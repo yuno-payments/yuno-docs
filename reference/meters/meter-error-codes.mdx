@@ -1,0 +1,60 @@
+---
+title: "Meter Error Codes"
+hidden: true
+description: "Error codes and messages returned by the meters, metered prices and usage event endpoints."
+---
+
+<Note>
+**Enabled per organization**
+
+Usage-based billing must be enabled for your organization before these endpoints accept requests. Contact your Yuno account manager to enable it. Requests from an organization where it is not enabled return `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+All lookup failures in this feature (unknown meter, plan, metered price or subscription) return HTTP `400` with a specific `code` — never `404`. Every error follows the standard shape used across the Subscriptions API:
+
+```json
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": ["The price_per_credit currency must match the plan base currency"]
+}
+```
+
+For general HTTP status semantics see [HTTP Response Codes](/reference/getting-started/response-codes).
+
+## Codes
+
+| HTTP | `code` | Returned by | When |
+| --- | --- | --- | --- |
+| 403 | `PRODUCT_NOT_ENABLED` | All endpoints | Usage-based billing is not enabled for your organization. Contact your Yuno account manager. |
+| 400 | `INVALID_PARAMETERS` | All endpoints | A field failed validation. `messages` carries one human-readable reason per failure — see the list below. |
+| 400 | `METER_NOT_FOUND` | Retrieve / Update Meter, Attach Meter to Plan, Create Plan (`meters[]`), Report Usage Event | The `meter_id` does not exist or is not linked to your account, or the meter is `INACTIVE` (archived meters cannot be attached and reject usage events) — on usage events, no `ACTIVE` meter with that `event_name` exists. |
+| 400 | `PLAN_NOT_FOUND` | Attach Meter to Plan, List Plan Meters, Update Plan Meter | The `plan_id` does not exist or is not linked to your account. |
+| 400 | `PLAN_METER_NOT_FOUND` | Update Plan Meter | The meter is not attached to this plan, or the meter is `INACTIVE` (its metered prices are frozen until it is reactivated). |
+| 400 | `SUBSCRIPTION_NOT_FOUND` | Report Usage Event | The `subscription_id` does not exist in your account. |
+| 400 | `SUBSCRIPTION_NOT_ACTIVE` | Report Usage Event | The subscription is `PAUSED`, `CANCELED` or `COMPLETED` (only `ACTIVE`, `TRIALING` and `PAST_DUE` accept usage). The event is rejected and nothing is counted — resume the subscription first. Message: "The subscription is not active". |
+| 409 | `METER_EVENT_NAME_CONFLICT` | Create Meter | A meter with the same `event_name` already exists in the account — active or archived. Choose another name (uniqueness is status-blind, so archiving does not free the name). |
+| 409 | `PLAN_METER_ALREADY_ASSIGNED` | Attach Meter to Plan, Create Plan (`meters[]`), `PATCH /subscriptions/plans/{plan_id}` | The meter is already attached to the plan — including when the same `meter_id` appears twice in one `meters[]` list. Use Update Plan Meter to change it. |
+
+## `INVALID_PARAMETERS` messages
+
+| Message | Endpoint | Fix |
+| --- | --- | --- |
+| The event_name must match ^[a-z0-9_.]+$ | Create Meter | Use lowercase letters, digits, `_` and `.` only (MAX 100). |
+| The account_id is required | Create Meter | Send the `account_id` of the account the meter belongs to. |
+| The default_price currency must be USD | Create / Update Meter | Only `USD` is accepted for `default_price`. Price non-USD plans explicitly with `price_per_credit`. |
+| The price_per_credit currency must match the plan base currency | Attach Meter to Plan, Update Plan Meter, Create Plan | Send `price_per_credit` in the plan's `base_amount` currency. |
+| A price_per_credit is required when the plan base currency is not USD | Attach Meter to Plan, Create Plan | Inheritance from `default_price` only works for USD plans — send the price. |
+| A price_per_credit is required when the meter has no default_price | Attach Meter to Plan, Create Plan | Send the price, or set a `default_price` on the meter first. |
+| The meter credits must be greater than or equal to 0 | Attach Meter to Plan, Update Plan Meter, Create Plan | `credits` cannot be negative. Use `0` to bill every unit. |
+| The meter pricing_strategy must be one of PER_UNIT, PACKAGE, TIERED | Attach Meter to Plan, Update Plan Meter, Create Plan | Send one of the three supported strategies. |
+| The country_prices must not contain duplicate countries | Attach Meter to Plan, Update Plan Meter, Create Plan | One entry per country. |
+| The event_id is required | Report Usage Event | Always send your idempotency key. |
+| The consumed_value is required for a SUM meter · The consumed_value is required for a LAST meter | Report Usage Event | `consumed_value` is mandatory for `SUM` and `LAST` meters (the message names the meter's aggregation); only `COUNT` defaults to 1. |
+| The occurred_at cannot be more than 35 days in the past | Report Usage Event | Report closer to real time, or drop events older than the 35-day window. |
+| The meter_id does not match the meter resolved from event_name | Report Usage Event | Either omit `meter_id` or make sure it belongs to the meter whose `event_name` you send. |
+| At least one field must be provided to update the meter | Update Meter | Send at least one updatable field in the PATCH body. |
+| At least one field must be provided | Update Plan Meter | Send at least one of `credits`, `pricing_strategy`, `price_per_credit`, `country_prices`. |
+
+<Note>
+Treat both the code list and the message texts as open-ended: new codes and messages can be added. Match on `code` for control flow and log `messages` for diagnostics.
+</Note>

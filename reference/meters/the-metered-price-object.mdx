@@ -1,0 +1,108 @@
+---
+title: "The Metered Price Object"
+hidden: true
+description: "Documents the metered price (plan meter) object: included credits per cycle, pricing strategy, price per unit and per-country prices."
+---
+
+<Note>
+**Enabled per organization**
+
+Usage-based billing must be enabled for your organization before these endpoints accept requests. Contact your Yuno account manager to enable it. Requests from an organization where it is not enabled return `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+## Attributes
+
+A metered price is the relation between a [meter](/reference/meters/the-meter-object) and a [plan](/reference/plans/the-plan-object). It says how many units of the meter are included in the plan each billing cycle (`credits`) and what every unit beyond that costs (`price_per_credit`, optionally per country). A plan can carry any number of metered prices alongside its flat price; every subscription on the plan inherits them. Returned by the `/subscriptions/plans/{plan_id}/meters` endpoints and embedded as `meters[]` on [Create Plan](/reference/plans/create-plan) and [Retrieve Plan](/reference/plans/retrieve-plan) — always present, an empty array for a plan without metered prices.
+
+<Note>
+**`credits` are included units, not prepaid money**
+
+`credits` is the usage allowance bundled in the plan's flat price — "the first 10,000 tokens each month are included". It is measured in the meter's own unit and resets every billing cycle. It is not a prepaid balance or wallet.
+</Note>
+
+<ParamField body="id" type="string">
+  The unique identifier of the metered price (MAX 64; MIN 36).
+
+  Example: 77777777-7777-7777-7777-777777777777
+</ParamField>
+
+<ParamField body="plan_id" type="string">
+  The unique identifier of the plan the meter is attached to (MAX 64; MIN 36).
+
+  Example: 00000000-0000-4000-8000-000000000001
+</ParamField>
+
+<ParamField body="meter_id" type="string">
+  The unique identifier of the attached meter (MAX 64; MIN 36). Must be `ACTIVE` when attaching. A meter can be attached to a given plan only once (`409 PLAN_METER_ALREADY_ASSIGNED`).
+
+  Example: 66666666-6666-6666-6666-666666666666
+</ParamField>
+
+<ParamField body="credits" type="number">
+  Units of the meter included in the plan per billing cycle — the allowance a subscriber can consume before any usage is billed. Must be greater than or equal to 0; `0` means every unit is billed. Decimals allowed.
+
+  Example: 100.5
+</ParamField>
+
+<ParamField body="pricing_strategy" type="enum">
+  How usage beyond `credits` is priced.
+
+  Possible values:
+  - `PER_UNIT` = Billable units × `price_per_credit` (or the matching `country_prices` entry).
+  - `PACKAGE` = Usage billed in bundles of N units; a partial bundle counts as a full one.
+  - `TIERED` = Graduated tiers: each band of usage is billed at its own rate.
+</ParamField>
+
+<ParamField body="price_per_credit" type="object">
+  The price per unit beyond the included credits, in the plan's base currency. Used for every subscriber whose country has no explicit entry in `country_prices`.
+
+  Rules when attaching or updating:
+  - `currency` must equal the plan's `base_amount` currency, else `400 INVALID_PARAMETERS`.
+  - Optional only when the plan's base currency is `USD` and the meter has a `default_price` — the meter's default then applies and this field is returned as `null`.
+  - Required when the plan's base currency is not `USD`, or when the meter has no `default_price`.
+
+  <Expandable title="properties">
+    <ParamField body="currency" type="enum">
+      MAX 3; MIN 3; <a href="/reference/country-reference">ISO 4217</a>.
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      The price per unit (multiple of 0.0001).
+
+      Example: 0.05
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="country_prices" type="array of objects">
+  Optional explicit per-unit prices by subscriber country, one entry per country (a repeated country is rejected with `400`). A country not listed falls back to `price_per_credit`. Same shape as the plan-level `country_prices`.
+
+  <Expandable title="properties">
+    <ParamField body="country" type="string">
+      MAX 2; MIN 2; <a href="/reference/country-reference">ISO 3166-1</a>.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      <Expandable title="properties">
+        <ParamField body="currency" type="enum" />
+        <ParamField body="value" type="number" />
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="created_at" type="Timestamp">
+  Set by Yuno when the metered price is attached.
+</ParamField>
+<ParamField body="updated_at" type="Timestamp">
+  Set by Yuno on every update of the metered price.
+</ParamField>
+
+## Related
+
+* [Attach Meter to Plan](/reference/meters/attach-meter-to-plan)
+* [List Plan Meters](/reference/meters/list-plan-meters)
+* [Update Plan Meter](/reference/meters/update-plan-meter)
+* [Create Plan](/reference/plans/create-plan) — attach meters inline with `meters[]`
+* [The Meter Object](/reference/meters/the-meter-object)
+* [Usage-Based Billing guide](/docs/payment-features/subscriptions/usage-based-billing)

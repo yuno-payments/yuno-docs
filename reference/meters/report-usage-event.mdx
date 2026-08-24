@@ -1,0 +1,32 @@
+---
+title: "Report Usage Event"
+openapi: "/openapi/meters/report-usage-event.json POST /subscriptions/meters/events"
+hidden: true
+description: "Reports one usage event (consumed_value, occurred_at) for an active subscription against a meter, idempotent on event_id."
+---
+
+<Note>
+**Enabled per organization**
+
+Usage-based billing must be enabled for your organization before these endpoints accept requests. Contact your Yuno account manager to enable it. Requests from an organization where it is not enabled return `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+Send one event per request, with a unique `X-Idempotency-Key` header. Yuno resolves the meter from `event_name`, validates the event synchronously and stores it against the `subscription_id`. `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions accept usage — `PAUSED`, `CANCELED` and `COMPLETED` are rejected with `400 SUBSCRIPTION_NOT_ACTIVE` and nothing is counted. Usage is aggregated per subscription and billing cycle according to the meter's `aggregation`, and any usage beyond the included `credits` is billed on the subscription's renewal charge.
+
+<Note>
+**`event_id` is your idempotency key**
+
+Generate a unique `event_id` for every event (a UUID or your own event/request id) and reuse it on retries. A replay returns the same response as the first call — including the original `consumed_value`, even if the retry carried a different one (the retry's value is discarded) — and the usage is never counted twice. `event_id` is unique per account and required: a request without it is rejected with `400`. Send both `event_id` and `X-Idempotency-Key` on every request: the header protects the HTTP call, `event_id` protects billing.
+</Note>
+
+<Note>
+**Timestamps**
+
+`occurred_at` defaults to the time Yuno receives the event (returned as `received_at`). You can backdate up to 35 days; older values are rejected with `400`. Which billing cycle an event lands in is decided by `occurred_at`, not by when it was received.
+</Note>
+
+<Note>
+An unknown `event_name` (or an archived meter) is a `400 METER_NOT_FOUND`; an unknown `subscription_id` is a `400 SUBSCRIPTION_NOT_FOUND`. The event carries no `country` or `account_id` — both are resolved from the subscription.
+</Note>
+
+Refer to [Meter Error Codes](/reference/meters/meter-error-codes) for the possible error outcomes.

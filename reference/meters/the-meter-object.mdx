@@ -1,0 +1,125 @@
+---
+title: "The Meter Object"
+hidden: true
+description: "Documents the meter object's attributes: event name, aggregation, unit labels, default price and status."
+---
+
+<Note>
+**Enabled per organization**
+
+Usage-based billing must be enabled for your organization before these endpoints accept requests. Contact your Yuno account manager to enable it. Requests from an organization where it is not enabled return `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+## Attributes
+
+A meter is a named, countable action your product performs — tokens generated, API requests served, gigabytes held. It defines the `event_name` your systems send on every [usage event](/reference/meters/report-usage-event) and how those events aggregate into a quantity per billing cycle. A meter carries no price of its own until it is attached to a plan as a [metered price](/reference/meters/the-metered-price-object); `default_price` is only a convenience default for USD plans.
+
+<ParamField body="id" type="string">
+  The unique identifier of the meter (MAX 64; MIN 36).
+
+  Example: 55555555-5555-5555-5555-555555555555
+</ParamField>
+
+<ParamField body="account_id" type="string">
+  The unique identifier of the account that owns the meter (MAX 64; MIN 36).
+
+  Example: 00000000-0000-4000-8000-000000000002
+</ParamField>
+
+<ParamField body="name" type="string">
+  The meter display name (MAX 255; MIN 3). Leading and trailing spaces are trimmed.
+
+  Example: AI tokens
+</ParamField>
+
+<ParamField body="description" type="string">
+  What the meter counts and how it is reported. Optional; `null` when not set.
+
+  Example: LLM tokens consumed by model responses, reported once per response
+</ParamField>
+
+<ParamField body="event_name" type="string">
+  The key your systems send on every usage event to reference this meter (MAX 100). Lowercase letters, digits, `_` and `.` only (`^[a-z0-9_.]+$`). Unique per account across all meters, `ACTIVE` or `INACTIVE` — creating another meter with the same `event_name` is rejected with `409 METER_EVENT_NAME_CONFLICT`, even if the existing one is archived. Immutable after creation; a PATCH that includes it is silently ignored.
+
+  Example: ai_tokens
+</ParamField>
+
+<ParamField body="aggregation" type="enum">
+  How reported events roll up into the cycle quantity. Immutable after creation; a PATCH that includes it is silently ignored.
+
+  Possible values:
+  - `SUM` = Adds the `consumed_value` of every event in the cycle. Use for consumption: tokens, minutes, messages, deliveries.
+  - `COUNT` = Counts events, ignoring `consumed_value` (each event counts as 1). Use for per-call pricing: API requests, jobs.
+  - `LAST` = Keeps the most recent `consumed_value` reported in the cycle (by `occurred_at`). Use for gauges: gigabytes held, seats in use.
+</ParamField>
+
+<ParamField body="unit_label" type="string">
+  Singular label of the unit the meter counts, used when usage is displayed. Optional.
+
+  Example: token
+</ParamField>
+
+<ParamField body="plural_unit_label" type="string">
+  Plural label of the unit the meter counts. Optional.
+
+  Example: tokens
+</ParamField>
+
+<ParamField body="default_price" type="object">
+  Optional default price per unit beyond the included credits. Inherited by USD plans that attach this meter without an explicit `price_per_credit`. `null` when not set.
+
+  <Expandable title="properties">
+    <ParamField body="currency" type="enum">
+      MAX 3; MIN 3. Must be `USD`  — any other currency is rejected with `400 INVALID_PARAMETERS`.
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      The price per unit (multiple of 0.0001).
+
+      Example: 0.002
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="metadata" type="array of objects">
+  Key-value pairs attached to the meter (MAX 48 entries; keys unique per meter). Independent of the `metadata` you send on usage events.
+
+  <Expandable title="properties">
+    <ParamField body="key" type="string">
+      MAX 48.
+
+      Example: team
+    </ParamField>
+
+    <ParamField body="value" type="string">
+      MAX 512.
+
+      Example: platform
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="status" type="enum">
+  Status of the meter. Always `ACTIVE` on creation — a `status` sent to Create Meter is ignored.
+
+  Possible values:
+  - `ACTIVE` = The meter accepts usage events and can be attached to plans.
+  - `INACTIVE` = Archived. Usage events for its `event_name` are rejected with `400 METER_NOT_FOUND`, it cannot be attached to plans, and its existing metered prices are frozen. The `event_name` stays reserved. Set through [Update Meter](/reference/meters/update-meter) and reversible (`status: ACTIVE`); there is no delete.
+</ParamField>
+
+<ParamField body="created_at" type="Timestamp">
+  Set by Yuno when the meter is created.
+</ParamField>
+<ParamField body="updated_at" type="Timestamp">
+  Set by Yuno on every update.
+</ParamField>
+
+## Related
+
+* [Create Meter](/reference/meters/create-meter)
+* [Retrieve Meter](/reference/meters/retrieve-meter)
+* [List Meters](/reference/meters/list-meters)
+* [Update Meter](/reference/meters/update-meter)
+* [Report Usage Event](/reference/meters/report-usage-event)
+* [The Metered Price Object](/reference/meters/the-metered-price-object) — how a meter is priced on a plan
+* [Usage-Based Billing guide](/docs/payment-features/subscriptions/usage-based-billing)
