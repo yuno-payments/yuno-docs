@@ -47,8 +47,8 @@ Have the following ready:
       | **Payment Mode** | Optional | **Payment App** (modern) or **Legacy** (redirect). |
       | **Transaction Identification From** | Optional | **Yuno TID** or **Provider TID**. |
       | **Antifraud Providers for Split Orders** | Optional | Comma-separated antifraud providers (`RISKIFIED`, `CYBERSOURCE`, `SIGNIFYD`, `CIELO_CYBERSOURCE_FRAUD`) that receive the shared session for split orders. Defaults to `RISKIFIED` + `CYBERSOURCE` when left empty. |
-      | **Vault Card for Order Modification** | Optional | When set to **Yes** (and **Create Customer** is also **Yes**), the plugin securely stores the card used on each order so that, if the order total later increases, the additional amount can be charged automatically. See [Order modifications](#order-modifications-changed-order-totals). |
-      | **Enable Network Tokens** | Optional | When set to **Yes** (and **Create Customer** is also **Yes**), the plugin securely stores each card on its first purchase and recognizes it on later purchases by the same customer, so Yuno can process repeat purchases with a network token instead of the card number. See [Network tokens](#network-tokens-repeat-card-purchases). |
+      | **Vault Card for Order Modification** | Optional | When set to **Yes** (and **Create Customer** is also **Yes**), the plugin securely stores the card used on each order and allows the additional amount to be charged automatically if the order total later increases. This is the only field that authorizes additional charges: when it is **No**, an order-total increase is declined even if the card was stored for network tokens. See [Order modifications](#order-modifications-changed-order-totals). |
+      | **Enable Network Tokens** | Optional | When set to **Yes** (and **Create Customer** is also **Yes**), the plugin securely stores each card on its first purchase and recognizes it on later purchases by the same customer, so Yuno can process repeat purchases with a network token instead of the card number. **The toggle has no effect until Yuno activates network tokens on the routes your store uses**: until then cards are stored but no tokens are issued. Contact your Yuno KAM or support to activate it. See [Network tokens](#network-tokens-repeat-card-purchases). |
     </Accordion>
 
     <Accordion title="Settlement Options">
@@ -178,10 +178,18 @@ To enable automatic charges when an order total **increases**, configure the fol
 
 Yuno can only attach a network token to a card it has securely stored. When **Enable Network Tokens** is on, the plugin stores each card the first time a customer pays with it and reuses that stored reference on every later purchase of the same card by the same customer. No storefront or Payment App change is needed; everything happens on the Yuno side of the integration.
 
-#### Prerequisites
+#### What has to be switched on
 
-*   Yuno VTEX plugin version **4.2.345 or later** installed in **every** VTEX account that runs the plugin (see [Multiple accounts](#multiple-accounts-and-franchises) below).
-*   Network tokens enabled by Yuno on the routes your store uses. This is configured on the Yuno side: contact your Yuno representative or [support](/docs/security-and-compliance/network-tokens#1-let-yuno-provision-and-collect-network-tokens) to activate it.
+| Requirement | Where |
+| :--- | :--- |
+| **Enable Network Tokens** | Provider configuration in VTEX (Step 1), set to **Yes**. Has no effect on its own. |
+| **Create Customer** | Same place, set to **Yes**. The stored card is bound to a Yuno customer, so both fields are required together. |
+| **Plugin 4.2.345+** | Every VTEX account that runs the plugin, including the account that authorizes rather than pays (see [Multiple accounts](#multiple-accounts-and-franchises)). |
+| **Route activation** | Done by Yuno on the routes your store uses. Not something you can set yourself: contact your Yuno KAM or [support](/docs/security-and-compliance/network-tokens#1-let-yuno-provision-and-collect-network-tokens). Activation is per route, and routes belong to a Yuno Account ID, so each account you process with needs its own activation. |
+
+<Warning>
+  **Enabling the fields in VTEX is not enough.** Until Yuno activates network tokens on your routes, the plugin stores cards but every payment is still processed with the card number and no network token is issued. Confirm the activation with your KAM or support before expecting any change in approval rates.
+</Warning>
 
 #### Enable it
 
@@ -189,28 +197,45 @@ In your provider configuration (Step 1), set the following two fields and save:
 
 | Field | Value |
 | :--- | :--- |
-| **Enable Network Tokens** | **Yes** |
+| **Enable Network Tokens** | **Yes**. Has no effect until Yuno activates network tokens on your routes (see above). |
 | **Create Customer** | **Yes**: required, because the stored card is bound to a Yuno customer. Both fields must be enabled together; **Enable Network Tokens** has no effect on its own. |
 
 #### What to expect
 
 *   **First purchase with a card**: processed with the card number, as today. The card is stored at the end of that purchase.
 *   **Later purchases of the same card by the same customer**: processed with the network token.
+*   **Gradual ramp-up**: because every card's first purchase still uses the card number, you will see almost no network tokens on day one. The benefit builds up as customers return with a card they have already used on your store.
 *   **Reissued cards** (for example, a new expiration date after a renewal) keep being recognized, so the network token continues to be used.
 *   **Fallback**: if the stored reference is not available for any reason, the payment proceeds with the card number exactly as it does today. Enabling this feature never causes a payment to fail.
 *   **VTEX subscriptions** are not affected. Recurring charges have their own stored-credential flow, which keeps working as described in the [FAQs](/docs/plugins/vtex/faqs).
 *   Applies to all card payments processed through the plugin, including fraud-defense payments and [split orders](#split-orders-multiple-sellers).
 
 <Note>
-  **Side effect on order modifications.** Because the card is stored on every first purchase, any order paid with a stored card can also receive an [additional charge when its total increases](#order-modifications-changed-order-totals), even if **Vault Card for Order Modification** is set to **No**. If you do not want order-total increases to be charged automatically, do not enable order modifications in VTEX.
+  **Order modifications are not affected.** Storing a card for network tokens does not by itself allow the plugin to charge it again. [Additional charges when an order total increases](#order-modifications-changed-order-totals) remain controlled only by **Vault Card for Order Modification**: with that field set to **No**, an order-total increase is declined even though the card is stored.
 </Note>
+
+```mermaid
+flowchart LR
+  subgraph single["Single store"]
+    direction LR
+    A1["First purchase<br/>card number"] --> A2["Card stored<br/>store A"] --> A3["Buys again<br/>same store"] --> A4["Network token<br/>better approval"]
+  end
+  subgraph franchise["Franchise, many store accounts"]
+    direction LR
+    B1["First purchase<br/>at store A"] --> B2["Card stored<br/>store A only"] --> B3["Buys again<br/>at store B"] --> B4["Card number<br/>no token"]
+  end
+  style A4 fill:#e6f2ec,stroke:#2e7d5b,color:#1f5c42
+  style B4 fill:#f9ebe3,stroke:#b5541f,color:#8a3d12
+```
+
+Store B has no record of the card, so it is treated as a first purchase. The payment still succeeds; it falls back to the card number.
 
 #### Multiple accounts and franchises
 
 The card is stored in the VTEX account that **authorizes** the payment and is scoped to that account's Yuno **Account ID**. Keep this in mind in the following setups:
 
 *   **Authorization and payment in different VTEX accounts** (for example, a B2B storefront that completes the payment in a second account): enable both fields on the affiliation of the account that **authorizes** the order, not only on the account that completes the payment. Both accounts must run plugin version **4.2.345 or later**.
-*   **Franchises / multiple store accounts** (many store accounts sharing a main account): enable both fields on **every** franchise affiliation. A card stored by one store account is not shared with another, and a card stored under one Yuno Account ID is not visible to another, so each store builds its own card history.
+*   **Franchises / multiple store accounts** (many store accounts sharing a main account): enable both fields on **every** franchise affiliation. A card stored by one store account is not shared with another, and a card stored under one Yuno Account ID is not visible to another, so each store builds its own card history. **The benefit therefore accrues per store**: a chain whose customers buy across several stores gets materially fewer tokenized payments than a single-store merchant, because each store only recognizes the cards first used in that same store. Route activation is also per Yuno Account ID, so Yuno must activate network tokens on the routes of **every** franchise account, not only the main one.
 
 <Accordion title="Verifying the setup (for Yuno TAMs)">
   Place two orders with the same card and the same customer on the store, then look up the plugin logs for each order in Datadog and filter by the `step_function` attribute:
