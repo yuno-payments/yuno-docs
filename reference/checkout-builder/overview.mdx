@@ -1,27 +1,28 @@
 ---
-title: "Overview"
+title: "Checkout Builder Overview"
 sidebarTitle: "Overview"
-description: "Programmatically configure a merchant's Yuno checkout — payment methods, conditions, required fields, and styling — via Yuno's public B2B API."
+description: "Programmatically configure a merchant's Yuno checkout (payment methods, conditions, required fields, and styling) via Yuno's public B2B API."
 badge: "Beta"
 ---
 
 <Warning>
-**BETA — access is granted per account.** This API is in closed beta and is enabled per account. Your account must be explicitly allowlisted; requests from a non-allowlisted account are rejected with `401`. Endpoints are stable in shape but subject to additive changes during the BETA window.
+**BETA: access is granted per account.** This API is in closed beta and is enabled per account. Your account must be explicitly allowlisted; requests from a non-allowlisted account are rejected with `401`. Endpoints are stable in shape but subject to additive changes during the BETA window.
 </Warning>
 
-Configure a merchant's Yuno checkout **server-to-server** — the same configuration surface that powers the Yuno Dashboard's Checkout Builder — so a partner can manage its merchants' checkouts programmatically, without using the Yuno UI:
+Configure a merchant's Yuno checkout **server-to-server**, using the same configuration surface that powers the Yuno Dashboard's Checkout Builder. This lets a partner manage its merchants' checkouts programmatically, without using the Yuno UI:
 
-- **Payment methods** — which methods are shown and in what display order
-- **Conditions** — per-method rules (currency, country, amount, metadata) that gate when a method appears
-- **Required fields** — per-method form field configuration (CVV, installments, billing address, etc.) for both the enrolled (saved-card) and non-enrolled (first-time) flows
-- **General settings** — accepted document types per country
-- **Styling & SDK settings** — colors, fonts, button shapes, logos, and Payment Link branding
+- **Payment methods**: which methods are shown and in what display order
+- **Conditions**: per-method rules (currency, country, amount, metadata) that gate when a method appears
+- **Required fields**: per-method form field configuration (CVV, installments, billing address, etc.) for both the enrolled (saved-card) and non-enrolled (first-time) flows
+- **General settings**: accepted document types per country
+- **Styling & SDK settings**: colors, fonts, button shapes, logos, and Payment Link branding
 
 ## Base URL
 
 | Environment | Base URL |
 | --- | --- |
-| Production | `https://api.y.uno` |
+| Production (US) | `https://api.y.uno` |
+| Production (EMEA) | `https://api.eu.y.uno` |
 | Sandbox | `https://api-sandbox.y.uno` |
 
 All examples in this reference use the production base URL. The sandbox host accepts the same endpoints and payload shapes.
@@ -35,49 +36,49 @@ Every request is authenticated with your merchant API credentials and scoped to 
 | Header | Required | Description |
 | --- | --- | --- |
 | `PUBLIC-API-KEY` | Yes | Merchant public API key. Found in your Yuno dashboard under **Settings → API Keys**. |
-| `PRIVATE-SECRET-KEY` | Yes | Merchant private secret key, paired with the public key. Server-side only — never embed it in client-side code. |
+| `PRIVATE-SECRET-KEY` | Yes | Merchant private secret key, paired with the public key. Server-side only. Never embed it in client-side code. |
 | `X-Account-Code` | Yes | UUID of the merchant account. The account is resolved **only** from this header (never from the request body or path) and must be in the beta allowlist. |
-| `X-Idempotency-Key` | No | Optional client key, up to 64 characters. Best-effort — see [Idempotency](#idempotency). |
+| `X-Idempotency-Key` | No | Optional client key, up to 64 characters. Best-effort. See [Idempotency](#idempotency). |
 | `Content-Type` | Yes (POST/PUT/PATCH) | `application/json` |
 
 </div>
 
 <Note>
-The organization is resolved by Yuno from your credentials — **do not send** an organization header. Missing/invalid credentials, or a non-allowlisted account, return `401`.
+The organization is resolved by Yuno from your credentials. **Do not send** an organization header. Missing/invalid credentials, or a non-allowlisted account, return `401`.
 </Note>
 
 ## Endpoints
 
-A **custom checkout** is identified by a `checkout_code` (a UUID). It is created, listed, read, written, and lifecycle-managed through the same resource — five operations:
+A **custom checkout** is identified by a `checkout_code` (a UUID). It is created, listed, read, written, and lifecycle-managed through the same resource, in five operations:
 
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `POST` | `/v1/checkouts` | Create a new custom checkout as a published clone of the account's default. |
 | `GET` | `/v1/checkouts` | List the account's custom checkouts (summaries only): ids, names, statuses, default flag. Supports filters and opt-in pagination. |
-| `GET` | `/v1/checkouts/{checkout_code}` | Fetch the full custom checkout — configuration **and** styling, together. |
+| `GET` | `/v1/checkouts/{checkout_code}` | Fetch the full custom checkout: configuration **and** styling, together. |
 | `PUT` | `/v1/checkouts/{checkout_code}` | Publish configuration and/or styling. |
-| `PATCH` | `/v1/checkouts/{checkout_code}` | Manage the lifecycle — rename, publish, unpublish, archive, restore, or promote to default. |
+| `PATCH` | `/v1/checkouts/{checkout_code}` | Manage the lifecycle: rename, publish, unpublish, archive, restore, or promote to default. |
 
 `{checkout_code}` must be a valid UUID; other values are rejected with `400` before any processing.
 
 <Note>
-You obtain a `checkout_code` by calling [Create Checkout](/reference/checkout-builder/create-checkout) (the response's top-level `id`), by calling [List Checkouts](/reference/checkout-builder/list-checkouts) (each item's `id` is the `checkout_code`), or when the custom checkout is created in the Yuno dashboard / embedded Checkout Builder.
+You obtain a `checkout_code` by calling [Create Checkout](/reference/checkout-builder/create-checkout) (the response's top-level `id`) or by calling [List Checkouts](/reference/checkout-builder/list-checkouts) (each item's `id` is the `checkout_code`). You can also get one when the custom checkout is created in the Yuno dashboard / embedded Checkout Builder.
 </Note>
 
 ## Key behaviors
 
 <Note>
-**`PUT` is a sparse upsert for configuration, not a full replace.** Payment methods omitted from the `payment_methods` array retain their previous state — they are not removed or disabled. To disable a method, include it with `is_active: false`.
+**`PUT` is a sparse upsert for configuration, not a full replace.** Payment methods omitted from the `payment_methods` array retain their previous state. They are not removed or turned off. To turn off a method, include it with `is_active: false`.
 </Note>
 
-- **Configuration — sparse update.** Only the payment methods you include are updated; omitted methods keep their previous state. Publishing updates existing methods only — **new payment methods cannot be created** via the API (contact your Yuno TAM to add methods).
-- **Styling — partial merge.** Fields you omit (or send as `null`) are preserved; only the fields you include change. Partial styling updates are safe — you do not need to resend the entire `styles` object. To reset styling to defaults, use `flags.force_default_styles`.
+- **Configuration: sparse update.** Only the payment methods you include are updated; omitted methods keep their previous state. Publishing updates existing methods only. **New payment methods cannot be created** via the API (contact your Yuno TAM to add methods).
+- **Styling: partial merge.** Fields you omit (or send as `null`) are preserved; only the fields you include change. Partial styling updates are safe. You do not need to resend the entire `styles` object. To reset styling to defaults, use `flags.force_default_styles`.
 - **Order is driven by `order_to_show`**, not by array position. Lower values are shown first.
 - **At most one condition set per required field.** Sending more than one condition set on a field is rejected with `400` (`conditions_to_override must contain at most one condition set`).
 - **Enrolled and non-enrolled flows are independent.** For CARD, configure the non-enrolled flow via `fields` and the enrolled (saved-card) flow via `enrollment_fields`. To leave one flow untouched, pass an empty array for that side.
-- **Lifecycle transitions follow a state machine.** Publish is only valid from `NOT_PUBLISHED`; an `ARCHIVED` checkout is restored in two steps (`NOT_PUBLISHED` first, then `PUBLISHED`); the default checkout cannot be archived or unpublished. See [Manage Checkout Lifecycle](/reference/checkout-builder/manage-checkout-lifecycle) for the full rules.
+- **Lifecycle transitions follow a state machine.** Publish is only valid from `NOT_PUBLISHED`. An `ARCHIVED` checkout is restored in two steps (`NOT_PUBLISHED` first, then `PUBLISHED`). The default checkout cannot be archived or unpublished. See [Manage Checkout Lifecycle](/reference/checkout-builder/manage-checkout-lifecycle) for the full rules.
 - **Changes take effect immediately.** Validate payloads against the sandbox base URL before applying to production.
-- Each request body is validated independently; on any rule failure the whole request is rejected with a single aggregated `400` and nothing is applied. See the [Publish](/reference/checkout-builder/publish-checkout-configuration) endpoint for the full request shape, allowed values, and error catalog.
+- Each request body is validated independently; on any rule failure the whole request is rejected with a single aggregated `400` and nothing is applied. See the [Publish](/reference/checkout-builder/publish-checkout-configuration) endpoint for the full request shape and allowed values.
 
 ## Errors
 
@@ -93,7 +94,7 @@ Validation failures return HTTP `400` with a single aggregated body listing ever
 }
 ```
 
-Other statuses: `401` (authentication / account not allowlisted), `404` (checkout not found for the account, or no default checkout to clone on create), `409` (duplicate checkout name, or archiving/unpublishing the default checkout). The full per-rule error catalog is on the [Publish](/reference/checkout-builder/publish-checkout-configuration) page.
+Other statuses include `401` (authentication / account not allowlisted) and `404` (checkout not found for the account, or no default checkout to clone on create). `409` covers a duplicate checkout name, or archiving/unpublishing the default checkout. See the [Publish](/reference/checkout-builder/publish-checkout-configuration) page for the full request/response schema and example validation messages.
 
 ## Idempotency
 
