@@ -34,12 +34,15 @@ For general HTTP status semantics see [HTTP Response Codes](/reference/getting-s
 | 400 | `SUBSCRIPTION_NOT_ACTIVE` | Report Usage Event | The subscription is `PAUSED`, `CANCELED` or `COMPLETED` (only `ACTIVE`, `TRIALING` and `PAST_DUE` accept usage). The event is rejected and nothing is counted — resume the subscription first. Message: "The subscription is not active". |
 | 409 | `METER_EVENT_NAME_CONFLICT` | Create Meter | A meter with the same `event_name` already exists in the account — active or archived. Choose another name (uniqueness is status-blind, so archiving does not free the name). |
 | 409 | `PLAN_METER_ALREADY_ASSIGNED` | Attach Meter to Plan, Create Plan (`meters[]`), `PATCH /subscriptions/plans/{plan_id}` | The meter is already attached to the plan — including when the same `meter_id` appears twice in one `meters[]` list. Use Update Plan Meter to change it. |
+| 400 | `PLAN_METER_PRICING_CONFIG_UNSUPPORTED` | Attach Meter to Plan, Create Plan (`meters[]`), Update Plan Meter | `package_size`/`package_price`/`package_country_prices`/`tiers` sent for a metered price whose `pricing_strategy` isn't the matching one, or sent to Update Plan Meter at all (that config is attach-time only). Message: "Package and tier pricing configuration is not supported for this meter's pricing strategy." |
+| 400 | `PLAN_METER_MISSING_CURRENCY` | Attach Meter to Plan, Create Plan (`meters[]`), Update Plan Meter | A `PACKAGE`/`TIERED` metered price doesn't price every currency the plan supports — `messages` lists the missing ones. Message: "The meter must be priced in every currency the plan supports. Missing: %s." |
+| 400 | `PLAN_METER_BASE_CURRENCY_MISMATCH` | Attach Meter to Plan, Create Plan (`meters[]`), Update Plan Meter | A `PACKAGE`/`TIERED` metered price's base price currency doesn't match the plan's base currency. Message: "The meter base price currency must match the plan base currency." |
 
 ## `INVALID_PARAMETERS` messages
 
 | Message | Endpoint | Fix |
 | --- | --- | --- |
-| The event_name must match ^[a-z0-9_.]+$ | Create Meter | Use lowercase letters, digits, `_` and `.` only (MAX 100). |
+| The field 'event_name' has an invalid value, it must contain only lowercase letters, numbers, underscores and dots. | Create Meter | Use lowercase letters, digits, `_` and `.` only (MAX 100). |
 | The account_id is required | Create Meter | Send the `account_id` of the account the meter belongs to. |
 | The default_price currency must be USD | Create / Update Meter | Only `USD` is accepted for `default_price`. Price non-USD plans explicitly with `price_per_credit`. |
 | The price_per_credit currency must match the plan base currency | Attach Meter to Plan, Update Plan Meter, Create Plan | Send `price_per_credit` in the plan's `base_amount` currency. |
@@ -49,11 +52,18 @@ For general HTTP status semantics see [HTTP Response Codes](/reference/getting-s
 | The meter pricing_strategy must be one of PER_UNIT, PACKAGE, TIERED | Attach Meter to Plan, Update Plan Meter, Create Plan | Send one of the three supported strategies. |
 | The country_prices must not contain duplicate countries | Attach Meter to Plan, Update Plan Meter, Create Plan | One entry per country. |
 | The event_id is required | Report Usage Event | Always send your idempotency key. |
-| The consumed_value is required for a SUM meter · The consumed_value is required for a LAST meter | Report Usage Event | `consumed_value` is mandatory for `SUM` and `LAST` meters (the message names the meter's aggregation); only `COUNT` defaults to 1. |
-| The occurred_at cannot be more than 35 days in the past | Report Usage Event | Report closer to real time, or drop events older than the 35-day window. |
+| The value is required for a SUM meter · The value is required for a LAST meter | Report Usage Event | `value` is mandatory for `SUM` and `LAST` meters (the message names the meter's aggregation); only `COUNT` defaults to 1. |
+| The field 'occurred_at' has an invalid value, it must not be more than 35 days in the past. | Report Usage Event | Report closer to real time, or drop events older than the 35-day window. |
 | The meter_id does not match the meter resolved from event_name | Report Usage Event | Either omit `meter_id` or make sure it belongs to the meter whose `event_name` you send. |
 | At least one field must be provided to update the meter | Update Meter | Send at least one updatable field in the PATCH body. |
 | At least one field must be provided | Update Plan Meter | Send at least one of `credits`, `pricing_strategy`, `price_per_credit`, `country_prices`. |
+| A package_size is required for PACKAGE pricing / The package_size must be greater than 0 | Attach Meter to Plan, Create Plan | `package_size` is required and must be positive for `pricing_strategy: PACKAGE`. |
+| A package_price is required for PACKAGE pricing | Attach Meter to Plan, Create Plan | Send `package_price` for `pricing_strategy: PACKAGE`. |
+| A TIERED meter must define at least one tier | Attach Meter to Plan, Create Plan | Send at least one entry in `tiers[]` for `pricing_strategy: TIERED`. |
+| The last tier up_to must be null (unbounded) / Only the last tier may have a null up_to | Attach Meter to Plan, Create Plan | Exactly the last entry in `tiers[]` has `up_to: null`; every other tier needs a bound. |
+| Each tier up_to must be greater than 0 / Tier up_to bounds must strictly ascend | Attach Meter to Plan, Create Plan | Each non-last tier's `up_to` must be positive and strictly greater than the previous tier's. |
+| Each tier must define a rate | Attach Meter to Plan, Create Plan | Every entry in `tiers[]` needs a `rate`. |
+| Every tier must be priced in the same set of currencies | Attach Meter to Plan, Create Plan | Use the same currency (and the same `country_rates` countries, if any) across every tier in `tiers[]`. |
 
 <Note>
 Treat both the code list and the message texts as open-ended: new codes and messages can be added. Match on `code` for control flow and log `messages` for diagnostics.

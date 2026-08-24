@@ -45,16 +45,16 @@ A metered price is the relation between a [meter](/reference/meters/the-meter-ob
 </ParamField>
 
 <ParamField body="pricing_strategy" type="enum">
-  How usage beyond `credits` is priced.
+  How usage beyond `credits` is priced. Only `PER_UNIT`'s fields (`price_per_credit`, `country_prices`) can be changed after attach — `PACKAGE` and `TIERED` config is set once, at attach time (see the field notes below and [Update Plan Meter](/reference/meters/update-plan-meter)).
 
   Possible values:
   - `PER_UNIT` = Billable units × `price_per_credit` (or the matching `country_prices` entry).
-  - `PACKAGE` = Usage billed in bundles of N units; a partial bundle counts as a full one.
-  - `TIERED` = Graduated tiers: each band of usage is billed at its own rate.
+  - `PACKAGE` = Billable units rounded up to the nearest whole `package_size`, billed at `package_price` per bundle.
+  - `TIERED` = Graduated: usage is split across `tiers[]`, each band billed at its own rate.
 </ParamField>
 
 <ParamField body="price_per_credit" type="object">
-  The price per unit beyond the included credits, in the plan's base currency. Used for every subscriber whose country has no explicit entry in `country_prices`.
+  The price per unit beyond the included credits, in the plan's base currency. Used for every subscriber whose country has no explicit entry in `country_prices`. Only applies to `pricing_strategy: PER_UNIT`.
 
   Rules when attaching or updating:
   - `currency` must equal the plan's `base_amount` currency, else `400 INVALID_PARAMETERS`.
@@ -75,7 +75,7 @@ A metered price is the relation between a [meter](/reference/meters/the-meter-ob
 </ParamField>
 
 <ParamField body="country_prices" type="array of objects">
-  Optional explicit per-unit prices by subscriber country, one entry per country (a repeated country is rejected with `400`). A country not listed falls back to `price_per_credit`. Same shape as the plan-level `country_prices`.
+  Optional explicit per-unit prices by subscriber country, one entry per country (a repeated country is rejected with `400`). A country not listed falls back to `price_per_credit`. Same shape as the plan-level `country_prices`. Only applies to `pricing_strategy: PER_UNIT`.
 
   <Expandable title="properties">
     <ParamField body="country" type="string">
@@ -90,6 +90,42 @@ A metered price is the relation between a [meter](/reference/meters/the-meter-ob
     </ParamField>
   </Expandable>
 </ParamField>
+
+<ParamField body="package_size" type="number">
+  Only for `pricing_strategy: PACKAGE`. The bundle size — billable units are rounded up to the nearest whole multiple of this. Must be greater than 0; decimals and scientific notation (`1e3`) are accepted and coerced. Stored rounded to 4 decimal places. Set only at attach time — rejected with `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED` on Update Plan Meter.
+
+  Example: 1000
+</ParamField>
+
+<ParamField body="package_price" type="object">
+  Only for `pricing_strategy: PACKAGE`. The price per bundle, in the plan's base currency unless overridden per country in `package_country_prices`. Required when `pricing_strategy` is `PACKAGE`. Same shape as `price_per_credit`. Set only at attach time.
+</ParamField>
+
+<ParamField body="package_country_prices" type="array of objects">
+  Only for `pricing_strategy: PACKAGE`. Optional explicit per-bundle prices by subscriber country. Same shape as `country_prices`. Set only at attach time.
+</ParamField>
+
+<ParamField body="tiers" type="array of objects">
+  Only for `pricing_strategy: TIERED`. Ordered, graduated pricing bands — at least one entry, required when `pricing_strategy` is `TIERED`. Set only at attach time; rejected with `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED` on Update Plan Meter.
+
+  <Expandable title="properties">
+    <ParamField body="up_to" type="number">
+      The inclusive upper bound of this tier's billable-unit band. Required and must strictly ascend on every tier except the last; the last tier's `up_to` must be `null` (unbounded, covers all remaining usage). Exactly one tier per `tiers[]` array may have `up_to: null`, and it must be the last one.
+    </ParamField>
+
+    <ParamField body="rate" type="object">
+      The price per unit within this band, in the plan's base currency. Same shape as `price_per_credit`. Every tier in one metered price must share the same currency (and the same set of countries in `country_rates`, if used).
+    </ParamField>
+
+    <ParamField body="country_rates" type="array of objects">
+      Optional per-country override of `rate` for this tier. Same shape as `country_prices`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<Note>
+For `PACKAGE` and `TIERED`, the metered price must be priced in every currency the plan supports: a currency the plan uses with no matching `package_country_prices`/`country_rates` entry (and no applicable base price) is rejected with `400 PLAN_METER_MISSING_CURRENCY`; a `package_price`/tier `rate` in a currency the plan doesn't use at all is rejected with `400 PLAN_METER_BASE_CURRENCY_MISMATCH`. All three pricing strategies round the computed usage charge half-up to 4 decimal places.
+</Note>
 
 <ParamField body="created_at" type="Timestamp">
   Set by Yuno when the metered price is attached.
