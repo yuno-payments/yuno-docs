@@ -65,7 +65,14 @@ On the shopper's next visit, Click to Pay recognizes them (by device or by email
 
 ## Payment status lifecycle
 
-When you create a Click to Pay payment with the one-time token (OTT), the payment starts in the `READY_TO_PAY` status (sub-status `CREATED`) while it waits for the flow to be completed — for Passkey transactions, this means calling `continuePayment` in the SDK. Once the flow completes, the payment transitions to its final status. A payment that is never completed can transition to `EXPIRED`.
+For Click to Pay, passkey authentication happens **before** the payment exists: the shopper authenticates inside the Click to Pay experience, and only once authentication completes is the one-time token (OTT) generated — the OTT already carries the result of that authentication. You then create the payment using the OTT. If the passkey step does not complete, the flow aborts and no payment is created.
+
+After creating the payment, continue the flow in the SDK with `continuePayment`. The SDK evaluates the payment's status at that point:
+
+* `READY_TO_PAY` — or `PENDING` with sub-status `WAITING_ADDITIONAL_STEP` or `DELAYED_PROVIDER_RESPONSE` — means the provider requires an additional step (for example 3DS, a redirect, or a provider OTP), and the SDK executes it.
+* Any other status means the payment is already resolved, and the SDK reports the final status.
+
+These intermediate statuses are conditional: a payment that requires no additional step never passes through them.
 
 See [Payment statuses](/reference/payments/status-and-response-codes/payment) for the full lifecycle.
 
