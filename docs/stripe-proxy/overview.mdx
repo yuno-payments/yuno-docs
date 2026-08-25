@@ -35,71 +35,47 @@ To migrate, you only change **two things** in your integration:
 Everything else — your success page, your webhook handler, your error handling —
 keeps working as it does with Stripe today.
 
-## Before you start: register your Stripe credentials
+## Before you start
 
-If you want Yuno to keep using **Stripe Billing** for your subscriptions
-(`BILLING: STRIPE`, see [Proxy subscriptions](#subscriptions)) or to resolve
-existing `price_...` ids from your Stripe catalog, you first register a Stripe
-**restricted key** with Yuno. This is a one-time step per account: Yuno stores
-the key encrypted and uses it server-side, so you never send Stripe credentials
-on each request.
+The Stripe Proxy is set up once per account by Yuno. Share the following with
+your KAM/TAM and they will enable it for you — none of this is sent on the
+API requests.
 
-```bash
-curl -X POST '{baseUrl}/v1/onboarding' \
-  -H "PUBLIC-API-KEY: <your-public-key>" \
-  -H "PRIVATE-SECRET-KEY: <your-private-secret>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "organization_code": "<your-organization-code>",
-    "account_id": "<your-account-code>",
-    "stripe_restricted_key": "rk_live_...",
-    "stripe_custom_payment_method_type": "cpmt_..."
-  }'
-```
+### 1. Stripe credentials
 
-<ParamField body="organization_code" type="string" required>
-  Your Yuno organization code (UUID).
-</ParamField>
+Needed if you use `BILLING: STRIPE` (see [Proxy subscriptions](#subscriptions))
+or send existing `price_...` ids from your Stripe catalog. Yuno stores the key
+encrypted and uses it server-side, so you never send Stripe credentials on each
+request.
 
-<ParamField body="account_id" type="string" required>
-  The Yuno account the Stripe credentials belong to (UUID). Must match the
-  `X-account-code` you send on the hosted page requests.
-</ParamField>
-
-<ParamField body="stripe_restricted_key" type="string" required>
-  A Stripe **restricted key** (`rk_...`) with access to Hosted Page (Checkout Sessions),
-  Prices, Customers and Subscriptions. It is never logged and only stored
-  encrypted.
-</ParamField>
-
-<ParamField body="stripe_custom_payment_method_type" type="string" required>
-  The id of the Stripe custom payment method type (`cpmt_...`) Yuno uses to
-  report charges back to Stripe Billing.
-</ParamField>
-
-```json
-{
-  "merchant_ref": "mref_...",
-  "organization_code": "...",
-  "account_id": "...",
-  "status": "ACTIVE",
-  "webhook_url": "https://.../v1/onboarding/mref_.../stripe-webhook",
-  "stripe": {
-    "custom_payment_method_type": "cpmt_...",
-    "webhook_endpoint_id": "we_..."
-  }
-}
-```
-
-To rotate the key later use `POST /v1/onboarding/{merchant_ref}/rotate-keys`
-with `{"stripe_restricted_key": "rk_..."}`; to turn the link off use
-`POST /v1/onboarding/{merchant_ref}/disable`.
+| What we need | Description |
+| --- | --- |
+| **Stripe restricted key** (`rk_...`) | Created in your Stripe Dashboard under *Developers → API keys → Create restricted key*, with access to Checkout Sessions, Prices, Customers and Subscriptions. It is never logged and only stored encrypted. |
+| **Stripe custom payment method type** (`cpmt_...`) | The custom payment method type Yuno uses to report charges back to Stripe Billing. |
+| **Yuno organization and account** | The organization and the `X-account-code` you will send on the hosted page requests. |
 
 <Warning>
   Sending `mode=subscription` with `BILLING: STRIPE` (or a `price_...` id)
-  before completing this step returns a Stripe-shaped `authentication_error`,
+  before this step is enabled returns a Stripe-shaped `authentication_error`,
   since Yuno has no Stripe key to act on your behalf.
 </Warning>
+
+### 2. Webhook setup
+
+1. **Register this webhook in your Yuno Dashboard.** Go to *Developers →
+   Webhooks* and add the Stripe Proxy endpoint for your environment, so the
+   payment events of the hosted page reach the proxy (see
+   [Configure webhooks](/docs/webhooks/configure-webhooks)):
+
+   | Environment | Webhook URL |
+   | --- | --- |
+   | Sandbox | `https://internal-sandbox.y.uno/stripe-proxy-ms/v1/webhooks/payment` |
+   | Production | Provided by your KAM/TAM |
+
+2. **Send your webhook URL to your TAM.** The URL where you want to receive the
+   Stripe events (`checkout.session.completed`, `checkout.session.expired`) —
+   the same one your Stripe handler listens on today. Yuno relays the signed
+   events there.
 
 ## Base URL
 
@@ -252,7 +228,7 @@ both cases.
 
 | `BILLING` | What Yuno does | Requires |
 | --- | --- | --- |
-| `STRIPE` | Calls Stripe and creates the subscription in **Stripe Billing** (customer + subscription). Stripe keeps deciding *when and how much* to charge; Yuno executes the charges. | Stripe credentials registered ([step above](#before-you-start-register-your-stripe-credentials)) |
+| `STRIPE` | Calls Stripe and creates the subscription in **Stripe Billing** (customer + subscription). Stripe keeps deciding *when and how much* to charge; Yuno executes the charges. | Stripe credentials shared with your KAM/TAM ([Before you start](#before-you-start)) |
 | `YUNO` — **coming soon** | Creates a **Yuno subscription** from the plan in `X-Subscription-Plan-Id`. No call to Stripe is made. | `X-Subscription-Plan-Id` with a Yuno plan id |
 
 In both cases the paid webhook carries `subscription` like Stripe does.
@@ -340,6 +316,11 @@ verification works unchanged.
   }
 }
 ```
+
+<Note>
+  The Stripe Proxy webhook in your Yuno Dashboard and the URL where you receive
+  the Stripe events are configured once — see [Before you start](#before-you-start).
+</Note>
 
 ## Errors
 
