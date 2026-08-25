@@ -63,12 +63,26 @@ Click to Pay is embedded within the card payment method and is invisible until t
 * **Optional Enrollment**: Enrollment is via a checkbox. If declined, the user proceeds with manual card entry (the transaction still shows `CLICK_TO_PAY` in the one-time token (OTT)).
 * **Visibility**: Best for low-friction UX where enrollment feels optional.
 
-<Info>
-**Certification Note**
-The golden flow with passkeys in Mobile is currently in certification.
-</Info>
-
 <Frame><img src="/images/reference/click-to-pay/image5.png" /></Frame>
+
+## Card vaulting on successful payment
+
+When a shopper enrolls during checkout — mandatorily in the APM flow, or by accepting the enrollment checkbox in the Golden Flow — their card is vaulted into their Click to Pay wallet once the payment is approved. Vaulting happens as part of the successful payment; no separate enrollment call is needed.
+
+On the shopper's next visit, Click to Pay recognizes them (by device or by email lookup) and surfaces their vaulted cards directly in the checkout, so returning shoppers can pay without re-entering card details.
+
+## Payment status lifecycle
+
+For Click to Pay, passkey authentication happens **before** the payment exists: the shopper authenticates inside the Click to Pay experience, and only once authentication completes is the one-time token (OTT) generated — the OTT already carries the result of that authentication. You then create the payment using the OTT. If the passkey step does not complete, the flow aborts and no payment is created.
+
+After creating the payment, continue the flow in the SDK with `continuePayment`. The SDK evaluates the payment's status at that point:
+
+* `READY_TO_PAY` — or `PENDING` with sub-status `WAITING_ADDITIONAL_STEP` or `DELAYED_PROVIDER_RESPONSE` — means the provider requires an additional step (for example 3DS, a redirect, or a provider OTP), and the SDK executes it.
+* Any other status means the payment is already resolved, and the SDK reports the final status.
+
+These intermediate statuses are conditional: a payment that requires no additional step never passes through them.
+
+See [Payment statuses](/reference/payments/status-and-response-codes/payment) for the full lifecycle.
 
 ## Activation Guide
 
@@ -81,7 +95,7 @@ Follow the steps below based on your desired configuration:
 4. Define the payment method route in **Routing** and enable Click to Pay in the **Checkout Builder**.
 
 ### Option 2: Click to Pay + Passkey
-*Supported on web browsers only (not supported in WebView).*
+*Supported on web and mobile platforms. Not supported in WebView.*
 1. Request the **DPA ID** from the card network (for example, Mastercard).
 2. Add the **Click to Pay connection** using the DPA ID.
 3. Add the **card connection** and configure the **Acquirer BIN**.
@@ -95,12 +109,20 @@ Follow the steps below based on your desired configuration:
 4. Request the Yuno backend team to enable the **Golden Flow** flag.
 
 ### Option 4: Click to Pay + Golden Flow + Passkey
-*Supported on web browsers only (not supported in WebView).*
+*Supported on web and mobile platforms. Not supported in WebView.*
 1. Request the **DPA ID** from the card network (for example, Mastercard).
 2. Add the **Click to Pay connection**.
 3. Add the **card connection** and configure the **Acquirer BIN**.
 4. Request the Yuno backend team to enable **Passkey**, **Dual Payload**, and **Golden Flow** flags.
 5. Create checkout sessions with a `price` for Passkey to work correctly.
+
+## Click to Pay on VTEX
+
+Click to Pay is also supported for VTEX stores through the [Yuno VTEX plugin](/docs/plugins/vtex). The activation steps above (connection, routing, Checkout Builder) apply the same way.
+
+<Info>
+Click to Pay relies on a customer record existing in Yuno. When using the VTEX plugin, set the **Create Customer** field to **Yes** in your Yuno provider configuration so the plugin creates or updates the customer record on every payment. See the [VTEX plugin FAQs](/docs/plugins/vtex/faqs) for details.
+</Info>
 
 ## SDK integration (Click to Pay Passkey)
 
