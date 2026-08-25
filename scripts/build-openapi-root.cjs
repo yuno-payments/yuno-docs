@@ -54,6 +54,41 @@ const nPaths = Object.keys(spec.paths || {}).length;
 if (nPaths < MIN_PATHS)
   fail(`paths count ${nPaths} < ${MIN_PATHS} — refusing to publish a shell`);
 
+// Every documented environment must be present (api-environments lists all three).
+const REQUIRED_SERVERS = ["api-sandbox.y.uno", "api.y.uno", "api.eu.y.uno"];
+const serverUrls = (spec.servers || []).map((s) => s.url || "");
+for (const host of REQUIRED_SERVERS) {
+  if (!serverUrls.some((u) => u.includes(`//${host}/`) || u.endsWith(`//${host}`)))
+    fail(`servers is missing ${host} — must match the API environments page`);
+}
+
+// Every internal $ref and discriminator mapping target must resolve.
+function resolvePointer(pointer) {
+  let cur = spec;
+  for (const raw of pointer.slice(2).split("/")) {
+    const part = raw.replace(/~1/g, "/").replace(/~0/g, "~");
+    if (cur && typeof cur === "object" && part in cur) cur = cur[part];
+    else return false;
+  }
+  return true;
+}
+const badRefs = new Set();
+(function walk(node) {
+  if (Array.isArray(node)) return node.forEach(walk);
+  if (!node || typeof node !== "object") return;
+  if (typeof node.$ref === "string" && node.$ref.startsWith("#/") && !resolvePointer(node.$ref))
+    badRefs.add(node.$ref);
+  if (node.discriminator && node.discriminator.mapping) {
+    for (const target of Object.values(node.discriminator.mapping)) {
+      if (typeof target === "string" && target.startsWith("#/") && !resolvePointer(target))
+        badRefs.add(`discriminator → ${target}`);
+    }
+  }
+  Object.values(node).forEach(walk);
+})(spec);
+if (badRefs.size)
+  fail(`unresolved references in spec:\n  ${[...badRefs].join("\n  ")}`);
+
 const jsonText = JSON.stringify(spec, null, 2) + "\n";
 
 if (process.argv.includes("--check")) {
