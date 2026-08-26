@@ -440,6 +440,82 @@ This object represents a subscription that can be associated with a customer.
 
       Example: TRUE
     </ParamField>
+
+    <ParamField body="stopped" type="bool">
+      Whether retries for the current cycle have stopped. Present only while the subscription is `PAST_DUE` or has `cancel_scheduled` pending; omitted otherwise.
+
+      <Note>
+        Whether this field (and `attempts_made`, `outcome`, `next_retry_at` below) keeps reporting the last cycle's retry snapshot once the subscription reaches `CANCELED`, or is omitted at that point, is pending product confirmation — verify against a live response before depending on it.
+      </Note>
+    </ParamField>
+
+    <ParamField body="attempts_made" type="int">
+      Retry attempts made for the current cycle so far. Present only while the subscription is `PAST_DUE` or has `cancel_scheduled` pending; omitted otherwise.
+    </ParamField>
+
+    <ParamField body="outcome" type="enum">
+      How the current cycle's retries resolved. One of `RECOVERED`, `EXHAUSTED`, or `ABANDONED` (retries stopped by a cancellation before exhausting on their own). Present only while the subscription is `PAST_DUE` or has `cancel_scheduled` pending; omitted otherwise.
+    </ParamField>
+
+    <ParamField body="next_retry_at" type="Timestamp">
+      When the next retry is scheduled. Present only while the subscription is `PAST_DUE` with retries still running; omitted otherwise.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="cancel_scheduled" type="object">
+  The cancellation scheduled for this subscription, or `null` when none is pending. Schedule one with the `schedule` block on `POST /v1/subscriptions/{id}/cancel`; undo it with `"schedule": null`. See [Cancel Subscription](/reference/subscriptions/cancel-subscription).
+
+  <Expandable title="properties">
+    <ParamField body="mode" type="enum">
+      `AFTER_CYCLES` or `AT_DATE`, matching whichever of `after_cycles`/`at` was sent when the schedule was created.
+    </ParamField>
+
+    <ParamField body="after_cycles" type="int">
+      The number of billing cycles that were requested, when `mode` is `AFTER_CYCLES`. `null` when `mode` is `AT_DATE`.
+    </ParamField>
+
+    <ParamField body="at" type="Timestamp">
+      The resolved date and time the cancellation will fire.
+    </ParamField>
+
+    <ParamField body="requested_at" type="Timestamp">
+      When the cancellation was scheduled.
+    </ParamField>
+
+    <ParamField body="past_due_behavior" type="enum">
+      `EXHAUST_RETRIES` (default) or `SKIP_RETRIES` — what the schedule does if the subscription is `PAST_DUE` when it would otherwise fire. See [Cancel Subscription](/reference/subscriptions/cancel-subscription#behavior-while-retries-are-running).
+
+      <Note>
+        This echo is pending product confirmation as a stable external contract — see the note on [Cancel Subscription](/reference/subscriptions/cancel-subscription#behavior-while-retries-are-running).
+      </Note>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="unpaid_cycle" type="object">
+  The current billing cycle, when it is `PAST_DUE` and has not settled. Omitted — not `null` — for every other state.
+
+  <Note>
+    Whether this field keeps reporting the unsettled cycle once the subscription reaches `CANCELED`, or is omitted at that point, is pending product confirmation — verify against a live response before depending on it.
+  </Note>
+
+  <Expandable title="properties">
+    <ParamField body="cycle_number" type="int">
+      The billing cycle that is unpaid, matching `billing_cycles.current` at the time it was computed.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      The amount due for the unpaid cycle. Same shape as the subscription-level `amount`.
+    </ParamField>
+
+    <ParamField body="attempts" type="int">
+      Total charge attempts made for this cycle so far, including the original attempt.
+    </ParamField>
+
+    <ParamField body="last_failure_code" type="string">
+      The decline/failure code from the most recent attempt. `null` if unavailable.
+    </ParamField>
   </Expandable>
 </ParamField>
 

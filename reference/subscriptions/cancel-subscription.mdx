@@ -1,9 +1,157 @@
 ---
 title: "Cancel Subscription"
 openapi: "/openapi/subscriptions/cancel-subscription.json POST /subscriptions/{subscription_id}/cancel"
-description: "Cancels a subscription permanently, changing its status to CANCELED with no reversal."
+description: "Cancels a subscription immediately, or schedules the cancellation for a future date or billing cycle."
 ---
 
-Calling this endpoint will cancel a subscription, changing its `status` to CANCELED. This change cannot be reverted back, being a final point for the respective subscription.
+Calling this endpoint with an empty body (or no body at all) cancels the subscription right away,
+changing its `status` to `CANCELED`. This is unchanged and still final: once immediate, it cannot
+be reverted.
 
-You can cancel from `CREATED`, `ACTIVE`, `TRIALING`, `PAST_DUE` and `PAUSED`. `COMPLETED` and `CANCELED` are terminal, so canceling from either returns `400 INVALID_STATE` — including a second cancel on a subscription that is already canceled. See [Subscription Status](/reference/subscriptions/status-subscriptions).
+You can cancel from `CREATED`, `ACTIVE`, `TRIALING`, `PAST_DUE` and `PAUSED`. `COMPLETED` and
+`CANCELED` are terminal, so canceling from either returns `400 INVALID_STATE` — including a second
+cancel on a subscription that is already canceled. See [Subscription Status](/reference/subscriptions/status-subscriptions).
+
+## Scheduling a cancellation instead
+
+<Note>
+**Allowlisted organizations only**
+
+Scheduled cancellation is gated per organization. If your calls return `400` `"Scheduled
+cancellation is not enabled for this organization"`, contact your Yuno representative to have it
+enabled.
+</Note>
+
+Send a `schedule` object to defer the cancellation instead of applying it now. The subscription
+stays in its current status — billing continues normally — until the schedule fires.
+
+```json Schedule after 3 more billing cycles
+{
+  "schedule": {
+    "after_cycles": 3
+  }
+}
+```
+
+```json Schedule for a specific date
+{
+  "schedule": {
+    "at": "2026-11-01T00:00:00Z"
+  }
+}
+```
+
+`schedule` takes exactly one of:
+
+| Field | Type | Rules |
+|---|---|---|
+| `after_cycles` | integer | 1–60, and cannot exceed the billing cycles remaining on the subscription (`billing_cycles.total − billing_cycles.current`, when the plan has a total). |
+| `at` | Timestamp | ISO-8601 with a UTC offset, must be in the future, and must fall before `availability.finish_at` when the subscription has one. |
+
+Sending both or neither returns `400`.
+
+A `PIX_AUTOMATIC` subscription billed with `frequency.execution: MERCHANT` cannot schedule a
+cancellation — schedule it as `at` or `after_cycles` on a different payment method type, or cancel
+immediately instead.
+
+### Behavior while retries are running
+
+<Note>
+**`past_due_behavior` is echoed on `cancel_scheduled`, pending product confirmation**
+
+The engine currently stamps whatever `past_due_behavior` resolved for the schedule (explicit value,
+or the `EXHAUST_RETRIES` default) onto the `cancel_scheduled.past_due_behavior` field in every
+response. Treat this echo as provisional until product confirms it as the intended external
+contract — it may change.
+</Note>
+
+`past_due_behavior` controls what a scheduled cancellation does if the subscription is `PAST_DUE`
+when the schedule would otherwise fire:
+
+| Value | Behavior |
+|---|---|
+| `EXHAUST_RETRIES` (default) | The scheduled cancel waits — retries keep running for the cycle in progress, and the cancellation only fires once the subscription leaves `PAST_DUE` (recovered or retries exhausted). |
+| `SKIP_RETRIES` | The scheduled cancel fires immediately, without waiting for the outstanding retries to finish. |
+
+```json Schedule and skip retries if PAST_DUE when it fires
+{
+  "schedule": {
+    "after_cycles": 1,
+    "past_due_behavior": "SKIP_RETRIES"
+  }
+}
+```
+
+Independently of `past_due_behavior`, canceling a `PAST_DUE` subscription — whether immediately or
+because a schedule became due — never errors and always stops that cycle's retries. See
+[Subscription Status](/reference/subscriptions/status-subscriptions) and
+[Retries](/docs/payment-features/subscriptions/retries).
+
+<Note>
+Refund handling for an unpaid cycle at cancellation time is a separate, not-yet-documented
+behavior — it does not ship with scheduled cancellation.
+</Note>
+
+## Undoing a scheduled cancellation
+
+Send `"schedule": null` to clear a pending schedule. The subscription is unaffected otherwise — no
+status change, no charge.
+
+```json Undo a scheduled cancellation
+{
+  "schedule": null
+}
+```
+
+Sending `"schedule": null` when nothing is scheduled is a no-op: `200`, `cancel_scheduled` stays
+`null`, and no webhook is sent. When a schedule is cleared, `subscription.cancel_schedule_canceled`
+fires instead.
+
+## Reading the result
+
+The response carries the same [Subscription](/reference/subscriptions/the-subscription-object)
+shape as every other subscription endpoint. Three fields are relevant here:
+
+- `cancel_scheduled` — `null` when no cancellation is pending, otherwise the schedule's `mode`,
+  `after_cycles`/`at`, `requested_at` and `past_due_behavior`.
+- `retries.stopped`, `retries.attempts_made`, `retries.outcome`, `retries.next_retry_at` — populated
+  whenever the subscription is `PAST_DUE` or has a `cancel_scheduled` pending; omitted otherwise.
+- `unpaid_cycle` — present when the current billing cycle is `PAST_DUE` and has not settled.
+
+<Note>
+**Persistence of `retries` and `unpaid_cycle` after cancellation is pending product confirmation**
+
+Both fields are computed from the subscription's live state at request time. Whether a `GET
+/v1/subscriptions/{id}` issued after the subscription reaches `CANCELED` continues to surface the
+retry snapshot / unpaid cycle from the cycle that was in flight, or omits them once terminal, is not
+yet confirmed as a stable contract — verify against a live response before depending on it.
+</Note>
+
+See [the Subscription object](/reference/subscriptions/the-subscription-object) for the full field
+reference.
+
+## Webhooks
+
+- `subscription.cancel_scheduled` — sent when a cancellation is scheduled via this endpoint.
+- `subscription.cancel_schedule_canceled` — sent when a pending scheduled cancellation is undone via
+  `"schedule": null`.
+
+An immediate cancellation (empty body, or a schedule becoming due) still emits `subscription.cancel`
+as before — scheduling emits its own events only for the scheduling and undoing actions themselves.
+
+## Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `BAD_REQUEST` | An unrecognized top-level key, or an unrecognized key inside `schedule`. |
+| `400` | `BAD_REQUEST` | `schedule` carries both `at` and `after_cycles`, or neither. |
+| `400` | `BAD_REQUEST` | `after_cycles` is not an integer between 1 and 60, or exceeds the billing cycles remaining. |
+| `400` | `BAD_REQUEST` | `at` is not an ISO-8601 date-time with a UTC offset, is not in the future, or falls on/after `availability.finish_at`. |
+| `400` | `BAD_REQUEST` | `past_due_behavior` is not `EXHAUST_RETRIES` or `SKIP_RETRIES`. |
+| `400` | `BAD_REQUEST` | Scheduled cancellation is not enabled for this organization. |
+| `400` | `BAD_REQUEST` | A `PIX_AUTOMATIC` subscription billed with `frequency.execution: MERCHANT` cannot schedule a cancellation. |
+| `400` | `INVALID_STATE` | The subscription's status does not support cancellation (`COMPLETED` or already `CANCELED`). |
+
+</div>
