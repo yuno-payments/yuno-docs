@@ -85,11 +85,45 @@
                   "value": {
                     "schedule": null
                   }
+                },
+                "CANCEL WITH A PRORATED REFUND": {
+                  "value": {
+                    "refund": "PRORATED"
+                  }
+                },
+                "CANCEL WITH A CUSTOM REFUND AMOUNT": {
+                  "value": {
+                    "refund": "CUSTOM",
+                    "refund_amount": {
+                      "value": 5.00,
+                      "currency": "USD"
+                    }
+                  }
                 }
               },
               "schema": {
                 "type": "object",
                 "properties": {
+                  "refund": {
+                    "type": "string",
+                    "description": "NONE (default), PRORATED, FULL, or CUSTOM. Computes a refund quote for the current billing cycle on an immediate cancel. Cannot be combined with schedule.",
+                    "example": "PRORATED"
+                  },
+                  "refund_amount": {
+                    "type": "object",
+                    "description": "Required, and only allowed, when refund is CUSTOM. Must not exceed the current cycle's charged amount.",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "example": 5.00
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Must match the subscription's own currency.",
+                        "example": "USD"
+                      }
+                    }
+                  },
                   "schedule": {
                     "type": ["object", "null"],
                     "properties": {
@@ -258,6 +292,51 @@
                         "last_failure_code": "<example>"
                       },
                       "cancel_scheduled": null,
+                      "created_at": "2023-12-16T20:46:54.786342Z",
+                      "updated_at": "2023-12-16T21:00:54.786342Z"
+                    }
+                  },
+                  "CANCELED WITH A PRORATED REFUND QUOTE": {
+                    "value": {
+                      "id": "7304911d-5df9-429e-8488-ad41abea1a4c",
+                      "name": "sub_001",
+                      "description": "streaming service",
+                      "account_id": "2404911d-5df9-429e-8488-ad41abea1a4b",
+                      "merchant_reference": "001_marzo_23",
+                      "status": "CANCELED",
+                      "subscription_plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+                      "amount": {
+                        "currency": "USD",
+                        "value": 12100
+                      },
+                      "billing_cycles": {
+                        "total": 10,
+                        "current": 4,
+                        "next_at": "2023-02-16T20:00:00.786342Z"
+                      },
+                      "customer_payer": {
+                        "id": "3t04911d-5df9-429e-8488-ad41abea1a2c"
+                      },
+                      "refund": {
+                        "mode": "PRORATED",
+                        "amount": {
+                          "value": 20.00,
+                          "currency": "USD"
+                        },
+                        "unused_days": 20,
+                        "period_days": 30,
+                        "basis": {
+                          "billing_cycle": 4,
+                          "charged_amount": {
+                            "value": 30.00,
+                            "currency": "USD"
+                          },
+                          "payment_id": "<example>",
+                          "charged_at": "<example>"
+                        },
+                        "execution": "MERCHANT",
+                        "quoted_at": "<example>"
+                      },
                       "created_at": "2023-12-16T20:46:54.786342Z",
                       "updated_at": "2023-12-16T21:00:54.786342Z"
                     }
@@ -521,6 +600,74 @@
                         }
                       }
                     },
+                    "refund": {
+                      "type": ["object", "null"],
+                      "description": "null when refund was NONE or omitted. Present on the cancel response and on every later read once computed.",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "example": "PRORATED"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "value": {
+                              "type": "number",
+                              "example": 20.00
+                            }
+                          }
+                        },
+                        "unused_days": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "period_days": {
+                          "type": "integer",
+                          "example": 30
+                        },
+                        "basis": {
+                          "type": "object",
+                          "properties": {
+                            "billing_cycle": {
+                              "type": "integer",
+                              "example": 4
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "example": 30.00
+                                }
+                              }
+                            },
+                            "payment_id": {
+                              "type": "string",
+                              "description": "null for a $0-phase quote with no captured payment."
+                            },
+                            "charged_at": {
+                              "type": "string",
+                              "description": "null for a $0-phase quote with no captured payment."
+                            }
+                          }
+                        },
+                        "execution": {
+                          "type": "string",
+                          "example": "MERCHANT"
+                        },
+                        "quoted_at": {
+                          "type": "string"
+                        }
+                      }
+                    },
                     "created_at": {
                       "type": "string",
                       "example": "2023-12-16T20:46:54.786342Z"
@@ -577,6 +724,55 @@
                       "messages": [
                         "Scheduled cancellation is not enabled for this organization"
                       ]
+                    }
+                  },
+                  "REFUND NOT COMBINABLE WITH SCHEDULE": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "refund cannot be combined with schedule (v1)"
+                      ]
+                    }
+                  },
+                  "REFUND QUOTING NOT ENABLED FOR THIS ORGANIZATION": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "Refund quote is not enabled for this organization"
+                      ]
+                    }
+                  },
+                  "REFUND_AMOUNT EXCEEDS THE CHARGED AMOUNT": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "refund_amount must not exceed the charged amount"
+                      ]
+                    }
+                  },
+                  "REFUND_AMOUNT CURRENCY MISMATCH": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "refund_amount.currency must match the subscription's currency (USD)"
+                      ]
+                    }
+                  },
+                  "PRORATED NOT AVAILABLE ON A SUB-DAILY CADENCE": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "proration is not available for sub-daily cadences"
+                      ]
+                    }
+                  },
+                  "REFUND NOT AVAILABLE": {
+                    "value": {
+                      "code": "REFUND_NOT_AVAILABLE",
+                      "messages": [
+                        "No charged payment exists for the current cycle (subscription is PAST_DUE). Only refund: NONE is valid."
+                      ],
+                      "current_status": "PAST_DUE"
                     }
                   }
                 }
