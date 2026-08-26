@@ -19,15 +19,19 @@ This API requires activation for your organization. Contact your Key Account Man
 
 ## How it works
 
-1. You process a transaction directly with your provider (e.g. a purchase on your own Adyen account).
-2. You report it here — one event or a batch of up to 500. For latency-sensitive integrations we recommend batches of up to 100 events: the full 500-event batch is processed synchronously and can take several seconds.
-3. Each accepted event creates **one payment** with one transaction, with the status derived from `result` and the event type: a `PURCHASE` with result `SUCCEEDED` lands the payment `SUCCEEDED`; an `AUTHORIZE` with result `SUCCEEDED` lands `PENDING` with sub-status `AUTHORIZED` (an approved authorization is not captured money — it mirrors how Yuno-processed authorizations behave); a `VERIFY` with result `SUCCEEDED` lands `SUCCEEDED` with sub-status `VERIFIED` (the verification completed; no money moves — it mirrors how Yuno-processed verifications persist); `DECLINED` → `DECLINED`, `ERROR` → `ERROR`.
+1. You process a transaction directly with your provider (for example a purchase on your own Adyen account).
+2. You report it here: one event or a batch of up to 500. For latency-sensitive integrations, batches of up to 100 events are recommended. The full 500-event batch is processed synchronously and can take several seconds.
+3. Each accepted event creates **one payment** with one transaction, with the status derived from `result` and the event type:
+   - A `PURCHASE` with result `SUCCEEDED` lands the payment `SUCCEEDED`.
+   - An `AUTHORIZE` with result `SUCCEEDED` lands `PENDING` with sub-status `AUTHORIZED`. An approved authorization is not captured money; it mirrors how Yuno-processed authorizations behave.
+   - A `VERIFY` with result `SUCCEEDED` lands `SUCCEEDED` with sub-status `VERIFIED`. The verification completed and no money moves; it mirrors how Yuno-processed verifications persist.
+   - `DECLINED` lands `DECLINED`, and `ERROR` lands `ERROR`.
 
 In this version the supported operations are `PURCHASE` (default), `AUTHORIZE`, and `VERIFY`. A `VERIFY` reports a card verification (zero-dollar authorization), typically reported with `amount.value: 0`. Lifecycle events (captures, refunds, chargebacks) are on the roadmap.
 
 ## Retries and deduplication
 
-There is **no idempotency header on this endpoint — and none is needed**. The `report_id` you generate per event is the deduplication key: an event whose `report_id` was already ingested is counted in `duplicates` and never ingested twice, no matter when or in which batch it arrives. Retrying a whole batch after a network failure is always safe.
+There is **no idempotency header on this endpoint, and none is needed**. The `report_id` you generate per event is the deduplication key. An event whose `report_id` was already ingested is counted in `duplicates` and never ingested twice, no matter when or in which batch it arrives. Retrying a whole batch after a network failure is always safe.
 
 Because `report_id` alone decides, an event that reuses an already-ingested `report_id` with a *different* payload is also counted as a duplicate and silently discarded — never reuse a `report_id` across different transactions.
 
