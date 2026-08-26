@@ -49,6 +49,7 @@ Have the following ready:
       | **Antifraud Providers for Split Orders** | Optional | Comma-separated antifraud providers (`RISKIFIED`, `CYBERSOURCE`, `SIGNIFYD`, `CIELO_CYBERSOURCE_FRAUD`) that receive the shared session for split orders. Defaults to `RISKIFIED` + `CYBERSOURCE` when left empty. |
       | **Vault Card for Order Modification** | Optional | When set to **Yes** (and **Create Customer** is also **Yes**), the plugin securely stores the card used on each order and allows the additional amount to be charged automatically if the order total later increases. This is the only field that authorizes additional charges: when it is **No**, an order-total increase is declined even if the card was stored for network tokens. See [Order modifications](#order-modifications-changed-order-totals). |
       | **Enable Network Tokens** | Optional | When set to **Yes** (and **Create Customer** is also **Yes**), the plugin securely stores each card on its first purchase and recognizes it on later purchases by the same customer, so Yuno can process repeat purchases with a network token instead of the card number. **The toggle has no effect until Yuno activates network tokens on the routes your store uses**: until then cards are stored but no tokens are issued. Contact your Yuno KAM or support to activate it. See [Network tokens](#network-tokens-repeat-card-purchases). |
+      | **Use Corporate Buyer Data** | Optional | Brazil only. When set to **Yes**, orders placed by a shopper checking out as a company (*pessoa jurídica*) are paid under the company's legal name and **CNPJ** instead of the shopper's personal name and CPF, on every payment method. Default **No**. See [Corporate purchases](#corporate-purchases-brazil). |
     </Accordion>
 
     <Accordion title="Settlement Options">
@@ -268,4 +269,46 @@ The card is stored in the VTEX account that **authorizes** the payment and is sc
   | Repeat purchase | `cardVaultLookup` reporting a match, followed by `cardVaultTokenPassed` (the stored reference was sent with the payment). |
 
   A repeat purchase that shows `cardVaultLookup` without a match usually means the two orders did not share the same Yuno customer (check **Create Customer**), were placed from different store accounts, or used a different card. If the stored reference is passed but the payment still shows a card number on the Yuno side, network tokens are not yet enabled on the route.
+</Accordion>
+
+### Corporate purchases (Brazil)
+
+In Brazil, purchases made on behalf of a company must be paid and invoiced against the company's **CNPJ**, not the personal CPF of the person placing the order. When a shopper checks out as a company (*pessoa jurídica*), VTEX sends both identities to the plugin: the shopper's name and CPF, and the company's legal name (*razão social*), trade name (*nome fantasia*) and CNPJ.
+
+By default the plugin uses the shopper's personal identity. With **Use Corporate Buyer Data** set to **Yes**, corporate orders are paid under the company instead: the boleto is issued to the CNPJ, and every other payment method (cards, PIX, wallets) carries the company as the payer in Yuno.
+
+#### Enable it
+
+In your provider configuration (Step 1), set **Use Corporate Buyer Data** to **Yes** and save. No storefront or Payment App change is needed.
+
+| Field | Value |
+| :--- | :--- |
+| **Use Corporate Buyer Data** | **Yes**. Requires plugin **4.2.350 or later**; the field only appears in the provider configuration once the store runs that version. |
+
+#### What to expect
+
+| Order | Payer sent to Yuno |
+| :--- | :--- |
+| Shopper checks out as a company, Brazilian billing address | Company legal name, trade name and CNPJ (document type `CNPJ`). |
+| Shopper checks out as an individual | Shopper's name and CPF, exactly as today. |
+| Corporate checkout with a billing address outside Brazil | Shopper's personal identity. The corporate mapping is limited to Brazil, where the document type is known to be a CNPJ. |
+
+*   **Same shopper, different roles.** A shopper can place one order as a company and the next as an individual; each order carries the identity used at checkout, regardless of what earlier orders sent.
+*   **Fail-safe.** If the company data is incomplete (for example no CNPJ), the order falls back to the shopper's personal identity and the payment proceeds.
+*   **Wallets created before the order.** Apple Pay, Google Pay and Click to Pay payments that are created during page load, before the order exists, keep the identity collected by the storefront.
+
+<Note>
+  **Franchises / multiple accounts:** enable the field on **every** affiliation whose orders should use the company identity, and in setups where one account authorizes and another completes the payment, on the affiliation of the account that **authorizes**.
+</Note>
+
+<Accordion title="Verifying the setup (for Yuno TAMs)">
+  Place a corporate order on the store and open the created payment in the Yuno dashboard, or look up the plugin logs in Datadog (`step_name:"After get payment"`) and check the payment request:
+
+  | Field | Expected |
+  | :--- | :--- |
+  | `customer_payer.first_name` / `last_name` | Company legal name / trade name (trade name is omitted when it equals the legal name). |
+  | `customer_payer.document` | `{ "document_number": "<CNPJ>", "document_type": "CNPJ" }` |
+  | `metadata.customer_document` | The CNPJ. |
+
+  If the request still carries the CPF, confirm that **Use Corporate Buyer Data** appears in the affiliation's saved settings (the affiliation must be saved again after the plugin is upgraded to 4.2.350) and that the order's billing address is in Brazil.
 </Accordion>
