@@ -149,6 +149,28 @@ When a shopper's cart contains products from **different sellers or franchises**
 
 This works automatically; no extra setup is required. If you want to control which antifraud providers receive the shared session, use the **Antifraud Providers for Split Orders** field in the provider configuration (see the field reference in Step 1). Valid values are `RISKIFIED`, `CYBERSOURCE`, `SIGNIFYD`, and `CIELO_CYBERSOURCE_FRAUD`; when left empty, it defaults to `RISKIFIED` + `CYBERSOURCE`.
 
+### Antifraud session (device fingerprints)
+
+Antifraud providers (Riskified, Signifyd, CyberSource, Cielo CyberSource) score a payment by matching the device data collected in the shopper's browser with the session id Yuno sends in the payment. For that match to work, the browser and the server must use the **same** session id.
+
+The Yuno Payment App handles this for you: on the checkout page it reads the VTEX cart id (`window.vtexjs.checkout.orderFormId`) and reports it as the antifraud session id for `RISKIFIED`, `SIGNIFYD`, `CYBERSOURCE`, and `CIELO_CYBERSOURCE_FRAUD`. The Yuno Payment Connector sends the same `orderFormId` on the server side, so the session is consistent across the browser, every suborder of a split order, and the payment itself. No configuration is needed; if the cart id is not available, each provider falls back to its own generated session id and the payment is not blocked.
+
+<Accordion title="Cielo CyberSource: merchant ID prefix">
+  Cielo CyberSource requires the antifraud session id to start with your Cielo merchant ID (MID) prefix. Until this prefix is configurable in the Yuno dashboard, set it in your VTEX checkout custom JavaScript **before** the checkout loads:
+
+  ```javascript
+  window.yunoFingerprintPrefix = 'YOUR_MID_PREFIX_'
+  ```
+
+  The Payment App prepends it only to the `CIELO_CYBERSOURCE_FRAUD` session id (`YOUR_MID_PREFIX_<orderFormId>`); the other providers are not affected. When the variable is not defined, no prefix is applied.
+
+  <Note>
+    This global variable is an interim mechanism. Once the fingerprint prefix can be configured in the Yuno dashboard, it will no longer be needed.
+  </Note>
+</Accordion>
+
+If you integrate the SDK directly instead of using the Payment App, pass the session ids yourself through the `deviceFingerprints` mount option. See [Direct SDK integration](/docs/plugins/vtex/direct-sdk-integration).
+
 ### Order modifications (changed order totals)
 
 VTEX lets you **change an order after checkout**, when the final total turns out to be different from the amount that was authorized. This applies, for example, if you sell products **by weight**, where the exact total is only known once the order is picked and packed.
