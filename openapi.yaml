@@ -14130,6 +14130,7 @@ paths:
                       brand: VISA
                       issuer: JPMORGAN CHASE BANK N A
                       issuer_code: null
+                      country_code: US
                       category: CREDIT
                       type: CREDIT
                       fingerprint: 55a7fe38-cdc3-45dc-8c5f-820751799c76
@@ -14302,6 +14303,14 @@ paths:
                         type: string
                         example: JPMORGAN CHASE BANK N A
                       issuer_code: {}
+                      country_code:
+                        type:
+                          - string
+                          - 'null'
+                        description: >-
+                          ISO 3166-1 alpha-2 country code of the card's issuing country, derived from BIN lookup when
+                          the card is vaulted. Null when BIN enrichment data is unavailable.
+                        example: US
                       category:
                         type: string
                         example: CREDIT
@@ -19188,6 +19197,7 @@ paths:
                       brand: VISA
                       issuer: JPMORGAN CHASE BANK N A
                       issuer_code: null
+                      country_code: US
                       category: CREDIT
                       type: CREDIT
                       fingerprint: 55a7fe38-cdc3-45dc-8c5f-820751799c76
@@ -19349,6 +19359,14 @@ paths:
                             type: string
                             example: JPMORGAN CHASE BANK N A
                           issuer_code: {}
+                          country_code:
+                            type:
+                              - string
+                              - 'null'
+                            description: >-
+                              ISO 3166-1 alpha-2 country code of the card's issuing country, derived from BIN lookup
+                              when the card is vaulted. Null when BIN enrichment data is unavailable.
+                            example: US
                           category:
                             type: string
                             example: CREDIT
@@ -30095,13 +30113,23 @@ paths:
                           description: >-
                             The account funding transaction details object necessary for
                             [AFTs](/docs/account-funding-transactions-afts).
+                          required:
+                            - beneficiary
                           properties:
+                            funding_type:
+                              type: string
+                              description: >-
+                                The type of account funding operation. Accepted by the API but not yet read by any
+                                provider integration.
+                              enum:
+                                - RECHARGE
+                                - P2P
+                                - M2M
+                                - TRANSFER
+                                - BILL_PAYMENT
                             sender:
                               type: object
                               description: The sender object necessary for account funding transactions
-                              required:
-                                - first_name
-                                - country
                               properties:
                                 first_name:
                                   type: string
@@ -30248,9 +30276,6 @@ paths:
                             beneficiary:
                               type: object
                               description: The beneficiary object necessary for account funding transactions.
-                              required:
-                                - first_name
-                                - country
                               properties:
                                 first_name:
                                   type: string
@@ -30273,6 +30298,9 @@ paths:
                                 country:
                                   type: string
                                   description: The Beneficiary's country  (ISO 3166-1 MAX 2; MIN 2)
+                                account_number:
+                                  type: string
+                                  description: The beneficiary's account identifier inside the wallet (MAX 255).
                                 date_of_birth:
                                   type: string
                                   description: The beneficiary's date of birth in the YYYY-MM-DD (MAX 10; MIN 10)
@@ -86716,7 +86744,9 @@ paths:
                       type: array
                       description: >-
                         Object that define the schedule strategy for each retry event, the amounts of objects should
-                        match the amount of retries defined.
+                        match the amount of retries defined. Up to 7 attempts; attempt numbers must run sequentially
+                        from 1, and each delay_seconds must be between 1 and 604800 (7 days). The schedule can be
+                        replaced later via Update Subscription.
                       items:
                         properties:
                           attempt:
@@ -86741,8 +86771,9 @@ paths:
                         subscription status becomes CANCELED, cancellation_source is set to RETRIES_EXHAUSTED, future
                         billing stops, and a single SUBSCRIPTION.CANCEL webhook is emitted. Applies both when the retry
                         schedule runs out and when stop_on_hard_decline ends the cycle early. Defaults to false, which
-                        preserves the existing behavior. Can be set at creation or changed later via Update
-                        Subscription. The cancellation itself is final, so Retry Subscription is rejected afterwards.
+                        preserves the existing behavior. Create-only: it cannot be changed later — Update Subscription
+                        rejects a different value with 400. The cancellation itself is final, so Retry Subscription is
+                        rejected afterwards.
                 initial_payment_validation:
                   type: boolean
                   description: >-
@@ -87794,8 +87825,10 @@ paths:
                 retries:
                   type: object
                   description: >-
-                    Specified the 'retries' object. If we need to retry declined transactions in Yuno and the amount if
-                    necessary. If modified, the retries will apply to the next payment intent.
+                    The retries configuration to apply going forward. Accepts the same object as Create Subscription —
+                    including strategy and schedule — except cancel_on_exhausted_retries, which is create-only. Changes
+                    apply the next time retries are scheduled: a billing cycle already running its retries finishes on
+                    the configuration it started with, and the update takes effect from the next cycle.
                   properties:
                     retry_on_decline:
                       type: boolean
@@ -87803,17 +87836,56 @@ paths:
                     amount:
                       type: integer
                       description: >-
-                        The number of retries that the subscription plan will have to completion. If not set, or higher
-                        than 7, 7 will be defined as default. Max: 7
+                        The number of retries the subscription will attempt, for the DEFAULT and SMART strategies. The
+                        maximum equals your environment's configured retry schedule length — 6 in production; a higher
+                        value is rejected with 400 (Max retries attempts exceeded). With CUSTOM_SCHEDULE the amount is
+                        derived from the length of the schedule array instead.
                       format: int32
+                    strategy:
+                      type: string
+                      description: >-
+                        The retry strategy. Allowed values: DEFAULT (the fixed retry schedule), SMART
+                        (machine-learning-based retry timing, applied from the second retry onward) or CUSTOM_SCHEDULE
+                        (uses the per-attempt schedule array you provide). Sending a schedule without a strategy implies
+                        CUSTOM_SCHEDULE.
+                      enum:
+                        - DEFAULT
+                        - SMART
+                        - CUSTOM_SCHEDULE
+                    schedule:
+                      type: array
+                      description: >-
+                        Per-attempt retry schedule; replaces the stored schedule as a whole. Up to 7 attempts, attempt
+                        numbers must run sequentially from 1, and each delay_seconds must be between 1 and 604800 (7
+                        days). Sending it implies strategy CUSTOM_SCHEDULE and sets the retry amount to the schedule
+                        length.
+                      items:
+                        properties:
+                          attempt:
+                            type: number
+                            description: Number of the retry attempt
+                          delay_seconds:
+                            type: number
+                            description: Specifies the amount of seconds between each retry.
+                        type: object
+                    stop_on_hard_decline:
+                      type: boolean
+                      description: >-
+                        When true, the retry schedule stops for the current billing cycle after a hard decline. On its
+                        own, the subscription remains ACTIVE and billing advances to the next cycle; no subscription is
+                        canceled or paused and no subscription webhook is emitted. If cancel_on_exhausted_retries is
+                        also true, the subscription is canceled instead.
                     cancel_on_exhausted_retries:
                       type: boolean
                       description: >-
-                        When true, the subscription is canceled once retries for a billing cycle end without a
-                        successful payment, instead of remaining ACTIVE and advancing to the next cycle.
-                        cancellation_source is set to RETRIES_EXHAUSTED and a single SUBSCRIPTION.CANCEL webhook is
-                        emitted. Defaults to false. The cancellation itself is final, so Retry Subscription is rejected
-                        afterwards.
+                        Create-only: this flag cannot be changed after the subscription is created — sending a value
+                        different from the one stored on the subscription returns 400 (The field
+                        'retries.cancel_on_exhausted_retries' can only be set when the subscription is created); echoing
+                        the current value is accepted. When true, the subscription is canceled once retries for a
+                        billing cycle end without a successful payment, instead of remaining ACTIVE and advancing to the
+                        next cycle. cancellation_source is set to RETRIES_EXHAUSTED and a single SUBSCRIPTION.CANCEL
+                        webhook is emitted. Defaults to false. The cancellation itself is final, so Retry Subscription
+                        is rejected afterwards.
                 plan_change:
                   type:
                     - object
