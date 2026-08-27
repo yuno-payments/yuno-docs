@@ -295,6 +295,30 @@ Choose your platform and follow the steps to start processing your first payment
     </Tab>
 </Tabs>
 
+## Handling a failed payment
+
+The Web SDK can recover from a failed payment without reloading the page. Two mechanisms work together:
+
+* *Payment retry* — inline card retry when the payment returns `DECLINED` or `ERROR`. In *Seamless* the SDK handles retry automatically. In *Full Checkout*, *Lite*, and *Secure Fields* you call `continuePayment` after your backend confirms the decline. Works for non-enrolled credit and debit cards. See [Payment retry](/docs/sdks/resources/references/web#payment-retry) for the full reference.
+
+* *Switching payment methods* — call `updateCheckoutSession(newSession)` to inject a fresh checkout session without unmounting the SDK. The shopper can pick a different payment method after a failure. See [updateCheckoutSession](/docs/sdks/resources/references/web#updatecheckoutsession).
+
+```javascript
+// Inside your yunoCreatePayment callback:
+const payment = await createPaymentOnYourBackend(oneTimeToken);
+
+if (payment.status === 'DECLINED' || payment.status === 'ERROR') {
+  // Card retry: keeps the card form open with the decline shown.
+  await yuno.continuePayment();
+} else if (payment.checkout?.sdk_action_required) {
+  // Additional action: 3DS, bank redirect, etc.
+  await yuno.continuePayment({ showPaymentStatus: true });
+} else {
+  // No further SDK action — unmount.
+  await yuno.unmountSdk();
+}
+```
+
 ## Backend integration
 
 Your backend must implement two API endpoints to work with Yuno:
