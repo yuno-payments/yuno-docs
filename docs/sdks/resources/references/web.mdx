@@ -111,7 +111,7 @@ Parameters for `await yuno.startCheckout()`, `await yuno.mountCheckout()`, and r
 | `yunoCreatePayment(oneTimeToken)` | function | Yes      | Callback invoked when the user completes the card/APM step. Receive the one-time token; send it to your backend to create the payment via the API; then `await yuno.continuePayment()` to resume the flow. |
 | `yunoPaymentResult(status, subStatus)` | function | No  | Callback invoked when the payment flow finishes. Receives the [payment status](/reference/payments/status-and-response-codes/payment) (for example, `SUCCEEDED`, `DECLINED`, `PENDING`, `REJECTED`, `CANCELED`, `ERROR`) and an optional `subStatus` qualifying it. Use for UI updates or analytics. See [Shopper-cancelled steps](#shopper-cancelled-steps).  |
 | `yunoError(message, data)`        | function | No       | Callback invoked when an error occurs during the flow. Receives an error message and optional data object for debugging.                                                                                  |
-| `onLoading`                       | function | No       | Callback invoked when loading state changes (for example, SDK fetching config, processing payment). Use to show or hide your own loader.                                                                          |
+| `onLoading`                       | function | No       | Callback invoked when loading state changes (for example, SDK fetching config, processing payment, payment retry cloning a session). Use to show or hide your own loader.                                                                          |
 
 </div>
 
@@ -330,9 +330,11 @@ await yuno.startCheckout({
 
 Payment retry lets a shopper fix and re-submit a **card** payment after it comes back `DECLINED` or `ERROR`, without restarting the checkout. Instead of tearing down the card form, the SDK keeps it open and surfaces the decline (field-level errors and a top error banner). It also clones the checkout session so the next attempt reuses the same flow.
 
-Retry is enabled by the Checkout Builder / Dashboard setting `settings.card.enable_payment_retry` under [`styling.settings`](/reference/checkout-builder/publish-checkout-configuration). It is a server-controlled setting, not a `startCheckout()` argument. It applies to non-enrolled card payments only. Enrolled/vaulted cards are excluded.
+Retry is **disabled by default**. Yuno enables it per organization on request through a server-side flag — it is not a Dashboard or Checkout Builder toggle. It is a server-controlled setting, not a `startCheckout()` argument. It applies to non-enrolled card payments only. Enrolled cards, vaulted cards, and external-button payments are excluded.
 
 Payment retry is supported across all four Web integrations: **Seamless**, **Full Checkout**, **Lite**, and **Secure Fields**.
+
+<Note>Retry in Lite shipped in SDK v1.9.11.</Note>
 
 ### Behavior by integration
 
@@ -395,6 +397,23 @@ const token = await secureFields.generateTokenWithInformation({ /* no checkoutSe
 const token = await secureFields.generateTokenWithInformation({ checkoutSession });
 ```
 </Warning>
+
+### Retry lifecycle and callbacks
+
+On a retried attempt the SDK does **not** fire `yunoPaymentResult` and does **not** mount the status page. Instead, it delivers the cloned checkout session to your `onLoading` callback:
+
+```javascript
+onLoading: ({ type, data }) => {
+  if (type === 'PAYMENT_RETRY') {
+    // A fresh checkout session has been cloned for the retry.
+    const newCheckoutSession = data.newCheckoutSession;
+    // The SDK will NOT fire yunoPaymentResult for this retry step.
+    // The shopper stays on the card form — no additional action needed.
+  }
+}
+```
+
+Each retry attempt flows through `yunoCreatePayment` → your backend → `continuePayment` (or automatic in Seamless) without a `yunoPaymentResult` callback between attempts. `yunoPaymentResult` fires only when the flow finishes — either the payment succeeds or the shopper exits.
 
 ## updateCheckoutSession
 
