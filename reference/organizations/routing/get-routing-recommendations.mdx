@@ -16,7 +16,7 @@ The transaction itself never passes through Yuno. **Yuno recommends; you decide 
 
 1. You report your off-Yuno transaction outcomes through the [Transaction Reporting API](/reference/reporting/report-transactions). Only payments with `origin: REPORTED` feed the statistics — Yuno-processed traffic is a different population and is deliberately kept out.
 2. Before routing a payment, you call this endpoint with the payment context and your candidate providers.
-3. Yuno computes statistics per candidate — approval rate, average provider latency, sample size — over a rolling **30-day** window of your reported payments, segmented by provider, country and payment method (and BIN, when you send it), and returns the ranking ordered by your objective.
+3. Yuno computes statistics per candidate — approval rate, average provider latency, sample size — over a rolling **30-day** window of your reported payments, segmented by provider, country and payment method — and by card BIN when you send one (see [BIN-level statistics](#bin-level-statistics)) — and returns the ranking ordered by your objective.
 4. You route the payment yourself and report its outcome. If the reported event carries the same `merchant_order_id` you sent here, Yuno attributes the outcome to this recommendation automatically — closing the loop without you storing `recommendation_id`.
 
 Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` counts as approved and `SUCCEEDED + DECLINED` as decided. Payments in any other status (e.g. `ERROR`, pending) are ignored for the rate and latency, though they still count toward `sample_size`.
@@ -53,7 +53,7 @@ Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` 
           E.g. `CARD`, `PIX`, `WALLET`. Selects the statistics segment.
         </ParamField>
         <ParamField body="details" type="object">
-          Optional. `card.bin` (numeric) refines the context when available.
+          Optional. `card.bin` — the card's BIN, exactly **6 or 8 digits**. When that BIN has enough reported history, the ranking is scored on its own statistics (see [BIN-level statistics](#bin-level-statistics)); otherwise, or for any other value, the statistics fall back to country and payment method.
         </ParamField>
       </Expandable>
     </ParamField>
@@ -119,6 +119,17 @@ Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` 
 - **`sample_size`** is the honesty of the recommendation. A high approval rate over 12 events is not the same signal as one over 12,000.
 - **The full `ranking` always comes back**, ordered by your objective. If the recommended candidate declines, take the next entry — cascade retry without a second call.
 
+## BIN-level statistics
+
+If you report the card BIN on your `CARD` events (`payment_method_details.card.bin` in the [Transaction Reporting API](/reference/reporting/report-transactions)), send the same BIN here in `payment.payment_method.details.card.bin`. For each candidate, the ranking uses the most specific segment that reaches the minimum sample, in the payment's country:
+
+1. **8-digit BIN** — when you send 8 digits and that exact BIN has enough reported history.
+2. **6-digit BIN** — the first 6 digits (also the segment used when you send a 6-digit BIN).
+3. **Country** — provider, country and payment method, as without a BIN.
+4. **Payment method** — provider and payment method across countries.
+
+A BIN with no reported history simply falls through to the country and payment-method segments: the response is exactly what you would get without sending it. A value that is not exactly 6 or 8 digits is ignored, never rejected.
+
 ## Choosing an objective
 
 `optimize_for` orders the ranking: `APPROVAL_RATE` (default), `LATENCY`, or `BALANCED` (a weighted blend of both). There is no cost objective yet — the Reporting API does not collect fees, and Yuno does not rank on data it does not have.
@@ -145,7 +156,7 @@ curl -X POST 'https://api-sandbox.y.uno/v1/routing/recommendations' \
     "payment": {
       "amount": { "currency": "USD", "value": 99.00 },
       "country": "US",
-      "payment_method": { "type": "CARD" }
+      "payment_method": { "type": "CARD", "details": { "card": { "bin": "45717360" } } }
     },
     "candidates": [
       { "provider_id": "ADYEN", "merchant_connection_id": "acct-adyen-us-1" },
