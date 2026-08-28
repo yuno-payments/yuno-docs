@@ -37,6 +37,16 @@ Because `report_id` alone decides, an event that reuses an already-ingested `rep
 
 The batch is processed **per event**: one invalid event lands in `rejected[]` with its reason, and the rest of the batch is unaffected.
 
+## Card BIN for BIN-level routing statistics
+
+On `CARD` events you can send the card's BIN in `payment_method_details.card.bin` — the first **6 or 8 digits** of the card number, exactly. The BIN is not cardholder data: it identifies the issuer and card range, never the card.
+
+When present, Yuno stores it on the reported payment (`payment_method.detail.card.card_data.iin` on the transaction) and uses it to segment your statistics per BIN in the [Routing Recommendations API](/reference/organizations/routing/get-routing-recommendations), so a payment on the same BIN can be ranked on that BIN's own history instead of the country-wide one.
+
+- `payment_method_details` is keyed by the payment method type — today only `card`, and only on events whose `payment_method_type` is `CARD`. A `card.bin` on an event of any other type, or a container with any other key, rejects the event.
+- The BIN must be exactly 6 or 8 digits. A 7-digit value, a longer value, or anything that is not all digits rejects the event with `INVALID_EVENT`.
+- Omitting `payment_method_details`, or sending it empty (`{}` or `{"card": {}}`), keeps the event exactly as before: no BIN is stored and the event feeds the country and payment-method statistics only.
+
 ## The raw provider response
 
 If you include `raw_provider_response` (the provider's response payload, verbatim, up to 64 KB), Yuno stores it with defensive card-data redaction applied — primary account numbers and security codes are removed before anything is persisted. It is never returned by any API.
@@ -44,7 +54,7 @@ If you include `raw_provider_response` (the provider's response payload, verbati
 Sending it is recommended: it lets Yuno enrich the reported payment later (network transaction references, decline reasons) without asking you for anything new.
 
 <Warning>
-**Never send card data in the event fields.** Reported events carry references and outcomes, not cardholder data. The only place a card number may transit is inside `raw_provider_response`, where it is redacted on ingestion.
+**Never send card data in the event fields.** Reported events carry references and outcomes, not cardholder data. The BIN in `payment_method_details.card.bin` is the only card-derived value accepted, and it is not a card number. The only place a card number may transit is inside `raw_provider_response`, where it is redacted on ingestion.
 </Warning>
 
 ## Operations on reported payments
@@ -76,4 +86,4 @@ Errors return a `code` and a `messages` array.
 }
 ```
 
-Causes: invalid enum value, wrong field type, unknown field, or `raw_provider_response` over 64 KB.
+Causes: invalid enum value, wrong field type, unknown field, a `payment_method_details.card.bin` that is not exactly 6 or 8 digits (or sent on a non-`CARD` event), or `raw_provider_response` over 64 KB.
