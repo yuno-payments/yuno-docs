@@ -1,0 +1,2164 @@
+openapi: 3.1.0
+info:
+  title: Yuno Payments API
+  version: "1.0.0"
+  description: |
+    Yuno is a payment orchestration platform that connects merchants to multiple
+    payment providers through a single API. Process payments, manage customers,
+    handle subscriptions, and disburse payouts across Latin America, Asia, and beyond.
+  contact:
+    name: Yuno Support
+    url: https://docs.y.uno
+    email: support@y.uno
+
+servers:
+  - url: https://api-sandbox.y.uno/v1
+    description: Sandbox
+  - url: https://api.y.uno/v1
+    description: Production (US)
+  - url: https://api.eu.y.uno/v1
+    description: Production (EMEA)
+
+security:
+  - PublicApiKey: []
+    PrivateSecretKey: []
+
+tags:
+  - name: Customers
+    description: Create and manage customer profiles
+  - name: Checkout Sessions
+    description: Initialize checkout experiences
+  - name: Customer Sessions
+    description: Customer enrollment sessions
+  - name: Payment Methods
+    description: Enroll and manage vaulted payment methods
+  - name: Payments
+    description: Process payments, captures, refunds, cancellations
+  - name: Payment Links
+    description: Shareable payment links
+  - name: Subscriptions
+    description: Recurring billing management
+  - name: Payouts
+    description: Disburse funds to recipients
+  - name: Recipients
+    description: Marketplace recipient management
+  - name: Reports
+    description: Generate and download reports
+  - name: Webhooks
+    description: Event notification endpoints
+  - name: Currency Conversion
+    description: Exchange rate lookups
+
+paths:
+  # ==================== CUSTOMERS ====================
+  /customers:
+    post:
+      operationId: createCustomer
+      tags: [Customers]
+      summary: Create customer
+      description: Creates a new customer profile for payments and subscriptions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+            example:
+              merchant_customer_id: "customer_001"
+              first_name: "Alice"
+              last_name: "Tan"
+              email: "alice.tan@example.com"
+              country: "SG"
+              phone:
+                country_code: "65"
+                number: "91234567"
+              document:
+                document_type: "CC"
+                document_number: "S1234567A"
+              billing_address:
+                address_line_1: "123 Orchard Road"
+                city: "Singapore"
+                state: "Singapore"
+                zip_code: "238883"
+                country: "SG"
+      responses:
+        "201":
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /customers/{customer_id}:
+    get:
+      operationId: getCustomer
+      tags: [Customers]
+      summary: Retrieve customer
+      description: Returns a customer by their Yuno-generated ID.
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        "404":
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateCustomer
+      tags: [Customers]
+      summary: Update customer
+      description: Updates an existing customer's information.
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequest'
+      responses:
+        "200":
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+    delete:
+      operationId: deleteCustomer
+      tags: [Customers]
+      summary: Delete customer
+      description: Permanently deletes a customer and their associated data.
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Customer deleted
+
+  /customers/external-id/{external_id}:
+    get:
+      operationId: getCustomerByExternalId
+      tags: [Customers]
+      summary: Retrieve customer by external ID
+      description: Returns a customer by your merchant_customer_id.
+      parameters:
+        - name: external_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== CHECKOUT SESSIONS ====================
+  /checkout/sessions:
+    post:
+      operationId: createCheckoutSession
+      tags: [Checkout Sessions]
+      summary: Create checkout session
+      description: |
+        Initializes a checkout session representing a purchase intent.
+        The session token is required before creating a payment via SDK or direct API.
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          schema:
+            type: string
+          description: Unique key for idempotent request processing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCheckoutSessionRequest'
+            example:
+              account_id: "c49051bd-545d-4baf-a9cb-c84158856b5b"
+              merchant_order_id: "ORDER-1234567890"
+              payment_description: "Premium Plan Purchase"
+              country: "SG"
+              customer_id: "573459f5-e80a-46f3-b73e-c64a65ce7747"
+              amount:
+                currency: "SGD"
+                value: 100.00
+              workflow: "SDK_CHECKOUT"
+      responses:
+        "201":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSession'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "429":
+          $ref: '#/components/responses/TooManyRequests'
+
+  /checkout/sessions/{checkout_session_id}:
+    get:
+      operationId: getCheckoutSession
+      tags: [Checkout Sessions]
+      summary: Retrieve checkout session
+      parameters:
+        - name: checkout_session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSession'
+    patch:
+      operationId: updateCheckoutSession
+      tags: [Checkout Sessions]
+      summary: Update checkout session
+      description: Updates amount, description, or metadata of an active session.
+      parameters:
+        - name: checkout_session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  $ref: '#/components/schemas/Amount'
+                payment_description:
+                  type: string
+      responses:
+        "200":
+          description: Session updated
+
+  /checkout/sessions/{checkout_session_id}/payment-methods:
+    get:
+      operationId: getAvailablePaymentMethods
+      tags: [Checkout Sessions]
+      summary: Get available payment methods
+      description: Returns payment methods available for this session based on country, currency, and merchant configuration.
+      parameters:
+        - name: checkout_session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Available payment methods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      example: "CARD"
+                    name:
+                      type: string
+                      example: "Credit/Debit Card"
+
+  /checkout/sessions/tokens:
+    post:
+      operationId: createOneTimeToken
+      tags: [Checkout Sessions]
+      summary: Create one-time token (Direct)
+      description: Creates a one-time token for direct API integrations. Requires PCI DSS Level 1.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [account_id, checkout_session]
+              properties:
+                account_id:
+                  type: string
+                checkout_session:
+                  type: string
+                card_data:
+                  type: object
+                  properties:
+                    number:
+                      type: string
+                    holder_name:
+                      type: string
+                    expiration_month:
+                      type: integer
+                    expiration_year:
+                      type: integer
+                    security_code:
+                      type: string
+      responses:
+        "200":
+          description: Token created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  type:
+                    type: string
+
+  /checkout/sessions/tokens/sdk:
+    post:
+      operationId: createSDKToken
+      tags: [Checkout Sessions]
+      summary: Create token for SDK
+      description: Creates a token scoped for SDK-based integrations where card data is collected client-side.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [account_id, checkout_session]
+              properties:
+                account_id:
+                  type: string
+                checkout_session:
+                  type: string
+      responses:
+        "200":
+          description: SDK token created
+
+  # ==================== CUSTOMER SESSIONS ====================
+  /customer-sessions:
+    post:
+      operationId: createCustomerSession
+      tags: [Customer Sessions]
+      summary: Create customer session
+      description: Creates a session for enrolling payment methods without a payment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [account_id, customer_id, country]
+              properties:
+                account_id:
+                  type: string
+                customer_id:
+                  type: string
+                  format: uuid
+                country:
+                  type: string
+                  minLength: 2
+                  maxLength: 2
+      responses:
+        "200":
+          description: Customer session created
+
+  # ==================== PAYMENT METHODS ====================
+  /payment-methods:
+    post:
+      operationId: enrollPaymentMethod
+      tags: [Payment Methods]
+      summary: Enroll payment method
+      description: Vaults a payment method for a customer. Returns a vaulted_token for recurring use.
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollPaymentMethodRequest'
+            example:
+              account_id: "c49051bd-545d-4baf-a9cb-c84158856b5b"
+              customer_id: "573459f5-e80a-46f3-b73e-c64a65ce7747"
+              country: "SG"
+              payment_method:
+                token: "ott_abc123"
+                type: "CARD"
+      responses:
+        "201":
+          description: Payment method enrolled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+    get:
+      operationId: listPaymentMethods
+      tags: [Payment Methods]
+      summary: List enrolled payment methods
+      description: Returns all enrolled payment methods for a customer.
+      parameters:
+        - name: customer_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Maximum number of items to return
+        - name: starting_after
+          in: query
+          schema:
+            type: string
+          description: Cursor for forward pagination. Pass the last item's ID from the previous page.
+        - name: ending_before
+          in: query
+          schema:
+            type: string
+          description: Cursor for backward pagination. Pass the first item's ID from the previous page.
+      responses:
+        "200":
+          description: List of payment methods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethod'
+
+  /payment-methods/{payment_method_id}:
+    get:
+      operationId: getPaymentMethod
+      tags: [Payment Methods]
+      summary: Retrieve payment method
+      parameters:
+        - name: payment_method_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Payment method details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+
+  /payment-methods/{payment_method_id}/unenroll:
+    post:
+      operationId: unenrollPaymentMethod
+      tags: [Payment Methods]
+      summary: Unenroll payment method
+      description: Removes a vaulted payment method. The vaulted_token becomes invalid.
+      parameters:
+        - name: payment_method_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Payment method unenrolled
+
+  # ==================== PAYMENTS ====================
+  /payments:
+    post:
+      operationId: createPayment
+      tags: [Payments]
+      summary: Create payment
+      description: |
+        Processes a payment. Supports immediate capture, authorization-only,
+        card verification, and vaulted token recurring charges.
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Unique key to prevent duplicate payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+            examples:
+              card_immediate:
+                summary: Card payment with immediate capture
+                value:
+                  account_id: "c49051bd-545d-4baf-a9cb-c84158856b5b"
+                  merchant_order_id: "order_001"
+                  description: "Payment 1"
+                  country: "SG"
+                  amount:
+                    currency: "SGD"
+                    value: 45.50
+                  checkout:
+                    session: "checkout-session-uuid"
+                  customer_payer:
+                    id: "573459f5-e80a-46f3-b73e-c64a65ce7747"
+                    email: "alice.tan@example.com"
+                    first_name: "Alice"
+                    last_name: "Tan"
+                  workflow: "DIRECT"
+                  payment_method:
+                    type: "CARD"
+                    vault_on_success: false
+                    detail:
+                      card:
+                        card_data:
+                          number: "4111111111111111"
+                          holder_name: "Alice Tan"
+                          expiration_month: 12
+                          expiration_year: 2026
+                          security_code: "123"
+                        capture: true
+              authorization_only:
+                summary: Authorization without capture
+                value:
+                  account_id: "c49051bd-545d-4baf-a9cb-c84158856b5b"
+                  merchant_order_id: "auth_order_001"
+                  description: "Pre-auth for hotel"
+                  country: "SG"
+                  amount:
+                    currency: "SGD"
+                    value: 200.50
+                  checkout:
+                    session: "checkout-session-uuid"
+                  customer_payer:
+                    id: "573459f5-e80a-46f3-b73e-c64a65ce7747"
+                  workflow: "DIRECT"
+                  payment_method:
+                    type: "CARD"
+                    detail:
+                      card:
+                        card_data:
+                          number: "4111111111111111"
+                          holder_name: "Alice Tan"
+                          expiration_month: 12
+                          expiration_year: 2026
+                          security_code: "123"
+                        capture: false
+              vaulted_token:
+                summary: Recurring with vaulted token
+                value:
+                  account_id: "c49051bd-545d-4baf-a9cb-c84158856b5b"
+                  merchant_order_id: "recurring_001"
+                  description: "Monthly subscription"
+                  country: "SG"
+                  amount:
+                    currency: "SGD"
+                    value: 29.99
+                  checkout:
+                    session: "checkout-session-uuid"
+                  customer_payer:
+                    id: "573459f5-e80a-46f3-b73e-c64a65ce7747"
+                  payment_method:
+                    vaulted_token: "vt_xyz789"
+      responses:
+        "200":
+          description: Payment processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+        "429":
+          $ref: '#/components/responses/TooManyRequests'
+
+  /payments/{payment_id}:
+    get:
+      operationId: getPayment
+      tags: [Payments]
+      summary: Retrieve payment
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Payment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "429":
+          $ref: '#/components/responses/TooManyRequests'
+
+  /payments/merchant-order/{merchant_order_id}:
+    get:
+      operationId: getPaymentByMerchantOrder
+      tags: [Payments]
+      summary: Retrieve payment by merchant order ID
+      parameters:
+        - name: merchant_order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Payment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+
+  /payments/{payment_id}/refund:
+    post:
+      operationId: refundPayment
+      tags: [Payments]
+      summary: Refund payment
+      description: Process a full or partial refund on a captured payment.
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Idempotency-Key
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+            example:
+              merchant_reference: "refund_001"
+              description: "Customer requested refund"
+              reason: "REQUESTED_BY_CUSTOMER"
+              amount:
+                currency: "SGD"
+                value: 45.50
+              customer_payer:
+                id: "573459f5-e80a-46f3-b73e-c64a65ce7747"
+                email: "alice.tan@example.com"
+                first_name: "Alice"
+                last_name: "Tan"
+      responses:
+        "200":
+          description: Refund processed
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+        "429":
+          $ref: '#/components/responses/TooManyRequests'
+
+  /payments/{payment_id}/cancel:
+    post:
+      operationId: cancelPayment
+      tags: [Payments]
+      summary: Cancel/void payment
+      description: Voids an authorized (uncaptured) payment.
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelRequest'
+            example:
+              merchant_reference: "void_001"
+              description: "Order cancelled"
+              reason: "REQUESTED_BY_CUSTOMER"
+              customer_payer:
+                id: "573459f5-e80a-46f3-b73e-c64a65ce7747"
+      responses:
+        "200":
+          description: Payment cancelled
+
+  /payments/{payment_id}/capture:
+    post:
+      operationId: capturePayment
+      tags: [Payments]
+      summary: Capture authorized payment
+      description: Captures a previously authorized payment. Must be done within 7 days.
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaptureRequest'
+            example:
+              amount:
+                currency: "SGD"
+                value: 200.50
+      responses:
+        "200":
+          description: Payment captured
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /payments/{payment_id}/disputes:
+    post:
+      operationId: createDispute
+      tags: [Payments]
+      summary: Create dispute
+      description: Initiates a chargeback dispute for a payment.
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                evidence:
+                  type: string
+      responses:
+        "201":
+          description: Dispute created
+
+  # ==================== PAYMENT LINKS ====================
+  /payment-links:
+    post:
+      operationId: createPaymentLink
+      tags: [Payment Links]
+      summary: Create payment link
+      description: Generates a shareable payment link.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentLinkRequest'
+      responses:
+        "201":
+          description: Payment link created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLink'
+
+  /payment-links/{payment_link_id}:
+    get:
+      operationId: getPaymentLink
+      tags: [Payment Links]
+      summary: Retrieve payment link
+      parameters:
+        - name: payment_link_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Payment link details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLink'
+
+  /payment-links/{payment_link_id}/cancel:
+    post:
+      operationId: cancelPaymentLink
+      tags: [Payment Links]
+      summary: Cancel payment link
+      parameters:
+        - name: payment_link_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Payment link cancelled
+
+  # ==================== SUBSCRIPTIONS ====================
+  /subscriptions:
+    post:
+      operationId: createSubscription
+      tags: [Subscriptions]
+      summary: Create subscription
+      description: Creates a recurring billing subscription using a vaulted payment method.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+            example:
+              name: "Monthly Premium"
+              country: "SG"
+              amount:
+                currency: "SGD"
+                value: 29.99
+              customer_payer:
+                id: "573459f5-e80a-46f3-b73e-c64a65ce7747"
+              frequency:
+                type: "MONTH"
+                value: 1
+              billing_cycles:
+                total: 12
+              payment_method:
+                type: "CARD"
+                vaulted_token: "vt_xyz789"
+      responses:
+        "201":
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        "429":
+          $ref: '#/components/responses/TooManyRequests'
+
+  /subscriptions/{subscription_id}:
+    get:
+      operationId: getSubscription
+      tags: [Subscriptions]
+      summary: Retrieve subscription
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Subscription details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+    patch:
+      operationId: updateSubscription
+      tags: [Subscriptions]
+      summary: Update subscription
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                amount:
+                  $ref: '#/components/schemas/Amount'
+      responses:
+        "200":
+          description: Subscription updated
+
+  /subscriptions/{subscription_id}/pause:
+    post:
+      operationId: pauseSubscription
+      tags: [Subscriptions]
+      summary: Pause subscription
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Subscription paused
+
+  /subscriptions/{subscription_id}/resume:
+    post:
+      operationId: resumeSubscription
+      tags: [Subscriptions]
+      summary: Resume subscription
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Subscription resumed
+
+  /subscriptions/{subscription_id}/cancel:
+    post:
+      operationId: cancelSubscription
+      tags: [Subscriptions]
+      summary: Cancel subscription
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Subscription cancelled
+
+  # ==================== PAYOUTS ====================
+  /payouts:
+    post:
+      operationId: createPayout
+      tags: [Payouts]
+      summary: Create payout
+      description: Initiates a fund transfer to a recipient.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePayoutRequest'
+      responses:
+        "201":
+          description: Payout created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payout'
+
+  /payouts/{payout_id}:
+    get:
+      operationId: getPayout
+      tags: [Payouts]
+      summary: Retrieve payout
+      parameters:
+        - name: payout_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Payout details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payout'
+
+  /payouts/merchant-ref/{merchant_reference}:
+    get:
+      operationId: getPayoutByReference
+      tags: [Payouts]
+      summary: Retrieve payout by merchant reference
+      parameters:
+        - name: merchant_reference
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Payout details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payout'
+
+  # ==================== RECIPIENTS ====================
+  /recipients:
+    post:
+      operationId: createRecipient
+      tags: [Recipients]
+      summary: Create recipient
+      description: Registers a marketplace recipient for split payments and payouts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecipientRequest'
+      responses:
+        "201":
+          description: Recipient created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipient'
+    get:
+      operationId: listRecipients
+      tags: [Recipients]
+      summary: List recipients
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Maximum number of items to return
+        - name: starting_after
+          in: query
+          schema:
+            type: string
+          description: Cursor for forward pagination. Pass the last item's ID from the previous page.
+        - name: ending_before
+          in: query
+          schema:
+            type: string
+          description: Cursor for backward pagination. Pass the first item's ID from the previous page.
+      responses:
+        "200":
+          description: List of recipients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipient'
+
+  /recipients/{recipient_id}:
+    get:
+      operationId: getRecipient
+      tags: [Recipients]
+      summary: Retrieve recipient
+      parameters:
+        - name: recipient_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Recipient details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipient'
+    patch:
+      operationId: updateRecipient
+      tags: [Recipients]
+      summary: Update recipient
+      parameters:
+        - name: recipient_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+      responses:
+        "200":
+          description: Recipient updated
+    delete:
+      operationId: deleteRecipient
+      tags: [Recipients]
+      summary: Delete recipient
+      parameters:
+        - name: recipient_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Recipient deleted
+
+  # ==================== REPORTS ====================
+  /reports:
+    post:
+      operationId: createReport
+      tags: [Reports]
+      summary: Create report
+      description: Generates a new report for payments, settlements, or disputes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, date_range]
+              properties:
+                type:
+                  type: string
+                  enum: [PAYMENTS, SETTLEMENTS, DISPUTES, PAYOUTS]
+                date_range:
+                  type: object
+                  properties:
+                    from:
+                      type: string
+                      format: date
+                    to:
+                      type: string
+                      format: date
+                format:
+                  type: string
+                  enum: [CSV, XLSX, JSON]
+                  default: "CSV"
+      responses:
+        "201":
+          description: Report generation started
+    get:
+      operationId: listReports
+      tags: [Reports]
+      summary: List reports
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Maximum number of items to return
+        - name: starting_after
+          in: query
+          schema:
+            type: string
+          description: Cursor for forward pagination. Pass the last item's ID from the previous page.
+        - name: ending_before
+          in: query
+          schema:
+            type: string
+          description: Cursor for backward pagination. Pass the first item's ID from the previous page.
+      responses:
+        "200":
+          description: List of reports
+
+  /reports/{report_id}:
+    get:
+      operationId: getReport
+      tags: [Reports]
+      summary: Retrieve report
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Report details
+
+  /reports/{report_id}/download:
+    get:
+      operationId: downloadReport
+      tags: [Reports]
+      summary: Download report
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Report file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  # ==================== WEBHOOKS ====================
+  /webhooks:
+    post:
+      operationId: registerWebhook
+      tags: [Webhooks]
+      summary: Register webhook endpoint
+      description: Registers a URL to receive event notifications.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, events]
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: HTTPS endpoint to receive events
+                events:
+                  type: array
+                  items:
+                    type: string
+                  description: Event types to subscribe to
+                  example: ["payment.succeeded", "payment.failed", "refund.completed"]
+      responses:
+        "201":
+          description: Webhook registered
+
+  # ==================== CURRENCY CONVERSION ====================
+  /currency-conversion:
+    get:
+      operationId: getCurrencyConversion
+      tags: [Currency Conversion]
+      summary: Get exchange rates
+      description: Returns real-time exchange rates between supported currencies.
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "USD"
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "BRL"
+        - name: amount
+          in: query
+          schema:
+            type: number
+          example: 100
+      responses:
+        "200":
+          description: Exchange rate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  from:
+                    type: string
+                  to:
+                    type: string
+                  rate:
+                    type: number
+                  converted_amount:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
+
+# ==================== COMPONENTS ====================
+components:
+  securitySchemes:
+    PublicApiKey:
+      type: apiKey
+      in: header
+      name: public-api-key
+      description: Public API key from Dashboard > Settings > API Keys
+    PrivateSecretKey:
+      type: apiKey
+      in: header
+      name: private-secret-key
+      description: Private secret key (server-side only)
+    AccountCode:
+      type: apiKey
+      in: header
+      name: X-Account-Code
+      description: Required only for organizations with multiple accounts. Identifies which account to use for the request.
+
+  headers:
+    X-RateLimit-Limit:
+      schema:
+        type: integer
+      description: Maximum requests allowed in the current window
+    X-RateLimit-Remaining:
+      schema:
+        type: integer
+      description: Requests remaining in the current window
+    X-RateLimit-Reset:
+      schema:
+        type: integer
+      description: Unix timestamp when the rate limit window resets
+
+  schemas:
+    Amount:
+      type: object
+      required: [currency, value]
+      properties:
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          description: ISO 4217 currency code
+          example: "SGD"
+        value:
+          type: number
+          description: Monetary amount
+          example: 100.00
+
+    Address:
+      type: object
+      properties:
+        address_line_1:
+          type: string
+          example: "123 Orchard Road"
+        address_line_2:
+          type: string
+          nullable: true
+        city:
+          type: string
+          example: "Singapore"
+        state:
+          type: string
+          example: "Singapore"
+        zip_code:
+          type: string
+          example: "238883"
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+          description: ISO 3166-1 alpha-2
+          example: "SG"
+
+    Document:
+      type: object
+      properties:
+        document_type:
+          type: string
+          description: "CPF, CNPJ, CC, CURP, PASS, SSN, etc."
+          example: "CC"
+        document_number:
+          type: string
+          description: Document number (digits only)
+          example: "S1234567A"
+
+    Phone:
+      type: object
+      properties:
+        country_code:
+          type: string
+          example: "65"
+        number:
+          type: string
+          example: "91234567"
+
+    Metadata:
+      type: object
+      properties:
+        key:
+          type: string
+          maxLength: 48
+        value:
+          type: string
+          maxLength: 512
+
+    CreateCustomerRequest:
+      type: object
+      required: [merchant_customer_id]
+      properties:
+        merchant_customer_id:
+          type: string
+          description: Your unique customer identifier
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        country:
+          type: string
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+        date_of_birth:
+          type: string
+          format: date
+        document:
+          $ref: '#/components/schemas/Document'
+        phone:
+          $ref: '#/components/schemas/Phone'
+        billing_address:
+          $ref: '#/components/schemas/Address'
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+        metadata:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/Metadata'
+
+    UpdateCustomerRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          $ref: '#/components/schemas/Phone'
+        billing_address:
+          $ref: '#/components/schemas/Address'
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        merchant_customer_id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        country:
+          type: string
+        document:
+          $ref: '#/components/schemas/Document'
+        phone:
+          $ref: '#/components/schemas/Phone'
+        billing_address:
+          $ref: '#/components/schemas/Address'
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateCheckoutSessionRequest:
+      type: object
+      required: [account_id, merchant_order_id, payment_description, country]
+      properties:
+        account_id:
+          type: string
+          description: Account ID from Dashboard
+        merchant_order_id:
+          type: string
+          description: Your unique order identifier
+        payment_description:
+          type: string
+        country:
+          type: string
+        customer_id:
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/Amount'
+        workflow:
+          type: string
+          enum: [DIRECT, SDK_CHECKOUT, SDK_FULL, SDK_LITE, SDK_SEAMLESS]
+        callback_url:
+          type: string
+        metadata:
+          type: array
+          maxItems: 120
+          items:
+            $ref: '#/components/schemas/Metadata'
+
+    CheckoutSession:
+      type: object
+      properties:
+        checkout_session:
+          type: string
+          format: uuid
+          description: Session token for SDK and payment creation
+        merchant_order_id:
+          type: string
+        country:
+          type: string
+        amount:
+          $ref: '#/components/schemas/Amount'
+        workflow:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CustomerPayer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        merchant_customer_id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        document:
+          $ref: '#/components/schemas/Document'
+        phone:
+          $ref: '#/components/schemas/Phone'
+        billing_address:
+          $ref: '#/components/schemas/Address'
+        shipping_address:
+          $ref: '#/components/schemas/Address'
+
+    CreatePaymentRequest:
+      type: object
+      required: [account_id, description, country, merchant_order_id, amount, checkout]
+      properties:
+        account_id:
+          type: string
+        merchant_order_id:
+          type: string
+          description: Unique order ID per transaction
+        description:
+          type: string
+        country:
+          type: string
+        workflow:
+          type: string
+          enum: [DIRECT, SDK_CHECKOUT, SDK_SEAMLESS]
+        amount:
+          $ref: '#/components/schemas/Amount'
+        checkout:
+          type: object
+          required: [session]
+          properties:
+            session:
+              type: string
+              description: Checkout session token
+        customer_payer:
+          $ref: '#/components/schemas/CustomerPayer'
+        payment_method:
+          type: object
+          description: Payment method details. Required fields vary by `type`.
+          properties:
+            type:
+              type: string
+              enum: [CARD, PIX, BANK_TRANSFER, OXXO, BOLETO, PSE, WALLET]
+              description: Payment method type
+            vault_on_success:
+              type: boolean
+              description: Whether to vault this payment method for future use
+            detail:
+              type: object
+              description: Method-specific details (required for CARD)
+              properties:
+                card:
+                  type: object
+                  properties:
+                    number:
+                      type: string
+                    expiration_month:
+                      type: integer
+                    expiration_year:
+                      type: integer
+                    security_code:
+                      type: string
+                    holder_name:
+                      type: string
+                    capture:
+                      type: boolean
+                      description: Capture immediately (true) or authorize only (false)
+            vaulted_token:
+              type: string
+              description: Vaulted token for recurring payments (alternative to detail)
+            token:
+              type: string
+              description: One-time token from SDK tokenization
+        metadata:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metadata'
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+        merchant_order_id:
+          type: string
+        description:
+          type: string
+        country:
+          type: string
+        status:
+          type: string
+          enum: [SUCCEEDED, PENDING, REFUNDED, CANCELED, FAILED, REJECTED, EXPIRED]
+        sub_status:
+          type: string
+          enum:
+            - CREATED
+            - AUTHORIZED
+            - PENDING_PROVIDER
+            - REQUIRES_ACTION
+            - APPROVED
+            - DECLINED
+            - REJECTED
+            - ERROR
+            - FRAUD_REJECTED
+            - FULLY_REFUNDED
+            - PARTIALLY_REFUNDED
+            - VOIDED
+            - MERCHANT_CANCELED
+            - SESSION_EXPIRED
+          nullable: true
+        amount:
+          $ref: '#/components/schemas/Amount'
+        customer_payer:
+          $ref: '#/components/schemas/CustomerPayer'
+        payment_method:
+          type: object
+          properties:
+            type:
+              type: string
+            vaulted_token:
+              type: string
+              nullable: true
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        response_code:
+          type: string
+        response_message:
+          type: string
+        provider_data:
+          type: object
+          properties:
+            id:
+              type: string
+            transaction_id:
+              type: string
+
+    RefundRequest:
+      type: object
+      properties:
+        merchant_reference:
+          type: string
+        description:
+          type: string
+        reason:
+          type: string
+          enum: [REQUESTED_BY_CUSTOMER, DUPLICATE, FRAUDULENT]
+        amount:
+          $ref: '#/components/schemas/Amount'
+        customer_payer:
+          $ref: '#/components/schemas/CustomerPayer'
+
+    CancelRequest:
+      type: object
+      properties:
+        merchant_reference:
+          type: string
+        description:
+          type: string
+        reason:
+          type: string
+          enum: [REQUESTED_BY_CUSTOMER, DUPLICATE, FRAUDULENT]
+        customer_payer:
+          $ref: '#/components/schemas/CustomerPayer'
+
+    CaptureRequest:
+      type: object
+      properties:
+        merchant_reference:
+          type: string
+        amount:
+          $ref: '#/components/schemas/Amount'
+        customer_payer:
+          $ref: '#/components/schemas/CustomerPayer'
+
+    EnrollPaymentMethodRequest:
+      type: object
+      required: [account_id, customer_id, country, payment_method]
+      properties:
+        account_id:
+          type: string
+        customer_id:
+          type: string
+          format: uuid
+        country:
+          type: string
+        payment_method:
+          type: object
+          properties:
+            token:
+              type: string
+              description: One-time token from SDK
+            type:
+              type: string
+              enum: [CARD, PIX, NEQUI]
+
+    PaymentMethod:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        vaulted_token:
+          type: string
+          description: Use this for recurring payments
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+        card:
+          type: object
+          nullable: true
+          properties:
+            bin:
+              type: string
+            last_four:
+              type: string
+            brand:
+              type: string
+              enum: [VISA, MASTERCARD, AMEX, DISCOVER]
+            expiration_month:
+              type: integer
+            expiration_year:
+              type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    CreateSubscriptionRequest:
+      type: object
+      required: [name, country, amount, customer_payer, frequency, payment_method]
+      properties:
+        name:
+          type: string
+        country:
+          type: string
+        amount:
+          $ref: '#/components/schemas/Amount'
+        customer_payer:
+          type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              format: uuid
+        frequency:
+          type: object
+          required: [type, value]
+          properties:
+            type:
+              type: string
+              enum: [DAY, WEEK, MONTH, YEAR]
+            value:
+              type: integer
+              minimum: 1
+        billing_cycles:
+          type: object
+          properties:
+            total:
+              type: integer
+        payment_method:
+          type: object
+          required: [type, vaulted_token]
+          properties:
+            type:
+              type: string
+            vaulted_token:
+              type: string
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, PAUSED, CANCELLED, EXPIRED]
+        country:
+          type: string
+        amount:
+          $ref: '#/components/schemas/Amount'
+        frequency:
+          type: object
+          properties:
+            type:
+              type: string
+            value:
+              type: integer
+        billing_cycles:
+          type: object
+          properties:
+            total:
+              type: integer
+            completed:
+              type: integer
+        next_billing_date:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    CreatePayoutRequest:
+      type: object
+      required: [account_id, country, amount, merchant_reference]
+      properties:
+        account_id:
+          type: string
+        country:
+          type: string
+        amount:
+          $ref: '#/components/schemas/Amount'
+        merchant_reference:
+          type: string
+        description:
+          type: string
+        recipient:
+          type: object
+          properties:
+            document:
+              $ref: '#/components/schemas/Document'
+            first_name:
+              type: string
+            last_name:
+              type: string
+            email:
+              type: string
+            bank_account:
+              type: object
+              properties:
+                bank_code:
+                  type: string
+                account_number:
+                  type: string
+                account_type:
+                  type: string
+                  enum: [CHECKING, SAVINGS]
+
+    Payout:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [PENDING, SUCCEEDED, FAILED, REJECTED]
+        amount:
+          $ref: '#/components/schemas/Amount'
+        merchant_reference:
+          type: string
+        country:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreatePaymentLinkRequest:
+      type: object
+      required: [account_id, amount, country]
+      properties:
+        account_id:
+          type: string
+        amount:
+          $ref: '#/components/schemas/Amount'
+        country:
+          type: string
+        description:
+          type: string
+        expiration_date:
+          type: string
+          format: date-time
+        callback_url:
+          type: string
+
+    PaymentLink:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        status:
+          type: string
+          enum: [ACTIVE, CANCELLED, EXPIRED, COMPLETED]
+        amount:
+          $ref: '#/components/schemas/Amount'
+        country:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreateRecipientRequest:
+      type: object
+      required: [account_id, country]
+      properties:
+        account_id:
+          type: string
+        country:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        document:
+          $ref: '#/components/schemas/Document'
+        bank_account:
+          type: object
+          properties:
+            bank_code:
+              type: string
+            account_number:
+              type: string
+            account_type:
+              type: string
+
+    Recipient:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        country:
+          type: string
+        document:
+          $ref: '#/components/schemas/Document'
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+        created_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+              example: "YUNO_VAL_001"
+            type:
+              type: string
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              example: "Request validation failed"
+            details:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+            request_id:
+              type: string
+              format: uuid
+              description: Include this when contacting support
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "YUNO_VAL_001"
+              type: "VALIDATION_ERROR"
+              message: "Request validation failed"
+              details:
+                - field: "amount.currency"
+                  message: "Must be a valid ISO 4217 currency code"
+              request_id: "req_abc123"
+
+    Unauthorized:
+      description: Invalid or missing authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "YUNO_AUTH_001"
+              type: "AUTHENTICATION_ERROR"
+              message: "Invalid API credentials"
+              request_id: "req_def456"
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "YUNO_AUTH_003"
+              type: "AUTHORIZATION_ERROR"
+              message: "Payment method not available for this merchant"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "YUNO_GEN_001"
+              type: "NOT_FOUND"
+              message: "Resource not found"
+
+    UnprocessableEntity:
+      description: Business logic error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "YUNO_PAY_001"
+              type: "PROCESSING_ERROR"
+              message: "Payment declined by issuer"
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/X-RateLimit-Limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/X-RateLimit-Remaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/X-RateLimit-Reset'
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "YUNO_GEN_003"
+              type: "RATE_LIMIT"
+              message: "Rate limit exceeded. Retry after 60 seconds"

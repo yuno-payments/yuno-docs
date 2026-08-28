@@ -83,6 +83,18 @@ Example payload:
   Each transaction includes `connection_data`, which identifies the provider connection that processed it. Use `connection_data.id` as the stable identifier to attribute transactions to a specific connection when you operate multiple connections for the same provider. `connection_data.name` is the display name configured in the Yuno dashboard and can be `null` on some events, such as follow-up transactions.
 </Info>
 
+<Info>
+  The `transactions` field carries a different meaning per surface. In webhook payloads, `data.payment.transactions` is a **single object** — the transaction that triggered the event — and `transactions_history` carries the full list of the payment's transactions when it is enabled for the payment (see the note below). In the payment retrieve endpoints (`GET /payments/{payment_id}` and `GET /payments?merchant_order_id=`), `transactions` is an **array** containing every transaction of the payment.
+</Info>
+
+<Info>
+  `transactions_history` is **opt-in**: it is populated only when the payment was created with `response_additional_data.transactions_history: true` in the [Create Payment](/reference/payments/create-payment) request. Otherwise webhooks deliver it as an empty array `[]` — the default, which keeps payload sizes small. This matters for payments your routing retries across providers: without the flag, the final webhook shows only the last transaction, and the earlier attempts are only visible via `GET /payments/{payment_id}`. Payments created by Yuno-managed flows that do not set the flag (for example, subscription renewals) also deliver `[]`. Chargeback events always include the full history.
+</Info>
+
+<Info>
+  Field naming: the customer geolocation is serialized as `geo_location` in webhook payloads and as `geolocation` in the payment retrieve endpoints. Parse each surface accordingly.
+</Info>
+
 ```json
 {
     "type": "payment",

@@ -22,7 +22,7 @@ Choose your platform and follow the steps to start processing your first payment
     Or include via CDN:
 
     ```html
-    <script src="https://sdk-web.y.uno/v1.9/main.js"></script>
+    <script src="https://sdk-web.y.uno/v1.10/main.js"></script>
     ```
 
     ### 2. Initialize and process payment
@@ -294,6 +294,50 @@ Choose your platform and follow the steps to start processing your first payment
 
     </Tab>
 </Tabs>
+
+## Handling a failed payment
+
+The Web SDK can recover from a failed payment without reloading the page. Two mechanisms work together:
+
+* *Payment retry* — inline card retry when the payment returns `DECLINED` or `ERROR`. In *Seamless* the SDK handles retry automatically. In *Full Checkout*, *Lite*, and *Secure Fields* you call `continuePayment` after your backend confirms the decline. Works for non-enrolled credit and debit cards. See [Payment retry](/docs/sdks/resources/references/web#payment-retry) for the full reference.
+
+* *Switching payment methods* — call `updateCheckoutSession(newSession)` to inject a fresh checkout session without unmounting the SDK. Picking from the already-rendered payment-method list after a session swap works; a *different* set of payment methods requires unmounting and re-mounting the SDK — not a page reload. See [updateCheckoutSession](/docs/sdks/resources/references/web#updatecheckoutsession).
+
+```javascript
+// Inside your yunoCreatePayment callback:
+const payment = await createPaymentOnYourBackend(oneTimeToken);
+
+const isCard = payment.payment_method?.type === 'CARD';
+const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+
+if (isCard && failed) {
+  // Card retry: keeps the card form open with the decline shown.
+  await yuno.continuePayment();
+} else if (payment.checkout?.sdk_action_required) {
+  // Additional action: 3DS, bank redirect, etc.
+  await yuno.continuePayment({ showPaymentStatus: true });
+} else {
+  // No further SDK action — unmount.
+  await yuno.unmountSdk();
+}
+```
+
+<Note>
+On a retried attempt the SDK does **not** fire `yunoPaymentResult`. It delivers the cloned checkout session to your `onLoading` callback as `{ type: 'PAYMENT_RETRY', data: { newCheckoutSession } }`. Register `onLoading` in your `startCheckout` configuration to receive it:
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  // ...
+  onLoading: ({ type, data }) => {
+    if (type === 'PAYMENT_RETRY') {
+      // A fresh session has been cloned for the retry.
+      const newCheckoutSession = data.newCheckoutSession;
+    }
+  }
+});
+```
+</Note>
 
 ## Backend integration
 
