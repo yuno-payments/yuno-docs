@@ -181,6 +181,43 @@ If a PIX QR code expires naturally:
 * **Backend status**: Updated to `EXPIRED`
 * **SDK status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
 
+### Reading the status message and substatus
+
+From `yuno` **1.0.19** (native Android SDK 2.22.0 / iOS 2.23.1), payment and enrollment results carry extra detail you can read from the listener `state`, alongside the status:
+
+```dart
+YunoPaymentListener(
+  listener: (context, state) {
+    final status = state.paymentStatus; // reject, succeeded, fail, processing, internalError, cancelByUser
+    final substatus = state.substatus;  // e.g. AUTHORIZED, CLOSED_BY_USER (nullable)
+    final message = state.message;      // structured detail (nullable)
+
+    if (message != null) {
+      debugPrint('${message.source} · ${message.code} · ${message.reason}');
+    }
+  },
+  child: YourWidget(),
+)
+```
+
+The same fields are available in `YunoEnrollmentListener` through `state.enrollmentStatus`, `state.substatus`, and `state.message`.
+
+**`state.message` (`YunoStatusMessage?`)**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | `String` | Where the message originated, typically `backend` or `sdk`. |
+| `code` | `String?` | Machine-readable code for the status. |
+| `reason` | `String?` | Human-readable explanation. |
+| `raw` | `String?` | Raw payload provided by the native SDK. |
+| `context` | `String?` | Additional context about the status. |
+
+**`state.substatus` (`String?`)**
+
+A finer-grained status. On iOS it maps to `Yuno.Result.substatus`; on Android to the native `PaymentSubStates` value (for example `AUTHORIZED`, `CLOSED_BY_USER`, `WAITING_ADDITIONAL_STEP`). It is `null` when the native layer does not provide one, including Android enrollment.
+
+Both `message` and `substatus` are `null` when the native SDK does not attach them (for example, a plain success), so always null-check before use.
+
 ## Enrollment
 
 Follow these steps to enroll payment methods in your Flutter app.
