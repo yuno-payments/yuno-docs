@@ -76,6 +76,32 @@ Manual captures provide maximum flexibility since they give you full control of 
 If you need to capture a different amount than originally authorized, you must use manual capture. The real-time and delayed capture modes will always capture the initially authorized amount.
 </Warning>
 
+#### Pre-authorization holds (`authorization_type`)
+
+By default, a manual-capture authorization (`capture: false`) is created as a standard (final) authorization. Some providers additionally support an **extended pre-authorization hold**: a longer-dated hold (scheme-dependent, extendable up to ~30 days vs. ~7 days for standard authorizations) that can also be raised later with [incremental authorizations](/reference/increment-authorization) — common in hotels, car rental, travel, and EV charging.
+
+To request it, set `authorization_type` to `PRE_AUTHORIZATION` on the original authorization:
+
+```json
+{
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "authorization_type": "PRE_AUTHORIZATION", // New field
+        "card_data": {
+          // card details
+        }
+      }
+    }
+  }
+}
+```
+
+* The field is **optional**. When omitted, it defaults to `STANDARD` and the behavior is identical to today.
+* `PRE_AUTHORIZATION` is only valid with `capture: false`; combining it with `capture: true` returns a `400` error.
+* Support is provider-dependent (best effort): providers without a pre-authorization equivalent process the payment as a standard authorization. If you later attempt an incremental authorization on a hold that was not created as `PRE_AUTHORIZATION`, the provider may reject it with the `AUTHORIZATION_NOT_INCREMENTABLE` response code.
+
 ### Delayed capture
 
 Configure `capture: false` along with `delayed_capture_settings` to schedule the capture of the payment for a later time, specified in the `delay` field.
@@ -427,6 +453,7 @@ While this example shows both `delayed_capture_settings` and `delayed_cancel_set
 | Field                                      | Type      | Description                                                                                                                                                                                                                                          |
 | ------------------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `capture`                                  | `boolean` | Determines whether the card payment is captured immediately (`true`, purchase) or only authorized (`false`, requires capture or cancel).                                                                                                             |
+| `authorization_type`                       | `string`  | Optional, only valid with `capture: false`. `STANDARD` (default) creates a regular authorization; `PRE_AUTHORIZATION` requests an extended, incrementable pre-authorization hold where the provider supports it (best effort).                        |
 | `delayed_capture_settings.delay`           | `string`  | Delay before Yuno captures the payment. Must follow <a label="ISO 8601 duration format" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 duration format</a> (e.g., "P7D" for 7 days, "PT3H" for 3 hours). |
 | `delayed_capture_settings.simplified_mode` | `boolean` | If `true`, Yuno retries the capture if it fails.                                                                                                                                                                                                     |
 | `delayed_cancel_settings.delay`            | `string`  | Delay before Yuno cancels the authorization. Must follow <a label="ISO 8601 duration format" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 duration format</a> (e.g., "P30D" for 30 days).              |
