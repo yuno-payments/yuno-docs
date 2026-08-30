@@ -1,0 +1,220 @@
+---
+title: "Pix Automático"
+description: "Bill a Brazilian Pix Automático mandate as a subscription: the cadences the rail accepts, the D−4 scheduling date, and the fixed Pix retry ladder"
+---
+
+Yuno bills a Brazilian Pix Automático mandate as an ordinary subscription: you enroll the mandate
+first, then create the subscription against the resulting `vaulted_token`. Three things behave
+differently from a card subscription, and all three are set by the Pix rail rather than by your
+request — the billing cadences the mandate can express, the date the debit instruction is handed to
+the rail, and the retry ladder that runs when a debit is refused.
+
+## Creating a Pix Automático subscription
+
+Send `payment_method.type` as `PIX_AUTOMATIC` with the `vaulted_token` of an already-enrolled
+mandate, exactly as you would for a card:
+
+```json Create a monthly Pix Automático subscription
+{
+  "name": "Streaming BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 29.90
+  },
+  "frequency": {
+    "type": "MONTH",
+    "value": 1
+  },
+  "customer_payer": {
+    "id": "a15783f1-94e1-4ec0-ab8b-306f8517bcff"
+  },
+  "payment_method": {
+    "type": "PIX_AUTOMATIC",
+    "vaulted_token": "296dff7f-a6cb-4ce2-bf42-c51f1b356a2d"
+  }
+}
+```
+
+`payment_method.type` is matched case-insensitively, so `pix_automatic` resolves to the same payment
+method — and to the same cadence rules — as `PIX_AUTOMATIC`.
+
+Everything on this page describes subscriptions **Yuno executes**: `frequency.execution` is `YUNO`,
+so Yuno generates each debit instruction on schedule. On the one-call route, `frequency.execution`
+is sent explicitly and has no default — see
+[Start a subscription with the first payment](/docs/payment-features/subscriptions/start-with-payment#execution-decides-who-bills).
+Where `frequency.execution` is `MERCHANT` you generate each charge yourself, the scheduling and
+retry behavior below does not apply, and the subscription cannot
+[schedule a cancellation](/reference/subscriptions/cancel-subscription#scheduling-a-cancellation-instead).
+
+## Accepted billing cadences
+
+A Pix Automático mandate can only express the periodicities the Pix rail defines, so a cadence the
+mandate could not execute is rejected when the subscription is created rather than failing at the
+first debit.
+
+Accepted today: **`WEEK × 1`, `MONTH × 1` and `YEAR × 1`** — `frequency.type` is one of those three
+and `frequency.value` is exactly `1`.
+
+| `frequency` | Result |
+|---|---|
+| `WEEK`, value `1` | Accepted |
+| `MONTH`, value `1` | Accepted |
+| `YEAR`, value `1` | Accepted, through a plan only — see [Yearly needs a plan](#yearly-needs-a-plan) |
+| `WEEK`, `MONTH` or `YEAR` with any other value | `400 INVALID_PARAMETERS` |
+| `DAY`, any value | `400 INVALID_PARAMETERS` |
+
+The rejection is the same on every path, `HTTP 400`:
+
+```json Rejected cadence
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with value 1."
+  ]
+}
+```
+
+A subscription billed on a fixed date — the `billing_date` object instead of `frequency` — is not
+affected: it has no `frequency.type` for the rule to judge, so `PREPAID`, `POSTDATE`, `DAY` and
+`PLAN_CREATION_DATE` all stay available on Pix Automático.
+
+<Warning>
+**Do not read the accepted set from the message**
+
+The message names quarterly and half-yearly cadences, but neither can be requested today: there is
+no `QUARTER` or `HALF_YEAR` value for `frequency.type`, and `MONTH × 3` / `MONTH × 6` are rejected
+like any other value other than `1`. The accepted set is the table above.
+</Warning>
+
+### Where the rule applies
+
+The cadence is judged whenever a subscription resolves to a Pix Automático payment method — on the
+requested cadence for an inline `frequency`, and on the plan's cadence when the subscription is
+created from a `plan_id`. It is judged again on the target cadence of a plan change: on
+[Change Subscription Plan](/reference/subscriptions/change-subscription-plan), and on
+`PATCH /v1/subscriptions/{id}` with a `plan_change` block, for both `NEXT_BILLING_CYCLE` and
+`IMMEDIATE`.
+
+Plans themselves are unaffected. A plan on any cadence stays creatable — the rule gates the
+subscription, not the plan — so a `DAY` plan is only refused at the moment a Pix Automático
+subscription tries to bill from it.
+
+### Existing subscriptions are never re-judged
+
+Only the cadence being requested is judged; a subscription already in flight is never re-judged.
+A Pix Automático subscription created before this rule existed keeps billing on its original
+cadence, and can still be moved onto a plan — that move is judged on the target plan's cadence, so
+it succeeds whenever the target is one of the three accepted cadences.
+
+### Yearly needs a plan
+
+Sending `frequency.type` as `YEAR` inline — with no `plan_id` and no phases — is refused by a
+separate, older rule that applies to every payment method, not just Pix Automático:
+
+```json Inline YEAR, any payment method
+{
+  "code": "BAD_REQUEST",
+  "messages": [
+    "YEAR is invalid for frequency.type field"
+  ]
+}
+```
+
+To bill a Pix Automático subscription yearly, create it from a plan whose frequency is `YEAR × 1`.
+The Pix cadence rule accepts it; only the inline route is closed.
+
+## The scheduling date
+
+A Pix debit is not taken on demand — the instruction has to reach the rail ahead of the debit date.
+For a Pix Automático subscription that Yuno executes, Yuno schedules the instruction **four days
+before** the debit date and reports that moment as `billing_cycles.scheduling_date`.
+
+`scheduling_date` is exactly `billing_cycles.next_at` minus four days:
+
+```json billing_cycles on a Pix Automático subscription
+{
+  "billing_cycles": {
+    "total": null,
+    "current": 0,
+    "paid": 0,
+    "next_at": "2026-12-01T00:00:00Z",
+    "scheduling_date": "2026-11-27T00:00:00Z"
+  }
+}
+```
+
+On every other payment method the key is **absent, not `null`** — a card subscription's
+`billing_cycles` carries `total`, `current`, `paid` and `next_at` and nothing else. Read it from
+[Retrieve Subscription](/reference/subscriptions/retrieve-subscription), from the items of
+[List Subscriptions](/reference/subscriptions/list-subscriptions), and from subscription webhook
+payloads, which carry it inside the same `billing_cycles` block.
+
+`subscription.close_to_renewal` moves with it: for these subscriptions the notice is counted from
+`scheduling_date` rather than from `next_at`, so it arrives four days earlier than it would for a
+card subscription with the same `next_at` and the same `renewal_notification_days`.
+
+When the scheduling date has already passed at the moment the subscription is created — the first
+debit is less than four days out — there is nothing to wait for and the instruction is scheduled
+straight away instead.
+
+<Note>
+**Allowlisted organizations only**
+
+The four-day scheduling lead and the `scheduling_date` field are enabled per organization. Where
+they are not enabled, `scheduling_date` is absent from every read and the instruction is scheduled
+on Yuno's standard renewal lead instead. Contact your Yuno representative to have it enabled.
+</Note>
+
+## The retry ladder
+
+A refused Pix debit is retried on the Pix rail's own terms rather than on the
+[Smart Retries](/docs/payment-features/subscriptions/retries) schedule. Yuno reports the ladder it
+applies on the subscription's `retries` object:
+
+| Field | Value on a Pix Automático subscription |
+|---|---|
+| `profile` | `PIX_AUTOMATIC` |
+| `max_attempts` | `3` |
+| `min_gap_hours` | `24` |
+| `until` | `billing_cycles.next_at` plus 7 days |
+
+`amount` reads `3` on these subscriptions rather than the card default of `6`, matching
+`max_attempts`. The four fields above are **absent, not `null`**, on `CARD` and on every other
+payment method.
+
+### `min_gap_hours` counts debit dates, not dispatches
+
+`min_gap_hours: 24` is the gap between **debit dates** — the ladder runs on **D, D+1, D+2, D+3**,
+the original debit on D and up to three retries on the three days after it. It is not a gap between
+dispatch attempts, and it does not mean Yuno waits 24 hours before sending the next instruction.
+
+When the provider refuses an instruction synchronously, the instruction for the next debit date can
+go out seconds later, so against a provider that rejects everything the whole ladder can be
+dispatched almost at once. That is the ladder working as specified, not a fault. Check the **debit
+dates** carried on the attempts — D, D+1, D+2, D+3 — not the times at which they were sent.
+
+### The ladder is not configurable
+
+`retries.retry_on_decline` is the one input these subscriptions accept, in both directions: `false`
+suppresses the ladder entirely and leaves a single attempt per cycle. Sending `amount`, `strategy`,
+`schedule`, `stop_on_hard_decline` or `cancel_on_exhausted_retries` on a Pix Automático subscription
+— at creation or on [Update Subscription](/reference/subscriptions/update-subscription) — is
+rejected:
+
+```json Configuring the Pix ladder
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "Retries for PIX_AUTOMATIC follow the Pix rail (max 3, 24 h apart, within 7 days of the debit date) and cannot be configured."
+  ]
+}
+```
+
+## Fields Yuno computes
+
+`billing_cycles.scheduling_date` and the `retries.stopped`, `retries.attempts_made`,
+`retries.outcome` and `retries.next_retry_at` snapshot are computed by Yuno from the subscription's
+own state and are ignored on create and update — sending them changes nothing, and the values you
+read back are always Yuno's. See
+[The Subscription Object](/reference/subscriptions/the-subscription-object) for the full field
+reference.

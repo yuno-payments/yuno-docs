@@ -7,6 +7,12 @@ description: "Documents the subscription object's attributes, including billing 
 
 This object represents a subscription that can be associated with a customer.
 
+<Note>
+**Fields Yuno computes**
+
+`billing_cycles.scheduling_date`, `retries.stopped`, `retries.attempts_made`, `retries.outcome` and `retries.next_retry_at` are computed by Yuno from the subscription's own state. They are read-only: sending them is ignored on [Create Subscription](/reference/subscriptions/create-subscription) and on [Update Subscription](/reference/subscriptions/update-subscription), and the values you read back are always Yuno's.
+</Note>
+
 <ParamField body="id" type="string">
   The unique identifier of the subscription (MAX 64 ; MIN 36).
 
@@ -187,6 +193,8 @@ This object represents a subscription that can be associated with a customer.
       The type of interval the subscription will have in time. If not set, always MONTH by default.
 
       Possible enum values: `DAY`, `WEEK`, `MONTH`, or `YEAR`.
+
+      On a subscription whose `payment_method.type` is `PIX_AUTOMATIC`, only `WEEK`, `MONTH` and `YEAR` with `value` `1` are accepted — every other combination is rejected with `400 INVALID_PARAMETERS`. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences).
     </ParamField>
 
     <ParamField body="value" type="int">
@@ -225,6 +233,12 @@ This object represents a subscription that can be associated with a customer.
       The date of the next payment for the subscription. Always present. When `current_period_end` is returned it is this same instant.
 
       Example: 2023-02-16T20:00:00.786342Z
+    </ParamField>
+
+    <ParamField body="scheduling_date" type="Timestamp">
+      When the debit instruction is handed to the Pix rail — exactly `next_at` minus four days. Present only on `PIX_AUTOMATIC` subscriptions that Yuno executes, and only for organizations the four-day scheduling lead is enabled for; absent — not `null` — everywhere else. Returned by [Retrieve Subscription](/reference/subscriptions/retrieve-subscription), on [List Subscriptions](/reference/subscriptions/list-subscriptions) items, and on subscription webhook payloads. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-scheduling-date).
+
+      Example: 2026-11-27T00:00:00Z
     </ParamField>
   </Expandable>
 </ParamField>
@@ -288,7 +302,9 @@ This object represents a subscription that can be associated with a customer.
     <ParamField body="type" type="enum">
       Type of the payment method.
 
-      Possible enum values: `CARD`, `PAYPAL_ENROLLMENT`
+      Possible enum values: `CARD`, `PAYPAL_ENROLLMENT`, `PIX_AUTOMATIC`
+
+      `PIX_AUTOMATIC` bills a Brazilian Pix Automático mandate, is matched case-insensitively, and accepts only the cadences the mandate can express — see [Pix Automático](/docs/payment-features/subscriptions/pix-automatico).
     </ParamField>
 
     <ParamField body="token" type="string">
@@ -459,6 +475,22 @@ This object represents a subscription that can be associated with a customer.
 
     <ParamField body="next_retry_at" type="Timestamp">
       When the next retry is scheduled. Present only while the subscription is `PAST_DUE` with retries still running; omitted otherwise.
+    </ParamField>
+
+    <ParamField body="profile" type="enum">
+      The fixed retry ladder the subscription follows instead of the configurable schedule. Always `PIX_AUTOMATIC`. Present only on `PIX_AUTOMATIC` subscriptions that Yuno executes; absent — not `null` — on every other payment method, together with `max_attempts`, `min_gap_hours` and `until` below. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).
+    </ParamField>
+
+    <ParamField body="max_attempts" type="int">
+      How many retries the Pix ladder runs. Always `3`, matching the `amount` reported for these subscriptions.
+    </ParamField>
+
+    <ParamField body="min_gap_hours" type="int">
+      Always `24` — the gap between the ladder's **debit dates**, not between dispatch attempts. The ladder's debit dates are `D`, `D+1`, `D+2` and `D+3`; when a debit is refused synchronously the next instruction can be dispatched moments later, so compare debit dates rather than send times.
+    </ParamField>
+
+    <ParamField body="until" type="Timestamp">
+      When the ladder stops — `billing_cycles.next_at` plus 7 days. It tracks the cycle, so it moves with `next_at` at every renewal.
     </ParamField>
   </Expandable>
 </ParamField>
