@@ -129,6 +129,14 @@ This object represents a subscription that can be associated with a customer.
   Possible values: `TRIAL`, `REGULAR`.
 </ParamField>
 
+<ParamField body="current_phase_end" type="Timestamp">
+  When the phase named by `current_phase` hands over to the next one — for a subscription in its trial, the moment it switches to the regular price. It is the end of the last billing period the phase covers, so on the final period of a trial it equals `current_period_end`.
+
+  `null` on subscriptions that are not inside a phase: those with no plan, and plan-linked ones that already left the ladder and are on the plan's regular price.
+
+  Example: 2023-03-16T20:00:00.786342Z
+</ParamField>
+
 <ParamField body="billing_phases" type="array of objects">
   The plan's leading TRIAL phases, snapshotted for this subscriber's country at creation time. Only present on plan-linked subscriptions whose plan has phases. Absent as well when the subscription was created by a [plan change](/reference/subscriptions/change-subscription-plan) with `skip_trial: true` — that subscription is plan-linked and its plan has phases, but it never enters the ladder.
 
@@ -230,11 +238,15 @@ This object represents a subscription that can be associated with a customer.
 </ParamField>
 
 <ParamField body="current_period_start" type="Timestamp">
-  The start of the billing period currently in progress — the timestamp of that cycle's first (non-retry) payment attempt. Zero-amount cycles, such as a free trial phase, open a period the same way even though no charge is sent.
+  The start of the billing period currently in progress: one billing cadence before `current_period_end`. It is derived from the schedule, not from payments, so a subscription reports its window from the moment it is created, before any charge has been attempted.
 
-  Returned only by [Retrieve Subscription](/reference/subscriptions/retrieve-subscription) — `GET /v1/subscriptions/{subscription_id}` — and only once the first cycle has been charged. Every other response omits the pair regardless of how many cycles have been charged: create, update, pause, resume, cancel and retry. It is never populated on subscription list responses or on webhook payloads.
+  The cadence used is the one that scheduled the window. Inside a plan phase — a trial, an introductory price, any phase of a [plan](/reference/plans/the-plan-object) — that is the phase's own step, so a 14-day trial reports 14-day periods even when the plan bills monthly. On the first cycle after a phase ends the window still measures the cadence of the phase that scheduled it.
 
-  On REST responses the keys are omitted entirely when unresolved; webhook payloads may carry them as `null`. Treat null and missing as the same thing.
+  It never falls before `availability.start_at`: the first period of a subscription starts when the subscription does.
+
+  Returned on [Retrieve Subscription](/reference/subscriptions/retrieve-subscription), on [List Subscriptions](/reference/subscriptions/list-subscriptions) and on subscription webhook payloads.
+
+  Terminal subscriptions report their final billing period rather than going `null` — a `CANCELED` or `COMPLETED` subscription keeps the window it last had, the same way `PAUSED` freezes its window instead of advancing it. `null`, together with `current_period_end`, only when the subscription has no recurring cadence at all. On REST responses the keys may be omitted entirely instead of sent as `null` — treat null and missing as the same thing.
 
   Example: 2023-01-16T20:00:00.912480Z
 </ParamField>
@@ -242,11 +254,9 @@ This object represents a subscription that can be associated with a customer.
 <ParamField body="current_period_end" type="Timestamp">
   The end of the billing period currently in progress, which is also when the next charge is scheduled. Always equal to `billing_cycles.next_at`.
 
-  This pair describes the period the subscription is **scheduled** into, not one that is necessarily paid for: if a cycle's charge failed and its retries are still running, the window has already moved to the period that charge was meant to open.
+  This pair describes the period the subscription is **scheduled** into, not one that is necessarily paid for: if a cycle's charge failed and its retries are still running, the window has already moved to the period that charge was meant to open. A `PAUSED` subscription keeps the window it was paused inside rather than advancing it, and a `CANCELED` or `COMPLETED` subscription keeps its final window rather than clearing it — in both cases `current_period_end` can be well in the past, so check `status` before reading it as an upcoming date.
 
-  Absent under the same conditions as `current_period_start`; the two are always present or absent together.
-
-  These values are only meaningful while the subscription is live. A `CANCELED` or `COMPLETED` subscription keeps whatever window it last had; `current_period_end` then refers to a charge that will not be taken, and on a completed fixed-term subscription it can fall before `current_period_start`.
+  `null` under the same conditions as `current_period_start`; the two are always returned together.
 
   Example: 2023-02-16T20:00:00.786342Z
 </ParamField>
