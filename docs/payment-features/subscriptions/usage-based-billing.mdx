@@ -19,7 +19,7 @@ Typical uses: an AI product that includes 10,000 tokens a month and bills the re
 1. **Meter** — a named, countable action: `ai_tokens`, `api_request`, `storage_gb`. It defines the `event_name` your systems send and the aggregation (`SUM`, `COUNT` or `LAST`). A meter has no price of its own — at most a `default_price` in USD that plans can inherit. See [The Meter Object](/reference/meters/the-meter-object).
 2. **Metered price** — the meter attached to a [plan](/docs/payment-features/subscriptions/plans): how many units are included per cycle (`credits`) and what each unit beyond that costs (`price_per_credit`, optionally per country). A plan can carry any number of metered prices next to its flat price. See [The Metered Price Object](/reference/meters/the-metered-price-object).
 3. **Subscription** — created on that plan as usual. It inherits every metered price; nothing changes in [Create Subscription](/reference/subscriptions/create-subscription).
-4. **Usage events** — one call per unit of work, carrying the `event_name`, the `subscription_id`, a `consumed_value` and your own `event_id` for idempotency. See [Report Usage Event](/reference/meters/report-usage-event).
+4. **Usage events** — one call per unit of work, carrying the `event_name`, the `subscription_id`, a `value` and your own `event_id` for idempotency. See [Report Usage Event](/reference/meters/report-usage-event).
 5. **Renewal** — at the end of the billing cycle, Yuno computes the billable quantity (`max(0, usage − credits)`) and adds `billable × price_per_credit` to the subscription's renewal charge.
 
 <Note>
@@ -30,7 +30,7 @@ Nothing here is specific to AI. A meter can count deliveries, minutes, messages,
 
 ## Quick start
 
-The example builds a "Max" plan at \$200/month that includes 10,000 AI tokens and bills \$0.002 per token beyond that. Requests use the standard `public-api-key` / `private-secret-key` headers, and every write request must carry a unique `X-Idempotency-Key`.
+The example builds a "Max" plan at \$200/month that includes 10,000 AI tokens and bills \$0.002 per token beyond that. Requests use the standard `public-api-key` / `private-secret-key` headers. `X-Idempotency-Key` is accepted on every request as elsewhere in the Yuno API, but usage events have their own dedicated dedup key — see [Idempotency and timestamps](#idempotency-and-timestamps).
 
 <Steps>
   <Step title="Create the meter">
@@ -109,7 +109,7 @@ The example builds a "Max" plan at \$200/month that includes 10,000 AI tokens an
   </Step>
 
   <Step title="Report usage as it happens">
-    Send one event per unit of work. `event_id` is your idempotency key; `consumed_value` is required for `SUM` and `LAST` meters and defaults to 1 for `COUNT`. The subscription must be `ACTIVE`, `TRIALING` or `PAST_DUE`.
+    Send one event per unit of work. `event_id` is your idempotency key; `value` is required for `SUM` and `LAST` meters and defaults to 1 for `COUNT`. The subscription must be `ACTIVE`, `TRIALING` or `PAST_DUE`.
 
     ```bash
     curl -X POST https://api-sandbox.y.uno/v1/subscriptions/meters/events \
@@ -121,7 +121,7 @@ The example builds a "Max" plan at \$200/month that includes 10,000 AI tokens an
         "event_id": "11111111-1111-1111-1111-111111111111",
         "event_name": "ai_tokens",
         "subscription_id": "33333333-3333-3333-3333-333333333333",
-        "consumed_value": 1500,
+        "value": 1500,
         "occurred_at": "2026-08-18T09:00:04Z",
         "metadata": [{ "key": "model", "value": "llm-large" }]
       }'
@@ -136,12 +136,12 @@ The example builds a "Max" plan at \$200/month that includes 10,000 AI tokens an
       "event_name": "ai_tokens",
       "meter_id": "55555555-5555-5555-5555-555555555555",
       "subscription_id": "33333333-3333-3333-3333-333333333333",
-      "consumed_value": 1500,
+      "value": 1500,
       "received_at": "2026-08-18T09:00:04.000000Z"
     }
     ```
 
-    Retrying the same request (same `event_id`) returns this same response and never counts the 1,500 tokens twice — even if the retry carries a different `consumed_value`, the original is kept.
+    Retrying the same request (same `event_id`) returns this same response and never counts the 1,500 tokens twice — even if the retry carries a different `value`, the original is kept.
   </Step>
 </Steps>
 
@@ -151,16 +151,16 @@ The aggregation is fixed when you create the meter and decides what a cycle's qu
 
 <Tabs>
   <Tab title="SUM — consumption">
-    Adds every event's `consumed_value`. Report the amount consumed by each unit of work.
+    Adds every event's `value`. Report the amount consumed by each unit of work.
 
     ```json
-    { "event_id": "resp_8f3k2", "event_name": "ai_tokens", "subscription_id": "3333…", "consumed_value": 1280 }
+    { "event_id": "resp_8f3k2", "event_name": "ai_tokens", "subscription_id": "3333…", "value": 1280 }
     ```
 
     Three events of 1,280 / 640 / 2,100 tokens → cycle quantity 4,020 tokens. Use for tokens, minutes transcribed, messages sent, deliveries completed.
   </Tab>
   <Tab title="COUNT — per call">
-    Counts events; `consumed_value` is ignored (each event counts as 1, so you can omit it).
+    Counts events; `value` is ignored (each event counts as 1, so you can omit it).
 
     ```json
     { "event_id": "req_01J5Y3Q9K8ZC5G6E4Y2W7X8N9M", "event_name": "api_request", "subscription_id": "3333…" }
@@ -169,10 +169,10 @@ The aggregation is fixed when you create the meter and decides what a cycle's qu
     1,432 events → cycle quantity 1,432 requests. Use for API calls, jobs, exports.
   </Tab>
   <Tab title="LAST — gauge">
-    Keeps the most recent `consumed_value` in the cycle by `occurred_at`. Report the current level, not the delta.
+    Keeps the most recent `value` in the cycle by `occurred_at`. Report the current level, not the delta.
 
     ```json
-    { "event_id": "storage-2026-08-18T09:00-sub-3333", "event_name": "storage_gb", "subscription_id": "3333…", "consumed_value": 128.4, "occurred_at": "2026-08-18T09:00:00Z" }
+    { "event_id": "storage-2026-08-18T09:00-sub-3333", "event_name": "storage_gb", "subscription_id": "3333…", "value": 128.4, "occurred_at": "2026-08-18T09:00:00Z" }
     ```
 
     Reports of 96.0 → 110.2 → 128.4 GB → cycle quantity 128.4 GB. Use for storage held, seats in use, active devices.
@@ -187,13 +187,55 @@ A metered price has three pricing knobs:
 - **`price_per_credit`** — the price of each unit beyond `credits`, in the plan's base currency. On a USD plan you can omit it if the meter has a `default_price`; the meter's default then applies and the metered price is returned with `price_per_credit: null`. On a non-USD plan, or when the meter has no default, it is required. The currency must always match the plan's `base_amount` currency.
 - **`country_prices`** — optional per-unit prices by subscriber country (one entry per country), same shape as the plan's own `country_prices`. A subscriber whose country is not listed pays `price_per_credit`. The subscriber's country comes from the subscription — usage events carry no `country` or `account_id` — so `country_prices` are resolved automatically per subscriber.
 
-`pricing_strategy` selects how overage is rated:
+`pricing_strategy` selects how overage is rated, and each strategy carries its own config fields at attach time:
 
-- **`PER_UNIT`** — billable units × unit price (`price_per_credit` or the subscriber's `country_prices` entry). The default choice for tokens, requests, minutes.
-- **`PACKAGE`** — usage is billed in bundles of N units; a partial bundle counts as a full one.
-- **`TIERED`** — graduated tiers: each band of usage is billed at its own rate.
+<Tabs>
+  <Tab title="PER_UNIT — flat rate">
+    Billable units × `price_per_credit` (or the subscriber's `country_prices` entry). The default choice for tokens, requests, minutes.
 
-You can change `credits`, `price_per_credit` and `country_prices` on a live plan with [Update Plan Meter](/reference/meters/update-plan-meter); the new values apply to usage rated from the next billing cycle onward. The plan's flat price stays [immutable](/docs/payment-features/subscriptions/plans) as before.
+    ```json
+    { "pricing_strategy": "PER_UNIT", "credits": 10000, "price_per_credit": { "currency": "USD", "value": 0.002 } }
+    ```
+  </Tab>
+  <Tab title="PACKAGE — bundles">
+    Billable units are rounded **up** to the nearest whole `package_size` and billed at `package_price` per bundle — a partial bundle is billed as a full one. `package_size` accepts decimals, including scientific notation (`1e3` → `1000`); the stored value is rounded to 4 decimal places.
+
+    ```json
+    {
+      "pricing_strategy": "PACKAGE",
+      "credits": 10000,
+      "package_size": 1000,
+      "package_price": { "currency": "USD", "value": 1.50 },
+      "package_country_prices": [{ "country": "BR", "amount": { "currency": "BRL", "value": 7.50 } }]
+    }
+    ```
+
+    Example: 10,000 included + package of 1,000 at \$1.50 → a subscriber at 13,200 tokens has 3,200 billable units → `ceil(3200 / 1000) = 4` bundles → \$6.00 usage.
+  </Tab>
+  <Tab title="TIERED — graduated">
+    Billable units are split across ascending bands (`tiers[]`), each priced at its own `rate` — usage is charged at the rate of the band it falls in, marginally (the first band's units at the first band's rate, the next band's units at the next rate, and so on), not at a single blended rate. Every tier but the last needs an `up_to` upper bound (**exclusive of the previous tier, inclusive of itself**, strictly ascending); the last tier's `up_to` must be `null` (unbounded). All tiers in one metered price must be priced in the same currency (or the same set of countries, for `country_rates`).
+
+    ```json
+    {
+      "pricing_strategy": "TIERED",
+      "credits": 0,
+      "tiers": [
+        { "up_to": 1000, "rate": { "currency": "USD", "value": 0.01 } },
+        { "up_to": 5000, "rate": { "currency": "USD", "value": 0.008 } },
+        { "up_to": null, "rate": { "currency": "USD", "value": 0.005 } }
+      ]
+    }
+    ```
+
+    Example: 6,000 billable units → 1,000 at \$0.01 + 4,000 at \$0.008 + 1,000 at \$0.005 = \$47.00.
+  </Tab>
+</Tabs>
+
+For non-`PER_UNIT` strategies, the meter must be priced in every currency the plan supports — a plan with `country_prices` in currencies the metered price doesn't cover is rejected (`PLAN_METER_MISSING_CURRENCY`), and every priced currency must match one the plan actually uses (`PLAN_METER_BASE_CURRENCY_MISMATCH`). All computed usage amounts (any strategy) round half-up to 4 decimal places.
+
+<Warning>
+**Pricing config is set once, at attach time.** `credits`, `price_per_credit` and `country_prices` can be updated on a live `PER_UNIT` metered price with [Update Plan Meter](/reference/meters/update-plan-meter) — the new values apply to usage rated from the next billing cycle onward. `package_size`, `package_price`, `package_country_prices` and `tiers` cannot be changed after attach: switching a metered price's `pricing_strategy` validates that the request carries the target strategy's required config and clears the previous strategy's now-inapplicable fields — a switch with no config, or with the wrong strategy's config, is rejected. There is no detach endpoint, so to correct a `PACKAGE`/`TIERED` config you cannot re-attach the same meter — create a new meter with a new `event_name`, attach it with the corrected config, point your integration at the new `event_name`, and archive the old meter. The plan's flat price stays [immutable](/docs/payment-features/subscriptions/plans) as before.
+</Warning>
 
 ## What happens at renewal
 
@@ -214,7 +256,7 @@ Example, on the Max plan (10,000 tokens included, \$0.002 per extra token): a su
 
 - **`event_id` is required and is your idempotency key.** Make it unique per event — a UUID, or the id of the request/response/job it came from — and reuse it on every retry. Yuno stores the first event under that id and answers every replay with the same response, including the original `value` (a different `value` on the retry is discarded). Usage is never double counted, however many times you retry. A request without `event_id` is rejected with `400`.
 - **Report close to real time**, but you can backdate. `occurred_at` defaults to the receive time (returned as `received_at`) and can be up to **35 days** in the past; older events are rejected with `400`. The `occurred_at` (not the receive time) decides which billing cycle the event lands in.
-- **`X-Idempotency-Key`** is required on every write request of this feature and works as on the rest of the Yuno API (same key + same body → same response). It protects the HTTP call; `event_id` is what protects billing across calls, so send both.
+- **`X-Idempotency-Key`** is accepted, as on the rest of the Yuno API (same key + same body → same response), but it is optional here and not what dedupes usage — `event_id` is the mechanism that protects billing, and it's the one that's required.
 - **One event per request.** Aggregate on your side if you produce many small events (for example, sum tokens per response rather than per token) — a `SUM` meter is designed for that.
 - **The subscription must be active.** `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions accept usage (a subscription in payment retries keeps metering); events for a `PAUSED`, `CANCELED` or `COMPLETED` subscription are rejected with `400 SUBSCRIPTION_NOT_ACTIVE` and nothing is counted.
 
@@ -228,12 +270,16 @@ Validation is synchronous: a rejected event returns `400` immediately (lookup fa
 | `subscription_id` unknown | `400 SUBSCRIPTION_NOT_FOUND` |
 | Subscription is `PAUSED`, `CANCELED`, `COMPLETED` or otherwise not active | `400 SUBSCRIPTION_NOT_ACTIVE` — "The subscription is not active" |
 | Usage-based billing not enabled for your organization | `403 PRODUCT_NOT_ENABLED` |
-| `consumed_value` missing on a `SUM`/`LAST` meter | `400 INVALID_PARAMETERS` — "The consumed_value is required for a SUM meter" / "…for a LAST meter" |
+| `value` missing on a `SUM`/`LAST` meter | `400 INVALID_PARAMETERS` — "The value is required for a SUM meter" / "…for a LAST meter" |
 | `occurred_at` older than 35 days | `400 INVALID_PARAMETERS` |
 | Second meter with the same `event_name` (even if the first is archived) | `409 METER_EVENT_NAME_CONFLICT` |
 | Same meter attached to a plan twice | `409 PLAN_METER_ALREADY_ASSIGNED` |
 | Attaching an archived (`INACTIVE`) meter | `400 METER_NOT_FOUND` |
 | `price_per_credit` in the wrong currency / missing on a non-USD plan | `400 INVALID_PARAMETERS` |
+| `package_size`/`package_price`/`package_country_prices`/`tiers` sent for the wrong `pricing_strategy` (or on Update Plan Meter at all today) | `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED` — "Package and tier pricing configuration is not supported for this meter's pricing strategy." |
+| `tiers[]` bounds not strictly ascending, last tier's `up_to` not `null`, or an earlier tier's `up_to` missing | `400 INVALID_PARAMETERS` |
+| A currency the plan supports has no matching `country_prices`/`package_country_prices`/`country_rates` entry on a non-`PER_UNIT` metered price | `400 PLAN_METER_MISSING_CURRENCY` |
+| `package_price`/tier `rate` currency doesn't match the plan's base currency | `400 PLAN_METER_BASE_CURRENCY_MISMATCH` |
 
 The full list, with every message, is on [Meter Error Codes](/reference/meters/meter-error-codes).
 
