@@ -16,6 +16,10 @@ Calling this endpoint will reactivate a subscription. It will change a subscript
 
 Sending **no body at all** is neither of those two, and is the behaviour subscriptions have today: a billing date still in the future is left exactly where it is, and one that already passed moves one billing period from the resume. Existing integrations that call this endpoint without a body are unaffected.
 
+On a monthly subscription that period lands on the subscription's own billing day, not on the day of the month you resumed — so for most monthly subscriptions the no-body result is the same date `KEEP` would give, and the field is not needed to get it.
+
+There is one case where it matters, and it is the reason to send `KEEP`. Without the field, resuming a monthly subscription after its billing day has passed schedules **next** month's billing day even when this month's is still ahead, so a whole billing period can be skipped. A subscription billing on the 25th, paused with an August 25 charge outstanding and resumed on September 20, goes to **October 25** with no body — September 25 is passed over — and to **September 25** with `KEEP`.
+
 No charge is issued during the call under any of the three. **Only the anchor moves**: `billing_cycles.current`, `total` and `paid`, the retry configuration, and any pending plan change all survive untouched.
 
 `billing_cycle_behavior` is **write-only** — it is accepted on the request and never echoed in any response.
@@ -23,7 +27,7 @@ No charge is issued during the call under any of the three. **Only the anchor mo
 
 ### KEEP and RESTART compared
 
-A monthly subscription anchored on the 1st is paused on August 15 and resumed on September 20. The August 1 anchor fell due during the pause, so the two values diverge:
+A monthly subscription anchored on the 1st is paused on August 15 and resumed on September 20. Its September 1 anchor fell due while it was paused, so the two values diverge:
 
 <CodeGroup>
 ```json KEEP
@@ -40,6 +44,8 @@ A monthly subscription anchored on the 1st is paused on August 15 and resumed on
 // re-anchored to the resume date plus one month
 ```
 </CodeGroup>
+
+Sending no body in this scenario also gives October 1 — one month past the resume, landing on the subscription's billing day — so here `KEEP` only makes explicit what already happens.
 
 Had the subscription been resumed on August 5, while the September 1 anchor was still in the future, `KEEP` would have left it on September 1 and `RESTART` would have moved it to September 5.
 
