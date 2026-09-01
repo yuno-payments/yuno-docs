@@ -290,7 +290,7 @@
                   "plan_change": {
                     "type": "object",
                     "nullable": true,
-                    "description": "Schedules a move to another plan, effective at the next billing cycle. The subscription must be ACTIVE or TRIALING and already on a plan; the target plan must be ACTIVE. Only one change can be pending at a time. Send `\"plan_change\": null` to undo a pending change before it applies. `amount`, `frequency`, `billing_date` and `country` are managed by the plan and cannot be sent for a plan-linked subscription — combining any of them with `plan_change` returns 400.",
+                    "description": "Moves the subscription to another plan. `effective: NEXT_BILLING_CYCLE` (the default) schedules the change for the next renewal — no proration, no mid-cycle charge. `effective: IMMEDIATE` applies the change in place, in this call: the subscription keeps its `id`, the new plan's price bills from the next charge, and `billing_cycle_behavior` decides what happens to the billing anchor. The subscription must be ACTIVE or TRIALING and already on a plan; the target plan must be ACTIVE. For scheduled changes only one can be pending at a time — send `\"plan_change\": null` to undo it before it applies (an IMMEDIATE change while another is pending returns 409). `amount`, `frequency`, `billing_date` and `country` are managed by the plan and cannot be sent for a plan-linked subscription — combining any of them with `plan_change` returns 400.",
                     "required": [
                       "plan_id"
                     ],
@@ -301,15 +301,37 @@
                       },
                       "effective": {
                         "type": "string",
-                        "enum": ["NEXT_BILLING_CYCLE"],
-                        "description": "When the change applies. NEXT_BILLING_CYCLE is the default and only supported value: the current cycle bills the current plan's price, the next one bills the new plan's."
+                        "enum": [
+                          "NEXT_BILLING_CYCLE",
+                          "IMMEDIATE"
+                        ],
+                        "description": "When the change applies. NEXT_BILLING_CYCLE (default): the current cycle bills the current plan's price, the next one bills the new plan's. IMMEDIATE: the subscription moves to the target plan in this call - unlike a scheduled change, this also works in the final billing cycle."
                       },
                       "phases_behavior": {
                         "type": "string",
-                        "enum": ["START_FROM_REGULAR", "HONOR_PHASES"],
+                        "enum": [
+                          "START_FROM_REGULAR",
+                          "HONOR_PHASES"
+                        ],
                         "description": "What happens when the target plan has phases. START_FROM_REGULAR (default) enters the regular phase directly — no re-lived trials. HONOR_PHASES enters through the target plan's phase schedule."
+                      },
+                      "billing_cycle_behavior": {
+                        "type": "string",
+                        "enum": [
+                          "KEEP",
+                          "RESTART"
+                        ],
+                        "description": "What happens to the billing anchor when the plan changes in place with `effective: IMMEDIATE`. KEEP (default — omitting the field behaves identically): the next charge date is untouched. RESTART: the next charge re-anchors to the moment of the change plus the new plan's frequency — the anchor alone resets; billing cycle counters, the retry configuration and the subscription status survive. RESTART requires `effective: IMMEDIATE` and returns 400 with a scheduled change; KEEP alongside a scheduled change is accepted and simply schedules the change as usual. Write-only: this field is never echoed in any response."
                       }
                     }
+                  },
+                  "billing_cycle_behavior": {
+                    "type": "string",
+                    "enum": [
+                      "KEEP",
+                      "RESTART"
+                    ],
+                    "description": "For subscriptions that are not linked to a plan: re-anchors billing in the same way as `plan_change.billing_cycle_behavior`, typically combined with a `frequency` change in the same call (e.g. monthly to yearly, restarting the cycle from today). KEEP (default): the next charge date is untouched. RESTART: re-anchors the next charge to now plus the (possibly updated) frequency; the anchor alone resets — cycle counters, the retry configuration and the subscription status survive. On a subscription that has not started yet (CREATED — accepted here, unlike `plan_change`), the anchor clamps to its start date. Rules: cannot be combined with `plan_change` (400 — use the nested field); on a plan-linked subscription this field returns 400 (managed through `plan_change`); a PAUSED subscription returns 409 INVALID_SUBSCRIPTION_STATUS. Write-only: never echoed in any response."
                   },
                   "metadata": {
                     "type": "object",
@@ -517,19 +539,27 @@
                         },
                         "direction": {
                           "type": "string",
-                          "enum": ["UPGRADE", "DOWNGRADE"],
+                          "enum": [
+                            "UPGRADE",
+                            "DOWNGRADE"
+                          ],
                           "description": "Whether the target plan is an upgrade or a downgrade. Informational only.",
                           "example": "UPGRADE"
                         },
                         "effective": {
                           "type": "string",
-                          "enum": ["NEXT_BILLING_CYCLE"],
+                          "enum": [
+                            "NEXT_BILLING_CYCLE"
+                          ],
                           "description": "When the change applies.",
                           "example": "NEXT_BILLING_CYCLE"
                         },
                         "phases_behavior": {
                           "type": "string",
-                          "enum": ["START_FROM_REGULAR", "HONOR_PHASES"],
+                          "enum": [
+                            "START_FROM_REGULAR",
+                            "HONOR_PHASES"
+                          ],
                           "description": "What happens when the target plan has phases.",
                           "example": "START_FROM_REGULAR"
                         },
