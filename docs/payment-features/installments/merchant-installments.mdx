@@ -27,6 +27,28 @@ When you use Yuno's SDK, Yuno is responsible for presenting to the customer the 
 
 2. After enabling the installments, you need to create an installment plan using the [Create Installments Plan](/reference/create-installments-plan) endpoint. When creating a plan, you will specify the accepted currency, amounts, card brands, dates, etc. Once the plan is active, Yuno applies it automatically to matching payments and presents the corresponding installment options to the customer.
 
+### Issuer-based plan targeting
+
+When you create an installment plan, you can restrict it to one or more specific issuing banks using the `issuers` field. An empty `issuers` list means the plan applies to all cards regardless of the issuing bank — this is the default and preserves the existing behavior for plans created without issuers.
+
+Yuno resolves the card issuer from the BIN (first 6 digits of the card number) and matches it against your plan's issuer list. The matching is case-insensitive — `"santander"` and `"SANTANDER"` are treated the same. You can specify up to 100 issuers per plan.
+
+*Example:* A plan with `issuers: ["SANTANDER", "HSBC"]` only shows its installment terms when the customer's card is issued by Santander or HSBC. Cards from other banks skip the plan entirely and see only the terms from plans that target them (or from universal plans).
+
+#### Combining multiple plans
+
+When more than one merchant plan matches a customer's card, Yuno merges all the matching terms into a single response:
+
+* Installment counts are deduplicated — a 6-month term appears only once, even if multiple plans offer it.
+* Terms are sorted from lowest to highest installment count.
+* When the same count exists in both an issuer-targeted plan and a universal plan, the issuer-targeted version wins. This lets you define general fallback terms while giving specific banks tailored offers.
+
+*Example:* You have one universal plan with 3 and 6 months, and a Santander-only plan with 6, 9, and 12 months. A Santander card sees 3 (from the universal plan), 6, 9, and 12 months — Santander's 6 replaces the universal 6. A card from another bank sees only 3 and 6 months from the universal plan.
+
+<Tip>
+Issuer-based targeting is configured in the Dashboard when creating or editing an installment plan. The issuer field is a multi-select — you can pick any number of banks. Leave it empty to keep the plan universal.
+</Tip>
+
 <Warning>
 **Secure Fields SDK Integration**
 
