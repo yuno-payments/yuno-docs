@@ -7,6 +7,12 @@ description: "Documents the subscription object's attributes, including billing 
 
 This object represents a subscription that can be associated with a customer.
 
+<Note>
+**Fields Yuno computes**
+
+`billing_cycles.scheduling_date`, `retries.stopped`, `retries.attempts_made`, `retries.outcome` and `retries.next_retry_at` are computed by Yuno from the subscription's own state. They are read-only: sending them is ignored on [Create Subscription](/reference/subscriptions/create-subscription) and on [Update Subscription](/reference/subscriptions/update-subscription), and the values you read back are always Yuno's.
+</Note>
+
 <ParamField body="id" type="string">
   The unique identifier of the subscription (MAX 64 ; MIN 36).
 
@@ -195,6 +201,8 @@ This object represents a subscription that can be associated with a customer.
       The type of interval the subscription will have in time. If not set, always MONTH by default.
 
       Possible enum values: `DAY`, `WEEK`, `MONTH`, or `YEAR`.
+
+      On a subscription whose `payment_method.type` is `PIX_AUTOMATIC`, only `WEEK`, `MONTH` and `YEAR` with `value` `1` are accepted — every other combination is rejected with `400 INVALID_PARAMETERS`. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences).
     </ParamField>
 
     <ParamField body="value" type="int">
@@ -233,6 +241,12 @@ This object represents a subscription that can be associated with a customer.
       The date of the next payment for the subscription. Always present. When `current_period_end` is returned it is this same instant.
 
       Example: 2023-02-16T20:00:00.786342Z
+    </ParamField>
+
+    <ParamField body="scheduling_date" type="Timestamp">
+      When the debit instruction is handed to the Pix rail — exactly `next_at` minus four days. Present only on `PIX_AUTOMATIC` subscriptions that Yuno executes, and only for organizations the four-day scheduling lead is enabled for; absent — not `null` — everywhere else. Returned by [Retrieve Subscription](/reference/subscriptions/retrieve-subscription), on [List Subscriptions](/reference/subscriptions/list-subscriptions) items, and on subscription webhook payloads. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-scheduling-date).
+
+      Example: 2026-11-27T00:00:00Z
     </ParamField>
   </Expandable>
 </ParamField>
@@ -298,7 +312,9 @@ This object represents a subscription that can be associated with a customer.
     <ParamField body="type" type="enum">
       Type of the payment method.
 
-      Possible enum values: `CARD`, `PAYPAL_ENROLLMENT`
+      Possible enum values: `CARD`, `PAYPAL_ENROLLMENT`, `PIX_AUTOMATIC`
+
+      `PIX_AUTOMATIC` bills a Brazilian Pix Automático mandate, is matched case-insensitively, and accepts only the cadences the mandate can express — see [Pix Automático](/docs/payment-features/subscriptions/pix-automatico).
     </ParamField>
 
     <ParamField body="token" type="string">
@@ -449,6 +465,157 @@ This object represents a subscription that can be associated with a customer.
       When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of advancing to the next cycle. `cancellation_source` is set to `RETRIES_EXHAUSTED` and a single `SUBSCRIPTION.CANCEL` webhook is emitted. Defaults to false. Create-only: it cannot be changed later — [Update Subscription](/reference/subscriptions/update-subscription) rejects a different value with `400`. The cancellation itself is final — see [Retries](/docs/payment-features/subscriptions/retries#canceling-a-subscription-when-retries-run-out).
 
       Example: true
+    </ParamField>
+
+    <ParamField body="stopped" type="bool">
+      Whether retries for the current cycle have stopped. Present only while the subscription is `PAST_DUE` or has `cancel_scheduled` pending; omitted otherwise.
+
+      <Note>
+        Whether this field (and `attempts_made`, `outcome`, `next_retry_at` below) keeps reporting the last cycle's retry snapshot once the subscription reaches `CANCELED`, or is omitted at that point, is pending product confirmation — verify against a live response before depending on it.
+      </Note>
+    </ParamField>
+
+    <ParamField body="attempts_made" type="int">
+      Retry attempts made for the current cycle so far. Present only while the subscription is `PAST_DUE` or has `cancel_scheduled` pending; omitted otherwise.
+    </ParamField>
+
+    <ParamField body="outcome" type="enum">
+      How the current cycle's retries resolved. One of `RECOVERED`, `EXHAUSTED`, or `ABANDONED` (retries stopped by a cancellation before exhausting on their own). Present only while the subscription is `PAST_DUE` or has `cancel_scheduled` pending; omitted otherwise.
+    </ParamField>
+
+    <ParamField body="next_retry_at" type="Timestamp">
+      When the next retry is scheduled. Present only while the subscription is `PAST_DUE` with retries still running; omitted otherwise.
+    </ParamField>
+
+    <ParamField body="profile" type="enum">
+      The fixed retry ladder the subscription follows instead of the configurable schedule. Always `PIX_AUTOMATIC`. Present only on `PIX_AUTOMATIC` subscriptions that Yuno executes; absent — not `null` — on every other payment method, together with `max_attempts`, `min_gap_hours` and `until` below. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).
+    </ParamField>
+
+    <ParamField body="max_attempts" type="int">
+      How many retries the Pix ladder runs. Always `3`, matching the `amount` reported for these subscriptions.
+    </ParamField>
+
+    <ParamField body="min_gap_hours" type="int">
+      Always `24` — the gap between the ladder's **debit dates**, not between dispatch attempts. The ladder's debit dates are `D`, `D+1`, `D+2` and `D+3`; when a debit is refused synchronously the next instruction can be dispatched moments later, so compare debit dates rather than send times.
+    </ParamField>
+
+    <ParamField body="until" type="Timestamp">
+      When the ladder stops — `billing_cycles.next_at` plus 7 days. It tracks the cycle, so it moves with `next_at` at every renewal.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="cancel_scheduled" type="object">
+  The cancellation scheduled for this subscription, or `null` when none is pending. Schedule one with the `schedule` block on `POST /v1/subscriptions/{id}/cancel`; undo it with `"schedule": null`. See [Cancel Subscription](/reference/subscriptions/cancel-subscription).
+
+  <Expandable title="properties">
+    <ParamField body="mode" type="enum">
+      `AFTER_CYCLES` or `AT_DATE`, matching whichever of `after_cycles`/`at` was sent when the schedule was created.
+    </ParamField>
+
+    <ParamField body="after_cycles" type="int">
+      The number of billing cycles that were requested, when `mode` is `AFTER_CYCLES`. `null` when `mode` is `AT_DATE`.
+    </ParamField>
+
+    <ParamField body="at" type="Timestamp">
+      The resolved date and time the cancellation will fire.
+    </ParamField>
+
+    <ParamField body="requested_at" type="Timestamp">
+      When the cancellation was scheduled.
+    </ParamField>
+
+    <ParamField body="past_due_behavior" type="enum">
+      `EXHAUST_RETRIES` (default) or `SKIP_RETRIES` — what the schedule does if the subscription is `PAST_DUE` when it would otherwise fire. See [Cancel Subscription](/reference/subscriptions/cancel-subscription#behavior-while-retries-are-running).
+
+      <Note>
+        This echo is pending product confirmation as a stable external contract — see the note on [Cancel Subscription](/reference/subscriptions/cancel-subscription#behavior-while-retries-are-running).
+      </Note>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="unpaid_cycle" type="object">
+  The current billing cycle, when it is `PAST_DUE` and has not settled. Omitted — not `null` — for every other state.
+
+  <Note>
+    Whether this field keeps reporting the unsettled cycle once the subscription reaches `CANCELED`, or is omitted at that point, is pending product confirmation — verify against a live response before depending on it.
+  </Note>
+
+  <Expandable title="properties">
+    <ParamField body="cycle_number" type="int">
+      The billing cycle that is unpaid, matching `billing_cycles.current` at the time it was computed.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      The amount due for the unpaid cycle. Same shape as the subscription-level `amount`.
+    </ParamField>
+
+    <ParamField body="attempts" type="int">
+      Total charge attempts made for this cycle so far, including the original attempt.
+    </ParamField>
+
+    <ParamField body="last_failure_code" type="string">
+      The decline/failure code from the most recent attempt. `null` if unavailable.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="refund" type="object">
+  The refund quote from the last immediate cancellation, or `null`/omitted when none was ever
+  computed. Requested with the `refund` mode on `POST /v1/subscriptions/{id}/cancel` — see
+  [Cancel Subscription](/reference/subscriptions/cancel-subscription#refund-on-immediate-cancel).
+  Once computed, it persists and keeps appearing on every later read of the subscription.
+
+  <Expandable title="properties">
+    <ParamField body="mode" type="enum">
+      `PRORATED`, `FULL`, or `CUSTOM` — echoes what was requested.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      The computed (or `CUSTOM`-echoed) refund amount. Same shape as the subscription-level
+      `amount`.
+    </ParamField>
+
+    <ParamField body="unused_days" type="int">
+      Days of the billing cycle treated as unused. For `FULL`, equals `period_days` — the whole
+      cycle counts as unused.
+    </ParamField>
+
+    <ParamField body="period_days" type="int">
+      The billing cycle's total length in days.
+    </ParamField>
+
+    <ParamField body="basis" type="object">
+      What the refund was computed against.
+
+      <Expandable title="properties">
+        <ParamField body="billing_cycle" type="int">
+          The billing cycle the refund was computed against.
+        </ParamField>
+
+        <ParamField body="charged_amount" type="object">
+          The amount actually charged for that cycle — the refund's ceiling.
+        </ParamField>
+
+        <ParamField body="payment_id" type="string">
+          The captured payment's own id. `null` for a `$0`-phase quote with no payment to
+          reference.
+        </ParamField>
+
+        <ParamField body="charged_at" type="Timestamp">
+          When that payment was captured. `null` for a `$0`-phase quote with no payment to
+          reference.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="execution" type="string">
+      Always `"MERCHANT"` — Yuno computes the quote, you execute the refund.
+    </ParamField>
+
+    <ParamField body="quoted_at" type="Timestamp">
+      When this quote was computed.
     </ParamField>
   </Expandable>
 </ParamField>

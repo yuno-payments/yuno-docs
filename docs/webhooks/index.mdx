@@ -95,22 +95,24 @@ Yuno sends event notifications for various activities within the payment ecosyst
 | `subscription.past_due`         | Sent when a recurring charge fails and the subscription enters `PAST_DUE`. Only emitted for accounts where the status is enabled. See [Subscription Status](/reference/subscriptions/status-subscriptions). |
 | `subscription.pause`            | Sent when a subscription is paused.                                                                                  |
 | `subscription.resume`           | Sent when a paused subscription is resumed.                                                                          |
-| `subscription.cancel`           | Sent when a subscription is canceled. Once canceled it is terminated and cannot be reactivated.                      |
+| `subscription.cancel`           | Sent when a subscription is canceled. Once canceled it is terminated and cannot be reactivated. Carries `refund` when a refund quote was computed for the cancellation. |
 | `subscription.complete`         | Sent when a subscription reaches its end date or total billing cycles and transitions to `COMPLETED`.               |
-| `subscription.close_to_renewal` | Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification_days`.                             |
+| `subscription.close_to_renewal` | Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification_days`. On a `PIX_AUTOMATIC` subscription that Yuno executes it is counted from `billing_cycles.scheduling_date` instead of `next_at`, so it arrives four days earlier — see [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-scheduling-date). |
 | `subscription.cycle_executed`   | Sent for plan-based subscriptions when a `$0` cycle is executed — a trial cycle or a fully discounted one. These cycles produce no `payment.purchase` webhook, so this event is the receipt for them. Carries `cycle`, `reason` (`TRIAL` or `FULL_DISCOUNT`), `phase` and a `breakdown`. |
 | `subscription.phase_started`    | Sent for plan-based subscriptions when a new billing phase begins, including the first one. Carries `phase` and `previous_phase`.                     |
 | `subscription.phase_completed`  | Sent for plan-based subscriptions when the previous billing phase ends, immediately before `subscription.phase_started` for the new one. Not sent for the first phase, which has no predecessor. |
 | `subscription.plan_change_scheduled` | Sent when a plan change is scheduled for the next billing cycle via `PATCH /v1/subscriptions/{id}`.             |
 | `subscription.plan_change_canceled` | Sent when a pending plan change is undone by the merchant (`MERCHANT_UNDO`) or aborted because the target plan was canceled (`TARGET_PLAN_CANCELED`). Not sent when the subscription itself is canceled — only `subscription.cancel` fires then. |
 | `subscription.plan_changed`     | Sent when a plan change takes effect — at the renewal for a scheduled change, or at the moment of the call for one sent with `plan_change.effective: IMMEDIATE` (no `plan_change_scheduled` fires in that case). Either way the subscription keeps the same `code`. `POST /v1/subscriptions/{id}/plan` instead replaces the subscription: the payload carries a new `code` with `previous_subscription_id` set, and a separate `subscription.cancel` (`cancellation_source: PLAN_CHANGE`) fires for the original. |
+| `subscription.cancel_scheduled` | Sent when a cancellation is scheduled for a future date or billing cycle via `POST /v1/subscriptions/{id}/cancel`. See [Cancel Subscription](/reference/subscriptions/cancel-subscription). |
+| `subscription.cancel_schedule_canceled` | Sent when a pending scheduled cancellation is undone via `"schedule": null` on the same endpoint. Not sent when the schedule instead fires — `subscription.cancel` fires then. |
 
 <Note>
 Each renewal charge is delivered as a `payment.purchase` webhook tied to the subscription, with the outcome (success or decline) carried in the `status`/`sub_status` fields. `$0`/trial cycles emit no payment webhook — for plan-based subscriptions they are reported as `subscription.cycle_executed` instead. There is no `subscription.error` event: a failed renewal is signaled by `subscription.past_due` where that status is enabled, and by the `payment.purchase` webhook everywhere.
 </Note>
 
 <Note>
-Treat the plan-change events as notifications, not as the source of truth. Reconcile against `GET /v1/subscriptions/{id}` — `pending_plan_change` for a scheduled change and `plan_id` for an applied one — rather than relying on webhook delivery alone.
+Treat the plan-change events as notifications, not as the source of truth. Reconcile against `GET /v1/subscriptions/{id}` — `pending_plan_change` for a scheduled change and `plan_id` for an applied one — rather than relying on webhook delivery alone. The same applies to the cancel-scheduling events: reconcile against `cancel_scheduled`.
 </Note>
 
 ### Enrollment events
