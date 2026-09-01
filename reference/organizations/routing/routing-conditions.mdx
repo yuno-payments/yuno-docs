@@ -23,8 +23,8 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 
 | `condition_type` | Matches against | Value shape | Applicable `conditional`s | Card-only? |
 |---|---|---|---|---|
-| `COUNTRY` | Buyer's billing country | ISO 3166-1 alpha-2 (e.g. `"US"`, `"BR"`) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
-| `ISSUER_COUNTRY` | Card-issuing bank's country | ISO 3166-1 alpha-2 | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
+| `COUNTRY` | Transaction country — the top-level `country` field you submit in `POST /v1/payments` (never the card) | ISO 3166-1 alpha-2 (e.g. `"US"`, `"BR"`) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
+| `CARD_ISSUER_COUNTRY` | Card-issuing bank's country, resolved by Yuno's BIN lookup at processing time | ISO 3166-1 alpha-2 | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `CURRENCY` | Transaction currency | ISO 4217 (e.g. `"USD"`) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
 | `AMOUNT` | Transaction amount | Decimal as **string** (e.g. `"100.00"`); requires sibling `currency` | `EQUAL`, `NOT_EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `NOT_BETWEEN` | no |
 | `CARD_TYPE` | Card funding source | `CREDIT`, `DEBIT`, `PREPAID` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
@@ -51,5 +51,29 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 
 - **`AMOUNT` requires `currency`.** Comparisons are FX-naive; only payments whose currency matches the rule's `currency` are evaluated.
 - **`METADATA` requires `key`.** Compares `payment.metadata[key]`. If the key is absent on the payment, the condition does **not** match — absence is not equality.
-- **Card-only condition types** (`ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
+- **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
+- **`COUNTRY` vs `CARD_ISSUER_COUNTRY`.** The two are sourced independently: `COUNTRY` matches the transaction country your backend submits in the payment request, while `CARD_ISSUER_COUNTRY` matches the issuer country Yuno's own BIN lookup derives from the card number. The same payment can be `COUNTRY = US` and `CARD_ISSUER_COUNTRY = GB` at once. The BIN lookup runs before a provider is selected, is identical in sandbox and production, and reflects real-world BIN-registry data — never the processor's view of the card.
 - **Numeric values are submitted as strings** to match the `values: string[]` schema. Yuno parses them based on the `condition_type`.
+
+#### Testing `CARD_ISSUER_COUNTRY` rules in sandbox
+
+<Warning>
+**Provider test-card countries are simulator metadata**
+
+The "country" a payment provider documents for its test cards exists only inside that provider's own test environment — it is simulator metadata attached to the PAN, not a property of the number itself. Yuno's BIN lookup resolves the real-world registry entry instead, so a test card's documented country and its resolved `card_data.country_code` in Yuno usually differ.
+</Warning>
+
+Two examples with Stripe's test cards:
+
+| Test card | Documented by the provider as | Resolves in Yuno as | Why |
+|---|---|---|---|
+| `4242 4242 4242 4242` | US | `GB` (issuer: Stripe Payments UK) | BIN `424242` is registered to Stripe Payments UK Ltd in the actual Visa registry |
+| `4000 0019 6000 0008` | Cyprus | `US` | Any `4000 00...` Stripe test card resolves the same `400000` registry record, which is a US-registered range, regardless of the country the last digits encode |
+
+To verify a `CARD_ISSUER_COUNTRY` rule end-to-end today, work with resolved values rather than documented ones — the lookup is deterministic:
+
+1. Run one sandbox payment with a candidate test card.
+2. Read `card_data.country_code` from the payment (payment details in the dashboard, or the [Retrieve Payment](/reference/payments/retrieve-payment-by-id) response).
+3. Build the rule against that value. For example, `4242 4242 4242 4242` is a dependable `GB` card end-to-end.
+
+The same caveat applies to every BIN-derived condition (`CARD_TYPE`, `CARD_BRAND`), though country is where provider test-card documentation diverges most often.
