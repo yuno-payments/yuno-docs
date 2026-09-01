@@ -1,0 +1,42 @@
+---
+title: "Reactivate Subscription"
+openapi: "/openapi/subscriptions/reactivate-subscription.json POST /subscriptions/{subscription_id}/reactivate"
+description: "Returns a canceled or completed subscription to ACTIVE, keeping the same subscription."
+---
+
+Use this endpoint for win-back campaigns. The subscription returns to ACTIVE keeping its `id`, its `billing_cycles` counters, its subscription agreement, its vaulted payment method and a single continuous payment history. Nothing is duplicated, so a returning customer is not reported as a new signup.
+
+## Which subscriptions can be reactivated
+
+| Current `status` | Result |
+| --- | --- |
+| `CANCELED` | Reactivated. |
+| `COMPLETED` | Reactivated, as long as the subscription still has billing cycles left. |
+| Any other status | `409`. A paused subscription is resumed with [Resume Subscription](/reference/subscriptions/resume-subscription) instead. |
+
+A `COMPLETED` subscription that already used every cycle in `billing_cycles.total` is refused with `409`. Raise `billing_cycles.total` with [Update Subscription](/reference/subscriptions/update-subscription) first, then reactivate.
+
+A subscription whose `availability.finish_at` has passed is refused with `400`. Extend the window before reactivating.
+
+## Choosing the next billing date
+
+`billing_cycle_behavior` is the same axis used on plan changes and on resume.
+
+Take a subscription that bills monthly on the 17th, canceled in May and reactivated on September 1:
+
+| Value | Next charge |
+| --- | --- |
+| `KEEP` (default) | September 17 — the original anchor's next occurrence. |
+| `RESTART` | October 17 — one full period from the reactivation date, on the same billing day. |
+
+Omitting the field does what `KEEP` does. `KEEP` holds the original anchor: untouched while it is still ahead, and rolled to its next occurrence once it has passed. It never charges at the moment of reactivation.
+
+That matters most on a subscriber who comes back inside a period they already paid for. Canceling does not move the billing date, so a subscription canceled on September 1 that was paid through September 17 keeps September 17 as its anchor. `KEEP` bills them on that date, the one they paid through. `RESTART` would push the charge to October 17 and hand them the rest of September and all of October for free.
+
+## The payment method
+
+The vaulted payment method is revalidated before the subscription is reactivated. If it is no longer enrolled, the call returns `400` and the subscription stays canceled, rather than becoming a subscription that cannot charge.
+
+<Warning>
+Revalidation confirms the payment method is still enrolled. It cannot confirm that the stored-credential mandate is still valid with the issuer, because that validity is held by the issuer and the card network, not by Yuno. A long gap between the cancellation and the reactivation raises the chance that the first charge is declined. If it is, attach a newly vaulted payment method with [Update Subscription](/reference/subscriptions/update-subscription) and retry.
+</Warning>
