@@ -1,7 +1,58 @@
 ---
 title: "Resume Subscription"
 openapi: "/openapi/subscriptions/resume-subscription.json POST /subscriptions/{subscription_id}/resume"
-description: "Reactivates a paused subscription, changing its status back to ACTIVE."
+description: "Reactivates a paused subscription, returning it to the status it was billing under."
 ---
 
-Calling this endpoint will reactivate a subscription. It will change a subscription with PAUSED `status` to ACTIVE once again.
+Calling this endpoint will reactivate a subscription. It will change a subscription with PAUSED `status` back to the status it was billing under — ACTIVE, or TRIALING if it is still inside a trial phase.
+
+<Note>
+**Choosing what happens to the billing date**
+
+`billing_cycle_behavior` is an optional field on this call. It decides what happens to the billing anchor — the date in `billing_cycles.next_at` — when the subscription resumes. It carries the same two values and the same meanings as on [Update Subscription](/reference/subscriptions/update-subscription):
+
+- `KEEP` — the original billing date is preserved. If that date fell due while the subscription was paused, it advances to its **next occurrence**, never to a date in the past and never to a charge at the moment of the resume.
+- `RESTART` — the cycle re-anchors to the moment of the resume, plus the subscription's frequency.
+
+Sending **no body at all** is neither of those two, and is the behaviour subscriptions have today: a billing date still in the future is left exactly where it is, and one that already passed moves one billing period from the resume. Existing integrations that call this endpoint without a body are unaffected.
+
+No charge is issued during the call under any of the three. **Only the anchor moves**: `billing_cycles.current`, `total` and `paid`, the retry configuration, and any pending plan change all survive untouched.
+
+`billing_cycle_behavior` is **write-only** — it is accepted on the request and never echoed in any response.
+</Note>
+
+### KEEP and RESTART compared
+
+A monthly subscription anchored on the 1st is paused on August 15 and resumed on September 20. The August 1 anchor fell due during the pause, so the two values diverge:
+
+<CodeGroup>
+```json KEEP
+{ "billing_cycle_behavior": "KEEP" }
+
+// billing_cycles.next_at → 2026-10-01
+// the original anchor's next occurrence; the 1st is kept
+```
+
+```json RESTART
+{ "billing_cycle_behavior": "RESTART" }
+
+// billing_cycles.next_at → 2026-10-20
+// re-anchored to the resume date plus one month
+```
+</CodeGroup>
+
+Had the subscription been resumed on August 5, while the September 1 anchor was still in the future, `KEEP` would have left it on September 1 and `RESTART` would have moved it to September 5.
+
+<Note>
+**RESTART and the monthly billing day**
+
+On a monthly subscription created without an explicit billing day, `RESTART` anchors every future renewal to the day of the restart. Resuming with `RESTART` on the 20th therefore bills on the 20th from then on, not only for the next cycle. A subscription that declares its billing day keeps it: the date does not move to the restart day, only the time of day is re-anchored.
+
+The same rule applies to a `RESTART` on [Update Subscription](/reference/subscriptions/update-subscription) — it is one rule, on both endpoints.
+</Note>
+
+The `subscription.resume` webhook fires once and carries the resulting `billing_cycles.next_at`, so the new billing date can be read from the event rather than by fetching the subscription afterwards.
+
+### Errors
+
+An invalid `billing_cycle_behavior` value is rejected at the API edge with `400`. A subscription that is not `PAUSED` returns `400 INVALID_STATE`, and one whose `availability.finish_at` has already passed returns `400 INVALID_DATE` — both unchanged by this field.
