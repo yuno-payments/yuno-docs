@@ -38,7 +38,7 @@
     "/subscriptions/meters/events": {
       "post": {
         "summary": "Report Usage Event",
-        "description": "Usage-based billing must be enabled for your organization before this endpoint accepts requests (otherwise `403 PRODUCT_NOT_ENABLED`). Reports one usage event against a subscription. The meter is resolved from `event_name`. Validation is synchronous: a malformed or unresolvable event is rejected with `400` and never counted. Replaying the same `event_id` returns the original response — including the original `consumed_value`, even if the retry sent a different one — and never double counts. `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions accept usage; any other status is rejected with `400 SUBSCRIPTION_NOT_ACTIVE`. One event per request.",
+        "description": "Usage-based billing must be enabled for your organization before this endpoint accepts requests (otherwise `403 PRODUCT_NOT_ENABLED`). Reports one usage event against a subscription. The meter is resolved from `event_name`. Validation is synchronous: a malformed or unresolvable event is rejected with `400` and never counted. Replaying the same `event_id` returns the original response — including the original `value`, even if the retry sent a different one — and never double counts. `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions accept usage; any other status is rejected with `400 SUBSCRIPTION_NOT_ACTIVE`. One event per request.",
         "operationId": "report-usage-event",
         "parameters": [
           {
@@ -48,7 +48,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Unique identifier used in HTTP headers to ensure that a request is processed only once, even if it is retried due to network issues or timeouts. Required on every write request of this feature."
+            "description": "Unique identifier used in HTTP headers to ensure that a request is processed only once, even if it is retried due to network issues or timeouts. Optional, as on the rest of the Yuno API."
           }
         ],
         "requestBody": {
@@ -64,7 +64,7 @@
                 "properties": {
                   "event_id": {
                     "type": "string",
-                    "description": "Your unique identifier for this event — the idempotency key. Unique per account. Re-sending the same `event_id` returns the same response (including the original `consumed_value`) and never counts the usage twice, regardless of retries."
+                    "description": "Your unique identifier for this event — the idempotency key. Unique per account. Re-sending the same `event_id` returns the same response (including the original `value`) and never counts the usage twice, regardless of retries."
                   },
                   "event_name": {
                     "type": "string",
@@ -74,10 +74,10 @@
                     "type": "string",
                     "description": "The unique identifier of the subscription the usage is attributed to (MAX 64; MIN 36). Must exist in your account (`400 SUBSCRIPTION_NOT_FOUND`) and be `ACTIVE`, `TRIALING` or `PAST_DUE` (`400 SUBSCRIPTION_NOT_ACTIVE`). Usage is metered per subscription and billed on that subscription's renewal."
                   },
-                  "consumed_value": {
+                  "value": {
                     "type": "number",
                     "format": "float",
-                    "description": "The numeric value of the event (decimals allowed). Required for `SUM` and `LAST` meters (\"The consumed_value is required for a SUM meter\"). Optional for `COUNT` meters — defaults to 1."
+                    "description": "The numeric value of the event (decimals allowed). Required for `SUM` and `LAST` meters (\"The value is required for a SUM meter\"). Optional for `COUNT` meters — defaults to 1."
                   },
                   "occurred_at": {
                     "type": "string",
@@ -111,7 +111,7 @@
                     "event_id": "11111111-1111-1111-1111-111111111111",
                     "event_name": "ai_tokens",
                     "subscription_id": "33333333-3333-3333-3333-333333333333",
-                    "consumed_value": 1500,
+                    "value": 1500,
                     "occurred_at": "2026-08-18T09:00:04Z",
                     "metadata": [
                       {
@@ -122,7 +122,7 @@
                   }
                 },
                 "Count meter (API request)": {
-                  "summary": "COUNT meter — consumed_value omitted, counts as 1",
+                  "summary": "COUNT meter — value omitted, counts as 1",
                   "value": {
                     "event_id": "req_01J5Y3Q9K8ZC5G6E4Y2W7X8N9M",
                     "event_name": "api_request",
@@ -135,7 +135,7 @@
                     "event_id": "storage-2026-08-18T09:00-sub-3333",
                     "event_name": "storage_gb",
                     "subscription_id": "33333333-3333-3333-3333-333333333333",
-                    "consumed_value": 128.4,
+                    "value": 128.4,
                     "occurred_at": "2026-08-18T09:00:00Z"
                   }
                 }
@@ -156,7 +156,7 @@
                       "event_name": "ai_tokens",
                       "meter_id": "55555555-5555-5555-5555-555555555555",
                       "subscription_id": "33333333-3333-3333-3333-333333333333",
-                      "consumed_value": 1500,
+                      "value": 1500,
                       "received_at": "2026-08-18T09:00:04.000000Z"
                     }
                   }
@@ -180,7 +180,7 @@
                     "subscription_id": {
                       "type": "string"
                     },
-                    "consumed_value": {
+                    "value": {
                       "type": "number"
                     },
                     "received_at": {
@@ -215,12 +215,12 @@
                       ]
                     }
                   },
-                  "Missing consumed_value on SUM meter": {
-                    "summary": "Missing consumed_value on SUM meter",
+                  "Missing value on SUM meter": {
+                    "summary": "Missing value on SUM meter",
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The consumed_value is required for a SUM meter"
+                        "The value is required for a SUM meter"
                       ]
                     }
                   },
@@ -238,7 +238,7 @@
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The occurred_at cannot be more than 35 days in the past"
+                        "The field 'occurred_at' has an invalid value, it must not be more than 35 days in the past."
                       ]
                     }
                   },

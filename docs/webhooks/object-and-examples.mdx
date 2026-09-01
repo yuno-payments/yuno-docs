@@ -1475,6 +1475,9 @@ Example payload:
         "current": 1,
         "next_at": "2026-02-28T18:25:49.995376Z"
       },
+      "current_period_start": "2026-01-28T18:25:49.995376Z",
+      "current_period_end": "2026-02-28T18:25:49.995376Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1551,6 +1554,9 @@ Sent when a subscription transitions from any other valid status into `ACTIVE`. 
         "current": 2,
         "next_at": "2025-12-04T00:32:25.485281Z"
       },
+      "current_period_start": "2025-12-04T00:29:25.485281Z",
+      "current_period_end": "2025-12-04T00:32:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1626,6 +1632,9 @@ Sent when a subscription enters a plan's trial phase from another status. Enteri
         "current": 2,
         "next_at": "2025-12-04T00:32:25.485281Z"
       },
+      "current_period_start": "2025-12-04T00:29:25.485281Z",
+      "current_period_end": "2025-12-04T00:32:25.485281Z",
+      "current_phase_end": "2025-12-04T00:32:25.485281Z",
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1668,6 +1677,9 @@ This event is only emitted for accounts where the `PAST_DUE` status is enabled. 
         "current": 3,
         "next_at": "2025-12-04T00:35:25.485281Z"
       },
+      "current_period_start": "2025-12-04T00:32:25.485281Z",
+      "current_period_end": "2025-12-04T00:35:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1687,6 +1699,10 @@ This event is only emitted for accounts where the `PAST_DUE` status is enabled. 
 
 Sent when a subscription is paused. Use this event to update the status in your system and pause related services.
 
+<Note>
+**A paused subscription's window is frozen where it was, not moved forward.** `current_period_start`/`current_period_end` (and `current_phase_end`, if the subscription is inside a phase) keep whatever window was current at the moment of pause — Yuno does not advance them while billing is suspended. The longer a subscription stays paused, the further `current_period_end` falls into the past; on prod, the large majority of currently-paused subscriptions already show an elapsed window. Don't treat `current_period_end` as "the next charge date" without also checking `status` — for a paused subscription it isn't one.
+</Note>
+
 ```json JSON
 {
   "type": "subscription",
@@ -1704,6 +1720,14 @@ Sent when a subscription is paused. Use this event to update the status in your 
         "type": "FIXED",
         "value": 36000
       },
+      "billing_cycles": {
+        "total": 5,
+        "current": 3,
+        "next_at": "2025-12-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:32:25.485281Z",
+      "current_period_end": "2025-12-04T00:35:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       }
@@ -1749,6 +1773,9 @@ Sent when a paused subscription is resumed and transitions back to the `ACTIVE` 
         "current": 2,
         "next_at": "2026-07-14T19:19:31.914Z"
       },
+      "current_period_start": "2026-06-14T19:19:31.914Z",
+      "current_period_end": "2026-07-14T19:19:31.914Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1832,6 +1859,14 @@ Treat `cancellation_source` as open-ended. New values can be added as Yuno intro
         "type": "FIXED",
         "value": 36000
       },
+      "billing_cycles": {
+        "total": 5,
+        "current": 5,
+        "next_at": "2026-01-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:35:25.485281Z",
+      "current_period_end": "2026-01-04T00:35:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       }
@@ -1839,6 +1874,8 @@ Treat `cancellation_source` as open-ended. New values can be added as Yuno intro
   }
 }
 ```
+
+A terminal subscription reports its final billing period rather than an empty one — the pair above is frozen at whatever window was current when the subscription reached `CANCELED`, the same way a `PAUSED` subscription freezes its window (see the [`subscription.pause`](#subscription-pause) note).
 
 ### subscription.complete
 
@@ -1861,6 +1898,14 @@ Sent when a subscription reaches its end date or total billing cycles and transi
         "type": "FIXED",
         "value": 36000
       },
+      "billing_cycles": {
+        "total": 5,
+        "current": 5,
+        "next_at": "2026-01-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:35:25.485281Z",
+      "current_period_end": "2026-01-04T00:35:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       }
@@ -1906,6 +1951,9 @@ Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification
         "current": 2,
         "next_at": "2026-07-14T19:19:31.914Z"
       },
+      "current_period_start": "2026-06-14T19:19:31.914Z",
+      "current_period_end": "2026-07-14T19:19:31.914Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1985,6 +2033,9 @@ Sent for plan-based subscriptions when a `$0` cycle is executed, either a trial 
         "current": 2,
         "next_at": "2026-07-14T19:19:31.914Z"
       },
+      "current_period_start": "2026-06-14T19:19:31.914Z",
+      "current_period_end": "2026-07-14T19:19:31.914Z",
+      "current_phase_end": "2026-07-14T19:19:31.914Z",
       "payments": []
     },
     "cycle": 1,
