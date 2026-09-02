@@ -76,6 +76,27 @@ curl "https://api.y.uno/v1/pci-proxy/destinations" \
 
 Returns `{"destinations": [ ... ]}` — only the destinations registered for your account.
 
+<Warning>
+**Account-scoped destinations need the `X-account-code` header**
+
+As covered in [Register a destination](#register-a-destination) above, a destination registered
+with `account_id` set is scoped to that account. This call only returns it when you pass
+`X-account-code: {account_id}` on the request:
+
+```sh
+curl "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "X-account-code: $ACCOUNT_ID"
+```
+
+The header acts as a strict filter, not an addition: with it, you get only that account's
+destinations; without it, you get only org-wide destinations (`account_id: null`). Neither call
+returns both at once. An account-scoped destination isn't deleted when it's missing from a
+plain, header-less list, it's just filtered out — the most common cause of a destination that
+was registered successfully but never seems to show up.
+</Warning>
+
 ## Remove a destination
 
 ```sh
@@ -86,6 +107,10 @@ curl -X DELETE "https://api.y.uno/v1/pci-proxy/destinations/{id}" \
 
 Returns `204`. Removing a destination takes effect immediately — the next proxy request to
 that host is rejected.
+
+If the destination was registered with `account_id` set, pass `X-account-code: {account_id}` on
+this call too, the same way as when [listing your destinations](#list-your-destinations),
+otherwise it's treated as not found.
 
 ## Enable or disable a destination
 
@@ -108,6 +133,9 @@ curl -X POST "https://api.y.uno/v1/pci-proxy/destinations/{id}/enable" \
 Each returns `200` with the updated destination object (its `status` set to `DISABLED` or
 `ENABLED`). Only `ENABLED` destinations are used by the forward path; a request to a `DISABLED`
 host returns `403 DESTINATION_NOT_ALLOWED`.
+
+The same `X-account-code: {account_id}` header applies here: if the destination was registered
+with `account_id` set, include it or the call treats the destination as not found.
 
 A destination moves through three states:
 
