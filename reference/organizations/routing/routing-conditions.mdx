@@ -27,7 +27,8 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 | `CARD_ISSUER_COUNTRY` | Card-issuing bank's country, resolved by Yuno's BIN lookup at processing time | ISO 3166-1 alpha-2 | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `CURRENCY` | Transaction currency | ISO 4217 (e.g. `"USD"`) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
 | `AMOUNT` | Transaction amount | Decimal as **string** (e.g. `"100.00"`); requires sibling `currency` | `EQUAL`, `NOT_EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `NOT_BETWEEN` | no |
-| `CARD_TYPE` | Card funding source | `CREDIT`, `DEBIT`, `PREPAID` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
+| `CARD_TYPE` | Card funding source | `CREDIT`, `DEBIT`, `CHARGE CARD`, `VOUCHER` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
+| `CARD_PREPAID` | Whether the card BIN range is flagged as prepaid, resolved by Yuno's BIN lookup | `true`, `false` | `EQUAL` | yes |
 | `CARD_BRAND` | Card scheme | `VISA`, `MASTERCARD`, `AMEX`, `ELO`, `HIPERCARD`, `DINERS`, `DISCOVER`, `JCB`, `UNIONPAY`, `MAESTRO`, `CB` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `CARD_BIN` | First 6–8 digits of the PAN | 6–8 digit numeric string | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `INSTALLMENTS` | Number of installments requested | Integer as string | `EQUAL`, `NOT_EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `NOT_BETWEEN` | no |
@@ -51,7 +52,8 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 
 - **`AMOUNT` requires `currency`.** Comparisons are FX-naive; only payments whose currency matches the rule's `currency` are evaluated.
 - **`METADATA` requires `key`.** Compares `payment.metadata[key]`. If the key is absent on the payment, the condition does **not** match — absence is not equality.
-- **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
+- **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`, `CARD_PREPAID`) are only valid when `payment_method = "CARD"`.
+- **`CARD_PREPAID` and unknown BINs.** When the BIN lookup cannot resolve the prepaid flag, the condition evaluates to false for **both** operands: `CARD_PREPAID EQUAL true` does not match, and `CARD_PREPAID EQUAL false` does not match either — the payment falls through to the next condition set or the default route. Prepaid is **not** a `CARD_TYPE` value; use this standalone condition instead.
 - **`COUNTRY` vs `CARD_ISSUER_COUNTRY`.** The two are sourced independently: `COUNTRY` matches the transaction country your backend submits in the payment request, while `CARD_ISSUER_COUNTRY` matches the issuer country Yuno's own BIN lookup derives from the card number. The same payment can be `COUNTRY = US` and `CARD_ISSUER_COUNTRY = GB` at once. The BIN lookup runs before a provider is selected, is identical in sandbox and production, and reflects real-world BIN-registry data — never the processor's view of the card.
 - **Numeric values are submitted as strings** to match the `values: string[]` schema. Yuno parses them based on the `condition_type`.
 
