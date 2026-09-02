@@ -1,0 +1,192 @@
+---
+title: "PagaLeve"
+description: "Accept Pix Parcelado (installment Pix) and one-time Pix payments with PagaLeve, using either Yuno's SDK or Direct API workflows."
+---
+
+This guide explores how to integrate PagaLeve, a Pix-based payment provider for Brazil, into your checkout. Yuno supports both the **Yuno SDK** (recommended) and **Direct API** workflows. You'll learn how to:
+
+* Make one-time Pix payments with PagaLeve
+* Make Pix Parcelado (installment Pix) payments with PagaLeve
+
+<Warning>
+**Draft page**
+
+This page was drafted from confirmed registry data only (see [API enums](/reference/api-enums) and the [payment-methods table](/reference/payment-type-list)). The flow steps, request/response fields, and payment method type values below are placeholders and have **not** been confirmed against a real PagaLeve integration. Every `<!-- TODO -->` marker needs engineering/product confirmation before this page can be published.
+</Warning>
+
+## Requirements
+
+Before starting, you need:
+
+* A Yuno account with Dashboard access
+* API keys and an `account_id` (found in the dashboard)
+* A PagaLeve connection set up in your Yuno account (see [Connections](/docs/using-yuno/dashboard-overview/connections))
+
+## Create and manage customers
+
+Create the customer once using your external `merchant_customer_id`, then retrieve by Yuno `id` or by `merchant_customer_id` as needed.
+
+1. Use the [Create Customer](/reference/create-customer) endpoint and provide your own `merchant_customer_id` (the unique id of the customer in your system). The response returns `id` which is the Yuno customer id.
+2. Use [Retrieve Customer](/reference/retrieve-customer) with the Yuno `id`.
+3. Use [Retrieve Customer by External Id](/reference/retrieve-customer-by-external-id) with query parameter `merchant_customer_id`.
+
+<!-- TODO: confirm with engineering — does PagaLeve require a customer record before payment, or can it be a one-time (Direct) payment without prior customer creation, similar to plain PIX? -->
+
+## One-time Pix payment
+
+Use PagaLeve to accept a standard, single Pix payment.
+
+<Tabs>
+  <Tab title="Yuno SDK">
+    ### Step 1: Create a checkout session
+    Start by creating a checkout session using the [Create Checkout Session](/reference/create-checkout-session) endpoint.
+
+    ```json
+    {
+      "country": "BR",
+      "customer_id": "{{customer_id}}",
+      "merchant_order_id": "order-0000024",
+      "amount": {
+        "currency": "BRL",
+        "value": 15000
+      }
+    }
+    ```
+
+    The response returns a `checkout_session` ID.
+
+    ### Step 2: Initialize the SDK
+    Initialize Yuno's SDK (Web, Android, or iOS) with the `checkout_session` ID. PagaLeve renders as an available payment option in the SDK interface.
+
+    <!-- TODO: confirm with engineering — the exact payment_method type PagaLeve uses for plain PIX (e.g. is it just "PIX" scoped to the PagaLeve connection, or a PagaLeve-specific type?), and how the customer completes the payment (QR code shown in-SDK vs. redirect). -->
+  </Tab>
+
+  <Tab title="Direct API">
+    ### Step 1: Create a payment
+    Use [Create payment](/reference/create-payment) with the Direct workflow.
+
+    ```json
+    {
+      "description": "One-time Pix Payment with PagaLeve",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000024",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 150
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "DIRECT",
+      "payment_method": {
+        "type": "PIX" // TODO: confirm exact payment_method_type value for PagaLeve
+      }
+    }
+    ```
+
+    <!-- TODO: confirm with engineering — expected response fields (e.g. QR code data, redirect_url, status/sub_status values) and how the merchant confirms final payment status. -->
+
+    ### Step 2: Confirm payment
+    Use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm the final status.
+  </Tab>
+</Tabs>
+
+## Pix Parcelado (installment) payment
+
+PagaLeve supports Pix Parcelado, letting customers split a Pix payment into installments.
+
+<Tabs>
+  <Tab title="Yuno SDK">
+    ### Step 1: Get payment conditions
+    Request available installment options using the [APM installments](/reference/installments/apm-installments) endpoint.
+
+    ```bash
+    curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
+    --header 'public-api-key: {{your_public_api_key}}' \
+    --header 'private-secret-key: {{your_secret_api_key}}' \
+    --header 'X-account-code: {{your_account_code}}' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "country": "BR",
+      "payment_method": "PIX_PARCELADO", // TODO: confirm exact value expected here for PagaLeve
+      "amount": {
+        "currency": "BRL",
+        "value": "250"
+      },
+      "customer": {
+        "document": {
+          "document_type": "CPF",
+          "document_number": "12345678900"
+        },
+        "email": "customer@email.com"
+      }
+    }'
+    ```
+
+    <!-- TODO: confirm with engineering — the actual request/response shape of this call for PagaLeve, and whether it requires an enrolled/vaulted token or works as a one-time (non-enrolled) lookup like the example above. -->
+
+    Select the plan `id` and installments number from the response.
+
+    ### Step 2: Create the payment
+    Create the payment using the selected plan details.
+
+    ```json
+    {
+      "description": "Pix Parcelado Payment with PagaLeve",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000023",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 250
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "SDK_CHECKOUT",
+      "checkout": {
+        "session": "{{checkout_session_id}}"
+      },
+      "payment_method": {
+        "type": "PIX_PARCELADO", // TODO: confirm exact payment_method_type value
+        "detail": {
+          // TODO: confirm with engineering — the correct detail object shape
+          // (e.g. installments_plan_id, installments count) for PagaLeve
+        }
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Direct API">
+    ### Step 1: Get payment conditions
+    Request available installment options for PagaLeve using the [APM installments](/reference/installments/apm-installments) endpoint (see request example above).
+
+    The response returns an array of installment plans, including `id`, available `installments`, and amounts. Select a plan `id` and an allowed installments number.
+
+    ### Step 2: Create payment
+    Use [Create payment](/reference/create-payment) with the Direct workflow and the PagaLeve installment payment method type. Include the selected plan details.
+
+    <!-- TODO: confirm with engineering — full request body shape, expected response fields, and how status transitions (e.g. from created to succeeded) are reported for an installment Pix payment. -->
+
+    ### Step 3: Retrieve payment
+    Use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm the final status.
+  </Tab>
+</Tabs>
+
+<Info>
+**Limitations**
+
+<!-- TODO: confirm with engineering — are there any limitations to flag, similar to NuPay's "subscriptions don't support installments" note? For example, does PagaLeve support refunds and reverses on installment payments the same way as on one-time payments? -->
+</Info>
+
+## Endpoints
+
+* [Create customer](/reference/create-customer)
+* [Retrieve customer](/reference/retrieve-customer)
+* [Retrieve customer by external id](/reference/retrieve-customer-by-external-id)
+* [Create checkout session](/reference/create-checkout-session)
+* [Create payment](/reference/create-payment)
+* [Retrieve payment by id](/reference/retrieve-payment-by-id)
+* [APM installments](/reference/installments/apm-installments)
