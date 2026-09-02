@@ -4,17 +4,33 @@ openapi: "/openapi/subscriptions/reactivate-subscription.json POST /subscription
 description: "Returns a canceled or completed subscription to ACTIVE, keeping the same subscription."
 ---
 
-Use this endpoint for win-back campaigns. The subscription returns to ACTIVE keeping its `id`, its `billing_cycles` counters, its subscription agreement, its vaulted payment method and a single continuous payment history. Nothing is duplicated, so a returning customer is not reported as a new signup.
+Use this endpoint for win-back campaigns. A subscription with billing cycles left returns to ACTIVE keeping its `id`, its `billing_cycles` counters, its subscription agreement, its vaulted payment method and a single continuous payment history. Nothing is duplicated, so a returning customer is not reported as a new signup. One that used every cycle it had gets a successor instead, linked back to it.
 
 ## Which subscriptions can be reactivated
 
 | Current `status` | Result |
 | --- | --- |
 | `CANCELED` | Reactivated. |
-| `COMPLETED` | Reactivated, as long as the subscription still has billing cycles left. |
+| `COMPLETED` | Reactivated if billing cycles remain. If none do, a successor subscription is created instead — see below. |
 | Any other status | `409`. A paused subscription is resumed with [Resume Subscription](/reference/subscriptions/resume-subscription) instead. |
 
-A `COMPLETED` subscription that already used every cycle in `billing_cycles.total` is refused with `409`. Raise `billing_cycles.total` with [Update Subscription](/reference/subscriptions/update-subscription) first, then reactivate.
+## When the billing cycles are used up
+
+A subscription that used every cycle in `billing_cycles.total` is finished: its contract ran to the end, and returning it to life would only complete it again on the first charge.
+
+So this endpoint creates a **successor** instead. It is a new subscription with a new `id`, carrying the same plan, the same customer and the same vaulted payment method, and it points back at the finished one through `previous_subscription_code`. The finished subscription stays `COMPLETED`, with its history intact.
+
+The successor's cycle limit follows the body:
+
+| `billing_cycles.total` | The successor gets |
+| --- | --- |
+| omitted | the same limit the finished subscription had |
+| a number | that limit |
+| `null` | no limit — it bills until it is canceled |
+
+Retrying the same call hands back the successor it already created rather than a second one. A further win-back later on reactivates the successor, which chains from there.
+
+Sending `billing_cycles.total` for a subscription that still has cycles left returns `400`: there is nothing to size.
 
 A subscription whose `availability.finish_at` has passed is refused with `400`. Extend the window before reactivating.
 
