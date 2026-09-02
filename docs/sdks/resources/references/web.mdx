@@ -99,6 +99,7 @@ Parameters for `await yuno.startCheckout()`, `await yuno.mountCheckout()`, and r
 | `showLoading`       | boolean | No       | When `true`, shows the SDK loading spinner. Default `true`. Remains visible until `hideLoader()` or `await yuno.continuePayment()` is called.                                                                                                                                 |
 | `showPaymentStatus` | boolean | No       | When `true`, shows the payment result screen after the flow completes. Optional.                                                                                                                                                                                   |
 | `issuersFormEnable` | boolean | No       | When `true`, shows the issuer (bank) list form. Default `true`. Optional.                                                                                                                                                                                |
+| `savePaymentMethodEnabled` | boolean | No | When `true`, shows a "Save payment method for future payments" checkbox on direct-debit payment methods that support saving (the method's required fields include `save_on_success`) when the session has a customer. Default `false`. When the shopper ticks the checkbox, the one-time token carries `vault_on_success: true`; the key is omitted when it's left unticked. Does not cover card; card keeps its own `card.cardSaveEnable`. See [Direct-debit consent](#direct-debit-consent) and [Enrolling payment methods](#enrolling-payment-methods). *Available since Web SDK v1.10.12* |
 
 </div>
 
@@ -415,6 +416,47 @@ onLoading: ({ type, data }) => {
 ```
 
 Each retry attempt flows through `yunoCreatePayment` → your backend → `continuePayment` (or automatic in Seamless) without a `yunoPaymentResult` callback between attempts. `yunoPaymentResult` fires only when the flow finishes — either the payment succeeds, the shopper exits, or the payment fails without being retryable.
+
+## Direct-debit consent
+
+*Available since Web SDK v1.10.12.*
+
+On direct-debit payment methods (ACH, SEPA Direct Debit, Bacs, PAD, and iDEAL when the account is saved), the checkout renders authorization/mandate text below the bank fields, when enabled via the Checkout Builder's [Authorization text](/docs/using-yuno/dashboard-overview/checkout-builder#authorization-text) panel.
+
+* **One-off copy** is shown by default.
+* **Recurrent copy** is shown instead when the account will be stored — either the shopper ticked the `savePaymentMethodEnabled` save checkbox, or the flow is an enrollment.
+
+SEPA and iDEAL additionally require a mandatory acceptance checkbox alongside the authorization text. Submit is blocked with the error "Accept the mandate to continue" until the shopper checks it.
+
+### Mandate evidence in the one-time token
+
+Whenever the authorization-text block is shown, the SDK includes the shopper's acceptance evidence in the one-time token, regardless of whether the save checkbox was ticked. The shape below reflects what's encoded inside that token — your backend still forwards it to [Create Payment](/reference/payments/create-payment) as the opaque `payment_method.token` string, the same as any other one-time token:
+
+```json
+{
+  "payment_method": {
+    "bank_transfer": {
+      "mandate": {
+        "mandate_template_key": "...",
+        "mandate_type": "ONE_OFF",
+        "accepted_at": "2026-09-02T15:04:00Z",
+        "creditor": "..."
+      }
+    }
+  }
+}
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Field                   | Description                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| `mandate_template_key`   | Identifies the authorization/mandate copy template the shopper was shown.                        |
+| `mandate_type`           | `ONE_OFF` or `RECURRENT`, matching the copy variant rendered.                                      |
+| `accepted_at`            | UTC timestamp of when the shopper accepted the mandate.                                            |
+| `creditor`                | Creditor value as rendered in the authorization text. Omitted when the backend sends no creditor. |
+
+</div>
 
 ## updateCheckoutSession
 
