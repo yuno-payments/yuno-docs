@@ -87,3 +87,25 @@ A `CANCELED` or `COMPLETED` subscription is rejected earlier with `400 INVALID_S
 Validation problems in the block itself — a missing `plan_id`, an unsupported `effective`, a target plan in another currency, or a `HONOR_PHASES` ladder longer than the remaining billing cycles — return `400 BAD_REQUEST` without `current_status`. The same applies to `billing_cycle_behavior` placement mistakes: `RESTART` without `effective: IMMEDIATE`, the top-level field combined with `plan_change`, or the top-level field on a plan-linked subscription each return `400 BAD_REQUEST` with a message naming the fix. Where an invalid `billing_cycle_behavior` **value** is caught depends on its position: the top-level field is rejected at the API edge as `400 INVALID_PARAMETERS` (`"The field 'billing_cycle_behavior' has an invalid value."`), while a bad value nested inside `plan_change` reaches the engine and returns `400 BAD_REQUEST` (e.g. `"RESET is invalid for plan_change.billing_cycle_behavior field"`) — treat both codes as validation failures.
 
 One exception to the plan-change error table above: `PLAN_CHANGE_NOT_AVAILABLE` applies to *scheduled* changes only. An `IMMEDIATE` change does not need an upcoming cycle, so it is accepted in the final billing cycle.
+
+## Setting a refund rule
+
+`refund_rule` configures how a `CUSTOM` refund is sized when a cancel request carries no `refund_amount`. It is set here or on create, and sending `"refund_rule": null` clears it.
+
+<CodeGroup>
+```json A share of the charged amount
+{ "refund_rule": { "type": "PERCENT", "percent": 50 } }
+```
+
+```json A flat amount
+{ "refund_rule": { "type": "FIXED", "amount": { "value": 10.00, "currency": "USD" } } }
+```
+
+```json Clear the rule
+{ "refund_rule": null }
+```
+</CodeGroup>
+
+`PERCENT` and `FIXED` are exclusive — a rule carrying both `percent` and `amount` is rejected, as is one carrying neither. A `FIXED` rule's currency must equal the subscription's own currency, and that is checked against the currency the subscription will have **after** this update: changing `amount.currency` while a `FIXED` rule in the old currency is still stored is rejected with `REFUND_RULE_CURRENCY_MISMATCH`, so send the rule again in the new currency or clear it in the same request.
+
+See [Cancel Subscription](/reference/subscriptions/cancel-subscription#custom) for how the rule is used, and [the Subscription object](/reference/subscriptions/the-subscription-object) for the field reference. Available to organizations enabled for it; contact Yuno — for others the field is ignored.

@@ -11,18 +11,20 @@ Calling this endpoint will reactivate a subscription. It will change a subscript
 
 `billing_cycle_behavior` is an optional field on this call. It decides what happens to the billing anchor — the date in `billing_cycles.next_at` — when the subscription resumes. It carries the same two values and the same meanings as on [Update Subscription](/reference/subscriptions/update-subscription):
 
-- `KEEP` — the original billing date is preserved. If that date fell due while the subscription was paused, it advances to its **next occurrence**, never to a date in the past and never to a charge at the moment of the resume.
+- `KEEP` (default) — the original billing date is preserved whole, its day and its time of day. If it fell due while the subscription was paused, it advances by whole billing periods until it is in the future — never to a date in the past, and never to a charge at the moment of the resume. A billing date that fell inside the pause is not charged.
 - `RESTART` — the cycle re-anchors to the moment of the resume, plus the subscription's frequency.
 
-Sending **no body at all** is neither of those two, and is the behaviour subscriptions have today: a billing date still in the future is left exactly where it is, and one that already passed moves one billing period from the resume. Existing integrations that call this endpoint without a body are unaffected.
+**Omitting the field is `KEEP`.** There is no third behaviour to choose between.
 
-On a monthly subscription that period lands on the subscription's own billing day, not on the day of the month you resumed — so for most monthly subscriptions the no-body result is the same date `KEEP` would give, and the field is not needed to get it.
-
-There is one case where it matters, and it is the reason to send `KEEP`. Without the field, resuming a monthly subscription after its billing day has passed schedules **next** month's billing day even when this month's is still ahead, so a whole billing period can be skipped. A subscription billing on the 25th, paused with an August 25 charge outstanding and resumed on September 20, goes to **October 25** with no body — September 25 is passed over — and to **September 25** with `KEEP`.
-
-No charge is issued during the call under any of the three. **Only the anchor moves**: `billing_cycles.current`, `total` and `paid`, the retry configuration, and any pending plan change all survive untouched.
+No charge is issued during the call under either value. **Only the anchor moves**: `billing_cycles.current`, `total` and `paid`, the retry configuration, and any pending plan change all survive untouched.
 
 `billing_cycle_behavior` is **write-only** — it is accepted on the request and never echoed in any response.
+</Note>
+
+<Note>
+**Availability**
+
+`billing_cycle_behavior` is available to organizations enabled for it; contact Yuno. For an organization that is not yet enabled, sending the field is rejected with `400`, and a resume sent without a body keeps the behaviour those subscriptions have today.
 </Note>
 
 ### KEEP and RESTART compared
@@ -45,7 +47,7 @@ A monthly subscription anchored on the 1st is paused on August 15 and resumed on
 ```
 </CodeGroup>
 
-Sending no body in this scenario also gives October 1 — one month past the resume, landing on the subscription's billing day — so here `KEEP` only makes explicit what already happens.
+Because omitting the field means `KEEP`, a resume sent with no body in this scenario also gives October 1.
 
 Had the subscription been resumed on August 5, while the September 1 anchor was still in the future, `KEEP` would have left it on September 1 and `RESTART` would have moved it to September 5.
 
@@ -63,4 +65,11 @@ The `subscription.resume` webhook fires once and carries the resulting `billing_
 
 ### Errors
 
-An invalid `billing_cycle_behavior` value is rejected at the API edge with `400`. A subscription that is not `PAUSED` returns `400 INVALID_STATE`, and one whose `availability.finish_at` has already passed returns `400 INVALID_DATE` — both unchanged by this field.
+| Condition | Response |
+| --- | --- |
+| `billing_cycle_behavior` is not `KEEP` or `RESTART` | `400` — the value must be one of the two |
+| The organization is not enabled for the field | `400` — `billing_cycle_behavior is not enabled for this organization` |
+| The subscription is not `PAUSED` | `400 INVALID_STATE` |
+| `availability.finish_at` has already passed | `400 INVALID_DATE` |
+
+The last two are unchanged by this field.
