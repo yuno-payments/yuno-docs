@@ -50,16 +50,22 @@ Load the SDK from the CDN. It exposes a global `SdkPayments` and dispatches a `s
 
 Get the `integrity` hash from [`versions-sri.json`](https://sdk-web.y.uno/versions-sri.json): copy the `integrity` of the entry under `history` whose `version` matches the version in your script `src` (here `2.0.0-alpha.2`). Do **not** use `latest.integrity` — `latest` tracks the stable 1.x release, so its hash never matches the alpha bundle and the browser will block the script with an SRI error. `crossorigin="anonymous"` lets the browser validate the hash for the cross-origin script. See [Subresource Integrity](/docs/sdks/resources/references/web#subresource-integrity-sri) for details.
 
-Then wait for the `sdk-payments-ready` event and initialize:
+Then initialize the SDK. The bundle sets `window.SdkPayments` synchronously and fires `sdk-payments-ready` on `window` **once**, right as it loads. If your code runs after the script has already loaded, that event has passed — so check for the global first and fall back to the event only while the script is still loading:
 
 ````javascript
-window.addEventListener('sdk-payments-ready', async () => {
+async function startYuno() {
     const sdkPayments = await SdkPayments.initialize('your-public-api-key');
     // Build a transaction from here (see "Take the payment").
-});
+}
+
+if (window.SdkPayments) {
+    startYuno();
+} else {
+    window.addEventListener('sdk-payments-ready', startYuno);
+}
 ````
 
-`SdkPayments.initialize` returns a Promise. `await` it before using the SDK.
+This works whichever way you load the script — synchronous, `async`, or `defer`. `SdkPayments.initialize` returns a Promise; `await` it before using the SDK.
 
   </Tab>
 
