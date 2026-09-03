@@ -56,8 +56,8 @@ Send `subscription` alongside the normal Create Payment fields. To start a **new
 
 | Field                  | Type    | Required                     | Description                                                                                                                                  |
 | :--------------------- | :------ | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
-| `frequency.type`       | string  | Yes                          | Billing cadence unit. `MONTH` is the only value accepted on this route — other cadences are available on [Create Subscription](/reference/subscriptions/create-subscription). |
-| `frequency.value`      | integer | Yes (checked after the charge) | How many `type` units between charges. `{"type": "MONTH", "value": 1}` bills monthly, `"value": 3` bills quarterly. Always send it — omitting it isn't caught up front, it fails later when the subscription is created. Whole numbers only — a fractional value is not rejected up front and fails after the charge. |
+| `frequency.type`       | string  | Yes                          | Billing cadence unit. Accepts `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `YEAR`. |
+| `frequency.value`      | number | Yes (checked after the charge) | How many `type` units between charges. `{"type": "MONTH", "value": 1}` bills monthly, `"value": 3` bills quarterly. Always send it — omitting it isn't caught up front, it fails later when the subscription is created. Whole numbers only — a fractional value is not rejected up front and fails after the charge. |
 | `frequency.execution`  | string  | Yes                          | Who runs the recurrence. Send `YUNO`. See [`execution` decides who bills](#execution-decides-who-bills).                                        |
 | `availability.start_at`| string  | No                           | When the subscription's active window opens, UTC [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601). Must be in the future.                     |
 | `availability.finish_at`| string | No                           | When the window closes, UTC ISO 8601. Must be after `start_at` — or, if you omit `start_at`, after the moment of the call.                      |
@@ -141,7 +141,7 @@ The response is a normal payment object with one extra field populated:
 ```
 
 <Note>
-Illustrative — no merchant-surface capture exists yet for this flow. The field names and nesting are the ones this route adds; the values are placeholders.
+Illustrative — the values are placeholders, but the field names and nesting are the ones this route actually adds: a top-level `subscription_code` plus a nested `subscription` object carrying `billing_cycle` (which cycle this payment settled) and `retry` (which retry attempt this was, `null` on the first try).
 </Note>
 
 Keep `subscription_code` — it is the subscription's `id`, and it's what you pass to [Retrieve](/reference/subscriptions/retrieve-subscription), [Pause](/reference/subscriptions/pause-subscription), [Resume](/reference/subscriptions/resume-subscription), and [Cancel](/reference/subscriptions/cancel-subscription).
@@ -200,9 +200,17 @@ Two ways to follow the link:
 
 ## Charging an existing subscription
 
-The same `subscription` block has a second shape: send `id` with the UUID of a subscription that already exists, and the payment is attached to that subscription instead of creating a new one. In that shape you omit `frequency`, `availability`, and `amount` — the subscription already defines them.
+The same `subscription` block has a second shape: send `id` with the UUID of a subscription that already exists, and the payment is meant to attach to that subscription instead of creating a new one. In that shape you omit `frequency`, `availability`, and `amount` — the subscription already defines them.
 
-```json Create Payment for an existing subscription
+<Warning>
+**This shape currently rejects every subscription we tested**
+
+Sending `subscription.id` for an existing subscription fails with `400 INVALID_REQUEST` — `"The execution type defined for this subscription is not compatible with the current flow."` — regardless of how that subscription was created: a subscription raw-created with the default `execution`, one raw-created with `execution: MERCHANT`, and one created by this very route (`execution: YUNO`, see [How the one call works](#how-the-one-call-works)) all 400 the same way. No `execution` value has been found that this shape accepts.
+
+Treat the JSON below as the documented request shape, not a working example — do not build on it until it has been verified end to end. To attach a payment to an existing subscription today, take the payment on the payments surface without a `subscription` block, then reconcile it against the subscription with [List Subscription Payments](/reference/subscriptions/list-subscription-payments).
+</Warning>
+
+```json Create Payment for an existing subscription — currently rejected, see warning above
 {
   "account_id": "493e9374-510a-4201-9e09-de669d75f256",
   "merchant_order_id": "order-90219",
@@ -245,13 +253,14 @@ A bad `subscription` block can fail at two different moments, and the difference
 These are caught when the request is validated, so the call fails with a `400`, no money moves, and no subscription is created:
 
 * `frequency.execution` missing, or any value other than `YUNO` / `MERCHANT`.
-* `frequency.type` set to anything other than `MONTH`.
+* `frequency.type` set to anything other than `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR`, or `YEAR`.
 * `amount.type` set to anything other than `FIXED` / `VARIABLE`.
 * `amount.value` or `amount.currency` missing, or a currency that isn't a valid ISO 4217 code.
 * `subscription.amount.currency` different from the payment's `amount.currency`.
 * `subscription.amount.type` = `FIXED` with a `subscription.amount.value` different from the payment's `amount.value`.
 * `frequency`, `availability`, or `amount` missing while creating a new subscription (all three are required unless you send `id`).
 * `customer_payer` missing — a payment always needs a payer, so this is refused before anything is charged.
+* `subscription.id` for an existing subscription — `INVALID_REQUEST`, `"The execution type defined for this subscription is not compatible with the current flow."` See [Charging an existing subscription](#charging-an-existing-subscription): this has been observed on every subscription tested, regardless of `execution`.
 
 ### Validated when the subscription is created
 

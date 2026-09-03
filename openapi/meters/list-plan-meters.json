@@ -49,6 +49,31 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required — the list is always scoped to a single account. Omitting it returns `400 BAD_REQUEST` (\"Invalid x-account-code header.\")."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Accepted for consistency with other list endpoints, but not enforced by this endpoint: any value (including out-of-range or omitted) is accepted, and every metered price attached to the plan is always returned. The response's `pagination.limit` always equals `pagination.total`, never the requested value.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Accepted for consistency with other list endpoints, but not enforced by this endpoint: any value is accepted and ignored — results always start from the first item.",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -64,7 +89,7 @@
                           "id": "77777777-7777-7777-7777-777777777777",
                           "plan_id": "00000000-0000-4000-8000-000000000001",
                           "meter_id": "66666666-6666-6666-6666-666666666666",
-                          "credits": 100.5,
+                          "credits": 100,
                           "pricing_strategy": "PER_UNIT",
                           "price_per_credit": {
                             "currency": "USD",
@@ -79,6 +104,10 @@
                               }
                             }
                           ],
+                          "package_size": null,
+                          "package_price": null,
+                          "package_country_prices": [],
+                          "tiers": [],
                           "created_at": "2026-08-18T09:00:04.000000Z",
                           "updated_at": "2026-08-18T09:00:04.000000Z"
                         },
@@ -90,13 +119,17 @@
                           "pricing_strategy": "PER_UNIT",
                           "price_per_credit": null,
                           "country_prices": [],
+                          "package_size": null,
+                          "package_price": null,
+                          "package_country_prices": [],
+                          "tiers": [],
                           "created_at": "2026-08-18T09:00:04.000000Z",
                           "updated_at": "2026-08-18T09:00:04.000000Z"
                         }
                       ],
                       "pagination": {
                         "total": 2,
-                        "limit": 20,
+                        "limit": 2,
                         "offset": 0,
                         "has_more": false
                       }
@@ -122,8 +155,9 @@
                             "type": "string"
                           },
                           "credits": {
-                            "type": "number",
-                            "description": "Units included in the plan per billing cycle."
+                            "type": "integer",
+                            "description": "Units included in the plan per billing cycle.",
+                            "format": "int64"
                           },
                           "pricing_strategy": {
                             "type": "string",
@@ -168,6 +202,58 @@
                               }
                             }
                           },
+                          "package_size": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "description": "Units per package, for the `PACKAGE` pricing strategy. `null` for `PER_UNIT`/`TIERED`."
+                          },
+                          "package_price": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "description": "Flat price per package, for the `PACKAGE` pricing strategy. `null` for `PER_UNIT`/`TIERED`.",
+                            "properties": {
+                              "currency": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "package_country_prices": {
+                            "type": "array",
+                            "description": "Per-country package price overrides, for the `PACKAGE` pricing strategy. Empty for other strategies.",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "country": {
+                                  "type": "string"
+                                },
+                                "amount": {
+                                  "type": "object",
+                                  "properties": {
+                                    "currency": {
+                                      "type": "string"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "tiers": {
+                            "type": "array",
+                            "description": "Tier boundaries and prices, for the `TIERED` pricing strategy. Empty for other strategies.",
+                            "items": {
+                              "type": "object"
+                            }
+                          },
                           "created_at": {
                             "type": "string",
                             "description": "Set by Yuno on creation."
@@ -187,7 +273,8 @@
                           "description": "Total number of items."
                         },
                         "limit": {
-                          "type": "integer"
+                          "type": "integer",
+                          "description": "Always equals `pagination.total` — this endpoint does not paginate; it does not reflect the requested `limit`."
                         },
                         "offset": {
                           "type": "integer"
@@ -210,9 +297,73 @@
                 "examples": {
                   "Result": {
                     "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "Invalid x-account-code header."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Not authenticated"
+                      ]
+                    },
+                    "summary": "Result"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
                       "code": "PLAN_NOT_FOUND",
                       "messages": [
-                        "The plan does not exist or is not linked to this account."
+                        "Plan not found."
                       ]
                     }
                   }

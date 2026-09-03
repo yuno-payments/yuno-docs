@@ -61,8 +61,17 @@
           },
           {
             "in": "header",
-            "name": "X-Idempotency-Key",
+            "name": "X-Account-Code",
             "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required — the list is always scoped to a single account. Omitting it returns `400 BAD_REQUEST` (\"Invalid x-account-code header.\")."
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
             "schema": {
               "type": "string"
             },
@@ -76,8 +85,9 @@
                 "type": "object",
                 "properties": {
                   "credits": {
-                    "type": "number",
-                    "format": "float",
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0,
                     "description": "Units included in the plan per billing cycle — the allowance a subscriber can consume before any usage is billed. Must be >= 0. `0` means every unit is billed."
                   },
                   "pricing_strategy": {
@@ -203,7 +213,9 @@
                       "type": "string"
                     },
                     "credits": {
-                      "type": "number",
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 0,
                       "description": "Units included in the plan per billing cycle."
                     },
                     "pricing_strategy": {
@@ -256,6 +268,39 @@
                     "updated_at": {
                       "type": "string",
                       "description": "Set by Yuno on every update."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Not authenticated"
+                      ]
+                    },
+                    "summary": "Result"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
                     }
                   }
                 }
@@ -317,7 +362,7 @@
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The meter pricing_strategy must be one of PER_UNIT, PACKAGE, TIERED"
+                        "The field 'pricing_strategy' has an invalid value."
                       ]
                     }
                   },
@@ -338,13 +383,36 @@
                         "The meter does not exist, is inactive or is not linked to this account."
                       ]
                     }
-                  },
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "examples": {
                   "Unknown plan": {
                     "summary": "Unknown plan",
                     "value": {
                       "code": "PLAN_NOT_FOUND",
                       "messages": [
-                        "The plan does not exist or is not linked to this account."
+                        "Plan not found."
                       ]
                     }
                   },
@@ -353,7 +421,7 @@
                     "value": {
                       "code": "PLAN_METER_NOT_FOUND",
                       "messages": [
-                        "The meter 66666666-6666-6666-6666-666666666666 is not assigned to this plan"
+                        "This meter is not attached to the plan."
                       ]
                     }
                   }

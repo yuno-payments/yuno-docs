@@ -42,6 +42,15 @@
         "operationId": "attach-meter-to-plan",
         "parameters": [
           {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required — the list is always scoped to a single account. Omitting it returns `400 BAD_REQUEST` (\"Invalid x-account-code header.\")."
+          },
+          {
             "name": "plan_id",
             "in": "path",
             "required": true,
@@ -53,7 +62,7 @@
           {
             "in": "header",
             "name": "X-Idempotency-Key",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
             },
@@ -71,8 +80,9 @@
                     "description": "The unique identifier of the meter to attach (MAX 64; MIN 36). Must be an existing `ACTIVE` meter of the account — an unknown or `INACTIVE` meter is rejected with `400 METER_NOT_FOUND`. A meter can be attached to a plan only once, else `409 PLAN_METER_ALREADY_ASSIGNED`."
                   },
                   "credits": {
-                    "type": "number",
-                    "format": "float",
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0,
                     "description": "Units included in the plan per billing cycle — the allowance a subscriber can consume before any usage is billed. Must be >= 0. `0` means every unit is billed."
                   },
                   "pricing_strategy": {
@@ -243,7 +253,7 @@
                 "Metered price": {
                   "value": {
                     "meter_id": "66666666-6666-6666-6666-666666666666",
-                    "credits": 100.5,
+                    "credits": 100,
                     "pricing_strategy": "PER_UNIT",
                     "price_per_credit": {
                       "currency": "USD",
@@ -273,6 +283,39 @@
           }
         },
         "responses": {
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Not authenticated"
+                      ]
+                    },
+                    "summary": "Result"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
           "201": {
             "description": "201",
             "content": {
@@ -283,7 +326,7 @@
                       "id": "77777777-7777-7777-7777-777777777777",
                       "plan_id": "00000000-0000-4000-8000-000000000001",
                       "meter_id": "66666666-6666-6666-6666-666666666666",
-                      "credits": 100.5,
+                      "credits": 100,
                       "pricing_strategy": "PER_UNIT",
                       "price_per_credit": {
                         "currency": "USD",
@@ -317,7 +360,8 @@
                       "type": "string"
                     },
                     "credits": {
-                      "type": "number",
+                      "type": "integer",
+                      "format": "int64",
                       "description": "Units included in the plan per billing cycle."
                     },
                     "pricing_strategy": {
@@ -422,7 +466,7 @@
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The meter pricing_strategy must be one of PER_UNIT, PACKAGE, TIERED"
+                        "The field 'pricing_strategy' has an invalid value."
                       ]
                     }
                   },
@@ -441,15 +485,6 @@
                       "code": "METER_NOT_FOUND",
                       "messages": [
                         "The meter does not exist, is inactive or is not linked to this account."
-                      ]
-                    }
-                  },
-                  "Unknown plan": {
-                    "summary": "Unknown plan",
-                    "value": {
-                      "code": "PLAN_NOT_FOUND",
-                      "messages": [
-                        "The plan does not exist or is not linked to this account."
                       ]
                     }
                   }
@@ -492,6 +527,38 @@
                     "code": {
                       "type": "string",
                       "example": "PRODUCT_NOT_ENABLED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unknown plan": {
+                    "summary": "Unknown plan",
+                    "value": {
+                      "code": "PLAN_NOT_FOUND",
+                      "messages": [
+                        "Plan not found."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
                     },
                     "messages": {
                       "type": "array",
