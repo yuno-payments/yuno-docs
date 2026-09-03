@@ -74,6 +74,7 @@
                       "country": "CL",
                       "description": "Subscription Test",
                       "merchant_reference": "subscription-ref-merchant-AA01",
+                      "soft_descriptor": null,
                       "status": "ACTIVE",
                       "amount": {
                         "currency": "CLP",
@@ -89,12 +90,19 @@
                         "paid": 1,
                         "next_at": "2025-05-29T11:13:31.786421Z"
                       },
+                      "current_period_start": "2025-05-29T11:13:31.786421Z",
+                      "current_period_end": "2025-05-29T11:13:31.786421Z",
                       "customer_payer": {
                         "id": "1c6d1a88-d8d5-4c09-b19c-852530d89f05"
                       },
                       "payment_method": {
                         "type": "CARD",
-                        "vaulted_token": "743880c1-1bdb-4572-99a8-c4e5ce184895"
+                        "vaulted_token": "743880c1-1bdb-4572-99a8-c4e5ce184895",
+                        "card": {
+                          "installments": null,
+                          "network_transaction_id": null,
+                          "usage": "USED"
+                        }
                       },
                       "availability": {
                         "start_at": "2025-04-29T11:13:31.786421Z",
@@ -102,10 +110,12 @@
                       },
                       "retries": {
                         "retry_on_decline": false,
-                        "amount": 6
+                        "amount": 6,
+                        "strategy": "DEFAULT",
+                        "schedule": null,
+                        "stop_on_hard_decline": null,
+                        "cancel_on_exhausted_retries": null
                       },
-                      "metadata": null,
-                      "additional_data": null,
                       "trial_period": {
                         "billing_cycles": 1,
                         "amount": {
@@ -113,7 +123,19 @@
                           "currency": ""
                         }
                       },
+                      "metadata": null,
+                      "additional_data": null,
                       "initial_payment_validation": false,
+                      "reason": null,
+                      "renewal_notification_days": null,
+                      "payments": [],
+                      "subscription_agreement_id": null,
+                      "cancellation_time": null,
+                      "cancellation_source": null,
+                      "ending_time": null,
+                      "plan_id": null,
+                      "plan_assigned_at": null,
+                      "pending_plan_change": null,
                       "created_at": "2025-04-29T11:13:31.786421Z",
                       "updated_at": "2025-04-29T11:13:31.942325Z"
                     }
@@ -140,11 +162,17 @@
                     },
                     "description": {
                       "type": "string",
-                      "example": "Subscription Test"
+                      "example": "Subscription Test",
+                      "nullable": true
                     },
                     "merchant_reference": {
                       "type": "string",
                       "example": "subscription-ref-merchant-AA01"
+                    },
+                    "soft_descriptor": {
+                      "type": "string",
+                      "example": "ACME SUBSCRIPTION",
+                      "nullable": true
                     },
                     "status": {
                       "type": "string",
@@ -202,6 +230,18 @@
                         }
                       }
                     },
+                    "current_period_start": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Start of the billing period the subscription is currently in, one cadence before `current_period_end`. Inside a trial or any other plan phase it follows that phase's cadence. A terminal subscription (`CANCELED` or `COMPLETED`) keeps its final window rather than going null. Null only for a subscription with no recurring cadence. Always returned together with current_period_end.",
+                      "example": "2023-01-16T20:00:00.912480Z"
+                    },
+                    "current_period_end": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "End of the billing period the subscription is currently in. Equal to billing_cycles.next_at. Always returned together with current_period_start.",
+                      "example": "2023-02-16T20:00:00.786342Z"
+                    },
                     "customer_payer": {
                       "type": "object",
                       "properties": {
@@ -221,6 +261,23 @@
                         "vaulted_token": {
                           "type": "string",
                           "example": "743880c1-1bdb-4572-99a8-c4e5ce184895"
+                        },
+                        "card": {
+                          "type": "object",
+                          "properties": {
+                            "installments": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "network_transaction_id": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "usage": {
+                              "type": "string",
+                              "example": "FIRST"
+                            }
+                          }
                         }
                       }
                     },
@@ -246,11 +303,32 @@
                           "type": "integer",
                           "example": 6,
                           "default": 0
+                        },
+                        "strategy": {
+                          "type": "string",
+                          "description": "How the timing of each retry is decided: `DEFAULT`, `SMART` or `CUSTOM_SCHEDULE`. Treat as open-ended — handle unrecognized values gracefully.",
+                          "example": "DEFAULT"
+                        },
+                        "schedule": {
+                          "type": "array",
+                          "nullable": true,
+                          "description": "The per-attempt schedule, only set when `strategy` is `CUSTOM_SCHEDULE`; `null` otherwise.",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "stop_on_hard_decline": {
+                          "type": "boolean",
+                          "nullable": true,
+                          "description": "When true, a hard decline stops the retries for the current billing cycle."
+                        },
+                        "cancel_on_exhausted_retries": {
+                          "type": "boolean",
+                          "nullable": true,
+                          "description": "When true, the subscription is canceled once a cycle's retries end without a successful payment, with `cancellation_source` set to `RETRIES_EXHAUSTED`."
                         }
                       }
                     },
-                    "metadata": {},
-                    "additional_data": {},
                     "trial_period": {
                       "type": "object",
                       "properties": {
@@ -275,10 +353,118 @@
                         }
                       }
                     },
+                    "metadata": {},
+                    "additional_data": {},
                     "initial_payment_validation": {
                       "type": "boolean",
                       "example": false,
                       "default": true
+                    },
+                    "reason": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Free-form reason for the subscription's current status, when one was recorded; `null` otherwise.",
+                      "example": "merchant request"
+                    },
+                    "renewal_notification_days": {
+                      "type": "integer",
+                      "nullable": true,
+                      "description": "How many days before the next billing date the `subscription.close_to_renewal` webhook is sent. `null` means no renewal notification is sent.",
+                      "example": 3
+                    },
+                    "payments": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "5104911d-5df9-229e-8468-bd41abea1a4s"
+                      },
+                      "description": "The subscription's payments. **Omitted entirely when the subscription has no successful payments yet** (for example while every retry attempt has failed) — treat an absent key as an empty history, not as an error."
+                    },
+                    "subscription_agreement_id": {
+                      "type": "string",
+                      "example": "sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa",
+                      "nullable": true
+                    },
+                    "cancellation_time": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "When the subscription was canceled. Only set once it reaches `CANCELED`; `null` otherwise.",
+                      "example": "2023-12-16T20:46:54.786342Z"
+                    },
+                    "cancellation_source": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "What triggered the cancellation: `MERCHANT`, `SYSTEM`, `PLAN_CHANGE` or `RETRIES_EXHAUSTED`. Only set once the subscription reaches `CANCELED`; `null` otherwise. Treat as open-ended — handle unrecognized values gracefully.",
+                      "example": "MERCHANT"
+                    },
+                    "ending_time": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "When the subscription completed or expired. Only set once it reaches `COMPLETED`; `null` otherwise.",
+                      "example": "2024-12-16T20:46:54.786342Z"
+                    },
+                    "plan_id": {
+                      "type": "string",
+                      "description": "Only present when the subscription is linked to a plan.",
+                      "example": "00000000-0000-4000-8000-000000000001"
+                    },
+                    "plan_assigned_at": {
+                      "type": "string",
+                      "description": "Only present on plan-linked subscriptions. The moment the plan was attached — at creation from a plan, migration onto a plan, or a plan change.",
+                      "example": "2023-12-16T20:46:54.786342Z"
+                    },
+                    "pending_plan_change": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The plan change scheduled for the next billing cycle, or null when none is pending. Schedule one with the `plan_change` block on Update Subscription.",
+                      "properties": {
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The identifier of the target plan.",
+                          "example": "1904911d-5df9-429e-8488-ad41abea1a4d"
+                        },
+                        "plan_name": {
+                          "type": "string",
+                          "description": "The name of the target plan.",
+                          "example": "Pro"
+                        },
+                        "direction": {
+                          "type": "string",
+                          "enum": [
+                            "UPGRADE",
+                            "DOWNGRADE"
+                          ],
+                          "description": "Whether the target plan is an upgrade or a downgrade. Informational only.",
+                          "example": "UPGRADE"
+                        },
+                        "effective": {
+                          "type": "string",
+                          "enum": [
+                            "NEXT_BILLING_CYCLE"
+                          ],
+                          "description": "When the change applies.",
+                          "example": "NEXT_BILLING_CYCLE"
+                        },
+                        "phases_behavior": {
+                          "type": "string",
+                          "enum": [
+                            "START_FROM_REGULAR",
+                            "HONOR_PHASES"
+                          ],
+                          "description": "What happens when the target plan has phases.",
+                          "example": "START_FROM_REGULAR"
+                        },
+                        "applies_at": {
+                          "type": "string",
+                          "description": "The billing event the change will take effect on — the subscription's next billing date.",
+                          "example": "2023-02-16T20:00:00.786342Z"
+                        },
+                        "requested_at": {
+                          "type": "string",
+                          "description": "When the change was scheduled.",
+                          "example": "2023-01-20T10:12:31.786342Z"
+                        }
+                      }
                     },
                     "created_at": {
                       "type": "string",
@@ -338,6 +524,24 @@
                         "The last payment intent of the subscription does not support the action requested."
                       ]
                     }
+                  },
+                  "SUBSCRIPTION NOT FOUND": {
+                    "value": {
+                      "code": "SUBSCRIPTION_NOT_FOUND",
+                      "messages": [
+                        "Subscription not found."
+                      ]
+                    },
+                    "summary": "The subscription_id is well formed but no retryable subscription resolves for it on this account."
+                  },
+                  "MALFORMED SUBSCRIPTION ID": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "Invalid code parameter."
+                      ]
+                    },
+                    "summary": "The subscription_id in the path is not a valid identifier."
                   }
                 },
                 "schema": {

@@ -38,8 +38,10 @@ mandate, exactly as you would for a card:
 }
 ```
 
-`payment_method.type` is matched case-insensitively, so `pix_automatic` resolves to the same payment
-method — and to the same cadence rules — as `PIX_AUTOMATIC`.
+`payment_method.type` is matched case-insensitively by the cadence rule below, so `pix_automatic` and
+`PIX_AUTOMATIC` are judged by the same cadence rules — but only an exact-case `PIX_AUTOMATIC` matches
+the type stored on an enrolled `vaulted_token`; a lowercase type on a real token is rejected with
+`400 INCORRECT_PAYMENT_METHOD_TYPE`.
 
 Everything on this page describes subscriptions **Yuno executes**: `frequency.execution` is `YUNO`,
 so Yuno generates each debit instruction on schedule. On the one-call route, `frequency.execution`
@@ -55,18 +57,17 @@ A Pix Automático mandate can only express the periodicities the Pix rail define
 mandate could not execute is rejected when the subscription is created rather than failing at the
 first debit.
 
-Accepted today: **`WEEK × 1`, `MONTH × 1`, `QUARTER × 1`, `HALF_YEAR × 1` and `YEAR × 1`** —
-`frequency.type` is one of those five and `frequency.value` is exactly `1`. Daily does not exist for
+Accepted today: **`WEEK × 1`, `MONTH × 1` and `YEAR × 1`** —
+`frequency.type` is one of those three and `frequency.value` is exactly `1`. Daily does not exist for
 Pix Automático — this is a BCB restriction on the rail itself, not a Yuno or Adyen limitation.
 
 | `frequency` | Result |
 |---|---|
 | `WEEK`, value `1` | Accepted |
 | `MONTH`, value `1` | Accepted |
-| `QUARTER`, value `1` | Accepted |
-| `HALF_YEAR`, value `1` | Accepted |
 | `YEAR`, value `1` | Accepted, through a plan only — see [Yearly needs a plan](#yearly-needs-a-plan) |
-| `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `YEAR` with any other value | `400 INVALID_PARAMETERS` |
+| `WEEK`, `MONTH` or `YEAR` with any other value | `400 INVALID_PARAMETERS` |
+| `QUARTER` or `HALF_YEAR`, any value | `400 INVALID_PARAMETERS` |
 | `DAY`, any value | `400 INVALID_PARAMETERS` |
 
 The rejection is the same on every path, `HTTP 400`:
@@ -102,7 +103,7 @@ subscription tries to bill from it.
 Only the cadence being requested is judged; a subscription already in flight is never re-judged.
 A Pix Automático subscription created before this rule existed keeps billing on its original
 cadence, and can still be moved onto a plan — that move is judged on the target plan's cadence, so
-it succeeds whenever the target is one of the five accepted cadences.
+it succeeds whenever the target is one of the three accepted cadences.
 
 ### Yearly needs a plan
 

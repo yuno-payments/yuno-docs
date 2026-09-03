@@ -98,7 +98,7 @@
                   },
                   "plan_id": {
                     "type": "string",
-                    "description": "The unique identifier of a [plan](/reference/plans/the-plan-object) to subscribe this customer to. Mutually exclusive with `amount` — send exactly one of the two. Omit `trial_period` and `billing_date` when set: both are inherited from the plan and the request is rejected with `400 BAD_REQUEST` if you send them. Also omit `frequency` — it's inherited from the plan too, but sending it anyway is not rejected: it's silently ignored and overridden by the plan's frequency."
+                    "description": "The unique identifier of a [plan](/reference/plans/the-plan-object) to subscribe this customer to. Mutually exclusive with `amount` — send exactly one of the two. Omit `frequency`, `trial_period` and `billing_date` when set: all three are inherited from the plan, and the request is rejected with `400 INVALID_PARAMETERS` (\"The fields 'frequency', 'trial_period' and 'billing_date' cannot be sent when 'plan_id' is set\") if you send any of them."
                   },
                   "additional_data": {
                     "type": "object",
@@ -197,12 +197,13 @@
                     "properties": {
                       "type": {
                         "type": "string",
-                        "description": "The type of interval the subscription will have in time (DAY, WEEK, MONTH, YEAR). If not set, defaults to MONTH. When `payment_method.type` is `PIX_AUTOMATIC`, only `WEEK`, `MONTH` and `YEAR` with `value` `1` are legal — every other type, and every other value, is rejected with `400 INVALID_PARAMETERS`. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences).",
+                        "description": "The type of interval the subscription will have in time. If not set, defaults to MONTH. Accepted on this endpoint: `DAY`, `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` and `MINUTES` (the last for fast test cycles). **`YEAR` is rejected** — it returns `400 BAD_REQUEST` (\"YEAR is invalid for frequency.type field\") for every `payment_method.type`; use `MONTH` with `value` `12` for a yearly cadence. When `payment_method.type` is `PIX_AUTOMATIC` the Pix rail additionally requires `value` `1` — any other value is rejected with `400 INVALID_PARAMETERS` (\"Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with value 1.\"). See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences).",
                         "enum": [
                           "DAY",
                           "WEEK",
                           "MONTH",
-                          "YEAR",
+                          "QUARTER",
+                          "HALF_YEAR",
                           "MINUTES"
                         ]
                       },
@@ -350,7 +351,7 @@
                       },
                       "amount": {
                         "type": "integer",
-                        "description": "The number of retries that the subscription plan will have to complete. 6 will be defined as default if this value is not set or higher than 6. (MAX 6).",
+                        "description": "The number of retries the subscription will attempt. Defaults to 6 when not set. **The maximum is 6 and it is enforced, not clamped** — sending a higher value is rejected with `400 INVALID_PARAMETERS` (\"Max retries attempts exceeded.\").",
                         "format": "int32"
                       },
                       "strategy": {
@@ -541,7 +542,7 @@
                         "card": {
                           "installments": 3,
                           "network_transaction_id": null,
-                          "usage": null
+                          "usage": "FIRST"
                         }
                       },
                       "availability": {
@@ -686,7 +687,7 @@
                             "usage": {
                               "type": "string",
                               "nullable": true,
-                              "description": "FIRST or USED, echoed back when sent on the request.",
+                              "description": "FIRST or USED. Echoed back verbatim when sent on the request; when omitted, the engine infers it from the vaulted_token's own use history (a token used for the first time here comes back FIRST) rather than staying null.",
                               "example": "USED"
                             }
                           }
@@ -821,9 +822,83 @@
                       "type": "string",
                       "description": "Only present when this subscription was created by a plan change (switching an existing subscription to a different plan)."
                     },
+                    "phases": {
+                      "type": "array",
+                      "description": "Only present on plan-linked subscriptions whose plan has a phase ladder. The plan's full phase list (TRIAL and terminal REGULAR entries), snapshotted at creation.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "TRIAL",
+                              "REGULAR"
+                            ]
+                          },
+                          "duration": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "Omitted on the terminal REGULAR phase.",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "frequency": {
+                            "type": "object",
+                            "nullable": true,
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "amount": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "Omitted on the terminal REGULAR phase; its price comes from the plan's base_amount/country_prices instead.",
+                            "properties": {
+                              "value": {
+                                "type": "number"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "total_payments": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "country_prices": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "current_phase": {
                       "type": "string",
-                      "description": "Only present on plan-linked subscriptions."
+                      "description": "Only present on plan-linked subscriptions whose plan has a phase ladder."
+                    },
+                    "current_phase_end": {
+                      "type": "string",
+                      "description": "Only present on plan-linked subscriptions whose plan has a phase ladder. When the current phase ends."
                     },
                     "billing_phases": {
                       "type": "array",
@@ -927,7 +1002,8 @@
                     },
                     "subscription_agreement_id": {
                       "type": "string",
-                      "example": "sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa"
+                      "example": "sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa",
+                      "nullable": true
                     },
                     "cancellation_time": {
                       "type": "string",

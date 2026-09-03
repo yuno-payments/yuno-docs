@@ -17,7 +17,7 @@ Note that `availability.start_at` can only be moved earlier on update. Sending a
 <Note>
 **Retroactive Credential Update**
 
-If you have existing subscriptions that are failing rebills because of missing credential usage (e.g. from an initial CIT payment), you can use this `PATCH` endpoint to set `payment_method.card.usage` retroactively to fix the issue.
+If you have existing subscriptions that are failing rebills because of missing credential usage (e.g. from an initial CIT payment), you can use this `PATCH` endpoint to set `payment_method.card.usage` retroactively to fix the issue. Send the full `payment_method` object in the same request — `type` and `vaulted_token` (or `token`) alongside `card.usage` — omitting them returns `400` (`payment_method.type`/`payment_method.vaulted_token` required).
 </Note>
 
 <Note>
@@ -46,9 +46,9 @@ An immediate change emits the `subscription.plan_changed` webhook at the moment 
 <Note>
 **Restarting the Billing Cycle Without a Plan**
 
-For a subscription that is *not* linked to a plan, `billing_cycle_behavior` is available as a top-level field on this endpoint, typically combined with a `frequency` change in the same call — for example, moving a subscriber from monthly to yearly and restarting the cycle from today. The same `KEEP`/`RESTART` semantics apply, and on a subscription that has not started yet the re-anchored date clamps to its `availability.start_at`.
+For a subscription that is *not* linked to a plan, `billing_cycle_behavior` is available as a top-level field on this endpoint, typically combined with a `frequency` change in the same call — for example, moving a subscriber from monthly to yearly and restarting the cycle from today. The same `KEEP`/`RESTART` semantics apply — including on a subscription that has not started yet, where `RESTART` still re-anchors to now plus the frequency rather than to `availability.start_at`.
 
-Placement rules: on a plan-linked subscription the top-level field returns `400` (the anchor is managed through `plan_change`), and combining the top-level field with a `plan_change` block returns `400` — use `plan_change.billing_cycle_behavior` instead. A `PAUSED` subscription returns `409 INVALID_SUBSCRIPTION_STATUS`: a restart is accepted while the subscription is `ACTIVE`, `TRIALING` or `PAST_DUE` — or while it is still `CREATED`, where (unlike `plan_change`) the request is allowed and the re-anchored date clamps to `availability.start_at`. A top-level restart emits no webhook — read the new anchor from the subscription object.
+Placement rules: on a plan-linked subscription the top-level field returns `400` (the anchor is managed through `plan_change`), and combining the top-level field with a `plan_change` block returns `400` — use `plan_change.billing_cycle_behavior` instead. A `PAUSED` subscription returns `409 INVALID_SUBSCRIPTION_STATUS`: a restart is accepted while the subscription is `ACTIVE`, `TRIALING` or `PAST_DUE` — or while it is still `CREATED`, where (unlike `plan_change`) the request is allowed and re-anchors the same way as on an already-started subscription, to now plus the frequency, not to `availability.start_at`. A top-level restart emits no webhook — read the new anchor from the subscription object.
 </Note>
 
 ### Plan change errors

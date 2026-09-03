@@ -85937,6 +85937,7 @@ paths:
                         billing_cycles:
                           total: 10
                           current: 2
+                          paid: 0
                           next_at: '2023-02-16T20:00:00.786342Z'
                         payment_method:
                           type: CARD
@@ -86005,6 +86006,8 @@ paths:
                                 - integer
                                 - 'null'
                             current:
+                              type: integer
+                            paid:
                               type: integer
                             next_at:
                               type: string
@@ -86166,10 +86169,10 @@ paths:
                   type: string
                   description: >-
                     The unique identifier of a [plan](/reference/plans/the-plan-object) to subscribe this customer to.
-                    Mutually exclusive with `amount` — send exactly one of the two. Omit `trial_period` and
-                    `billing_date` when set: both are inherited from the plan and the request is rejected with `400
-                    BAD_REQUEST` if you send them. Also omit `frequency` — it's inherited from the plan too, but sending
-                    it anyway is not rejected: it's silently ignored and overridden by the plan's frequency.
+                    Mutually exclusive with `amount` — send exactly one of the two. Omit `frequency`, `trial_period` and
+                    `billing_date` when set: all three are inherited from the plan, and the request is rejected with
+                    `400 INVALID_PARAMETERS` ("The fields 'frequency', 'trial_period' and 'billing_date' cannot be sent
+                    when 'plan_id' is set") if you send any of them.
                 additional_data:
                   type: object
                   description: >-
@@ -86255,16 +86258,20 @@ paths:
                     type:
                       type: string
                       description: >-
-                        The type of interval the subscription will have in time (DAY, WEEK, MONTH, YEAR). If not set,
-                        defaults to MONTH. When `payment_method.type` is `PIX_AUTOMATIC`, only `WEEK`, `MONTH` and
-                        `YEAR` with `value` `1` are legal — every other type, and every other value, is rejected with
-                        `400 INVALID_PARAMETERS`. See [Pix
+                        The type of interval the subscription will have in time. If not set, defaults to MONTH. Accepted
+                        on this endpoint: `DAY`, `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` and `MINUTES` (the last for
+                        fast test cycles). **`YEAR` is rejected** — it returns `400 BAD_REQUEST` ("YEAR is invalid for
+                        frequency.type field") for every `payment_method.type`; use `MONTH` with `value` `12` for a
+                        yearly cadence. When `payment_method.type` is `PIX_AUTOMATIC` the Pix rail additionally requires
+                        `value` `1` — any other value is rejected with `400 INVALID_PARAMETERS` ("Pix Automático only
+                        supports weekly, monthly, quarterly, half-yearly or yearly frequencies with value 1."). See [Pix
                         Automático](/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences).
                       enum:
                         - DAY
                         - WEEK
                         - MONTH
-                        - YEAR
+                        - QUARTER
+                        - HALF_YEAR
                         - MINUTES
                     value:
                       type: integer
@@ -86393,8 +86400,9 @@ paths:
                     amount:
                       type: integer
                       description: >-
-                        The number of retries that the subscription plan will have to complete. 6 will be defined as
-                        default if this value is not set or higher than 6. (MAX 6).
+                        The number of retries the subscription will attempt. Defaults to 6 when not set. **The maximum
+                        is 6 and it is enforced, not clamped** — sending a higher value is rejected with `400
+                        INVALID_PARAMETERS` ("Max retries attempts exceeded.").
                       format: int32
                     strategy:
                       type: string
@@ -86541,7 +86549,7 @@ paths:
                       card:
                         installments: 3
                         network_transaction_id: null
-                        usage: null
+                        usage: FIRST
                     availability:
                       start_at: '2024-09-30T12:04:23.265393Z'
                       finish_at: null
@@ -86653,7 +86661,10 @@ paths:
                             type:
                               - string
                               - 'null'
-                            description: FIRST or USED, echoed back when sent on the request.
+                            description: >-
+                              FIRST or USED. Echoed back verbatim when sent on the request; when omitted, the engine
+                              infers it from the vaulted_token's own use history (a token used for the first time here
+                              comes back FIRST) rather than staying null.
                             example: USED
                   availability:
                     type: object
@@ -86788,9 +86799,70 @@ paths:
                     description: >-
                       Only present when this subscription was created by a plan change (switching an existing
                       subscription to a different plan).
+                  phases:
+                    type: array
+                    description: >-
+                      Only present on plan-linked subscriptions whose plan has a phase ladder. The plan's full phase
+                      list (TRIAL and terminal REGULAR entries), snapshotted at creation.
+                    items:
+                      type: object
+                      properties:
+                        order:
+                          type: integer
+                        name:
+                          type: string
+                        type:
+                          type: string
+                          enum:
+                            - TRIAL
+                            - REGULAR
+                        duration:
+                          type:
+                            - object
+                            - 'null'
+                          description: Omitted on the terminal REGULAR phase.
+                          properties:
+                            type:
+                              type: string
+                            value:
+                              type: integer
+                        frequency:
+                          type:
+                            - object
+                            - 'null'
+                          properties:
+                            type:
+                              type: string
+                            value:
+                              type: integer
+                        amount:
+                          type:
+                            - object
+                            - 'null'
+                          description: >-
+                            Omitted on the terminal REGULAR phase; its price comes from the plan's
+                            base_amount/country_prices instead.
+                          properties:
+                            value:
+                              type: number
+                            currency:
+                              type: string
+                        total_payments:
+                          type:
+                            - integer
+                            - 'null'
+                        country_prices:
+                          type: array
+                          items:
+                            type: object
                   current_phase:
                     type: string
-                    description: Only present on plan-linked subscriptions.
+                    description: Only present on plan-linked subscriptions whose plan has a phase ladder.
+                  current_phase_end:
+                    type: string
+                    description: >-
+                      Only present on plan-linked subscriptions whose plan has a phase ladder. When the current phase
+                      ends.
                   billing_phases:
                     type: array
                     description: >-
@@ -86870,7 +86942,9 @@ paths:
                         description: When the change was scheduled.
                         example: '2023-01-20T10:12:31.786342Z'
                   subscription_agreement_id:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa
                   cancellation_time:
                     type:
@@ -87329,8 +87403,12 @@ paths:
                           Flat price for the phase. 0 is allowed (a free trial). On a **non-terminal** phase, this or
                           `country_prices` is required (one of the two). On the **terminal** REGULAR phase, omit this
                           entirely — sending it is rejected with `400 BAD_REQUEST` ("The terminal phase price comes from
-                          the plan base_amount/country_prices - remove the phase amount"); the terminal price always
-                          comes from the plan's own `base_amount`/`country_prices`.
+                          the plan base_amount/country_prices - remove the phase amount."); the terminal price always
+                          comes from the plan's own `base_amount`/`country_prices`. On a non-terminal phase, if the
+                          plan's `country_prices` lists a country in a currency the phase's flat `amount` does not
+                          cover, the phase must also supply a matching phase-level `country_prices` entry for that
+                          country, or creation is rejected with `400 BAD_REQUEST` ("The phase amount is in USD but the
+                          plan prices 'BR' in BRL - add a phase country price for 'BR' or align the currencies.").
                         properties:
                           currency:
                             type: string
@@ -87397,6 +87475,11 @@ paths:
                       amount:
                         currency: USD
                         value: 9.99
+                      country_prices:
+                        - country: BR
+                          amount:
+                            currency: BRL
+                            value: 49.9
                     - order: 2
                       name: Regular
                       type: REGULAR
@@ -87410,6 +87493,8 @@ paths:
                   value:
                     id: 00000000-0000-4000-8000-000000000001
                     account_id: 00000000-0000-4000-8000-000000000002
+                    account_ids:
+                      - 00000000-0000-4000-8000-000000000002
                     name: Streaming Pro
                     description: Access to Pro features, billed monthly
                     merchant_reference: streaming-pro-monthly
@@ -87457,9 +87542,20 @@ paths:
                         amount:
                           currency: USD
                           value: 9.99
+                        country_prices:
+                          - country: BR
+                            amount:
+                              currency: BRL
+                              value: 49.9
+                        total_payments: 3
                       - order: 2
                         name: Regular
                         type: REGULAR
+                        duration: null
+                        frequency: null
+                        amount: null
+                        total_payments: null
+                        country_prices: []
                     created_at: '2024-01-15T10:30:00.000000Z'
                     updated_at: '2024-01-15T10:30:00.000000Z'
               schema:
@@ -87469,10 +87565,17 @@ paths:
                     type: string
                   account_id:
                     type: string
+                  account_ids:
+                    type: array
+                    items:
+                      type: string
+                    description: Same value as account_id, returned as a single-element array.
                   name:
                     type: string
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                   merchant_reference:
                     type: string
                   status:
@@ -87654,7 +87757,8 @@ paths:
                   value:
                     id: 00000000-0000-4000-8000-000000000001
                     account_id: 00000000-0000-4000-8000-000000000002
-                    account_ids: []
+                    account_ids:
+                      - 00000000-0000-4000-8000-000000000002
                     name: Streaming Pro
                     description: Access to Pro features, billed monthly
                     merchant_reference: streaming-pro-monthly
@@ -87726,8 +87830,8 @@ paths:
                     items:
                       type: string
                     description: >-
-                      The additional accounts the plan is shared with, excluding the owner in `account_id`. Empty for a
-                      plan that belongs to a single account.
+                      The plan's own `account_id`, plus any additional accounts the plan is shared with. Never empty:
+                      for a plan that belongs to a single account, this is a one-element array equal to `[account_id]`.
                   name:
                     type: string
                   description:
@@ -88038,7 +88142,6 @@ paths:
                       next_at: '2023-02-16T20:00:00.786342Z'
                     current_period_start: '2023-01-16T20:00:00.912480Z'
                     current_period_end: '2023-02-16T20:00:00.786342Z'
-                    billing_date: null
                     customer_payer:
                       id: 3t04911d-5df9-429e-8488-ad41abea1a2c
                     payment_method:
@@ -88128,7 +88231,9 @@ paths:
                     type: string
                     example: sub_001
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: streaming service
                   account_id:
                     type: string
@@ -88141,7 +88246,9 @@ paths:
                     type: string
                     example: 001_marzo_23
                   soft_descriptor:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: ACME SUBSCRIPTION
                   status:
                     type: string
@@ -88170,9 +88277,13 @@ paths:
                     type: object
                     properties:
                       total:
-                        type: integer
+                        type:
+                          - integer
+                          - 'null'
                         example: 10
-                        default: 0
+                        description: >-
+                          Total billing cycles the subscription runs for. `null` for an open-ended subscription with no
+                          cycle limit.
                       current:
                         type: integer
                         example: 2
@@ -88349,7 +88460,9 @@ paths:
                             type: string
                             example: ''
                   metadata:
-                    type: array
+                    type:
+                      - array
+                      - 'null'
                     items:
                       type: object
                       properties:
@@ -88388,11 +88501,16 @@ paths:
                     example: 3
                   payments:
                     type: array
+                    description: >-
+                      The subscription's captured payment ids. Omitted — not an empty array — until the subscription's
+                      first payment has been made.
                     items:
                       type: string
                       example: 5104911d-5df9-229e-8468-bd41abea1a4s
                   subscription_agreement_id:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa
                   cancellation_time:
                     type:
@@ -88829,6 +88947,19 @@ paths:
                       type: number
                       description: The value of each payment of the subscription (multiple of 0.0001).
                       format: float
+                billing_date:
+                  type: object
+                  description: >-
+                    Bills on a fixed day instead of a rolling frequency; mutually exclusive with `frequency`. Cannot be
+                    sent for a plan-linked subscription — combining it with `plan_change` returns 400 ("The billing_date
+                    field is managed by the subscription's plan.").
+                  properties:
+                    type:
+                      type: string
+                      example: DAY
+                    day:
+                      type: integer
+                      example: 2
                 frequency:
                   type: object
                   description: >-
@@ -88972,10 +89103,14 @@ paths:
                 retries:
                   type: object
                   description: >-
-                    The retries configuration to apply going forward. Accepts the same object as Create Subscription —
-                    including strategy and schedule — except cancel_on_exhausted_retries, which is create-only. Changes
-                    apply the next time retries are scheduled: a billing cycle already running its retries finishes on
-                    the configuration it started with, and the update takes effect from the next cycle.
+                    The retries configuration to apply going forward, replacing the stored configuration as a whole:
+                    fields left out of the object revert to their defaults (for example, omitting strategy resets it to
+                    DEFAULT and omitting amount resets it to the environment's default retry count) rather than being
+                    left unchanged — send every field you want to keep, not just the ones changing. Accepts the same
+                    object as Create Subscription — including strategy and schedule — except
+                    cancel_on_exhausted_retries, which is create-only. Changes apply the next time retries are
+                    scheduled: a billing cycle already running its retries finishes on the configuration it started
+                    with, and the update takes effect from the next cycle.
                   properties:
                     retry_on_decline:
                       type: boolean
@@ -89097,24 +89232,27 @@ paths:
                     (e.g. monthly to yearly, restarting the cycle from today). KEEP (default): the next charge date is
                     untouched. RESTART: re-anchors the next charge to now plus the (possibly updated) frequency; the
                     anchor alone resets — cycle counters, the retry configuration and the subscription status survive.
-                    On a subscription that has not started yet (CREATED — accepted here, unlike `plan_change`), the
-                    anchor clamps to its start date. Rules: cannot be combined with `plan_change` (400 — use the nested
-                    field); on a plan-linked subscription this field returns 400 (managed through `plan_change`); a
-                    PAUSED subscription returns 409 INVALID_SUBSCRIPTION_STATUS. Write-only: never echoed in any
+                    On a subscription that has not started yet (CREATED — accepted here, unlike `plan_change`), RESTART
+                    still re-anchors to now plus the frequency, the same as on an already-started subscription — it does
+                    not clamp to `availability.start_at`. Rules: cannot be combined with `plan_change` (400 — use the
+                    nested field); on a plan-linked subscription this field returns 400 (managed through `plan_change`);
+                    a PAUSED subscription returns 409 INVALID_SUBSCRIPTION_STATUS. Write-only: never echoed in any
                     response.
                 metadata:
-                  type: object
+                  type: array
                   description: >-
-                    Set of key-value pairs that you can attach to an object. This can be useful for storing additional
-                    information about the object in a structured format. Individual keys can be unset by posting an
-                    empty value to them. All keys can be unset by posting an empty value to metadata.
-                  properties:
-                    key:
-                      type: string
-                      description: Object title that represents the key-value pair inside the metadata (MAX 48 ; MIN 1).
-                    value:
-                      type: string
-                      description: Object value for the key defined  (MAX 512 ; MIN 1).
+                    Replaces the stored metadata as a whole: send every key-value pair you want to keep, not just the
+                    ones changing; a key left out of the array is removed. Posting an empty string as a key's value does
+                    not remove it — the key stays with an empty value. To clear metadata entirely, send an empty array.
+                  items:
+                    type: object
+                    properties:
+                      key:
+                        type: string
+                        description: Object title that represents the key-value pair inside the metadata (MAX 48 ; MIN 1).
+                      value:
+                        type: string
+                        description: Object value for the key defined  (MAX 512 ; MIN 1).
       responses:
         '200':
           description: '200'
@@ -89208,6 +89346,13 @@ paths:
                         type: integer
                         example: 1
                         default: 0
+                      monthly_billing_day:
+                        type: integer
+                        description: >-
+                          The day of the month billing is anchored to. Only present on MONTH-frequency subscriptions
+                          once an anchor day has been derived (for example after a `billing_cycle_behavior: RESTART`);
+                          absent otherwise.
+                        example: 3
                   billing_cycles:
                     type: object
                     properties:
@@ -89787,9 +89932,9 @@ paths:
               examples:
                 Result:
                   value:
-                    code: INVALID_REQUEST
+                    code: BAD_REQUEST
                     messages:
-                      - Invalid request.
+                      - Invalid json.
                 PIX AUTOMATICO CADENCE NOT SUPPORTED:
                   value:
                     code: INVALID_PARAMETERS
@@ -89797,6 +89942,11 @@ paths:
                       - >-
                         Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with
                         value 1.
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
         '401':
           description: '401'
           content:
@@ -90283,9 +90433,9 @@ paths:
                       stopped:
                         type: boolean
                         description: >-
-                          Whether the retry ladder is stopped for this subscription. Returned on lifecycle responses
-                          that touch the ladder (this route sets it to `true` on an immediate cancel); omitted on reads
-                          that do not.
+                          Whether the retry ladder is stopped for this subscription. Populated whenever the subscription
+                          is `PAST_DUE` or has a `cancel_scheduled` pending; omitted otherwise, including on reads that
+                          do not carry it.
                       attempts_made:
                         type: integer
                         description: >-
@@ -90703,6 +90853,11 @@ paths:
           content:
             application/json:
               examples:
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
                 INVALID_STATE:
                   value:
                     code: INVALID_STATE
@@ -90717,12 +90872,12 @@ paths:
                   value:
                     code: BAD_REQUEST
                     messages:
-                      - schedule must carry exactly one of at or after_cycles
+                      - schedule must carry exactly one of at or after_cycles.
                 at NOT IN THE FUTURE:
                   value:
                     code: BAD_REQUEST
                     messages:
-                      - schedule.at must be in the future
+                      - schedule.at must be in the future.
                 ORGANIZATION NOT ENABLED:
                   value:
                     code: BAD_REQUEST
@@ -90732,7 +90887,7 @@ paths:
                   value:
                     code: BAD_REQUEST
                     messages:
-                      - refund cannot be combined with schedule (v1)
+                      - refund cannot be combined with schedule (v1).
                 REFUND QUOTING NOT ENABLED FOR THIS ORGANIZATION:
                   value:
                     code: BAD_REQUEST
@@ -90742,17 +90897,17 @@ paths:
                   value:
                     code: BAD_REQUEST
                     messages:
-                      - refund_amount must not exceed the charged amount
+                      - refund_amount must not exceed the charged amount.
                 REFUND_AMOUNT CURRENCY MISMATCH:
                   value:
                     code: BAD_REQUEST
                     messages:
-                      - refund_amount.currency must match the subscription's currency (USD)
+                      - refund_amount.currency must match the subscription's currency (USD).
                 PRORATED NOT AVAILABLE ON A SUB-DAILY CADENCE:
                   value:
                     code: BAD_REQUEST
                     messages:
-                      - proration is not available for sub-daily cadences
+                      - proration is not available for sub-daily cadences.
                 REFUND NOT AVAILABLE:
                   value:
                     code: REFUND_NOT_AVAILABLE
@@ -90883,7 +91038,9 @@ paths:
                     type: string
                     example: sub_001
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: streaming service
                   account_id:
                     type: string
@@ -91030,10 +91187,14 @@ paths:
                     description: Free-form reason for the subscription's current status, when one was recorded; `null` otherwise.
                     example: merchant request
                   subscription_agreement_id:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa
                   soft_descriptor:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: ACME SUBSCRIPTION
                   renewal_notification_days:
                     type:
@@ -91071,7 +91232,9 @@ paths:
                       - object
                       - 'null'
                   metadata:
-                    type: array
+                    type:
+                      - array
+                      - 'null'
                     items:
                       type: object
                       properties:
@@ -91090,6 +91253,9 @@ paths:
                       Object](/reference/subscriptions/the-subscription-object) for its full shape.
                   payments:
                     type: array
+                    description: >-
+                      The subscription's captured payment ids. Omitted — not an empty array — until the subscription's
+                      first payment has been made.
                     items:
                       type: string
                       example: 5104911d-5df9-229e-8468-bd41abea1a4s
@@ -91168,8 +91334,8 @@ paths:
         - name: offset
           in: query
           description: >-
-            Number of items to skip. Must be a non-negative multiple of `limit`, else `400 BAD_REQUEST` — a non-aligned
-            offset would re-serve rows you already saw and corrupt `has_more`. Defaults to 0.
+            Number of items to skip. Must be a non-negative multiple of `limit`, else `400 INVALID_PARAMETERS` — a
+            non-aligned offset would re-serve rows you already saw and corrupt `has_more`. Defaults to 0.
           schema:
             type: integer
             default: 0
@@ -91257,6 +91423,7 @@ paths:
                           properties:
                             id:
                               type: string
+                              description: null when no persisted payment-method record id is attached to this charge.
                             type:
                               type: string
                         amount:
@@ -91338,6 +91505,32 @@ paths:
                         type: integer
                       has_more:
                         type: boolean
+        '400':
+          description: '400'
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - The field 'offset' must be a multiple of 'limit'
+                  summary: Result
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INVALID_PARAMETERS
+                  messages:
+                    type: array
+                    items:
+                      type: string
         '401':
           description: '401'
           content:
@@ -91443,6 +91636,7 @@ paths:
                     billing_cycles:
                       total: 8
                       current: 1
+                      paid: 0
                       next_at: '2024-01-16T20:46:54.786342Z'
                     customer_payer:
                       id: 3t04911d-5df9-429e-8488-ad41abea1a2c
@@ -91467,7 +91661,11 @@ paths:
                       - key: sub_ext_id
                         value: AA001
                     additional_data: null
-                    trial_period: null
+                    trial_period:
+                      billing_cycles: 1
+                      amount:
+                        value: 0
+                        currency: ''
                     initial_payment_validation: false
                     reason: null
                     subscription_agreement_id: null
@@ -91567,10 +91765,10 @@ paths:
                         value: AA001
                     additional_data: null
                     trial_period:
-                      billing_cycles: 2
+                      billing_cycles: 1
                       amount:
-                        value: 5000
-                        currency: USD
+                        value: 0
+                        currency: ''
                     initial_payment_validation: false
                     reason: null
                     subscription_agreement_id: null
@@ -91584,6 +91782,29 @@ paths:
                     plan_id: 1904911d-5df9-429e-8488-ad41abea1a4d
                     plan_assigned_at: '2023-12-16T20:46:54.786342Z'
                     previous_subscription_id: 7304911d-5df9-429e-8488-ad41abea1a4c
+                    phases:
+                      - order: 1
+                        name: Intro
+                        type: TRIAL
+                        duration:
+                          type: MONTH
+                          value: 2
+                        frequency:
+                          type: MONTH
+                          value: 1
+                        amount:
+                          value: 5000
+                          currency: USD
+                        total_payments: 2
+                        country_prices: []
+                      - order: 2
+                        name: Regular
+                        type: REGULAR
+                        duration: null
+                        frequency: null
+                        amount: null
+                        total_payments: null
+                        country_prices: []
                     pending_plan_change: null
         '400':
           description: '400'
@@ -91602,6 +91823,12 @@ paths:
                       - >-
                         Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with
                         value 1.
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
+                  summary: No subscription resolves for the subscription_id on this account — returned as 400, not 404.
         '401':
           description: '401'
           content:
@@ -91731,8 +91958,6 @@ paths:
                     additional_data: null
                     reason: null
                     renewal_notification_days: 3
-                    payments:
-                      - 5104911d-5df9-229e-8468-bd41abea1a4s
                     subscription_agreement_id: null
                     cancellation_time: null
                     cancellation_source: null
@@ -91749,7 +91974,9 @@ paths:
                     type: string
                     example: sub_001
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: streaming service
                   account_id:
                     type: string
@@ -91762,7 +91989,9 @@ paths:
                     type: string
                     example: 001_marzo_23
                   soft_descriptor:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: ACME SUBSCRIPTION
                   status:
                     type: string
@@ -91770,9 +91999,13 @@ paths:
                   plan_id:
                     type: string
                     example: 1904911d-5df9-429e-8488-ad41abea1a4d
+                    description: >-
+                      Omitted entirely on a subscription created without a plan (an inline/raw subscription) — absent,
+                      not null.
                   plan_assigned_at:
                     type: string
                     example: '2023-12-16T20:46:54.786342Z'
+                    description: Omitted entirely on a subscription created without a plan — absent, not null.
                   amount:
                     type: object
                     properties:
@@ -91903,7 +92136,9 @@ paths:
                       - object
                       - 'null'
                   metadata:
-                    type: array
+                    type:
+                      - array
+                      - 'null'
                     items:
                       type: object
                       properties:
@@ -91934,13 +92169,10 @@ paths:
                       How many days before the next billing date the `subscription.close_to_renewal` webhook is sent.
                       `null` means no renewal notification is sent.
                     example: 3
-                  payments:
-                    type: array
-                    items:
-                      type: string
-                      example: 5104911d-5df9-229e-8468-bd41abea1a4s
                   subscription_agreement_id:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa
                   cancellation_time:
                     type:
@@ -91981,13 +92213,24 @@ paths:
                     code: INVALID_DATE
                     messages:
                       - >-
-                        The subscription can not be resumed due to a conflict with the availability dates. Please update
-                        availability dates and try again if you want to keep using the subscription.
+                        The subscription can not be resume due to a conflict with the availability dates. Please update
+                        availability dates and try again if you want to keep using the subscription
                 INVALID BILLING CYCLE BEHAVIOR:
                   value:
                     code: INVALID_PARAMETERS
                     messages:
                       - The field 'billing_cycle_behavior' has an invalid value.
+                INVALID SUBSCRIPTION STATE:
+                  value:
+                    code: INVALID_STATE
+                    messages:
+                      - The subscription state does not support the action requested.
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
+                  summary: No subscription resolves for the subscription_id on this account — returned as 400, not 404.
         '401':
           description: '401'
           content:
@@ -92049,6 +92292,7 @@ paths:
                     country: CL
                     description: Subscription Test
                     merchant_reference: subscription-ref-merchant-AA01
+                    soft_descriptor: null
                     status: ACTIVE
                     amount:
                       currency: CLP
@@ -92061,25 +92305,45 @@ paths:
                       current: 2
                       paid: 1
                       next_at: '2025-05-29T11:13:31.786421Z'
+                    current_period_start: '2025-05-29T11:13:31.786421Z'
+                    current_period_end: '2025-05-29T11:13:31.786421Z'
                     customer_payer:
                       id: 1c6d1a88-d8d5-4c09-b19c-852530d89f05
                     payment_method:
                       type: CARD
                       vaulted_token: 743880c1-1bdb-4572-99a8-c4e5ce184895
+                      card:
+                        installments: null
+                        network_transaction_id: null
+                        usage: USED
                     availability:
                       start_at: '2025-04-29T11:13:31.786421Z'
                       finish_at: null
                     retries:
                       retry_on_decline: false
                       amount: 6
-                    metadata: null
-                    additional_data: null
+                      strategy: DEFAULT
+                      schedule: null
+                      stop_on_hard_decline: null
+                      cancel_on_exhausted_retries: null
                     trial_period:
                       billing_cycles: 1
                       amount:
                         value: 0
                         currency: ''
+                    metadata: null
+                    additional_data: null
                     initial_payment_validation: false
+                    reason: null
+                    renewal_notification_days: null
+                    payments: []
+                    subscription_agreement_id: null
+                    cancellation_time: null
+                    cancellation_source: null
+                    ending_time: null
+                    plan_id: null
+                    plan_assigned_at: null
+                    pending_plan_change: null
                     created_at: '2025-04-29T11:13:31.786421Z'
                     updated_at: '2025-04-29T11:13:31.942325Z'
               schema:
@@ -92098,11 +92362,18 @@ paths:
                     type: string
                     example: CL
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: Subscription Test
                   merchant_reference:
                     type: string
                     example: subscription-ref-merchant-AA01
+                  soft_descriptor:
+                    type:
+                      - string
+                      - 'null'
+                    example: ACME SUBSCRIPTION
                   status:
                     type: string
                     example: ACTIVE
@@ -92144,6 +92415,25 @@ paths:
                       next_at:
                         type: string
                         example: '2025-05-29T11:13:31.786421Z'
+                  current_period_start:
+                    type:
+                      - string
+                      - 'null'
+                    description: >-
+                      Start of the billing period the subscription is currently in, one cadence before
+                      `current_period_end`. Inside a trial or any other plan phase it follows that phase's cadence. A
+                      terminal subscription (`CANCELED` or `COMPLETED`) keeps its final window rather than going null.
+                      Null only for a subscription with no recurring cadence. Always returned together with
+                      current_period_end.
+                    example: '2023-01-16T20:00:00.912480Z'
+                  current_period_end:
+                    type:
+                      - string
+                      - 'null'
+                    description: >-
+                      End of the billing period the subscription is currently in. Equal to billing_cycles.next_at.
+                      Always returned together with current_period_start.
+                    example: '2023-02-16T20:00:00.786342Z'
                   customer_payer:
                     type: object
                     properties:
@@ -92159,6 +92449,20 @@ paths:
                       vaulted_token:
                         type: string
                         example: 743880c1-1bdb-4572-99a8-c4e5ce184895
+                      card:
+                        type: object
+                        properties:
+                          installments:
+                            type:
+                              - integer
+                              - 'null'
+                          network_transaction_id:
+                            type:
+                              - string
+                              - 'null'
+                          usage:
+                            type: string
+                            example: FIRST
                   availability:
                     type: object
                     properties:
@@ -92177,8 +92481,31 @@ paths:
                         type: integer
                         example: 6
                         default: 0
-                  metadata: {}
-                  additional_data: {}
+                      strategy:
+                        type: string
+                        description: >-
+                          How the timing of each retry is decided: `DEFAULT`, `SMART` or `CUSTOM_SCHEDULE`. Treat as
+                          open-ended — handle unrecognized values gracefully.
+                        example: DEFAULT
+                      schedule:
+                        type:
+                          - array
+                          - 'null'
+                        description: The per-attempt schedule, only set when `strategy` is `CUSTOM_SCHEDULE`; `null` otherwise.
+                        items:
+                          type: object
+                      stop_on_hard_decline:
+                        type:
+                          - boolean
+                          - 'null'
+                        description: When true, a hard decline stops the retries for the current billing cycle.
+                      cancel_on_exhausted_retries:
+                        type:
+                          - boolean
+                          - 'null'
+                        description: >-
+                          When true, the subscription is canceled once a cycle's retries end without a successful
+                          payment, with `cancellation_source` set to `RETRIES_EXHAUSTED`.
                   trial_period:
                     type: object
                     properties:
@@ -92196,10 +92523,117 @@ paths:
                           currency:
                             type: string
                             example: ''
+                  metadata: {}
+                  additional_data: {}
                   initial_payment_validation:
                     type: boolean
                     example: false
                     default: true
+                  reason:
+                    type:
+                      - string
+                      - 'null'
+                    description: Free-form reason for the subscription's current status, when one was recorded; `null` otherwise.
+                    example: merchant request
+                  renewal_notification_days:
+                    type:
+                      - integer
+                      - 'null'
+                    description: >-
+                      How many days before the next billing date the `subscription.close_to_renewal` webhook is sent.
+                      `null` means no renewal notification is sent.
+                    example: 3
+                  payments:
+                    type: array
+                    items:
+                      type: string
+                      example: 5104911d-5df9-229e-8468-bd41abea1a4s
+                    description: >-
+                      The subscription's payments. **Omitted entirely when the subscription has no successful payments
+                      yet** (for example while every retry attempt has failed) — treat an absent key as an empty
+                      history, not as an error.
+                  subscription_agreement_id:
+                    type:
+                      - string
+                      - 'null'
+                    example: sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa
+                  cancellation_time:
+                    type:
+                      - string
+                      - 'null'
+                    description: When the subscription was canceled. Only set once it reaches `CANCELED`; `null` otherwise.
+                    example: '2023-12-16T20:46:54.786342Z'
+                  cancellation_source:
+                    type:
+                      - string
+                      - 'null'
+                    description: >-
+                      What triggered the cancellation: `MERCHANT`, `SYSTEM`, `PLAN_CHANGE` or `RETRIES_EXHAUSTED`. Only
+                      set once the subscription reaches `CANCELED`; `null` otherwise. Treat as open-ended — handle
+                      unrecognized values gracefully.
+                    example: MERCHANT
+                  ending_time:
+                    type:
+                      - string
+                      - 'null'
+                    description: >-
+                      When the subscription completed or expired. Only set once it reaches `COMPLETED`; `null`
+                      otherwise.
+                    example: '2024-12-16T20:46:54.786342Z'
+                  plan_id:
+                    type: string
+                    description: Only present when the subscription is linked to a plan.
+                    example: 00000000-0000-4000-8000-000000000001
+                  plan_assigned_at:
+                    type: string
+                    description: >-
+                      Only present on plan-linked subscriptions. The moment the plan was attached — at creation from a
+                      plan, migration onto a plan, or a plan change.
+                    example: '2023-12-16T20:46:54.786342Z'
+                  pending_plan_change:
+                    type:
+                      - object
+                      - 'null'
+                    description: >-
+                      The plan change scheduled for the next billing cycle, or null when none is pending. Schedule one
+                      with the `plan_change` block on Update Subscription.
+                    properties:
+                      plan_id:
+                        type: string
+                        description: The identifier of the target plan.
+                        example: 1904911d-5df9-429e-8488-ad41abea1a4d
+                      plan_name:
+                        type: string
+                        description: The name of the target plan.
+                        example: Pro
+                      direction:
+                        type: string
+                        enum:
+                          - UPGRADE
+                          - DOWNGRADE
+                        description: Whether the target plan is an upgrade or a downgrade. Informational only.
+                        example: UPGRADE
+                      effective:
+                        type: string
+                        enum:
+                          - NEXT_BILLING_CYCLE
+                        description: When the change applies.
+                        example: NEXT_BILLING_CYCLE
+                      phases_behavior:
+                        type: string
+                        enum:
+                          - START_FROM_REGULAR
+                          - HONOR_PHASES
+                        description: What happens when the target plan has phases.
+                        example: START_FROM_REGULAR
+                      applies_at:
+                        type: string
+                        description: The billing event the change will take effect on — the subscription's next billing date.
+                        example: '2023-02-16T20:00:00.786342Z'
+                      requested_at:
+                        type: string
+                        description: When the change was scheduled.
+                        example: '2023-01-20T10:12:31.786342Z'
                   created_at:
                     type: string
                     example: '2025-04-29T11:13:31.786421Z'
@@ -92216,6 +92650,18 @@ paths:
                     code: INVALID_STATE
                     messages:
                       - The last payment intent of the subscription does not support the action requested.
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
+                  summary: The subscription_id is well formed but no retryable subscription resolves for it on this account.
+                MALFORMED SUBSCRIPTION ID:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - Invalid code parameter.
+                  summary: The subscription_id in the path is not a valid identifier.
               schema:
                 oneOf:
                   - type: object

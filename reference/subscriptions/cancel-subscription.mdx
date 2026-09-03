@@ -93,7 +93,7 @@ For example, a 30-day cycle charged `$30.00`, canceled on day 10: 10 days used, 
 ```
 
 A subscription billed by the hour or minute has no meaningful notion of a "day," so `PRORATED`
-returns `400` `"proration is not available for sub-daily cadences"` there. `FULL` and `CUSTOM` are
+returns `400` `"proration is not available for sub-daily cadences."` there. `FULL` and `CUSTOM` are
 unaffected — both still work on a sub-daily cadence.
 
 ### FULL
@@ -147,9 +147,9 @@ charged amount, and `refund_amount.currency` must match the subscription's own c
 
 - **The cancel `200` response** always carries the `refund` key — `null` when no quote was computed,
   the object otherwise.
-- **`GET /v1/subscriptions/{id}`** and **`GET /v1/subscriptions?merchant_reference=...`** carry the
-  *last computed* `refund` too, once one exists — canceling with a refund quote persists it, so it
-  keeps showing up on every later read of that subscription through either of these.
+- **`GET /v1/subscriptions/{id}`** carries the *last computed* `refund` too, once one exists —
+  canceling with a refund quote persists it, so it keeps showing up on every later read of that
+  subscription there.
 - **`GET /v1/subscriptions`** (the paginated list) does **not** carry `refund` on any entry, whether
   or not that subscription was canceled with a quote — the list item is a smaller summary shape than
   the full subscription object, and `refund` isn't one of the fields it includes.
@@ -249,7 +249,7 @@ status change, no charge.
 ```
 
 Sending `"schedule": null` when nothing is scheduled is a no-op: `200`, `cancel_scheduled` stays
-`null`, and no webhook is sent. When a schedule is cleared, `subscription.cancel_schedule_canceled`
+omitted, and no webhook is sent. When a schedule is cleared, `subscription.cancel_schedule_canceled`
 fires instead.
 
 ## Reading the result
@@ -257,7 +257,7 @@ fires instead.
 The response carries the same [Subscription](/reference/subscriptions/the-subscription-object)
 shape as every other subscription endpoint. Four fields are relevant here:
 
-- `cancel_scheduled` — `null` when no cancellation is pending, otherwise the schedule's `mode`,
+- `cancel_scheduled` — omitted when no cancellation is pending, otherwise the schedule's `mode`,
   `after_cycles`/`at`, `requested_at` and `past_due_behavior`.
 - `retries.stopped`, `retries.attempts_made`, `retries.outcome`, `retries.next_retry_at` — populated
   whenever the subscription is `PAST_DUE` or has a `cancel_scheduled` pending; omitted otherwise.
@@ -295,6 +295,7 @@ itself: present only when a quote was actually computed (`PRORATED`/`FULL`/`CUST
 
 | HTTP | `code` | When |
 |---|---|---|
+| `400` | `SUBSCRIPTION_NOT_FOUND` | `subscription_id` doesn't identify a subscription. |
 | `400` | `BAD_REQUEST` | An unrecognized top-level key, or an unrecognized key inside `schedule`. |
 | `400` | `BAD_REQUEST` | `schedule` carries both `at` and `after_cycles`, or neither. |
 | `400` | `BAD_REQUEST` | `after_cycles` is not an integer between 1 and 60, or exceeds the billing cycles remaining. |
@@ -305,7 +306,7 @@ itself: present only when a quote was actually computed (`PRORATED`/`FULL`/`CUST
 | `400` | `BAD_REQUEST` | `refund` is not one of `NONE`, `PRORATED`, `FULL`, `CUSTOM`. |
 | `400` | `BAD_REQUEST` | `refund` (any mode other than `NONE`) is combined with `schedule`, including `"schedule": null`. |
 | `400` | `BAD_REQUEST` | Refund quoting is not enabled for this organization (`refund: NONE`/absent is never gated). |
-| `400` | `BAD_REQUEST` | `refund_amount` is sent without `refund: CUSTOM`, or `refund: CUSTOM` is sent without `refund_amount`. |
+| `400` | `BAD_REQUEST` | `refund_amount` is sent without `refund: CUSTOM`, or `refund: CUSTOM` is sent without `refund_amount` and the plan has no configured refund rule for it to fall back on. |
 | `400` | `BAD_REQUEST` | `refund_amount.value` is missing, not greater than `0`, or exceeds the current cycle's charged amount (the cap). |
 | `400` | `BAD_REQUEST` | `refund_amount.currency` is missing or does not match the subscription's own currency. |
 | `400` | `BAD_REQUEST` | `refund: PRORATED` on a sub-daily (`HOUR`/`MINUTE`) cadence. |

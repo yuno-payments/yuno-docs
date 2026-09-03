@@ -138,7 +138,7 @@ This object represents a subscription that can be associated with a customer.
 <ParamField body="current_phase_end" type="Timestamp">
   When the phase named by `current_phase` hands over to the next one — for a subscription in its trial, the moment it switches to the regular price. It is the end of the last billing period the phase covers, so on the final period of a trial it equals `current_period_end`.
 
-  `null` on subscriptions that are not inside a phase: those with no plan, and plan-linked ones that already left the ladder and are on the plan's regular price.
+  Absent — not `null` — on subscriptions that are not inside a phase: those with no plan, and plan-linked ones that already left the ladder and are on the plan's regular price.
 
   Example: 2023-03-16T20:00:00.786342Z
 </ParamField>
@@ -165,7 +165,7 @@ This object represents a subscription that can be associated with a customer.
     <ParamField body="frequency" type="object">
       <Expandable title="properties">
         <ParamField body="type" type="enum">
-          `DAY`, `WEEK`, `MONTH`, `YEAR`, or `MINUTES`.
+          `DAY`, `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `MINUTES` — all six are accepted on create. `YEAR` is rejected with `400 BAD_REQUEST` ("YEAR is invalid for frequency.type field") wherever `frequency.type` is validated; use `MONTH` with `value` `12` instead — confirm before relying on it.
         </ParamField>
         <ParamField body="value" type="int" />
       </Expandable>
@@ -194,15 +194,19 @@ This object represents a subscription that can be associated with a customer.
 </ParamField>
 
 <ParamField body="frequency" type="object">
-  The frequency defined for the payment subscription. If not set, defaults are MONTH for type and 1 for value.
+  The frequency defined for the payment subscription. If not set, defaults are MONTH for type and 1 for value. Absent — not defaulted — on a subscription created with `billing_date` instead; the two are mutually exclusive.
 
   <Expandable title="properties">
     <ParamField body="type" type="enum">
       The type of interval the subscription will have in time. If not set, always MONTH by default.
 
-      Possible enum values: `DAY`, `WEEK`, `MONTH`, `YEAR`, or `MINUTES`.
+      Possible enum values: `DAY`, `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `MINUTES`. `YEAR` is rejected on staging — see the note below.
 
-      On a subscription whose `payment_method.type` is `PIX_AUTOMATIC`, only `WEEK`, `MONTH` and `YEAR` with `value` `1` are accepted — every other combination is rejected with `400 INVALID_PARAMETERS`. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences).
+      On a subscription whose `payment_method.type` is `PIX_AUTOMATIC`, only `WEEK` and `MONTH` with `value` `1` are confirmed to be accepted on staging as of this audit — every other combination tried (`YEAR`, `QUARTER`, `HALF_YEAR`, and `MONTH` with `value` `3` or `6`) is rejected with `400`, several of them (`QUARTER`, `HALF_YEAR`) with the same `INVALID_PARAMETERS` "Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with value 1." message that names them as supported. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences) and confirm with engineering before treating this as the final accepted set.
+
+      <Note>
+        `frequency.type: YEAR` is rejected everywhere on staging, not just for `PIX_AUTOMATIC` — a plain `CARD` subscription with `{"type":"YEAR","value":1}` gets `400 BAD_REQUEST` ("YEAR is invalid for frequency.type field"). This may be a staging regression rather than an intentional contract change; confirm with engineering before removing `YEAR` from the schema.
+      </Note>
     </ParamField>
 
     <ParamField body="value" type="int">
@@ -286,13 +290,13 @@ This object represents a subscription that can be associated with a customer.
 
   <Expandable title="properties">
     <ParamField body="type" type="string">
-      The type of billing_date the subscription will have in time. PREPAID, POSTDATE, DAY. If not set, the creation date for the plan will be set by default.
+      The type of billing_date the subscription will have in time. PREPAID, POSTDATE, DAY. Required when `billing_date` is sent — omitting it is rejected with `400 BAD_REQUEST` ("billing_date.type field is required"), confirmed on staging.
 
       Example: DAY
     </ParamField>
 
     <ParamField body="day" type="number">
-      The day of the month to charge the subscription if the type is set to DAY. Always 1 by default.
+      The day of the month to charge the subscription if the type is set to DAY. Required when `type` is `DAY` — omitting it is rejected with `400 BAD_REQUEST` ("The billing date day must be between 1 and 31."), confirmed on staging; it is not defaulted to 1.
 
       Example: 2
     </ParamField>
@@ -320,7 +324,7 @@ This object represents a subscription that can be associated with a customer.
 
       Possible enum values: `CARD`, `PAYPAL_ENROLLMENT`, `PIX_AUTOMATIC`
 
-      `PIX_AUTOMATIC` bills a Brazilian Pix Automático mandate, is matched case-insensitively, and accepts only the cadences the mandate can express — see [Pix Automático](/docs/payment-features/subscriptions/pix-automatico).
+      `PIX_AUTOMATIC` bills a Brazilian Pix Automático mandate, is matched case-sensitively — `pix_automatic` in lowercase against the same vaulted token is rejected with `400 INCORRECT_PAYMENT_METHOD_TYPE` ("The type of payment method of the request does not correspond to the vaulted_token."), confirmed against a same-token control request using the correct case, which succeeds — and accepts only the cadences the mandate can express — see [Pix Automático](/docs/payment-features/subscriptions/pix-automatico).
     </ParamField>
 
     <ParamField body="token" type="string">
@@ -380,6 +384,26 @@ This object represents a subscription that can be associated with a customer.
             </ParamField>
           </Expandable>
         </ParamField>
+
+        <ParamField body="installments" type="number">
+          The number of installments the payment was authorized for. `null` until a payment has been authorized on this card.
+        </ParamField>
+
+        <ParamField body="network_transaction_id" type="string">
+          The card network's transaction identifier from the most recent authorized payment. `null` until a payment has been authorized on this card.
+
+          Example: 177447700566392
+        </ParamField>
+
+        <ParamField body="usage" type="enum">
+          Echoes the `usage` sent (or defaulted) on the request that authorized the most recent payment on this card — see [Create Subscription](/reference/subscriptions/create-subscription) for what the values mean.
+
+          Observed values: `FIRST` (present from creation, before any payment on this card has been authorized — while `installments` and `network_transaction_id` are still `null`) and `USED` (once one has).
+        </ParamField>
+
+        <Note>
+          `verify` and `card_data` above are write-only — accepted on [Create Subscription](/reference/subscriptions/create-subscription), never echoed back on a response. `installments`, `network_transaction_id` and `usage` are the response-time keys instead.
+        </Note>
       </Expandable>
     </ParamField>
   </Expandable>
@@ -387,6 +411,8 @@ This object represents a subscription that can be associated with a customer.
 
 <ParamField body="trial_period" type="object">
   Specifies the trial_period object.
+
+  `trial_period` is always present in the response — never omitted or null — defaulting to `{"billing_cycles": 1, "amount": {"value": 0, "currency": ""}}` when not requested on create, confirmed identically on a plan-linked-with-phases subscription, a plan-linked-no-phases subscription, and a raw `billing_date` subscription. Its presence does not indicate a real trial; the default `amount.currency` is an empty string rather than a 3-character ISO 4217 code.
 
   <Expandable title="properties">
     <ParamField body="billing_cycles" type="number">
@@ -438,13 +464,13 @@ This object represents a subscription that can be associated with a customer.
 
   <Expandable title="properties">
     <ParamField body="retry_on_decline" type="bool">
-      If we should retry a payment or not after a first decline. False by default.
+      If we should retry a payment or not after a first decline. False by default (`true` by default on `PIX_AUTOMATIC` subscriptions).
 
       Example: true
     </ParamField>
 
     <ParamField body="amount" type="number">
-      The number of retries that the subscription plan will have to completion. The maximum equals your environment's configured retry schedule length (6 in production). A value above the cap is rejected with `400` (`Max retries attempts exceeded`). Max: 6
+      The number of retries that the subscription plan will have to completion. The maximum equals your environment's configured retry schedule length (6 in production). A value above the cap is rejected with `400` (`Max retries attempts exceeded.`). Max: 6
 
       Example: 4
     </ParamField>
@@ -458,7 +484,13 @@ This object represents a subscription that can be associated with a customer.
 
       Treat this field as open-ended. New values can be introduced as Yuno adds retry behaviors, so handle an unrecognized value gracefully rather than switching exhaustively over the list above. `SMART` is the most recent addition.
 
+      On staging as of this audit, sending `strategy` as `DEFAULT` or `CUSTOM_SCHEDULE` on this fixture account is silently returned as `strategy: "SMART"` on the created subscription — a submitted `CUSTOM_SCHEDULE` `schedule` array is echoed back unchanged even though the effective strategy comes back `SMART` (contradicting the `schedule` rule below). Confirm with engineering whether this is an account-level override or a general regression before treating `DEFAULT`/`CUSTOM_SCHEDULE` as reliably settable.
+
       Example: `SMART`
+    </ParamField>
+
+    <ParamField body="schedule" type="array of objects">
+      The per-attempt schedule sent when `strategy` is `CUSTOM_SCHEDULE`; `null` otherwise, including when a non-`CUSTOM_SCHEDULE` request included one.
     </ParamField>
 
     <ParamField body="stop_on_hard_decline" type="bool">
@@ -486,7 +518,11 @@ This object represents a subscription that can be associated with a customer.
     </ParamField>
 
     <ParamField body="outcome" type="enum">
-      How the current cycle's retries resolved. One of `RECOVERED`, `EXHAUSTED`, or `ABANDONED` (retries stopped by a cancellation before exhausting on their own). Present only while the subscription is `PAST_DUE` or has `cancel_scheduled` pending; omitted otherwise.
+      How the current cycle's retries resolved. One of `RECOVERED`, `EXHAUSTED`, or `ABANDONED` (retries stopped by a cancellation before exhausting on their own).
+
+      <Note>
+        Unlike `stopped` and `attempts_made`, a `cancel_scheduled` pending on its own is not enough to surface this field — confirmed live on a subscription that had never gone `PAST_DUE`. The exact presence rule (it appears to require the cycle to have actually gone `PAST_DUE`) needs a `PAST_DUE` + `cancel_scheduled` repro to state precisely.
+      </Note>
     </ParamField>
 
     <ParamField body="next_retry_at" type="Timestamp">
@@ -512,7 +548,7 @@ This object represents a subscription that can be associated with a customer.
 </ParamField>
 
 <ParamField body="cancel_scheduled" type="object">
-  The cancellation scheduled for this subscription, or `null` when none is pending. Schedule one with the `schedule` block on `POST /v1/subscriptions/{id}/cancel`; undo it with `"schedule": null`. See [Cancel Subscription](/reference/subscriptions/cancel-subscription).
+  The cancellation scheduled for this subscription. Omitted — not `null` — when none is pending. Schedule one with the `schedule` block on `POST /v1/subscriptions/{id}/cancel`; undo it with `"schedule": null`. See [Cancel Subscription](/reference/subscriptions/cancel-subscription).
 
   <Expandable title="properties">
     <ParamField body="mode" type="enum">
@@ -742,6 +778,10 @@ This object represents a subscription that can be associated with a customer.
 
 <ParamField body="additional_data" type="object">
   Specifies the additional_data object. This object is not mandatory. However, if you send this information, the payment experience will be enhanced for your user.
+
+  `additional_data` also accepts sub-fields beyond `order.items` that are not enumerated below: at the top level, `airline`, `transportations`, `seller_details`, `device`, `payer_risk_data` (all `null` when unset); on `order`, `fee_amount`, `shipping_amount`, `tip_amount`, `account_funding`, `tickets`, `fulfillment`, `discounts`, `sales_channel`, `duty_amount`, `date`; and on each item in `order.items`, `url`, `unit_of_measure`, `commodity_code`, `total_amount`, `gross_net_indicator`. Each is still validated against its own schema — for example `transportations[].type` only accepts `ONE_WAY`, `ROUNDTRIP` or `MULTIPLE_DESTINATIONS`, `order.discounts[]` requires `id`, `name` and `unit_amount`, and `order.account_funding`/`order.fulfillment` reject a plain string or number ("wrong data type") so they take an object, not the shapes shown here.
+
+  <Warning>Of this passthrough set, only `order.fee_amount`, `order.shipping_amount` and `order.tip_amount` are actually echoed back — confirmed live. Every other field listed above is accepted on the request but comes back `null` on the create response: `airline`, `transportations`, `device`, `payer_risk_data`, `order.tickets`, `order.discounts`, `order.sales_channel`, `order.duty_amount`, `order.date`, and each item's `url`, `unit_of_measure`, `commodity_code` and `total_amount` — confirmed live sending valid values for all of them and getting `null` back on every one. `seller_details` is the one exception that comes back as an object rather than `null`, but with a fixed field set of its own (`name`, `website`, `email`, `address`, `reference`, `country`, `phone`, `document`, `industry`, `merchant_category_code`, `provider_seller_id`) that has nothing to do with whatever you send it — sending `{"id": "seller1"}` came back `{"name": "", "website": "", "email": "", ...}` with no `id` key at all. Confirm with engineering before relying on any of this passthrough set for a round trip.</Warning>
 
   <Expandable title="properties">
     <ParamField body="order" type="object">

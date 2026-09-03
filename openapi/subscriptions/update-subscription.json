@@ -101,6 +101,20 @@
                       }
                     }
                   },
+                  "billing_date": {
+                    "type": "object",
+                    "description": "Bills on a fixed day instead of a rolling frequency; mutually exclusive with `frequency`. Cannot be sent for a plan-linked subscription — combining it with `plan_change` returns 400 (\"The billing_date field is managed by the subscription's plan.\").",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "example": "DAY"
+                      },
+                      "day": {
+                        "type": "integer",
+                        "example": 2
+                      }
+                    }
+                  },
                   "frequency": {
                     "type": "object",
                     "description": "Specifies the `frequency` object. Defines the billing frequency for the subscription. Including type and value.",
@@ -241,7 +255,7 @@
                   },
                   "retries": {
                     "type": "object",
-                    "description": "The retries configuration to apply going forward. Accepts the same object as Create Subscription — including strategy and schedule — except cancel_on_exhausted_retries, which is create-only. Changes apply the next time retries are scheduled: a billing cycle already running its retries finishes on the configuration it started with, and the update takes effect from the next cycle.",
+                    "description": "The retries configuration to apply going forward, replacing the stored configuration as a whole: fields left out of the object revert to their defaults (for example, omitting strategy resets it to DEFAULT and omitting amount resets it to the environment's default retry count) rather than being left unchanged — send every field you want to keep, not just the ones changing. Accepts the same object as Create Subscription — including strategy and schedule — except cancel_on_exhausted_retries, which is create-only. Changes apply the next time retries are scheduled: a billing cycle already running its retries finishes on the configuration it started with, and the update takes effect from the next cycle.",
                     "properties": {
                       "retry_on_decline": {
                         "type": "boolean",
@@ -332,19 +346,22 @@
                       "KEEP",
                       "RESTART"
                     ],
-                    "description": "For subscriptions that are not linked to a plan: re-anchors billing in the same way as `plan_change.billing_cycle_behavior`, typically combined with a `frequency` change in the same call (e.g. monthly to yearly, restarting the cycle from today). KEEP (default): the next charge date is untouched. RESTART: re-anchors the next charge to now plus the (possibly updated) frequency; the anchor alone resets — cycle counters, the retry configuration and the subscription status survive. On a subscription that has not started yet (CREATED — accepted here, unlike `plan_change`), the anchor clamps to its start date. Rules: cannot be combined with `plan_change` (400 — use the nested field); on a plan-linked subscription this field returns 400 (managed through `plan_change`); a PAUSED subscription returns 409 INVALID_SUBSCRIPTION_STATUS. Write-only: never echoed in any response."
+                    "description": "For subscriptions that are not linked to a plan: re-anchors billing in the same way as `plan_change.billing_cycle_behavior`, typically combined with a `frequency` change in the same call (e.g. monthly to yearly, restarting the cycle from today). KEEP (default): the next charge date is untouched. RESTART: re-anchors the next charge to now plus the (possibly updated) frequency; the anchor alone resets — cycle counters, the retry configuration and the subscription status survive. On a subscription that has not started yet (CREATED — accepted here, unlike `plan_change`), RESTART still re-anchors to now plus the frequency, the same as on an already-started subscription — it does not clamp to `availability.start_at`. Rules: cannot be combined with `plan_change` (400 — use the nested field); on a plan-linked subscription this field returns 400 (managed through `plan_change`); a PAUSED subscription returns 409 INVALID_SUBSCRIPTION_STATUS. Write-only: never echoed in any response."
                   },
                   "metadata": {
-                    "type": "object",
-                    "description": "Set of key-value pairs that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to metadata.",
-                    "properties": {
-                      "key": {
-                        "type": "string",
-                        "description": "Object title that represents the key-value pair inside the metadata (MAX 48 ; MIN 1)."
-                      },
-                      "value": {
-                        "type": "string",
-                        "description": "Object value for the key defined  (MAX 512 ; MIN 1)."
+                    "type": "array",
+                    "description": "Replaces the stored metadata as a whole: send every key-value pair you want to keep, not just the ones changing; a key left out of the array is removed. Posting an empty string as a key's value does not remove it — the key stays with an empty value. To clear metadata entirely, send an empty array.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "description": "Object title that represents the key-value pair inside the metadata (MAX 48 ; MIN 1)."
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Object value for the key defined  (MAX 512 ; MIN 1)."
+                        }
                       }
                     }
                   }
@@ -469,6 +486,11 @@
                           "type": "integer",
                           "example": 1,
                           "default": 0
+                        },
+                        "monthly_billing_day": {
+                          "type": "integer",
+                          "description": "The day of the month billing is anchored to. Only present on MONTH-frequency subscriptions once an anchor day has been derived (for example after a `billing_cycle_behavior: RESTART`); absent otherwise.",
+                          "example": 3
                         }
                       }
                     },
@@ -1145,9 +1167,9 @@
                 "examples": {
                   "Result": {
                     "value": {
-                      "code": "INVALID_REQUEST",
+                      "code": "BAD_REQUEST",
                       "messages": [
-                        "Invalid request."
+                        "Invalid json."
                       ]
                     }
                   },
@@ -1156,6 +1178,14 @@
                       "code": "INVALID_PARAMETERS",
                       "messages": [
                         "Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with value 1."
+                      ]
+                    }
+                  },
+                  "SUBSCRIPTION NOT FOUND": {
+                    "value": {
+                      "code": "SUBSCRIPTION_NOT_FOUND",
+                      "messages": [
+                        "Subscription not found."
                       ]
                     }
                   }

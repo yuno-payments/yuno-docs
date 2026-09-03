@@ -54,7 +54,7 @@
             "name": "plan_id",
             "in": "path",
             "required": true,
-            "description": "The unique identifier of the plan.",
+            "description": "The unique identifier of the plan. Must be a valid UUID v4, else `400 INVALID_PARAMETERS` (\"The path parameter in url 'plan_id' must be a valid uuid v4.\").",
             "schema": {
               "type": "string"
             }
@@ -77,7 +77,7 @@
                 "properties": {
                   "meter_id": {
                     "type": "string",
-                    "description": "The unique identifier of the meter to attach (MAX 64; MIN 36). Must be an existing `ACTIVE` meter of the account — an unknown or `INACTIVE` meter is rejected with `400 METER_NOT_FOUND`. A meter can be attached to a plan only once, else `409 PLAN_METER_ALREADY_ASSIGNED`."
+                    "description": "The unique identifier of the meter to attach (MAX 64; MIN 36). Must be a valid UUID v4, else `400 INVALID_PARAMETERS` (\"The field 'meter_id' must be a valid uuid v4.\"). Must be an existing `ACTIVE` meter of the account — an unknown or `INACTIVE` meter is rejected with `400 METER_NOT_FOUND`. A meter can be attached to a plan only once, else `409 PLAN_METER_ALREADY_ASSIGNED`."
                   },
                   "credits": {
                     "type": "integer",
@@ -332,6 +332,8 @@
                         "currency": "USD",
                         "value": 0.05
                       },
+                      "package_size": null,
+                      "package_price": null,
                       "country_prices": [
                         {
                           "country": "US",
@@ -341,8 +343,10 @@
                           }
                         }
                       ],
+                      "package_country_prices": [],
                       "created_at": "2026-08-18T09:00:04.000000Z",
-                      "updated_at": "2026-08-18T09:00:04.000000Z"
+                      "updated_at": "2026-08-18T09:00:04.000000Z",
+                      "tiers": []
                     }
                   }
                 },
@@ -385,8 +389,49 @@
                         }
                       }
                     },
+                    "package_size": {
+                      "type": "number",
+                      "nullable": true,
+                      "description": "The bundle size for `pricing_strategy: PACKAGE`. `null` unless the attach used `PACKAGE`."
+                    },
+                    "package_price": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The price per bundle for `pricing_strategy: PACKAGE`. `null` unless the attach used `PACKAGE`.",
+                      "properties": {
+                        "currency": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      }
+                    },
                     "country_prices": {
                       "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "country": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "currency": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "package_country_prices": {
+                      "type": "array",
+                      "description": "Per-bundle price by subscriber country for `pricing_strategy: PACKAGE`. `[]` unless the attach used `PACKAGE`.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -414,6 +459,53 @@
                     "updated_at": {
                       "type": "string",
                       "description": "Set by Yuno on every update."
+                    },
+                    "tiers": {
+                      "type": "array",
+                      "description": "Graduated pricing bands for `pricing_strategy: TIERED`. `[]` unless the attach used `TIERED`.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "up_to": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "rate": {
+                            "type": "object",
+                            "properties": {
+                              "currency": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "country_rates": {
+                            "type": "array",
+                            "nullable": true,
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "country": {
+                                  "type": "string"
+                                },
+                                "amount": {
+                                  "type": "object",
+                                  "properties": {
+                                    "currency": {
+                                      "type": "string"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -428,27 +520,27 @@
                   "Currency mismatch": {
                     "summary": "Currency mismatch",
                     "value": {
-                      "code": "INVALID_PARAMETERS",
+                      "code": "BAD_REQUEST",
                       "messages": [
-                        "The price_per_credit currency must match the plan base currency"
+                        "The price_per_credit currency must match the plan base currency."
                       ]
                     }
                   },
                   "Missing price on non-USD plan": {
                     "summary": "Missing price on non-USD plan",
                     "value": {
-                      "code": "INVALID_PARAMETERS",
+                      "code": "BAD_REQUEST",
                       "messages": [
-                        "A price_per_credit is required when the plan base currency is not USD"
+                        "A price_per_credit is required when the plan base currency is not USD."
                       ]
                     }
                   },
                   "Missing price and no default": {
                     "summary": "Missing price and no default",
                     "value": {
-                      "code": "INVALID_PARAMETERS",
+                      "code": "BAD_REQUEST",
                       "messages": [
-                        "A price_per_credit is required when the meter has no default_price"
+                        "A price_per_credit is required when the meter has no default_price."
                       ]
                     }
                   },
@@ -457,7 +549,7 @@
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The meter credits must be greater than or equal to 0"
+                        "The field 'credits' must be greater than or equal to the minimum allowed value."
                       ]
                     }
                   },
@@ -473,9 +565,9 @@
                   "Duplicate country": {
                     "summary": "Duplicate country",
                     "value": {
-                      "code": "INVALID_PARAMETERS",
+                      "code": "BAD_REQUEST",
                       "messages": [
-                        "The country_prices must not contain duplicate countries"
+                        "Duplicated country_prices for 'US'."
                       ]
                     }
                   },
@@ -484,7 +576,16 @@
                     "value": {
                       "code": "METER_NOT_FOUND",
                       "messages": [
-                        "The meter does not exist, is inactive or is not linked to this account."
+                        "Meter not found."
+                      ]
+                    }
+                  },
+                  "Package/tier config on wrong strategy": {
+                    "summary": "Package/tier config on wrong strategy",
+                    "value": {
+                      "code": "PLAN_METER_PRICING_CONFIG_UNSUPPORTED",
+                      "messages": [
+                        "Package and tier pricing configuration is not supported for this meter's pricing strategy."
                       ]
                     }
                   }
@@ -580,7 +681,7 @@
                     "value": {
                       "code": "PLAN_METER_ALREADY_ASSIGNED",
                       "messages": [
-                        "The meter 66666666-6666-6666-6666-666666666666 is already assigned to this plan"
+                        "This meter is already assigned to the plan."
                       ]
                     }
                   }

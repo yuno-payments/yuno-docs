@@ -12,7 +12,7 @@ The `subscription` block on [Create Payment](/reference/payments/create-payment)
 
 * **One call** (this page): the customer is signing up and paying right now, and you want the signup to succeed or fail as a single unit. Best for checkout flows.
 * **[Create Subscription](/reference/subscriptions/create-subscription)**: you already hold a `vaulted_token` for the customer — for example, they enrolled a card earlier. See the [subscriptions overview](/docs/payment-features/subscriptions/index) for that flow. To move an existing subscriber onto another plan, use [Change Subscription Plan](/reference/subscriptions/change-subscription-plan) — creating a second subscription leaves the first one active and billing.
-* **[Payment links](/reference/payment-links/create-payment-link)**: the `subscription` block is not supported on payment-link create — it is ignored rather than rejected, so the link returns `201` and no subscription is ever created. Take the payment on the link with `vault_on_success`, then call [Create Subscription](/reference/subscriptions/create-subscription) with the resulting `vaulted_token`.
+* **[Payment links](/reference/payment-links/create-payment-link)**: the `subscription` block IS recognized on payment-link create — it is not ignored. It requires `vault_on_success: true`, but that requirement is only surfaced once `one_time_use: true` is also set: with `one_time_use` present and `vault_on_success` omitted the call 400s (`INVALID_PARAMETERS`, `"vault_on_success must be set true when a subscription is requested."`), while omitting both is accepted at create time. Send `vault_on_success: true` explicitly rather than relying on the error to catch it.
 
 Both routes produce a subscription you manage with the same endpoints — [pause](/reference/subscriptions/pause-subscription), [resume](/reference/subscriptions/resume-subscription), [cancel](/reference/subscriptions/cancel-subscription), [retrieve](/reference/subscriptions/retrieve-subscription). They are not configured identically: the `subscription` block on Create Payment carries a smaller field set, and cannot set `retries`, `trial_period`, `plan_id`, `metadata`, `soft_descriptor` or a subscription `name`. In particular **[Smart Retries](/docs/payment-features/subscriptions/retries) are off** on a subscription created this way — a declined renewal is not retried until you turn them on with [Update Subscription](/reference/subscriptions/update-subscription).
 </Note>
@@ -57,14 +57,14 @@ Send `subscription` alongside the normal Create Payment fields. To start a **new
 | Field                  | Type    | Required                     | Description                                                                                                                                  |
 | :--------------------- | :------ | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
 | `frequency.type`       | string  | Yes                          | Billing cadence unit. Accepts `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `YEAR`. |
-| `frequency.value`      | number | Yes (checked after the charge) | How many `type` units between charges. `{"type": "MONTH", "value": 1}` bills monthly, `"value": 3` bills quarterly. Always send it — omitting it isn't caught up front, it fails later when the subscription is created. Whole numbers only — a fractional value is not rejected up front and fails after the charge. |
+| `frequency.value`      | number | Yes                          | How many `type` units between charges. `{"type": "MONTH", "value": 1}` bills monthly, `"value": 3` bills quarterly. Whole numbers only — a fractional value is rejected before any charge (`400`, `"<value> is invalid for subscription_external.frequency.value field"`). Always send it: omitting it entirely is **not currently validated** — the subscription is created with `frequency.value: 0` and a zero-length billing period, with no error anywhere. |
 | `frequency.execution`  | string  | Yes                          | Who runs the recurrence. Send `YUNO`. See [`execution` decides who bills](#execution-decides-who-bills).                                        |
 | `availability.start_at`| string  | No                           | When the subscription's active window opens, UTC [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601). Must be in the future.                     |
 | `availability.finish_at`| string | No                           | When the window closes, UTC ISO 8601. Must be after `start_at` — or, if you omit `start_at`, after the moment of the call.                      |
 | `amount.value`         | number  | Yes                          | The amount of each recurring charge. When `amount.type` is `FIXED` it must equal the payment's `amount.value` — a different value is rejected before any charge. |
 | `amount.currency`      | string  | Yes                          | ISO 4217 currency code (3 characters). Must match the payment's `amount.currency` — a different currency is rejected before any charge. See [Country reference](/reference/country-reference). |
 | `amount.type`          | string  | Yes                          | `FIXED` or `VARIABLE`.                                                                                                                        |
-| `billing_cycles.total` | number  | No                           | Total number of cycles to bill before the subscription completes. Must be `1` or greater.                                                     |
+| `billing_cycles.total` | number  | No                           | Documented to cap the subscription after this many cycles, but on this route staging silently drops it regardless of the value sent — the charge and subscription both succeed, and `GET` on the resulting subscription always shows `billing_cycles.total: null`, the same as if you had never sent it. No cap is ever enforced here. (The subscriptions-surface [Create Subscription](/reference/subscriptions/create-subscription) does persist this field correctly — the gap is specific to this payments-surface block.) Validate the cap on your own side, or create the subscription via Create Subscription instead if you need it enforced. |
 | `billing_cycles.current`| number | No                           | Accepted by the API but **ignored** when a subscription is created — the first cycle is always cycle 1. Do not use it to start a subscription mid-life. |
 | `id`                   | string  | Only for an existing sub     | UUID of an existing subscription. Omit it when creating a new one — see [Charging an existing subscription](#charging-an-existing-subscription). |
 
@@ -73,9 +73,9 @@ Send `subscription` alongside the normal Create Payment fields. To start a **new
 The `availability` object itself is required when you're creating a new subscription, but both fields inside it are optional — send `{}` if you want the subscription to start now and run until you cancel it.
 
 <Warning>
-**`customer_payer` is required for this flow**
+**`customer_payer.id` is required for this flow**
 
-A subscription always belongs to a customer, so a `customer_payer` object must be present when you send a `subscription` block. You can identify an existing customer with `customer_payer.id`, or send the customer inline (`email`, `merchant_customer_id`, `document`) and let Yuno create them — `id` is not required. Create the customer up front with [Create Customer](/reference/customers/create-customer) if you prefer to hold the identifier yourself.
+A subscription always belongs to a customer, so `customer_payer` must be present when you send a `subscription` block — and on staging it must carry an existing customer's `id`. Sending the customer inline instead (`email`, `merchant_customer_id`, `document`, no `id`) is accepted on a plain Create Payment call but is rejected the moment a `subscription` block is attached: `400 MISSING_PARAMETERS`, `"Missing parameters: customer.code."`. Create the customer first with [Create Customer](/reference/customers/create-customer) and send its `id`.
 </Warning>
 
 <Warning>
@@ -141,7 +141,7 @@ The response is a normal payment object with one extra field populated:
 ```
 
 <Note>
-Illustrative — the values are placeholders, but the field names and nesting are the ones this route actually adds: a top-level `subscription_code` plus a nested `subscription` object carrying `billing_cycle` (which cycle this payment settled) and `retry` (which retry attempt this was, `null` on the first try).
+Illustrative — the values are placeholders, but `subscription_code` is the one field this route adds to the payment response. The nested `subscription` object (`billing_cycle`, `retry`) is not part of the Create Payment response — it appears when you retrieve the payment afterward; see [Retrieve Payment](/reference/payments/retrieve-payment-by-id).
 </Note>
 
 Keep `subscription_code` — it is the subscription's `id`, and it's what you pass to [Retrieve](/reference/subscriptions/retrieve-subscription), [Pause](/reference/subscriptions/pause-subscription), [Resume](/reference/subscriptions/resume-subscription), and [Cancel](/reference/subscriptions/cancel-subscription).
@@ -189,7 +189,7 @@ The payment you made in the one call is not a loose transaction sitting next to 
 
 Two ways to follow the link:
 
-* **From the payment**: `subscription_code` on the payment object is the subscription's `id`. It's on the Create Payment response and on [Retrieve Payment](/reference/payments/retrieve-payment-by-id).
+* **From the payment**: `subscription_code` on the Create Payment response is the subscription's `id`. [Retrieve Payment](/reference/payments/retrieve-payment-by-id) carries the same link under a different name, `subscription_id` — not `subscription_code` — alongside the nested `subscription` object (`billing_cycle`, `retry`).
 * **From the subscription**: [List Subscription Payments](/reference/subscriptions/list-subscription-payments) returns the subscription's charge history, and the payment from the one call is linked there as the subscription's first billing cycle, carrying the same payment `id` you got back from the call.
 
 <Note>
@@ -261,23 +261,25 @@ These are caught when the request is validated, so the call fails with a `400`, 
 * `frequency`, `availability`, or `amount` missing while creating a new subscription (all three are required unless you send `id`).
 * `customer_payer` missing — a payment always needs a payer, so this is refused before anything is charged.
 * `subscription.id` for an existing subscription — `INVALID_REQUEST`, `"The execution type defined for this subscription is not compatible with the current flow."` See [Charging an existing subscription](#charging-an-existing-subscription): this has been observed on every subscription tested, regardless of `execution`.
+* `availability.start_at` in the past — `"The availability start date must be after the current date."`
+* `availability.finish_at` at or before `start_at` — `"The availability start date must be before the end date."`
+* `frequency.value` set to a fractional number — `"1.5 is invalid for subscription_external.frequency.value field"`.
 
-### Validated when the subscription is created
+### Known validation gaps
 
-These are checked at subscription-creation time, which happens *after* the charge:
+These are not caught at all, before or after the charge — no `400`, no error surfaced anywhere. The charge succeeds and a broken or unbounded subscription is created silently:
 
-* `availability.start_at` in the past, or `finish_at` at or before `start_at`.
-* `billing_cycles.total` set to `0` or a negative number.
-* `frequency.value` missing, or set to a fractional number.
+* `frequency.value` missing entirely — the subscription is created with `frequency.value: 0`, so `current_period_start` equals `current_period_end`: a zero-length billing period.
+* `billing_cycles.total` — accepted for any value (valid or not) but never persisted on this route; the subscription is created normally with `billing_cycles.total: null` and no cap enforced.
+
+Validate these on your side before sending the call; do not rely on the API to reject them.
 
 <Warning>
-**By this point the payment may already have succeeded**
+**If a payment succeeds but `subscription_code` comes back `null`**
 
-If one of these fails, the charge is not rolled back. **The payment stands and the subscription is not created** — you have a successful one-off payment and no recurrence. The payment response comes back with `subscription_code: null`.
+No currently-tested input on this route fails *after* the charge — every case above either 400s before any money moves, or (the two gaps just listed) is silently accepted. But the mechanism still exists on the API, so if you ever do see a terminal, successful payment with `subscription_code: null`, treat it as a signal to reconcile: either refund the payment, or create the subscription separately with [Create Subscription](/reference/subscriptions/create-subscription). Do not retry the original call — see [Retrying the call](#retrying-the-call).
 
-Apply this check only once the payment reaches a terminal status. If the payment comes back `PENDING`, the subscription has not been created **yet** and `subscription_code` is `null` because the outcome is still open — wait for the terminal status before doing anything.
-
-On a payment that is terminal and successful, treat `subscription_code: null` as a signal to reconcile: either refund the payment, or create the subscription separately with [Create Subscription](/reference/subscriptions/create-subscription). Do not retry the original call — see [Retrying the call](#retrying-the-call). Checking these fields on your side before you send the call narrows the window, so it's worth doing.
+If the payment comes back `PENDING`, the subscription has not been created **yet** and `subscription_code` is `null` because the outcome is still open — wait for the terminal status before doing anything.
 </Warning>
 
 See [HTTP Response Codes](/reference/getting-started/response-codes) for the full list.
