@@ -1,7 +1,77 @@
 ---
 title: "Resume Subscription"
 openapi: "/openapi/subscriptions/resume-subscription.json POST /subscriptions/{subscription_id}/resume"
-description: "Reactivates a paused subscription, changing its status back to ACTIVE."
+description: "Reactivates a paused subscription, returning it to the status it was billing under."
 ---
 
-Calling this endpoint will reactivate a subscription. It will change a subscription with PAUSED `status` to ACTIVE once again.
+Calling this endpoint will reactivate a subscription. It will change a subscription with PAUSED `status` back to the status it was billing under — ACTIVE, or TRIALING if it is still inside a trial phase.
+
+<Note>
+**Choosing what happens to the billing date**
+
+`billing_cycle_behavior` is an optional field on this call. It decides what happens to the billing anchor — the date in `billing_cycles.next_at` — when the subscription resumes. It carries the same two values and the same meanings as on [Update Subscription](/reference/subscriptions/update-subscription):
+
+- `KEEP` (default) — the original billing date is preserved whole, its day and its time of day. If it fell due while the subscription was paused, it advances by whole billing periods until it is in the future — never to a date in the past, and never to a charge at the moment of the resume. A billing date that fell inside the pause is not charged.
+- `RESTART` — the cycle re-anchors to the moment of the resume, plus the subscription's frequency.
+
+**Omitting the field is `KEEP`.** There is no third behaviour to choose between.
+
+No charge is issued during the call under either value. **Only the anchor moves**: `billing_cycles.current`, `total` and `paid`, the retry configuration, and any pending plan change all survive untouched.
+
+`billing_cycle_behavior` is **write-only** — it is accepted on the request and never echoed in any response.
+</Note>
+
+<Note>
+**Availability**
+
+`billing_cycle_behavior` is available to organizations enabled for it; contact Yuno. For an organization that is not yet enabled, sending the field is rejected with `400`, and a resume sent without a body keeps the behaviour those subscriptions have today.
+
+Subscriptions paused before this feature was enabled for your organization resume exactly as before; pauses created afterwards default to `KEEP`. Sending `billing_cycle_behavior` explicitly always applies, on either kind of pause.
+</Note>
+
+### KEEP and RESTART compared
+
+A monthly subscription anchored on the 1st is paused on August 15 and resumed on September 20. Its September 1 anchor fell due while it was paused, so the two values diverge:
+
+<CodeGroup>
+```json KEEP
+{ "billing_cycle_behavior": "KEEP" }
+
+// billing_cycles.next_at → 2026-10-01
+// the original anchor's next occurrence; the 1st is kept
+```
+
+```json RESTART
+{ "billing_cycle_behavior": "RESTART" }
+
+// billing_cycles.next_at → 2026-10-20
+// re-anchored to the resume date plus one month
+```
+</CodeGroup>
+
+Because omitting the field means `KEEP`, a resume sent with no body in this scenario also gives October 1.
+
+Had the subscription been resumed on August 5, while the September 1 anchor was still in the future, `KEEP` would have left it on September 1 and `RESTART` would have moved it to September 5.
+
+<Note>
+**RESTART and the monthly billing day**
+
+On a monthly subscription created without an explicit `frequency.monthly_billing_day`, `RESTART` sets that field to the day of the restart, and every future renewal reads it. Resuming with `RESTART` on the 20th therefore bills on the 20th from then on, not only for the next cycle. A subscription that already declares a billing day keeps it: the date does not move to the restart day, only the time of day is re-anchored.
+
+`frequency.monthly_billing_day` is returned on the subscription object, so the value a restart settled on can be read back from any subscription response.
+
+The same rule applies to a `RESTART` on [Update Subscription](/reference/subscriptions/update-subscription) — it is one rule, on both endpoints.
+</Note>
+
+The `subscription.resume` webhook fires once and carries the resulting `billing_cycles.next_at`, so the new billing date can be read from the event rather than by fetching the subscription afterwards.
+
+### Errors
+
+| Condition | Response |
+| --- | --- |
+| `billing_cycle_behavior` is not `KEEP` or `RESTART` | `400` — the value must be one of the two |
+| The organization is not enabled for the field | `400` — `billing_cycle_behavior is not enabled for this organization` |
+| The subscription is not `PAUSED` | `400 INVALID_STATE` |
+| `availability.finish_at` has already passed | `400 INVALID_DATE` |
+
+The last two are unchanged by this field.
