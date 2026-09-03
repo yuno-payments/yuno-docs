@@ -38,9 +38,18 @@
     "/subscriptions/plans/{plan_id}/meters/{meter_id}": {
       "patch": {
         "summary": "Update Plan Meter",
-        "description": "Usage-based billing must be enabled for your organization before this endpoint accepts requests (otherwise `403 PRODUCT_NOT_ENABLED`). Updates a metered price already attached to a plan: included `credits`, `pricing_strategy`, `price_per_credit` and `country_prices`. Send at least one field. The change applies to usage rated from the subscription's next billing cycle onward. `package_size`, `package_price`, `package_country_prices` and `tiers` cannot be sent here — any request containing one is rejected with `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED`; `PACKAGE`/`TIERED` config is attach-time only, and switching `pricing_strategy` is validated against the metered price's config for the target strategy. If the meter is `INACTIVE` the metered price is frozen and this call returns `404 PLAN_METER_NOT_FOUND`. To stop billing a meter on a plan, archive the meter (Update Meter with `status: INACTIVE`) — there is no detach endpoint.",
+        "description": "Usage-based billing must be enabled for your organization before this endpoint accepts requests (otherwise `403 PRODUCT_NOT_ENABLED`). Updates a metered price already attached to a plan: included `credits`, `pricing_strategy`, `price_per_credit` and `country_prices`. Send at least one field. The change applies to usage rated from the subscription's next billing cycle onward. `package_size`, `package_price`, `package_country_prices` and `tiers` cannot be sent here — any request containing one is rejected with `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED`; `PACKAGE`/`TIERED` config is attach-time only, and switching `pricing_strategy` is validated against the metered price's config for the target strategy. If the meter is `INACTIVE` the metered price is frozen and this call returns `400 PLAN_METER_NOT_FOUND`. To stop billing a meter on a plan, archive the meter (Update Meter with `status: INACTIVE`) — there is no detach endpoint.",
         "operationId": "update-plan-meter",
         "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required — omitting it returns `400 BAD_REQUEST` (\"Invalid x-account-code header.\")."
+          },
           {
             "name": "plan_id",
             "in": "path",
@@ -61,17 +70,8 @@
           },
           {
             "in": "header",
-            "name": "X-Account-Code",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required — the list is always scoped to a single account. Omitting it returns `400 BAD_REQUEST` (\"Invalid x-account-code header.\")."
-          },
-          {
-            "in": "header",
             "name": "X-Idempotency-Key",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "string"
             },
@@ -85,9 +85,8 @@
                 "type": "object",
                 "properties": {
                   "credits": {
-                    "type": "integer",
-                    "format": "int64",
-                    "minimum": 0,
+                    "type": "number",
+                    "format": "float",
                     "description": "Units included in the plan per billing cycle — the allowance a subscriber can consume before any usage is billed. Must be >= 0. `0` means every unit is billed."
                   },
                   "pricing_strategy": {
@@ -113,7 +112,7 @@
                       "value": {
                         "type": "number",
                         "format": "float",
-                        "description": "Price per unit beyond the included credits (multiple of 0.0001). Required whenever `price_per_credit` is sent to this endpoint — omitting `value` returns `400 INVALID_PARAMETERS` (\"The field 'price_per_credit.value' is required.\"), even when the plan's base currency is `USD` and the meter has a `default_price`; that null-price fallback applies only at attach time, not on update."
+                        "description": "Price per unit beyond the included credits (multiple of 0.0001). Optional only when the plan's base currency is `USD` and the meter has a `default_price` — the meter's default then applies and the metered price is returned with `price_per_credit: null`. Required otherwise."
                       }
                     }
                   },
@@ -194,10 +193,6 @@
                           }
                         }
                       ],
-                      "package_size": null,
-                      "package_price": null,
-                      "package_country_prices": [],
-                      "tiers": [],
                       "created_at": "2026-08-18T09:00:04.000000Z",
                       "updated_at": "2026-08-18T12:15:00.000000Z"
                     }
@@ -217,9 +212,7 @@
                       "type": "string"
                     },
                     "credits": {
-                      "type": "integer",
-                      "format": "int64",
-                      "minimum": 0,
+                      "type": "number",
                       "description": "Units included in the plan per billing cycle."
                     },
                     "pricing_strategy": {
@@ -265,55 +258,6 @@
                         }
                       }
                     },
-                    "package_size": {
-                      "type": "integer",
-                      "format": "int64",
-                      "nullable": true,
-                      "description": "Units per bundle for a PACKAGE-strategy metered price. Attach-time only; present here but never settable via this endpoint."
-                    },
-                    "package_price": {
-                      "type": "object",
-                      "nullable": true,
-                      "description": "Price per bundle for a PACKAGE-strategy metered price. Attach-time only; present here but never settable via this endpoint.",
-                      "properties": {
-                        "currency": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "number"
-                        }
-                      }
-                    },
-                    "package_country_prices": {
-                      "type": "array",
-                      "description": "Per-country package prices for a PACKAGE-strategy metered price. Attach-time only; present here but never settable via this endpoint.",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "country": {
-                            "type": "string"
-                          },
-                          "amount": {
-                            "type": "object",
-                            "properties": {
-                              "currency": {
-                                "type": "string"
-                              },
-                              "value": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "tiers": {
-                      "type": "array",
-                      "description": "Graduated tier bands for a TIERED-strategy metered price. Attach-time only; present here but never settable via this endpoint.",
-                      "items": {
-                        "type": "object"
-                      }
-                    },
                     "created_at": {
                       "type": "string",
                       "description": "Set by Yuno on creation."
@@ -321,39 +265,6 @@
                     "updated_at": {
                       "type": "string",
                       "description": "Set by Yuno on every update."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "401",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Result": {
-                    "value": {
-                      "code": "NOT_AUTHENTICATED",
-                      "messages": [
-                        "Not authenticated"
-                      ]
-                    },
-                    "summary": "Result"
-                  }
-                },
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "NOT_AUTHENTICATED"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
                     }
                   }
                 }
@@ -368,18 +279,36 @@
                   "Empty body": {
                     "summary": "Empty body",
                     "value": {
-                      "code": "BAD_REQUEST",
+                      "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "At least one field must be provided."
+                        "At least one field must be provided"
                       ]
                     }
                   },
                   "Currency mismatch": {
                     "summary": "Currency mismatch",
                     "value": {
-                      "code": "BAD_REQUEST",
+                      "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The price_per_credit currency must match the plan base currency."
+                        "The price_per_credit currency must match the plan base currency"
+                      ]
+                    }
+                  },
+                  "Missing price on non-USD plan": {
+                    "summary": "Missing price on non-USD plan",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "A price_per_credit is required when the plan base currency is not USD"
+                      ]
+                    }
+                  },
+                  "Missing price and no default": {
+                    "summary": "Missing price and no default",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "A price_per_credit is required when the meter has no default_price"
                       ]
                     }
                   },
@@ -388,7 +317,7 @@
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The field 'credits' must be greater than or equal to the minimum allowed value."
+                        "The meter credits must be greater than or equal to 0"
                       ]
                     }
                   },
@@ -397,57 +326,34 @@
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The field 'pricing_strategy' has an invalid value."
+                        "The meter pricing_strategy must be one of PER_UNIT, PACKAGE, TIERED"
                       ]
                     }
                   },
                   "Duplicate country": {
                     "summary": "Duplicate country",
                     "value": {
-                      "code": "BAD_REQUEST",
+                      "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "Duplicated country_prices for 'US'."
+                        "The country_prices must not contain duplicate countries"
                       ]
                     }
                   },
-                  "Unsupported strategy switch": {
-                    "summary": "Unsupported strategy switch",
+                  "Unknown or inactive meter": {
+                    "summary": "Unknown or inactive meter",
                     "value": {
-                      "code": "PLAN_METER_PRICING_CONFIG_REQUIRED",
+                      "code": "METER_NOT_FOUND",
                       "messages": [
-                        "This meter carries no configuration for the requested pricing strategy. Pricing configuration can only be set when a meter is attached to the plan."
+                        "The meter does not exist, is inactive or is not linked to this account."
                       ]
                     }
-                  }
-                },
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "404",
-            "content": {
-              "application/json": {
-                "examples": {
+                  },
                   "Unknown plan": {
                     "summary": "Unknown plan",
                     "value": {
                       "code": "PLAN_NOT_FOUND",
                       "messages": [
-                        "Plan not found."
+                        "The plan does not exist or is not linked to this account."
                       ]
                     }
                   },
@@ -456,7 +362,7 @@
                     "value": {
                       "code": "PLAN_METER_NOT_FOUND",
                       "messages": [
-                        "This meter is not attached to the plan."
+                        "The meter 66666666-6666-6666-6666-666666666666 is not assigned to this plan"
                       ]
                     }
                   }

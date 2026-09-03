@@ -40,17 +40,6 @@
         "summary": "Create Plan",
         "description": "Creates a reusable pricing plan. Plans are immutable once created — a price change means creating a new plan; existing subscriptions on the old plan are unaffected.",
         "operationId": "create-plan",
-        "parameters": [
-          {
-            "name": "X-idempotency-key",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Idempotency key. Accepted and forwarded but replay protection is not currently enforced for plan creation."
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -63,21 +52,17 @@
                   "frequency"
                 ],
                 "properties": {
-                  "account_id": {
-                    "type": "string",
-                    "description": "The account_id found in your Yuno Dashboard (UUID). Required. Unlike other Plans endpoints, this is sent in the request body, not the X-Account-Code header."
-                  },
                   "name": {
                     "type": "string",
                     "description": "The plan name (MAX 255; MIN 3)."
                   },
                   "description": {
                     "type": "string",
-                    "description": "The plan description (MAX 255; MIN 3 when present)."
+                    "description": "The plan description. No length limit is currently enforced."
                   },
                   "merchant_reference": {
                     "type": "string",
-                    "description": "Your own identifier for the plan (MAX 218; MIN 3 when present)."
+                    "description": "Your own identifier for the plan. No length limit is currently enforced."
                   },
                   "base_amount": {
                     "type": "object",
@@ -114,7 +99,6 @@
                           "MONTH",
                           "QUARTER",
                           "HALF_YEAR",
-                          "MINUTES",
                           "YEAR"
                         ]
                       },
@@ -209,9 +193,6 @@
                                 "DAY",
                                 "WEEK",
                                 "MONTH",
-                                "QUARTER",
-                                "HALF_YEAR",
-                                "MINUTES",
                                 "YEAR"
                               ]
                             },
@@ -233,7 +214,6 @@
                                 "MONTH",
                                 "QUARTER",
                                 "HALF_YEAR",
-                                "MINUTES",
                                 "YEAR"
                               ]
                             },
@@ -245,7 +225,7 @@
                         },
                         "amount": {
                           "type": "object",
-                          "description": "Flat price for the phase. 0 is allowed (a free trial). On a **non-terminal** phase, this or `country_prices` is required (one of the two). On the **terminal** REGULAR phase, omit this entirely — sending it is rejected with `400 BAD_REQUEST` (\"The terminal phase price comes from the plan base_amount/country_prices - remove the phase amount.\"); the terminal price always comes from the plan's own `base_amount`/`country_prices`. On a non-terminal phase, if the plan's `country_prices` lists a country in a currency the phase's flat `amount` does not cover, the phase must also supply a matching phase-level `country_prices` entry for that country, or creation is rejected with `400 BAD_REQUEST` (\"The phase amount is in USD but the plan prices 'BR' in BRL - add a phase country price for 'BR' or align the currencies.\").",
+                          "description": "Flat price for the phase. 0 is allowed (a free trial). On a **non-terminal** phase, this or `country_prices` is required (one of the two). On the **terminal** REGULAR phase, omit this entirely — sending it is rejected with `400 BAD_REQUEST` (\"The terminal phase price comes from the plan base_amount/country_prices - remove the phase amount\"); the terminal price always comes from the plan's own `base_amount`/`country_prices`.",
                           "properties": {
                             "currency": {
                               "type": "string"
@@ -282,13 +262,16 @@
                         }
                       }
                     }
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required — on this endpoint the account is sent in the request body, not the `X-Account-Code` header."
                   }
                 }
               },
               "examples": {
                 "Plan": {
                   "value": {
-                    "account_id": "00000000-0000-4000-8000-000000000002",
                     "name": "Streaming Pro",
                     "description": "Access to Pro features, billed monthly",
                     "merchant_reference": "streaming-pro-monthly",
@@ -342,16 +325,7 @@
                         "amount": {
                           "currency": "USD",
                           "value": 9.99
-                        },
-                        "country_prices": [
-                          {
-                            "country": "BR",
-                            "amount": {
-                              "currency": "BRL",
-                              "value": 49.9
-                            }
-                          }
-                        ]
+                        }
                       },
                       {
                         "order": 2,
@@ -366,39 +340,6 @@
           }
         },
         "responses": {
-          "401": {
-            "description": "401",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Result": {
-                    "value": {
-                      "code": "NOT_AUTHENTICATED",
-                      "messages": [
-                        "Not authenticated"
-                      ]
-                    },
-                    "summary": "Result"
-                  }
-                },
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "NOT_AUTHENTICATED"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
           "201": {
             "description": "201",
             "content": {
@@ -408,9 +349,6 @@
                     "value": {
                       "id": "00000000-0000-4000-8000-000000000001",
                       "account_id": "00000000-0000-4000-8000-000000000002",
-                      "account_ids": [
-                        "00000000-0000-4000-8000-000000000002"
-                      ],
                       "name": "Streaming Pro",
                       "description": "Access to Pro features, billed monthly",
                       "merchant_reference": "streaming-pro-monthly",
@@ -449,16 +387,6 @@
                           "value": "app_store"
                         }
                       ],
-                      "retries": {
-                        "retry_on_decline": true,
-                        "amount": 4,
-                        "strategy": "DEFAULT",
-                        "schedule": null,
-                        "stop_on_hard_decline": null,
-                        "cancel_on_exhausted_retries": null
-                      },
-                      "retry_split": null,
-                      "meters": [],
                       "phases": [
                         {
                           "order": 1,
@@ -475,27 +403,12 @@
                           "amount": {
                             "currency": "USD",
                             "value": 9.99
-                          },
-                          "country_prices": [
-                            {
-                              "country": "BR",
-                              "amount": {
-                                "currency": "BRL",
-                                "value": 49.9
-                              }
-                            }
-                          ],
-                          "total_payments": 3
+                          }
                         },
                         {
                           "order": 2,
                           "name": "Regular",
-                          "type": "REGULAR",
-                          "duration": null,
-                          "frequency": null,
-                          "amount": null,
-                          "total_payments": null,
-                          "country_prices": []
+                          "type": "REGULAR"
                         }
                       ],
                       "created_at": "2024-01-15T10:30:00.000000Z",
@@ -512,19 +425,11 @@
                     "account_id": {
                       "type": "string"
                     },
-                    "account_ids": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      },
-                      "description": "Same value as account_id, returned as a single-element array."
-                    },
                     "name": {
                       "type": "string"
                     },
                     "description": {
-                      "type": "string",
-                      "nullable": true
+                      "type": "string"
                     },
                     "merchant_reference": {
                       "type": "string"
@@ -589,65 +494,6 @@
                         "type": "object"
                       }
                     },
-                    "retries": {
-                      "type": "object",
-                      "nullable": true,
-                      "description": "The default retry policy applied to subscriptions created from this plan (subscriptions may override it). `null` when not set. Same shape as the subscription's `retries` field — see [The Subscription Object](/reference/subscriptions/the-subscription-object) and [Retries](/docs/payment-features/subscriptions/retries).",
-                      "properties": {
-                        "retry_on_decline": {
-                          "type": "boolean",
-                          "description": "Whether declined charges are retried at all.",
-                          "example": true
-                        },
-                        "amount": {
-                          "type": "integer",
-                          "description": "How many retries a billing cycle gets. Capped by your environment's retry schedule length (6 in production).",
-                          "example": 4
-                        },
-                        "strategy": {
-                          "type": "string",
-                          "description": "How the timing of each retry is decided: `DEFAULT`, `SMART` or `CUSTOM_SCHEDULE`. Treat as open-ended — handle unrecognized values gracefully.",
-                          "example": "DEFAULT"
-                        },
-                        "schedule": {
-                          "type": "array",
-                          "nullable": true,
-                          "description": "The per-attempt schedule, only set when `strategy` is `CUSTOM_SCHEDULE`; `null` otherwise.",
-                          "items": {
-                            "type": "object"
-                          }
-                        },
-                        "stop_on_hard_decline": {
-                          "type": "boolean",
-                          "nullable": true,
-                          "description": "When true, a hard decline stops the retries for the current billing cycle."
-                        },
-                        "cancel_on_exhausted_retries": {
-                          "type": "boolean",
-                          "nullable": true,
-                          "description": "When true, a subscription created from this plan is canceled once a cycle's retries end without a successful payment, with `cancellation_source` set to `RETRIES_EXHAUSTED`."
-                        }
-                      }
-                    },
-                    "retry_split": {
-                      "type": "object",
-                      "nullable": true,
-                      "description": "Smart retry split configuration applied to subscriptions created from this plan. `null` when not set.",
-                      "properties": {
-                        "smart_pct": {
-                          "type": "integer",
-                          "nullable": true,
-                          "description": "Percentage (0-100) of retries routed through Yuno's smart retry logic."
-                        }
-                      }
-                    },
-                    "meters": {
-                      "type": "array",
-                      "description": "Usage-based meters priced on this plan. Empty array when the plan has no metered pricing. See the meters reference for the full object shape.",
-                      "items": {
-                        "type": "object"
-                      }
-                    },
                     "phases": {
                       "type": "array",
                       "items": {
@@ -672,10 +518,9 @@
                 "examples": {
                   "Result": {
                     "value": {
-                      "code": "INVALID_PARAMETERS",
+                      "code": "INVALID_REQUEST",
                       "messages": [
-                        "The field 'base_amount' is required.",
-                        "The field 'frequency' is required."
+                        "Invalid request"
                       ]
                     },
                     "summary": "Result"

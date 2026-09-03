@@ -23,14 +23,15 @@ Say you're launching a "Streaming Pro" tier that costs \$20/month in the US, but
 **`plan_id` takes over pricing and cadence — but not all conflicting fields are rejected the same way**
 
 - `amount` is mutually exclusive with `plan_id` — send exactly one of the two.
-- `trial_period`, `billing_date`, and `frequency` sent alongside `plan_id` are all rejected with `400 INVALID_PARAMETERS` (`"The fields 'frequency', 'trial_period' and 'billing_date' cannot be sent when 'plan_id' is set"`) — the plan already defines the trial ladder, cadence, and frequency, so these would conflict with it.
+- `trial_period` and `billing_date` sent alongside `plan_id` are rejected with `400 BAD_REQUEST` — the plan already defines the trial ladder and cadence, so these would conflict with it.
+- `frequency` sent alongside `plan_id` is **not** rejected — it's silently ignored and overridden by the plan's own frequency. If you send one anyway expecting it to apply, it won't; nothing will tell you that.
 
 Simplest rule: when subscribing with `plan_id`, just omit `amount`, `frequency`, `trial_period`, and `billing_date` entirely — the plan supplies all of them. (Raw subscriptions without a plan still work exactly as before — plans are an addition, not a replacement.)
 </Warning>
 
 ## Plans are immutable — here's why that matters
 
-You can't edit a plan's price after creating it — there's no endpoint to change a plan's base_amount, country_prices, name, or frequency. This is deliberate: it means every subscriber keeps the exact price they signed up for, forever, even if you change your pricing later. Nobody gets a surprise price increase because you tweaked the plan.
+You can't edit a plan's price after creating it — there's no update endpoint. This is deliberate: it means every subscriber keeps the exact price they signed up for, forever, even if you change your pricing later. Nobody gets a surprise price increase because you tweaked the plan.
 
 In practice, this means a "price change" is really "create a new plan": if Streaming Pro goes from \$20 to \$25/month, you create a new plan for \$25 and start pointing new signups at it — your existing \$20 subscribers keep paying \$20 until you move them or they cancel. To migrate existing subscribers onto the new plan, use [Change Subscription Plan](/reference/subscriptions/change-subscription-plan) (immediate, but replaces the subscription under a new `id`) or the `plan_change` object on [Update Subscription](/reference/subscriptions/update-subscription), which keeps the same `id` — scheduled for the next renewal by default, or applied in place with `"effective": "IMMEDIATE"`, optionally restarting the billing anchor with `billing_cycle_behavior: RESTART`. When you're ready to stop offering the old price entirely, see **Canceling a plan** below.
 

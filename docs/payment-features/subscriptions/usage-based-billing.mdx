@@ -62,7 +62,7 @@ The example builds a "Max" plan at \$200/month that includes 10,000 AI tokens an
 
     <CodeGroup>
     ```bash New plan
-    curl -X POST https://api-sandbox.y.uno/v1/subscriptions/plans \
+    curl -X POST https://api-sandbox.y.uno/v1/plans \
       -H 'Content-Type: application/json' \
       -H 'public-api-key: <Your public-api-key>' \
       -H 'private-secret-key: <Your private-secret-key>' \
@@ -87,7 +87,6 @@ The example builds a "Max" plan at \$200/month that includes 10,000 AI tokens an
       -H 'Content-Type: application/json' \
       -H 'public-api-key: <Your public-api-key>' \
       -H 'private-secret-key: <Your private-secret-key>' \
-      -H 'X-Account-Code: <Your account ID>' \
       -H 'X-Idempotency-Key: 9e6d0b4f-5c8a-4b3d-a2e1-3f4a5b6c7d8e' \
       -d '{
         "meter_id": "55555555-5555-5555-5555-555555555555",
@@ -110,14 +109,13 @@ The example builds a "Max" plan at \$200/month that includes 10,000 AI tokens an
   </Step>
 
   <Step title="Report usage as it happens">
-    Send one event per unit of work. `event_id` is your idempotency key; `value` is required for `SUM` and `LAST` meters and defaults to 1 for `COUNT`. The intended rule is that the subscription must be `ACTIVE`, `TRIALING` or `PAST_DUE` — but that check is not currently enforced, so don't rely on the API to reject usage reported against a stopped subscription (see the note under [Idempotency and timestamps](#idempotency-and-timestamps)).
+    Send one event per unit of work. `event_id` is your idempotency key; `value` is required for `SUM` and `LAST` meters and defaults to 1 for `COUNT`. The subscription must be `ACTIVE`, `TRIALING` or `PAST_DUE`.
 
     ```bash
     curl -X POST https://api-sandbox.y.uno/v1/subscriptions/meters/events \
       -H 'Content-Type: application/json' \
       -H 'public-api-key: <Your public-api-key>' \
       -H 'private-secret-key: <Your private-secret-key>' \
-      -H 'X-Account-Code: <Your account ID>' \
       -H 'X-Idempotency-Key: 3c7e8f10-2b4d-4e6a-9c1f-5a7b9d2e4f60' \
       -d '{
         "event_id": "11111111-1111-1111-1111-111111111111",
@@ -162,7 +160,7 @@ The aggregation is fixed when you create the meter and decides what a cycle's qu
     Three events of 1,280 / 640 / 2,100 tokens → cycle quantity 4,020 tokens. Use for tokens, minutes transcribed, messages sent, deliveries completed.
   </Tab>
   <Tab title="COUNT — per call">
-    Counts events; each event is recorded as `1`. **Do not send `value`** — an explicit `value` on a `COUNT` meter is rejected with `400 BAD_REQUEST` ("The value must not be provided for a COUNT meter.").
+    Counts events; `value` is ignored (each event counts as 1, so you can omit it).
 
     ```json
     { "event_id": "req_01J5Y3Q9K8ZC5G6E4Y2W7X8N9M", "event_name": "api_request", "subscription_id": "3333…" }
@@ -233,10 +231,10 @@ A metered price has three pricing knobs:
   </Tab>
 </Tabs>
 
-For non-`PER_UNIT` strategies, the meter must be priced in every currency the plan supports — a plan with `country_prices` in currencies the metered price doesn't cover is rejected (`PLAN_METER_MISSING_CURRENCY`). `PLAN_METER_BASE_CURRENCY_MISMATCH` only checks the metered price's primary price or rate (`price_per_credit`, `package_price`, or a tier's `rate`) against the plan's base currency — as tested, it does not police extra `country_prices`/`package_country_prices`/`country_rates` entries priced in a currency the plan itself never lists; those are currently accepted as-is. All computed usage amounts (any strategy) round half-up to 4 decimal places.
+For non-`PER_UNIT` strategies, the meter must be priced in every currency the plan supports — a plan with `country_prices` in currencies the metered price doesn't cover is rejected (`PLAN_METER_MISSING_CURRENCY`), and every priced currency must match one the plan actually uses (`PLAN_METER_BASE_CURRENCY_MISMATCH`). All computed usage amounts (any strategy) round half-up to 4 decimal places.
 
 <Warning>
-**Pricing config is set once, at attach time.** `credits`, `price_per_credit` and `country_prices` can be updated on a live `PER_UNIT` metered price with [Update Plan Meter](/reference/meters/update-plan-meter) — the new values apply to usage rated from the next billing cycle onward. `package_size`, `package_price`, `package_country_prices` and `tiers` cannot be changed after attach — any [Update Plan Meter](/reference/meters/update-plan-meter) request containing one of them is rejected with `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED`, regardless of the metered price's current `pricing_strategy`; there is no supported way to switch `pricing_strategy` in place. There is no detach endpoint, so to correct a `PACKAGE`/`TIERED` config you cannot re-attach the same meter — create a new meter with a new `event_name`, attach it with the corrected config, point your integration at the new `event_name`, and archive the old meter. The plan's flat price stays [immutable](/docs/payment-features/subscriptions/plans) as before.
+**Pricing config is set once, at attach time.** `credits`, `price_per_credit` and `country_prices` can be updated on a live `PER_UNIT` metered price with [Update Plan Meter](/reference/meters/update-plan-meter) — the new values apply to usage rated from the next billing cycle onward. `package_size`, `package_price`, `package_country_prices` and `tiers` cannot be changed after attach: switching a metered price's `pricing_strategy` validates that the request carries the target strategy's required config and clears the previous strategy's now-inapplicable fields — a switch with no config, or with the wrong strategy's config, is rejected. There is no detach endpoint, so to correct a `PACKAGE`/`TIERED` config you cannot re-attach the same meter — create a new meter with a new `event_name`, attach it with the corrected config, point your integration at the new `event_name`, and archive the old meter. The plan's flat price stays [immutable](/docs/payment-features/subscriptions/plans) as before.
 </Warning>
 
 ## What happens at renewal
@@ -260,7 +258,7 @@ Example, on the Max plan (10,000 tokens included, \$0.002 per extra token): a su
 - **Report close to real time**, but you can backdate. `occurred_at` defaults to the receive time (returned as `received_at`) and can be up to **35 days** in the past; older events are rejected with `400`. The `occurred_at` (not the receive time) decides which billing cycle the event lands in.
 - **`X-Idempotency-Key`** is accepted, as on the rest of the Yuno API (same key + same body → same response), but it is optional here and not what dedupes usage — `event_id` is the mechanism that protects billing, and it's the one that's required.
 - **One event per request.** Aggregate on your side if you produce many small events (for example, sum tokens per response rather than per token) — a `SUM` meter is designed for that.
-- **Subscription-status gating is not currently enforced.** The intended rule is that only `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions accept usage (a subscription in payment retries keeps metering) and that events for a `PAUSED`, `CANCELED` or `COMPLETED` subscription are rejected with `400 SUBSCRIPTION_NOT_ACTIVE`. As tested, events are currently accepted (`201`) and counted regardless of subscription status, including `PAUSED` and `CANCELED`. Don't rely on this check to stop usage from being billed after a subscription stops — gate reporting on your side until the restriction is confirmed live.
+- **The subscription must be active.** `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions accept usage (a subscription in payment retries keeps metering); events for a `PAUSED`, `CANCELED` or `COMPLETED` subscription are rejected with `400 SUBSCRIPTION_NOT_ACTIVE` and nothing is counted.
 
 ## Error handling
 
@@ -270,15 +268,14 @@ Validation is synchronous: a rejected event returns `400` immediately (lookup fa
 | --- | --- |
 | `event_name` does not match an `ACTIVE` meter of your account | `400 METER_NOT_FOUND` |
 | `subscription_id` unknown | `400 SUBSCRIPTION_NOT_FOUND` |
-| Subscription is `PAUSED`, `CANCELED`, `COMPLETED` or otherwise not active | `400 SUBSCRIPTION_NOT_ACTIVE` — "The subscription is not active" (documented behavior; as tested, `PAUSED` and `CANCELED` subscriptions currently return `201` instead — see the note above) |
+| Subscription is `PAUSED`, `CANCELED`, `COMPLETED` or otherwise not active | `400 SUBSCRIPTION_NOT_ACTIVE` — "The subscription is not active" |
 | Usage-based billing not enabled for your organization | `403 PRODUCT_NOT_ENABLED` |
-| `value` missing on a `SUM`/`LAST` meter | `400 BAD_REQUEST` — "The value is required for a SUM meter" / "…for a LAST meter" |
+| `value` missing on a `SUM`/`LAST` meter | `400 INVALID_PARAMETERS` — "The value is required for a SUM meter" / "…for a LAST meter" |
 | `occurred_at` older than 35 days | `400 INVALID_PARAMETERS` |
 | Second meter with the same `event_name` (even if the first is archived) | `409 METER_EVENT_NAME_CONFLICT` |
 | Same meter attached to a plan twice | `409 PLAN_METER_ALREADY_ASSIGNED` |
 | Attaching an archived (`INACTIVE`) meter | `400 METER_NOT_FOUND` |
-| `price_per_credit` missing on a non-USD plan | `400 BAD_REQUEST` — "A price_per_credit is required when the plan base currency is not USD." |
-| `price_per_credit` currency doesn't match the plan's base currency | `400 BAD_REQUEST` — "The price_per_credit currency must match the plan base currency." |
+| `price_per_credit` in the wrong currency / missing on a non-USD plan | `400 INVALID_PARAMETERS` |
 | `package_size`/`package_price`/`package_country_prices`/`tiers` sent for the wrong `pricing_strategy` (or on Update Plan Meter at all today) | `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED` — "Package and tier pricing configuration is not supported for this meter's pricing strategy." |
 | `tiers[]` bounds not strictly ascending, last tier's `up_to` not `null`, or an earlier tier's `up_to` missing | `400 INVALID_PARAMETERS` |
 | A currency the plan supports has no matching `country_prices`/`package_country_prices`/`country_rates` entry on a non-`PER_UNIT` metered price | `400 PLAN_METER_MISSING_CURRENCY` |
@@ -311,7 +308,7 @@ The full list, with every message, is on [Meter Error Codes](/reference/meters/m
     Yes, per plan. The meter's `default_price` is USD-only, but a metered price on a BRL plan takes `price_per_credit` in BRL (required — nothing is inherited for non-USD plans), and `country_prices` lets you set per-country unit prices in each country's currency.
   </Accordion>
   <Accordion title="What happens if I report usage for a paused or canceled subscription?">
-    The intended behavior is a `400 SUBSCRIPTION_NOT_ACTIVE` rejection — only `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions are meant to accept usage. As tested, that check is not currently enforced: the event is accepted and counted even for a `PAUSED` or `CANCELED` subscription. Don't depend on this — resume the subscription first ([Resume Subscription](/reference/subscriptions/resume-subscription)) before reporting usage for a paused one, since the rejection may start being enforced without notice; you can backdate `occurred_at` up to 35 days.
+    The event is rejected with `400 SUBSCRIPTION_NOT_ACTIVE` and nothing is counted — only `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions accept usage. Resume the subscription first ([Resume Subscription](/reference/subscriptions/resume-subscription)), then report the usage; you can backdate `occurred_at` up to 35 days.
   </Accordion>
   <Accordion title="Can I meter usage without a subscription?">
     No. Every event needs a `subscription_id`; usage is billed on that subscription's renewal.
