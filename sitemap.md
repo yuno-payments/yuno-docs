@@ -27,7 +27,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Tokens](https://docs.y.uno/docs/basic-concepts/tokens.md)
 - [Payment methods](https://docs.y.uno/docs/basic-concepts/payment-methods.md)
 - [Webhooks](https://docs.y.uno/docs/basic-concepts/webhooks-1.md)
-- [glossary](https://docs.y.uno/docs/glossary.md)
+- [Glossary](https://docs.y.uno/docs/glossary.md)
 
 ### Using Yuno
 
