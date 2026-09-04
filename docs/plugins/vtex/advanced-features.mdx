@@ -11,12 +11,69 @@ To set this up, repeat Step 1 once per integration, giving each one a distinct *
 
 ## Multi-account
 
-If your business runs **multiple VTEX accounts** (for example, a franchise model sharing the same Yuno credentials), use the **Main Account** fields in the provider configuration:
+If your business runs **multiple VTEX accounts** — a franchise model, a marketplace with affiliates, or separate storefronts sharing a checkout — the Yuno plugin needs to know which account owns the orders. The **Main Account** fields in the provider configuration tell it where to look. The rule that applies to every row below: *Main Account Name is the account whose OMS owns the order.* It is not necessarily the account where the Payment App runs or the account that creates the payment.
 
-*   **Main Account Name**: The name of the main VTEX account.
-*   **Main Account App key** and **Main Account App token**: Application credentials of that main account.
+### When you need the fields
 
-When these fields are set, the plugin reads catalog and order data from the main account instead of the current one.
+| Your setup | Main Account fields |
+| :--- | :--- |
+| **Single account** — one store, one admin | Not required. Leave all three fields empty. |
+| **Franchise fan-in** — many store accounts (franchisees) under a parent account that owns the catalog and orders | Required on **every franchise affiliation**. Set Main Account Name to the parent account. |
+| **Marketplace affiliate** — a storefront whose orders are paid through a different account's checkout, where the sellers process the payment | Required on the **seller account's** affiliation (the account that authorizes and processes the payment). Main Account Name is the marketplace account, which owns the order. This must be a **dedicated affiliation for the marketplace trade policy**, not the seller's regular storefront affiliation — single-order lookup, lookup-by-payment-id and order cancellation always target the main account. Sharing the fields on a regular affiliation breaks the seller's own storefront traffic. |
+| **1-to-1 satellite** — two accounts where one authorizes and the other completes the payment (for example, a B2B storefront with a separate payment account) | Required on the authorizing account's affiliation. Main Account Name is the account whose OMS owns the order. |
+
+### What each field does
+
+**Main Account Name:** the VTEX account that owns the order data in OMS. The plugin reads orders and order groups from this account, and sends the Yuno credentials to it so that fulfillment events are emitted from the correct OMS. Trade-policy resolution uses the current account's credentials.
+
+**Main Account App key** and **Main Account App token:** application credentials of that main account. The plugin uses them to call VTEX APIs on behalf of the main account.
+
+<Warning>
+  **All three fields must be set together.** If you set the Main Account Name but leave the App key or App token empty, the plugin treats the affiliation as if no Main Account fields were configured — it reads catalog and order data from the current account, just like a single-account setup. A value of `NA` (a legacy convention on some affiliations) is also treated as empty. The three fields are either all active or all absent; there is no intermediate state.
+</Warning>
+
+### How to obtain the main account credentials
+
+In the main account's **VTEX License Manager**, create an application key. The key is used for these API calls on the main account:
+
+*   **OMS**: read orders and order groups (including lookup by payment id); cancel denied orders (`POST /api/oms/pvt/orders/{id}/cancel`).
+*   **Catalog**: read the seller record (`GET /api/catalog_system/pvt/seller/{sellerId}`).
+*   **Subscriptions**: read subscription cycles (`GET /api/rns/pub/cycles`), for stores that use VTEX Subscriptions.
+
+The key must be created in the main account, not in the franchise or satellite account. A key created in the wrong account cannot read the data the plugin needs. For details on creating keys and assigning permissions, see [VTEX License Manager](https://help.vtex.com/en/tutorial/license-manager-resources--3q6ztrC8YynQf6rdc6euk3).
+
+### Symptoms of a misconfigured Multi-account
+
+When the Main Account fields are **missing or point to the wrong account**, the failure can be silent — no error appears in the VTEX dashboard or at checkout. Wrong credentials or a wrong account name, however, produce visible API errors in the plugin logs (401, 403, or 404 responses on OMS calls).
+
+| Symptom | What is happening |
+| :--- | :--- |
+| Orders never marked as fulfilled | The Yuno credentials were stored in a different account than the one that emits the order status events, so the event handler finds nothing and stops. |
+| Fulfillment works but authorization retries or order cancellations fail after payment | The main-account credentials are invalid or the account name does not match. Check for VTEX API errors on OMS calls in the plugin logs. |
+| Trade policy or sales channel name sent to Yuno is wrong | The trade policy is resolved with the current account's credentials, but the order data is read from the main account. A mismatch between the two produces wrong routing and reporting data on the Yuno side. |
+| Split orders not detected | The plugin queries the wrong OMS for related sub-orders. An antifraud session is not shared; each sub-order gets its own. |
+| Payment rejected or created without store data (empty sales channel or seller website) | The order does not exist in the account the plugin queried at authorization time. Check the payment's additional data in the Yuno dashboard. |
+
+### How to verify the setup
+
+**For the merchant:**
+
+Place a test order on the store, then check the Yuno dashboard:
+
+*   The payment carries the expected **sales channel** in its additional data.
+*   A **fulfillment update** appears once the order ships in VTEX (this confirms the credentials landed in the account whose OMS emits the status events).
+
+<Accordion title="Verifying the setup (for Yuno TAMs)">
+  Take the test order's VTEX order id (it is the `application_session` attribute in the plugin audit logs), then look it up in Datadog (`service:sdk-event-log-audit-ms`):
+
+  1.  Confirm that `organization_name` in the authorization steps matches the **origin account** (the franchise or satellite), and that the `saveYunoKeys` hop targets the main account.
+  2.  If `saveYunoKeys` targets the origin account itself, or a different account from the expected main one, the Main Account fields are misconfigured — check that all three fields are populated and that the Main Account Name matches the account you intend.
+  3.  Confirm that no `sendFulfillment` log appears for an order that did ship — its absence means the credentials landed in the wrong account and the fulfillment event handler found nothing.
+</Accordion>
+
+<Note>
+  Features that depend on per-account state — card vault for network tokens, order modifications, and corporate buyer data — must be enabled on **every** franchise affiliation individually. Enabling them on the parent account alone is not enough, because the plugin reads these settings from the affiliation that authorizes each order. See [Network tokens](#network-tokens-repeat-card-purchases), [Order modifications](#order-modifications-changed-order-totals), and [Corporate purchases](#corporate-purchases-brazil) for per-feature setup instructions.
+</Note>
 
 ## Split orders (multiple sellers)
 
