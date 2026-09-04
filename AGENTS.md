@@ -3,8 +3,6 @@ title: "AGENTS.md"
 description: "Instructions for coding agents integrating the Yuno Payments API and SDKs: install, configure, first payment, resources."
 ---
 
-# Yuno: instructions for coding agents
-
 Yuno is a payment orchestration platform. The REST API returns JSON and uses GET, POST, and PATCH. This page gives an agent the minimum to install an SDK, configure credentials, and create a first payment in sandbox.
 
 ## Installation
