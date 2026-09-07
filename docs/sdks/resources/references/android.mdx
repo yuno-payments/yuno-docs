@@ -32,7 +32,7 @@ Parameters for payment flows. All parameters used in [Payment flows (Android)](/
 | ----------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`       | string   | Yes      | Checkout session ID from your backend (Create checkout session API). Required for all payment flows.                                                                                                                                                                         |
 | `countryCode`           | string   | Yes      | ISO country code where the payment runs (for example, `US`, `BR`). Determines available payment methods and compliance.                                                                                                                                                            |
-| `callbackPaymentState`| function | No       | Callback invoked when the payment state changes. Receives the current state, for example `SUCCEEDED`, `FAIL`, `PROCESSING`, `REJECT`. Use for UI updates, analytics, or navigation.                                                                                                  |
+| `callbackPaymentState`| function | No       | Callback invoked when the payment state changes. Receives the current state (`SUCCEEDED`, `FAIL`, `PROCESSING`, `REJECT`, etc.), a sub-status string, and an optional `StatusMessage?` with error details. Use for UI updates, analytics, or navigation. Available from SDK `2.22.0` with three parameters.                                                                                                  |
 | `merchantSessionId`     | string   | No       | Optional merchant session identifier. Use to correlate the SDK session with your own session or order ID.                                                                                                                                                                   |
 | `onInstallmentSelected` | function | No       | Callback invoked when the shopper selects an installment option in the card form (`InstallmentSelected?` payload with `installment`, `label`, and `amount`). Fires for the default pre-selection, every selection, plan recalculations, and once with `null` when installments stop being available. Available from SDK `2.20.0`. See [Full (Android)](/docs/sdks/full-checkout/android-payments#installment-selection-callback-oninstallmentselected).      |
 
@@ -81,6 +81,28 @@ Dismisses the SDK loader when `keepLoader` is active. Use this method when a bac
 fun Activity.hideLoader()
 ```
 
+### `StatusMessage` (available since SDK 2.22.0)
+
+Detailed error information returned alongside payment failures or errors. The third parameter in the payment callback.
+
+```kotlin
+data class StatusMessage(
+    val source: String?,
+    val code: String?,
+    val reason: String?,
+    val raw: String?,
+    val context: Map<String, Any?>?
+)
+```
+
+| Field     | Type                  | Description                                                                      |
+| --------- | --------------------- | -------------------------------------------------------------------------------- |
+| `source`  | `String?`             | Originating component or service that produced the status (e.g. `PROVIDER`).     |
+| `code`    | `String?`             | Machine-readable error code.                                                     |
+| `reason`  | `String?`             | Human-readable explanation of the error.                                         |
+| `raw`     | `String?`             | Raw response from the source as a string.                                        |
+| `context` | `Map<String, Any?>?`  | Additional metadata about the error or payment state.                            |
+
 ### `Yuno.continuePayment()`
 
 Resumes the payment flow for asynchronous methods (3ds, PIX, etc.) after a payment has been created on your backend.
@@ -90,7 +112,7 @@ fun continuePayment(
     showPaymentStatus: Boolean = true,
     checkoutSession: String? = null,
     countryCode: String? = null,
-    callbackPaymentState: ((String?) -> Unit)? = null
+    callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null
 )
 ```
 
@@ -150,7 +172,7 @@ activity.startCheckout(
         // then call continuePayment:
         activity.continuePayment(showPaymentStatus = true)
     },
-    callbackPaymentState = { state, subState ->
+    callbackPaymentState = { state, subState, statusMessage ->
         // Handle final payment state
     },
 )
