@@ -218,7 +218,7 @@ function main() {
   const parts = mdxContent.split('\n---\n');
   const frontmatter = '---\n' + parts[0].replace(/^---\n/, '');
   const restContent = parts.slice(1).join('\n---\n');
-  const header = '<!-- Generated from OpenAPI spec — regenerate via: node scripts/generate-endpoint-overview.cjs -->\n\n';
+  const header = '{/* Generated from OpenAPI spec — regenerate via: node scripts/generate-endpoint-overview.cjs */}\n\n';
   
   fs.writeFileSync(outputPath, frontmatter + '\n---\n\n' + header + restContent);
   
