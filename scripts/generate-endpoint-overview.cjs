@@ -100,7 +100,13 @@ function getOperationSummary(operation) {
     return firstSentence ? firstSentence + '.' : description;
   }
   
-  return '';
+  // Fall back to operationId or em dash
+  const operationId = (operation.operationId || '').trim();
+  if (operationId) {
+    return operationId;
+  }
+  
+  return '—';
 }
 
 /**
@@ -117,10 +123,13 @@ function generateMarkdownTable(tag, operations) {
     const summary = getOperationSummary(operation);
     const idempotent = hasIdempotencyKey(operation) ? 'Yes' : '—';
     
+    // Escape MDX expressions in path (curly braces)
+    const pathEscaped = path.replace(/\{/g, '\\{').replace(/\}/g, '\\}');
+    
     // Escape pipe characters in descriptions
     const summaryEscaped = summary.replace(/\|/g, '\\|');
     
-    lines.push(`| ${methodUpper} | \`${path}\` | ${summaryEscaped} | ${idempotent} |`);
+    lines.push(`| ${methodUpper} | \`${pathEscaped}\` | ${summaryEscaped} | ${idempotent} |`);
   }
   
   return lines.join('\n');
