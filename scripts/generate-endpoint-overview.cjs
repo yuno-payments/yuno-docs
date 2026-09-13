@@ -85,27 +85,78 @@ function hasIdempotencyKey(operation) {
 }
 
 /**
- * Get operation summary or a default description.
+ * Check if a string looks like a raw operationId (snake_case or kebab-case with underscores/hyphens).
  */
-function getOperationSummary(operation) {
+function looksLikeOperationId(str) {
+  if (!str) return false;
+  // Matches: get_foo, post_bar-baz, put_foo-bar-id
+  return /^[a-z]+[_-][a-z0-9_-]+$/i.test(str);
+}
+
+/**
+ * Derive a human-readable description from HTTP method + path.
+ * E.g. "PATCH /checkout/sessions/{id}" → "Update checkout session"
+ */
+function deriveDescription(method, path) {
+  const methodLower = method.toLowerCase();
+  
+  // Extract the main resource from path (last segment before parameters)
+  // /campaigns/{id} → campaigns
+  // /checkout/sessions/{id} → sessions
+  // /banking/accounts → accounts
+  const segments = path.split('/').filter(s => s && !s.startsWith('{'));
+  const resource = segments[segments.length - 1] || segments[segments.length - 2] || 'resource';
+  
+  // Convert kebab-case or snake_case to space-separated
+  const resourceReadable = resource
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, c => c.toLowerCase());
+  
+  // Map method to action verb
+  const verbMap = {
+    'get': segments.length > 2 && !path.includes('{') ? 'List' : 'Get',
+    'post': 'Create',
+    'patch': 'Update',
+    'put': 'Update',
+    'delete': 'Delete'
+  };
+  
+  const verb = verbMap[methodLower] || methodLower.toUpperCase();
+  return `${verb} ${resourceReadable}`;
+}
+
+/**
+ * Get operation summary with smart fallbacks and cleanup.
+ * Prefers clean OpenAPI summary/description, derives from method+path if needed.
+ */
+function getOperationSummary(operation, method, path) {
   let summary = (operation.summary || '').trim();
-  if (summary) {
+  
+  // Skip if summary looks like operationId or starts with "Copy of"
+  if (summary && !looksLikeOperationId(summary) && !/^Copy of\b/i.test(summary)) {
     return summary;
   }
   
+  // Try description field
   const description = (operation.description || '').trim();
-  if (description) {
-    // Take first sentence if available
-    const firstSentence = description.split('.')[0];
-    return firstSentence ? firstSentence + '.' : description;
+  if (description && !looksLikeOperationId(description)) {
+    // Take first sentence, strip markdown
+    const cleaned = description
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
+      .replace(/[*_~`]/g, ''); // Remove markdown formatting
+    const firstSentence = cleaned.split(/[.!?]\s/)[0];
+    if (firstSentence && firstSentence.length > 10 && firstSentence.length < 200) {
+      return firstSentence + (firstSentence.endsWith('.') ? '' : '.');
+    }
   }
   
-  // Fall back to operationId or em dash
-  const operationId = (operation.operationId || '').trim();
-  if (operationId) {
-    return operationId;
+  // Derive from method + path
+  const derived = deriveDescription(method, path);
+  if (derived && derived !== 'GET resource' && derived !== 'POST resource') {
+    return derived;
   }
   
+  // Last resort
   return '—';
 }
 
@@ -120,7 +171,7 @@ function generateMarkdownTable(tag, operations) {
   
   for (const {path, method, operation} of operations) {
     const methodUpper = method.toUpperCase();
-    const summary = getOperationSummary(operation);
+    const summary = getOperationSummary(operation, method, path);
     const idempotent = hasIdempotencyKey(operation) ? 'Yes' : '—';
     
     // Escape MDX expressions in path (curly braces)
@@ -136,7 +187,7 @@ function generateMarkdownTable(tag, operations) {
 }
 
 /**
- * Generate the full MDX content.
+ * Generate the full MDX content (body only, no frontmatter/comment).
  */
 function generateMdxContent(mainSpec, sandboxSpec = null) {
   const mainOps = extractOperations(mainSpec);
@@ -155,13 +206,8 @@ function generateMdxContent(mainSpec, sandboxSpec = null) {
   // Sort tags alphabetically
   const sortedTags = Object.keys(grouped).sort();
   
-  // Build MDX content
+  // Build MDX body content (no frontmatter)
   const lines = [];
-  lines.push('---');
-  lines.push('title: "Endpoint Overview"');
-  lines.push('description: "A complete index of Yuno API endpoints organized by resource"');
-  lines.push('---');
-  lines.push('');
   lines.push('This page provides a scannable catalog of all Yuno REST API endpoints. Use it to discover what operations are available before diving into individual reference pages.');
   lines.push('');
   lines.push('For implementation details:');
@@ -206,7 +252,7 @@ function main() {
   }
   
   console.log('Generating MDX content...');
-  const mdxContent = generateMdxContent(mainSpec, sandboxSpec);
+  const bodyContent = generateMdxContent(mainSpec, sandboxSpec);
   
   console.log(`Writing to ${outputPath}...`);
   const outputDir = path.dirname(outputPath);
@@ -214,13 +260,20 @@ function main() {
     fs.mkdirSync(outputDir, { recursive: true });
   }
   
-  // Write frontmatter first, then comment, then content
-  const parts = mdxContent.split('\n---\n');
-  const frontmatter = '---\n' + parts[0].replace(/^---\n/, '');
-  const restContent = parts.slice(1).join('\n---\n');
-  const header = '{/* Generated from OpenAPI spec — regenerate via: node scripts/generate-endpoint-overview.cjs */}\n\n';
+  // Build three separate pieces: frontmatter, comment, body
+  const frontmatter = [
+    '---',
+    'title: "Endpoint Overview"',
+    'description: "A complete index of Yuno API endpoints organized by resource"',
+    '---'
+  ].join('\n');
   
-  fs.writeFileSync(outputPath, frontmatter + '\n---\n\n' + header + restContent);
+  const comment = '{/* Generated from OpenAPI spec — regenerate via: node scripts/generate-endpoint-overview.cjs */}';
+  
+  // Concatenate with proper spacing
+  const fullContent = frontmatter + '\n\n' + comment + '\n\n' + bodyContent;
+  
+  fs.writeFileSync(outputPath, fullContent);
   
   console.log(`✓ Generated ${outputPath}`);
   
