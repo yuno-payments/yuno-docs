@@ -9,11 +9,11 @@ This guide explores how to integrate PagaLeve, a Pix-based payment provider for 
 * Make Pix Parcelado (installment Pix) payments with PagaLeve
 
 <Warning>
-**Draft page**
+**One item still needs confirmation before this page can be published**
 
-This page was drafted from confirmed registry data only (see [API enums](/reference/api-enums) and the [payment-methods table](/reference/payment-type-list)). The flow steps, request/response fields, and payment method type values below are placeholders and have **not** been confirmed against a real PagaLeve integration. Every `TODO` marker needs engineering/product confirmation before this page can be published.
+Everything below has been confirmed against the `pagaleve-int` connector, the `pagaleve-webhook` service, and the OpenAPI spec, except the `payment_method.detail` shape for Pix Parcelado installment payments (flagged below), which still needs confirmation from product/API.
 
-**Structure is also unconfirmed.** This draft follows the [NuPay](/docs/wallets/nupay) page's shape (checkout session + SDK enrollment/2FA), because it's the only full BR/Pix flow guide we have. But `payment-type-list` classifies PagaLeve under the `BNPL` category, same as Addi, Acuotaz, Wibond, and Klarna, and those providers use a simpler flow: a single [Create Payment](/reference/create-payment) call with `"workflow": "REDIRECT"`, no checkout session or enrollment step (see [BNPL examples](/reference/payments/payment-examples/bnpl)). The section structure below may need to be replaced with that simpler pattern rather than just having its field values filled in. Please confirm which shape actually matches PagaLeve before treating anything past this warning as reliable.
+Separately, `PIX_PARCELADO` isn't in the published OpenAPI spec yet. That's tracked as its own follow-up and doesn't block this page.
 </Warning>
 
 ## Requirements
@@ -32,9 +32,9 @@ Create the customer once using your external `merchant_customer_id`, then retrie
 2. Use [Retrieve Customer](/reference/retrieve-customer) with the Yuno `id`.
 3. Use [Retrieve Customer by External Id](/reference/retrieve-customer-by-external-id) with query parameter `merchant_customer_id`.
 
-<Note>
-**TODO:** confirm with engineering: does PagaLeve require a customer record before payment, or can it be a one-time (Direct) payment without prior customer creation, similar to plain PIX?
-</Note>
+<Tip>
+Creating a Yuno customer record first is not required. PagaLeve accepts customer info (CPF, email, name, phone, birth date, address) directly in the Create Payment call, the same as plain Pix. Creating the customer up front is still recommended for consistency with your other payment methods.
+</Tip>
 
 ## One-time Pix payment
 
@@ -60,11 +60,11 @@ Use PagaLeve to accept a standard, single Pix payment.
     The response returns a `checkout_session` ID.
 
     ### Step 2: Initialize the SDK
-    Initialize Yuno's SDK (Web, Android, or iOS) with the `checkout_session` ID. PagaLeve renders as an available payment option in the SDK interface.
+    Initialize Yuno's SDK (Web, Android, or iOS) with the `checkout_session` ID. PagaLeve renders as an available payment option in the SDK interface, using payment method type `"PIX"` for a one-time payment.
 
-    <Note>
-    **TODO:** confirm with engineering: whether PagaLeve is actually integrated via SDK checkout session at all, or only via the simpler Direct `"workflow": "REDIRECT"` call used by other BNPL providers (see the structure warning at the top of this page). If the latter, this whole SDK tab may not apply. Also confirm the exact `payment_method` type PagaLeve uses for plain PIX, and how the customer completes the payment (QR code shown in-SDK vs. redirect).
-    </Note>
+    <Tip>
+    The customer completes the payment on PagaLeve's hosted checkout page. If your PagaLeve connection has `TRANSPARENT_CHECKOUT` enabled, the customer completes it inside the SDK instead, through a checkout URL. Either way, PagaLeve confirms the result to Yuno through a webhook. See [Status transitions](#status-transitions) below.
+    </Tip>
   </Tab>
 
   <Tab title="Direct API">
@@ -91,9 +91,9 @@ Use PagaLeve to accept a standard, single Pix payment.
     }
     ```
 
-    <Note>
-    **TODO:** confirm with engineering: exact `payment_method_type` value for PagaLeve (the `"PIX"` placeholder above is unconfirmed), expected response fields (e.g. QR code data, `redirect_url`, `status`/`sub_status` values), and how the merchant confirms final payment status.
-    </Note>
+    <Tip>
+    The response returns the checkout's `redirect_url` in the payment method detail. Redirect the customer there to complete the payment; PagaLeve confirms the result to Yuno via webhook. See [Status transitions](#status-transitions) below for how PagaLeve's states map to Yuno's.
+    </Tip>
 
     ### Step 2: Confirm payment
     Use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm the final status.
@@ -132,9 +132,9 @@ PagaLeve supports Pix Parcelado, letting customers split a Pix payment into inst
     }'
     ```
 
-    <Note>
-    **TODO:** confirm with engineering: exact `payment_method` value expected here for PagaLeve (the `"PIX_PARCELADO"` placeholder above is unconfirmed), the actual request/response shape of this call, and whether it requires an enrolled/vaulted token or works as a one-time (non-enrolled) lookup like the example above.
-    </Note>
+    <Tip>
+    This is a one-time (non-enrolled) lookup, PagaLeve doesn't use an enrollment/vaulted token. The request above is confirmed correct.
+    </Tip>
 
     Select the plan `id` and installments number from the response.
 
@@ -165,9 +165,9 @@ PagaLeve supports Pix Parcelado, letting customers split a Pix payment into inst
     }
     ```
 
-    <Note>
-    **TODO:** confirm with engineering: exact `payment_method_type` value (placeholder above is unconfirmed) and the correct `detail` object shape (e.g. `installments_plan_id`, `installments` count) for PagaLeve.
-    </Note>
+    <Warning>
+    **Still needs confirmation:** `payment_method.type` `"PIX_PARCELADO"` is confirmed, but the `detail` object shape above (`{}`) is a placeholder. The connector passes the order's line items through to PagaLeve for this call rather than a simple `installments_plan_id`, but the exact field names and shape still need confirmation from product/API before this example can be trusted.
+    </Warning>
   </Tab>
 
   <Tab title="Direct API">
@@ -179,9 +179,9 @@ PagaLeve supports Pix Parcelado, letting customers split a Pix payment into inst
     ### Step 2: Create payment
     Use [Create payment](/reference/create-payment) with the Direct workflow and the PagaLeve installment payment method type. Include the selected plan details.
 
-    <Note>
-    **TODO:** confirm with engineering: full request body shape, expected response fields, and how status transitions (e.g. from created to succeeded) are reported for an installment Pix payment.
-    </Note>
+    <Tip>
+    Use the same `payment_method.type` `"PIX_PARCELADO"` shown in the SDK tab above. See [Status transitions](#status-transitions) below for how PagaLeve reports status changes. The `detail` object shape for the selected plan is still unconfirmed, see the note in the SDK tab above.
+    </Tip>
 
     ### Step 3: Retrieve payment
     Use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm the final status.
@@ -191,8 +191,26 @@ PagaLeve supports Pix Parcelado, letting customers split a Pix payment into inst
 <Info>
 **Limitations**
 
-**TODO:** confirm with engineering whether there are any limitations to flag here, similar to NuPay's "subscriptions don't support installments" note. For example, does PagaLeve support refunds and reverses on installment payments the same way as on one-time payments?
+* Currency is limited to BRL.
+* Pix and Pix Parcelado share the same refund flow, both are refundable the same way, including `DUPLICATE`, `FRAUDULENT`, and `REQUESTED_BY_CUSTOMER` reasons.
+* PagaLeve doesn't use an enrollment/vaulting pattern, unlike NuPay. Every payment is a one-time checkout.
 </Info>
+
+## Status transitions
+
+PagaLeve reports payment status through webhooks, processed asynchronously. For `CANCELED` and `EXPIRED`, the webhook publishes the status directly. For the other success states, it first captures the payment via the `ProcessPayment` endpoint.
+
+| PagaLeve state | Yuno status |
+| --- | --- |
+| `NEW` | Created |
+| `ACCEPTED` | Pending provider confirmation |
+| `AUTHORIZED` | Successful |
+| `COMPLETED` | Successful |
+| `RELEASED` | Successful |
+| `CAPTURED` | Successful |
+| `CANCELED` | Cancelled by user |
+| `EXPIRED` | Expired by provider |
+| `PAYMENT_DECLINED` | Declined by provider |
 
 ## Endpoints
 
