@@ -5,3 +5,62 @@ description: "Pauses an active subscription, allowing it to later resume or be c
 ---
 
 Calling this endpoint will change the subscription `status` to PAUSED. This status can be changed to ACTIVE or CANCELED.
+
+## Pause for a set time
+
+A pause is open-ended by default: the subscription stays PAUSED until you resume it. Sending a body with a duration schedules the resume in advance, and the subscription returns on its own when that moment arrives.
+
+Give the duration one of two ways, never both:
+
+- `pause_cycles` — an integer from 1 to 3. Counted from the pause, in the subscription's own frequency.
+- `pause_until` — an RFC 3339 instant. It must be in the future and inside the subscription's availability window.
+
+`billing_cycle_behavior` is optional and decides the billing date when the subscription resumes, exactly as it does on [Resume Subscription](/reference/subscriptions/resume-subscription): `KEEP` (the default) holds the original billing date, `RESTART` re-anchors from the resume. It only qualifies a duration: sending it without `pause_cycles` or `pause_until` is rejected. The choice is recorded on the pause and applied whether the subscription resumes on its own or you resume it yourself without naming a behaviour. An open-ended pause records `KEEP`, so resuming it later without a body keeps the original billing date too.
+
+<CodeGroup>
+```json Pause for two cycles
+{ "pause_cycles": 2 }
+```
+
+```json Pause until a date
+{ "pause_until": "2026-10-15T00:00:00Z" }
+```
+
+```json Pause and re-anchor on resume
+{ "pause_cycles": 1, "billing_cycle_behavior": "RESTART" }
+```
+</CodeGroup>
+
+`pause_cycles` is converted once, at the moment of the pause: the resolved instant is the pause instant plus n × the subscription's frequency. The subscription object then carries that instant as `pause_until` on retrieve and list responses, so a pause given in cycles and one given as a date are indistinguishable afterwards.
+
+### What happens while it is paused, and when it returns
+
+No cycle is charged during the pause, and the plan phase does not advance.
+
+Within about a minute of `pause_until` the subscription returns to the status it was billing under — ACTIVE, or TRIALING if it is still inside a trial phase — and a `subscription.resume` webhook is sent carrying `resume_reason: SCHEDULED`. A resume you make yourself carries `resume_reason: MERCHANT`, so the two are distinguishable on the event.
+
+Resuming manually before `pause_until` is allowed and cancels the scheduled resume.
+
+A paused subscription can still be canceled. `schedule.after_cycles` is not accepted while it is paused, because the cycle clock is frozen and there is no boundary to count to — use `schedule.at`. See [Cancel Subscription](/reference/subscriptions/cancel-subscription).
+
+A subscription paused while it is past due returns to active on the automatic resume; the unpaid cycle remains unpaid.
+
+<Note>
+**Availability**
+
+Scheduling the resume in advance is available to organizations enabled for it; contact Yuno. For an organization that is not yet enabled, the pause stays open-ended and is unchanged.
+</Note>
+
+### Errors
+
+| Condition | Response |
+| --- | --- |
+| Both `pause_cycles` and `pause_until` are sent | `400` — send one or the other |
+| `pause_cycles` is outside 1–3 | `400` |
+| `pause_until` is in the past | `400` |
+| `pause_until` falls outside the availability window | `400` |
+| `billing_cycle_behavior` is sent without `pause_cycles` or `pause_until` | `400` — it only qualifies a duration |
+| The organization is not enabled for the duration | `400` |
+| The subscription is not in a pausable status | `400 INVALID_STATE` |
+
+Sending no body at all is an open-ended pause and is never rejected by any of the above.
