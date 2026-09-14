@@ -5,6 +5,101 @@ description: "Latest updates and version history for the Yuno Web SDK"
 
 import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
+## v1.11.0
+*September 12, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **Regional static hosts: chunks and card iframes follow the host the SDK was loaded from**  
+  Until now the bundle served from `sdk-web.<region>.y.uno` (EU: `sdk-web.prod.eu.y.uno`, MENA: `sdk-web.mena.staging.y.uno`) still fetched every lazy chunk from the US host it was built for and both card iframes from `sdk-web-card.prod.y.uno`. The SDK now records the host `main.js` was actually loaded from and, when it is a Yuno static host other than the built one, serves lazy chunks from that same directory and loads the card form and secure-field iframes from the matching `sdk-web-card.<region>` host. The same build works on every regional bucket, so no build variants or infra changes are needed. Merchant `apiUrl` / `assetUrl` overrides keep precedence, and a bundle self-hosted on a non-Yuno domain behaves as before. No merchant integration changes are required.
+
+## v1.10.17
+*September 10, 2026*
+
+**Payment Methods**
+
+- <ChangelogBadge type="fixed" /> **Fixed the expanded payment method list preselecting nothing for returning shoppers**  
+  When the `preferred` flag landed on an express-rendered method (PayPal, Apple Pay, Google Pay) and the radio list held more than one row, no payment method was preselected and the shopper had to pick one manually. The single-regular-method rule now counts distinct method types instead of rows, so a saved card and the new-card row collapse into one Card method and the first card row is auto-selected. Express buttons demoted into the radio list by horizontal stacking no longer break the count, and a lone demoted express button is still preselected as before. Checkouts offering several distinct payment methods still require a manual selection, and a preferred express button that never finishes rendering is still never auto-selected.
+
+## v1.10.16
+*September 6, 2026*
+
+**Lite Web SDK**
+
+- <ChangelogBadge type="fixed" /> **Enrollment OTP screen shows the branding of the method being enrolled**  
+  The OTP step of an enrollment always rendered the DaviPlata logo and title, whatever payment method was being enrolled — an ACH enrollment through Stripe showed a DaviPlata header. The header now uses the icon and name the enrollment itself carries, so every method shows its own branding, and it falls back to the generic OTP title when the enrollment has neither. DaviPlata enrollments keep the header they had.
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **The ACH account type and account holder type fields offer their options during enrollment**  
+  Both fields read their dropdown options from the backend `ui` object, and the enrollment flow never put that object on the store. The two selects rendered empty, so a customer enrolling an ACH bank account could not pick an account type and could not finish the form. The enrollment response already carries the `ui` object, and it now reaches the store, which also lets the backend-driven labels, placeholders and error copies apply to the rest of the enrollment form.
+
+## v1.10.15
+*September 5, 2026*
+
+**Fraud & Risk**
+
+- <ChangelogBadge type="added" /> **Merchant-configurable ThreatMetrix session_id prefix for Cielo CyberSource**  
+  The `FINGERPRINT_PREFIX` connection param is prepended to the ThreatMetrix script URL session_id only, while the device fingerprint id reported to Yuno stays the bare session id.
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Google Pay honours `showPaymentStatus` when the payment fails**  
+  The error path in `completeGooglePayPayment` hardcoded the status screen, so merchants with `showPaymentStatus: false` still got the SDK's full-page "Transaction failed" screen over their own UI. It now respects the flag, consistent with the payment-action path.
+
+## v1.10.14
+*September 4, 2026*
+
+**Revolut Pay**
+
+- <ChangelogBadge type="fixed" /> **Fixed Revolut Pay Late Authorization Expiry**  
+  When a shopper closed the Revolut Pay widget while an authentication challenge was still in progress, the SDK expired the payment immediately, and an authorization that Revolut completed afterwards could not be applied, leaving funds on hold with no visible payment. The SDK now keeps the payment open on those cancellations so a late authorization is reflected correctly.
+
+## v1.10.13
+*September 3, 2026*
+
+**Google Pay**
+
+- <ChangelogBadge type="fixed" /> **Improved Google Pay Double-Tap Handling**  
+  A rapid second tap on the Google Pay button is now ignored while the payment sheet is loading, and the SDK no longer reloads the merchant page in that case.
+
+**Lite Web SDK**
+
+- <ChangelogBadge type="added" /> **PayPal Enrollment Element Render and Customization**  
+  PayPal enrollment in `mountEnrollmentLite` now supports `renderMode.type: 'element'`, shows a loading skeleton while the button loads, and accepts `externalButtons.paypal` for button customization.
+
+**Payment Actions**
+
+- <ChangelogBadge type="fixed" /> **Merchant Redirects After 3DS No Longer Cancelled**  
+  While a 3DS challenge is open, the SDK adds a browser history entry so the back button can cancel the payment. It removed that entry just after telling the merchant the payment had finished, which cancelled any redirect the merchant started from `yunoPaymentResult` or from a result-screen button and left the shopper on the loader. The entry is now removed just before the merchant is notified, so the redirect completes. Browser back still cancels the challenge as before.
+
+## v1.10.12
+*September 2, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="added" /> **Direct Debit Authorization and Save for Future Payments**  
+  Direct-debit payment methods (ACH, SEPA, Bacs, PAD, iDEAL) now render the mandate authorization text sent by the backend — switching between the one-off and recurrent copies as the buyer opts into saving, with the mandatory acceptance checkbox where the scheme requires it (SEPA / iDEAL) — and send the mandate acceptance evidence on the one-time token and enrollment requests. Adds the `savePaymentMethodEnabled` option to `startCheckout`: when the merchant enables it and the method supports saving, the checkout renders a "Save payment method for future payments" checkbox and the buyer's choice travels as `vault_on_success` (sent only when ticked). Off by default; card keeps its own `card.cardSaveEnable` / `card.vaultOnSuccess` configuration.
+
+- <ChangelogBadge type="added" /> **Plugin attribution on every SDK event**  
+  `Yuno.initialize` accepts an optional `plugin` block identifying the commerce platform the SDK is embedded in — `vtex`, `shopify`, `magento`, `woocommerce`, `prestashop` or `other` — along with the plugin's own version and the merchant's host-platform version. When it is present, every event the SDK emits carries `plugin_platform`, `plugin_version` and `host_platform_version` on the envelope, and `application` reports `plugin` instead of `sdk`. This lets the existing funnel, latency and A/B views be split by commerce platform without adding a single new event. A direct merchant integration omits the block and nothing changes: the three attributes are null and `application` keeps its current value.
+
+## v1.10.11
+*September 1, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Apple Pay capability detection hardened for older Safari**  
+  `applePayCapabilities()` is now feature-detected before use (the API only exists in Safari on iOS 18 / macOS Sequoia and newer), and a failed capabilities call falls back to the legacy `canMakePayments()` check instead of hiding the Apple Pay button. A successful call reporting no card in the wallet still hides the button. This makes the capability-based detection safe to enable by default for all merchants.
+
+**Core SDK**
+
+- <ChangelogBadge type="added" /> **onChange reports whether the payment form is complete**  
+  Merchants that hide the SDK pay button with `showPayButton: false` and render their own can now tell when the form is ready to be submitted. `onChange` reports `{ form: { isValid } }` every time it changes, covering every required field including the card fields the SDK renders in its secure iframes. It is available on `startCheckout` and on `mountEnrollmentLite`, and works for card, saved card and alternative payment method forms.
+
+- <ChangelogBadge type="fixed" /> **Only the selected payment method is submitted, and the loading state always closes**  
+  When a customer filled in one payment method and then switched to another, the SDK could submit both and create more than one payment token. Only the payment method the customer currently has selected is submitted now. Separately, when creating the token failed on an alternative payment method, `onLoading` never reported that it had finished, leaving merchants with a loading state that never closed. The alternative payment method form also left its own loading flag stuck on after the first submit, so anything reading it stayed in a loading state for the rest of the session.
+
 ## v1.10.10
 *August 31, 2026*
 
@@ -241,6 +336,14 @@ import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
 - <ChangelogBadge type="breaking" /> **Full-width action button in modal footers**  
   The action button in the shared modal footer now spans the full width on every viewport, with the "Powered by Yuno" privacy tag centered above it. Lite keeps the tag below the button. Embedded forms rendered with `renderMode: element` are unchanged.
+
+## v1.9.42
+*September 14, 2026*
+
+**Card Payments**
+
+- <ChangelogBadge type="fixed" /> **Honor the Keyboard Next Key Across the Card Form Fields**  
+  Pressing Next on the mobile keyboard now advances focus through the full card form fields and on to Cardholder Name after the last one, for every account, including those with automatic field advancement turned off.
 
 ## v1.9.36
 *August 21, 2026*
