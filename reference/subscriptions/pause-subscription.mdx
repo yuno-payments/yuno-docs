@@ -5,3 +5,67 @@ description: "Pauses an active subscription, allowing it to later resume or be c
 ---
 
 Calling this endpoint will change the subscription `status` to PAUSED. This status can be changed to ACTIVE or CANCELED.
+
+## Pause for a set time
+
+A pause is open-ended by default: the subscription stays `PAUSED` until you resume it. Sending a body with a duration schedules the resume in advance, and the subscription returns on its own when that moment arrives.
+
+Give the duration one of two ways, never both:
+
+- `pause_cycles` — an integer from 1 to 3, counted from the pause in the subscription's own frequency.
+- `pause_until` — an RFC 3339 instant. It must be in the future and fall before `availability.finish_at` when the subscription has one.
+
+`billing_cycle_behavior` is optional and decides the billing date when the subscription resumes, with the same `KEEP`/`RESTART` meanings as on [Resume Subscription](/reference/subscriptions/resume-subscription#keep-and-restart-compared): `KEEP` (the default) holds the original billing date, `RESTART` re-anchors from the resume. Sending it without `pause_cycles` or `pause_until` is accepted — an open-ended pause that just records the behaviour for whenever the subscription is later resumed.
+
+`reason` is an optional free-form string, at most 255 characters, stored on the subscription's `reason` field. A later `GET` on the subscription echoes it back, and it stays until something else overwrites it — a resume that sends its own `reason`, for example.
+
+<CodeGroup>
+```json Pause for two cycles
+{ "pause_cycles": 2 }
+```
+
+```json Pause until a date
+{ "pause_until": "2026-09-22T15:47:04.964Z" }
+```
+
+```json Pause and re-anchor on resume
+{ "pause_cycles": 1, "billing_cycle_behavior": "RESTART" }
+```
+
+```json Pause with a reason
+{ "pause_cycles": 1, "reason": "customer requested a break" }
+```
+</CodeGroup>
+
+`pause_cycles` is resolved once, at the moment of the pause: the resolved instant is the pause instant plus `pause_cycles` × the subscription's frequency. The subscription then carries that instant as `pause_until` on every later read while it stays paused — a pause given in cycles and one given as a date are indistinguishable afterwards. For example, `{ "pause_cycles": 1 }` on a monthly subscription paused at `2026-09-15T15:54:18Z` resolves to `pause_until: "2026-10-15T15:54:22.780166Z"`.
+
+### What happens while it is paused, and when it returns
+
+No cycle is charged during the pause. While a duration is running, the subscription carries `pause_until` on every read; it returns to the status it was billing under on its own, within about a minute of that instant, and a `subscription.resume` webhook arrives carrying `resume_reason: SCHEDULED`. A manual resume before that instant cancels the schedule — call [Resume Subscription](/reference/subscriptions/resume-subscription) yourself at any time to end the pause early.
+
+<Note>
+**Availability**
+
+Pausing for a set time, and the `reason` field, are available to organizations enabled for it; contact Yuno.
+</Note>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `BAD_REQUEST` | Both `pause_cycles` and `pause_until` are sent — `"pause_cycles cannot be combined with pause_until."` |
+| `400` | `BAD_REQUEST` | `pause_until` is not in the future — `"pause_until must be in the future."` |
+| `400` | `BAD_REQUEST` | `pause_until` falls on or after `availability.finish_at` — the message names both instants. |
+| `400` | `BAD_REQUEST` | `pause_cycles` is sent on a subscription with no recurring billing cadence. |
+| `400` | `BAD_REQUEST` | The organization is not enabled for `pause_cycles`/`pause_until` and one is sent — the message names the field. |
+| `400` | `BAD_REQUEST` | An unrecognized field is sent, refused at the gateway — `"Bad request"` |
+| `400` | `INVALID_PARAMETERS` | `billing_cycle_behavior` is not `KEEP` or `RESTART` — `"The field 'billing_cycle_behavior' has an invalid value."` |
+| `400` | `INVALID_PARAMETERS` | `pause_cycles` is outside 1–3 — `"The field 'pause_cycles' has a value greater than allowed."` |
+| `400` | `BAD_REQUEST` | The request body is malformed JSON, refused at the gateway — `"The field '' wrong data type."` |
+| `400` | `INVALID_STATE` | The subscription's status does not support pausing. |
+
+</div>
+
+Sending no body at all is an open-ended pause and is never rejected by any of the above.
