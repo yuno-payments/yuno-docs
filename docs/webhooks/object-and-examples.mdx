@@ -1746,7 +1746,11 @@ Sent when a subscription is paused. Use this event to update the status in your 
 
 ### subscription.resume
 
-Sent when a paused subscription is resumed and transitions back to the `ACTIVE` status.
+Sent when a paused subscription is resumed and transitions back to the status it was billing under — `ACTIVE`, or `TRIALING` if it is still inside a trial phase.
+
+The payload carries `resume_reason`, present only on this event: `MERCHANT` when [Resume Subscription](/reference/subscriptions/resume-subscription) was called, `SCHEDULED` when the pause reached its `pause_until` and the subscription returned on its own. The event also carries the resulting `billing_cycles.next_at`.
+
+Subscription payloads carry `refund_rule` and `pause_until` whenever the subscription object does — see [the Subscription object](/reference/subscriptions/the-subscription-object).
 
 ```json JSON
 {
@@ -1826,6 +1830,7 @@ Sent when a paused subscription is resumed and transitions back to the `ACTIVE` 
       "initial_payment_validation": false,
       "provider_subscription_id": null,
       "reason": null,
+      "resume_reason": "MERCHANT",
       "subscription_agreement_id": null,
       "soft_descriptor": null,
       "renewal_notification_days": null,
@@ -1840,9 +1845,181 @@ Sent when a paused subscription is resumed and transitions back to the `ACTIVE` 
 }
 ```
 
+A scheduled resume — the pause reaching its `pause_until` on its own — sends the same event with `"resume_reason": "SCHEDULED"` instead, and no other structural difference in the payload.
+
+### subscription.reactivate
+
+Sent when a `CANCELED` or `COMPLETED` subscription returns to `ACTIVE` — or `TRIALING` when a trial phase covers the reactivated cycle — through [Reactivate Subscription](/reference/subscriptions/reactivate-subscription). The payload is the subscription object.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.reactivate",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "SUB-111 win-back subject",
+      "description": null,
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "sub111a-1789487996637-802344",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 45000
+      },
+      "frequency": {
+        "type": "MONTH",
+        "value": 1,
+        "monthly_billing_day": null,
+        "execution": "YUNO"
+      },
+      "billing_date": null,
+      "billing_cycles": {
+        "total": 12,
+        "current": 2,
+        "next_at": "2026-10-15T15:59:57.366916Z"
+      },
+      "current_period_start": "2026-09-15T15:59:57.366916Z",
+      "current_period_end": "2026-10-15T15:59:57.366916Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payment_method": {
+        "type": "CARD",
+        "vaulted_token": "96a73f83-8039-455c-97c6-7757d036450a",
+        "card": {
+          "installments": null,
+          "network_transaction_id": null,
+          "usage": "USED"
+        }
+      },
+      "availability": {
+        "start_at": "2026-09-15T15:59:57.366916Z",
+        "finish_at": null
+      },
+      "retries": {
+        "retry_on_decline": false,
+        "amount": 6,
+        "strategy": "DEFAULT",
+        "schedule": null,
+        "stop_on_hard_decline": null,
+        "cancel_on_exhausted_retries": null
+      },
+      "metadata": null,
+      "additional_data": null,
+      "payments": [],
+      "trial_period": {
+        "billing_cycles": 1,
+        "amount": {
+          "currency": null,
+          "value": null
+        }
+      },
+      "initial_payment_validation": false,
+      "provider_subscription_id": null,
+      "reason": null,
+      "subscription_agreement_id": null,
+      "soft_descriptor": null,
+      "renewal_notification_days": null,
+      "cancellation_time": null,
+      "cancellation_source": null,
+      "ending_time": null,
+      "created_at": "2026-09-15T15:59:57.366916Z",
+      "updated_at": "2026-09-15T15:59:58.65775Z",
+      "history": null
+    }
+  }
+}
+```
+
+### subscription.auto_resume_failed
+
+Sent when the automatic resume of a paused subscription could not be completed after its retries; the subscription stays `PAUSED`. The payload is the subscription object. Available to organizations enabled for it; contact Yuno.
+
+<Note>
+No live capture of this event exists yet. The example below reuses a captured `PAUSED` subscription body (the same shape [`subscription.pause`](#subscription-pause) shows, with `pause_until` from a duration-based pause), identifiers swapped to this page's example subscription.
+</Note>
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.auto_resume_failed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "SUB-112 passthrough subject",
+      "description": null,
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "pa-sub112pt-1789487657670-794215",
+      "status": "PAUSED",
+      "amount": {
+        "currency": "COP",
+        "value": 45000
+      },
+      "frequency": {
+        "type": "MONTH",
+        "value": 1
+      },
+      "billing_cycles": {
+        "total": null,
+        "current": 2,
+        "paid": 1,
+        "next_at": "2026-10-15T15:54:18.312843Z"
+      },
+      "current_period_start": "2026-09-15T15:54:18.312843Z",
+      "current_period_end": "2026-10-15T15:54:18.312843Z",
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payment_method": {
+        "type": "CARD",
+        "vaulted_token": "589c51a6-050d-4b9b-a00c-856e064e5f50",
+        "card": {
+          "installments": null,
+          "network_transaction_id": "615803391389209",
+          "usage": "USED"
+        }
+      },
+      "availability": {
+        "start_at": "2026-09-15T15:54:18.312843Z",
+        "finish_at": null
+      },
+      "retries": {
+        "retry_on_decline": false,
+        "amount": 6,
+        "strategy": "SMART",
+        "schedule": null,
+        "stop_on_hard_decline": null,
+        "cancel_on_exhausted_retries": null
+      },
+      "metadata": null,
+      "additional_data": null,
+      "initial_payment_validation": false,
+      "reason": null,
+      "subscription_agreement_id": null,
+      "created_at": "2026-09-15T15:54:18.312843Z",
+      "updated_at": "2026-09-15T15:54:22.783678Z",
+      "pause_until": "2026-10-15T15:54:22.780166Z"
+    }
+  }
+}
+```
+
+`auto_resume_failed` is not itself a status — the subscription is, and stays, `PAUSED`. Call [Resume Subscription](/reference/subscriptions/resume-subscription) to end the pause manually once this event arrives.
+
 ### subscription.cancel
 
-Sent when a subscription is canceled. Once canceled, the subscription is terminated and cannot be reactivated.
+Sent when a subscription is canceled. A canceled subscription can be brought back with [Reactivate Subscription](/reference/subscriptions/reactivate-subscription), which keeps the same subscription and its payment history.
 
 The subscription object carries a `cancellation_source` field describing what triggered the cancellation — `MERCHANT`, `SYSTEM`, `PLAN_CHANGE`, or `RETRIES_EXHAUSTED`. See [the subscription object](/reference/subscriptions/the-subscription-object) for what each value means.
 
