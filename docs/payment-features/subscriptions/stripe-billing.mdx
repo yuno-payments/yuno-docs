@@ -1,0 +1,108 @@
+---
+title: "Process Stripe Billing subscriptions with Yuno"
+description: "Keep Stripe Billing as your subscription engine — plans, invoices, billing cycles, dunning — while Yuno processes every charge through your own providers and routing rules"
+---
+
+{/* TODO(editorial): confirm the public feature name ("Stripe Billing with Yuno" vs other) and add dashboard screenshots of a bridge payment. */}
+
+Keep Stripe Billing as your subscription engine — plans, invoices, billing cycles, dunning — while Yuno processes every charge through your own providers and routing rules. Your subscription logic doesn't change: only the checkout moves to Yuno, and Yuno takes care of the rest.
+
+## How it works
+
+Stripe's [third-party payment processing](https://docs.stripe.com/billing/subscriptions/third-party-payment-processing) mode lets an external processor execute the charges for your Billing subscriptions. With Yuno:
+
+1. **Signup:** your customer pays the first charge through your Yuno checkout (3DS, anti-fraud and smart routing included). Yuno securely vaults the card.
+2. **Activation:** Yuno automatically registers the payment in Stripe, links the vaulted card to the subscription, and Stripe activates it — Stripe never sees the card.
+3. **Renewals:** when Stripe issues a renewal invoice, Yuno charges the vaulted card as a merchant-initiated transaction (with network-compliant stored credentials) and reports the outcome back to Stripe. The invoice is marked paid automatically.
+4. **Recovery:** failed renewals follow the retry schedule you configure in Stripe; each retry is executed by Yuno across your provider cascade.
+5. **Refunds:** refund through Yuno as usual — Yuno reports it to Stripe and creates the credit note.
+
+Your backend keeps listening to the same Stripe webhooks you use today (`invoice.paid`, `customer.subscription.updated`, …) for entitlements. No changes there.
+
+## Prerequisites
+
+* A Yuno account with your providers connected and routing published.
+* A Stripe account with Billing and **third-party payment processing enabled** (request it from Stripe).
+* Onboarding with Yuno: share a **restricted API key** from your Stripe account with your Yuno contact so Yuno can register the webhook endpoint and report payments. Yuno stores it encrypted and uses it only for your account.
+
+## Step 1 — Create the subscription in Stripe
+
+Create the Customer and Subscription in Stripe exactly as you do today (use `payment_behavior: default_incomplete`). Keep the `customer` and `subscription` ids — you'll send them to Yuno in the next step.
+
+<Warning>
+  Create the subscription at checkout time and collect the payment in the same session: Stripe requires the first payment to be reported within **23 hours** of the subscription's creation.
+</Warning>
+
+## Step 2 — Collect the first payment with Yuno
+
+Run your normal Yuno checkout and create the payment from your backend with two additions: `vault_on_success` and the `external_subscription` object linking the payment to your Stripe subscription (see [Create payment](/reference/payments/create-payment)):
+
+```json
+{
+  "account_id": "<your_account_id>",
+  "merchant_order_id": "<your_order_id>",
+  "description": "Pro plan — first month",
+  "country": "US",
+  "amount": { "currency": "USD", "value": 99.00 },
+  "customer_payer": { "id": "<yuno_customer_id>" },
+  "payment_method": {
+    "type": "CARD",
+    "token": "<one_time_token_from_sdk>",
+    "vault_on_success": true
+  },
+  "external_subscription": {
+    "id": "sub_1QwZzz",
+    "customer_id": "cus_RplXYZ"
+  }
+}
+```
+
+That's it. When the payment is approved, Yuno automatically: creates a payment method reference in your Stripe account (no card data), attaches it to the subscription as its default payment method, and reports the payment so Stripe marks the first invoice as paid and activates the subscription.
+
+## Free trials
+
+When signup starts a **trial**, there is no first charge — the trigger is the **$0 card verification** of the enrollment flow instead. Create the Stripe subscription with `trial_end` as usual, then enroll the card through the [Enroll payment method](/reference/enroll-payment-method-api) endpoint with the `external_subscription` object nested inside `verify`:
+
+```json
+{
+  "account_id": "<your_account_id>",
+  "country": "US",
+  "type": "CARD",
+  "workflow": "DIRECT",
+  "card_data": { "...": "..." },
+  "verify": {
+    "vault_on_success": true,
+    "currency": "USD",
+    "external_subscription": {
+      "id": "sub_1QwZzz",
+      "customer_id": "cus_RplXYZ"
+    }
+  }
+}
+```
+
+<Info>
+  Use the same currency for the verification as the subscription's — renewals are charged in the subscription's currency.
+</Info>
+
+On a successful verification Yuno links the vaulted card to the trialing subscription (its `default_payment_method` in Stripe becomes the Yuno reference) and nothing is charged or reported — no invoice is due. At trial end, Stripe issues the first real invoice and Yuno charges it with network-compliant stored credentials, exactly like any renewal.
+
+## Renewals — nothing to do
+
+Every renewal is automatic: Stripe finalizes the invoice → Yuno charges the vaulted card → Stripe marks it paid. You'll see each charge as a normal payment in your Yuno dashboard and reports, and the invoice lifecycle in Stripe as always.
+
+## Failed payments and recovery
+
+Configure a **custom retry schedule** in Stripe (Smart Retries are not available in third-party processing mode — a Stripe limitation). Each scheduled retry triggers a new charge attempt through Yuno, executed across your routing and provider cascade. If all retries are exhausted, your Stripe dunning configuration decides the subscription's fate, as usual.
+
+## Refunds
+
+Refund through the Yuno API or dashboard as with any payment. Yuno reports the refund to Stripe and creates the corresponding **credit note** so your Stripe books stay consistent. Partial refunds are supported.
+
+## Changing the customer's card
+
+Collect a new payment (or run a new verification, for trialing subscriptions) sending the same `external_subscription.id`. Yuno vaults the new card and switches the subscription's default payment method in Stripe automatically. Renewals continue without interruption.
+
+## Not supported in this mode
+
+Per Stripe's third-party processing mode: Stripe Checkout, the Stripe-hosted invoice page, Smart Retries and recovery emails, Stripe-managed disputes, and Stripe-initiated refunds. Embedded Stripe pricing tables are not compatible (the checkout is Yuno's).

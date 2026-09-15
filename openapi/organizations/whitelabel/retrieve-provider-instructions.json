@@ -1,0 +1,212 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - Retrieve Instructions",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers/{provider_id}/instructions": {
+      "get": {
+        "summary": "Retrieve a Provider's Instruction Override",
+        "operationId": "retrieve-whitelabel-provider-instructions",
+        "description": "Returns the custom connection instructions you have stored for this provider — the focused read an editor loads before saving. A provider with no override answers `404`; use `GET /v1/whitelabel/providers/{provider_id}`, which never 404s, when you want the overlay whether or not one exists.\n\nA field you do not override is absent, not null and not an empty list: absent means \"keep the Yuno catalogue's value\", present-and-empty means \"replace it with nothing\".",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "description": "Yuno catalogue provider id in UPPER_SNAKE_CASE. Case-insensitive; normalized to upper case.",
+            "schema": {
+              "type": "string",
+              "example": "STRIPE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The stored override.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider_id": {
+                      "type": "string",
+                      "description": "Yuno catalogue provider id, UPPER_SNAKE_CASE.",
+                      "example": "STRIPE"
+                    },
+                    "instructions": {
+                      "type": "array",
+                      "description": "Connection steps replacing the catalogue's.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "One instruction step. Accepts `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` and `sub_instructions` (nested up to 3 levels). `text` and `text_link` are either a plain string or a language map such as `{\"EN\": \"...\", \"ES\": \"...\"}`. Every `link` must be https."
+                      }
+                    },
+                    "setup_instructions": {
+                      "type": "array",
+                      "description": "Grouped setup steps replacing the catalogue's.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "One setup group. Accepts `title`, `order`, `instructions_type` and `instructions` (the same step shape)."
+                      }
+                    },
+                    "more_info_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "Documentation link replacing the catalogue's, when overridden. Always https.",
+                      "example": "https://docs.example.com/stripe"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Display name replacing the catalogue's, when overridden. Only Yuno-owned providers can carry one.",
+                      "example": "Acme Risk"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true,
+                      "description": "When the override was first written.",
+                      "example": "2026-09-02T13:54:13Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true,
+                      "description": "When the override was last written.",
+                      "example": "2026-09-02T13:54:13Z"
+                    },
+                    "created_by": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true,
+                      "description": "The dashboard user who created it. Overrides written through this API carry the all-zero sentinel `00000000-0000-0000-0000-000000000000`, meaning \"written through the API\" rather than by a person in the dashboard.",
+                      "example": "00000000-0000-0000-0000-000000000000"
+                    },
+                    "updated_by": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true,
+                      "description": "The dashboard user who last updated it, with the same sentinel rule as `created_by`.",
+                      "example": "00000000-0000-0000-0000-000000000000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid provider_id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "provider_id is invalid"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "This provider has no instruction override.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "about:blank"
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "Not Found"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "detail": {
+                      "type": "string",
+                      "example": "No instruction override for provider STRIPE"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
