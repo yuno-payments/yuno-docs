@@ -81,7 +81,9 @@ Sending `billing_cycles.total`:
 | Not a positive integer | `400` `BAD_REQUEST` — `"billing_cycles.total must be a positive integer."` |
 
 Sending `billing_cycles.total` for a subscription that still has cycles left is accepted the same
-way: it raises the limit, it is not restricted to exhausted subscriptions.
+way: it raises the limit, it is not restricted to exhausted subscriptions. An explicit
+`billing_cycles.total: null` is treated the same as omitting the field — the current total is left
+unchanged.
 
 ## Choosing the next billing date
 
@@ -140,6 +142,8 @@ Reactivating a subscription clears:
 - `ending_time`
 - `reason`
 - any scheduled cancellation (`cancel_scheduled`)
+- any pause that was scheduled to end on its own — a reactivated subscription never carries
+  `pause_until`
 
 The `subscription.reactivate` webhook fires once, carrying the reactivated subscription.
 
@@ -155,7 +159,8 @@ The `subscription.reactivate` webhook fires once, carrying the reactivated subsc
 | `400` | `INVALID_DATE` | `availability.finish_at` has already passed. |
 | `400` | `BAD_REQUEST` | `billing_cycles.total` is not greater than the current total, is sent on a subscription with no cycle limit, or is not a positive integer. |
 | `400` | `BAD_REQUEST` | `billing_cycle_behavior` is not `KEEP` or `RESTART`. |
-| `400` | `BAD_REQUEST` | An unrecognized top-level key, or a key other than `total` inside `billing_cycles` — `"Unknown field(s): foo."` |
+| `400` | `BAD_REQUEST` | An unrecognized top-level key, caught by the gateway's own JSON binding before the call reaches the engine — `"Bad request"` |
+| `400` | `BAD_REQUEST` | A key other than `total` inside `billing_cycles`, forwarded raw to the engine and refused there — `"Unknown field(s): foo."` |
 | `400` | `PAYMENT_METHOD_STATUS_INVALID` | The vaulted payment method is no longer enrolled. |
 | `400` | `OPERATION_IN_PROCESS` | Another write against the same subscription is still in progress — `"Operation over the same subscription is already in process. Try again in a few seconds."` |
 
