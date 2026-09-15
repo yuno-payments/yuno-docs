@@ -104,14 +104,25 @@ as unused).
 
 ### CUSTOM
 
-<Warning>
-**Provisional — semantics under product review**
+A `CUSTOM` refund takes its amount from one of two places, in this order:
 
-`CUSTOM`'s current behavior is a merchant-supplied `refund_amount` sent on the cancel request
-itself, capped at the current cycle's charged amount. Product is reviewing whether the refund rule
-for `CUSTOM` should instead live on the **plan** as a standing rule, rather than a per-cancel amount.
-Treat everything in this subsection as unstable until that's resolved.
-</Warning>
+1. `refund_amount` on the cancel request, if you send one.
+2. otherwise the `refund_rule` configured on the subscription.
+
+If neither exists the cancellation is rejected with `400` — `CUSTOM` never falls back to a computed
+amount. The rule lives on the **subscription**, is set on create or update, and is described on
+[the Subscription object](/reference/subscriptions/the-subscription-object).
+
+Whichever source is used, its currency must match both the subscription's currency and the currency
+of the charged payment, and the error message names the source it was checking.
+
+<Note>
+**Availability**
+
+A configured `refund_rule` is available to organizations enabled for it; contact Yuno. For an
+organization that is not yet enabled, `CUSTOM` behaves exactly as it does today: `refund_amount` on
+the request is required, and any rule stored on the subscription is ignored.
+</Note>
 
 Send `refund_amount` alongside `"refund": "CUSTOM"` to refund a specific amount instead of a
 computed one:
@@ -305,7 +316,9 @@ itself: present only when a quote was actually computed (`PRORATED`/`FULL`/`CUST
 | `400` | `BAD_REQUEST` | `refund` is not one of `NONE`, `PRORATED`, `FULL`, `CUSTOM`. |
 | `400` | `BAD_REQUEST` | `refund` (any mode other than `NONE`) is combined with `schedule`, including `"schedule": null`. |
 | `400` | `BAD_REQUEST` | Refund quoting is not enabled for this organization (`refund: NONE`/absent is never gated). |
-| `400` | `BAD_REQUEST` | `refund_amount` is sent without `refund: CUSTOM`, or `refund: CUSTOM` is sent without `refund_amount`. |
+| `400` | `BAD_REQUEST` | `refund_amount` is sent without `refund: CUSTOM`. |
+| `400` | `BAD_REQUEST` | `refund: CUSTOM` is sent with neither `refund_amount` nor a configured `refund_rule` on the subscription. |
+| `400` | `REFUND_RULE_CURRENCY_MISMATCH` | The winning source's currency does not match the subscription's currency or the charged payment's. The message names which source was used. |
 | `400` | `BAD_REQUEST` | `refund_amount.value` is missing, not greater than `0`, or exceeds the current cycle's charged amount (the cap). |
 | `400` | `BAD_REQUEST` | `refund_amount.currency` is missing or does not match the subscription's own currency. |
 | `400` | `BAD_REQUEST` | `refund: PRORATED` on a sub-daily (`HOUR`/`MINUTE`) cadence. |
