@@ -135,6 +135,46 @@ Yuno system follows a sequential process, initially examining card data and subs
 
 To get the desired payment result using the payment description, you need to define the expected result as the description of the payment you create. For example, if you are testing a payment and expect a successful result, the payment description should be "SUCCEEDED". You will find all available options in the [Transaction Codes](/reference/transaction#transaction-codes) section.
 
+###### Simulate a chargeback
+
+In sandbox, you can simulate a chargeback after a successful purchase by setting the payment **description**. The trigger is the description field, not the amount or the card number.
+
+Use this format as the payment `description`:
+
+```
+SUCCEEDED+CHARGEBACK <outcome>
+```
+
+Replace `<outcome>` with one of the values in the table below. The purchase succeeds first. About two minutes later, Yuno creates a `CHARGEBACK` transaction on that payment and emits the related webhook events.
+
+| Description outcome | CHARGEBACK status | CHARGEBACK response_code | Payment status | Payment sub_status |
+| --- | --- | --- | --- | --- |
+| `action_required` | `CREATED` | `ACTION_REQUIRED` | `IN_DISPUTE` | `RECEIVED` |
+| `review` | `PENDING` | `IN_REVIEW` | `IN_DISPUTE` | `PENDING_REVIEW` |
+| `won` | `WON` | `REVIEW_WON` | `SUCCEEDED` | `APPROVED` |
+| `lost` | `LOST` | `REVIEW_LOST` | `CHARGEBACK` | `LOST` |
+
+Examples:
+
+* `SUCCEEDED+CHARGEBACK action_required`
+* `SUCCEEDED+CHARGEBACK review`
+* `SUCCEEDED+CHARGEBACK won`
+* `SUCCEEDED+CHARGEBACK lost`
+
+If the outcome after `CHARGEBACK` is missing or not recognized, Yuno falls back to `action_required`.
+
+In testing, the chargeback `reason` observed is `REQUESTED_BY_CUSTOMER`.
+
+<Note>
+**Card data is evaluated first**
+
+Yuno evaluates card data before the payment description, so the card decides the initial authorization result. The card does not stop the chargeback simulation: about one minute later the description takes over, the payment moves to `SUCCEEDED`, and the chargeback still lands about one minute after that. Pair the `SUCCEEDED+CHARGEBACK <outcome>` description with a [SUCCEEDED test card](/docs/direct-integration-use-cases/yuno-testing-gateway#222---card-detail) (or an equivalent SUCCEEDED card prefix) so the payment status is stable throughout the flow.
+</Note>
+
+<Tip>
+Confirm that your sandbox webhook endpoint receives `payment.chargeback`. Configure the endpoint on your own sandbox URL, then complete one simulated chargeback end to end. See [Webhooks overview](/docs/webhooks), [Configure webhooks](/docs/webhooks/configure-webhooks), and the [Chargeback webhook examples](/docs/webhooks/object-and-examples#chargeback-webhook-v2). For dispute states and merchant actions after the chargeback lands, see [Chargeback management](/docs/payouts-and-disputes/chargeback-management).
+</Tip>
+
 ##### 2.2.2 - Card detail
 
 Another option to get the expected payment results is to use one of the testing cards provided by Yuno. In the tables below, you find a list of cards and their data details to use when using the Yuno Testing Gateway. The **Transaction Response Code** column defines the returned payment status when you use the corresponding card.

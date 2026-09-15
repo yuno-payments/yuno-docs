@@ -1,0 +1,110 @@
+---
+title: "List the White-label Provider Overlay"
+description: "Returns your organization's overlay on the Yuno provider catalogue: which providers your dashboard offers, and the wording, links and logos you have set for them."
+openapi: "/openapi/organizations/whitelabel/list-providers.json GET /whitelabel/providers"
+---
+
+Returns your organization's overlay on the Yuno provider catalogue: which providers your dashboard offers, and the custom wording, links and logos you have set for them.
+
+It is an **overlay, not the catalogue**. Read the provider catalogue separately and join this on top — this response only covers providers you have an opinion about.
+
+<Note>
+This filters a picker. It is **not authorization**: it does not stop a connection being created against a provider you do not offer.
+</Note>
+
+### Response
+
+<ResponseField name="filtered" type="boolean">
+  Whether your organization has at least one allowlist entry. `false` means a white-label organization currently offers no provider at all (the allowlist is opt-in), not that everything is offered. **Branch on this, never on the length of `providers`** — the list is also non-empty when your only entries are instruction or logo overrides.
+</ResponseField>
+
+<ResponseField name="providers" type="object[]">
+  The union of your allowlist, your instruction overrides, and your logo overrides. A provider can carry custom wording or a custom logo without being offered, in which case it appears here with `allowed: false`.
+  <Expandable title="item">
+    <ResponseField name="provider_id" type="string">
+      Yuno catalogue provider id, UPPER_SNAKE_CASE.
+    </ResponseField>
+    <ResponseField name="allowed" type="boolean">
+      Whether your organization offers this provider.
+    </ResponseField>
+    <ResponseField name="has_instruction_override" type="boolean">
+      Whether any instruction override exists. A cheap badge flag — redundant with the content fields below, and not authoritative for rendering them.
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Display name replacing the catalogue's, when overridden. Absent means keep the catalogue's.
+    </ResponseField>
+    <ResponseField name="instructions" type="object[]">
+      Connection steps replacing the catalogue's, when overridden.
+    </ResponseField>
+    <ResponseField name="setup_instructions" type="object[]">
+      Grouped setup steps replacing the catalogue's, when overridden.
+    </ResponseField>
+    <ResponseField name="more_info_url" type="string">
+      Documentation link replacing the catalogue's, when overridden. Always https.
+    </ResponseField>
+    <ResponseField name="logo_url" type="string">
+      Presigned on this read and short-lived. Never store it — read again for a fresh one.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/whitelabel/providers' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK — with an allowlist
+{
+  "filtered": true,
+  "providers": [
+    {
+      "provider_id": "ADYEN",
+      "allowed": true,
+      "has_instruction_override": false
+    },
+    {
+      "provider_id": "STRIPE",
+      "allowed": true,
+      "has_instruction_override": true,
+      "more_info_url": "https://docs.example.com/stripe"
+    },
+    {
+      "provider_id": "YUNO_3DS",
+      "allowed": false,
+      "has_instruction_override": false,
+      "logo_url": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+    }
+  ]
+}
+```
+
+```json 200 OK — no allowlist
+{
+  "filtered": false,
+  "providers": []
+}
+```
+
+```json 401 Unauthorized
+{
+  "code": "NOT_AUTHENTICATED",
+  "messages": ["Not authenticated"]
+}
+```
+</CodeGroup>
+
+<Note>
+`YUNO_3DS` in the example above is **not offered** (`allowed: false`) and still appears, because it carries a custom logo. This is why `allowed` has to be read per provider rather than inferred from the list's contents.
+</Note>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `401` | `NOT_AUTHENTICATED` | Missing or invalid API keys. |
+
+</div>

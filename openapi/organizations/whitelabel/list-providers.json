@@ -1,0 +1,149 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - List",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers": {
+      "get": {
+        "summary": "List the White-label Provider Overlay",
+        "operationId": "list-whitelabel-providers",
+        "description": "Returns your organization's overlay on the Yuno provider catalogue: which providers your dashboard offers, and the custom wording, links and logos you have set for them. It is an overlay, not the catalogue — join it onto the provider catalogue rather than reading it as the list of providers.\n\nBranch on `filtered`, never on the length of `providers`: a provider with custom wording but no allowlist entry appears here with `allowed: false`.\n\nThis filters a picker. It is not authorization, and it does not stop a connection being created against a provider you do not offer.",
+        "responses": {
+          "200": {
+            "description": "The organization's provider overlay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filtered": {
+                      "type": "boolean",
+                      "description": "Whether the organization has at least one allowlist entry. `false` means a white-label organization currently offers no provider at all (the allowlist is opt-in), not that everything is offered. Branch on this, never on the length of `providers` — the list is also non-empty when the only entries are instruction or logo overrides.",
+                      "example": true
+                    },
+                    "providers": {
+                      "type": "array",
+                      "description": "The union of the allowlist, the instruction overrides, and the logo overrides. A provider can carry custom wording or a custom logo without being offered, in which case it appears with `allowed: false`.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider_id": {
+                            "type": "string",
+                            "description": "Yuno catalogue provider id, UPPER_SNAKE_CASE.",
+                            "example": "STRIPE"
+                          },
+                          "allowed": {
+                            "type": "boolean",
+                            "description": "Whether the organization offers this provider.",
+                            "example": true
+                          },
+                          "has_instruction_override": {
+                            "type": "boolean",
+                            "description": "Whether any instruction override exists. A cheap badge flag, redundant with the content fields and not authoritative for rendering them.",
+                            "example": true
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Display name replacing the catalogue's, when overridden. Only Yuno-owned providers can carry one.",
+                            "example": "Acme Risk"
+                          },
+                          "instructions": {
+                            "type": "array",
+                            "description": "Connection steps replacing the catalogue's, when overridden. Absent means keep the catalogue's.",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "description": "One instruction step. Accepts `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` and `sub_instructions` (nested up to 3 levels). `text` and `text_link` are either a plain string or a language map such as `{\"EN\": \"...\", \"ES\": \"...\"}`. Every `link` must be https."
+                            }
+                          },
+                          "setup_instructions": {
+                            "type": "array",
+                            "description": "Grouped setup steps replacing the catalogue's, when overridden. Absent means keep the catalogue's.",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "description": "One setup group. Accepts `title`, `order`, `instructions_type` and `instructions` (the same step shape)."
+                            }
+                          },
+                          "more_info_url": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "Documentation link replacing the catalogue's, when overridden. Always https.",
+                            "example": "https://docs.example.com/stripe"
+                          },
+                          "logo_url": {
+                            "type": "string",
+                            "readOnly": true,
+                            "description": "Read-only and ephemeral: a presigned URL minted on this read and valid only for a short window. Never store it — read the provider again for a fresh one.",
+                            "example": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

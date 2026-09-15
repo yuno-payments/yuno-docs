@@ -5614,25 +5614,7 @@ paths:
                     payment methods with redirection. (MAX 526; MIN 3)
                 country:
                   type: string
-                  description: The customer's country (MAX 2; MIN 2; [ISO 3166-1](country-reference)).
-                  enum:
-                    - AR
-                    - BO
-                    - BR
-                    - CL
-                    - CO
-                    - CR
-                    - EC
-                    - SV
-                    - GT
-                    - HN
-                    - MX
-                    - NI
-                    - PA
-                    - PY
-                    - PE
-                    - US
-                    - UY
+                  description: Country where the transaction must be processed (MAX 2; MIN 2; [ISO 3166-1](country-reference)).
                 account_id:
                   type: string
                   description: >-
@@ -6308,25 +6290,7 @@ paths:
                     payment methods with redirection. (MAX 526; MIN 3)
                 country:
                   type: string
-                  description: The customer's country (MAX 2; MIN 2; [ISO 3166-1](country-reference)).
-                  enum:
-                    - AR
-                    - BO
-                    - BR
-                    - CL
-                    - CO
-                    - CR
-                    - EC
-                    - SV
-                    - GT
-                    - HN
-                    - MX
-                    - NI
-                    - PA
-                    - PY
-                    - PE
-                    - US
-                    - UY
+                  description: Country where the transaction must be processed (MAX 2; MIN 2; [ISO 3166-1](country-reference)).
                 account_id:
                   type: string
                   description: >-
@@ -77589,29 +77553,43 @@ paths:
                       - destination did not respond within the configured timeout
       tags:
         - Pci Proxy
-  /plans:
+  /subscriptions/plans:
     get:
       summary: List Plans
-      description: Returns a paginated, grid-ready list of plans for the authenticated account. 1-indexed pagination.
+      description: >-
+        Returns a paginated, grid-ready list of plans for the authenticated account. offset-based (`offset=0` is the
+        first page) pagination.
       operationId: list-plans
       parameters:
-        - name: page
-          in: query
-          description: 1-indexed page number. Must be >= 1, else `400 BAD_REQUEST` ("The page must be greater than or equal to 1").
+        - in: header
+          name: X-Account-Code
+          required: false
           schema:
-            type: integer
-            default: 1
-            minimum: 1
-        - name: size
-          in: query
+            type: string
           description: >-
-            Page size. Must be between 1 and 100 inclusive, else `400 BAD_REQUEST` ("The size must be greater than or
-            equal to 1" if too low, "The size must be at most 100" if too high).
+            The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required unless
+            `account_id` is supplied as a query parameter — with neither, the call returns `400 BAD_REQUEST` ("Invalid
+            x-account-code header.").
+        - in: query
+          name: account_id
+          required: false
+          schema:
+            type: string
+          description: >-
+            Scope the list to one account. An alternative to the `X-Account-Code` header; one of the two must be
+            present.
+        - in: query
+          name: limit
+          required: false
           schema:
             type: integer
-            default: 20
-            minimum: 1
-            maximum: 100
+          description: Maximum number of plans to return. Defaults to 20.
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+          description: Number of plans to skip. Defaults to 0.
       responses:
         '200':
           description: '200'
@@ -77620,7 +77598,7 @@ paths:
               examples:
                 Result:
                   value:
-                    items:
+                    data:
                       - id: 00000000-0000-4000-8000-000000000001
                         account_id: 00000000-0000-4000-8000-000000000002
                         name: Streaming Pro
@@ -77638,14 +77616,14 @@ paths:
                           - US
                         created_at: '2024-01-15T10:30:00.000000Z'
                     pagination:
-                      page: 1
-                      size: 20
                       total: 1
-                      total_pages: 1
+                      limit: 20
+                      offset: 0
+                      has_more: false
               schema:
                 type: object
                 properties:
-                  items:
+                  data:
                     type: array
                     items:
                       type: object
@@ -77685,14 +77663,18 @@ paths:
                   pagination:
                     type: object
                     properties:
-                      page:
-                        type: integer
-                      size:
-                        type: integer
                       total:
                         type: integer
-                      total_pages:
+                        description: Total number of plans on the account.
+                      limit:
                         type: integer
+                        description: The limit applied to this page.
+                      offset:
+                        type: integer
+                        description: The offset applied to this page.
+                      has_more:
+                        type: boolean
+                        description: Whether more plans follow this page.
         '400':
           description: '400'
           content:
@@ -77729,6 +77711,7 @@ paths:
             schema:
               type: object
               required:
+                - account_id
                 - name
                 - base_amount
                 - frequency
@@ -77769,6 +77752,8 @@ paths:
                         - DAY
                         - WEEK
                         - MONTH
+                        - QUARTER
+                        - HALF_YEAR
                         - YEAR
                     value:
                       type: integer
@@ -77860,6 +77845,8 @@ paths:
                               - DAY
                               - WEEK
                               - MONTH
+                              - QUARTER
+                              - HALF_YEAR
                               - YEAR
                           value:
                             type: integer
@@ -77897,6 +77884,11 @@ paths:
                                 value:
                                   type: number
                                   format: float
+                account_id:
+                  type: string
+                  description: >-
+                    The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required
+                    — on this endpoint the account is sent in the request body, not the `X-Account-Code` header.
             examples:
               Plan:
                 value:
@@ -77937,12 +77929,17 @@ paths:
                       amount:
                         currency: USD
                         value: 9.99
+                      country_prices:
+                        - country: BR
+                          amount:
+                            currency: BRL
+                            value: 49.9
                     - order: 2
                       name: Regular
                       type: REGULAR
       responses:
-        '200':
-          description: '200'
+        '201':
+          description: '201'
           content:
             application/json:
               examples:
@@ -77975,7 +77972,22 @@ paths:
                     metadata:
                       - key: campaign
                         value: app_store
-                    phases: []
+                    phases:
+                      - order: 1
+                        name: Intro
+                        type: TRIAL
+                        duration:
+                          type: MONTH
+                          value: 3
+                        frequency:
+                          type: MONTH
+                          value: 1
+                        amount:
+                          currency: USD
+                          value: 9.99
+                      - order: 2
+                        name: Regular
+                        type: REGULAR
                     created_at: '2024-01-15T10:30:00.000000Z'
                     updated_at: '2024-01-15T10:30:00.000000Z'
               schema:
@@ -77988,7 +78000,9 @@ paths:
                   name:
                     type: string
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                   merchant_reference:
                     type: string
                   status:
@@ -78044,20 +78058,28 @@ paths:
             application/json:
               examples:
                 Result:
-                  value: |-
-                    {
-                     Refer to the HTTP Response Codes section for more details: 'https://docs.y.uno/reference/response-codes'
-                    }
+                  value:
+                    code: INVALID_REQUEST
+                    messages:
+                      - Invalid request
                   summary: Result
       deprecated: false
       tags:
         - Plans
-  /plans/{plan_id}:
+  /subscriptions/plans/{plan_id}:
     get:
       summary: Retrieve Plan
       description: ''
       operationId: retrieve-plan
       parameters:
+        - in: header
+          name: X-Account-Code
+          required: true
+          schema:
+            type: string
+          description: >-
+            The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required —
+            omitting it returns `400 BAD_REQUEST` ("Invalid x-account-code header.").
         - name: plan_id
           in: path
           description: The unique identifier of the plan.
@@ -78134,7 +78156,9 @@ paths:
                   name:
                     type: string
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                   merchant_reference:
                     type: string
                   status:
@@ -78183,6 +78207,32 @@ paths:
                     type: string
                   updated_at:
                     type: string
+                  account_ids:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      Every account the plan is available on. Always returned; contains `account_id` when the plan is
+                      scoped to a single account.
+                  retries:
+                    type:
+                      - object
+                      - 'null'
+                    description: >-
+                      The retry configuration subscriptions created from this plan inherit. `null` when the plan sets
+                      none.
+                  retry_split:
+                    type:
+                      - object
+                      - 'null'
+                    description: The Smart Retries A/B split configuration attached to this plan. `null` when none is set.
+                  meters:
+                    type: array
+                    items:
+                      type: object
+                    description: >-
+                      The metered prices attached to this plan. Empty when the plan has no usage-based pricing; see
+                      [Attach Meter to Plan](/reference/meters/attach-meter-to-plan).
         '404':
           description: '404'
           content:
@@ -78207,7 +78257,7 @@ paths:
       deprecated: false
       tags:
         - Plans
-  /plans/{plan_id}/status:
+  /subscriptions/plans/{plan_id}/status:
     post:
       summary: Cancel Plan
       description: >-
@@ -78215,6 +78265,14 @@ paths:
         cascade-cancels every subscription currently linked to it.
       operationId: cancel-plan
       parameters:
+        - in: header
+          name: X-Account-Code
+          required: true
+          schema:
+            type: string
+          description: >-
+            The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required —
+            omitting it returns `400 BAD_REQUEST` ("Invalid x-account-code header.").
         - name: plan_id
           in: path
           description: The unique identifier of the plan.
@@ -78270,7 +78328,7 @@ paths:
                   value:
                     code: INVALID_STATE
                     messages:
-                      - The subscription state does not support the action requested.
+                      - The plan state does not support the action requested.
                   summary: Result
               schema:
                 type: object
@@ -86237,7 +86295,7 @@ paths:
       operationId: list-subscriptions
       parameters:
         - in: header
-          name: x-account-code
+          name: X-Account-Code
           required: true
           schema:
             type: string
@@ -86342,6 +86400,8 @@ paths:
                           type: CARD
                         plan_id: 00000000-0000-4000-8000-000000000001
                         created_at: '2023-12-16T20:46:54.786342Z'
+                        current_period_start: '2023-01-16T20:00:00.912480Z'
+                        current_period_end: '2023-02-16T20:00:00.786342Z'
                     pagination:
                       page: 1
                       size: 20
@@ -86406,6 +86466,19 @@ paths:
                               type: integer
                             next_at:
                               type: string
+                            scheduling_date:
+                              type: string
+                              description: >-
+                                When the debit instruction is handed to the Pix rail — `next_at` minus four days. Only
+                                present on `PIX_AUTOMATIC` items that Yuno executes, and only where the four-day
+                                scheduling lead is enabled for the organization; absent, not `null`, otherwise.
+                                Read-only. See [Pix
+                                Automático](/docs/payment-features/subscriptions/pix-automatico#the-scheduling-date).
+                            paid:
+                              type: integer
+                              description: >-
+                                How many cycles have been paid so far. Distinct from `current`, which is the cycle being
+                                billed.
                         payment_method:
                           type: object
                           properties:
@@ -86421,6 +86494,21 @@ paths:
                             `amount`/`frequency`.
                         created_at:
                           type: string
+                        current_period_start:
+                          type:
+                            - string
+                            - 'null'
+                          description: >-
+                            Same semantics as on [The Subscription
+                            Object](/reference/subscriptions/the-subscription-object): start of the billing period the
+                            subscription is currently in.
+                        current_period_end:
+                          type:
+                            - string
+                            - 'null'
+                          description: >-
+                            End of the billing period the subscription is currently in. Equal to
+                            `billing_cycles.next_at`.
                   pagination:
                     type: object
                     properties:
@@ -86472,8 +86560,8 @@ paths:
                 - name
                 - account_id
                 - country
-                - amount
                 - payment_method
+                - customer_payer
               properties:
                 name:
                   type: string
@@ -86611,7 +86699,10 @@ paths:
                       type: string
                       description: >-
                         The type of interval the subscription will have in time (DAY, WEEK, MONTH, YEAR). If not set,
-                        defaults to MONTH.
+                        defaults to MONTH. When `payment_method.type` is `PIX_AUTOMATIC`, only `WEEK`, `MONTH` and
+                        `YEAR` with `value` `1` are legal — every other type, and every other value, is rejected with
+                        `400 INVALID_PARAMETERS`. See [Pix
+                        Automático](/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences).
                       enum:
                         - DAY
                         - WEEK
@@ -86631,7 +86722,10 @@ paths:
                       format: int32
                 customer_payer:
                   type: object
-                  description: Specifies the `customer_payer` object to identify the customer.
+                  description: >-
+                    Specifies the `customer_payer` object to identify the customer. Required. Note that validation
+                    errors on this object name the field `customer_payer.code`, not `customer_payer.id` — for example
+                    `400 BAD_REQUEST` ("customer_payer.code field is required") when it is omitted.
                   properties:
                     id:
                       type: string
@@ -86639,17 +86733,21 @@ paths:
                 payment_method:
                   type: object
                   description: >-
-                    Specifies the `payment_method` object. Supported types are `CARD` and `PAYPAL_ENROLLMENT`, both
-                    using previously enrolled payment methods (`vaulted_token`)
+                    Specifies the `payment_method` object. Supported types are `CARD`, `PAYPAL_ENROLLMENT` and
+                    `PIX_AUTOMATIC`, all using previously enrolled payment methods (`vaulted_token`)
                   required:
                     - type
                   properties:
                     type:
                       type: string
-                      description: Payment method type.
+                      description: >-
+                        Payment method type. `PIX_AUTOMATIC` bills a Brazilian Pix Automático mandate, is matched
+                        case-insensitively, and restricts the billing cadence — see [Pix
+                        Automático](/docs/payment-features/subscriptions/pix-automatico).
                       enum:
                         - CARD
                         - PAYPAL_ENROLLMENT
+                        - PIX_AUTOMATIC
                     vaulted_token:
                       type: string
                       description: The vaulted token (UUID, 36 chars).
@@ -86851,8 +86949,8 @@ paths:
                     - key: plan
                       value: gold
       responses:
-        '200':
-          description: '200'
+        '201':
+          description: '201'
           content:
             application/json:
               examples:
@@ -86908,13 +87006,17 @@ paths:
                     type: string
                     example: US
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: Subscription Test
                   merchant_reference:
                     type: string
                     example: subscription-ref-merchant-AA01
                   soft_descriptor:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: ACME SUBSCRIPTION
                   status:
                     type: string
@@ -86926,7 +87028,7 @@ paths:
                         type: string
                         example: USD
                       value:
-                        type: integer
+                        type: number
                         example: 15000
                         default: 0
                   frequency:
@@ -86943,7 +87045,9 @@ paths:
                     type: object
                     properties:
                       total:
-                        type: integer
+                        type:
+                          - integer
+                          - 'null'
                         example: 12
                         default: 0
                       current:
@@ -86986,7 +87090,7 @@ paths:
                         type: object
                         properties:
                           value:
-                            type: integer
+                            type: number
                             example: 0
                             default: 0
                           currency:
@@ -87044,7 +87148,9 @@ paths:
                         end_cycle:
                           type: integer
                   subscription_agreement_id:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa
                   created_at:
                     type: string
@@ -87063,6 +87169,30 @@ paths:
                     messages:
                       - Invalid request.
                   summary: Result
+                PIX AUTOMATICO CADENCE NOT SUPPORTED:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - >-
+                        Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with
+                        value 1.
+                INLINE YEAR WITHOUT A PLAN:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - YEAR is invalid for frequency.type field
+                PLAN NOT FOUND:
+                  value:
+                    code: PLAN_NOT_FOUND
+                    messages:
+                      - Plan not found.
+                  summary: The plan_id does not resolve to a plan on this account.
+                REFUND RULE CURRENCY MISMATCH:
+                  value:
+                    code: REFUND_RULE_CURRENCY_MISMATCH
+                    messages:
+                      - refund_rule.amount.currency USD must match the subscription currency COP.
+                  summary: A FIXED refund_rule must be denominated in the subscription's own currency.
       deprecated: false
       parameters:
         - in: header
@@ -87205,7 +87335,9 @@ paths:
                     type: string
                     example: sub_001
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: streaming service
                   account_id:
                     type: string
@@ -87218,7 +87350,9 @@ paths:
                     type: string
                     example: 001_marzo_23
                   soft_descriptor:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: ACME SUBSCRIPTION
                   status:
                     type: string
@@ -87230,7 +87364,7 @@ paths:
                         type: string
                         example: USD
                       value:
-                        type: integer
+                        type: number
                         example: 12100
                         default: 0
                   frequency:
@@ -87247,7 +87381,9 @@ paths:
                     type: object
                     properties:
                       total:
-                        type: integer
+                        type:
+                          - integer
+                          - 'null'
                         example: 10
                         default: 0
                       current:
@@ -87257,17 +87393,37 @@ paths:
                       next_at:
                         type: string
                         example: '2023-02-16T20:00:00.786342Z'
+                      scheduling_date:
+                        type: string
+                        description: >-
+                          When the debit instruction is handed to the Pix rail — `next_at` minus four days. Only present
+                          on `PIX_AUTOMATIC` subscriptions that Yuno executes, and only where the four-day scheduling
+                          lead is enabled for the organization; absent, not `null`, otherwise. Read-only. See [Pix
+                          Automático](/docs/payment-features/subscriptions/pix-automatico#the-scheduling-date).
+                        example: '2026-11-27T00:00:00Z'
+                      paid:
+                        type: integer
+                        description: >-
+                          How many cycles have been paid so far. Distinct from `current`, which is the cycle being
+                          billed.
                   current_period_start:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     description: >-
-                      Only returned by this endpoint, and only once the first billing cycle has been charged. Always
-                      returned together with current_period_end.
+                      Start of the billing period the subscription is currently in, one cadence before
+                      `current_period_end`. Inside a trial or any other plan phase it follows that phase's cadence. A
+                      terminal subscription (`CANCELED` or `COMPLETED`) keeps its final window rather than going null.
+                      Null only for a subscription with no recurring cadence. Always returned together with
+                      current_period_end.
                     example: '2023-01-16T20:00:00.912480Z'
                   current_period_end:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     description: >-
-                      Only returned by this endpoint, and only once the first billing cycle has been charged. Equal to
-                      billing_cycles.next_at. Always returned together with current_period_start.
+                      End of the billing period the subscription is currently in. Equal to billing_cycles.next_at.
+                      Always returned together with current_period_start.
                     example: '2023-02-16T20:00:00.786342Z'
                   billing_date:
                     type:
@@ -87299,7 +87455,9 @@ paths:
                         type: string
                         example: 6104911d-5df9-429e-8488-ad41abea1a4b
                       card:
-                        type: object
+                        type:
+                          - object
+                          - 'null'
                         properties:
                           installments:
                             type:
@@ -87319,7 +87477,9 @@ paths:
                         type: string
                         example: '2024-01-16T00:00:00.786342Z'
                       finish_at:
-                        type: string
+                        type:
+                          - string
+                          - 'null'
                         example: '2024-05-26T20:00:00.786342Z'
                   retries:
                     type:
@@ -87364,6 +87524,31 @@ paths:
                         description: >-
                           When true, the subscription is canceled once a cycle's retries end without a successful
                           payment, with `cancellation_source` set to `RETRIES_EXHAUSTED`.
+                      profile:
+                        type: string
+                        description: >-
+                          The fixed retry ladder the subscription follows instead of the configurable schedule. Always
+                          `PIX_AUTOMATIC`. This field and the three below are only present on `PIX_AUTOMATIC`
+                          subscriptions that Yuno executes; they are absent, not `null`, on every other payment method.
+                          See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).
+                        example: PIX_AUTOMATIC
+                      max_attempts:
+                        type: integer
+                        description: >-
+                          How many retries the Pix ladder runs. Always 3, matching the `amount` reported for these
+                          subscriptions.
+                        example: 3
+                      min_gap_hours:
+                        type: integer
+                        description: >-
+                          Always 24 — the gap between the ladder's debit dates (`D`, `D+1`, `D+2`, `D+3`), not between
+                          dispatch attempts.
+                        example: 24
+                      until:
+                        type: string
+                        description: >-
+                          When the ladder stops — `billing_cycles.next_at` plus 7 days. Moves with `next_at` at every
+                          renewal.
                   trial_period:
                     type: object
                     properties:
@@ -87375,14 +87560,16 @@ paths:
                         type: object
                         properties:
                           value:
-                            type: integer
+                            type: number
                             example: 0
                             default: 0
                           currency:
                             type: string
                             example: ''
                   metadata:
-                    type: array
+                    type:
+                      - array
+                      - 'null'
                     items:
                       type: object
                       properties:
@@ -87425,7 +87612,9 @@ paths:
                       type: string
                       example: 5104911d-5df9-229e-8468-bd41abea1a4s
                   subscription_agreement_id:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa
                   cancellation_time:
                     type:
@@ -87541,6 +87730,16 @@ paths:
                     type: string
                     description: Only present on plan-linked subscriptions.
                     example: REGULAR
+                  current_phase_end:
+                    type:
+                      - string
+                      - 'null'
+                    description: >-
+                      When the phase named by `current_phase` hands over to the next one — for a subscription in its
+                      trial, when it switches to the regular price. End of the last billing period the phase covers, so
+                      on the final period of a trial it equals `current_period_end`. Null for a subscription with no
+                      plan and for one that already left the phase ladder.
+                    example: '2023-03-16T20:00:00.786342Z'
                   billing_phases:
                     type: array
                     description: >-
@@ -87904,11 +88103,15 @@ paths:
                     - object
                     - 'null'
                   description: >-
-                    Schedules a move to another plan, effective at the next billing cycle. The subscription must be
-                    ACTIVE or TRIALING and already on a plan; the target plan must be ACTIVE. Only one change can be
-                    pending at a time. Send `"plan_change": null` to undo a pending change before it applies. `amount`,
-                    `frequency`, `billing_date` and `country` are managed by the plan and cannot be sent for a
-                    plan-linked subscription — combining any of them with `plan_change` returns 400.
+                    Moves the subscription to another plan. `effective: NEXT_BILLING_CYCLE` (the default) schedules the
+                    change for the next renewal — no proration, no mid-cycle charge. `effective: IMMEDIATE` applies the
+                    change in place, in this call: the subscription keeps its `id`, the new plan's price bills from the
+                    next charge, and `billing_cycle_behavior` decides what happens to the billing anchor. The
+                    subscription must be ACTIVE or TRIALING and already on a plan; the target plan must be ACTIVE. For
+                    scheduled changes only one can be pending at a time — send `"plan_change": null` to undo it before
+                    it applies (an IMMEDIATE change while another is pending returns 409). `amount`, `frequency`,
+                    `billing_date` and `country` are managed by the plan and cannot be sent for a plan-linked
+                    subscription — combining any of them with `plan_change` returns 400.
                   required:
                     - plan_id
                   properties:
@@ -87921,9 +88124,11 @@ paths:
                       type: string
                       enum:
                         - NEXT_BILLING_CYCLE
+                        - IMMEDIATE
                       description: >-
-                        When the change applies. NEXT_BILLING_CYCLE is the default and only supported value: the current
-                        cycle bills the current plan's price, the next one bills the new plan's.
+                        When the change applies. NEXT_BILLING_CYCLE (default): the current cycle bills the current
+                        plan's price, the next one bills the new plan's. IMMEDIATE: the subscription moves to the target
+                        plan in this call - unlike a scheduled change, this also works in the final billing cycle.
                     phases_behavior:
                       type: string
                       enum:
@@ -87933,6 +88138,35 @@ paths:
                         What happens when the target plan has phases. START_FROM_REGULAR (default) enters the regular
                         phase directly — no re-lived trials. HONOR_PHASES enters through the target plan's phase
                         schedule.
+                    billing_cycle_behavior:
+                      type: string
+                      enum:
+                        - KEEP
+                        - RESTART
+                      description: >-
+                        What happens to the billing anchor when the plan changes in place with `effective: IMMEDIATE`.
+                        KEEP (default — omitting the field behaves identically): the next charge date is untouched.
+                        RESTART: the next charge re-anchors to the moment of the change plus the new plan's frequency —
+                        the anchor alone resets; billing cycle counters, the retry configuration and the subscription
+                        status survive. RESTART requires `effective: IMMEDIATE` and returns 400 with a scheduled change;
+                        KEEP alongside a scheduled change is accepted and simply schedules the change as usual.
+                        Write-only: this field is never echoed in any response.
+                billing_cycle_behavior:
+                  type: string
+                  enum:
+                    - KEEP
+                    - RESTART
+                  description: >-
+                    For subscriptions that are not linked to a plan: re-anchors billing in the same way as
+                    `plan_change.billing_cycle_behavior`, typically combined with a `frequency` change in the same call
+                    (e.g. monthly to yearly, restarting the cycle from today). KEEP (default): the next charge date is
+                    untouched. RESTART: re-anchors the next charge to now plus the (possibly updated) frequency; the
+                    anchor alone resets — cycle counters, the retry configuration and the subscription status survive.
+                    On a subscription that has not started yet (CREATED — accepted here, unlike `plan_change`), the
+                    anchor clamps to its start date. Rules: cannot be combined with `plan_change` (400 — use the nested
+                    field); on a plan-linked subscription this field returns 400 (managed through `plan_change`); a
+                    PAUSED subscription returns 409 INVALID_SUBSCRIPTION_STATUS. Write-only: never echoed in any
+                    response.
                 metadata:
                   type: object
                   description: >-
@@ -88007,13 +88241,17 @@ paths:
                     type: string
                     example: US
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: Subscription Test
                   merchant_reference:
                     type: string
                     example: subscription-ref-merchant-AA01
                   soft_descriptor:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: ACME SUBSCRIPTION
                   status:
                     type: string
@@ -88025,7 +88263,7 @@ paths:
                         type: string
                         example: USD
                       value:
-                        type: integer
+                        type: number
                         example: 15000
                         default: 0
                   frequency:
@@ -88042,7 +88280,9 @@ paths:
                     type: object
                     properties:
                       total:
-                        type: integer
+                        type:
+                          - integer
+                          - 'null'
                         example: 12
                         default: 0
                       current:
@@ -88133,6 +88373,39 @@ paths:
                     code: INVALID_REQUEST
                     messages:
                       - Invalid request.
+                PIX AUTOMATICO CADENCE NOT SUPPORTED:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - >-
+                        Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with
+                        value 1.
+                PLAN CHANGE BEHAVIOR INVALID VALUE:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - RESET is invalid for plan_change.billing_cycle_behavior field
+                  summary: plan_change.billing_cycle_behavior accepts only KEEP or RESTART.
+                BEHAVIOR COMBINED WITH PLAN CHANGE:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - >-
+                        The billing_cycle_behavior field cannot be combined with plan_change; use
+                        plan_change.billing_cycle_behavior.
+                  summary: When you send plan_change, put the behaviour inside it rather than at the top level.
+                RESTART REQUIRES IMMEDIATE:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - The plan_change.billing_cycle_behavior value RESTART requires effective IMMEDIATE.
+                  summary: RESTART re-anchors the billing date, so it is only valid on an immediate plan change.
+                PLAN CHANGE ALREADY SCHEDULED:
+                  value:
+                    code: PLAN_CHANGE_ALREADY_SCHEDULED
+                    messages:
+                      - 'A plan change is already scheduled for this subscription. Undo it first with plan_change: null.'
+                  summary: Only one plan change may be pending at a time.
       deprecated: false
       tags:
         - Subscriptions
@@ -88148,6 +88421,83 @@ paths:
           schema:
             type: string
           required: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            examples:
+              IMMEDIATE (empty body):
+                value: {}
+              SCHEDULE AFTER 3 CYCLES:
+                value:
+                  schedule:
+                    after_cycles: 3
+              SCHEDULE AT A DATE:
+                value:
+                  schedule:
+                    at: '2026-11-01T00:00:00Z'
+              SCHEDULE AND SKIP RETRIES IF PAST_DUE:
+                value:
+                  schedule:
+                    after_cycles: 1
+                    past_due_behavior: SKIP_RETRIES
+              UNDO A PENDING SCHEDULE:
+                value:
+                  schedule: null
+              CANCEL WITH A PRORATED REFUND:
+                value:
+                  refund: PRORATED
+              CANCEL WITH A CUSTOM REFUND AMOUNT:
+                value:
+                  refund: CUSTOM
+                  refund_amount:
+                    value: 5
+                    currency: USD
+            schema:
+              type: object
+              properties:
+                refund:
+                  type: string
+                  description: >-
+                    NONE (default), PRORATED, FULL, or CUSTOM. Computes a refund quote for the current billing cycle on
+                    an immediate cancel. Cannot be combined with schedule.
+                  example: PRORATED
+                refund_amount:
+                  type: object
+                  description: >-
+                    Required, and only allowed, when refund is CUSTOM. Must not exceed the current cycle's charged
+                    amount.
+                  properties:
+                    value:
+                      type: number
+                      example: 5
+                    currency:
+                      type: string
+                      description: Must match the subscription's own currency.
+                      example: USD
+                schedule:
+                  type:
+                    - object
+                    - 'null'
+                  properties:
+                    after_cycles:
+                      type: integer
+                      description: >-
+                        Cancel after this many more billing cycles. 1-60, capped at the cycles remaining. Exactly one of
+                        after_cycles/at is required.
+                      example: 3
+                    at:
+                      type: string
+                      description: >-
+                        Cancel at this ISO-8601 date-time (UTC offset required). Must be in the future and before
+                        availability.finish_at. Exactly one of after_cycles/at is required.
+                      example: '2026-11-01T00:00:00Z'
+                    past_due_behavior:
+                      type: string
+                      description: >-
+                        EXHAUST_RETRIES (default) waits for the in-flight cycle's retries before firing; SKIP_RETRIES
+                        fires immediately even if the subscription is PAST_DUE.
+                      example: EXHAUST_RETRIES
       responses:
         '200':
           description: '200'
@@ -88197,6 +88547,110 @@ paths:
                       - 5104911d-5df9-229e-8468-bd41abea1a4s
                     created_at: '2023-12-16T20:46:54.786342Z'
                     updated_at: '2023-12-16T21:00:54.786342Z'
+                CANCELLATION SCHEDULED:
+                  value:
+                    id: 7304911d-5df9-429e-8488-ad41abea1a4c
+                    name: sub_001
+                    description: streaming service
+                    account_id: 2404911d-5df9-429e-8488-ad41abea1a4b
+                    merchant_reference: 001_marzo_23
+                    status: ACTIVE
+                    subscription_plan_id: 1904911d-5df9-429e-8488-ad41abea1a4d
+                    amount:
+                      currency: USD
+                      value: 12100
+                    frequency:
+                      type: MONTH
+                      value: 1
+                    billing_cycles:
+                      total: 10
+                      current: 2
+                      next_at: '2023-02-16T20:00:00.786342Z'
+                    customer_payer:
+                      id: 3t04911d-5df9-429e-8488-ad41abea1a2c
+                    retries:
+                      retry_on_decline: true
+                      amount: 4
+                      strategy: SMART
+                    cancel_scheduled:
+                      mode: AFTER_CYCLES
+                      after_cycles: 3
+                      at: <example>
+                      requested_at: <example>
+                      past_due_behavior: EXHAUST_RETRIES
+                    created_at: '2023-12-16T20:46:54.786342Z'
+                    updated_at: '2023-12-16T21:00:54.786342Z'
+                CANCELED FROM PAST_DUE (RETRIES STOPPED, UNPAID CYCLE):
+                  value:
+                    id: 7304911d-5df9-429e-8488-ad41abea1a4c
+                    name: sub_001
+                    description: streaming service
+                    account_id: 2404911d-5df9-429e-8488-ad41abea1a4b
+                    merchant_reference: 001_marzo_23
+                    status: CANCELED
+                    subscription_plan_id: 1904911d-5df9-429e-8488-ad41abea1a4d
+                    amount:
+                      currency: USD
+                      value: 12100
+                    billing_cycles:
+                      total: 10
+                      current: 2
+                      next_at: '2023-02-16T20:00:00.786342Z'
+                    customer_payer:
+                      id: 3t04911d-5df9-429e-8488-ad41abea1a2c
+                    retries:
+                      retry_on_decline: true
+                      amount: 4
+                      strategy: SMART
+                      stopped: true
+                      attempts_made: 2
+                      outcome: ABANDONED
+                    unpaid_cycle:
+                      cycle_number: 2
+                      amount:
+                        currency: USD
+                        value: 12100
+                      attempts: 2
+                      last_failure_code: <example>
+                    cancel_scheduled: null
+                    created_at: '2023-12-16T20:46:54.786342Z'
+                    updated_at: '2023-12-16T21:00:54.786342Z'
+                CANCELED WITH A PRORATED REFUND QUOTE:
+                  value:
+                    id: 7304911d-5df9-429e-8488-ad41abea1a4c
+                    name: sub_001
+                    description: streaming service
+                    account_id: 2404911d-5df9-429e-8488-ad41abea1a4b
+                    merchant_reference: 001_marzo_23
+                    status: CANCELED
+                    subscription_plan_id: 1904911d-5df9-429e-8488-ad41abea1a4d
+                    amount:
+                      currency: USD
+                      value: 12100
+                    billing_cycles:
+                      total: 10
+                      current: 4
+                      next_at: '2023-02-16T20:00:00.786342Z'
+                    customer_payer:
+                      id: 3t04911d-5df9-429e-8488-ad41abea1a2c
+                    refund:
+                      mode: PRORATED
+                      amount:
+                        value: 20
+                        currency: USD
+                      unused_days: 20
+                      period_days: 30
+                      basis:
+                        billing_cycle: 4
+                        charged_amount:
+                          value: 30
+                          currency: USD
+                        payment_id: <example>
+                        charged_at: <example>
+                      execution: MERCHANT
+                      quoted_at: <example>
+                    created_at: '2023-12-16T20:46:54.786342Z'
+                    updated_at: '2023-12-16T21:00:54.786342Z'
               schema:
                 type: object
                 properties:
@@ -88207,7 +88661,9 @@ paths:
                     type: string
                     example: sub_001
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: streaming service
                   account_id:
                     type: string
@@ -88228,7 +88684,7 @@ paths:
                         type: string
                         example: USD
                       value:
-                        type: integer
+                        type: number
                         example: 12100
                         default: 0
                   frequency:
@@ -88245,7 +88701,9 @@ paths:
                     type: object
                     properties:
                       total:
-                        type: integer
+                        type:
+                          - integer
+                          - 'null'
                         example: 10
                         default: 0
                       current:
@@ -88262,47 +88720,48 @@ paths:
                         type: string
                         example: 3t04911d-5df9-429e-8488-ad41abea1a2c
                   payment_method:
-                    type: array
-                    items:
-                      type: object
-                      properties:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: CARD
+                      token:
+                        type: string
+                        example: 9104911d-5df9-429e-8488-ad41abea1a4b
+                      vaulted_token:
+                        type: string
+                        example: 6104911d-5df9-429e-8488-ad41abea1a4b
+                      card:
                         type:
-                          type: string
-                          example: CARD
-                        token:
-                          type: string
-                          example: 9104911d-5df9-429e-8488-ad41abea1a4b
-                        vaulted_token:
-                          type: string
-                          example: 6104911d-5df9-429e-8488-ad41abea1a4b
-                        card:
-                          type: object
-                          properties:
-                            verify:
-                              type: boolean
-                              example: false
-                              default: true
-                            card_data:
-                              type: object
-                              properties:
-                                number:
-                                  type: string
-                                  example: '4507990000000010'
-                                expiration_month:
-                                  type: integer
-                                  example: 10
-                                  default: 0
-                                expiration_year:
-                                  type: integer
-                                  example: 2025
-                                  default: 0
-                                security_code:
-                                  type: integer
-                                  example: 123
-                                  default: 0
-                                holder_name:
-                                  type: string
-                                  example: JOHN DOE
+                          - object
+                          - 'null'
+                        properties:
+                          verify:
+                            type: boolean
+                            example: false
+                            default: true
+                          card_data:
+                            type: object
+                            properties:
+                              number:
+                                type: string
+                                example: '4507990000000010'
+                              expiration_month:
+                                type: integer
+                                example: 10
+                                default: 0
+                              expiration_year:
+                                type: integer
+                                example: 2025
+                                default: 0
+                              security_code:
+                                type: integer
+                                example: 123
+                                default: 0
+                              holder_name:
+                                type: string
+                                example: JOHN DOE
+                    description: The payment method the subscription charges. A single object, not a list.
                   availability:
                     type: object
                     properties:
@@ -88310,10 +88769,14 @@ paths:
                         type: string
                         example: '2024-01-16T00:00:00.786342Z'
                       finish_at:
-                        type: string
+                        type:
+                          - string
+                          - 'null'
                         example: '2024-05-26T20:00:00.786342Z'
                   metadata:
-                    type: object
+                    type:
+                      - object
+                      - 'null'
                     properties:
                       key:
                         type: string
@@ -88326,6 +88789,117 @@ paths:
                     items:
                       type: string
                       example: 5104911d-5df9-229e-8468-bd41abea1a4s
+                  retries:
+                    type: object
+                    properties:
+                      retry_on_decline:
+                        type: boolean
+                      amount:
+                        type: integer
+                      strategy:
+                        type: string
+                      stopped:
+                        type: boolean
+                        description: Present only when the subscription is PAST_DUE or has cancel_scheduled pending.
+                      attempts_made:
+                        type: integer
+                        description: Present only when the subscription is PAST_DUE or has cancel_scheduled pending.
+                      outcome:
+                        type: string
+                        description: >-
+                          RECOVERED, EXHAUSTED or ABANDONED. Present only when the subscription is PAST_DUE or has
+                          cancel_scheduled pending.
+                      next_retry_at:
+                        type: string
+                        description: Present only when the subscription is PAST_DUE or has cancel_scheduled pending.
+                  unpaid_cycle:
+                    type: object
+                    description: Present only when the current billing cycle is PAST_DUE and has not settled.
+                    properties:
+                      cycle_number:
+                        type: integer
+                      amount:
+                        type: object
+                        properties:
+                          currency:
+                            type: string
+                          value:
+                            type: number
+                      attempts:
+                        type: integer
+                      last_failure_code:
+                        type: string
+                  cancel_scheduled:
+                    type:
+                      - object
+                      - 'null'
+                    description: null when no cancellation is pending.
+                    properties:
+                      mode:
+                        type: string
+                        example: AFTER_CYCLES
+                      after_cycles:
+                        type: integer
+                        example: 3
+                      at:
+                        type: string
+                      requested_at:
+                        type: string
+                      past_due_behavior:
+                        type: string
+                        example: EXHAUST_RETRIES
+                  refund:
+                    type:
+                      - object
+                      - 'null'
+                    description: >-
+                      null when refund was NONE or omitted. Present on the cancel response and on every later read once
+                      computed.
+                    properties:
+                      mode:
+                        type: string
+                        example: PRORATED
+                      amount:
+                        type: object
+                        properties:
+                          currency:
+                            type: string
+                            example: USD
+                          value:
+                            type: number
+                            example: 20
+                      unused_days:
+                        type: integer
+                        example: 20
+                      period_days:
+                        type: integer
+                        example: 30
+                      basis:
+                        type: object
+                        properties:
+                          billing_cycle:
+                            type: integer
+                            example: 4
+                          charged_amount:
+                            type: object
+                            properties:
+                              currency:
+                                type: string
+                                example: USD
+                              value:
+                                type: number
+                                example: 30
+                          payment_id:
+                            type: string
+                            description: null for a $0-phase quote with no captured payment.
+                          charged_at:
+                            type: string
+                            description: null for a $0-phase quote with no captured payment.
+                      execution:
+                        type: string
+                        example: MERCHANT
+                      quoted_at:
+                        type: string
                   created_at:
                     type: string
                     example: '2023-12-16T20:46:54.786342Z'
@@ -88337,11 +88911,70 @@ paths:
           content:
             application/json:
               examples:
-                Result:
+                INVALID_STATE:
                   value:
                     code: INVALID_STATE
                     messages:
                       - The subscription state does not support the action requested.
+                UNKNOWN KEY:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - <example>
+                SCHEDULE MUST CARRY EXACTLY ONE OF at OR after_cycles:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - schedule must carry exactly one of at or after_cycles
+                at NOT IN THE FUTURE:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - schedule.at must be in the future
+                ORGANIZATION NOT ENABLED:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - Scheduled cancellation is not enabled for this organization
+                REFUND NOT COMBINABLE WITH SCHEDULE:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - refund cannot be combined with schedule (v1)
+                REFUND QUOTING NOT ENABLED FOR THIS ORGANIZATION:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - Refund quote is not enabled for this organization
+                REFUND_AMOUNT EXCEEDS THE CHARGED AMOUNT:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - refund_amount must not exceed the charged amount
+                REFUND_AMOUNT CURRENCY MISMATCH:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - refund_amount.currency must match the subscription's currency (USD)
+                PRORATED NOT AVAILABLE ON A SUB-DAILY CADENCE:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - proration is not available for sub-daily cadences
+                REFUND NOT AVAILABLE:
+                  value:
+                    code: REFUND_NOT_AVAILABLE
+                    messages:
+                      - >-
+                        No charged payment exists for the current cycle (subscription is PAST_DUE). Only refund: NONE is
+                        valid.
+                    current_status: PAST_DUE
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
+                  summary: No subscription resolves for the subscription_id on this account. Returned as 400, not 404.
       deprecated: false
       tags:
         - Subscriptions
@@ -88371,7 +89004,7 @@ paths:
                     account_id: 2404911d-5df9-429e-8488-ad41abea1a4b
                     merchant_reference: 001_marzo_23
                     status: PAUSED
-                    subscription_plan_id: 1904911d-5df9-429e-8488-ad41abea1a4d
+                    plan_id: 1904911d-5df9-429e-8488-ad41abea1a4d
                     amount:
                       currency: USD
                       value: 12100
@@ -88385,17 +89018,9 @@ paths:
                     customer_payer:
                       id: 3t04911d-5df9-429e-8488-ad41abea1a2c
                     payment_method:
-                      - type: CARD
-                        token: 9104911d-5df9-429e-8488-ad41abea1a4b
-                        vaulted_token: 6104911d-5df9-429e-8488-ad41abea1a4b
-                        card:
-                          verify: false
-                          card_data:
-                            number: '4507990000000010'
-                            expiration_month: 10
-                            expiration_year: 2025
-                            security_code: 123
-                            holder_name: JOHN DOE
+                      type: CARD
+                      vaulted_token: 6104911d-5df9-429e-8488-ad41abea1a4b
+                      card: {}
                     availability:
                       start_at: '2024-01-16T00:00:00.786342Z'
                       finish_at: '2024-05-26T20:00:00.786342Z'
@@ -88416,7 +89041,9 @@ paths:
                     type: string
                     example: sub_001
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: streaming service
                   account_id:
                     type: string
@@ -88437,7 +89064,7 @@ paths:
                         type: string
                         example: USD
                       value:
-                        type: integer
+                        type: number
                         example: 12100
                         default: 0
                   frequency:
@@ -88454,7 +89081,9 @@ paths:
                     type: object
                     properties:
                       total:
-                        type: integer
+                        type:
+                          - integer
+                          - 'null'
                         example: 10
                         default: 0
                       current:
@@ -88471,47 +89100,48 @@ paths:
                         type: string
                         example: 3t04911d-5df9-429e-8488-ad41abea1a2c
                   payment_method:
-                    type: array
-                    items:
-                      type: object
-                      properties:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: CARD
+                      token:
+                        type: string
+                        example: 9104911d-5df9-429e-8488-ad41abea1a4b
+                      vaulted_token:
+                        type: string
+                        example: 6104911d-5df9-429e-8488-ad41abea1a4b
+                      card:
                         type:
-                          type: string
-                          example: CARD
-                        token:
-                          type: string
-                          example: 9104911d-5df9-429e-8488-ad41abea1a4b
-                        vaulted_token:
-                          type: string
-                          example: 6104911d-5df9-429e-8488-ad41abea1a4b
-                        card:
-                          type: object
-                          properties:
-                            verify:
-                              type: boolean
-                              example: false
-                              default: true
-                            card_data:
-                              type: object
-                              properties:
-                                number:
-                                  type: string
-                                  example: '4507990000000010'
-                                expiration_month:
-                                  type: integer
-                                  example: 10
-                                  default: 0
-                                expiration_year:
-                                  type: integer
-                                  example: 2025
-                                  default: 0
-                                security_code:
-                                  type: integer
-                                  example: 123
-                                  default: 0
-                                holder_name:
-                                  type: string
-                                  example: JOHN DOE
+                          - object
+                          - 'null'
+                        properties:
+                          verify:
+                            type: boolean
+                            example: false
+                            default: true
+                          card_data:
+                            type: object
+                            properties:
+                              number:
+                                type: string
+                                example: '4507990000000010'
+                              expiration_month:
+                                type: integer
+                                example: 10
+                                default: 0
+                              expiration_year:
+                                type: integer
+                                example: 2025
+                                default: 0
+                              security_code:
+                                type: integer
+                                example: 123
+                                default: 0
+                              holder_name:
+                                type: string
+                                example: JOHN DOE
+                    description: The payment method the subscription charges. A single object, not a list.
                   availability:
                     type: object
                     properties:
@@ -88519,10 +89149,14 @@ paths:
                         type: string
                         example: '2024-01-16T00:00:00.786342Z'
                       finish_at:
-                        type: string
+                        type:
+                          - string
+                          - 'null'
                         example: '2024-05-26T20:00:00.786342Z'
                   metadata:
-                    type: object
+                    type:
+                      - object
+                      - 'null'
                     properties:
                       key:
                         type: string
@@ -88551,6 +89185,12 @@ paths:
                     code: INVALID_STATE
                     messages:
                       - The subscription state does not support the action requested.
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
+                  summary: No subscription resolves for the subscription_id on this account. Returned as 400, not 404.
       deprecated: false
       tags:
         - Subscriptions
@@ -88990,6 +89630,19 @@ paths:
                     code: INVALID_STATE
                     messages:
                       - The subscription status <STATUS> does not support plan changes.
+                PIX AUTOMATICO CADENCE NOT SUPPORTED:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - >-
+                        Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with
+                        value 1.
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
+                  summary: No subscription resolves for the subscription_id on this account. Returned as 400, not 404.
         '404':
           description: '404'
           content:
@@ -89029,7 +89682,7 @@ paths:
                     account_id: 2404911d-5df9-429e-8488-ad41abea1a4b
                     merchant_reference: 001_marzo_23
                     status: ACTIVE
-                    subscription_plan_id: 1904911d-5df9-429e-8488-ad41abea1a4d
+                    plan_id: 1904911d-5df9-429e-8488-ad41abea1a4d
                     amount:
                       currency: USD
                       value: 12100
@@ -89043,17 +89696,9 @@ paths:
                     customer_payer:
                       id: 3t04911d-5df9-429e-8488-ad41abea1a2c
                     payment_method:
-                      - type: CARD
-                        token: 9104911d-5df9-429e-8488-ad41abea1a4b
-                        vaulted_token: 6104911d-5df9-429e-8488-ad41abea1a4b
-                        card:
-                          verify: false
-                          card_data:
-                            number: '4507990000000010'
-                            expiration_month: 10
-                            expiration_year: 2025
-                            security_code: 123
-                            holder_name: JOHN DOE
+                      type: CARD
+                      vaulted_token: 6104911d-5df9-429e-8488-ad41abea1a4b
+                      card: {}
                     availability:
                       start_at: '2024-01-16T00:00:00.786342Z'
                       finish_at: '2024-05-26T20:00:00.786342Z'
@@ -89074,7 +89719,9 @@ paths:
                     type: string
                     example: sub_001
                   description:
-                    type: string
+                    type:
+                      - string
+                      - 'null'
                     example: streaming service
                   account_id:
                     type: string
@@ -89095,7 +89742,7 @@ paths:
                         type: string
                         example: USD
                       value:
-                        type: integer
+                        type: number
                         example: 12100
                         default: 0
                   frequency:
@@ -89112,7 +89759,9 @@ paths:
                     type: object
                     properties:
                       total:
-                        type: integer
+                        type:
+                          - integer
+                          - 'null'
                         example: 10
                         default: 0
                       current:
@@ -89129,47 +89778,48 @@ paths:
                         type: string
                         example: 3t04911d-5df9-429e-8488-ad41abea1a2c
                   payment_method:
-                    type: array
-                    items:
-                      type: object
-                      properties:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: CARD
+                      token:
+                        type: string
+                        example: 9104911d-5df9-429e-8488-ad41abea1a4b
+                      vaulted_token:
+                        type: string
+                        example: 6104911d-5df9-429e-8488-ad41abea1a4b
+                      card:
                         type:
-                          type: string
-                          example: CARD
-                        token:
-                          type: string
-                          example: 9104911d-5df9-429e-8488-ad41abea1a4b
-                        vaulted_token:
-                          type: string
-                          example: 6104911d-5df9-429e-8488-ad41abea1a4b
-                        card:
-                          type: object
-                          properties:
-                            verify:
-                              type: boolean
-                              example: false
-                              default: true
-                            card_data:
-                              type: object
-                              properties:
-                                number:
-                                  type: string
-                                  example: '4507990000000010'
-                                expiration_month:
-                                  type: integer
-                                  example: 10
-                                  default: 0
-                                expiration_year:
-                                  type: integer
-                                  example: 2025
-                                  default: 0
-                                security_code:
-                                  type: integer
-                                  example: 123
-                                  default: 0
-                                holder_name:
-                                  type: string
-                                  example: JOHN DOE
+                          - object
+                          - 'null'
+                        properties:
+                          verify:
+                            type: boolean
+                            example: false
+                            default: true
+                          card_data:
+                            type: object
+                            properties:
+                              number:
+                                type: string
+                                example: '4507990000000010'
+                              expiration_month:
+                                type: integer
+                                example: 10
+                                default: 0
+                              expiration_year:
+                                type: integer
+                                example: 2025
+                                default: 0
+                              security_code:
+                                type: integer
+                                example: 123
+                                default: 0
+                              holder_name:
+                                type: string
+                                example: JOHN DOE
+                    description: The payment method the subscription charges. A single object, not a list.
                   availability:
                     type: object
                     properties:
@@ -89177,10 +89827,14 @@ paths:
                         type: string
                         example: '2024-01-16T00:00:00.786342Z'
                       finish_at:
-                        type: string
+                        type:
+                          - string
+                          - 'null'
                         example: '2024-05-26T20:00:00.786342Z'
                   metadata:
-                    type: object
+                    type:
+                      - object
+                      - 'null'
                     properties:
                       key:
                         type: string
@@ -89211,23 +89865,35 @@ paths:
                       - >-
                         The subscription can not be resumed due to a conflict with the availability dates. Please update
                         availability dates and try again if you want to keep using the subscription.
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
+                  summary: No subscription resolves for the subscription_id on this account. Returned as 400, not 404.
+                INVALID BILLING CYCLE BEHAVIOR:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - The field 'billing_cycle_behavior' has an invalid value.
+                  summary: billing_cycle_behavior accepts only KEEP or RESTART.
       deprecated: false
       tags:
         - Subscriptions
-  /subscriptions/{id}/retry:
+  /subscriptions/{subscription_id}/retry:
     post:
       summary: Retry Subscription
       description: ''
       operationId: retry-subscription
       parameters:
-        - name: id
+        - name: subscription_id
           in: path
           description: The unique identifier of the subscription, see [create subscription](/reference/create-subscription) (UUID).
           schema:
             type: string
           required: true
         - in: header
-          name: x-account-code
+          name: X-Account-Code
           schema:
             type: string
           description: The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID).
@@ -89308,7 +89974,7 @@ paths:
                         type: string
                         example: CLP
                       value:
-                        type: integer
+                        type: number
                         example: 15000
                         default: 0
                   frequency:
@@ -89381,7 +90047,7 @@ paths:
                         type: object
                         properties:
                           value:
-                            type: integer
+                            type: number
                             example: 0
                             default: 0
                           currency:
@@ -89407,6 +90073,12 @@ paths:
                     code: INVALID_STATE
                     messages:
                       - The last payment intent of the subscription does not support the action requested.
+                SUBSCRIPTION NOT FOUND:
+                  value:
+                    code: SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - Subscription not found.
+                  summary: No subscription resolves for the subscription_id on this account. Returned as 400, not 404.
               schema:
                 oneOf:
                   - type: object
