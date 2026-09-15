@@ -160,6 +160,12 @@
                           "type": "integer",
                           "example": 1,
                           "default": 0
+                        },
+                        "monthly_billing_day": {
+                          "type": "integer",
+                          "nullable": true,
+                          "description": "The day of the month billing is anchored to on a MONTH-frequency subscription — set by RESTART (on Update, a plan change, resume or reactivate) or by sending Update Subscription's own frequency.monthly_billing_day. Present only once stamped; absent, not null, before that and on every other frequency type.",
+                          "example": 15
                         }
                       }
                     },
@@ -180,6 +186,15 @@
                         "next_at": {
                           "type": "string",
                           "example": "2023-02-16T20:00:00.786342Z"
+                        },
+                        "scheduling_date": {
+                          "type": "string",
+                          "description": "When the debit instruction is handed to the Pix rail — `next_at` minus four days. Only present on `PIX_AUTOMATIC` subscriptions that Yuno executes, and only where the four-day scheduling lead is enabled for the organization; absent, not `null`, otherwise. Read-only. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-scheduling-date).",
+                          "example": "2026-11-27T00:00:00Z"
+                        },
+                        "paid": {
+                          "type": "integer",
+                          "description": "How many cycles have been paid so far. Distinct from `current`, which is the cycle being billed."
                         }
                       }
                     },
@@ -242,6 +257,18 @@
                                   "example": "JOHN DOE"
                                 }
                               }
+                            },
+                            "installments": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "network_transaction_id": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "usage": {
+                              "type": "string",
+                              "example": "FIRST"
                             }
                           },
                           "nullable": true
@@ -291,6 +318,562 @@
                     "updated_at": {
                       "type": "string",
                       "example": "2023-12-16T21:00:54.786342Z"
+                    },
+                    "country": {
+                      "type": "string",
+                      "description": "The subscription's country (ISO 3166-1 alpha-2).",
+                      "example": "US"
+                    },
+                    "soft_descriptor": {
+                      "type": "string",
+                      "example": "ACME SUBSCRIPTION",
+                      "nullable": true
+                    },
+                    "current_period_start": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Start of the billing period the subscription is currently in, one cadence before `current_period_end`. Inside a trial or any other plan phase it follows that phase's cadence. A terminal subscription (`CANCELED` or `COMPLETED`) keeps its final window rather than going null. Null only for a subscription with no recurring cadence. Always returned together with current_period_end.",
+                      "example": "2023-01-16T20:00:00.912480Z"
+                    },
+                    "current_period_end": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "End of the billing period the subscription is currently in. Equal to billing_cycles.next_at. Always returned together with current_period_start.",
+                      "example": "2023-02-16T20:00:00.786342Z"
+                    },
+                    "billing_date": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "Only present on subscriptions billed on a fixed date instead of a frequency; mutually exclusive with `frequency`.",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "DAY"
+                        },
+                        "day": {
+                          "type": "integer",
+                          "example": 2
+                        }
+                      }
+                    },
+                    "retries": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The retry policy applied when a recurring charge is declined. See [Retries](/docs/payment-features/subscriptions/retries).",
+                      "properties": {
+                        "retry_on_decline": {
+                          "type": "boolean",
+                          "description": "Whether declined charges are retried at all.",
+                          "example": true
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "description": "How many retries a billing cycle gets. Capped by your environment's retry schedule length (6 in production).",
+                          "example": 4
+                        },
+                        "strategy": {
+                          "type": "string",
+                          "description": "How the timing of each retry is decided: `DEFAULT`, `SMART` or `CUSTOM_SCHEDULE`. Treat as open-ended — handle unrecognized values gracefully.",
+                          "example": "DEFAULT"
+                        },
+                        "schedule": {
+                          "type": "array",
+                          "nullable": true,
+                          "description": "The per-attempt schedule, only set when `strategy` is `CUSTOM_SCHEDULE`; `null` otherwise.",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "stop_on_hard_decline": {
+                          "type": "boolean",
+                          "nullable": true,
+                          "description": "When true, a hard decline stops the retries for the current billing cycle."
+                        },
+                        "cancel_on_exhausted_retries": {
+                          "type": "boolean",
+                          "nullable": true,
+                          "description": "When true, the subscription is canceled once a cycle's retries end without a successful payment, with `cancellation_source` set to `RETRIES_EXHAUSTED`."
+                        },
+                        "profile": {
+                          "type": "string",
+                          "description": "The fixed retry ladder the subscription follows instead of the configurable schedule. Always `PIX_AUTOMATIC`. This field and the three below are only present on `PIX_AUTOMATIC` subscriptions that Yuno executes; they are absent, not `null`, on every other payment method. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).",
+                          "example": "PIX_AUTOMATIC"
+                        },
+                        "max_attempts": {
+                          "type": "integer",
+                          "description": "How many retries the Pix ladder runs. Always 3, matching the `amount` reported for these subscriptions.",
+                          "example": 3
+                        },
+                        "min_gap_hours": {
+                          "type": "integer",
+                          "description": "Always 24 — the gap between the ladder's debit dates (`D`, `D+1`, `D+2`, `D+3`), not between dispatch attempts.",
+                          "example": 24
+                        },
+                        "until": {
+                          "type": "string",
+                          "description": "When the ladder stops — `billing_cycles.next_at` plus 7 days. Moves with `next_at` at every renewal."
+                        },
+                        "stopped": {
+                          "type": "boolean",
+                          "description": "Present only when the subscription is PAST_DUE or has cancel_scheduled pending."
+                        },
+                        "attempts_made": {
+                          "type": "integer",
+                          "description": "Present only when the subscription is PAST_DUE or has cancel_scheduled pending."
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "description": "RECOVERED, EXHAUSTED or ABANDONED. Present only when the subscription is PAST_DUE or has cancel_scheduled pending."
+                        },
+                        "next_retry_at": {
+                          "type": "string",
+                          "description": "Present only when the subscription is PAST_DUE or has cancel_scheduled pending."
+                        }
+                      }
+                    },
+                    "trial_period": {
+                      "type": "object",
+                      "properties": {
+                        "billing_cycles": {
+                          "type": "integer",
+                          "example": 1,
+                          "default": 0
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": ""
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "additional_data": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The optional order enrichment sent at creation, echoed back. See [The Subscription Object](/reference/subscriptions/the-subscription-object) for its full shape."
+                    },
+                    "initial_payment_validation": {
+                      "type": "boolean",
+                      "description": "Whether the subscription waited for its first payment to succeed before activating. `false` by default.",
+                      "example": false
+                    },
+                    "reason": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Free-form reason for the subscription's current status, when one was recorded; `null` otherwise.",
+                      "example": "merchant request"
+                    },
+                    "renewal_notification_days": {
+                      "type": "integer",
+                      "nullable": true,
+                      "description": "How many days before the next billing date the `subscription.close_to_renewal` webhook is sent. `null` means no renewal notification is sent.",
+                      "example": 3
+                    },
+                    "subscription_agreement_id": {
+                      "type": "string",
+                      "example": "sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa",
+                      "nullable": true
+                    },
+                    "cancellation_time": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "When the subscription was canceled. Only set once it reaches `CANCELED`; `null` otherwise.",
+                      "example": "2023-12-16T20:46:54.786342Z"
+                    },
+                    "cancellation_source": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "What triggered the cancellation: `MERCHANT`, `SYSTEM`, `PLAN_CHANGE` or `RETRIES_EXHAUSTED`. Only set once the subscription reaches `CANCELED`; `null` otherwise. Treat as open-ended — handle unrecognized values gracefully.",
+                      "example": "MERCHANT"
+                    },
+                    "ending_time": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "When the subscription completed or expired. Only set once it reaches `COMPLETED`; `null` otherwise.",
+                      "example": "2024-12-16T20:46:54.786342Z"
+                    },
+                    "plan_id": {
+                      "type": "string",
+                      "description": "Only present when the subscription is linked to a plan.",
+                      "example": "00000000-0000-4000-8000-000000000001"
+                    },
+                    "plan_assigned_at": {
+                      "type": "string",
+                      "description": "Only present on plan-linked subscriptions. The moment the plan was attached — at creation from a plan, migration onto a plan, or a plan change.",
+                      "example": "2023-12-16T20:46:54.786342Z"
+                    },
+                    "previous_subscription_id": {
+                      "type": "string",
+                      "description": "Only present when this subscription was created by a plan change (switching an existing subscription to a different plan).",
+                      "nullable": true
+                    },
+                    "phases": {
+                      "type": "array",
+                      "description": "The linked plan's phase definitions, as the plan declares them — including the terminal `REGULAR` phase. Only present on plan-linked subscriptions whose plan has phases. This is the plan's own ladder, not this subscriber's snapshot: for what was pinned for this subscription at creation, use `billing_phases`.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "`TRIAL` or `REGULAR`."
+                          },
+                          "duration": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "How long the phase lasts. `null` on the terminal `REGULAR` phase, which runs until the subscription ends.",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "frequency": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "How often the phase bills. `null` on the terminal `REGULAR` phase, which bills at the plan's own frequency.",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "amount": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "The phase price. `null` on the terminal `REGULAR` phase, whose price resolves from the plan at every billing.",
+                            "properties": {
+                              "currency": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "total_payments": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "country_prices": {
+                            "type": "array",
+                            "description": "Per-country overrides of the phase price, empty when the phase has none.",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "country": {
+                                  "type": "string"
+                                },
+                                "amount": {
+                                  "type": "object",
+                                  "properties": {
+                                    "currency": {
+                                      "type": "string"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "current_phase": {
+                      "type": "string",
+                      "description": "Only present on plan-linked subscriptions.",
+                      "example": "REGULAR"
+                    },
+                    "current_phase_end": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "When the phase named by `current_phase` hands over to the next one — for a subscription in its trial, when it switches to the regular price. End of the last billing period the phase covers, so on the final period of a trial it equals `current_period_end`. Null for a subscription with no plan and for one that already left the phase ladder.",
+                      "example": "2023-03-16T20:00:00.786342Z"
+                    },
+                    "billing_phases": {
+                      "type": "array",
+                      "description": "Only present on plan-linked subscriptions whose plan has phases. Contains the leading TRIAL phases only, snapshotted at creation — the terminal REGULAR phase is never included, since its price isn't pinned and instead resolves from the plan at every billing. `current_phase: \"REGULAR\"` is how you know the ladder is exhausted.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order": {
+                            "type": "integer"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Always TRIAL — the terminal REGULAR phase is never in this array."
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "currency": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "frequency": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "start_cycle": {
+                            "type": "integer"
+                          },
+                          "end_cycle": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "pending_plan_change": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The plan change scheduled for the next billing cycle, or null when none is pending. Schedule one with the `plan_change` block on Update Subscription.",
+                      "properties": {
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The identifier of the target plan.",
+                          "example": "1904911d-5df9-429e-8488-ad41abea1a4d"
+                        },
+                        "plan_name": {
+                          "type": "string",
+                          "description": "The name of the target plan.",
+                          "example": "Pro"
+                        },
+                        "direction": {
+                          "type": "string",
+                          "enum": [
+                            "UPGRADE",
+                            "DOWNGRADE"
+                          ],
+                          "description": "Whether the target plan is an upgrade or a downgrade. Informational only.",
+                          "example": "UPGRADE"
+                        },
+                        "effective": {
+                          "type": "string",
+                          "enum": [
+                            "NEXT_BILLING_CYCLE"
+                          ],
+                          "description": "When the change applies.",
+                          "example": "NEXT_BILLING_CYCLE"
+                        },
+                        "phases_behavior": {
+                          "type": "string",
+                          "enum": [
+                            "START_FROM_REGULAR",
+                            "HONOR_PHASES"
+                          ],
+                          "description": "What happens when the target plan has phases.",
+                          "example": "START_FROM_REGULAR"
+                        },
+                        "applies_at": {
+                          "type": "string",
+                          "description": "The billing event the change will take effect on — the subscription's next billing date.",
+                          "example": "2023-02-16T20:00:00.786342Z"
+                        },
+                        "requested_at": {
+                          "type": "string",
+                          "description": "When the change was scheduled.",
+                          "example": "2023-01-20T10:12:31.786342Z"
+                        }
+                      }
+                    },
+                    "refund_rule": {
+                      "type": "object",
+                      "description": "The stored refund rule used to resolve a CUSTOM cancel refund when the cancel request sends no refund_amount of its own. Present only when one is configured; omitted, not null, otherwise. Available to organizations enabled for it; contact Yuno.",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "PERCENT",
+                            "FIXED"
+                          ],
+                          "description": "PERCENT resolves the refund as a percentage of the charged amount; FIXED resolves it to a fixed amount.",
+                          "example": "FIXED"
+                        },
+                        "percent": {
+                          "type": "number",
+                          "description": "Required, and only allowed, when type is PERCENT (0-100).",
+                          "example": 50
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Required, and only allowed, when type is FIXED.",
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "example": 10000
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "Must match the subscription's own currency.",
+                              "example": "COP"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pause_until": {
+                      "type": "string",
+                      "description": "When the subscription is scheduled to resume automatically. Present only on a subscription currently paused with a duration (pause_cycles or pause_until sent at pause); absent, not null, on every other read.",
+                      "example": "2026-10-15T15:54:22.780166Z"
+                    },
+                    "cancel_scheduled": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "null when no cancellation is pending.",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "example": "AFTER_CYCLES"
+                        },
+                        "after_cycles": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "at": {
+                          "type": "string"
+                        },
+                        "requested_at": {
+                          "type": "string"
+                        },
+                        "past_due_behavior": {
+                          "type": "string",
+                          "example": "EXHAUST_RETRIES"
+                        }
+                      }
+                    },
+                    "refund": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "null when refund was NONE or omitted. Present on the cancel response and on every later read once computed.",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "example": "PRORATED"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "value": {
+                              "type": "number",
+                              "example": 20.0
+                            }
+                          }
+                        },
+                        "unused_days": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "period_days": {
+                          "type": "integer",
+                          "example": 30
+                        },
+                        "basis": {
+                          "type": "object",
+                          "properties": {
+                            "billing_cycle": {
+                              "type": "integer",
+                              "example": 4
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "example": 30.0
+                                }
+                              }
+                            },
+                            "payment_id": {
+                              "type": "string",
+                              "description": "null for a $0-phase quote with no captured payment."
+                            },
+                            "charged_at": {
+                              "type": "string",
+                              "description": "null for a $0-phase quote with no captured payment."
+                            }
+                          }
+                        },
+                        "execution": {
+                          "type": "string",
+                          "example": "MERCHANT"
+                        },
+                        "quoted_at": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "unpaid_cycle": {
+                      "type": "object",
+                      "description": "Present only when the current billing cycle is PAST_DUE and has not settled.",
+                      "properties": {
+                        "cycle_number": {
+                          "type": "integer"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        "attempts": {
+                          "type": "integer"
+                        },
+                        "last_failure_code": {
+                          "type": "string"
+                        }
+                      }
                     }
                   }
                 }
@@ -318,13 +901,125 @@
                       ]
                     },
                     "summary": "No subscription resolves for the subscription_id on this account. Returned as 400, not 404."
+                  },
+                  "PAUSE_CYCLES COMBINED WITH PAUSE_UNTIL": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "pause_cycles cannot be combined with pause_until."
+                      ]
+                    }
+                  },
+                  "PAUSE_UNTIL NOT IN THE FUTURE": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "pause_until must be in the future."
+                      ]
+                    }
+                  },
+                  "UNKNOWN FIELD (GATEWAY)": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "Bad request"
+                      ]
+                    }
+                  },
+                  "INVALID BILLING CYCLE BEHAVIOR (GATEWAY)": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'billing_cycle_behavior' has an invalid value."
+                      ]
+                    }
+                  },
+                  "PAUSE_CYCLES OUT OF RANGE (GATEWAY)": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'pause_cycles' has a value greater than allowed."
+                      ]
+                    }
+                  },
+                  "MALFORMED JSON (GATEWAY)": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "The field '' wrong data type."
+                      ]
+                    }
                   }
                 }
               }
             }
           }
         },
-        "deprecated": false
+        "deprecated": false,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pause_cycles": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3,
+                    "description": "Pause for this many of the subscription's own billing cycles, starting from the pause. Resolved once, at the pause, into a stored `pause_until`. Cannot be combined with pause_until.",
+                    "example": 1
+                  },
+                  "pause_until": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Pause until this RFC 3339 instant. Must be in the future and before availability.finish_at. Cannot be combined with pause_cycles.",
+                    "example": "2026-09-22T15:47:04.964Z"
+                  },
+                  "billing_cycle_behavior": {
+                    "type": "string",
+                    "enum": [
+                      "KEEP",
+                      "RESTART"
+                    ],
+                    "description": "What happens to the billing anchor when the subscription resumes (manually or automatically). KEEP (default): the original anchor is walked forward by whole periods it missed. RESTART: the anchor re-anchors to the moment of the resume. Sending it without pause_cycles or pause_until is accepted — an open-ended pause that just records the behaviour for whenever the subscription is later resumed.",
+                    "example": "RESTART"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "description": "Free-form reason for the pause, stored on the subscription's reason field. At most 255 characters; blank is treated as absent.",
+                    "example": "customer requested a break"
+                  }
+                }
+              },
+              "examples": {
+                "PAUSE FOR TWO CYCLES": {
+                  "value": {
+                    "pause_cycles": 2
+                  }
+                },
+                "PAUSE UNTIL A DATE": {
+                  "value": {
+                    "pause_until": "2026-09-22T15:47:04.964Z"
+                  }
+                },
+                "PAUSE AND RE-ANCHOR ON RESUME": {
+                  "value": {
+                    "pause_cycles": 1,
+                    "billing_cycle_behavior": "RESTART"
+                  }
+                },
+                "PAUSE WITH A REASON": {
+                  "value": {
+                    "pause_cycles": 1,
+                    "reason": "customer requested a break"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
