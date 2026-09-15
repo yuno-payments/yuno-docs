@@ -1,0 +1,92 @@
+---
+title: "Update Several Providers' Visibility"
+description: "Turns the named providers on or off in one request, leaving every other provider untouched."
+openapi: "/openapi/organizations/whitelabel/update-providers-visibility.json PATCH /whitelabel/providers"
+---
+
+Turns the named providers on or off in one request. **Only the providers you list are touched** — every other provider keeps whatever it had, which is what separates this from [Replace the Provider Allowlist](/reference/organizations/whitelabel/replace-provider-allowlist).
+
+Idempotent, and turning a provider off keeps its instruction override.
+
+<Note>
+The whole request is validated before the first row is written: a repeated `provider_id` changes **nothing** rather than half of what you asked for.
+</Note>
+
+### Body
+
+<ParamField body="providers" type="object[]" required>
+  The providers whose visibility changes in this request. At most 500 entries, and each `provider_id` may appear at most once.
+  <Expandable title="item">
+    <ParamField body="provider_id" type="string" required>
+      Yuno catalogue provider id in UPPER_SNAKE_CASE. Case-insensitive — normalized to upper case before the repeat check, so `stripe` and `STRIPE` count as the same entry.
+    </ParamField>
+    <ParamField body="visible" type="boolean" required>
+      Whether your organization offers this provider. `visible: false` on a provider that is not on the allowlist is a no-op.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+The refreshed overlay, in the same shape as [List the White-label Provider Overlay](/reference/organizations/whitelabel/list-providers).
+
+<ResponseField name="filtered" type="boolean">
+  Whether your organization has at least one allowlist entry, after this change.
+</ResponseField>
+<ResponseField name="providers" type="object[]">
+  The union of your allowlist, your instruction overrides, and your logo overrides.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH 'https://api.y.uno/v1/whitelabel/providers' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "providers": [
+      { "provider_id": "STRIPE", "visible": true },
+      { "provider_id": "DLOCAL", "visible": false }
+    ]
+  }'
+```
+
+```json 200 OK
+{
+  "filtered": true,
+  "providers": [
+    {
+      "provider_id": "ADYEN",
+      "allowed": true,
+      "has_instruction_override": false
+    },
+    {
+      "provider_id": "STRIPE",
+      "allowed": true,
+      "has_instruction_override": true,
+      "more_info_url": "https://docs.example.com/stripe"
+    }
+  ]
+}
+```
+
+```json 400 — repeated provider_id
+{
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "provider_id must appear at most once per request; repeated: STRIPE"
+}
+```
+</CodeGroup>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | Envelope | When |
+|---|---|---|
+| `400` | problem+json | A `provider_id` appears more than once, an id is not a valid catalogue id, more than 500 entries, or an unknown field. |
+| `401` | `NOT_AUTHENTICATED` | Missing or invalid API keys. |
+| `413` | — | Request body larger than 256 KB. |
+
+</div>

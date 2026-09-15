@@ -1,0 +1,156 @@
+---
+title: "White-label Providers Overview"
+description: "Merchant-facing reference for the public-API surface that controls which payment providers your white-label dashboard offers, and the wording, links and logos it shows for them."
+---
+
+If you embed the Yuno Dashboard under your own brand, your users see a **Providers** tab when they add a connection. These endpoints control what that tab shows: which providers you offer, and the name, connection instructions, documentation link and logo displayed for each one.
+
+What you store here is an **overlay on the Yuno provider catalogue**, not the catalogue itself. Yuno publishes around 260 providers; your overlay says which of them your dashboard offers and where your own wording replaces Yuno's. Read the catalogue separately and join this on top.
+
+<Note>
+This surface filters a picker. It is **not authorization** — hiding a provider stops it appearing in the Providers tab, but it does not block a connection being created against it through other means.
+</Note>
+
+## Common contract
+
+### Base URLs
+
+| Environment | Dashboard mode | Base URL |
+| --- | --- | --- |
+| Sandbox | Test Mode | `https://api-sandbox.y.uno` |
+| Production (US) | Live Mode | `https://api.y.uno` |
+| Production (EMEA) | Live Mode | `https://api.eu.y.uno` |
+
+Every path below is relative to `/v1`.
+
+### Authentication & headers
+
+| Header | Required | Notes |
+| --- | --- | --- |
+| `public-api-key` | yes | Your public API key. |
+| `private-secret-key` | yes | Your private secret key. Server side only. |
+| `Content-Type: application/json` | on `PATCH` and `PUT` | |
+
+The **organization that owns the API keys** is the scope of every call. There is no `account_id` anywhere in this surface: the overlay belongs to the organization, not to one of its accounts. Sandbox keys read and write the Test Mode overlay, production keys the Live Mode one, and the two are entirely separate.
+
+### Error formats
+
+Two envelopes reach you, and which one you get depends on where the request failed.
+
+Public-API validation and authentication errors:
+
+```json
+{
+  "code": "VALIDATION_ERROR",
+  "messages": ["provider_id is invalid"]
+}
+```
+
+Upstream rejections, passed through as `application/problem+json`:
+
+```json
+{
+  "title": "Invalid provider instructions",
+  "status": 400,
+  "detail": "The instruction override was rejected",
+  "violations": [
+    "name: only Yuno's own providers can be renamed; 'STRIPE' cannot"
+  ]
+}
+```
+
+`violations` is present on the rejections that validate a whole document or a logo, and lists **every** problem at once rather than one per round trip — fix them together instead of resubmitting to discover the next one.
+
+## What you need to know before writing
+
+### The allowlist is opt-in
+
+A provider is offered only when an allowlist entry names it. `filtered` tells you whether your organization has at least one entry:
+
+- `filtered: false` — you have no allowlist entries at all. For a white-label organization this means **no provider is offered** in the Dashboard until you enable some; it is not a "show everything" state. (The overlay only ever filters white-label organizations — a standard organization always sees the whole catalogue.)
+- `filtered: true` — you have an allowlist, and `allowed` on each provider says whether that one is on it.
+
+Branch on `filtered`, **never** on the length of `providers`. The list is also non-empty when your only entries are instruction or logo overrides, and a provider that carries custom wording or a custom logo without being offered appears in it with `allowed: false`.
+
+<Warning>
+`DELETE /v1/whitelabel/providers` and `PUT /v1/whitelabel/providers` with an empty `provider_ids` reach the same state: zero allowlist entries, `filtered: false`. Under the opt-in rule that is **not** a "show everything" switch. Treat both as "remove every entry", and rebuild the list with `PUT` rather than clearing it to widen what you offer.
+</Warning>
+
+### Overrides replace, they never merge
+
+An instruction override is a **whole document**. `PUT` stores what you send and clears what you omit, so a field you leave out reverts to the Yuno catalogue's value for it. The safe edit is read with `GET`, change the one field, and put the whole document back.
+
+The same rule applies field by field on read: a field that is **absent** means "keep the catalogue's value"; a field that is present but empty means "replace it with nothing".
+
+### Identity belongs to Yuno's own providers
+
+A provider's wording is yours to change. Its **identity** is not:
+
+- `name` and a custom logo are accepted **only for Yuno-owned providers** — a catalogue id containing `YUNO`, such as `YUNO_3DS` or `YUNO_FRAUD_SCREENING`.
+- Any other provider is rejected with `400` and a `violations` entry that names the id.
+
+You can still override instructions, setup steps and `more_info_url` on every provider.
+
+### Links must be https
+
+`more_info_url` and every `link` inside an instruction step must be an https URL — the dashboard renders them as hrefs. Anything else is refused.
+
+### Logos are separate from instructions, and `logo_url` is ephemeral
+
+Instructions and logos are independent resources: deleting one leaves the other alone, and neither adds the provider to your allowlist.
+
+<Warning>
+`logo_url` is **presigned on every read and short-lived**. It is never stored and never the same twice. Render it immediately and read the provider again for a fresh one — never persist it, cache it, or paste it into another system.
+</Warning>
+
+Logo uploads travel base64 inside JSON, not multipart. The image must be PNG or JPEG (decided by the file's own bytes, so an SVG renamed `.png` is refused), square, at least 200x200 pixels and at most 64 KB decoded. Request bodies over 256 KB are rejected with `413`.
+
+### Writes are attributed to the API
+
+A write made through these endpoints shows `created_by` and `updated_by` as the all-zero sentinel `00000000-0000-0000-0000-000000000000` — "written through the API" rather than by a person in the dashboard. Writes made by a user in the Dashboard carry that user's id.
+
+### The Dashboard and the API are the same data
+
+Changes made here appear immediately in the Dashboard's white-label **Providers** tab, and changes made there are returned by these endpoints. There is no sync step and no second source of truth.
+
+## A typical script
+
+<Steps>
+  <Step title="Read what you have">
+    Call [List the White-label Provider Overlay](/reference/organizations/whitelabel/list-providers). Check `filtered` to learn whether you have an allowlist at all, and read `allowed` per provider. Join the result onto the Yuno provider catalogue to render a full picker.
+  </Step>
+
+  <Step title="Set what you offer">
+    Use [Update Several Providers' Visibility](/reference/organizations/whitelabel/update-providers-visibility) to turn a handful of providers on or off without restating the rest, or [Replace the Provider Allowlist](/reference/organizations/whitelabel/replace-provider-allowlist) when your screen saves the complete set. Turning a provider off keeps its instruction override, so your wording survives the toggle.
+  </Step>
+
+  <Step title="Write your wording, one provider at a time">
+    For each provider you customize, read the current document with [Retrieve a Provider's Instruction Override](/reference/organizations/whitelabel/retrieve-provider-instructions), edit it, and send the whole thing back with [Replace a Provider's Instruction Override](/reference/organizations/whitelabel/replace-provider-instructions). Remember that omitted fields revert to the catalogue.
+  </Step>
+
+  <Step title="Add logos where you are allowed to">
+    For Yuno-owned providers only, upload a square PNG or JPEG with [Upload a Provider Logo](/reference/organizations/whitelabel/upload-provider-logo).
+  </Step>
+
+  <Step title="Replicate Test Mode to Live Mode">
+    The two modes hold separate overlays. Read the whole overlay with your **sandbox** keys, then replay the same writes against `https://api.y.uno` with your **production** keys. Because `PUT` is a whole-document replace and the allowlist `PUT` is a whole-set replace, replaying a read is enough to make Live Mode match Test Mode — no diffing required.
+  </Step>
+</Steps>
+
+## Endpoints
+
+| Endpoint | Method & path |
+| --- | --- |
+| [List the White-label Provider Overlay](/reference/organizations/whitelabel/list-providers) | `GET /v1/whitelabel/providers` |
+| [Retrieve a Provider Overlay](/reference/organizations/whitelabel/retrieve-provider) | `GET /v1/whitelabel/providers/{provider_id}` |
+| [Update a Provider's Visibility](/reference/organizations/whitelabel/update-provider-visibility) | `PATCH /v1/whitelabel/providers/{provider_id}` |
+| [Update Several Providers' Visibility](/reference/organizations/whitelabel/update-providers-visibility) | `PATCH /v1/whitelabel/providers` |
+| [Replace the Provider Allowlist](/reference/organizations/whitelabel/replace-provider-allowlist) | `PUT /v1/whitelabel/providers` |
+| [Clear the Provider Allowlist](/reference/organizations/whitelabel/clear-provider-allowlist) | `DELETE /v1/whitelabel/providers` |
+| [Retrieve a Provider's Instruction Override](/reference/organizations/whitelabel/retrieve-provider-instructions) | `GET /v1/whitelabel/providers/{provider_id}/instructions` |
+| [Replace a Provider's Instruction Override](/reference/organizations/whitelabel/replace-provider-instructions) | `PUT /v1/whitelabel/providers/{provider_id}/instructions` |
+| [Delete a Provider's Instruction Override](/reference/organizations/whitelabel/delete-provider-instructions) | `DELETE /v1/whitelabel/providers/{provider_id}/instructions` |
+| [Upload a Provider Logo](/reference/organizations/whitelabel/upload-provider-logo) | `PUT /v1/whitelabel/providers/{provider_id}/logo` |
+| [Delete a Provider Logo](/reference/organizations/whitelabel/delete-provider-logo) | `DELETE /v1/whitelabel/providers/{provider_id}/logo` |
+
+Setting up the organizations, accounts and users behind a white-label deployment is covered in [B2B Organization Management](/docs/using-yuno/b2b-organization-management).
