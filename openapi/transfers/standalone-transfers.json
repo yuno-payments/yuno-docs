@@ -96,7 +96,7 @@
               "PLATFORM_TO_RECIPIENT",
               "RECIPIENT_TO_PLATFORM"
             ],
-            "description": "The immutable direction saved when the transfer was created. Existing transfers return PLATFORM_TO_RECIPIENT. Metadata updates do not change this value.",
+            "description": "The immutable direction saved when the transfer was created. Existing transfers return PLATFORM_TO_RECIPIENT. It cannot be changed after creation.",
             "example": "PLATFORM_TO_RECIPIENT"
           },
           "recipient_id": {
@@ -179,6 +179,16 @@
                 "provider_raw_response": {
                   "type": "string",
                   "example": "{.... }"
+                },
+                "parent_transaction_code": {
+                  "type": "string",
+                  "description": "Code of the original transaction that a SPLIT_TRANSFER_REVERSE transaction reverses. Absent on the original transaction.",
+                  "example": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e"
+                },
+                "reason": {
+                  "type": "string",
+                  "description": "Reason given in the reverse request. Present on SPLIT_TRANSFER_REVERSE transactions.",
+                  "example": "ORDER_CANCELLED"
                 },
                 "created_at": {
                   "type": "string",
@@ -272,7 +282,7 @@
         "tags": [
           "Transfers"
         ],
-        "description": "Create a standalone transfer. Direction is immutable; omitted or null direction defaults to PLATFORM_TO_RECIPIENT. RECIPIENT_TO_PLATFORM is not generally available. Use it only after Yuno confirms account enablement and provider support. Reusing the same account and idempotency key with a different normalized direction returns INVALID_PARAMETERS when the requested direction is enabled; otherwise the availability guard returns DIRECTION_NOT_ENABLED first.",
+        "description": "Create a standalone transfer. Direction is immutable; omitted or null direction defaults to PLATFORM_TO_RECIPIENT. RECIPIENT_TO_PLATFORM is not generally available. Use it only after Yuno confirms account enablement and provider support. RECIPIENT_TO_PLATFORM with a provider other than STRIPE returns INVALID_PARAMETERS before the enablement check. Reusing the same account and idempotency key with a different normalized direction returns INVALID_PARAMETERS when the requested direction is enabled; otherwise the availability guard returns DIRECTION_NOT_ENABLED first.",
         "parameters": [
           {
             "name": "X-Idempotency-Key",
@@ -480,13 +490,33 @@
                       ]
                     }
                   },
-                  "INVALID_DIRECTION": {
-                    "summary": "Invalid direction",
-                    "description": "Empty, unknown or incorrectly cased strings, or a JSON object, array, number or boolean, return INVALID_PARAMETERS. Null uses the default direction.",
+                  "INVALID_DIRECTION_VALUE": {
+                    "summary": "Invalid direction value",
+                    "description": "An empty, unknown or incorrectly cased string returns INVALID_PARAMETERS. Null uses the default direction.",
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
                         "The field 'direction' has an invalid value."
+                      ]
+                    }
+                  },
+                  "INVALID_DIRECTION_TYPE": {
+                    "summary": "Direction is not a string",
+                    "description": "A JSON object, array, number or boolean in direction is rejected while decoding the body, before any other validation.",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'direction' must be a string."
+                      ]
+                    }
+                  },
+                  "DIRECTION_UNSUPPORTED_PROVIDER": {
+                    "summary": "Recipient-to-platform with a provider other than STRIPE",
+                    "description": "Rejected before the account enablement check. Match on code; the message text can differ between releases.",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "Invalid transfer direction or operation"
                       ]
                     }
                   },
@@ -577,7 +607,7 @@
         "tags": [
           "Transfers"
         ],
-        "description": "Retrieve the saved transfer, including its immutable direction. Existing transfers return PLATFORM_TO_RECIPIENT. Metadata updates and reversals do not change the parent direction.",
+        "description": "Retrieve the saved transfer, including its immutable direction. Existing transfers return PLATFORM_TO_RECIPIENT. Reversals do not change the parent direction.",
         "parameters": [
           {
             "name": "transfer_id",
@@ -874,10 +904,11 @@
                   },
                   "DIRECTION_NOT_REVERSIBLE": {
                     "summary": "Recipient-to-platform transfers cannot be reversed",
+                    "description": "Match on code. The message text can differ between releases.",
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "Invalid transfer parameters"
+                        "Invalid transfer direction or operation"
                       ]
                     }
                   }
