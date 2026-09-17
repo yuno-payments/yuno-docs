@@ -1,0 +1,353 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "promotions",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/promotions/quote": {
+      "post": {
+        "summary": "Create Promotion Quote",
+        "description": "Prices a payment before you create it. Returns the promotion that applies and a `quote.id`, or `eligible: false`. Nothing is consumed: the same request returns the same answer. Promotions must be enabled for your organization by Yuno before you can use this endpoint. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).",
+        "operationId": "create-promotion-quote",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "amount",
+                  "country",
+                  "payment_method"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "The account that will create the payment (UUID)."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
+                      },
+                      "value": {
+                        "type": "number",
+                        "format": "float",
+                        "description": "Multiple of 0.0001."
+                      }
+                    },
+                    "description": "The original amount of the payment, before any promotion. It must be the same `amount` you later send on the payment."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "The country of the payment (MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference))."
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "description": "The payment method type the customer chose, for example `CARD`. See [Payment type list](/reference/payment-type-list)."
+                  },
+                  "card_type": {
+                    "type": "string",
+                    "enum": [
+                      "CREDIT",
+                      "DEBIT"
+                    ],
+                    "description": "Cards only. Needed for promotions with a `CARD_TYPE` condition."
+                  },
+                  "bin": {
+                    "type": "string",
+                    "description": "Cards only. The first 6 to 8 digits of the card. Never send the full card number. Needed for promotions with a `BIN` or `BIN_RANGE` condition."
+                  },
+                  "customer_id": {
+                    "type": "string",
+                    "description": "The Yuno customer the payment belongs to, when you have one."
+                  }
+                }
+              },
+              "examples": {
+                "Card payment": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "amount": {
+                      "currency": "ARS",
+                      "value": 25000.0
+                    },
+                    "country": "AR",
+                    "payment_method": "CARD",
+                    "card_type": "CREDIT",
+                    "bin": "457896",
+                    "customer_id": "a1d3b664-e32a-4508-9da1-9ede3e62a60c"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "A promotion applies": {
+                    "value": {
+                      "eligible": true,
+                      "quote": {
+                        "id": "qte_0d91f7ac3b2e",
+                        "expires_at": "2026-10-04T18:41:02Z",
+                        "promotion_id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                      },
+                      "promotion": {
+                        "name": "BBVA 10% off - Mother's Day",
+                        "redemption": {
+                          "mode": "AUTOMATIC",
+                          "code": null
+                        },
+                        "discount": {
+                          "type": "PERCENTAGE",
+                          "value": 10
+                        }
+                      },
+                      "computed": {
+                        "original": {
+                          "currency": "ARS",
+                          "value": 25000.0
+                        },
+                        "discount": {
+                          "currency": "ARS",
+                          "value": 2500.0
+                        },
+                        "total": {
+                          "currency": "ARS",
+                          "value": 22500.0
+                        }
+                      }
+                    },
+                    "summary": "A promotion applies"
+                  },
+                  "Nothing applies": {
+                    "value": {
+                      "eligible": false,
+                      "quote": null,
+                      "promotion": null,
+                      "computed": null,
+                      "reason": "NO_MATCH"
+                    },
+                    "summary": "Nothing applies"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "eligible": {
+                      "type": "boolean",
+                      "description": "`true` when a promotion applies to this payment."
+                    },
+                    "quote": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Send it on the payment as `additional_data.order.discounts[].quote_id`."
+                        },
+                        "expires_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "The quote is valid until this instant: 30 minutes at most."
+                        },
+                        "promotion_id": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "promotion": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "redemption": {
+                          "type": "object",
+                          "properties": {
+                            "mode": {
+                              "type": "string"
+                            },
+                            "code": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        },
+                        "discount": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "computed": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "original": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
+                            },
+                            "value": {
+                              "type": "number",
+                              "format": "float",
+                              "description": "Multiple of 0.0001."
+                            }
+                          },
+                          "description": "The amount you sent."
+                        },
+                        "discount": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
+                            },
+                            "value": {
+                              "type": "number",
+                              "format": "float",
+                              "description": "Multiple of 0.0001."
+                            }
+                          },
+                          "description": "What the customer saves. Always a positive value."
+                        },
+                        "total": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
+                            },
+                            "value": {
+                              "type": "number",
+                              "format": "float",
+                              "description": "Multiple of 0.0001."
+                            }
+                          },
+                          "description": "What the customer pays: `original - discount`."
+                        }
+                      }
+                    },
+                    "reason": {
+                      "type": "string",
+                      "description": "Only when `eligible` is `false`. For example `NO_MATCH`."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "bin must have 6 to 8 digits."
+                      ]
+                    },
+                    "summary": "Result"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}
