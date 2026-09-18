@@ -2450,83 +2450,77 @@ A failed renewal does produce a subscription webhook in two cases. Where the `PA
 
 ## Marketplace Split Transfers
 
+Standalone transfer notifications include the saved `direction` at the top level of the delivered JSON body. Existing transfers use `PLATFORM_TO_RECIPIENT`. Recipient-to-platform availability follows the [create endpoint](/reference/transfers/create-standalone-transfer).
+
+The examples below show selected fields from the delivered body. The headings are the subscription event types; the delivered body is the transfer object itself, without an envelope and without an event-type field. Identify a reversal notification by its `status` (`REVERSED` or `REVERSED_PARTIAL`) and by a transaction of type `SPLIT_TRANSFER_REVERSE`.
+
 ### split_transfer.succeeded
 
 ```json
 {
-    "type": "split_transfer",
-    "type_event": "succeeded",
-    "trace_id": "abc123",
-    "transfer_id": "TRF_7kB2mQ9xPnL4vR",
-    "account_id": "2c05976d-1234-1234-1234-6421883de48d",
-    "retry": 0,
-    "version": 1,
-    "data": {
-        "id": "TRF_7kB2mQ9xPnL4vR",
-        "recipient_id": "550e8400-e29b-41d4-a716-446655440000",
-        "amount": {
-            "currency": "USD",
-            "value": 150.00
-        },
-        "status": "SUCCEEDED",
-        "description": "Weekly marketplace earnings",
-        "merchant_reference": "TRANSFER-2026-02-15-001",
-        "metadata": [],
-        "provider": "adyen",
-        "transactions": [
-            {
-                "code": "7ac2c5f3-7c79-4e99-b45e-aa5952620188",
-                "type": "SPLIT_TRANSFER",
-                "status": "SUCCEEDED",
-                "provider_transfer_id": "tr_1T9eKVIiMnPsFcbbRTb8ObsZ",
-                "created_at": "2026-03-11T04:25:06.229027Z",
-                "updated_at": "2026-03-11T04:25:07.917364Z"
-            }
-        ],
-        "created_at": "2026-03-11T04:25:06.208761Z",
-        "updated_at": "2026-03-11T04:25:07.928000342Z",
-        "completed_at": "2026-03-11T04:25:07.927971142Z"
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "recipient_id": "d246d578-266c-47c3-92b6-1748d780711b",
+  "direction": "PLATFORM_TO_RECIPIENT",
+  "amount": {
+    "currency": "USD",
+    "value": 4
+  },
+  "status": "SUCCEEDED",
+  "metadata": [],
+  "transactions": [
+    {
+      "code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+      "type": "SPLIT_TRANSFER",
+      "status": "SUCCEEDED",
+      "provider_transfer_id": "tr_example",
+      "created_at": "2026-09-15T10:00:00Z",
+      "updated_at": "2026-09-15T10:00:00Z"
     }
+  ],
+  "created_at": "2026-09-15T10:00:00Z",
+  "updated_at": "2026-09-15T10:00:00Z",
+  "completed_at": "2026-09-15T10:00:00Z"
 }
 ```
 
 ### split_transfer_reverse.succeeded
 
+The notification identifies the original transfer, retains its direction, and includes both the original and reversal transactions. In this partial-reversal example, `status` is `REVERSED_PARTIAL` and `amount` is the USD 1 reversal amount. The reversal transaction points to the original transaction through `parent_transaction_code`. This notification is distinct from the reversal HTTP response, which does not include direction. It is delivered under the original transfer's `id`; `description` and `merchant_reference` carry the values sent in the reverse request.
+
 ```json
 {
-    "type": "split_transfer_reverse",
-    "type_event": "succeeded",
-    "trace_id": "xyz789",
-    "transfer_id": "TRF_7kB2mQ9xPnL4vR",
-    "account_id": "2c05976d-1234-1234-1234-6421883de48d",
-    "retry": 0,
-    "version": 1,
-    "data": {
-        "id": "TRF_REV_9xPnL4vR7kB2mQ",
-        "recipient_id": "550e8400-e29b-41d4-a716-446655440000",
-        "amount": {
-            "currency": "USD",
-            "value": 50.00
-        },
-        "status": "SUCCEEDED",
-        "description": "Reversal of partial earnings",
-        "merchant_reference": "REVERSE-2026-02-16-001",
-        "metadata": [],
-        "provider": "adyen",
-        "transactions": [
-            {
-                "code": "8bd3d6f4-8d80-5f00-c56f-bb6063731299",
-                "type": "SPLIT_TRANSFER_REVERSE",
-                "status": "SUCCEEDED",
-                "provider_transfer_id": "tr_2U0fLWIjNoQtGdccSUc9PbtA",
-                "created_at": "2026-03-12T05:26:07.229027Z",
-                "updated_at": "2026-03-12T05:26:08.917364Z"
-            }
-        ],
-        "created_at": "2026-03-12T05:26:07.208761Z",
-        "updated_at": "2026-03-12T05:26:08.928000342Z",
-        "completed_at": "2026-03-12T05:26:08.927971142Z"
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "recipient_id": "d246d578-266c-47c3-92b6-1748d780711b",
+  "direction": "PLATFORM_TO_RECIPIENT",
+  "amount": {
+    "currency": "USD",
+    "value": 1
+  },
+  "status": "REVERSED_PARTIAL",
+  "metadata": null,
+  "transactions": [
+    {
+      "code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+      "type": "SPLIT_TRANSFER",
+      "status": "SUCCEEDED",
+      "provider_transfer_id": "tr_example",
+      "created_at": "2026-09-15T10:00:00Z",
+      "updated_at": "2026-09-15T10:00:00Z"
+    },
+    {
+      "code": "0e5b4d60-4811-4a48-90c1-398d28dbce8c",
+      "type": "SPLIT_TRANSFER_REVERSE",
+      "status": "SUCCEEDED",
+      "parent_transaction_code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+      "provider_transfer_id": "trr_example",
+      "reason": "ORDER_CANCELLED",
+      "created_at": "2026-09-15T10:05:00Z",
+      "updated_at": "2026-09-15T10:05:00Z"
     }
+  ],
+  "created_at": "2026-09-15T10:00:00Z",
+  "updated_at": "2026-09-15T10:05:00Z",
+  "completed_at": "2026-09-15T10:05:00Z"
 }
 ```
 

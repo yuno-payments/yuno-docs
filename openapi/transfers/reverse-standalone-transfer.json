@@ -136,8 +136,10 @@
             "example": "2026-02-16T10:30:15Z"
           },
           "provider": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": null
           },
           "transactions": {
@@ -169,6 +171,16 @@
                   "type": "string",
                   "example": "{.... }"
                 },
+                "parent_transaction_code": {
+                  "type": "string",
+                  "description": "Code of the original transaction that a SPLIT_TRANSFER_REVERSE transaction reverses. Absent on the original transaction.",
+                  "example": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e"
+                },
+                "reason": {
+                  "type": "string",
+                  "description": "Reason given in the reverse request. Present on SPLIT_TRANSFER_REVERSE transactions.",
+                  "example": "ORDER_CANCELLED"
+                },
                 "created_at": {
                   "type": "string",
                   "format": "date-time",
@@ -183,6 +195,67 @@
             }
           }
         }
+      },
+      "ReverseTransfer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "recipient_id": {
+            "$ref": "#/components/schemas/Transfer/properties/recipient_id"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Transfer/properties/amount"
+          },
+          "status": {
+            "type": "string",
+            "example": "REVERSED_PARTIAL"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/Transfer/properties/reason"
+          },
+          "description": {
+            "$ref": "#/components/schemas/Transfer/properties/description"
+          },
+          "merchant_reference": {
+            "$ref": "#/components/schemas/Transfer/properties/merchant_reference"
+          },
+          "provider_data": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "recipient_id": {
+                "type": "string"
+              },
+              "transaction_id": {
+                "type": "string"
+              },
+              "response_code": {
+                "type": "string"
+              },
+              "response_message": {
+                "type": "string"
+              }
+            }
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Transfer/properties/created_at"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Transfer/properties/updated_at"
+          },
+          "transactions": {
+            "$ref": "#/components/schemas/Transfer/properties/transactions"
+          }
+        },
+        "description": "The parent transfer after a reversal. Direction is available through GET, not this response."
       }
     }
   },
@@ -255,71 +328,56 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Reversal processed",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Transfer"
+                  "$ref": "#/components/schemas/ReverseTransfer"
                 },
                 "examples": {
-                  "Success": {
+                  "PartialReversal": {
+                    "summary": "Parent after a partial reversal",
                     "value": {
-                      "id": "94036ceb-5cca-4384-b144-e2a5a908af77",
-                      "recipient_id": "e56c3329-f3d9-48e5-a677-284b147abf95",
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "recipient_id": "d246d578-266c-47c3-92b6-1748d780711b",
                       "amount": {
                         "currency": "USD",
-                        "value": 100
+                        "value": 1
                       },
-                      "status": "SUCCEEDED",
-                      "description": "test transfer",
-                      "merchant_reference": "c19e858a-ffd6-4635-8a31-4f60c5becf4d",
-                      "metadata": [],
-                      "provider": null,
+                      "status": "REVERSED_PARTIAL",
+                      "reason": "ORDER_CANCELLED",
+                      "description": "Partial reversal",
+                      "merchant_reference": "REVERSAL-001",
+                      "provider_data": {
+                        "id": "STRIPE",
+                        "recipient_id": "acct_example",
+                        "transaction_id": "trr_example",
+                        "response_code": "",
+                        "response_message": ""
+                      },
                       "transactions": [
                         {
-                          "code": "7ac2c5f3-7c79-4e99-b45e-aa5952620188",
+                          "code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
                           "type": "SPLIT_TRANSFER",
                           "status": "SUCCEEDED",
-                          "provider_transfer_id": "tr_1T9eKVIiMnPsFcbbRTb8ObsZ",
-                          "provider_response_message": null,
-                          "provider_raw_response": "{\n  \"id\": \"tr_1T9eKVIiMnPsFcbbRTb8ObsZ\",\n  \"object\": \"transfer\",\n  \"amount\": 10000,\n  \"amount_reversed\": 0,\n  \"balance_transaction\": \"txn_1T9eKVIiMnPsFcbbOPnvz3xM\",\n  \"created\": 1773203107,\n  \"currency\": \"usd\",\n  \"description\": \"test transfer\",\n  \"destination\": \"acct_1T9PSQIZEg1WWTvj\",\n  \"destination_payment\": \"py_1T9eKVIZEg1WWTvjbVjmnzFK\",\n  \"livemode\": false,\n  \"metadata\": {},\n  \"reversals\": {\n    \"object\": \"list\",\n    \"data\": [],\n    \"has_more\": false,\n    \"total_count\": 0,\n    \"url\": \"/v1/transfers/tr_1T9eKVIiMnPsFcbbRTb8ObsZ/reversals\"\n  },\n  \"reversed\": false,\n  \"source_transaction\": null,\n  \"source_type\": \"card\",\n  \"transfer_group\": null\n}",
-                          "created_at": "2026-03-11T04:25:06.229027Z",
-                          "updated_at": "2026-03-11T04:25:07.917364Z"
-                        }
-                      ],
-                      "created_at": "2026-03-11T04:25:06.208761Z",
-                      "updated_at": "2026-03-11T04:25:07.928000342Z",
-                      "completed_at": "2026-03-11T04:25:07.927971142Z"
-                    }
-                  },
-                  "Error": {
-                    "value": {
-                      "id": "9778f631-504d-448f-b2c1-f7b903781df7",
-                      "recipient_id": "82b12c8c-7d3d-4a21-a3c6-165cc04ca741",
-                      "amount": {
-                        "currency": "USD",
-                        "value": 50000
-                      },
-                      "status": "ERROR",
-                      "description": "test transfer",
-                      "merchant_reference": "cb18df20-21ae-4fed-8da9-fb81cfd56797",
-                      "metadata": [],
-                      "provider": null,
-                      "transactions": [
+                          "provider_transfer_id": "tr_example",
+                          "created_at": "2026-09-15T10:00:00Z",
+                          "updated_at": "2026-09-15T10:00:00Z"
+                        },
                         {
-                          "code": "9eee65d1-6c3a-4076-9ef9-fa4bff73d597",
-                          "type": "SPLIT_TRANSFER",
-                          "status": "ERROR",
-                          "provider_transfer_id": "tr_1T9PTLIiMnPsFcbbFKyh1Nds",
-                          "provider_response_message": "{\n  \"id\": \"tr_1T9PTLIiMnPsFcbbFKyh1Nds\",\n  \"object\": \"transfer\",\n  \"amount\": 10000,\n  \"amount_reversed\": 0,\n  \"balance_transaction\": \"txn_1T9PTMIiMnPsFcbbxRKvaZ3G\",\n  \"created\": 1773145996,\n  \"currency\": \"usd\",\n  \"description\": \"test transfer\"\n}",
-                          "provider_raw_response": "{.... }",
-                          "created_at": "2026-03-10T13:39:19.342902Z",
-                          "updated_at": "2026-03-10T13:39:19.342914Z"
+                          "code": "0e5b4d60-4811-4a48-90c1-398d28dbce8c",
+                          "type": "SPLIT_TRANSFER_REVERSE",
+                          "status": "SUCCEEDED",
+                          "parent_transaction_code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+                          "provider_transfer_id": "trr_example",
+                          "reason": "ORDER_CANCELLED",
+                          "created_at": "2026-09-15T10:05:00Z",
+                          "updated_at": "2026-09-15T10:05:00Z"
                         }
                       ],
-                      "created_at": "2026-03-10T13:39:19.241990247Z",
-                      "updated_at": "2026-03-10T13:39:19.242012664Z"
+                      "created_at": "2026-09-15T10:00:00Z",
+                      "updated_at": "2026-09-15T10:05:00Z"
                     }
                   }
                 }
@@ -378,6 +436,16 @@
                       "code": "INVALID_CURRENCY",
                       "messages": [
                         "The specified currency is invalid or does not match the original transfer."
+                      ]
+                    }
+                  },
+                  "DIRECTION_NOT_REVERSIBLE": {
+                    "summary": "Recipient-to-platform transfers cannot be reversed",
+                    "description": "Match on code. The message text can differ between releases.",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "Invalid transfer parameters"
                       ]
                     }
                   }
@@ -449,7 +517,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Fully or partially reverse a PLATFORM_TO_RECIPIENT transfer. A RECIPIENT_TO_PLATFORM parent returns 400 INVALID_PARAMETERS. To return a separately collected fee, create a new PLATFORM_TO_RECIPIENT transfer. The reversal HTTP response does not include direction; read the parent transfer to retrieve it."
       }
     }
   }
