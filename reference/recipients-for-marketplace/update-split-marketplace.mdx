@@ -1,0 +1,47 @@
+---
+title: "Update the split of a paid transaction"
+openapi: "/openapi/recipients-for-marketplace/update-split-marketplace.json PUT /payments/{payment_id}/transactions/{transaction_id}/split-marketplace"
+description: "Replace the split_marketplace of a transaction that is already paid, before the provider settles it"
+---
+
+Marketplaces that redistribute an order after payment (a different seller delivers, an item is swapped) can replace the split of a paid transaction instead of refunding and charging again. The update replaces the **whole** split: the legs you send become the split, and legs you do not send are removed. The payment and the transaction keep their status, and no new transaction is created.
+
+## When an update is accepted
+
+- The transaction is a `PURCHASE` with status `SUCCEEDED`.
+- The provider still allows it: before settlement, and while the provider's limit of split changes per transaction is not reached (each update uses that allowance once per leg). Both conditions belong to the provider; when one fails you get a `409` with `SPLIT_UPDATE_WINDOW_CLOSED` or `SPLIT_UPDATE_LIMIT_REACHED`, and the split is not changed. Yuno counts the changes already made and refuses an update that would pass the limit before it reaches the provider.
+- The payment has no refund (partial, total, or one waiting to be retried), no chargeback and no transfer reversal. Otherwise you get a `409` with `SPLIT_UPDATE_NOT_ALLOWED`.
+- The provider of the transaction supports it. Availability is enabled per connection; contact Yuno to enable it for yours.
+
+Every leg must name its recipient (`recipient_id` or `provider_recipient_id`, never both) and its amount. The amounts must not add up to more than the transaction amount, in the currency of the payment.
+
+## Idempotency
+
+`X-Idempotency-Key` is required. **A timeout is not a failure**: the update may have been applied at the provider even if you did not get the answer. Repeat the request with the **same key and the same body** and you get the outcome of the first attempt, without a second change at the provider: the same status, and the payment as it is at that moment (after a later update, the split shown is the current one). The same key with a different body is refused with `SPLIT_UPDATE_IDEMPOTENCY_CONFLICT`. If you repeat the request while the first attempt is still running (for example right after your own timeout), the answer is `400` `OPERATION_IN_PROCESS` and nothing changes: wait a few seconds and repeat it again with the same key. Use a new key only for a new change.
+
+## Where to read the split
+
+The answer is the payment, in the same shape as [Retrieve payment by ID](/reference/retrieve-payment-by-id). Read the split on `transactions.split_marketplace`; the payment-level `split_marketplace` array does not carry it. The same is true of every later `GET /payments/{payment_id}`.
+
+## When the provider does not confirm
+
+If the provider does not confirm the outcome (a timeout at the provider, or a failure while it replaced the rules), the answer is a `502` with `PROVIDER_ERROR` and the update stays **under review** by Yuno. Do not send a new update for that transaction: it is refused with `409` `SPLIT_UPDATE_NOT_ALLOWED` until the review is complete. A retry with the same key returns the same `502`. Refunds of that payment are refused until the review is complete too (next section).
+
+## Refunds while an update is open
+
+While an update of a payment is in progress or under review, refunds of that payment (including cancel-or-refund) are refused with `400` `OPERATION_IN_PROCESS`, the same answer as for any other operation running on the payment. Under review, the message says so. Nothing is recorded for the refused refund: repeat it with the **same idempotency key** once the update finishes. Refunds requested in bulk are not retried automatically; request them again.
+
+## Response codes
+
+| HTTP | `code` | Meaning |
+|---|---|---|
+| 200 | — | The split was replaced. The answer is the payment. |
+| 400 | `INVALID_PARAMETERS` | A field is missing or invalid: no idempotency key, an empty split, a leg without recipient or amount, both recipient ids in one leg, amounts above the transaction amount, another currency, a description shorter than 3 or longer than 255 characters. |
+| 400 | `PAYMENT_NOT_FOUND`, `TRANSACTION_NOT_FOUND` | The payment, or the transaction of that payment, is not found for your account. |
+| 404 | `RECIPIENT_NOT_FOUND` | A `recipient_id` is unknown, or the recipient is not onboarded with the provider of the transaction. |
+| 409 | `SPLIT_UPDATE_NOT_ALLOWED` | The transaction is not a succeeded purchase, the provider is not enabled, the payment has a refund (including one waiting to be retried), chargeback or transfer reversal, or a previous update is under review. |
+| 409 | `SPLIT_UPDATE_WINDOW_CLOSED` | The provider no longer accepts changes for this transaction. The split was not changed. |
+| 409 | `SPLIT_UPDATE_LIMIT_REACHED` | The provider's limit of split changes for this transaction was reached. The split was not changed. |
+| 409 | `SPLIT_UPDATE_IN_PROGRESS` | Another update of this transaction is in progress. Try again in a few seconds. |
+| 409 | `SPLIT_UPDATE_IDEMPOTENCY_CONFLICT` | The idempotency key was already used with a different body. |
+| 502 | `PROVIDER_ERROR` | The provider did not confirm the outcome; the update is under review. |
