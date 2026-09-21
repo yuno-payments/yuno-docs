@@ -866,31 +866,25 @@
                           },
                           "discounts": {
                             "type": "array",
-                            "description": "Specifies the discounts array of objects (up to 10 entries). Optional: automatic promotions apply to a payment sent exactly as today, with no entry needed. To reference a promotion yourself, add an entry with exactly one of `quote_id` or `promotion_id` and no `unit_amount`; Yuno fills the rest. An entry with `id`, `name` and `unit_amount` is a discount you computed and is passed on untouched. An entry with more than one reference, or a reference together with `unit_amount`, is rejected with `400 INVALID_REQUEST`.",
+                            "description": "Specifies the discounts array of objects (up to 10 entries). An entry is either a discount you computed (`id`, `name`, `unit_amount`), which Yuno passes on untouched, or a promotion quote, which carries only `quote_id`. Never both in one entry: an entry that mixes them is rejected with a `400` error.",
                             "items": {
                               "properties": {
                                 "id": {
                                   "type": "string",
-                                  "description": "ID of the discount (MAX 255; MIN 1). Used for a discount you computed. Not sent together with a promotion reference (`quote_id` or `promotion_id`)."
+                                  "description": "ID of the discount (MAX 255; MIN 1). Used for a discount you computed. Not sent together with `quote_id`."
                                 },
                                 "name": {
                                   "type": "string",
-                                  "description": "Name of the discount (MAX 255; MIN 1). Used for a discount you computed. Not sent together with a promotion reference (`quote_id` or `promotion_id`)."
+                                  "description": "Name of the discount (MAX 255; MIN 1). Used for a discount you computed. Not sent together with `quote_id`."
                                 },
                                 "unit_amount": {
                                   "type": "number",
-                                  "description": "The unit amount of the discount (multiple of 0.0001). Used for a discount you computed. Not sent together with a promotion reference (`quote_id` or `promotion_id`).",
+                                  "description": "The unit amount of the discount (multiple of 0.0001). Used for a discount you computed. Not sent together with `quote_id`.",
                                   "format": "float"
                                 },
                                 "quote_id": {
                                   "type": "string",
-                                  "description": "The `quote.id` returned by Create Promotion Quote. Yuno charges that quote without evaluating again; a quote that has expired, or whose original amount differs from the payment `amount`, is not used and the payment is priced again. `amount` stays the original amount. See [Promotions](/docs/payment-features/promotions) for details."
-                                },
-                                "promotion_id": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "description": "The id of a promotion to apply; Yuno considers only that promotion. See [Promotions](/docs/payment-features/promotions) for details.",
-                                  "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                                  "description": "The `quote.id` returned by Create Promotion Quote. A promotion applies only when the payment carries a `quote_id`; without one the payment is charged in full, exactly as today. `amount` stays the original amount, and Yuno charges the quoted total. If Yuno can't honour the quote — it expired; the amount or currency isn't the one quoted; the card, payment method or account isn't the one quoted; the `quote_id` isn't valid; or Promotions is temporarily unavailable — the payment is rejected, never charged at full price. See [Promotions](/docs/payment-features/promotions) for details."
                                 }
                               },
                               "type": "object"
@@ -5081,48 +5075,6 @@
                         "discounts": [
                           {
                             "quote_id": "qte_0d91f7ac3b2e"
-                          }
-                        ]
-                      }
-                    }
-                  }
-                },
-                "Card - With a promotion id": {
-                  "value": {
-                    "country": "AR",
-                    "amount": {
-                      "currency": "ARS",
-                      "value": 25000
-                    },
-                    "customer_payer": {
-                      "id": "<customer_id>",
-                      "first_name": "John",
-                      "last_name": "Doe",
-                      "email": "johndoe@example.com"
-                    },
-                    "payment_method": {
-                      "detail": {
-                        "card": {
-                          "card_data": {
-                            "number": "4111111111111111",
-                            "expiration_month": 11,
-                            "expiration_year": 28,
-                            "security_code": "123",
-                            "holder_name": "John Doe"
-                          }
-                        }
-                      },
-                      "type": "CARD"
-                    },
-                    "account_id": "<account_id>",
-                    "description": "Payment with card details",
-                    "merchant_order_id": "000023",
-                    "workflow": "DIRECT",
-                    "additional_data": {
-                      "order": {
-                        "discounts": [
-                          {
-                            "promotion_id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
                           }
                         ]
                       }
@@ -11823,7 +11775,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -11848,8 +11800,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -13291,7 +13242,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -13316,8 +13267,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -14388,7 +14338,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -14413,8 +14363,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -15725,7 +15674,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -15750,8 +15699,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -16914,7 +16862,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -16939,8 +16887,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -18084,7 +18031,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -18109,8 +18056,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -19186,7 +19132,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -19211,8 +19157,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -20288,7 +20233,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -20313,8 +20258,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -21422,7 +21366,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -21447,8 +21391,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -22521,7 +22464,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -22546,8 +22489,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -23627,7 +23569,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -23652,8 +23594,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -24745,7 +24686,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -24770,8 +24711,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -25413,7 +25353,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -25438,8 +25378,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -26594,7 +26533,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -26619,8 +26558,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -27330,7 +27268,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -27355,8 +27293,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
@@ -28466,7 +28403,7 @@
                         },
                         "applied_promotion": {
                           "type": "object",
-                          "description": "The promotion Yuno applied to this payment, present only when Yuno applied a promotion to the payment — with a quote, with a `promotion_id`, or automatically. Absent (never `null`) when no promotion applied. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -28491,8 +28428,7 @@
                             },
                             "quote_id": {
                               "type": "string",
-                              "nullable": true,
-                              "description": "The quote the payment was charged with, when it used one.",
+                              "description": "The quote the payment was charged with.",
                               "example": "qte_0d91f7ac3b2e"
                             },
                             "discount": {
