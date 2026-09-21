@@ -3,7 +3,7 @@ title: "Routing Resource Shape"
 description: "Each routing is a single atomic resource on the public API: one HTTP call creates or replaces the full configuration."
 ---
 
-A routing tells Yuno, for one `payment_method` on one account, which connection to use — and lets you branch by buyer attributes (country, currency, amount, card brand, custom metadata, …).
+A routing tells Yuno, for one `payment_method` on one account, which connection to use (or whether to reject the payment) — and lets you branch by buyer attributes (country, currency, amount, card brand, custom metadata, …).
 
 ### Resource shape
 
@@ -48,7 +48,7 @@ A routing tells Yuno, for one `payment_method` on one account, which connection 
 | Field | Type | Notes |
 |---|---|---|
 | `id` | UUID | Server-assigned. The same value is referenced as `routing_id` in URL paths. |
-| `account_id` | string | Inferred from your API key. Not supplied in request bodies. |
+| `account_id` | string | The account the routing belongs to. **Required** in the `POST` and `PATCH` request bodies; on `PATCH` it must be the routing's own account. |
 | `payment_method` | enum | E.g., `CARD`, `PIX`, `WALLET`. Immutable per routing — to route a different method, create a new routing. |
 | `name` | string | Free-form label. |
 | `default_route` | object | The route used when no `condition_sets[]` matches. **Required.** |
@@ -59,16 +59,17 @@ A routing tells Yuno, for one `payment_method` on one account, which connection 
 
 **`route.steps[]`**
 
-Each step is one provider attempt. `index` values are contiguous starting at 1.
+Each step is either one provider attempt or a [Cancel step](#cancel-steps). `index` values are contiguous starting at 1.
 
 <div className="code-nowrap-table dense-table">
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `index` | int | yes | Step ordinal within the route. Cycles are forbidden — `output[].next` must point to a higher index. |
-| `provider_id` | string | yes | Must match the `provider_id` of the referenced connection. |
-| `connection_id` | UUID | yes | Must be `ACTIVE`, in the same account, and support the routing's `payment_method`. |
-| `output[]` | object[] | no | Per-outcome handlers. **Omit for terminal steps with no chaining or per-decline customization** — the route will just run the step and terminate with whatever the provider returned. |
+| `provider_id` | string | provider steps | Must match the `provider_id` of the referenced connection. Omit on a Cancel step. |
+| `connection_id` | UUID | provider steps | Must be `ACTIVE`, in the same account, and support the routing's `payment_method`. Omit on a Cancel step. |
+| `action` | enum | Cancel steps | `CANCEL`. Omit on provider steps. |
+| `output[]` | object[] | no | Per-outcome handlers. **Omit for terminal steps with no chaining or per-decline customization** — the route will just run the step and terminate with whatever the provider returned. Not allowed on a Cancel step (an empty array is accepted). |
 
 </div>
 
@@ -80,8 +81,7 @@ Each step is one provider attempt. `index` values are contiguous starting at 1.
 |---|---|---|---|
 | `status` | enum | yes | What outcome this entry reacts to. See enum below. |
 | `decline_types[]` | string[] | only with <span className="whitespace-nowrap">`status = DECLINE_GROUP`</span> | Subset of Yuno's normalized decline taxonomy. |
-| `error_rate_threshold` | object | only with <span className="whitespace-nowrap">`status = ERROR_RATE`</span> | `{ threshold_percent: int, window_seconds: int }`. |
-| `next` | int \| null | yes | Index of the step to jump to, or `null` to terminate. |
+| `next` | int \| null | no | Index of the step to jump to. Omit it or send `null` to terminate. |
 
 </div>
 
@@ -94,15 +94,44 @@ Each step is one provider attempt. `index` values are contiguous starting at 1.
 | `APPROVED` | The provider returned success. Implicit by default; list explicitly only for post-approval routing. | — |
 | `DECLINED` | Any decline (catch-all). Place last in the array. | — |
 | `DECLINE_GROUP` | Decline whose normalized code is in `decline_types[]`. | `decline_types[]` |
-| `ERROR_RATE` | The step's rolling error rate exceeds `error_rate_threshold`. | `error_rate_threshold` |
-| `TIMEOUT` | The provider didn't respond within Yuno's per-step timeout. | — |
 | `INTERNAL_ERROR` | The provider returned a 5xx or connection error before reaching the issuer. | — |
 
 </div>
 
 **Evaluation rules**
 
-1. The route enters at `index: 1`.
+1. The route enters at `index: 1`. If that step is a Cancel step, the payment is rejected and the route ends.
 2. The provider call runs.
-3. Yuno walks `output[]` top-to-bottom; the first entry whose `status` (plus optional `decline_types` / `error_rate_threshold` predicate) matches the outcome wins.
+3. Yuno walks `output[]` top-to-bottom; the first entry whose `status` (plus optional `decline_types` predicate) matches the outcome wins.
 4. If the matched entry's `next` is an integer, jump to that step. If `null` or no entry matches, the route terminates with the actual provider outcome.
+
+### Cancel steps
+
+A Cancel step rejects the payment without sending it to any provider. It is the API equivalent of the dashboard's **Cancel** action.
+
+```json
+{ "index": 1, "action": "CANCEL" }
+```
+
+- It must be the only step of its route, so its `index` is always `1`.
+- It has no `provider_id`, `connection_id` or `output`.
+- It is allowed in `default_route` and in any `condition_sets[].route`. A Cancel-only `default_route` rejects every payment that no condition set matches.
+- At payment time the payment is rejected before any provider is called: the transaction ends `REJECTED` with the code `YUNO_ROUTING_REJECTED`.
+- [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) returns Cancel steps in this same shape, so a routing you retrieve can be sent back in a [`PATCH`](/reference/organizations/routing/update-routing) without losing them.
+
+For example, this condition set rejects every card issued outside the US and Canada, while payments with domestic cards continue to the next condition set or the `default_route`:
+
+```json
+{
+  "sort_number": 1,
+  "name": "Reject foreign-issued cards",
+  "conditions": [
+    { "condition_type": "CARD_ISSUER_COUNTRY", "conditional": "NOT_ONE_OF", "values": ["US", "CA"] }
+  ],
+  "route": {
+    "steps": [
+      { "index": 1, "action": "CANCEL" }
+    ]
+  }
+}
+```
