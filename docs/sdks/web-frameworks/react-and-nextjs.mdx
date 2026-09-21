@@ -25,16 +25,18 @@ npm install @yuno-payments/sdk-web
 npm install --save-dev @yuno-payments/sdk-web-types
 ```
 
-`loadScript` injects the SDK script and resolves with the initialized instance. Pass the `integrity` hash published in `versions-sri.json` so the browser verifies the script (see [Subresource Integrity](/docs/sdks/resources/references/web#subresource-integrity-sri)).
+`loadScript` injects the SDK script and resolves with the `Yuno` object. Initializing is a second step: call `Yuno.initialize` with your public API key to get the instance you mount with. Set `sri: true` so the browser verifies the script against its published hash (see [Subresource Integrity](/docs/sdks/resources/references/web#subresource-integrity-sri)).
 
 ```javascript
 import { loadScript } from '@yuno-payments/sdk-web';
 
-const yuno = await loadScript({
-  apiKey: 'YOUR_PUBLIC_API_KEY',
-  integrity: 'sha384-...',
-});
+const Yuno = await loadScript({ sri: true });
+const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
 ```
+
+<Note>
+  If your account is in the EU region, pass `region: 'eu'` to `loadScript` as well.
+</Note>
 
 If you prefer the script tag, add it to your HTML and call `Yuno.initialize` from the browser:
 
@@ -88,10 +90,9 @@ export function useYuno() {
   const [yuno, setYuno] = useState(null);
 
   useEffect(() => {
-    sdkPromise ??= loadScript({
-      apiKey: process.env.NEXT_PUBLIC_YUNO_PUBLIC_API_KEY,
-      integrity: process.env.NEXT_PUBLIC_YUNO_SDK_INTEGRITY,
-    });
+    sdkPromise ??= loadScript({ sri: true }).then((Yuno) =>
+      Yuno.initialize(process.env.NEXT_PUBLIC_YUNO_PUBLIC_API_KEY)
+    );
     let active = true;
     sdkPromise.then((instance) => {
       if (active) setYuno(instance);
@@ -353,7 +354,6 @@ export async function getServerSideProps() {
 | Variable | Where it is used |
 | :--- | :--- |
 | `NEXT_PUBLIC_YUNO_PUBLIC_API_KEY` | Browser, to initialize the SDK |
-| `NEXT_PUBLIC_YUNO_SDK_INTEGRITY` | Browser, the `sha384-...` hash for the pinned SDK version |
 | `YUNO_PUBLIC_API_KEY` and `YUNO_PRIVATE_SECRET_KEY` | Server only, on every API call |
 | `YUNO_ACCOUNT_ID` | Server only, in checkout session and payment requests |
 
@@ -375,7 +375,7 @@ The checkout loads after the page renders. Reserve the space it will take so the
 | Two checkout forms appear in development | React StrictMode runs effects twice and the first mount was not cleaned up | Return `() => yuno.unmountSdk()` from the effect and cache the `loadScript` promise |
 | The form disappears on every keystroke | The component remounts because a callback or object prop is recreated on each render | Keep callbacks in a `useRef` and limit effect dependencies to `yuno`, `checkoutSession`, and `countryCode` |
 | The card form stays open after a decline | `continuePayment` was not called for a `DECLINED` or `ERROR` card payment | Follow the [payment retry rules](/docs/sdks/resources/references/web#payment-retry) in `yunoCreatePayment` |
-| The browser refuses to run the script | The `integrity` hash does not match the loaded version | Copy `latest.integrity` from `https://sdk-web.y.uno/versions-sri.json` for the version you pin, or drop `integrity` when you use the global `v1.10` path |
+| The browser refuses to run the script | Subresource Integrity rejected the script | Confirm you are on a version whose hash is published in `https://sdk-web.y.uno/versions-sri.json`, or drop `sri: true` while you isolate the problem |
 | Payment methods do not match the shopper's country | The session was created for one country and the component received another | Create the session and mount the component with the same `country` value |
 
 ## Next steps
