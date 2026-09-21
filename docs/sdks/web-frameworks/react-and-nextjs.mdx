@@ -90,9 +90,14 @@ export function useYuno() {
   const [yuno, setYuno] = useState(null);
 
   useEffect(() => {
-    sdkPromise ??= loadScript({ sri: true }).then((Yuno) =>
-      Yuno.initialize(process.env.NEXT_PUBLIC_YUNO_PUBLIC_API_KEY)
-    );
+    sdkPromise ??= loadScript({ sri: true })
+      .then((Yuno) =>
+        Yuno.initialize(process.env.NEXT_PUBLIC_YUNO_PUBLIC_API_KEY)
+      )
+      .catch((err) => {
+        delete sdkPromise;
+        throw err;
+      });
     let active = true;
     sdkPromise.then((instance) => {
       if (active) setYuno(instance);
@@ -130,27 +135,9 @@ export function YunoCheckout({ checkoutSession, countryCode, onResult }) {
         renderMode: {
           type: 'element',
           elementSelector: {
-            apmForm: '#yuno-apm-form',
-            actionForm: '#yuno-action-form',
+            apmForm: 'apmForm',
+            actionForm: 'actionForm',
           },
-        },
-        async yunoCreatePayment(oneTimeToken) {
-          const payment = await fetch('/api/payments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ oneTimeToken, checkoutSession }),
-          }).then((r) => r.json());
-
-          const isCard = payment.payment_method?.type === 'CARD';
-          const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
-
-          if (isCard && failed) {
-            await yuno.continuePayment();
-          } else if (payment.checkout?.sdk_action_required) {
-            await yuno.continuePayment({ showPaymentStatus: true });
-          } else {
-            await yuno.unmountSdk();
-          }
         },
         yunoPaymentResult(status, subStatus) {
           onResultRef.current?.(status, subStatus);
@@ -172,8 +159,8 @@ export function YunoCheckout({ checkoutSession, countryCode, onResult }) {
 
   return (
     <>
-      <div id="yuno-apm-form" />
-      <div id="yuno-action-form" />
+      <div className="apmForm" />
+      <div className="actionForm" />
       <button type="button" onClick={() => yuno?.startPayment()}>
         Pay
       </button>
@@ -186,7 +173,7 @@ Three details matter here:
 
 * **Dependencies**: only `yuno`, `checkoutSession`, and `countryCode` remount the form. Callbacks go through a ref so parent re-renders do not tear the checkout down.
 * **Cleanup**: `unmountSdk` removes the SDK from the DOM. Without it, navigating away and back mounts a second form, and StrictMode in development shows two forms on first render.
-* **Payment creation**: your `/api/payments` route calls [Create Payment](/reference/payments/create-payment) with `payment_method.token` and `checkout.session`, then the component follows the [payment retry rules](/docs/sdks/resources/references/web#payment-retry): `continuePayment` for a declined card or when `sdk_action_required` is `true`, `unmountSdk` otherwise.
+* **Seamless payment creation**: the SDK creates the payment from the checkout session on your account — your server does not call Create Payment. The lifecycle callbacks let you react to the result.
 
 <Tip>
   When the shopper needs a new session after a failed payment, call `yuno.updateCheckoutSession(newSession)` instead of remounting. If the new session changes the payment methods, styling, or country, remount by changing the `checkoutSession` prop. See [updateCheckoutSession](/docs/sdks/resources/references/web#updatecheckoutsession).
@@ -206,7 +193,22 @@ useEffect(() => {
       countryCode,
       elementSelector: '#yuno-card',
       async yunoCreatePayment(oneTimeToken) {
-        /* same as the Seamless example */
+        const payment = await fetch('/api/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oneTimeToken, checkoutSession }),
+        }).then((r) => r.json());
+
+        const isCard = payment.payment_method?.type === 'CARD';
+        const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+
+        if (isCard && failed) {
+          await yuno.continuePayment();
+        } else if (payment.checkout?.sdk_action_required) {
+          await yuno.continuePayment({ showPaymentStatus: true });
+        } else {
+          await yuno.unmountSdk();
+        }
       },
       yunoPaymentResult(status, subStatus) {
         onResultRef.current?.(status, subStatus);
@@ -241,28 +243,35 @@ import { useYuno } from './useYuno';
 
 export function CardForm({ checkoutSession, countryCode }) {
   const yuno = useYuno();
-  const secureFieldsRef = useRef(null);
+  const fieldsRef = useRef([]);
   const [holderName, setHolderName] = useState('');
 
   useEffect(() => {
     if (!yuno || !checkoutSession) return;
+    let cancelled = false;
 
-    const secureFields = yuno.secureFields({ countryCode, checkoutSession });
-    secureFieldsRef.current = secureFields;
+    async function setup() {
+      const secureFields = await yuno.secureFields({ countryCode, checkoutSession });
 
-    secureFields.create({ name: 'pan', options: { placeholder: 'Card number' } }).render('#yuno-pan');
-    secureFields.create({ name: 'expiration', options: { placeholder: 'MM/YY' } }).render('#yuno-expiration');
-    secureFields.create({ name: 'cvv', options: { placeholder: 'CVV' } }).render('#yuno-cvv');
+      const pan = secureFields.create({ name: 'pan', options: { placeholder: 'Card number' } }).render('#yuno-pan');
+      const expiration = secureFields.create({ name: 'expiration', options: { placeholder: 'MM/YY' } }).render('#yuno-expiration');
+      const cvv = secureFields.create({ name: 'cvv', options: { placeholder: 'CVV' } }).render('#yuno-cvv');
+
+      if (!cancelled) fieldsRef.current = [pan, expiration, cvv];
+    }
+
+    setup();
 
     return () => {
-      secureFieldsRef.current = null;
-      yuno.unmountSdk();
+      cancelled = true;
+      fieldsRef.current.forEach((field) => field.unmountSync());
+      fieldsRef.current = [];
     };
   }, [yuno, checkoutSession, countryCode]);
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const oneTimeToken = await secureFieldsRef.current.generateToken({
+    const oneTimeToken = await fieldsRef.current[0].generateToken({
       cardHolderName: holderName,
     });
     const payment = await fetch('/api/payments', {
@@ -271,13 +280,19 @@ export function CardForm({ checkoutSession, countryCode }) {
       body: JSON.stringify({ oneTimeToken, checkoutSession }),
     }).then((r) => r.json());
 
-    if (payment.checkout?.sdk_action_required) {
+    const isCard = payment.payment_method?.type === 'CARD';
+    const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+
+    if (isCard && failed) {
       await yuno.continuePayment();
+    } else if (payment.checkout?.sdk_action_required) {
+      await yuno.continuePayment({ showPaymentStatus: true });
     } else {
       await yuno.mountStatusPayment({
         checkoutSession,
         countryCode,
-        yunoPaymentResult(data) {
+        language: 'en',
+        paymentResult(data) {
           console.log(data);
         },
       });
@@ -374,8 +389,8 @@ The checkout loads after the page renders. Reserve the space it will take so the
 | `window is not defined` or `document is not defined` at build time | The SDK was imported or initialized during server rendering | Move the import into `useEffect`, or mark the file `'use client'`, or load the component with `next/dynamic({ ssr: false })` |
 | Two checkout forms appear in development | React StrictMode runs effects twice and the first mount was not cleaned up | Return `() => yuno.unmountSdk()` from the effect and cache the `loadScript` promise |
 | The form disappears on every keystroke | The component remounts because a callback or object prop is recreated on each render | Keep callbacks in a `useRef` and limit effect dependencies to `yuno`, `checkoutSession`, and `countryCode` |
-| The card form stays open after a decline | `continuePayment` was not called for a `DECLINED` or `ERROR` card payment | Follow the [payment retry rules](/docs/sdks/resources/references/web#payment-retry) in `yunoCreatePayment` |
-| The browser refuses to run the script | Subresource Integrity rejected the script | Confirm you are on a version whose hash is published in `https://sdk-web.y.uno/versions-sri.json`, or drop `sri: true` while you isolate the problem |
+| The card form stays open after a decline | `continuePayment` was not called for a `DECLINED` or `ERROR` card payment | Follow the [payment retry rules](/docs/sdks/resources/references/web#payment-retry): on a declined or errored card, call `yuno.continuePayment()` before the shopper retries |
+| The browser refuses to run the script | Subresource Integrity rejected the script | Upgrade `@yuno-payments/sdk-web` to the latest version that matches the published hash, or drop `sri: true` while you isolate the problem. With `loadScript` the hash is hardcoded inside the npm package — there is no external URL to check. |
 | Payment methods do not match the shopper's country | The session was created for one country and the component received another | Create the session and mount the component with the same `country` value |
 
 ## Next steps
