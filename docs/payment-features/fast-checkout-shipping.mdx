@@ -1,0 +1,91 @@
+---
+title: "Fast Checkout Shipping"
+description: "Let customers pick a saved shipping address and delivery method inside the wallet widget, and receive the selection back on the payment"
+---
+
+Fast Checkout lets the customer pick a saved shipping address and a delivery method **inside the wallet widget** — starting with Revolut Pay. Because the payment is created before the customer makes that choice, the selection reaches Yuno asynchronously and is attached to the payment afterwards: you receive it on `GET /payments/{id}` and on payment webhooks as a top-level `shipping` node.
+
+## How it works
+
+1. You create the checkout session with the delivery options you offer (`shipping_methods`).
+2. Yuno forwards those options to the wallet when the payment is created, and the widget renders them.
+3. The customer picks a saved address and a delivery method inside the widget.
+4. The wallet notifies Yuno, which attaches the selection to the payment and fills `customer_payer.shipping_address` when the payer had none.
+5. You receive the selection on the payment webhook and on `GET /payments/{id}`.
+
+<Info>
+  The delivery fee is a flat price **already included in the payment amount** — `payment.amount` is never modified by the selection.
+</Info>
+
+## Offer delivery options on the session
+
+Send `shipping_methods` when creating the [checkout session](/reference/create-checkout-session). The first method is preselected in the widget, and each method requires its `summary_items` breakdown (it drives the price summary the wallet displays).
+
+```json
+{
+  "amount": { "currency": "GBP", "value": 105.00 },
+  "shipping_methods": [
+    {
+      "id": "express",
+      "label": "Express shipping",
+      "detail": "Arrives in 1-2 business days",
+      "amount": { "currency": "GBP", "value": 5.00 },
+      "summary_items": [
+        { "id": "order", "label": "Order", "amount": { "currency": "GBP", "value": 100.00 } },
+        { "id": "shipping", "label": "Express shipping", "amount": { "currency": "GBP", "value": 5.00 } }
+      ]
+    }
+  ]
+}
+```
+
+* `shipping_methods[].id` is merchant-defined; the selection comes back referencing it.
+* Every amount uses the session currency, in major units.
+
+## Receive the selection on the payment
+
+Once the customer confirms, the payment carries the selection. The same `shipping` node is returned on `GET /payments/{id}` and on payment webhooks (V1 and V2 payloads); see [the payment object](/reference/the-payment-object) for the field reference and [webhook examples](/docs/object-and-examples).
+
+```json
+{
+  "id": "3455abae-3f3b-4e30-a6d5-8f28b1e176a3",
+  "status": "SUCCEEDED",
+  "amount": { "currency": "GBP", "value": 105.00 },
+  "customer_payer": {
+    "shipping_address": {
+      "address_line_1": "221B Baker Street",
+      "address_line_2": "Flat 2",
+      "city": "London",
+      "state": "England",
+      "zip_code": "NW1 6XE",
+      "country": "GB"
+    }
+  },
+  "shipping": {
+    "method": {
+      "id": "express",
+      "label": "Express shipping",
+      "amount": { "currency": "GBP", "value": 5.00 }
+    },
+    "address": {
+      "address_line_1": "221B Baker Street",
+      "address_line_2": "Flat 2",
+      "city": "London",
+      "state": "England",
+      "zip_code": "NW1 6XE",
+      "country": "GB"
+    }
+  }
+}
+```
+
+## Behavior details
+
+* The `shipping` key is **omitted** when the payment has no shipping selection — payments without Fast Checkout are unaffected.
+* `shipping.method.id` always matches one of the `shipping_methods[].id` you sent on the session; a selection that doesn't match is discarded and the payment status still updates.
+* `customer_payer.shipping_address` is filled from `shipping.address` only when the payer had no shipping address yet — an address you sent on the payment request is never overwritten.
+* The selection is idempotent: repeated notifications with the same shipping don't change the payment.
+
+## Availability
+
+Fast Checkout shipping is available for **Revolut Pay** on web SDK integrations with `requestShipping` enabled. Contact your Yuno representative to enable it for your account.
