@@ -16439,6 +16439,12 @@ paths:
                           type: string
                         merchant_id:
                           type: string
+                        parent_code:
+                          type:
+                            - string
+                            - 'null'
+                          format: uuid
+                          description: The `id` of the group this group is nested under. `null` for a root (top-level) group.
                         created_at:
                           type: string
                           format: date-time
@@ -16482,6 +16488,16 @@ paths:
                 merchant_id:
                   type: string
                   description: Unique identifier used by the merchant in their systems (min=1, max=255).
+                account_codes:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: >-
+                    Optional. `id`s of existing accounts to attach to the new group in the same transaction. An account
+                    belongs to one group at a time, so an account that is already in another group is moved to the new
+                    one. If any code does not match an active account of the organization the whole request fails and no
+                    group is created. Defaults to an empty list.
       responses:
         '201':
           description: Created
@@ -16498,6 +16514,14 @@ paths:
                     type: string
                   merchant_id:
                     type: string
+                  parent_code:
+                    type:
+                      - string
+                      - 'null'
+                    format: uuid
+                    description: >-
+                      The `id` of the group this group is nested under. Always `null` on creation: a new group is
+                      created as a root and nested afterwards with Update Account Group.
                   created_at:
                     type: string
                     format: date-time
@@ -16534,6 +16558,12 @@ paths:
                     type: string
                   merchant_id:
                     type: string
+                  parent_code:
+                    type:
+                      - string
+                      - 'null'
+                    format: uuid
+                    description: The `id` of the group this group is nested under. `null` for a root (top-level) group.
                   created_at:
                     type: string
                     format: date-time
@@ -16545,7 +16575,14 @@ paths:
     patch:
       summary: Update Account Group
       operationId: update-account-group
-      description: Updates an account group.
+      description: >-
+        Updates an account group. Every field is optional and only the fields present in the body are changed.
+
+
+        `parent_code` nests the group under another group of the same organization. It has three states: **absent**
+        leaves the current parent untouched; **`null`** detaches the group and promotes it back to a root, together with
+        any sub-groups hanging off it; a **group `id`** nests the group under that group. Nesting is structural only —
+        it grants and revokes nothing, so moving a group leaves every existing permission untouched.
       parameters:
         - name: account_group_id
           in: path
@@ -16566,6 +16603,15 @@ paths:
                 merchant_id:
                   type: string
                   description: Local identifier (min=1, max=255).
+                parent_code:
+                  type:
+                    - string
+                    - 'null'
+                  format: uuid
+                  description: >-
+                    The `id` of the group to nest this group under. Omit it to leave the parent unchanged; send `null`
+                    to detach the group and make it a root again. The parent must belong to the same organization and
+                    must not be the group itself or one of its descendants.
       responses:
         '200':
           description: OK
@@ -16581,18 +16627,59 @@ paths:
                     type: string
                   merchant_id:
                     type: string
+                  parent_code:
+                    type:
+                      - string
+                      - 'null'
+                    format: uuid
+                    description: The `id` of the group this group is nested under. `null` for a root (top-level) group.
                   created_at:
                     type: string
                     format: date-time
                   updated_at:
                     type: string
                     format: date-time
+        '400':
+          description: >-
+            Bad Request. The `code` field tells the reason:
+
+
+            - `PARENT_NOT_FOUND` — no group with that `parent_code` in this organization.
+
+            - `INVALID_PARENT` — the group was sent as its own parent.
+
+            - `PARENT_IS_DESCENDANT` — the target parent sits inside this group's own subtree, so the move would create
+            a cycle.
+
+            - `MAX_NESTING_DEPTH` — the move would push the tree past the maximum depth of 20 levels.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: Machine-readable error code.
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    description: Human-readable details.
+              example:
+                code: PARENT_IS_DESCENDANT
+                messages:
+                  - Account group [LATAM] is inside [Acme], so it cannot become its parent.
+        '404':
+          description: Not Found — no account group with that `account_group_id` in this organization.
       tags:
         - Organizations
     delete:
       summary: Delete Account Group
       operationId: delete-account-group
-      description: Deletes an account group, the accounts are then assigned to a default group.
+      description: >-
+        Deletes an account group. A group can only be deleted once it is empty: remove, move or delete its accounts
+        first (see Remove Account from Group) and move or delete its sub-groups. Accounts are never reassigned
+        automatically.
       parameters:
         - name: account_group_id
           in: path
@@ -16603,7 +16690,35 @@ paths:
           description: Account group UUID.
       responses:
         '204':
-          description: No Content
+          description: No Content — the group was deleted.
+        '400':
+          description: >-
+            Bad Request. The `code` field tells the reason:
+
+
+            - `GROUP_HAS_ACCOUNTS` — the group still has accounts. Remove them from the group first.
+
+            - `GROUP_HAS_SUBGROUPS` — the group still has sub-groups. Move them to another parent (or detach them with
+            Update Account Group) or delete them first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: Machine-readable error code.
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    description: Human-readable details.
+              example:
+                code: GROUP_HAS_SUBGROUPS
+                messages:
+                  - Cannot delete account group that still has sub-groups
+        '404':
+          description: Not Found — no account group with that `account_group_id` in this organization.
       tags:
         - Organizations
   /organizations/account-groups/{account_group_id}/accounts:
@@ -16706,6 +16821,59 @@ paths:
                   updated_at:
                     type: string
                     format: date-time
+      tags:
+        - Organizations
+  /organizations/account-groups/{account_group_id}/accounts/{account_id}:
+    delete:
+      summary: Remove Account from Group
+      operationId: remove-account-from-group
+      description: >-
+        Detaches an account from an account group. The account itself is not deleted or disabled: it keeps its users,
+        permissions and configuration and becomes a standalone account of the organization, so it can be attached to
+        another group later with Create Account. A group must always keep at least one account, so the last account of a
+        group cannot be removed this way: move it into another group (with `account_codes` on Create Account Group) or
+        delete the account instead.
+      parameters:
+        - name: account_group_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Account group UUID.
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the account to detach. It must currently belong to this group.
+      responses:
+        '204':
+          description: No Content — the account was detached from the group.
+        '400':
+          description: >-
+            Bad Request — `LAST_ACCOUNT_IN_GROUP`: the account is the only one left in the group. A group must contain
+            at least one account.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: Machine-readable error code.
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    description: Human-readable details.
+              example:
+                code: LAST_ACCOUNT_IN_GROUP
+                messages:
+                  - A group must contain at least one account
+        '404':
+          description: Not Found — no such account group in this organization, or the account is not a member of this group.
       tags:
         - Organizations
   /organizations/accounts:
