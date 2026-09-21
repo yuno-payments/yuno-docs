@@ -165,6 +165,133 @@ This object represents the payment created after generating the checkout session
   </Expandable>
 </ParamField>
 
+<ParamField body="applied_promotion" type="object">
+  The promotion Yuno applied to this payment. Present only when the payment carried a
+  `quote_id` and Yuno applied a promotion; absent (never `null`) otherwise, and the payment
+  looks exactly as it does today. `amount.value` is the charged total, and
+  `original_amount − discount_amount = charged_amount`, which equals `amount`.
+
+  Promotions is enabled per organization. It's off by default; ask your Technical Account
+  Manager or Key Account Manager to enable it. See
+  [Promotions](/docs/payment-features/promotions) for the full flow.
+
+  <Expandable title="properties">
+
+    <ParamField body="id" type="string">
+      The applied promotion's id.
+
+      Example: b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31
+    </ParamField>
+
+    <ParamField body="name" type="string">
+      The applied promotion's name.
+
+      Example: BBVA 10% off - Mother's Day
+    </ParamField>
+
+    <ParamField body="code" type="string">
+      The promotion's code. Always `null`: promotion codes are not available yet.
+
+      Example: null
+    </ParamField>
+
+    <ParamField body="application_id" type="string">
+      Yuno's identifier for this use of the promotion on this payment.
+
+      Example: 6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12
+    </ParamField>
+
+    <ParamField body="quote_id" type="string">
+      The `quote.id` sent on this payment's `additional_data.order.discounts` entry.
+
+      Example: qte_0d91f7ac3b2e
+    </ParamField>
+
+    <ParamField body="discount" type="object">
+      The promotion's discount definition.
+
+      <Expandable title="properties">
+
+        <ParamField body="type" type="enum">
+          Whether the discount is a percentage or a fixed amount.
+
+          Possible enum values: `PERCENTAGE`, `FIXED`
+        </ParamField>
+
+        <ParamField body="value" type="number">
+          The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for
+          `FIXED`.
+
+          Example: 10
+        </ParamField>
+
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="original_amount" type="object">
+      The amount before the discount, the one sent on the quote.
+
+      <Expandable title="properties">
+
+        <ParamField body="currency" type="enum">
+          The currency of the original amount (ISO 4217, 3 chars).
+
+          Example: ARS
+        </ParamField>
+
+        <ParamField body="value" type="number">
+          The amount before the discount.
+
+          Example: 25000
+        </ParamField>
+
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="discount_amount" type="object">
+      The amount Yuno discounted, always positive.
+
+      <Expandable title="properties">
+
+        <ParamField body="currency" type="enum">
+          The currency of the discount amount (ISO 4217, 3 chars).
+
+          Example: ARS
+        </ParamField>
+
+        <ParamField body="value" type="number">
+          The discounted amount.
+
+          Example: 2500
+        </ParamField>
+
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="charged_amount" type="object">
+      The amount charged: `original_amount` minus `discount_amount`. Equals the payment's
+      `amount`.
+
+      <Expandable title="properties">
+
+        <ParamField body="currency" type="enum">
+          The currency of the charged amount (ISO 4217, 3 chars).
+
+          Example: ARS
+        </ParamField>
+
+        <ParamField body="value" type="number">
+          The amount charged.
+
+          Example: 22500
+        </ParamField>
+
+      </Expandable>
+    </ParamField>
+
+  </Expandable>
+</ParamField>
+
 <ParamField body="checkout" type="object">
   Specifies the checkout object. This object is not mandatory for back to back payments. Required when
             `WORKFLOW` is defined as `CHECKOUT` or is not sent. Not required for `DIRECT`
@@ -2218,26 +2345,62 @@ This object represents the payment created after generating the checkout session
         </ParamField>
 
         <ParamField body="discounts" type="array of objects">
-          Specifies the order's discounts array of objects.
+          Specifies the order's discounts array of objects: the discounts you sent, in the
+          order you sent them. When Yuno applied a promotion, it appends one more entry, last
+          in the array, whose `id` is the promotion's id and whose `unit_amount` is the
+          discount amount.
+
+          You send `quote_id` on [Create Payment](/reference/payments/create-payment) to ask
+          Yuno to apply a promotion quote; it is read back in `applied_promotion.quote_id`. See
+          [Promotions](/docs/payment-features/promotions) for the full flow.
 
           <Expandable title="properties">
 
             <ParamField body="id" type="string">
-              ID of the discount (MAX 255; MIN 3).
+              ID of the discount (MAX 255; MIN 3). For the entry Yuno appends when a promotion
+              applied, the promotion's id.
 
               Example: 10OFF
             </ParamField>
 
             <ParamField body="name" type="string">
-              The name of the discount (MAX 255; MIN 3).
+              The name of the discount (MAX 255; MIN 3). For the entry Yuno appends when a
+              promotion applied, the promotion's name.
 
               Example: Offer
             </ParamField>
 
             <ParamField body="unit_amount" type="float">
-              The amount of the discount (multiple of 0.0001).
+              The amount of the discount (multiple of 0.0001). For the entry Yuno appends when
+              a promotion applied, the discount amount, always positive.
 
               Example: 100
+            </ParamField>
+
+            <ParamField body="promotion_id" type="string">
+              The promotion's id. Present only on the entry Yuno appends when a promotion
+              applied.
+
+              Example: b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31
+            </ParamField>
+
+            <ParamField body="code" type="string">
+              The promotion's code. Always `null`: promotion codes are not available yet.
+
+              Example: null
+            </ParamField>
+
+            <ParamField body="applied" type="boolean">
+              `true` on the entry Yuno appends when a promotion applied.
+
+              Example: true
+            </ParamField>
+
+            <ParamField body="application_id" type="string">
+              Yuno's identifier for this use of the promotion on this payment. Present only on
+              the entry Yuno appends when a promotion applied.
+
+              Example: 6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12
             </ParamField>
 
           </Expandable>
