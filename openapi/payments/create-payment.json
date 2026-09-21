@@ -866,28 +866,30 @@
                           },
                           "discounts": {
                             "type": "array",
-                            "description": "Specifies the discounts array of objects.",
+                            "description": "Specifies the discounts array of objects (up to 10 entries). An entry is either a discount you computed (`id`, `name`, `unit_amount`), which Yuno passes on untouched, or a promotion quote, which carries only `quote_id`. Never both in one entry: an entry that mixes them is rejected with a `400` error.",
                             "items": {
                               "properties": {
                                 "id": {
                                   "type": "string",
-                                  "description": "ID of the discount (MAX 255; MIN 1)."
+                                  "description": "ID of the discount (MAX 255; MIN 1). Used for a discount you computed. Not sent together with `quote_id`."
                                 },
                                 "name": {
                                   "type": "string",
-                                  "description": "Name of the discount (MAX 255; MIN 1)."
+                                  "description": "Name of the discount (MAX 255; MIN 1). Used for a discount you computed. Not sent together with `quote_id`."
                                 },
                                 "unit_amount": {
                                   "type": "number",
-                                  "description": "The unit amount of the discount (multiple of 0.0001).",
+                                  "description": "The unit amount of the discount (multiple of 0.0001). Used for a discount you computed. Not sent together with `quote_id`.",
                                   "format": "float"
+                                },
+                                "quote_id": {
+                                  "type": "string",
+                                  "description": "The `quote.id` returned by Create Promotion Quote. A promotion applies only when the payment carries a `quote_id`. Without one, the payment is charged in full, exactly as today. `amount` stays the original amount, and Yuno charges the quoted total. Yuno rejects the payment with a `400` error if it can't honour the quote. This happens when the quote expired, the amount or currency doesn't match the quote, the card, payment method or account doesn't match the quote, the `quote_id` isn't valid, or Promotions is temporarily unavailable. The payment is never charged at full price instead. See [Promotions](/docs/payment-features/promotions) for details."
                                 }
                               },
-                              "required": [
-                                "unit_amount"
-                              ],
                               "type": "object"
-                            }
+                            },
+                            "maxItems": 10
                           },
                           "sales_channel": {
                             "type": "string",
@@ -5035,6 +5037,48 @@
                       }
                     },
                     "workflow": "DIRECT"
+                  }
+                },
+                "Card - With a promotion quote": {
+                  "value": {
+                    "country": "AR",
+                    "amount": {
+                      "currency": "ARS",
+                      "value": 25000
+                    },
+                    "customer_payer": {
+                      "id": "<customer_id>",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "johndoe@example.com"
+                    },
+                    "payment_method": {
+                      "detail": {
+                        "card": {
+                          "card_data": {
+                            "number": "4111111111111111",
+                            "expiration_month": 11,
+                            "expiration_year": 28,
+                            "security_code": "123",
+                            "holder_name": "John Doe"
+                          }
+                        }
+                      },
+                      "type": "CARD"
+                    },
+                    "account_id": "<account_id>",
+                    "description": "Payment with card details",
+                    "merchant_order_id": "000023",
+                    "workflow": "DIRECT",
+                    "additional_data": {
+                      "order": {
+                        "discounts": [
+                          {
+                            "quote_id": "qte_0d91f7ac3b2e"
+                          }
+                        ]
+                      }
+                    }
                   }
                 }
               }
@@ -11105,6 +11149,458 @@
                       "simplified_mode": false
                     },
                     "summary": "Wallet Direct"
+                  },
+                  "Card - With a promotion applied": {
+                    "value": {
+                      "id": "6c44ed29-cc51-4479-a5eb-108afdaadd50",
+                      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                      "description": "Card Payment",
+                      "country": "AR",
+                      "status": "SUCCEEDED",
+                      "sub_status": "APPROVED",
+                      "merchant_order_id": "1744403449",
+                      "created_at": "2025-04-11T20:30:49.825637Z",
+                      "updated_at": "2025-04-11T20:30:51.953868Z",
+                      "amount": {
+                        "captured": 0,
+                        "currency": "ARS",
+                        "refunded": 0,
+                        "value": 22500
+                      },
+                      "applied_promotion": {
+                        "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
+                        "name": "BBVA 10% off - Mother's Day",
+                        "code": null,
+                        "application_id": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12",
+                        "quote_id": "qte_0d91f7ac3b2e",
+                        "discount": {
+                          "type": "PERCENTAGE",
+                          "value": 10
+                        },
+                        "original_amount": {
+                          "currency": "ARS",
+                          "value": 25000
+                        },
+                        "discount_amount": {
+                          "currency": "ARS",
+                          "value": 2500
+                        },
+                        "charged_amount": {
+                          "currency": "ARS",
+                          "value": 22500
+                        }
+                      },
+                      "checkout": {
+                        "session": "7fb7093e-dc67-4c7a-80c5-d25cf5e6ff27",
+                        "sdk_action_required": false
+                      },
+                      "payment_method": {
+                        "vaulted_token": "dcc06b32-43ad-4627-aa75-c631eb50c2ac",
+                        "type": "CARD",
+                        "vault_on_success": true,
+                        "token": "8cabcd5c-1b40-4407-b14a-14ab21741865",
+                        "parent_payment_method_type": null,
+                        "payment_method_detail": {
+                          "card": {
+                            "verify": false,
+                            "capture": true,
+                            "installments": 1,
+                            "installments_plan_id": null,
+                            "first_installment_deferral": 0,
+                            "installments_type": "",
+                            "installment_amount": null,
+                            "soft_descriptor": "",
+                            "authorization_code": "835631",
+                            "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
+                            "voucher": null,
+                            "card_data": {
+                              "holder_name": "Fannie Weissnat",
+                              "iin": "41961111",
+                              "lfd": "0010",
+                              "number_length": 16,
+                              "security_code_length": 1,
+                              "brand": "VISA",
+                              "issuer_name": "METABANK",
+                              "issuer_code": null,
+                              "country_code": "US",
+                              "category": "PREPAID RELOADABLE",
+                              "type": "DEBIT",
+                              "three_d_secure": {
+                                "version": null,
+                                "electronic_commerce_indicator": null,
+                                "cryptogram": null,
+                                "transaction_id": null,
+                                "directory_server_transaction_id": null,
+                                "pares_status": null,
+                                "acs_id": null
+                              },
+                              "fingerprint": "5605f3e4-69e7-4a9f-9646-2ac8c2e33e12",
+                              "expiration_month": 3,
+                              "expiration_year": 24
+                            },
+                            "stored_credentials": {
+                              "reason": null,
+                              "usage": null,
+                              "subscription_agreement_id": null,
+                              "network_transaction_id": null
+                            }
+                          }
+                        }
+                      },
+                      "customer_payer": {
+                        "id": "94121f98-98f7-4d57-aa5f-228401d35b12",
+                        "merchant_customer_id": "1744402154",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "gender": "",
+                        "date_of_birth": "1990-02-28",
+                        "email": "john.doe2@gmail.com",
+                        "nationality": "US",
+                        "ip_address": "192.168.123.167",
+                        "device_fingerprint": "hi88287gbd8d7d782ge....",
+                        "device_fingerprints": [],
+                        "browser_info": {
+                          "user_agent": "string",
+                          "accept_header": "string",
+                          "accept_content": null,
+                          "accept_browser": null,
+                          "color_depth": "string",
+                          "screen_height": "string",
+                          "screen_width": "string",
+                          "javascript_enabled": true,
+                          "java_enabled": null,
+                          "browser_time_difference": null,
+                          "language": "string"
+                        },
+                        "document": {
+                          "document_type": "SSN",
+                          "document_number": "38799992"
+                        },
+                        "phone": {
+                          "number": "5551234567",
+                          "country_code": "1"
+                        },
+                        "billing_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 502",
+                          "country": "US",
+                          "state": "California",
+                          "city": "Los Angeles",
+                          "zip_code": "90001",
+                          "neighborhood": "Test"
+                        },
+                        "shipping_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 502",
+                          "country": "US",
+                          "state": "California",
+                          "city": "Los Angeles",
+                          "zip_code": "90001",
+                          "neighborhood": "Test"
+                        },
+                        "merchant_customer_created_at": "2023-08-05T14:43:58.980718Z"
+                      },
+                      "additional_data": {
+                        "airline": {
+                          "pnr": "1P-2UUGJW",
+                          "legs": [
+                            {
+                              "departure_airport": "EZE",
+                              "departure_datetime": "2014-05-12 13:05:00",
+                              "departure_airport_timezone": "-03:00",
+                              "arrival_airport": "AMS",
+                              "arrival_airport_timezone": "+00:00",
+                              "arrival_datetime": "",
+                              "carrier_code": "KL",
+                              "flight_number": "842",
+                              "fare_basis_code": "HL7LNR",
+                              "fare_class_code": "FR",
+                              "base_fare": 200,
+                              "base_fare_currency": "USD",
+                              "stopover_code": "s"
+                            }
+                          ],
+                          "passengers": [
+                            {
+                              "first_name": "string",
+                              "last_name": "string",
+                              "middle_name": "string",
+                              "type": "s",
+                              "date_of_birth": "stringstri",
+                              "nationality": "US",
+                              "document": {
+                                "document_type": "SSN",
+                                "document_number": "351040753"
+                              },
+                              "country": "US",
+                              "loyalty_number": "string",
+                              "loyalty_tier": "strin",
+                              "email": null,
+                              "phone": null
+                            }
+                          ],
+                          "ticket": {
+                            "ticket_number": "123456",
+                            "e_ticket": false,
+                            "restricted": false,
+                            "total_fare_amount": 80,
+                            "total_tax_amount": 22,
+                            "total_fee_amount": 14,
+                            "issue": null
+                          },
+                          "tickets": null
+                        },
+                        "order": {
+                          "fee_amount": 40.5,
+                          "shipping_amount": 10.35,
+                          "tip_amount": null,
+                          "items": [
+                            {
+                              "id": "123AD",
+                              "name": "Skirt",
+                              "quantity": 3,
+                              "unit_amount": 20,
+                              "category": "Clothes",
+                              "brand": "XYZ",
+                              "sku_code": "8765432109",
+                              "manufacture_part_number": "XYZ123456",
+                              "image_url": "https://cdn.example.com/img/skirt-01.jpg"
+                            }
+                          ],
+                          "account_funding": null,
+                          "tickets": null,
+                          "fulfillment": null,
+                          "discounts": [
+                            {
+                              "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
+                              "promotion_id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
+                              "code": null,
+                              "name": "BBVA 10% off - Mother's Day",
+                              "unit_amount": 2500,
+                              "applied": true,
+                              "application_id": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            }
+                          ]
+                        },
+                        "seller_details": null
+                      },
+                      "transactions": {
+                        "id": "9dc9524a-504d-4eaf-84ef-c881b46aab25",
+                        "type": "PURCHASE",
+                        "status": "SUCCEEDED",
+                        "category": "CARD",
+                        "amount": 22500,
+                        "provider_id": "YUNO_TEST_PAYMENT_GW",
+                        "payment_method": {
+                          "vaulted_token": "dcc06b32-43ad-4627-aa75-c631eb50c2ac",
+                          "type": "CARD",
+                          "vault_on_success": true,
+                          "token": "8cabcd5c-1b40-4407-b14a-14ab21741865",
+                          "parent_payment_method_type": null,
+                          "detail": {
+                            "card": {
+                              "verify": false,
+                              "capture": true,
+                              "installments": 1,
+                              "installments_plan_id": null,
+                              "first_installment_deferral": 0,
+                              "installments_type": "",
+                              "installment_amount": null,
+                              "soft_descriptor": "",
+                              "authorization_code": "835631",
+                              "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
+                              "voucher": null,
+                              "card_data": {
+                                "holder_name": "Fannie Weissnat",
+                                "iin": "41961111",
+                                "lfd": "0010",
+                                "number_length": 16,
+                                "security_code_length": 1,
+                                "brand": "VISA",
+                                "issuer_name": "METABANK",
+                                "issuer_code": null,
+                                "country_code": "US",
+                                "category": "PREPAID RELOADABLE",
+                                "type": "DEBIT",
+                                "three_d_secure": {
+                                  "version": null,
+                                  "electronic_commerce_indicator": null,
+                                  "cryptogram": null,
+                                  "transaction_id": null,
+                                  "directory_server_transaction_id": null,
+                                  "pares_status": null,
+                                  "acs_id": null
+                                },
+                                "fingerprint": "5605f3e4-69e7-4a9f-9646-2ac8c2e33e12",
+                                "expiration_month": 3,
+                                "expiration_year": 24
+                              },
+                              "stored_credentials": {
+                                "reason": null,
+                                "usage": null,
+                                "subscription_agreement_id": null,
+                                "network_transaction_id": null
+                              }
+                            }
+                          }
+                        },
+                        "response_code": "SUCCEEDED",
+                        "response_message": "Transaction successful",
+                        "reason": null,
+                        "description": "Test Payment",
+                        "merchant_reference": "1744403449",
+                        "provider_data": {
+                          "id": "YUNO_TEST_PAYMENT_GW",
+                          "transaction_id": "04d94195-a6ce-455a-b027-5f237f91a576",
+                          "account_id": "",
+                          "status": "SUCCEEDED",
+                          "sub_status": "",
+                          "status_detail": "",
+                          "response_message": null,
+                          "response_code": null,
+                          "raw_response": {
+                            "amount": {
+                              "currency": "ARS",
+                              "value": 22500
+                            },
+                            "merchantAccount": "YunoPaymentsECOM",
+                            "reference": "34343434",
+                            "status": "received"
+                          },
+                          "third_party_transaction_id": "",
+                          "third_party_account_id": null,
+                          "iso8583_response_code": null,
+                          "iso8583_response_message": null
+                        },
+                        "connection_data": {
+                          "id": "90defca1-c913-4894-965c-ed536b65951a",
+                          "name": null
+                        },
+                        "created_at": "2025-04-11T20:30:51.097215Z",
+                        "updated_at": "2025-04-11T20:30:51.199007Z"
+                      },
+                      "transactions_history": [
+                        {
+                          "id": "9dc9524a-504d-4eaf-84ef-c881b46aab25",
+                          "type": "PURCHASE",
+                          "status": "SUCCEEDED",
+                          "category": "CARD",
+                          "amount": 22500,
+                          "provider_id": "YUNO_TEST_PAYMENT_GW",
+                          "payment_method": {
+                            "vaulted_token": "dcc06b32-43ad-4627-aa75-c631eb50c2ac",
+                            "type": "CARD",
+                            "vault_on_success": true,
+                            "token": "8cabcd5c-1b40-4407-b14a-14ab21741865",
+                            "parent_payment_method_type": null,
+                            "detail": {
+                              "card": {
+                                "verify": false,
+                                "capture": true,
+                                "installments": 1,
+                                "installments_plan_id": null,
+                                "first_installment_deferral": 0,
+                                "installments_type": "",
+                                "installment_amount": null,
+                                "soft_descriptor": "",
+                                "authorization_code": "835631",
+                                "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
+                                "voucher": null,
+                                "card_data": {
+                                  "holder_name": "Fannie Weissnat",
+                                  "iin": "41961111",
+                                  "lfd": "0010",
+                                  "number_length": 16,
+                                  "security_code_length": 1,
+                                  "brand": "VISA",
+                                  "issuer_name": "METABANK",
+                                  "issuer_code": null,
+                                  "country_code": "US",
+                                  "category": "PREPAID RELOADABLE",
+                                  "type": "DEBIT",
+                                  "three_d_secure": {
+                                    "version": null,
+                                    "electronic_commerce_indicator": null,
+                                    "cryptogram": null,
+                                    "transaction_id": null,
+                                    "directory_server_transaction_id": null,
+                                    "pares_status": null,
+                                    "acs_id": null
+                                  },
+                                  "fingerprint": "5605f3e4-69e7-4a9f-9646-2ac8c2e33e12",
+                                  "expiration_month": 3,
+                                  "expiration_year": 24
+                                },
+                                "stored_credentials": {
+                                  "reason": null,
+                                  "usage": null,
+                                  "subscription_agreement_id": null,
+                                  "network_transaction_id": null
+                                }
+                              }
+                            }
+                          },
+                          "response_code": "SUCCEEDED",
+                          "response_message": "Transaction successful",
+                          "reason": null,
+                          "description": "Test Payment",
+                          "merchant_reference": "1744403449",
+                          "provider_data": {
+                            "id": "YUNO_TEST_PAYMENT_GW",
+                            "transaction_id": "04d94195-a6ce-455a-b027-5f237f91a576",
+                            "account_id": "",
+                            "status": "SUCCEEDED",
+                            "sub_status": "",
+                            "status_detail": "",
+                            "response_message": null,
+                            "response_code": null,
+                            "raw_response": {
+                              "amount": {
+                                "currency": "ARS",
+                                "value": 22500
+                              },
+                              "merchantAccount": "YunoPaymentsECOM",
+                              "reference": "34343434",
+                              "status": "received"
+                            },
+                            "third_party_transaction_id": "",
+                            "third_party_account_id": null,
+                            "iso8583_response_code": null,
+                            "iso8583_response_message": null
+                          },
+                          "connection_data": {
+                            "id": "90defca1-c913-4894-965c-ed536b65951a",
+                            "name": null
+                          },
+                          "created_at": "2025-04-11T20:30:51.097215Z",
+                          "updated_at": "2025-04-11T20:30:51.199007Z"
+                        }
+                      ],
+                      "callback_url": "http://www.google.com/?checkoutSession=7fb7093e-dc67-4c7a-80c5-d25cf5e6ff27",
+                      "workflow": "SDK_CHECKOUT",
+                      "metadata": [
+                        {
+                          "key": "ID",
+                          "value": "1234"
+                        }
+                      ],
+                      "fraud_screening": null,
+                      "payment_link_id": "",
+                      "subscription_code": null,
+                      "routing_rules": {
+                        "smart_routing": false,
+                        "monitors": false,
+                        "condition": {
+                          "id": 146526,
+                          "name": null,
+                          "description": null
+                        }
+                      },
+                      "simplified_mode": false
+                    }
                   }
                 },
                 "schema": {
@@ -11274,6 +11770,106 @@
                               "type": "integer",
                               "example": 15000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
                             }
                           }
                         },
@@ -11863,7 +12459,52 @@
                                 "account_funding": {},
                                 "tickets": {},
                                 "fulfillment": {},
-                                "discounts": {}
+                                "discounts": {
+                                  "type": "array",
+                                  "description": "Specifies the order's discounts array of objects: the merchant's own entries first, untouched, then, only when a promotion applied, one entry Yuno appends last with the promotion's breakdown. See [Promotions](/docs/payment-features/promotions) for details.",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "description": "ID of the discount (MAX 255; MIN 1). For a merchant entry, the discount's own ID; for the entry Yuno appends when a promotion applied, the promotion's ID.",
+                                        "example": "10OFF"
+                                      },
+                                      "name": {
+                                        "type": "string",
+                                        "description": "Name of the discount (MAX 255; MIN 1). For a merchant entry, the discount's own name; for the entry Yuno appends, the promotion's name.",
+                                        "example": "Offer"
+                                      },
+                                      "unit_amount": {
+                                        "type": "number",
+                                        "description": "The unit amount of the discount (multiple of 0.0001). For the entry Yuno appends when a promotion applied, the discount amount, always positive.",
+                                        "format": "float",
+                                        "example": 100
+                                      },
+                                      "promotion_id": {
+                                        "type": "string",
+                                        "description": "The promotion's ID. Present only on the entry Yuno appends when a promotion applied.",
+                                        "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                                      },
+                                      "code": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                                        "example": null
+                                      },
+                                      "applied": {
+                                        "type": "boolean",
+                                        "description": "`true` on the entry Yuno appends when a promotion applied.",
+                                        "example": true
+                                      },
+                                      "application_id": {
+                                        "type": "string",
+                                        "description": "Yuno's identifier for this use of the promotion on this payment. Present only on the entry Yuno appends when a promotion applied.",
+                                        "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                                      }
+                                    }
+                                  }
+                                }
                               }
                             },
                             "seller_details": {}
@@ -12596,6 +13237,106 @@
                               "type": "integer",
                               "example": 20000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
                             }
                           }
                         },
@@ -13592,6 +14333,106 @@
                               "type": "integer",
                               "example": 2000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
                             }
                           }
                         },
@@ -14831,6 +15672,106 @@
                             }
                           }
                         },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -15919,6 +16860,106 @@
                             }
                           }
                         },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -16988,6 +18029,106 @@
                             }
                           }
                         },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -17989,6 +19130,106 @@
                             }
                           }
                         },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -18987,6 +20228,106 @@
                               "type": "integer",
                               "example": 5000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
                             }
                           }
                         },
@@ -20023,6 +21364,106 @@
                             }
                           }
                         },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -21018,6 +22459,106 @@
                               "type": "integer",
                               "example": 5000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
                             }
                           }
                         },
@@ -22023,6 +23564,106 @@
                               "type": "integer",
                               "example": 5000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
                             }
                           }
                         },
@@ -23043,6 +24684,106 @@
                             }
                           }
                         },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -23607,6 +25348,106 @@
                               "type": "integer",
                               "example": 100,
                               "default": 0
+                            }
+                          }
+                        },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
                             }
                           }
                         },
@@ -24690,6 +26531,106 @@
                             }
                           }
                         },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -25322,6 +27263,106 @@
                               "type": "integer",
                               "example": 500,
                               "default": 0
+                            }
+                          }
+                        },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
                             }
                           }
                         },
@@ -26357,6 +28398,106 @@
                               "type": "integer",
                               "example": 5000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "applied_promotion": {
+                          "type": "object",
+                          "description": "The promotion Yuno applied to this payment, present only when the payment carried a `quote_id` and Yuno applied the quoted promotion; absent (never `null`) otherwise. See [Promotions](/docs/payment-features/promotions) for details.",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The applied promotion's identifier.",
+                              "example": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The applied promotion's name.",
+                              "example": "BBVA 10% off - Mother's Day"
+                            },
+                            "code": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Promotion code. Always `null`: promotion codes are not available yet.",
+                              "example": null
+                            },
+                            "application_id": {
+                              "type": "string",
+                              "description": "Yuno's identifier for this use of the promotion on this payment.",
+                              "example": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
+                            },
+                            "quote_id": {
+                              "type": "string",
+                              "description": "The quote the payment was charged with.",
+                              "example": "qte_0d91f7ac3b2e"
+                            },
+                            "discount": {
+                              "type": "object",
+                              "description": "The promotion's discount definition.",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PERCENTAGE",
+                                    "FIXED"
+                                  ],
+                                  "description": "Whether the discount is a percentage or a fixed amount.",
+                                  "example": "PERCENTAGE"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discount value: a percentage (0-100) for `PERCENTAGE`, or a currency amount for `FIXED`.",
+                                  "example": 10
+                                }
+                              }
+                            },
+                            "original_amount": {
+                              "type": "object",
+                              "description": "The amount before the discount, the one sent on the quote.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the original amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount before the discount.",
+                                  "example": 25000
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "The amount Yuno discounted, always positive.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the discount amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The discounted amount.",
+                                  "example": 2500
+                                }
+                              }
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "description": "The amount charged: `original_amount` minus `discount_amount`. Equals the payment's `amount`.",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "The currency of the charged amount (ISO 4217, 3 chars).",
+                                  "example": "ARS"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "The amount charged.",
+                                  "example": 22500
+                                }
+                              }
                             }
                           }
                         },
