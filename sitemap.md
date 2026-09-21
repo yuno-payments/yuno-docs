@@ -364,7 +364,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Onboarding Statuses](https://docs.y.uno/reference/recipients-for-marketplace/onboarding-statuses-and-response-codes.md)
 - [Create Recipient](https://docs.y.uno/reference/recipients-for-marketplace/create-recipient-1.md)
 - [Get Recipient](https://docs.y.uno/reference/recipients-for-marketplace/get-recipient.md)
-- [List Recipients](https://docs.y.uno/reference/recipients-for-marketplace/list-recipients.md)
+- [Retrieve Recipient by Merchant Recipient ID](https://docs.y.uno/reference/recipients-for-marketplace/retrieve-recipient-by-merchant-recipient-id.md)
 - [Update Recipient](https://docs.y.uno/reference/recipients-for-marketplace/update-recipient-1.md)
 - [Delete Recipient](https://docs.y.uno/reference/recipients-for-marketplace/delete-recipient.md)
 - [Create Onboarding](https://docs.y.uno/reference/recipients-for-marketplace/create-onboarding.md)
