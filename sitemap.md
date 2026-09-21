@@ -444,6 +444,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Retrieve Account Group](https://docs.y.uno/reference/organizations/retrieve-account-group.md)
 - [Update Account Group](https://docs.y.uno/reference/organizations/update-account-group.md)
 - [Delete Account Group](https://docs.y.uno/reference/organizations/delete-account-group.md)
+- [Remove Account from Group](https://docs.y.uno/reference/organizations/remove-account-from-group.md)
 - [List Accounts of Group](https://docs.y.uno/reference/organizations/list-accounts-of-group.md)
 
 #### Accounts
