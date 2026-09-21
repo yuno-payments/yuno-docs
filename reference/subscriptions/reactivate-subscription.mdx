@@ -4,33 +4,40 @@ openapi: "/openapi/subscriptions/reactivate-subscription.json POST /subscription
 description: "Returns a canceled or completed subscription to ACTIVE, keeping the same subscription."
 ---
 
-Use this endpoint for win-back campaigns. A subscription with billing cycles left returns to ACTIVE keeping its `id`, its `billing_cycles` counters, its subscription agreement, its vaulted payment method and a single continuous payment history. Nothing is duplicated, so a returning customer is not reported as a new signup. One that used every cycle it had gets a successor instead, linked back to it.
+Use this endpoint for win-back campaigns. The subscription returns to ACTIVE keeping its `id`, its `billing_cycles` counters, its subscription agreement, its vaulted payment method and a single continuous payment history. Nothing is duplicated, so a returning customer is not reported as a new signup.
 
 ## Which subscriptions can be reactivated
 
 | Current `status` | Result |
 | --- | --- |
 | `CANCELED` | Reactivated. |
-| `COMPLETED` | Reactivated if billing cycles remain. If none do, a successor subscription is created instead — see below. |
+| `COMPLETED` | Reactivated. If it used every billing cycle it had, raise the limit in the same call — see below. |
 | Any other status | `409`. A paused subscription is resumed with [Resume Subscription](/reference/subscriptions/resume-subscription) instead. |
 
 ## When the billing cycles are used up
 
-A subscription that used every cycle in `billing_cycles.total` is finished: its contract ran to the end, and returning it to life would only complete it again on the first charge.
+A subscription that used every cycle in `billing_cycles.total` needs a larger limit before it can come back, because returning it to ACTIVE as it is would only complete it again on the first charge. Reactivating it without a new limit returns `409` and names the number it needs: `The subscription exhausted its 12 billing cycles. Send billing_cycles.total greater than 12 in the reactivate body`.
 
-So this endpoint creates a **successor** instead. It is a new subscription with a new `id`, carrying the same plan, the same customer and the same vaulted payment method, and it points back at the finished one through `previous_subscription_code`. The finished subscription stays `COMPLETED`, with its history intact.
+Send that number in the reactivate body and the subscription comes back in the same call. It keeps its `id`, its history and its counters, and only the limit changes. No second subscription is created.
 
-The successor's cycle limit follows the body:
+```json
+{
+  "billing_cycles": {
+    "total": 24
+  }
+}
+```
 
-| `billing_cycles.total` | The successor gets |
+The field only raises the limit:
+
+| `billing_cycles.total` | Result |
 | --- | --- |
-| omitted | the same limit the finished subscription had |
-| a number | that limit |
-| `null` | no limit — it bills until it is canceled |
+| greater than the current total | the limit is raised and the subscription is reactivated |
+| equal to or lower than the current total | `400`: `billing_cycles.total must be greater than the current total (12)` |
+| sent to a subscription that has no cycle limit | `400`: `billing_cycles.total cannot be set on a subscription without a billing cycle limit` |
+| omitted, or sent as `null` | the limit stays as it is, so a subscription that used it up gets the `409` above |
 
-Retrying the same call hands back the successor it already created rather than a second one. A further win-back later on reactivates the successor, which chains from there.
-
-Sending `billing_cycles.total` for a subscription that still has cycles left returns `400`: there is nothing to size.
+A subscription that still has cycles left does not need the field, but it accepts it: the reactivated subscription then runs on the longer limit.
 
 A subscription whose `availability.finish_at` has passed is refused with `400`. Extend the window before reactivating.
 
