@@ -43,7 +43,9 @@ The same harness also fronts the **hosted Payment Link checkout**: it serves the
 │  /payment?       │     │    /v<n>/pages    → CARD    │     │  - <env>.y.uno (BFF)│
 │  session=…       │     │    /challenge     → 3DS     │     │  - api[-env].y.uno  │
 │                  │     │    /icons,/css    → STATIC  │     │                     │
-│                  │     │    /flags,/*.png  → ICONS   │     │                     │
+│                  │     │    /flags,/*.png  → ICONS   │     │  - prod.y.uno       │
+│                  │     │  /sdk-static-bundles-ms/*   │     │    (fonts)          │
+│                  │     │                   → FONTS   │     │                     │
 │                  │     │    else           → SDK     │     │                     │
 └──────────────────┘     └────────────────────────────┘     └─────────────────────┘
 ```
@@ -76,6 +78,7 @@ A single Node.js process built on three libraries:
    - Card micro-app paths (`/v<semver>/pages/*`, `/v<semver>/assets/*`) → `SDK_CARD_UPSTREAM`.
    - Static-asset paths (`/icons/*`, `/css/*`, `/brands/*`, `/c2p/*`) → `SDK_STATIC_UPSTREAM` (`sdk.prod.y.uno`).
    - Icon-asset paths (`/sdk-web/*`, `/flags/*`, and bare root brand images like `/Visa.png`, `/boleto_logosimbolo.png`) → `SDK_ICONS_UPSTREAM` (`icons.prod.y.uno`).
+   - Font paths (`/sdk-static-bundles-ms/*`) → `SDK_STATIC_BUNDLES_UPSTREAM` (`prod.y.uno`). Since SDK 1.10 the SDK loads its font stylesheet from `prod.y.uno/sdk-static-bundles-ms/v1/static/css/…`, and the stylesheet loads its `woff2` files with relative `../fonts/` URLs under the same prefix.
    - Everything else → `SDK_UPSTREAM`.
 
    The static / icons branches exist because the SDK used to load these straight from `icons.prod.y.uno` / `sdk.prod.y.uno`, bypassing the white-label host. Recent SDK builds host-swap them onto the proxy origin (path preserved), so the proxy must forward them back out to the two CDNs by path prefix. These upstreams are always `*.prod.y.uno` regardless of the target environment.
@@ -245,13 +248,14 @@ npm install express http-proxy node-fetch@2 dotenv
 | `SDK_3DS_UPSTREAM` | `/challenge.html`, `/redirect.html`, `/session-id.html`, `/assets/(challenge\|redirect\|session-id\|validate-url)*` |
 | `SDK_STATIC_UPSTREAM` | `/icons/*`, `/css/*`, `/brands/*`, `/c2p/*` (host-swapped CDN assets) |
 | `SDK_ICONS_UPSTREAM` | `/sdk-web/*`, `/flags/*`, bare root brand images (`/Visa.png`, …) |
+| `SDK_STATIC_BUNDLES_UPSTREAM` | `/sdk-static-bundles-ms/*` (font stylesheet and font files, SDK 1.10+) |
 | `BACKEND_URL` | `/v1/*`, `/v2/*` (REST API) |
 | `BACKEND_WS_URL` | `/checkout-websocket-notification-ms/ws/{payment,enrollment}` (WebSocket only) |
 | `BASE_PATH` | _(optional)_ sub-path the proxy is mounted under, stripped before routing; empty = root |
 
 </div>
 
-`SDK_CARD_UPSTREAM` and `SDK_3DS_UPSTREAM` default to `SDK_UPSTREAM` when unset, and `BACKEND_WS_URL` defaults to `BACKEND_URL`. Keep this fallback behaviour, it makes single-env testing easier. `SDK_STATIC_UPSTREAM` / `SDK_ICONS_UPSTREAM` are the exception: they default to the fixed `sdk.prod.y.uno` / `icons.prod.y.uno` CDNs (the SDK host-swaps these from `*.prod.y.uno` regardless of environment), **not** to `SDK_UPSTREAM`. `CHECKOUT_UPSTREAM` / `CHECKOUT_BFF_UPSTREAM` default to sandbox (`checkout.sandbox.y.uno` / `sandbox.y.uno`); the checkout-asset rule is checked **before** the SDK icon rules so the CRA bundle and root files (`/favicon.ico`, …) don't fall through to `icons.prod.y.uno`.
+`SDK_CARD_UPSTREAM` and `SDK_3DS_UPSTREAM` default to `SDK_UPSTREAM` when unset, and `BACKEND_WS_URL` defaults to `BACKEND_URL`. Keep this fallback behaviour, it makes single-env testing easier. `SDK_STATIC_UPSTREAM` / `SDK_ICONS_UPSTREAM` / `SDK_STATIC_BUNDLES_UPSTREAM` are the exception: they default to the fixed `sdk.prod.y.uno` / `icons.prod.y.uno` / `prod.y.uno` hosts (the SDK host-swaps these from `*.prod.y.uno` regardless of environment), **not** to `SDK_UPSTREAM`. `CHECKOUT_UPSTREAM` / `CHECKOUT_BFF_UPSTREAM` default to sandbox (`checkout.sandbox.y.uno` / `sandbox.y.uno`); the checkout-asset rule is checked **before** the SDK icon rules so the CRA bundle and root files (`/favicon.ico`, …) don't fall through to `icons.prod.y.uno`.
 
 <Note>
   If you need to emulate a partner gateway mounted under a sub-path, register a strip middleware **before** all routes that rewrites `req.url` / `req.originalUrl` to drop `BASE_PATH` (and apply the same strip on the `http.Server` `upgrade` handler). Every route below then sees root-relative paths. Skip it entirely when `BASE_PATH` is empty. See [`BASE_PATH`: sub-path mounting](#base_path--sub-path-mounting).
@@ -393,9 +397,30 @@ Serve `index.html` at `/` and a `/whitelabel-info` JSON endpoint that returns th
 - **Streaming, not buffering, for assets.** `upstream.body.pipe(res)` keeps memory flat even for multi-MB bundles.
 - **Version normalization is `SDK_UPSTREAM`-only.** Card and 3DS micro-apps have their own version segments; rewriting them breaks the upstream URL. The static / icons CDNs aren't versioned, so they aren't normalized either.
 - **Static CDN assets are host-swapped too.** Recent SDK builds rewrite their hard-coded `icons.prod.y.uno` / `sdk.prod.y.uno` asset URLs onto the white-label host, so the proxy must forward `/icons`, `/css`, `/brands`, `/c2p` → `sdk.prod.y.uno` and `/sdk-web`, `/flags`, bare `/*.png` → `icons.prod.y.uno`. Older SDK builds load these straight from the CDN and never reach the proxy. Exercising this end-to-end needs a recent SDK build **and** a partner page that inits with `{ apiUrl: '<proxy origin>' }` (or `assetUrl`).
+- **Fonts need their own route from SDK 1.10.** The SDK loads its font stylesheet from `prod.y.uno/sdk-static-bundles-ms/…`, host-swapped onto the white-label host. Without a `/sdk-static-bundles-ms/*` → `prod.y.uno` rule, the request falls through to `SDK_UPSTREAM` and returns `404`. The SDK then renders in the system font, with no error.
 - **Don't forward the partner page's cookies to the API.** Strip `Cookie` on `/v1`/`/v2` forwards. The browser's localhost cookies (session, analytics, URL-valued ones like `spage`) don't belong on a cross-origin call to `api.y.uno` and can trip the upstream WAF with a `403`. The API authenticates via the public API key.
 - **WebSocket auth is whatever headers `http-proxy` sees.** Do **not** strip `cookie` or `authorization` from WS upgrades; the cookie strip applies only to the HTTP `/v1`/`/v2` backend forwards.
 - `.env` is gitignored. Always keep `.env.example` in sync; it is the spec for anyone cloning the repo.
+
+## Routes a partner proxy must forward
+
+A production partner gateway needs the same split as this harness. Every path arrives under the partner's base path, prefixed exactly as `apiUrl` / `assetUrl` carry it. Check this list before upgrading the SDK line.
+
+<div className="nowrap-col1-table dense-table">
+
+| Path | Forward to | Needed from |
+| :--- | :--- | :--- |
+| `/v<major.minor>/*` (SDK bundle and chunks) | `sdk-web[.<env>].y.uno` | Always |
+| `/v<card-semver>/pages/*`, `/v<card-semver>/assets/*` | `sdk-web-card[.<env>].y.uno` | Always |
+| `/challenge.html`, `/redirect.html`, `/session-id.html`, `/assets/(challenge\|redirect\|session-id\|validate-url)*` | `sdk-3ds[.<env>].y.uno` | 3DS |
+| `/v1/*`, `/v2/*` | `api[-<env>].y.uno` | Always |
+| `/checkout-websocket-notification-ms/ws/*` (WebSocket) | `[<env>.]y.uno` | Always |
+| `/icons/*`, `/css/*`, `/brands/*`, `/c2p/*` | `sdk.prod.y.uno` | Always |
+| `/sdk-web/*`, `/flags/*`, bare brand images (`/Visa.png`, …) | `icons.prod.y.uno` | Always |
+| `/sdk-static-bundles-ms/*` | `prod.y.uno` | **SDK 1.10+** |
+| `/payment`, `/payment/status`, `/enroll`, `/static/*`, `/checkout-bff/*` | `checkout[.<env>].y.uno` / `<env>.y.uno` | Payment Link white-label |
+
+</div>
 
 ## Verification checklist
 
