@@ -252,6 +252,12 @@
                           "type": "integer",
                           "example": 1,
                           "default": 0
+                        },
+                        "monthly_billing_day": {
+                          "type": "integer",
+                          "nullable": true,
+                          "description": "The day of the month billing is anchored to on a MONTH-frequency subscription — set by RESTART (on Update, a plan change, resume or reactivate) or by sending Update Subscription's own frequency.monthly_billing_day. Present only once stamped; absent, not null, before that and on every other frequency type.",
+                          "example": 15
                         }
                       }
                     },
@@ -421,6 +427,22 @@
                         "until": {
                           "type": "string",
                           "description": "When the ladder stops — `billing_cycles.next_at` plus 7 days. Moves with `next_at` at every renewal."
+                        },
+                        "stopped": {
+                          "type": "boolean",
+                          "description": "Present only when the subscription is PAST_DUE or has cancel_scheduled pending."
+                        },
+                        "attempts_made": {
+                          "type": "integer",
+                          "description": "Present only when the subscription is PAST_DUE or has cancel_scheduled pending."
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "description": "RECOVERED, EXHAUSTED or ABANDONED. Present only when the subscription is PAST_DUE or has cancel_scheduled pending."
+                        },
+                        "next_retry_at": {
+                          "type": "string",
+                          "description": "Present only when the subscription is PAST_DUE or has cancel_scheduled pending."
                         }
                       }
                     },
@@ -529,6 +551,7 @@
                     },
                     "previous_subscription_id": {
                       "type": "string",
+                      "nullable": true,
                       "description": "Only present when this subscription was created by a plan change (switching an existing subscription to a different plan)."
                     },
                     "phases": {
@@ -734,6 +757,170 @@
                     "updated_at": {
                       "type": "string",
                       "example": "2023-12-16T21:00:54.786342Z"
+                    },
+                    "refund_rule": {
+                      "type": "object",
+                      "description": "The stored refund rule used to resolve a CUSTOM cancel refund when the cancel request sends no refund_amount of its own. Present only when one is configured; omitted, not null, otherwise. Available to organizations enabled for it; contact Yuno.",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "PERCENT",
+                            "FIXED"
+                          ],
+                          "description": "PERCENT resolves the refund as a percentage of the charged amount; FIXED resolves it to a fixed amount.",
+                          "example": "FIXED"
+                        },
+                        "percent": {
+                          "type": "number",
+                          "description": "Required, and only allowed, when type is PERCENT (0-100).",
+                          "example": 50
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Required, and only allowed, when type is FIXED.",
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "example": 10000
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "Must match the subscription's own currency.",
+                              "example": "COP"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pause_until": {
+                      "type": "string",
+                      "description": "When the subscription is scheduled to resume automatically. Present only on a subscription currently paused with a duration (pause_cycles or pause_until sent at pause); absent, not null, on every other read.",
+                      "example": "2026-10-15T15:54:22.780166Z"
+                    },
+                    "cancel_scheduled": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "null when no cancellation is pending.",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "example": "AFTER_CYCLES"
+                        },
+                        "after_cycles": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "at": {
+                          "type": "string"
+                        },
+                        "requested_at": {
+                          "type": "string"
+                        },
+                        "past_due_behavior": {
+                          "type": "string",
+                          "example": "EXHAUST_RETRIES"
+                        }
+                      }
+                    },
+                    "refund": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "null when refund was NONE or omitted. Present on the cancel response and on every later read once computed.",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "example": "PRORATED"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "value": {
+                              "type": "number",
+                              "example": 20.0
+                            }
+                          }
+                        },
+                        "unused_days": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "period_days": {
+                          "type": "integer",
+                          "example": 30
+                        },
+                        "basis": {
+                          "type": "object",
+                          "properties": {
+                            "billing_cycle": {
+                              "type": "integer",
+                              "example": 4
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "example": 30.0
+                                }
+                              }
+                            },
+                            "payment_id": {
+                              "type": "string",
+                              "description": "null for a $0-phase quote with no captured payment."
+                            },
+                            "charged_at": {
+                              "type": "string",
+                              "description": "null for a $0-phase quote with no captured payment."
+                            }
+                          }
+                        },
+                        "execution": {
+                          "type": "string",
+                          "example": "MERCHANT"
+                        },
+                        "quoted_at": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "unpaid_cycle": {
+                      "type": "object",
+                      "description": "Present only when the current billing cycle is PAST_DUE and has not settled.",
+                      "properties": {
+                        "cycle_number": {
+                          "type": "integer"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        "attempts": {
+                          "type": "integer"
+                        },
+                        "last_failure_code": {
+                          "type": "string"
+                        }
+                      }
                     }
                   }
                 }
