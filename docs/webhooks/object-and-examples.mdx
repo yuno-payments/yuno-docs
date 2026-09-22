@@ -32,7 +32,7 @@ The JSON attributes for Yuno webhooks are listed below:
 
   <Expandable title="properties">
     <ParamField body="idempotency_key" type="string">
-      Identifier used to skip duplicate deliveries. It stays stable across every retry of the same event. On `subscription.*` events it identifies the subscription rather than the event, so de-duplicate those on `type_event` plus this key. See [De-duplication](/docs/webhooks#de-duplication) for coverage details.
+      Identifier used to skip duplicate deliveries. It stays stable across every retry of the same event. On `subscription.*` events it identifies the subscription rather than the event, so de-duplicate those on `type_event` plus this key. For `payment.split_update`, de-duplicate on `split_update.idempotency_key` instead. See [De-duplication](/docs/webhooks#de-duplication) for coverage details.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -40,6 +40,62 @@ The JSON attributes for Yuno webhooks are listed below:
 <ParamField body="x-hmac-signature" type="string">
   Optional. The HMAC-SHA256 signature sent in the HTTP header for webhook verification when HMAC authentication is enabled.
 </ParamField>
+
+## Split update webhooks
+
+These abbreviated examples show only the fields needed to interpret `payment.split_update`; the normal payment fields are also included. This event requires explicit subscription and is pending production catalog availability.
+
+In v2, the envelope identifies `type_event: "payment.split_update"`, and the operation block is `data.split_update`:
+
+```json
+{
+  "type": "payment",
+  "type_event": "payment.split_update",
+  "version": 2,
+  "retry": 0,
+  "data": {
+    "split_update": {
+      "idempotency_key": "4a518553-a6e7-4717-a415-06084ea85c99",
+      "updated_at": "2026-09-22T04:20:00Z"
+    },
+    "payment": {
+      "transactions": {
+        "split_marketplace": []
+      }
+    }
+  }
+}
+```
+
+This example clears the split, so the operation's `split_marketplace` is `[]`. An applied replacement carries that operation's split entries instead. `transactions` is a single object, not an array.
+
+Legacy v1 sends the payment body without the v2 envelope or `type_event`. Identify this event by the `split_update` block next to `payment`:
+
+```json
+{
+  "split_update": {
+    "idempotency_key": "4a518553-a6e7-4717-a415-06084ea85c99",
+    "updated_at": "2026-09-22T04:20:00Z"
+  },
+  "payment": {
+    "transactions": {
+      "split_marketplace": []
+    }
+  }
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `split_update.idempotency_key` | The original split update request key. Use it to distinguish operations and de-duplicate delivery, scoped by account and event type. |
+| `split_update.updated_at` | The operation's recorded completion time, preserved on repeated resolution and delayed notification. |
+| `payment.transactions.split_marketplace` | The selected operation's split snapshot, including `[]` for a clear. |
+
+If `transactions_history` is enabled, its entry for the affected transaction carries the same operation split. The event does not enable history or replace the payment-level `payment.split_marketplace`; do not use that payment-level field as this operation's snapshot. Other fields reflect the payment read when the notification is prepared and may include later changes. Use `GET /v1/payments/{payment_id}` for the latest payment state.
+
+The operation snapshot is not guaranteed to serialize identically to a later payment read. Numeric scale can differ (for example, `5` versus `5.0`), and a liability object containing only `chargebacks` can be represented differently by the live-payment mapping. Compare values and their meaning rather than requiring byte-for-byte JSON equality. These representation differences do not identify a new split operation.
+
+Only this event adds `split_update`; purchase and refund payloads do not acquire the block. See [Split update notifications](/docs/webhooks#split-update-notifications) for subscription, emission, ordering, and delivery behavior.
 
 ## Examples
 
