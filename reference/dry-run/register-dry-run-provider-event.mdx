@@ -45,6 +45,19 @@ Use `X-Idempotency-Key` for safe retries. Same key + same payload returns the or
 
 ## Correlation
 
-- `merchant_reference` is always required and uniquely identifies the order on your side. Yuno uses it to resolve the event to a payment asynchronously when `payment_id` is not supplied.
+- `merchant_reference` uniquely identifies the order on your side. Yuno uses it to resolve the event to a payment asynchronously when `payment_id` is not supplied.
+- `X-Orchestrator-Dry-Run-Id` is a request header you can send as an alternative to `merchant_reference`. It must be 3 to 255 characters. When you send both `X-Orchestrator-Dry-Run-Id` and `merchant_reference`, they must match, otherwise the request is rejected.
 - `payment_id`, if supplied, is resolved immediately. If the id is unknown for your account the request returns `404 PAYMENT_NOT_FOUND`.
 - `provider_id` + `payment_method_type` optionally identify which integration surface the dry-run exercises (for example `stripe` + `CREDIT_CARD`). If omitted, Yuno uses the information from the associated payment.
+- `operation_type` on each event identifies the operation being simulated: `PURCHASE`, `AUTHORIZE`, `CAPTURE`, `CANCEL`, `REFUND`, `CHARGEBACK`, `THREE_D_SECURE`, or `ENROLLMENT`. Use `ENROLLMENT` when the exchange corresponds to saving a payment method rather than a payment.
+
+## Pairing an enrollment
+
+To validate an enrollment instead of a payment, use the same `X-Orchestrator-Dry-Run-Id` on both legs:
+
+1. Call the enrollment endpoint (direct or checkout) with the headers `X-Dry-Run: true` and `X-Orchestrator-Dry-Run-Id: <your id>`. Yuno accepts the request, makes no provider enrollment, sends no webhook, and stores it for comparison.
+2. Call `POST /v1/dry-run/provider-events` with the provider exchange for the enrollment, `operation_type` set to `ENROLLMENT`, and the same `X-Orchestrator-Dry-Run-Id` (or a `merchant_reference` equal to it).
+
+Yuno pairs the two records and grades the enrollment request the same way it grades a payment.
+
+When Yuno makes no provider request for the enrollment (a provider token import, or card data enrolled without a provider connection), there is nothing to compare against, so the comparison stays partial.
