@@ -37,6 +37,7 @@ Choose your platform and follow the steps to start processing your first payment
 
     // Create checkout session on your backend
     // Your backend calls: POST https://api-sandbox.y.uno/v1/checkout/sessions
+    // Backend adds: account_id, merchant_order_id, payment_description (server-side)
     const session = await fetch('/api/create-session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -54,7 +55,9 @@ Choose your platform and follow the steps to start processing your first payment
     countryCode: 'US',
     async yunoCreatePayment(oneTimeToken) {
         // Your backend calls: POST https://api-sandbox.y.uno/v1/payments
-        // with { payment_method: { token: oneTimeToken }, checkout_session: ... }
+        // with header: X-Idempotency-Key
+        // and body: { account_id, description, country, merchant_order_id, amount,
+        //             checkout: { session }, payment_method: { token: oneTimeToken }, ... }
         const payment = await fetch('/api/process-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -350,21 +353,25 @@ Your backend must implement two API endpoints to work with Yuno:
 Before displaying the payment UI, your backend creates a checkout session:
 
 - **Endpoint**: `POST https://api-sandbox.y.uno/v1/checkout/sessions`
-- **Required**: Customer ID, amount, country
+- **Required (OpenAPI)**: `account_id`, `merchant_order_id`, `payment_description`, `country`
+- **Also send**: `customer_id` (from Create Customer) and `amount` `{ currency, value }`
+- **Optional for SDK**: `workflow` (`SDK_CHECKOUT` | `SDK_SEAMLESS` | `CHECKOUT`), `callback_url`, `checkout_id`
 - **Returns**: `checkout_session` ID (used in SDK)
 - **Reference**: [Create checkout session API](/reference/checkout-sessions/create-checkout-session)
 
 **Example request**:
 ```json
 {
+  "account_id": "YOUR_ACCOUNT_ID",
+  "merchant_order_id": "order-001",
+  "payment_description": "Sandbox quickstart payment",
   "country": "US",
-  "customer_payer": {
-    "id": "customer-123"
-  },
+  "customer_id": "YOUR_CUSTOMER_UUID",
   "amount": {
     "currency": "USD",
-    "value": "2500"
-  }
+    "value": 100
+  },
+  "workflow": "SDK_CHECKOUT"
 }
 ```
 
@@ -373,23 +380,46 @@ Before displaying the payment UI, your backend creates a checkout session:
 In the One-Time Token (OTT) callback, your backend creates the payment:
 
 - **Endpoint**: `POST https://api-sandbox.y.uno/v1/payments`
-- **Required**: One-time token (from SDK callback), checkout session
+- **Required header**: `X-Idempotency-Key` (unique UUID per attempt) — see [Authentication](/reference/getting-started/authentication)
+- **Required body (OpenAPI)**: `account_id`, `description`, `country`, `merchant_order_id`, `amount`, `payment_method`, `checkout`
+- **`payment_method.token`** = one-time token from the SDK callback
+- **`checkout.session`** = checkout session id from step 1
 - **Returns**: Payment status and `sdk_action_required` field
 - **Reference**: [Create payment API](/reference/payments/create-payment)
+
+**Example headers**:
+```http
+public-api-key: YOUR_PUBLIC_API_KEY
+private-secret-key: YOUR_PRIVATE_SECRET_KEY
+X-Idempotency-Key: YOUR_UUID
+content-type: application/json
+accept: application/json
+```
 
 **Example request**:
 ```json
 {
-  "payment_method": {
-    "token": "one-time-token-from-sdk"
+  "account_id": "YOUR_ACCOUNT_ID",
+  "description": "Sandbox quickstart payment",
+  "country": "US",
+  "merchant_order_id": "order-001",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  },
+  "customer_payer": {
+    "id": "YOUR_CUSTOMER_UUID"
   },
   "checkout": {
-    "session": "checkout-session-id"
+    "session": "YOUR_CHECKOUT_SESSION_UUID"
+  },
+  "payment_method": {
+    "token": "ONE_TIME_TOKEN_FROM_SDK"
   }
 }
 ```
 
-**Important**: If the API response has `sdk_action_required: true`, you must call the SDK's `continuePayment()` method to complete async payment methods (3DS authentication, PIX, bank redirects, etc.).
+**Important**: If the API response has `sdk_action_required: true` or `checkout.sdk_action_required: true`, you must call the SDK's `continuePayment()` method to complete async payment methods (3DS authentication, PIX, bank redirects, etc.).
 
 ## Parameters
 
