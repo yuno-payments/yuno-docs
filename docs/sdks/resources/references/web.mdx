@@ -69,6 +69,93 @@ const yuno = await loadScript({
 
 * Browser blocks SRI on cross-origin request when the crossorigin attribute is missing or CORS is restrictive. To fix, add `crossorigin="anonymous"` and configure the static hosting to allow cross-origin fetches for JS assets.
 
+## Preload the SDK script
+
+When you use the NPM package, the browser only starts downloading `main.js` when your app calls `loadScript()`. In a single-page app that call often runs seconds after navigation, once your own bundle has downloaded and executed. On a slow mobile connection that delay, plus the download itself, can add several seconds before the SDK runs.
+
+Tell the browser about the script and the Yuno hosts from your HTML `<head>`, so the download and the connections start while the page is still being parsed.
+
+### Recommended setup
+
+Add these tags as the first elements in `<head>`, before your app bundle. This example is for a production account in the US region, using `@yuno-payments/sdk-web` 9.x:
+
+```html
+<head>
+  <link rel="preload" as="script" href="https://sdk-web.y.uno/v1.11/main.js">
+  <link rel="preconnect" href="https://api.y.uno" crossorigin>
+  <link rel="preconnect" href="https://sdk-web-card.prod.y.uno">
+  <link rel="dns-prefetch" href="https://sdk.prod.y.uno">
+  <link rel="dns-prefetch" href="https://icons.prod.y.uno">
+</head>
+```
+
+Keep your `loadScript()` call as it is:
+
+```javascript
+import { loadScript } from '@yuno-payments/sdk-web';
+
+const Yuno = await loadScript();
+```
+
+`loadScript()` still injects the `<script>` tag. Because the file is already in the browser's preload cache, the browser uses that copy instead of downloading it again.
+
+### Match the preload URL to your `loadScript` options
+
+The preload only helps when its `href` is exactly the URL `loadScript()` requests. That URL depends on the options you pass. For `@yuno-payments/sdk-web` 9.x (SDK `v1.11`):
+
+| `loadScript(...)` | Preload `href` | Preconnect hosts |
+| :--- | :--- | :--- |
+| `loadScript()` | `https://sdk-web.y.uno/v1.11/main.js` | `https://api.y.uno` and `https://sdk-web-card.prod.y.uno` |
+| `loadScript({ region: 'eu' })` | `https://sdk-web.prod.eu.y.uno/v1.11/main.js` | `https://api.eu.y.uno` and `https://sdk-web-card.prod.eu.y.uno` |
+| `loadScript({ env: 'sandbox' })` | `https://sdk-web.sandbox.y.uno/v1.11/main.js` | `https://api-sandbox.y.uno` and `https://sdk-web-card.sandbox.y.uno` |
+| `loadScript({ sri: true })` | `https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, with the `integrity` value the package uses and `crossorigin="anonymous"` | Same as `loadScript()` |
+| `loadScript({ sri: true, env: 'sandbox' })` | `https://sandbox.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, with the sandbox `integrity` value the package uses and `crossorigin="anonymous"` | Same as `loadScript({ env: 'sandbox' })` |
+| `loadScript({ sri: true, region: 'eu' })` | `https://prod.eu.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, with the same `integrity` value as the US bundle (the file is byte-identical) and `crossorigin="anonymous"` | Same as `loadScript({ region: 'eu' })` |
+
+The API host follows the environment and region of your public API key, so it is the same host your backend calls. The card form host follows the host `main.js` was loaded from.
+
+With `sri: true`, the preload tag looks like this:
+
+```html
+<link
+  rel="preload"
+  as="script"
+  href="https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js"
+  integrity="sha384-<same-hash-the-package-uses>"
+  crossorigin="anonymous">
+```
+
+<Note>
+With `sri: true`, the package pins a specific SDK version and its hash. Use that version in the preload, not the `latest` entry in [versions-sri.json](https://sdk-web.y.uno/versions-sri.json), which is usually newer than the version your package loads.
+</Note>
+
+To find the exact URL and hash your app requests, open DevTools, go to **Elements**, and inspect the `<script id="sdk-payments-script">` tag that `loadScript()` adds. Copy its `src`, and its `integrity` when present.
+
+Rules:
+
+* **Keep `crossorigin` on the API preconnect.** The SDK opens the same preconnect when it initializes. Without the attribute, the browser opens a connection that its CORS requests to the API cannot reuse.
+* **With `sri: true`, add `crossorigin="anonymous"` to the preload.** The injected script uses that mode. If the preload and the script use different modes, the browser downloads the file twice.
+* **A mismatch does not break anything.** If the URL or mode does not match, the browser downloads `main.js` twice and DevTools logs a warning that the preloaded resource was not used. You lose the speed-up, nothing else.
+
+### Keep the preload URL up to date
+
+The preload URL is written in your HTML, so it does not change when you upgrade the package. Update it yourself:
+
+* **Without SRI**, the URL contains only the major and minor SDK version (`v1.11`). Patch releases need no change. Update it when a package release moves to a new SDK minor version (for example 7.x loads `v1.9`, 8.x loads `v1.10`, 9.x loads `v1.11`); the README of the version you install states which one it loads.
+* **With SRI**, the URL and the hash pin the full SDK version (for example `v1.11.1`). Update both on every package upgrade that changes that version.
+
+<Note>
+When you upgrade `@yuno-payments/sdk-web`, update the preload `href` (and `integrity` when you use SRI) to the URL the new version loads. The package's [README on npm](https://www.npmjs.com/package/@yuno-payments/sdk-web) states the SDK version it loads. For the hash, use the entry for that version in the `history` list of [versions-sri.json](https://sdk-web.y.uno/versions-sri.json) (sandbox: [sdk-web.sandbox.y.uno/versions-sri.json](https://sdk-web.sandbox.y.uno/versions-sri.json)), or copy both values from the `<script id="sdk-payments-script">` tag in DevTools.
+</Note>
+
+### Check that it works
+
+Open DevTools, go to the **Network** panel, and reload the page. `main.js` should appear once, with **Initiator** set to the preload tag in your HTML and a start time close to the start of the page load. If `main.js` appears twice, or the **Console** shows that the preloaded resource was not used, the preload `href` or `crossorigin` mode does not match what `loadScript()` requests.
+
+<Warning>
+Do not replace the preload with your own `<script id="sdk-payments-script">` tag. `loadScript()` then skips its own injection, but it checks only the `id` and never the URL, so an outdated SDK version keeps running after you upgrade the package. If that script fails to load, `loadScript()` also never resolves or rejects.
+</Warning>
+
 ## Key parameters (checkout session creation)
 
 When creating a checkout session on your backend, the following parameters are commonly used across web SDKs:
