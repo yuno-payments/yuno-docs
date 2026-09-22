@@ -1,0 +1,66 @@
+---
+title: "Delete a Connection"
+description: "Deletes a connection. It must not be referenced by an active routing rule."
+openapi: "/openapi/organizations/connections/delete-connection.json DELETE /connections/{connection_id}"
+---
+
+Deletes a connection you previously created. The connection moves to `DELETED` status and stops being available to routing. Returns `204 No Content` on success.
+
+<Warning>
+A connection that is still referenced by an active routing rule cannot be deleted — the request fails with `409 CONNECTION_IN_USE`. Detach it from your routes first, then retry.
+</Warning>
+
+### Path Parameters
+
+<ParamField path="connection_id" type="string" required>
+  The id returned by [Create a Connection](/reference/organizations/connections/create-connection). Must belong to the account your API key is scoped to.
+</ParamField>
+
+### Headers
+
+<ParamField header="X-account-code" type="string" required>
+  UUID of the account the connection belongs to.
+</ParamField>
+
+### Response
+
+Returns `204 No Content` with an empty body.
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE 'https://api.y.uno/v1/connections/f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'X-account-code: a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+```
+
+```json 409 — In Use
+{
+  "type": "conflict",
+  "code": "CONNECTION_IN_USE",
+  "message": "Connection 'f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e' is still referenced by an active routing rule",
+  "details": { "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e" }
+}
+```
+
+```json 404 Not Found
+{
+  "type": "not_found",
+  "code": "CONNECTION_NOT_FOUND",
+  "message": "Connection '...' was not found",
+  "details": { "connection_id": "..." }
+}
+```
+</CodeGroup>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` |
+| --- | --- |
+| `401` | `NOT_AUTHENTICATED`<br />Missing or invalid API key. |
+| `404` | `CONNECTION_NOT_FOUND`<br />Unknown `connection_id`, or the id belongs to a different account. |
+| `409` | `CONNECTION_IN_USE`<br />The connection is still referenced by an active routing rule. |
+
+</div>
