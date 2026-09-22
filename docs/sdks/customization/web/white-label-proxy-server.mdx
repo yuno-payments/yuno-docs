@@ -76,7 +76,7 @@ A single Node.js process built on three libraries:
    - Checkout app assets: the CRA bundle (`/static/(js|css|media)/*`) and root public files (`/favicon.ico`, `/manifest.json`, `/robots.txt`, `/asset-manifest.json`) → `CHECKOUT_UPSTREAM`. Checked **first** so they don't fall through to the SDK icon upstream.
    - 3DS micro-app paths (`/challenge.html`, `/redirect.html`, `/session-id.html`, and `/assets/(challenge|redirect|session-id|validate-url)*`) → `SDK_3DS_UPSTREAM`.
    - Card micro-app paths (`/v<semver>/pages/*`, `/v<semver>/assets/*`) → `SDK_CARD_UPSTREAM`.
-   - Static-bundles paths (`/sdk-static-bundles-ms/*`) → `SDK_STATIC_BUNDLES_UPSTREAM` (`prod.y.uno`). Since SDK 1.10.9 the SDK loads its font stylesheet from `prod.y.uno/sdk-static-bundles-ms/v1/static/css/…`, and the stylesheet loads its `woff2` files with relative `../fonts/` URLs under the same prefix. SDK releases after 1.11.12 also load the Forter script and the Riskified SRI beacon from this prefix. Checked before the static rule, because its paths also contain `/static/css/`, `/static/js/` and `/fonts/`.
+   - Static-bundles paths (`/sdk-static-bundles-ms/*`) → `SDK_STATIC_BUNDLES_UPSTREAM` (`prod.y.uno`). Since SDK 1.10.9 the SDK loads its font stylesheet from `prod.y.uno/sdk-static-bundles-ms/v1/static/css/…`, and the stylesheet loads its `woff2` files with relative `../fonts/` URLs under the same prefix. From SDK 1.11.16 the Forter script and the Riskified SRI beacon are also requested from this prefix on the white-label host (earlier releases request them straight from `prod.y.uno`, bypassing the proxy). Checked before the static rule, because its paths also contain `/static/css/`, `/static/js/` and `/fonts/`.
    - Static-asset paths (`/icons/*`, `/css/*`, `/brands/*`, `/c2p/*`, `/wallets/*`, `/fonts/*`) → `SDK_STATIC_UPSTREAM` (`sdk.prod.y.uno`).
    - Icon-asset paths (`/sdk-web/*`, `/flags/*`, and bare root brand images like `/Visa.png`, `/boleto_logosimbolo.png`) → `SDK_ICONS_UPSTREAM` (`icons.prod.y.uno`).
    - Everything else → `SDK_UPSTREAM`.
@@ -417,9 +417,11 @@ A production partner gateway needs the same split as this harness (this table is
 | 3 | `/payment`, `/payment/status`, `/enroll`, `/static/(js\|css\|media)/*`, `/favicon.ico`, `/manifest.json`, `/robots.txt`, `/asset-manifest.json`, `/checkout-bff/*` | `checkout[.<env>].y.uno` / `<env>.y.uno` | Payment Link white-label |
 | 4 | `/challenge.html`, `/redirect.html`, `/session-id.html`, `/assets/(challenge\|redirect\|session-id\|validate-url)*` | `sdk-3ds[.<env>].y.uno` | 3DS |
 | 5 | `/v<card-semver>/pages/*`, `/v<card-semver>/assets/*` | `sdk-web-card[.<env>].y.uno` | Always |
-| 6 | `/sdk-static-bundles-ms/*` (keep the query string) | `prod.y.uno` (`staging.y.uno` for sandbox and staging Riskified SRI) | **SDK 1.10.9+** (font stylesheet); the Forter script and the Riskified SRI beacon from SDK releases after 1.11.12 |
+| 6 | `/sdk-static-bundles-ms/*` (keep the query string) | `prod.y.uno` (`staging.y.uno` for sandbox and staging Riskified SRI) | **SDK 1.10.9+** (font stylesheet); **SDK 1.11.16+** (Forter script, Riskified SRI beacon) |
 | 7 | `/icons/*`, `/css/*`, `/brands/*`, `/c2p/*` | `sdk.prod.y.uno` | SDK 1.9.32+ |
-| 8 | `/wallets/*` (Samsung Pay Portuguese button), `/fonts/*` (Checkout Builder custom fonts) | `sdk.prod.y.uno` | SDK releases after 1.11.12 |
+| 8 | `/wallets/*` (Samsung Pay Portuguese button), `/fonts/*` (Checkout Builder custom fonts) | `sdk.prod.y.uno` | **SDK 1.11.16+** |
+
+The **Needed from** column is the SDK release from which the SDK sends that request to the white-label host. The assets themselves are older (the Forter script has lived under `/sdk-static-bundles-ms/` since SDK 1.5.19, the Riskified SRI beacon since 1.6.4, the Samsung Pay Portuguese button under `/wallets/` since 1.10.9), but before the release listed the SDK requested them directly from `*.y.uno`, so a partner proxy never saw them and needed no rule. Adding the rules before upgrading is harmless.
 | 9 | `/sdk-web/*`, `/flags/*`, bare brand images (`/Visa.png`, …) | `icons.prod.y.uno` | SDK 1.9.32+ |
 | 10 | `/v<major.minor>/*` (SDK bundle and chunks) and anything else | `sdk-web[.<env>].y.uno` | Always |
 
@@ -430,7 +432,7 @@ A production partner gateway needs the same split as this harness (this table is
 - **Regions.** With an `apiUrl` override the SDK no longer adds the public API key's region to hosts, so a gateway serving EU or MENA keys must route them to the regional hosts itself (`api.eu.y.uno`, `prod.eu.y.uno`, …).
 - **Versioned `assetUrl`** (for example `…/orchestrator/v1.0`). Chunks are requested under that version segment, so the gateway must map it to a published `sdk-web` path (the harness normalizes it to the latest published version).
 - **Payment Link.** Rewrite the absolute `checkout.<env>.y.uno` origin in the served `index.html` to your base path, as the harness does, or the bundle loads from the Yuno host.
-- **Fallback.** SDK releases after 1.11.12 load the fraud scripts, the Samsung Pay Portuguese button and Checkout Builder fonts from Yuno again when the gateway can't serve them, so a missing rule degrades instead of breaking. Keeping every request off `*.y.uno` still needs every rule above.
+- **Fallback.** SDK 1.11.16+ loads the fraud scripts, the Samsung Pay Portuguese button and Checkout Builder fonts from Yuno again when the gateway can't serve them, so a missing rule degrades instead of breaking. Keeping every request off `*.y.uno` still needs every rule above.
 
 ## Verification checklist
 
