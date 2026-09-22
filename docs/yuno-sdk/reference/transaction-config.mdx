@@ -45,16 +45,33 @@ On Web there is no `controller` field: wire events (`onStatus`, `showLoading`, `
 </Tab>
 <Tab title="Android">
 
+Android exposes `TransactionConfig` through **two constructors** — the same object, reached two ways. The constructor you call decides the flow, and the payment-only fields simply don't exist on the enrollment one. Passing both sessions, or neither, is a compile error: there is no constructor for that combination.
+
+**Payment** — `TransactionConfig(checkoutSession = …)`
+
 | Field | Type | Required | Default |
 |---|---|---|---|
-| [`checkoutSession`](#checkoutsession) | String | One of two |  |
-| [`customerSession`](#customersession) | String | One of two |  |
+| [`checkoutSession`](#checkoutsession) | String | Yes |  |
 | [`countryCode`](#countrycode) | String | Yes |  |
+| [`controller`](#controller-ios-android) | TransactionController | Yes |  |
 | [`language`](#language) | String? | No | Device language |
-| [`controller`](#controller-ios-android) | TransactionController? | No | `null` |
-| [`showStatusScreen`](#showstatusscreen) | Bool | No | `false` |
-| [`autoContinuePayment`](#autocontinuepayment) | Bool | No | `true` |
 | [`appearance`](#appearance-ios-android) | Appearance? | No | `null` |
+| [`autoContinuePayment`](#autocontinuepayment) | Bool | No | `true` |
+| [`showStatusScreen`](#showstatusscreen) | Bool | No | `false` |
+| [`onShippingAddressChanged`](#onshippingaddresschanged-android-payments-only) | (suspend (String, ShippingInfo) → ShippingUpdate?)? | No | `null` |
+
+**Enrollment** — `TransactionConfig(customerSession = …)`
+
+| Field | Type | Required | Default |
+|---|---|---|---|
+| [`customerSession`](#customersession) | String | Yes |  |
+| [`countryCode`](#countrycode) | String | Yes |  |
+| [`controller`](#controller-ios-android) | TransactionController | Yes |  |
+| [`language`](#language) | String? | No | Device language |
+| [`appearance`](#appearance-ios-android) | Appearance? | No | `null` |
+| [`showStatusScreen`](#showstatusscreen) | Bool | No | `false` |
+
+`autoContinuePayment` and `onShippingAddressChanged` are payment-only — the enrollment constructor doesn't take them.
 
 </Tab>
 </Tabs>
@@ -95,7 +112,7 @@ See [Supported languages](/docs/sdks/resources/languages-supported).
 
 Object that implements the `TransactionController` interface. Used to receive transaction events (`onStatus`, `showLoading`, `createPayment`).
 
-On iOS, `controller` is **required**: `onStatus` is the only mechanism for receiving the transaction outcome, so a config without a controller would silently swallow every result. The SDK holds the reference weakly, so keep the instance alive for the duration of the transaction.
+On iOS and Android, `controller` is **required**: `onStatus` is the only mechanism for receiving the transaction outcome, so a config without a controller would deliver every result nowhere. On iOS the SDK holds the reference weakly, so keep the instance alive for the duration of the transaction.
 
 On Web, controllers are wired directly as fields on the config (`onStatus`, `showLoading`, `createPayment`). On iOS and Android, you pass a single controller object through the `controller` field.
 
@@ -115,6 +132,12 @@ Flag that controls whether the SDK presents its built-in result screen after the
 Controls whether the SDK automatically continues the payment flow after creating it. When `true` (default), the SDK handles 3DS and status polling internally. Set to `false` if you want to control the post-creation flow manually.
 
 With `false`, the SDK stops once the payment is created: it does not poll status, does not run 3DS, and `onStatus` is not invoked for the transaction.
+
+## `onShippingAddressChanged` (Android, payments only)
+
+Optional real-time shipping callback for wallet sheets (Google Pay). When set, the SDK notifies each shipping-address selection with the redacted address and applies the returned `ShippingUpdate` (new totals and/or an error) live on the sheet; returning `null` keeps the current values. When `null` (default) the wallet flow behaves exactly as without callbacks.
+
+Exists only on the payment constructor — the enrollment constructor does not take it.
 
 ## `elementSelector` (Web only)
 
@@ -143,7 +166,7 @@ The config rejects both `checkoutSession` and `customerSession` being set, or ne
 | Platform | Enforcement |
 |---|---|
 | iOS | Compile-time. `TransactionConfig` has two non-throwing initializers (`init(checkoutSession:...)` and `init(customerSession:...)`), so a config with both or neither sessions cannot be constructed. No `try` is needed. |
-| Android | Runtime. `IllegalArgumentException` |
+| Android | Compile-time. `TransactionConfig` has two constructors (`TransactionConfig(checkoutSession = …)` and `TransactionConfig(customerSession = …)`), so a config with both or neither session cannot be constructed. |
 | Web | Runtime. Throws a Yuno SDK error |
 
 On Web, the constructor also throws if `countryCode` is missing.
