@@ -7,210 +7,255 @@ description: Use when building payment integrations, configuring payment orchest
 
 ## Product summary
 
-Yuno is an AI-powered payments infrastructure that acts as a control plane between your application and the global payments ecosystem. It provides a single integration point to connect, route, and optimize payments across multiple payment service providers (PSPs), acquirers, fraud tools, and local payment methods. Agents use Yuno to build payment flows via REST API, SDKs (Web, iOS, Android, Flutter, React Native), or Payment Links. Key files and endpoints: API credentials in Dashboard → Settings → Developers, REST API at `https://api.y.uno/v1/`, SDKs available at `docs.y.uno/sdks`. Primary documentation: https://docs.y.uno
+Yuno is a payment orchestration platform. One integration connects a merchant to many payment service providers (PSPs), acquirers, fraud tools and local payment methods. Developers integrate through the REST API, the SDKs (Web, iOS, Android, Flutter, React Native) or Payment Links. API credentials live in Dashboard → Developers. Primary documentation: https://docs.y.uno
 
 ## When to use
 
 Reach for this skill when:
-
 - Building payment checkout flows (SDK or API-based)
 - Creating or managing payments, refunds, cancellations, or authorizations
-- Enrolling and vaulting payment methods for recurring charges
+- Vaulting cards and charging them later (subscriptions, merchant-initiated charges)
+- Receiving webhooks and verifying their signature
 - Configuring payment routing rules or provider connections
-- Setting up webhooks to receive payment status updates
-- Implementing 3D Secure, fraud prevention, or tokenization
-- Managing subscriptions, installments, or split payments
-- Handling payment disputes, chargebacks, or payouts
-- Integrating with VTEX, WooCommerce, or custom platforms
-- Testing payment flows in Sandbox before production
+- Testing payment flows in sandbox before production
 
 ## Authority for agents
 
-- **Paths and required request fields:** treat [OpenAPI](https://docs.y.uno/openapi.json) / per-operation JSON under `https://docs.y.uno/openapi/...` and the matching Reference pages as authoritative over this skill's simplified tables.
-- **Auth header casing (Payments / Checkout Session):** [Authentication](https://docs.y.uno/reference/getting-started/authentication) (`public-api-key`, `private-secret-key`).
-- **Sandbox cards (Test Payment Gateway):** [Yuno Testing Gateway](https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway).
-- If this skill and OpenAPI disagree, **prefer OpenAPI**, then file a docs fix.
+- Paths and required fields: the [OpenAPI](https://docs.y.uno/openapi.json) files and the matching Reference pages win over this skill's short tables. If they disagree, prefer OpenAPI and file a docs fix.
+- Header casing for Payments and Checkout Session: [Authentication](https://docs.y.uno/reference/getting-started/authentication).
+- Sandbox test cards: [Yuno Testing Gateway](https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway).
+
+## Facts models most often get wrong
+
+Read these before writing code. Each one is a mistake models make repeatedly.
+
+1. **Checkout session path is `POST /v1/checkout/sessions`**: two segments, plural. `/v1/checkout-sessions` (hyphen) returns 404 NOT_FOUND, and so does singular `/checkout/session`.
+2. **Refund path is transaction-scoped**: `POST /v1/payments/{payment_id}/transactions/{transaction_id}/refund`. Its body requires `merchant_reference`. There is no `POST /v1/payments/{id}/refund` (404 NOT_FOUND). The alternative is `POST /v1/payments/{payment_id}/cancel-or-refund` with a `reason`.
+3. **Webhook signature header is `x-hmac-signature`**: base64 HMAC-SHA256 over the raw request body. Never `x-yuno-signature`, `x-signature`, `yuno-signature` or `x-hub-signature-256`.
+4. **Amounts are decimal major units**: `{"currency": "USD", "value": 25}` is 25.00 USD. `2500` would charge 2,500 USD. `49.90 BRL` is `"value": 49.9`.
+5. **Sandbox host is `https://api-sandbox.y.uno`**. Default to it in test code and in any client where the environment is unset. Production is `https://api.y.uno` (EMEA: `https://api.eu.y.uno`).
+6. **Recurring card charges use `stored_credentials`**, nested at `payment_method.detail.card.stored_credentials`. `reason` is one of `CARD_ON_FILE`, `SUBSCRIPTION`, `UNSCHEDULED_CARD_ON_FILE`. There is no `RECURRING` reason.
+7. **Prefer webhooks to polling** for payment status. Poll `GET /v1/payments/{id}` only as a fallback or for reconciliation.
 
 ## Quick reference
 
-### API Authentication Headers
+### Environments
 
-Core Payments / Checkout Session APIs (match [Authentication](https://docs.y.uno/reference/getting-started/authentication)):
+| Environment | Base URL |
+|---|---|
+| Sandbox (Test Mode) | `https://api-sandbox.y.uno` |
+| Production US (Live Mode) | `https://api.y.uno` |
+| Production EMEA | `https://api.eu.y.uno` |
+
+Sandbox and production use different API keys. Read the base URL and keys from environment variables. If no environment is configured, use sandbox, never production.
+
+### Request headers
 
 | Header | Value | Notes |
-| --- | --- | --- |
-| `public-api-key` | Your public key | Dashboard → Settings → Developers (Public API Key). Safe for SDK init / client. |
-| `private-secret-key` | Your secret key | Server-side only; never expose in client code. |
-| `X-Idempotency-Key` | Unique UUID | Required for payment, refund, cancel (and similar mutating) operations. |
-| `Content-Type` | `application/json` | For POST/PUT/PATCH requests. |
+|--------|-------|-------|
+| `public-api-key` | Your public key | Dashboard → Developers. Required on **every** server request, together with `private-secret-key` |
+| `private-secret-key` | Your secret key | Required on every server request. Server-side only; never send it to a browser or app |
+| `X-Idempotency-Key` | UUID v4 | Required on `POST /v1/payments`, refunds and cancels |
+| `Content-Type` | `application/json` | On POST/PATCH |
 
-**Account identifier:** send JSON body field `account_id` (same UUID as Dashboard account id / sample env `ACCOUNT_CODE`). It is **not** a required header on Create Checkout Session or Create Payment.
+The merchant account goes in the request **body** as `account_id`, not in a header.
 
-**When `X-Account-Code` applies:** Checkout Builder API (beta) and some other surfaces require header `X-Account-Code` (same UUID) **in addition to** API keys — see [Create Checkout](https://docs.y.uno/reference/checkout-builder/create-checkout) and the [Developers Credentials](https://docs.y.uno/docs/using-yuno/settings/developers-credentials) page.
+`X-Account-Code` (the same account UUID) is a header only on some organization-level APIs, such as the Checkout Builder API (beta), connections and sellers. See [Create Checkout](https://docs.y.uno/reference/checkout-builder/create-checkout). Payments and checkout sessions do not need it.
 
-**Remote MCP** uses `account-code` (and related) headers — see Remote Yuno MCP docs; do not confuse MCP headers with REST Payments headers.
+### Idempotency
 
-### Core API Endpoints
+- Generate a new UUID for every new operation: each payment, each refund attempt, each cancel.
+- Retry an unclear failure (timeout, connection error, 500) with the **same** key. Never retry it with a new key: if the first request succeeded, a new key creates a duplicate charge.
+- A reused key returns the original payment (the retry body is ignored), `400 REQUEST_IN_PROCESS` (retry in a few seconds with the same key), or `400 IDEMPOTENCY_DUPLICATED` (no payment was created; fix the request and use a new key).
+- Use a new key for a new order or a new attempt after a decline.
+- A refund never reuses the payment's idempotency key.
 
-Base URL (Sandbox): `https://api-sandbox.y.uno/v1`  
-Base URL (Production): `https://api.y.uno/v1` (and regional hosts where documented)  
+### Core API endpoints
 
-Paths below are relative to `/v1`. Example: Checkout Session → `POST https://api-sandbox.y.uno/v1/checkout/sessions`.
+All paths are relative to the base URL.
 
-| Resource | Endpoint | Method | Purpose |
-| --- | --- | --- | --- |
-| Customers | `POST /customers` | POST | Create customer record |
-| Checkout Session | `POST /checkout/sessions` | POST | Initialize SDK payment flow |
-| Payments | `POST /payments` | POST | Create payment (API or SDK) |
-| Payments | `GET /payments/{id}` | GET | Retrieve payment status |
-| Refunds | `POST /payments/{id}/refund` | POST | Full or partial refund |
-| Cancel/Refund | `POST /payments/{id}/cancel-or-refund` | POST | Auto-detect cancel vs refund |
-| Webhooks | `POST /webhooks` | POST | Register webhook endpoint |
-| Payment Methods | `POST /payment-methods` | POST | Enroll card or method |
-| Subscriptions | `POST /subscriptions` | POST | Create recurring charge |
+| Resource | Method and path | Purpose |
+|----------|----------|---------|
+| Customers | `POST /v1/customers` | Create a customer. Needed for vaulting |
+| Checkout session | `POST /v1/checkout/sessions` | Start an SDK payment flow |
+| Payments | `POST /v1/payments` | Create a payment (SDK or DIRECT) |
+| Payments | `GET /v1/payments/{payment_id}` | Read payment `status` and `sub_status` |
+| Refund | `POST /v1/payments/{payment_id}/transactions/{transaction_id}/refund` | Refund one transaction, full or partial. Body requires `merchant_reference` |
+| Cancel or refund | `POST /v1/payments/{payment_id}/cancel-or-refund` | Yuno picks cancel or refund. Requires `reason` |
 
-### SDK Integration Types (Choose one)
+A `GET` can answer with HTTP 201. Treat any 2xx as success, not only 200. Error responses are JSON with a `code` and `messages`; surface both to the caller.
 
-| Type | Best For | UI Control | Code Effort | PCI Burden |
-| --- | --- | --- | --- | --- |
-| Seamless SDK | Most use cases; recommended | Pre-built + customizable | Low | Yuno handles |
-| Lite SDK | Custom payment method display | Full control | Medium | Yuno handles |
-| Headless SDK | Fully custom checkout UI | Complete ownership | High | Yuno handles |
-| Secure Fields | Embedded card inputs | Partial control | Medium | Yuno handles |
-| Direct API | PCI-certified merchants only | Full control | High | Merchant handles |
+### Payment status
 
-### Payment Status Lifecycle
+Read the **payment-level** `status` and `sub_status`. A payment can have several transactions; the payment status is the source of truth, not an individual transaction's status.
 
-```
-PENDING → APPROVED → CAPTURED → COMPLETED
-   ↓         ↓          ↓
-DECLINED  CANCELLED  REFUNDED
+| `status` | Meaning | Fulfil the order? |
+|---|---|---|
+| `SUCCEEDED` | Captured | Yes |
+| `PENDING` | Waiting on 3DS, an async method or provider confirmation | Wait for the webhook |
+| `DECLINED`, `REJECTED`, `ERROR`, `CANCELLED`, `EXPIRED`, `REFUNDED` | Not paid, or reversed | No |
 
-```
-
-Use `status` and `sub_status` fields as the primary reference for payment state.
-
-### Webhook Event Types
-
-| Type | Event | Trigger |
-| --- | --- | --- |
-| `payment` | `purchase`, `authorize`, `capture`, `refund`, `cancel` | Payment lifecycle |
-| `enrollment` | `enroll`, `unenroll`, `expiration` | Payment method changes |
-| `subscription` | `create`, `active`, `pause`, `cancel` | Subscription lifecycle |
-| `payout` | `payout` | Funds transferred |
-
-## Decision guidance
-
-### When to use SDK vs Direct API
-
-| Scenario | Use SDK | Use Direct API |
-| --- | --- | --- |
-| Building a checkout UI | ✅ Recommended | ❌ Only if PCI-certified |
-| Handling card data | ✅ Yuno handles security | ❌ Requires PCI compliance |
-| Rapid integration | ✅ Pre-built components | ❌ Manual implementation |
-| Custom UX control | ✅ Seamless/Lite/Headless | ✅ Full control |
-| Mobile app | ✅ iOS/Android SDKs | ❌ Not recommended |
-| Server-to-server only | ❌ Not applicable | ✅ Direct workflow |
-
-### When to use each refund endpoint
-
-| Endpoint | Use When | Requires |
-| --- | --- | --- |
-| `POST /payments/{id}/refund` | You know the exact transaction | `transaction_id` |
-| `POST /payments/{id}/cancel-or-refund` | Yuno should decide (cancel vs refund) | `reason` field |
-| `POST /payments/{id}/cancel-or-refund` with `transaction_id` | Specific transaction, auto-decide | `transaction_id` + `reason` |
-
-### Workflow selection: DIRECT vs REDIRECT
-
-| Workflow | Response | Use Case |
-| --- | --- | --- |
-| `DIRECT` | Raw provider response | Full control; build custom experience |
-| `REDIRECT` | Provider response + redirect URL | Yuno-hosted experience for that payment |
-
-Both support cards (with 3DS) and alternative methods. DIRECT requires PCI certification for cards.
+For an authorize-only payment, `sub_status` tells you whether the funds are authorized or captured.
 
 ## Workflow
 
-### 1. Create a Payment (SDK Flow — Recommended)
+### 1. SDK checkout (recommended; no PCI scope)
 
-1. Create a customer (optional but required for vaulting): Call `POST /customers` with name, email, phone. Store the returned `customer_id`.
-2. Create a checkout session: Call `POST /checkout/sessions` with `customer_id`. Include `payment_method.detail.card.capture: true` (capture immediately) or `false` (authorize only). Store the returned `checkout_session_id`.
-3. Initialize SDK on frontend: Load Yuno SDK (Web, iOS, Android, etc.). Pass `checkout_session_id` and `public-api-key`. SDK displays available payment methods and collects details.
-4. Create payment on backend: Call `POST /payments` with `checkout.session` and order details. Include `X-Idempotency-Key` header (unique UUID). Check response `status` and `sub_status`.
-5. Handle response: `APPROVED` + `CAPTURED`: Payment complete. `APPROVED` + `AUTHORIZED`: Call capture endpoint later. `PENDING`: Await webhook or poll for updates. `DECLINED`: Inform user; retry with different method.
+The SDK flow uses the default workflow `SDK_CHECKOUT`. Do not set `DIRECT` or `REDIRECT` on a checkout session for the SDK.
 
-### 2. Create a Payment (Direct API Flow — PCI-Certified Only)
+1. **Server: create a checkout session.** `POST /v1/checkout/sessions` with:
+   - Required: `account_id`, `merchant_order_id`, `payment_description`, `country` (ISO 3166-1 alpha-2, e.g. `"US"`), `amount` `{currency, value}` in major units
+   - `customer_id` to link a Yuno customer
+   - Return only `checkout_session`, the public API key and the country code to the browser
+2. **Browser: start the SDK.**
+   ```js
+   const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+   await yuno.startSeamlessCheckout({
+     checkoutSession, elementSelector: "#root", countryCode: "US", language: "en",
+     async yunoCreatePayment(oneTimeToken) {
+       await fetch("/api/payments", { method: "POST", headers: {"Content-Type": "application/json"},
+         body: JSON.stringify({ oneTimeToken, checkoutSession }) });
+       yuno.continuePayment();
+     },
+     yunoPaymentResult(status) { /* show result; the webhook is the source of truth */ },
+   });
+   await yuno.mountSeamlessCheckout();
+   // on the pay button: yuno.startPayment();
+   ```
+3. **Server: create the payment** from inside `yunoCreatePayment`. `POST /v1/payments` with `X-Idempotency-Key`, `account_id`, `description`, `country`, `merchant_order_id`, `amount`, `checkout: {"session": checkoutSession}` and `payment_method: {"token": oneTimeToken}`. The browser then calls `yuno.continuePayment()` to handle 3DS or redirects.
+4. **Confirm by webhook.** Ship only when a verified webhook (or a `GET`) shows `SUCCEEDED`.
 
-1. Create a customer (optional): Call `POST /customers` with merchant customer ID. Store `customer_id`.
-2. Create payment directly: Call `POST /payments` with `workflow: "DIRECT"`. Include payment method details (card data, token, or vaulted_token). Include `X-Idempotency-Key` header. Provide order, customer, and amount details.
-3. Handle response: Check `status` and `sub_status`. For 3DS: redirect user to `payment_method.detail.redirect_url` if present. For alternative methods: follow provider-specific flow.
+### 2. Direct API (PCI-certified merchants only)
 
-### 3. Refund a Payment
+`POST /v1/payments` with `workflow: "DIRECT"` and the required fields `account_id`, `description`, `country`, `merchant_order_id`, `amount`, `payment_method`.
 
-1. Identify the transaction: Retrieve payment: `GET /payments/{payment_id}`. Note the `transaction_id` from the response.
-2. Issue refund: Call `POST /payments/{payment_id}/refund`. Include `X-Idempotency-Key` (new UUID). For partial refund: include `amount` object. For full refund: omit `amount`.
-3. Verify: Check response `status` (should be `PENDING` or `SUCCEEDED`). Await webhook `payment.refund` event or poll status.
+Charge a saved card with the vaulted token only:
 
-### 4. Set Up Webhooks
+```json
+"payment_method": { "type": "CARD", "vaulted_token": "<vaulted_token>" }
+```
 
-1. Navigate to Dashboard: Go to Developers → Webhooks → Add webhook.
-2. Configure endpoint: Enter your public endpoint URL (no auth required). Set `x-api-key` and `x-secret` headers. Optionally enable HMAC signature verification.
-3. Select events: Check boxes for event types: `payment`, `enrollment`, `subscription`, etc. Save configuration.
-4. Implement receiver: Build POST endpoint that accepts JSON. Verify HMAC signature if enabled (see Verify Webhook Signatures). Return HTTP 200 OK immediately. Process event asynchronously. Yuno retries up to 7 times over 96 hours if no 200 response.
+Do not send `payment_method.token` together with `vaulted_token`: the vaulted token overrides the token, and fraud screening loses the device fingerprint. Read both `status` and `sub_status` on the response. If `payment_method.detail.redirect_url` is present, send the user there for 3DS.
 
-### 5. Configure Payment Routing
+### 3. Vault a card and charge it monthly (merchant-initiated)
 
-1. Set up provider connection: Dashboard → Connections → Add connection. Select provider (Stripe, Adyen, dLocal, etc.). Enter provider credentials.
-2. Create routing rule: Dashboard → Routing → Not Published tab. Select payment method (Card, PIX, etc.). Click "Set Up" → "Create new route". Add step: select provider connection. Configure conditions (country, currency, amount, card brand). Add fallback provider if desired. Click "Publish".
-3. Verify: Payments now route through configured provider. Check Payments dashboard to confirm routing.
+1. **Create the customer** with `POST /v1/customers`. Keep the Yuno customer id.
+2. **First payment (customer present).** Vault the card and mark the series start:
+   ```json
+   {
+     "customer_payer": { "id": "<yuno_customer_id>" },
+     "payment_method": {
+       "type": "CARD",
+       "token": "<one_time_token>",
+       "vault_on_success": true,
+       "detail": { "card": { "stored_credentials": { "reason": "SUBSCRIPTION", "usage": "FIRST" } } }
+     }
+   }
+   ```
+   `vault_on_success` needs `customer_payer.id`. Without it, nothing is vaulted. Save `vaulted_token` and `payment_method.detail.card.stored_credentials.network_transaction_id` from the response.
+3. **Each monthly charge (customer absent).** New `X-Idempotency-Key`, vaulted token only, same `reason`, `usage: "USED"`, and the network transaction id from the first charge:
+   ```json
+   {
+     "customer_payer": { "id": "<yuno_customer_id>" },
+     "payment_method": {
+       "type": "CARD",
+       "vaulted_token": "<vaulted_token>",
+       "detail": { "card": { "stored_credentials": {
+         "reason": "SUBSCRIPTION", "usage": "USED",
+         "network_transaction_id": "<from_first_charge>"
+       } } }
+     }
+   }
+   ```
+   Keep `reason` the same across the series; some providers (e.g. Adyen) decline when it changes. Add `subscription_agreement_id` where the market needs it (e.g. MX). The merchant never stores a raw card number.
+
+`reason` values: `SUBSCRIPTION` (scheduled MIT), `UNSCHEDULED_CARD_ON_FILE` (MIT at any time), `CARD_ON_FILE` (customer present, one-click). `usage` values: `FIRST`, `USED`.
+
+### 4. Refund a payment
+
+1. **Find the transaction.** Take the `PURCHASE` transaction (one-step payment) or the `CAPTURE` transaction (two-step) from the create response (`transactions.id`) or from `GET /v1/payments/{payment_id}`. A `REFUND` transaction's id cannot be refunded.
+2. **Call** `POST /v1/payments/{payment_id}/transactions/{transaction_id}/refund` with a **new** `X-Idempotency-Key` and a `merchant_reference` in the body (required; without it the API returns 400 INVALID_PARAMETERS).
+   - Full refund: omit `amount`.
+   - Partial refund: send `amount: {currency, value}` in major units.
+3. **Read the result.** The response contains a new transaction of type `REFUND`:
+   - `SUCCEEDED`: refunded.
+   - `PENDING`: the provider confirms later. Wait for the `payment.refund` webhook.
+   - `DECLINED` or `ERROR`: failed. Retry later with a new idempotency key.
+4. **One refund at a time.** Do not start another refund on the same transaction while one is `PENDING`.
+
+### 5. Receive webhooks
+
+Configure the endpoint in Dashboard → Developers → Webhooks and enable **Use HMAC Authentication**. The HMAC secret is the webhook secret from the dashboard; it is not the API `private-secret-key`.
+
+```js
+app.post("/webhooks/yuno", express.raw({ type: "application/json" }), async (req, res) => {
+  const sig = req.get("x-hmac-signature") || "";
+  const expected = crypto.createHmac("sha256", process.env.YUNO_WEBHOOK_SECRET)
+    .update(req.body)            // raw bytes, never JSON.stringify(req.body)
+    .digest("base64");
+  const a = Buffer.from(sig), b = Buffer.from(expected);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.sendStatus(401);
+
+  const event = JSON.parse(req.body.toString("utf8"));
+  const key = event.data?.idempotency_key;          // stable across retries
+  if (await alreadyProcessed(event.type_event, key)) return res.sendStatus(200);
+
+  if (event.type_event === "payment.purchase" && event.data.payment.status === "SUCCEEDED") {
+    await markOrderPaid(event.data.payment.id);
+  }
+  await recordProcessed(event.type_event, key);
+  res.sendStatus(200);
+});
+```
+
+- Verify over the **raw body**. Re-serialized JSON changes the bytes and the signature fails.
+- Reject a bad signature with 401 and do nothing else.
+- Yuno retries up to 7 times when it does not get HTTP 200. De-duplicate on `data.idempotency_key` (plus `type_event` for `subscription.*` events). The top-level `retry` field counts attempts.
+- Payload shape: `type`, `type_event` (`payment.purchase`, `payment.refund`, ...), `retry`, `data.payment.id`, `data.payment.status`, `data.payment.sub_status`, `data.idempotency_key`.
+- Return 200 fast and process slow work asynchronously.
+
+### 6. Configure payment routing
+
+1. Dashboard → Connections → add a provider connection with its credentials.
+2. Dashboard → Routing → choose the payment method → create a route, add the connection as a step, add conditions (country, currency, amount, card brand) and an optional fallback → Publish.
+3. Test the route in sandbox before production.
 
 ## Common gotchas
 
-- **Missing X-Idempotency-Key**: Payment, refund, and cancel operations require this header. Omitting it may cause duplicate charges. Always generate a new UUID for each request.
-- **Reusing idempotency keys**: If you retry with the same key, Yuno returns the original result (not a duplicate). Use the same key only for retries; use a new key for genuinely new operations.
-- **Exposing secret API key**: Never embed `private-secret-key` / Secret API Key in client-side code (frontend, mobile). Use only `public-api-key` on client; keep the secret server-side only.
-- **Sending vaulted_token with device fingerprint**: If you send both `payment_method.vaulted_token` and `payment_method.token`, the vaulted_token overrides the token (including device fingerprint). Fraud screening may not work. Send only one.
-- **Refunding while another refund is in progress**: Do not start a new refund on the same transaction while a previous one is still processing. Wait for the previous refund to reach a final status (SUCCEEDED, DECLINED, ERROR).
-- **Canceling 3DS payments**: Payments in PENDING status due to 3DS authentication cannot be canceled. They are awaiting user authentication and will auto-resolve to FRAUD_VERIFIED or CANCELLED.
-- **Metadata not driving routing**: If you use metadata to drive routing logic, it must be set in the Checkout Session, not just in the Payment object. Setting it only in Payment will not activate route logic.
-- **Fallback with provider installments**: Do not configure a fallback provider for a route that uses provider installments. Different providers handle installments differently and may cause processing errors.
-- **Polling vs webhooks**: Webhooks are more reliable than polling. Always configure webhooks to receive payment status updates. Polling adds latency and increases API load.
-- **Payment status vs transaction status**: Use payment `status` and `sub_status` as the primary reference, not transaction status. A payment may have multiple transactions, but the payment status reflects the final outcome.
-- **Wrong sandbox test card**: Starter pages historically disagreed (`4242…`, `4111…`, Gateway `450799…`). For **Yuno Test Payment Gateway**, use the Visa SUCCEEDED card **`4507990000000002`** (exp `11/28`, CVV `123`, name John Doe) and the full matrices on [Yuno Testing Gateway](https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway). Do not treat Stripe-style `4242` / `4111` as Gateway success unless Product documents them as aliases.
+- **Invented paths.** Use the exact paths in the endpoint table. `/v1/checkout-sessions` and `/v1/payments/{id}/refund` return 404.
+- **Minor units.** Yuno amounts are major units. Do not multiply by 100.
+- **Secret key in the browser.** Only `public-api-key` reaches the client. `private-secret-key` stays on the server.
+- **vaulted_token with token.** Send one or the other. The vaulted token overrides the token and its device fingerprint.
+- **Parallel refunds.** Wait for a refund to reach a final status before starting another on the same transaction.
+- **Cancelling during 3DS.** A payment that is `PENDING` for 3DS cannot be cancelled. It resolves on its own.
+- **Routing on metadata.** Metadata that drives routing must be set on the checkout session, not only on the payment.
+- **Fallback with provider installments.** Do not add a fallback provider to a route that uses provider installments.
+- **Polling as the primary signal.** Use webhooks. Polling adds latency and load.
+- **Wrong sandbox test card.** For the Yuno Test Payment Gateway, the Visa card that returns SUCCEEDED is `4507990000000002` (exp `11/28`, CVV `123`). Stripe-style `4242…` and `4111…` are not Gateway cards. Full matrix: [Yuno Testing Gateway](https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway).
 
 ## Verification checklist
 
-Before submitting payment integration work:
-
-- [ ] API credentials (`public-api-key`, `private-secret-key`) are stored securely; secret never exposed in client code
-- [ ] All payment/refund/cancel requests include `X-Idempotency-Key` header with unique UUID
-- [ ] Checkout session created before SDK payment flow (if using SDK)
-- [ ] Payment response `status` and `sub_status` are checked and handled correctly
-- [ ] Webhooks configured in Dashboard and endpoint returns HTTP 200 OK
-- [ ] Webhook signature verification implemented (if HMAC enabled)
-- [ ] Refund logic waits for previous refund to complete before starting new one
-- [ ] Routing rules published and tested in Sandbox environment
-- [ ] 3DS flow tested (if applicable) — user redirected to issuer authentication
-- [ ] Alternative payment methods tested (PIX, Boleto, etc., if applicable)
-- [ ] Error responses handled (DECLINED, FRAUD_VERIFIED, ERROR statuses)
-- [ ] Idempotency key retry logic implemented (same key for retries, new key for new operations)
+- [ ] Base URL from config; sandbox (`api-sandbox.y.uno`) when unset
+- [ ] `private-secret-key` only on the server; the browser gets only `public-api-key` and the session id
+- [ ] Every payment, refund and cancel sends a fresh UUID `X-Idempotency-Key`; retries of the same request reuse it
+- [ ] Amounts in major units
+- [ ] Checkout session created server-side at `POST /v1/checkout/sessions` before the SDK starts
+- [ ] Payment `status` and `sub_status` read at payment level; any 2xx accepted
+- [ ] Webhook verified with `x-hmac-signature` over the raw body, timing-safe compare, 401 on mismatch
+- [ ] Webhook retries de-duplicated on `data.idempotency_key`
+- [ ] Refunds use the transaction-scoped path with `merchant_reference`, one at a time
+- [ ] Recurring charges carry `stored_credentials` with a valid `reason`, `usage: USED` and the `network_transaction_id`
 
 ## Resources
 
-Comprehensive navigation: https://docs.y.uno/llms.txt
+**Full index**: https://docs.y.uno/llms.txt
 
-Critical documentation pages:
-
-1. [Authentication](https://docs.y.uno/reference/getting-started/authentication) — Header names + idempotency
-2. [Create Checkout Session](https://docs.y.uno/reference/checkout-sessions/create-checkout-session) — Path `/checkout/sessions` + required fields
-3. [Create Payment](https://docs.y.uno/reference/payments/create-payment) — Payment creation with examples
-4. [Quickstart](https://docs.y.uno/docs/sdks/overview/quickstart) — SDK happy path (verify bodies match OpenAPI)
-5. [Yuno Testing Gateway](https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway) — Canonical sandbox test cards for Test Payment Gateway
-6. [SDK Integration Guide](https://docs.y.uno/docs/sdks/overview/choose-integration) — Choose and implement SDK type
-7. [Webhooks Configuration](https://docs.y.uno/docs/webhooks/configure-webhooks) — Event notifications
-8. [OpenAPI (Checkout Session)](https://docs.y.uno/openapi/checkout-sessions/create-checkout-session.json) — Machine-readable path + schema
-9. [llms.txt](https://docs.y.uno/llms.txt) — Full docs index for agents
-
----
-
-> For additional documentation and navigation, see: https://docs.y.uno/llms.txt
+1. [API environments](https://docs.y.uno/reference/getting-started/api-environments)
+2. [Authentication](https://docs.y.uno/reference/getting-started/authentication)
+3. [Create checkout session](https://docs.y.uno/reference/checkout-sessions/create-checkout-session)
+4. [Create payment](https://docs.y.uno/reference/payments/create-payment)
+5. [Refund payments](https://docs.y.uno/docs/direct-integration-use-cases/refund-payments)
+6. [Stored credentials](https://docs.y.uno/docs/payment-features/stored-credentials)
+7. [Verify webhook signatures (HMAC)](https://docs.y.uno/docs/webhooks/verify-webhook-signatures-hmac)
+8. [Webhook object and examples](https://docs.y.uno/docs/webhooks/object-and-examples)
+9. [Seamless SDK web payments](https://docs.y.uno/docs/sdks/seamless-sdk/web-payments)
