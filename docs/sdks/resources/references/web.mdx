@@ -77,7 +77,7 @@ Tell the browser about the script and the Yuno hosts from your HTML `<head>`, so
 
 ### Recommended setup
 
-Add these tags as the first elements in `<head>`, before your app bundle:
+Add these tags as the first elements in `<head>`, before your app bundle. This example is for a production account in the US region, using `@yuno-payments/sdk-web` 9.x:
 
 ```html
 <head>
@@ -103,12 +103,15 @@ const Yuno = await loadScript();
 
 The preload only helps when its `href` is exactly the URL `loadScript()` requests. That URL depends on the options you pass. For `@yuno-payments/sdk-web` 9.x (SDK `v1.11`):
 
-| `loadScript(...)` | Preload `href` |
-| :--- | :--- |
-| `loadScript()` | `https://sdk-web.y.uno/v1.11/main.js` |
-| `loadScript({ region: 'eu' })` | `https://sdk-web.prod.eu.y.uno/v1.11/main.js`. Also preconnect to `https://sdk-web-card.prod.eu.y.uno` instead of `https://sdk-web-card.prod.y.uno` |
-| `loadScript({ env: 'sandbox' })` | `https://sdk-web.sandbox.y.uno/v1.11/main.js` |
-| `loadScript({ sri: true })` | The full-version URL your package pins, for example `https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, with the same `integrity` value and `crossorigin="anonymous"` |
+| `loadScript(...)` | Preload `href` | Preconnect hosts |
+| :--- | :--- | :--- |
+| `loadScript()` | `https://sdk-web.y.uno/v1.11/main.js` | `https://api.y.uno` and `https://sdk-web-card.prod.y.uno` |
+| `loadScript({ region: 'eu' })` | `https://sdk-web.prod.eu.y.uno/v1.11/main.js` | `https://api.eu.y.uno` and `https://sdk-web-card.prod.eu.y.uno` |
+| `loadScript({ env: 'sandbox' })` | `https://sdk-web.sandbox.y.uno/v1.11/main.js` | `https://api-sandbox.y.uno` and `https://sdk-web-card.sandbox.y.uno` |
+| `loadScript({ sri: true })` | `https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, with the `integrity` value the package uses and `crossorigin="anonymous"` | Same as `loadScript()` |
+| `loadScript({ sri: true, env: 'sandbox' })` | `https://sandbox.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, with the sandbox `integrity` value the package uses and `crossorigin="anonymous"` | Same as `loadScript({ env: 'sandbox' })` |
+
+The API host follows the environment and region of your public API key, so it is the same host your backend calls. The card form host follows the host `main.js` was loaded from.
 
 With `sri: true`, the preload tag looks like this:
 
@@ -121,11 +124,15 @@ With `sri: true`, the preload tag looks like this:
   crossorigin="anonymous">
 ```
 
+<Note>
+With `sri: true`, the package pins a specific SDK version and its hash. Use that version in the preload, not the `latest` entry in [versions-sri.json](https://sdk-web.y.uno/versions-sri.json), which is usually newer than the version your package loads.
+</Note>
+
 To find the exact URL and hash your app requests, open DevTools, go to **Elements**, and inspect the `<script id="sdk-payments-script">` tag that `loadScript()` adds. Copy its `src`, and its `integrity` when present.
 
 Rules:
 
-* **Keep `crossorigin` on the API preconnect.** The SDK calls the API with CORS requests that carry no credentials. A preconnect without `crossorigin` opens a connection those requests cannot use.
+* **Keep `crossorigin` on the API preconnect.** The SDK opens the same preconnect when it initializes. Without the attribute, the browser opens a connection that its CORS requests to the API cannot reuse.
 * **With `sri: true`, add `crossorigin="anonymous"` to the preload.** The injected script uses that mode. If the preload and the script use different modes, the browser downloads the file twice.
 * **A mismatch does not break anything.** If the URL or mode does not match, the browser downloads `main.js` twice and DevTools logs a warning that the preloaded resource was not used. You lose the speed-up, nothing else.
 
@@ -133,11 +140,11 @@ Rules:
 
 The preload URL is written in your HTML, so it does not change when you upgrade the package. Update it yourself:
 
-* **Without SRI**, the URL contains only the major and minor SDK version (`v1.11`). Patch releases need no change. Update it when you move to a new major version of `@yuno-payments/sdk-web`, because each major version loads a new SDK minor version (9.x loads `v1.11`, 10.x loads `v1.12`).
+* **Without SRI**, the URL contains only the major and minor SDK version (`v1.11`). Patch releases need no change. Update it when you move to a new major version of `@yuno-payments/sdk-web`, because each major version loads a new SDK minor version (7.x loads `v1.9`, 8.x loads `v1.10`, 9.x loads `v1.11`).
 * **With SRI**, the URL and the hash pin the full SDK version (for example `v1.11.1`). Update both on every package upgrade that changes that version.
 
 <Note>
-When you upgrade `@yuno-payments/sdk-web`, update the preload `href` (and `integrity` when you use SRI) to the URL the new version loads.
+When you upgrade `@yuno-payments/sdk-web`, update the preload `href` (and `integrity` when you use SRI) to the URL the new version loads. You can read both from the package's [README on npm](https://www.npmjs.com/package/@yuno-payments/sdk-web) or from the `<script id="sdk-payments-script">` tag in DevTools.
 </Note>
 
 ### Check that it works
