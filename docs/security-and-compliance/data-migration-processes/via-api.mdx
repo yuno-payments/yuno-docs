@@ -1,49 +1,53 @@
 ---
-title: "Via API"
-description: "Walks through migrating customers and enrolling payment methods via the Yuno API endpoints."
+title: "Token Migration via API"
+sidebarTitle: "Via API"
+description: "Step-by-step guide to map migrated cards to Yuno vaulted tokens: create customers, enroll payment methods, and reconcile the results."
 ---
 
-This guide provides a step-by-step process for migrating tokens using the Yuno API endpoints. By following the steps outlined, you will compile a list of customers with their enrolled payment methods.
+This guide covers the final step of the [Token Migration Process](/docs/security-and-compliance/data-migration-processes/token-migration-process): once Yuno has ingested your card export, you use the API to register your customers and enroll each imported card, receiving a Yuno `vaulted_token` for every card.
 
 ## Requirements
 
 Before proceeding with the steps in this guide, ensure you have:
 
-* Completed the three steps related to the [importing cards from a gateway account](/docs/security-and-compliance/data-migration-processes/token-migration-process#importing-cards-from-a-gateway-account-steps-1-and-2) process.
+* Completed steps 1 and 2 of the [Token Migration Process](/docs/security-and-compliance/data-migration-processes/token-migration-process): the export file from your previous provider has been securely transferred to Yuno and ingested.
 * Accessed your [API credentials](/docs/using-yuno/settings/developers-credentials) on the Yuno Dashboard, which include:
   * `public-api-key`
   * `private-secret-key`
   * `account_id`
 
-Make sure you have completed these steps and have the necessary data before continuing with the guide.
+<Tip>
+**Rehearse in sandbox first**
+
+Run your migration script end to end against the sandbox environment (`https://api-sandbox.y.uno`) with test data before executing it in production. This validates your request payloads, error handling, and reconciliation logic without touching real card data.
+</Tip>
 
 ## Migrate tokens via API
 
-### Step 1: Create customers
+<Steps>
+<Step title="Create customers">
 
-To begin the token migration process, you will use the [Create Customer](/reference/create-customer) endpoint to add customers to the Yuno system. It is important to note that payment methods cannot be enrolled for customers who do not exist in the Yuno system. If the customers are already present in Yuno, you may skip this step.
+Use the [Create Customer](/reference/create-customer) endpoint to add customers to the Yuno system. Payment methods cannot be enrolled for customers who do not exist in Yuno. If the customers are already present in Yuno, you may skip this step.
 
-To register new customers, provide their personal information. Additionally, you must supply the `merchant_customer_id`, which is a unique identifier for the customer used in your system.
+To register new customers, provide their personal information. The only mandatory field is `merchant_customer_id`, the unique identifier for the customer in your system.
 
 <Note>
 **Customer complementary information**
 
 When creating a customer, certain information is optional but can enhance the user's payment experience if provided. Examples of non-mandatory data include phone number, billing address, and shipping address.
-
-If you choose to add optional information, ensure that all required mandatory fields are also provided.
 </Note>
 
 Upon completing the customer creation process, you will receive an `id` that identifies the user within the Yuno system. Use this `id` to enroll the existing payment methods.
 
-### Step 2: Check the customer data (optional)
+</Step>
+<Step title="Check the customer data (optional)">
 
-In this step, you have the option to verify the information of each registered customer. Use the [Retrieve Customer](/reference/customers/retrieve-customer) endpoint to access the customer data. To do this, provide the `id` that was generated when the customer was initially created.
+You can verify the information of each registered customer with the [Retrieve Customer](/reference/customers/retrieve-customer) endpoint, providing the `id` generated when the customer was created.
 
-### Step 3: Enroll a payment method
+</Step>
+<Step title="Enroll a payment method">
 
-To complete the migration process, you need to enroll payment methods for each customer using the third-party vault or gateway data.
-
-Utilize the [Enroll Payment Method](/reference/enroll-payment-method-api) endpoint to register the payment methods. Remember, the `customer_id` required for this request is the `id` obtained during the customer creation in [Step 1](/docs/security-and-compliance/data-migration-processes/via-api#step-1-create-customers). Additionally, include the `provider_data` object containing the external provider's token, as shown in the code snippet below:
+Enroll each imported card with the [Enroll Payment Method](/reference/payment-methods-direct-workflow/enroll-payment-method-api) endpoint. The `customer_id` in the URL is the `id` obtained in step 1. Include the `provider_data` object containing the external provider's token from the export file:
 
 ```sh Request
 curl --request POST \
@@ -68,8 +72,63 @@ curl --request POST \
 '
 ```
 
-In the response from the endpoint, you will receive a `vaulted_token` that identifies the enrolled payment method. This `vaulted_token` will be used for future payments, eliminating the need for additional payment method details.
+The response contains the `vaulted_token` that identifies the enrolled payment method, along with the card details Yuno resolved for it:
 
-### Step 4: Check the enrolled payment method (optional)
+```json Response
+{
+  "name": "VISA ****1111",
+  "type": "CARD",
+  "category": "CARD",
+  "country": "BR",
+  "status": "ENROLLED",
+  "vaulted_token": "cbdcc878-ceb4-4dd8-b0f0-49d444855de0",
+  "created_at": "2024-06-06T13:32:49.715656Z",
+  "card_data": {
+    "iin": "41111111",
+    "lfd": "1111",
+    "holder_name": "JOHN DOE",
+    "expiration_month": 3,
+    "expiration_year": 26,
+    "brand": "VISA",
+    "issuer": "JPMORGAN CHASE BANK N A",
+    "category": "CREDIT",
+    "type": "CREDIT",
+    "fingerprint": "55a7fe38-cdc3-45dc-8c5f-820751799c76"
+  }
+}
+```
 
-Once the payment method is enrolled, you can verify its successful enrollment using the [retrieve enrolled payment methods](/reference/retrieve-enrolled-payment-methods-api) endpoint. Remember, the `customer_id` needed for this request is the `id` obtained during the customer creation in [Step 1](/docs/security-and-compliance/data-migration-processes/via-api#step-1-create-customers).
+Store the returned `vaulted_token` against the provider's card token in your database: this mapping is the outcome of the migration, and the `vaulted_token` is what you will send in all future payment requests. The `card_data.fingerprint` lets you [detect duplicate cards](/docs/security-and-compliance/fingerprint) across enrollments.
+
+</Step>
+<Step title="Check the enrolled payment method (optional)">
+
+Verify successful enrollment with the [Retrieve Enrolled Payment Methods](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api) endpoint, using the same `customer_id` from step 1.
+
+</Step>
+</Steps>
+
+## Running the migration at scale
+
+Migrations typically involve thousands of customers and cards. To run the loop reliably:
+
+* **Use one idempotency key per enrollment attempt.** The `X-Idempotency-Key` header makes retries safe: reusing the same key for the same card guarantees you never create a duplicate enrollment if a request times out and you retry it.
+* **Process incrementally and persist as you go.** Write each `provider token → vaulted_token` mapping to your database as soon as the enrollment succeeds, so an interrupted run can resume where it stopped instead of starting over.
+* **Retry transient failures, quarantine permanent ones.** Retry timeouts and `5xx` responses with backoff. Collect `4xx` failures in a separate list for review instead of retrying them blindly.
+* **Pace your requests.** Spread the migration over a controlled request rate rather than firing the full volume at once. Your Yuno contact can advise on the appropriate throughput for your migration size.
+
+Common error responses from the enrollment endpoint:
+
+| HTTP status | Code | What it means |
+| --- | --- | --- |
+| 400 | `INVALID_REQUEST` | The payload is malformed or a field is invalid. Review the request body and confirm the provider token matches the export file that was imported |
+| 401 | `INVALID_CREDENTIALS` | The `public-api-key` or `private-secret-key` is wrong, or the keys do not match the environment (sandbox vs. production) |
+| 403 | `AUTHORIZATION_REQUIRED` | Your merchant account is not enabled for this API. Contact your Yuno business advisor |
+
+## Reconcile before cutover
+
+When the run finishes, verify it before moving your billing volume to Yuno:
+
+1. Compare the number of rows in the export file against the number of `vaulted_tokens` you stored, and account for every failed row.
+2. Spot-check a sample of enrollments with the [Retrieve Enrolled Payment Methods](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api) endpoint, confirming the card brand and last four digits match the source data.
+3. Process a small cohort of real payments with migrated tokens before the full cutover, and keep your previous provider active until you have validated the results. See [Before you switch off your old provider](/docs/security-and-compliance/data-migration-processes/token-migration-process#before-you-switch-off-your-old-provider).
