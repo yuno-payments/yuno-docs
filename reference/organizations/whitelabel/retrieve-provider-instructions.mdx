@@ -1,0 +1,119 @@
+---
+title: "Retrieve a Provider's Instruction Override"
+description: "Returns the custom connection instructions stored for one provider — the focused read an editor loads before saving."
+openapi: "/openapi/organizations/whitelabel/retrieve-provider-instructions.json GET /whitelabel/providers/{provider_id}/instructions"
+---
+
+Returns the custom connection instructions you have stored for this provider — the focused read an editor loads before saving.
+
+A provider with no override answers `404`. Use [Retrieve a Provider Overlay](/reference/organizations/whitelabel/retrieve-provider), which never 404s, when you want the overlay whether or not an override exists.
+
+<Note>
+A field you do not override is **absent** — not `null`, not an empty list. Absent means "keep the Yuno catalogue's value"; present-and-empty means "replace it with nothing".
+</Note>
+
+### Path Parameters
+
+<ParamField path="provider_id" type="string" required>
+  Yuno catalogue provider id in UPPER_SNAKE_CASE. Case-insensitive — normalized to upper case.
+</ParamField>
+
+### Response
+
+<ResponseField name="provider_id" type="string">
+  Yuno catalogue provider id, normalized to upper case.
+</ResponseField>
+<ResponseField name="instructions" type="object[]">
+  Connection steps replacing the catalogue's. Each step accepts `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` and `sub_instructions` (nested up to 3 levels). `text` and `text_link` are either a plain string or a language map such as `{"EN": "...", "ES": "..."}`.
+</ResponseField>
+<ResponseField name="setup_instructions" type="object[]">
+  Grouped setup steps replacing the catalogue's. Each group accepts `title`, `order`, `instructions_type` and `instructions` (the same step shape).
+</ResponseField>
+<ResponseField name="more_info_url" type="string">
+  Documentation link replacing the catalogue's. Always https.
+</ResponseField>
+<ResponseField name="name" type="string">
+  Display name replacing the catalogue's. Only Yuno-owned providers can carry one.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp — when the override was first written.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  ISO 8601 timestamp — when the override was last written.
+</ResponseField>
+<ResponseField name="created_by" type="string">
+  The dashboard user who created it. Overrides written through this API carry the all-zero sentinel, meaning "written through the API" rather than by a person in the Dashboard.
+</ResponseField>
+<ResponseField name="updated_by" type="string">
+  The dashboard user who last updated it, with the same sentinel rule as `created_by`.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/whitelabel/providers/STRIPE/instructions' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK
+{
+  "provider_id": "STRIPE",
+  "more_info_url": "https://docs.example.com/stripe",
+  "instructions": [
+    {
+      "step": 1,
+      "text": { "EN": "Open your Stripe dashboard.", "ES": "Abre tu panel de Stripe." },
+      "type": "TEXT"
+    },
+    {
+      "step": 2,
+      "text": "Copy the secret API key and paste it below.",
+      "text_link": "Where do I find my key?",
+      "link": "https://docs.example.com/stripe#api-keys",
+      "type": "LINK"
+    }
+  ],
+  "setup_instructions": [
+    {
+      "title": "Before you start",
+      "order": 1,
+      "instructions_type": "TEXT",
+      "instructions": [
+        { "step": 1, "text": "Make sure your Stripe account is activated." }
+      ]
+    }
+  ],
+  "created_at": "2026-09-02T13:54:13Z",
+  "updated_at": "2026-09-02T13:54:13Z",
+  "created_by": "00000000-0000-0000-0000-000000000000",
+  "updated_by": "00000000-0000-0000-0000-000000000000"
+}
+```
+
+```json 404 — no override
+{
+  "title": "Not Found",
+  "status": 404,
+  "detail": "No instruction override for provider STRIPE"
+}
+```
+
+```json 400 Bad Request
+{
+  "code": "VALIDATION_ERROR",
+  "messages": ["provider_id is invalid"]
+}
+```
+</CodeGroup>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | Envelope | When |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | `provider_id` is not a valid catalogue id. |
+| `401` | `NOT_AUTHENTICATED` | Missing or invalid API keys. |
+| `404` | problem+json | This provider has no instruction override. |
+
+</div>

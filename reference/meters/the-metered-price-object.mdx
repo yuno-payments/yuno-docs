@@ -1,0 +1,144 @@
+---
+title: "The Metered Price Object"
+description: "Documents the metered price (plan meter) object: included credits per cycle, pricing strategy, price per unit and per-country prices."
+hidden: true
+---
+
+<Note>
+**Enabled per organization**
+
+Usage-based billing must be enabled for your organization before these endpoints accept requests. Contact your Yuno account manager to enable it. Requests from an organization where it is not enabled return `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+## Attributes
+
+A metered price is the relation between a [meter](/reference/meters/the-meter-object) and a [plan](/reference/plans/the-plan-object). It says how many units of the meter are included in the plan each billing cycle (`credits`) and what every unit beyond that costs (`price_per_credit`, optionally per country). A plan can carry any number of metered prices alongside its flat price; every subscription on the plan inherits them. Returned by the `/subscriptions/plans/{plan_id}/meters` endpoints and embedded as `meters[]` on [Create Plan](/reference/plans/create-plan) and [Retrieve Plan](/reference/plans/retrieve-plan) — always present, an empty array for a plan without metered prices.
+
+<Note>
+**`credits` are included units, not prepaid money**
+
+`credits` is the usage allowance bundled in the plan's flat price — "the first 10,000 tokens each month are included". It is measured in the meter's own unit and resets every billing cycle. It is not a prepaid balance or wallet.
+</Note>
+
+<ParamField body="id" type="string">
+  The unique identifier of the metered price (MAX 64; MIN 36).
+
+  Example: 77777777-7777-7777-7777-777777777777
+</ParamField>
+
+<ParamField body="plan_id" type="string">
+  The unique identifier of the plan the meter is attached to (MAX 64; MIN 36).
+
+  Example: 00000000-0000-4000-8000-000000000001
+</ParamField>
+
+<ParamField body="meter_id" type="string">
+  The unique identifier of the attached meter (MAX 64; MIN 36). Must be `ACTIVE` when attaching. A meter can be attached to a given plan only once (`409 PLAN_METER_ALREADY_ASSIGNED`).
+
+  Example: 66666666-6666-6666-6666-666666666666
+</ParamField>
+
+<ParamField body="credits" type="number">
+  Units of the meter included in the plan per billing cycle — the allowance a subscriber can consume before any usage is billed. Must be greater than or equal to 0; `0` means every unit is billed. Decimals allowed.
+
+  Example: 100.5
+</ParamField>
+
+<ParamField body="pricing_strategy" type="enum">
+  How usage beyond `credits` is priced. Only `PER_UNIT`'s fields (`price_per_credit`, `country_prices`) can be changed after attach — `PACKAGE` and `TIERED` config is set once, at attach time (see the field notes below and [Update Plan Meter](/reference/meters/update-plan-meter)).
+
+  Possible values:
+  - `PER_UNIT` = Billable units × `price_per_credit` (or the matching `country_prices` entry).
+  - `PACKAGE` = Billable units rounded up to the nearest whole `package_size`, billed at `package_price` per bundle.
+  - `TIERED` = Graduated: usage is split across `tiers[]`, each band billed at its own rate.
+</ParamField>
+
+<ParamField body="price_per_credit" type="object">
+  The price per unit beyond the included credits, in the plan's base currency. Used for every subscriber whose country has no explicit entry in `country_prices`. Only applies to `pricing_strategy: PER_UNIT`.
+
+  Rules when attaching or updating:
+  - `currency` must equal the plan's `base_amount` currency, else `400 INVALID_PARAMETERS`.
+  - Optional only when the plan's base currency is `USD` and the meter has a `default_price` — the meter's default then applies and this field is returned as `null`.
+  - Required when the plan's base currency is not `USD`, or when the meter has no `default_price`.
+
+  <Expandable title="properties">
+    <ParamField body="currency" type="enum">
+      MAX 3; MIN 3; <a href="/reference/country-reference">ISO 4217</a>.
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      The price per unit (multiple of 0.0001).
+
+      Example: 0.05
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="country_prices" type="array of objects">
+  Optional explicit per-unit prices by subscriber country, one entry per country (a repeated country is rejected with `400`). A country not listed falls back to `price_per_credit`. Same shape as the plan-level `country_prices`. Only applies to `pricing_strategy: PER_UNIT`.
+
+  <Expandable title="properties">
+    <ParamField body="country" type="string">
+      MAX 2; MIN 2; <a href="/reference/country-reference">ISO 3166-1</a>.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      <Expandable title="properties">
+        <ParamField body="currency" type="enum" />
+        <ParamField body="value" type="number" />
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="package_size" type="number">
+  Only for `pricing_strategy: PACKAGE`. The bundle size — billable units are rounded up to the nearest whole multiple of this. Must be greater than 0; decimals and scientific notation (`1e3`) are accepted and coerced. Stored rounded to 4 decimal places. Set only at attach time — rejected with `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED` on Update Plan Meter.
+
+  Example: 1000
+</ParamField>
+
+<ParamField body="package_price" type="object">
+  Only for `pricing_strategy: PACKAGE`. The price per bundle, in the plan's base currency unless overridden per country in `package_country_prices`. Required when `pricing_strategy` is `PACKAGE`. Same shape as `price_per_credit`. Set only at attach time.
+</ParamField>
+
+<ParamField body="package_country_prices" type="array of objects">
+  Only for `pricing_strategy: PACKAGE`. Optional explicit per-bundle prices by subscriber country. Same shape as `country_prices`. Set only at attach time.
+</ParamField>
+
+<ParamField body="tiers" type="array of objects">
+  Only for `pricing_strategy: TIERED`. Ordered, graduated pricing bands — at least one entry, required when `pricing_strategy` is `TIERED`. Set only at attach time; rejected with `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED` on Update Plan Meter.
+
+  <Expandable title="properties">
+    <ParamField body="up_to" type="number">
+      The inclusive upper bound of this tier's billable-unit band. Required and must strictly ascend on every tier except the last; the last tier's `up_to` must be `null` (unbounded, covers all remaining usage). Exactly one tier per `tiers[]` array may have `up_to: null`, and it must be the last one.
+    </ParamField>
+
+    <ParamField body="rate" type="object">
+      The price per unit within this band, in the plan's base currency. Same shape as `price_per_credit`. Every tier in one metered price must share the same currency (and the same set of countries in `country_rates`, if used).
+    </ParamField>
+
+    <ParamField body="country_rates" type="array of objects">
+      Optional per-country override of `rate` for this tier. Same shape as `country_prices`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<Note>
+For `PACKAGE` and `TIERED`, the metered price must be priced in every currency the plan supports: a currency the plan uses with no matching `package_country_prices`/`country_rates` entry (and no applicable base price) is rejected with `400 PLAN_METER_MISSING_CURRENCY`; a `package_price`/tier `rate` in a currency the plan doesn't use at all is rejected with `400 PLAN_METER_BASE_CURRENCY_MISMATCH`. All three pricing strategies round the computed usage charge half-up to 4 decimal places.
+</Note>
+
+<ParamField body="created_at" type="Timestamp">
+  Set by Yuno when the metered price is attached.
+</ParamField>
+<ParamField body="updated_at" type="Timestamp">
+  Set by Yuno on every update of the metered price.
+</ParamField>
+
+## Related
+
+* [Attach Meter to Plan](/reference/meters/attach-meter-to-plan)
+* [List Plan Meters](/reference/meters/list-plan-meters)
+* [Update Plan Meter](/reference/meters/update-plan-meter)
+* [Create Plan](/reference/plans/create-plan) — attach meters inline with `meters[]`
+* [The Meter Object](/reference/meters/the-meter-object)
+* [Usage-Based Billing guide](/docs/payment-features/subscriptions/usage-based-billing)

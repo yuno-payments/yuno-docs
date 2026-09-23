@@ -1,0 +1,259 @@
+---
+title: "Direct Integration"
+description: "Integrate Apple Pay directly with Yuno's API for one-time and recurring CIT/MIT payments."
+---
+
+This guide describes how to integrate Apple Pay directly with Yuno's API. Direct integration offers full control over the payment flow and is ideal for merchants who need custom implementations or have existing payment systems.
+
+Yuno's Apple Pay Direct integration supports one-time and recurring payments (useful for subscriptions and other regular transactions).
+
+<Note>
+  Before implementing Apple Pay payments, ensure you have completed the [Apple Pay prerequisites](/docs/prerequisites-apple-pay).
+</Note>
+
+## Apple Pay overview
+
+1. Customer initiates payment on their iOS device
+2. Receive `payment_token` via Apple SDK
+3. [Create a payment](/reference/create-payment) with Yuno including the stringified token
+4. Yuno processes with your configured provider or providers and returns a response
+5. Monitor response status via [webhooks](/docs/webhooks)
+
+## Request fields
+
+The [create payment](/reference/create-payment) request for Apple Pay uses the fields below. The requirement is shown per flow: one-time, CIT (the first payment of a recurring series), and MIT (subsequent recurring payments).
+
+| Field | One-time | CIT | MIT |
+| --- | --- | --- | --- |
+| `account_id` | Required | Required | Required |
+| `description` | Required | Required | Required |
+| `country` | Required | Required | Required |
+| `merchant_order_id` | Required | Required | Required |
+| `amount.currency`, `amount.value` | Required | Required | Required |
+| `workflow` | Required: `"DIRECT"` | Required: `"DIRECT"` | Required: `"DIRECT"` |
+| `payment_method.type` | Required: `"APPLE_PAY"` | Required: `"APPLE_PAY"` | Required: `"APPLE_PAY"` |
+| `payment_method.detail.wallet.payment_token` | Required | Required | Not sent |
+| `payment_method.vaulted_token` | Not sent | Not sent | Required |
+| `payment_method.vault_on_success` | Optional | Required: `true` | Optional |
+| `payment_method.detail.wallet.stored_credentials` | Not sent | Required: `usage: "FIRST"` | Not sent |
+| `payment_method.detail.card.stored_credentials` | Not sent | Not sent | Required: `usage: "USED"` |
+| `customer_payer` | Optional | Optional | Optional |
+| `soft_descriptor` (inside `detail.wallet`, or `detail.card` for MIT) | Optional | Optional | Optional |
+
+<Note>
+  * `payment_token` is the complete Apple Pay SDK response sent as a JSON string (stringified).
+  * If you do not send `workflow: "DIRECT"`, the API requires a `checkout.session` instead.
+  * Send the `X-Idempotency-Key` header on every create payment call to avoid duplicate charges.
+  * The required fields for Apple Pay are the same for every provider. No provider requires additional customer data fields for Apple Pay.
+</Note>
+
+## One-time payments
+
+To integrate a single transaction, such as an online purchase, use Yuno's API to [create a payment](/reference/create-payment). This requires you to obtain certain information from the Apple SDK's response, which is generated when the customer authorizes the payment.
+
+### Example Apple Pay response
+
+The Apple Pay SDK returns an object like the example below, we call this response the `payment_token`.
+
+```json
+{
+  "paymentMethod": {
+    "type": "credit",
+    "displayName": "Visa 3748",
+    "network": "Visa"
+  },
+  "paymentData": {
+    "data": "B5NSQI0TdXuLwqadBCL0yOwtik/rJx7v41xxE8rNSlFBTHR2W88iRck7a6bH...",
+    "signature": "MIAGCSqGSIb3DQEHAqCAMIACAQExDTALBglghkgBZQMEAgEwgAYJKoZIhvcN...",
+    "header": {
+      "publicKeyHash": "YK8kdoBXLGqBQKBtCZOl0DQTUHOWidRCxgOgf/1gBMM=",
+      "ephemeralPublicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEVv32VVJYlg+E0zMsthvBald...",
+      "transactionId": "87a03c4cc1b242a25d74257d4bc990a6473b9866392850e584a9f680dcdf3d0f"
+    },
+    "version": "EC_v1"
+  }
+}
+```
+
+### Example one-time payment request
+
+Here is an example of a one-time Apple Pay payment request using Yuno's Direct API. The request includes the **stringified** Apple Pay response inside `payment_token`, as received from the Apple Pay SDK, along with required fields such as amount, currency, and account information. Adjust the values as needed for your integration.
+
+```json
+curl --location 'https://api-sandbox.y.uno/v1/payments' \
+--header 'X-idempotency-key: 20cc2a07-9170-47d7-88ff-c4d3ee48274e' \
+--header 'public-api-key: '\
+--header 'private-secret-key: ' \
+--header 'Keep-Alive: timeout=5, max=1000' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "country": "US",
+    "amount": {
+        "currency": "USD",
+        "value": 2000
+    },
+    "customer_payer": {
+        "id": "24e25748-6ab3-4d43-bb8b-eb0204bb0954",
+        "email": "customer@example.com",
+        "first_name": "John",
+        "last_name": "Doe"
+    },
+    "workflow": "DIRECT",
+    "payment_method": {
+        "type": "APPLE_PAY",
+        "detail": {
+            "wallet": {
+                "payment_token": "{\r\n   \"paymentMethod\":{\r\n      \"type\":\"credit\",\r\n      \"displayName\":\"Visa 3748\",\r\n      \"network\":\"Visa\"\r\n   },\r\n   \"paymentData\":{\r\n      \"data\":\"B5NSQI0TdXuLwqadBCL0yOwtik\/rJx7v41xxE8rNSlFBTHR2W88iRck7a6b...\",\r\n      \"signature\":\"MIAGCSqGSIb3DQEHAqCAMIACAQExDTALBglghkgBZQMEAgEwgAYJKoZIhvcN...\",\r\n      \"header\":{\r\n         \"publicKeyHash\":\"YK8kdoBXLGqBQKBtCZOl0DQTUHOWidRCxgOgf\/1gBMM=\",\r\n         \"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEVv32VVJYlg+E0zMsthvBald...\",\r\n         \"transactionId\":\"87a03c4cc1b242a25d74257d4bc990a6473b9866392850e584a9f680dcdf3d0f\"\r\n      },\r\n      \"version\":\"EC_v1\"\r\n   }\r\n}",
+                "soft_descriptor": "TEST"
+            }
+        }
+    },
+    "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
+    "description": "Apple Pay one-time payment",
+    "merchant_order_id": "order-123"
+}'
+```
+
+## Recurring payments with Direct API
+
+Recurring Apple Pay payments with Direct integration require implementation of Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT).
+
+* **Customer Initiated Transaction (CIT):** The first transaction where the customer authorizes recurring payments. This generates a `vaulted_token` for future use.
+
+* **Merchant Initiated Transaction (MIT):** Subsequent automated transactions using the `vaulted_token` without customer interaction.
+
+### Customer Initiated Transaction (CIT)
+
+When a customer authorizes the subscription and you have a response from the Apple SDK, use the stringified `payment_token` in Yuno's [create payment API](/reference/create-payment) to create the CIT.
+
+```json
+curl --location 'https://api-sandbox.y.uno/v1/payments' \
+--header 'X-idempotency-key: 30cc2a07-9170-47d7-88ff-c4d3ee48274e' \
+--header 'public-api-key: ' \
+--header 'private-secret-key: ' \
+--header 'Keep-Alive: timeout=5, max=1000' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "country": "US",
+    "amount": {
+        "currency": "USD",
+        "value": 2000
+    },
+    "customer_payer": {
+        "id": "24e25748-6ab3-4d43-bb8b-eb0204bb0951",
+        "email": "customer@example.com",
+        "first_name": "John",
+        "last_name": "Doe"
+    },
+    "workflow": "DIRECT",
+    "payment_method": {
+        "vault_on_success": true,
+        "type": "APPLE_PAY",
+        "detail": {
+            "wallet": {
+                "payment_token": "{\r\n   \"paymentMethod\":{\r\n      \"type\":\"credit\",\r\n      \"displayName\":\"Visa 3748\",\r\n      \"network\":\"Visa\"\r\n   },\r\n   \"paymentData\":{\r\n      \"data\":\"B5NSQI0TdXuLwqadBCL0yOwtik\/rJx7v41xxE8rNSlFBTHR2W88iRck7a6b...\",\r\n      \"signature\":\"MIAGCSqGSIb3DQEHAqCAMIACAQExDTALBglghkgBZQMEAgEwgAYJKoZIhvcN...\",\r\n      \"header\":{\r\n         \"publicKeyHash\":\"YK8kdoBXLGqBQKBtCZOl0DQTUHOWidRCxgOgf\/1gBMM=\",\r\n         \"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEVv32VVJYlg+E0zMsthvBald...\",\r\n         \"transactionId\":\"87a03c4cc1b242a25d74257d4bc990a6473b9866392850e584a9f680dcdf3d0f\"\r\n      },\r\n      \"version\":\"EC_v1\"\r\n   }\r\n}",
+                "soft_descriptor": "TEST",
+                "stored_credentials": {
+                    "reason": "SUBSCRIPTION",
+                    "usage": "FIRST"
+                }
+            }
+        }
+    },
+    "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
+    "description": "Apple Pay recurring setup",
+    "merchant_order_id": "recurring-setup-123"
+}'
+```
+
+#### Key parameters for CIT
+
+* **`vault_on_success: true`**: Indicates this is a recurring payment setup and generates the vaulted token for future MIT transactions
+* **`detail.wallet.stored_credentials.usage: FIRST`**: Indicates this is the initial transaction in a recurring series
+* **`detail.wallet.payment_token`**: Must be the stringified Apple SDK response, the `payment_token`
+
+### CIT response handling
+
+When the CIT is successful, you'll receive a response containing the `vaulted_token`. It can be used for subsequent transactions. Store it encrypted at rest, and restrict access to only the systems that need it to create MIT charges.
+
+<Note>
+  The payment response is the only place the `vaulted_token` is returned. Wallet-vaulted instruments are intentionally not included in [Retrieve Enrolled Payment Methods](/reference/retrieve-enrolled-payment-methods-api), so don't rely on the customer's payment-methods list to rediscover the token — persist it (with any display metadata you need) when the CIT succeeds. A stored token can still be resolved individually with [Retrieve Enrolled Payment Method by ID](/reference/retrieve-enrolled-payment-method-by-id-api). See [Stored Credentials](/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay) for the tagging rules on stored wallet tokens.
+</Note>
+
+```json
+{
+  "id": "61533a3b-f971-422f-a839-9af61f8ec9ab",
+  "status": "SUCCEEDED",
+  "payment_method": {
+    "id": "7a2f1c44-3d57-4a9c-9ef0-3c0b5a8d2e1f",
+    "vaulted_token": "98c16e23-ebdd-4d0f-85bd-e0ba7d2fedf6"
+  }
+}
+```
+
+### Merchant Initiated Transaction (MIT)
+
+MIT transactions are processed automatically for recurring billing using the `vaulted_token` from the CIT.
+
+#### Example MIT request
+
+```json
+curl --location 'https://api-sandbox.y.uno/v1/payments' \
+--header 'X-idempotency-key: 4793b6aa-b2b3-4296-8477-37316f27c287' \
+--header 'public-api-key: ' \
+--header 'private-secret-key: ' \
+--header 'Keep-Alive: timeout=5, max=1000' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "country": "US",
+    "amount": {
+        "currency": "USD",
+        "value": 2000
+    },
+    "customer_payer": {
+        "id": "24e25748-6ab3-4d43-bb8b-eb0204bb0951",
+        "email": "customer@example.com",
+        "first_name": "John",
+        "last_name": "Doe"
+    },
+    "workflow": "DIRECT",
+    "payment_method": {
+        "vault_on_success": true,
+        "vaulted_token": "98c16e23-ebdd-4d0f-85bd-e0ba7d2fedf6",
+        "type": "APPLE_PAY",
+        "detail": {
+            "card": {
+                "soft_descriptor": "TEST",
+                "stored_credentials": {
+                    "reason": "SUBSCRIPTION",
+                    "usage": "USED"
+                }
+            }
+        }
+    },
+    "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
+    "description": "Apple Pay recurring setup",
+    "merchant_order_id": "recurring-setup-123"
+}'
+```
+
+#### Key parameters for MIT
+
+* **`vaulted_token`**: The vaulted token generated during the CIT
+* **`detail.card.stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
+* **No `payment_token` required**: Uses the stored `vaulted_token` instead
+
+## Troubleshooting
+
+* **Merchant validation failed**: verify Apple Pay certificates and merchant ID configuration
+* **Invalid or expired Apple token**: obtain a fresh token from Apple SDK and ensure it is stringified
+* **Unsupported network or country**: confirm your provider supports Apple Pay for the requested currency/country
+* **Duplicate charges**: always send an `Idempotency-Key` with create payment calls
+
+## Related documentation
+
+* [Prerequisites for Apple Pay](/docs/prerequisites-apple-pay)
+* [Apple Pay SDK integration](/docs/apple-pay-sdk-integration)
+* [Create payment API](/reference/create-payment)
+* [Subscription management](/docs/subscriptions)
+* [Webhooks](/docs/webhooks)

@@ -1,0 +1,213 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - Update Visibility",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers/{provider_id}": {
+      "patch": {
+        "summary": "Update a Provider's Visibility",
+        "operationId": "update-whitelabel-provider-visibility",
+        "description": "Turns a single provider on or off. Idempotent, and turning it off keeps its instruction override so your wording survives the toggle.\n\nThe response is the provider's refreshed overlay, with `allowed` reflecting the `visible` you sent.",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "description": "Yuno catalogue provider id in UPPER_SNAKE_CASE. Case-insensitive; normalized to upper case.",
+            "schema": {
+              "type": "string",
+              "example": "STRIPE"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Whether the organization offers this provider.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "visible"
+                ],
+                "properties": {
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Whether the organization offers this provider. `true` adds it to the allowlist, `false` removes it. Removing keeps any instruction override. Required — an omitted or null `visible` is a `400`, never a defaulted `false`.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The provider's refreshed overlay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider_id": {
+                      "type": "string",
+                      "description": "Yuno catalogue provider id, UPPER_SNAKE_CASE.",
+                      "example": "STRIPE"
+                    },
+                    "allowed": {
+                      "type": "boolean",
+                      "description": "Whether the organization offers this provider.",
+                      "example": true
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Display name replacing the catalogue's, when overridden. Only Yuno-owned providers can carry one.",
+                      "example": "Acme Risk"
+                    },
+                    "instructions": {
+                      "type": "array",
+                      "description": "Connection steps replacing the catalogue's, when overridden. Absent means keep the catalogue's.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "One instruction step. Accepts `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` and `sub_instructions` (nested up to 3 levels). `text` and `text_link` are either a plain string or a language map such as `{\"EN\": \"...\", \"ES\": \"...\"}`. Every `link` must be https."
+                      }
+                    },
+                    "setup_instructions": {
+                      "type": "array",
+                      "description": "Grouped setup steps replacing the catalogue's, when overridden. Absent means keep the catalogue's.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "One setup group. Accepts `title`, `order`, `instructions_type` and `instructions` (the same step shape)."
+                      }
+                    },
+                    "more_info_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "Documentation link replacing the catalogue's, when overridden. Always https.",
+                      "example": "https://docs.example.com/stripe"
+                    },
+                    "logo_url": {
+                      "type": "string",
+                      "readOnly": true,
+                      "description": "Read-only and ephemeral: a presigned URL minted on this read and valid only for a short window. Never store it — read the provider again for a fresh one.",
+                      "example": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid provider_id or body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "provider_id is invalid"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body larger than 256 KB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Request body is too large"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,232 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - Replace Allowlist",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers": {
+      "put": {
+        "summary": "Replace the Provider Allowlist",
+        "operationId": "replace-whitelabel-provider-allowlist",
+        "description": "Replaces the whole set of providers your organization offers with the ids in the body. A provider the body omits stops being offered — this is a replace, not a merge; use `PATCH /v1/whitelabel/providers` to change some providers without restating the rest.\n\nAn empty `provider_ids` is a legal request and clears the allowlist, the same end state as `DELETE /v1/whitelabel/providers`, so a save-everything admin screen needs no special case for \"the last provider was unticked\".\n\nRemoving a provider keeps its instruction override, so toggling it off and on again does not lose your wording.",
+        "requestBody": {
+          "required": true,
+          "description": "The complete set of provider ids to offer.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "provider_ids"
+                ],
+                "properties": {
+                  "provider_ids": {
+                    "type": "array",
+                    "description": "The complete set of provider ids the organization offers. UPPER_SNAKE_CASE catalogue ids (`[A-Z0-9_]`), at most 100 characters each, at most 500 entries.",
+                    "maxItems": 500,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 100
+                    },
+                    "example": [
+                      "STRIPE",
+                      "ADYEN",
+                      "YUNO_3DS"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The refreshed overlay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filtered": {
+                      "type": "boolean",
+                      "description": "Whether the organization has at least one allowlist entry. Branch on this, never on the length of `providers` — the list is also non-empty when the only entries are instruction or logo overrides.",
+                      "example": true
+                    },
+                    "providers": {
+                      "type": "array",
+                      "description": "The union of the allowlist, the instruction overrides, and the logo overrides. A provider can carry custom wording or a custom logo without being offered, in which case it appears with `allowed: false`.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider_id": {
+                            "type": "string",
+                            "description": "Yuno catalogue provider id, UPPER_SNAKE_CASE.",
+                            "example": "STRIPE"
+                          },
+                          "allowed": {
+                            "type": "boolean",
+                            "description": "Whether the organization offers this provider.",
+                            "example": true
+                          },
+                          "has_instruction_override": {
+                            "type": "boolean",
+                            "description": "Whether any instruction override exists. A cheap badge flag, redundant with the content fields and not authoritative for rendering them.",
+                            "example": true
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Display name replacing the catalogue's, when overridden. Only Yuno-owned providers can carry one.",
+                            "example": "Acme Risk"
+                          },
+                          "instructions": {
+                            "type": "array",
+                            "description": "Connection steps replacing the catalogue's, when overridden. Absent means keep the catalogue's.",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "description": "One instruction step. Accepts `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` and `sub_instructions` (nested up to 3 levels). `text` and `text_link` are either a plain string or a language map such as `{\"EN\": \"...\", \"ES\": \"...\"}`. Every `link` must be https."
+                            }
+                          },
+                          "setup_instructions": {
+                            "type": "array",
+                            "description": "Grouped setup steps replacing the catalogue's, when overridden. Absent means keep the catalogue's.",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "description": "One setup group. Accepts `title`, `order`, `instructions_type` and `instructions` (the same step shape)."
+                            }
+                          },
+                          "more_info_url": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "Documentation link replacing the catalogue's, when overridden. Always https.",
+                            "example": "https://docs.example.com/stripe"
+                          },
+                          "logo_url": {
+                            "type": "string",
+                            "readOnly": true,
+                            "description": "Read-only and ephemeral: a presigned URL minted on this read and valid only for a short window. Never store it — read the provider again for a fresh one.",
+                            "example": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error — unknown field, more than 500 ids, or an id that is not a valid catalogue id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "about:blank"
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "Bad Request"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "detail": {
+                      "type": "string",
+                      "example": "provider_ids contains an invalid catalogue id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body larger than 256 KB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Request body is too large"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

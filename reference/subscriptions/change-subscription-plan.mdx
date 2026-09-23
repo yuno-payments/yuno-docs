@@ -1,0 +1,170 @@
+---
+title: "Change Subscription Plan"
+openapi: "/openapi/subscriptions/change-subscription-plan.json POST /subscriptions/{subscription_id}/plan"
+description: "Moves a subscription onto a plan, effective at its next renewal."
+---
+
+<Note>
+**The change takes effect at the next renewal**
+
+No charge is made when you call this endpoint, and nothing is prorated or refunded. The
+subscription keeps billing on its existing schedule; the new plan's price applies from the
+next renewal date onwards.
+</Note>
+
+## Two behaviors, one endpoint
+
+Which one you get depends on whether the subscription is already on a plan.
+
+| Subscription | What happens | `id` in the response |
+|---|---|---|
+| Not on a plan | Attached to the plan in place | Unchanged |
+| Already on a plan | Canceled and replaced by a new subscription on the target plan | **New** — the old `id` is in `previous_subscription_id` |
+
+In the replacement case the original subscription ends up `CANCELED` with a
+`cancellation_source` of `PLAN_CHANGE`, and the replacement inherits the original's
+remaining billing cycles and its next renewal date — `availability.start_at` and
+`billing_cycles.next_at` on the replacement both equal the original's `next_at`, and its
+`billing_cycles.current` restarts at `1`. If that renewal date has already passed (for
+example on a long-paused subscription), the replacement instead starts about a minute from
+now and bills right away.
+
+<Warning>
+**Store the returned `id` after a plan-to-plan change**
+
+The replacement is a different subscription. If you keep the old `id`, subsequent calls will
+act on a canceled subscription.
+</Warning>
+
+## Webhooks
+
+A plan-to-plan change emits three events:
+
+- `subscription.create` for the replacement.
+- `subscription.cancel` for the original, with `cancellation_source: PLAN_CHANGE`. Do not
+  count it as churn.
+- `subscription.plan_changed` for the replacement, with `previous_subscription_id` set.
+
+The attach case emits none of them. Its only webhook is a status change, and only when the
+plan's ladder promotes the subscription to `TRIALING` on this call.
+
+## Skipping the target plan's trial
+
+If the target plan defines trial or intro phases, the subscription adopts that whole ladder by
+default — which means a subscriber can change plans mid-trial and receive a fresh trial.
+
+Set `skip_trial` to `true` to prevent that. The replacement bills the target plan's regular
+price from its first charge and its status stays `ACTIVE` rather than becoming `TRIALING`.
+
+```json Change plan without granting a new trial
+{
+  "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+  "skip_trial": true
+}
+```
+
+`skip_trial` defaults to `false` and applies only to plan-to-plan changes. Sending
+`skip_trial: true` on a subscription that is not on a plan returns `400` — `false` and an
+omitted flag are equivalent and are accepted everywhere. On a plan with no phases it makes no
+difference.
+
+<Note>
+**`phases` still describes the plan**
+
+With `skip_trial: true` the response still lists the target plan's `phases` — that array
+describes the *plan*, not what this subscription will be billed. The subscription-level
+signals are `status`, which stays `ACTIVE` instead of becoming `TRIALING`, and the **absence**
+of `current_phase` and `billing_phases`: both keys are omitted from the response rather than
+returned as `null`, so test for absence, not for `null`. A default change returns both
+populated.
+</Note>
+
+## Scheduling the change instead
+
+Both mechanisms take billing effect at the next renewal — neither charges now. They differ in
+what happens to the subscription record. This endpoint restructures it immediately: an attach
+mutates the subscription in place, and a plan-to-plan change returns a new `id` with the
+original left `CANCELED`. The `plan_change` object on
+[Update Subscription](/reference/subscriptions/update-subscription) leaves the subscription
+untouched until the renewal and keeps the same `id`.
+
+`plan_change` is not a general substitute: it requires a subscription that is already on a
+plan and is `ACTIVE` or `TRIALING`. Attaching a plan to a subscription that has none, or
+changing plans from `CREATED` or `PAUSED`, is only possible through this endpoint.
+
+The two differ in their trial default, for backwards-compatibility reasons:
+
+| | Default |
+|---|---|
+| This endpoint | Adopts the target plan's phases (`skip_trial: false`) |
+| `plan_change` on Update Subscription | Skips them (`phases_behavior: "START_FROM_REGULAR"`) |
+
+Set `skip_trial` or `phases_behavior` explicitly whenever the trial behavior matters to you.
+
+## Repeated calls
+
+While the subscription is in an accepted status, re-posting its **current** plan is an
+idempotent no-op that returns `200` with the subscription unchanged — including when you
+change only `skip_trial`, and including when that plan has since been canceled.
+
+A plan-to-plan change is not repeatable on the same `subscription_id`. Once it succeeds the
+original is `CANCELED`, so re-posting to that `id` returns `400` `INVALID_STATE`
+(`The subscription status CANCELED does not support plan changes.`) rather than replaying the
+first outcome. Treat that error as confirmation the change already landed, and point any
+follow-up call at the replacement `id`.
+
+If a call times out, reconcile with `GET /v1/subscriptions/{subscription_id}` instead of
+retrying blind: the original carries `cancellation_source: PLAN_CHANGE` once the change
+landed, and the replacement is the subscription whose `previous_subscription_id` is that
+`id`. An in-flight retry sent while the original is still changeable is safe — it is
+deduplicated as long as `skip_trial` is unchanged. A different `skip_trial` value is a
+different operation.
+
+## Requirements
+
+The subscription must not be `CANCELED` or `COMPLETED` — those return `400` `INVALID_STATE`
+(`The subscription status <STATUS> does not support plan changes.`). This endpoint accepts
+`CREATED` and `PAUSED` subscriptions, which the `plan_change` object on Update Subscription
+does not.
+
+Both cases require the plan to be `ACTIVE` and to belong to the subscription's account, and
+neither is available to subscriptions billed with `frequency.execution: MERCHANT`.
+
+**Attaching a subscription that has no plan** additionally requires that the plan's cadence
+matches the subscription's and that the resolved price is in the subscription's currency. The
+subscription must not be in a trial period, must not already have billing phases, must not use
+a `billing_date`, and must not have a `VARIABLE` amount.
+
+The subscription adopts the target plan's phase ladder from its next unbilled cycle, and that
+ladder must fit inside the subscription's remaining billing cycles. If the ladder opens with a
+`TRIAL` phase covering the cycle in flight, an `ACTIVE` subscription becomes `TRIALING` on this
+same call; `CREATED` and `PAUSED` subscriptions are not promoted this way. `skip_trial` cannot
+suppress that — it is a plan-to-plan-only flag.
+
+**Changing from one plan to another** additionally requires that the subscription has at least
+one billing cycle left and that its availability window does not end before the next renewal.
+The target plan must accept the subscription's payment-method type, if it restricts
+`allowed_payment_methods`, and the subscription must have a stored vaulted payment method. The
+target plan's cadence and price apply as defined on that plan.
+
+If the subscription had a scheduled change pending, this call discards it without a
+`subscription.plan_change_canceled` webhook; the replacement starts with
+`pending_plan_change: null`.
+
+## Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `404` | `PLAN_NOT_FOUND` | The target plan does not exist or is not linked to this account. |
+| `400` | `INVALID_STATE` | The subscription's status does not support plan changes; the target plan is not active; or the availability window ends before the next renewal. |
+| `400` | `BAD_REQUEST` | `skip_trial: true` on a subscription that is not on a plan; no remaining billing cycles; the subscription is billed with `frequency.execution: MERCHANT`. |
+| `400` | `INCORRECT_PAYMENT_METHOD_TYPE` | The target plan restricts `allowed_payment_methods` and the subscription's payment-method type is not on the list. |
+| `400` | `PAYMENT_METHOD_NOT_FOUND` | The subscription has no stored vaulted payment method. |
+
+</div>
+
+Re-posting the subscription's current plan here is a `200` no-op. The same intent expressed
+through the `plan_change` object on [Update Subscription](/reference/subscriptions/update-subscription)
+is rejected with `422` `SAME_PLAN`.

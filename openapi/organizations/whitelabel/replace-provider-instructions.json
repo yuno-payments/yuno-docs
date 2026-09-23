@@ -1,0 +1,267 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - Replace Instructions",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers/{provider_id}/instructions": {
+      "put": {
+        "summary": "Replace a Provider's Instruction Override",
+        "operationId": "replace-whitelabel-provider-instructions",
+        "description": "Stores your own connection instructions for this provider, replacing the Yuno catalogue's wording where you override it.\n\nThe document is stored whole, not merged. A field this body omits is cleared, and the provider reverts to the catalogue value for it — so read the current document with `GET`, edit it, and put the whole thing back. At least one of `instructions`, `setup_instructions`, `more_info_url` and `name` must be present, unknown top-level keys are rejected rather than ignored, and the serialised document may not exceed 64 KB.\n\nEvery `link`, and `more_info_url`, must be https. `name` renames the provider and is accepted only for Yuno-owned providers (a catalogue id containing `YUNO`); any other provider is rejected with `400`. Rejections list every violation at once in `violations`.\n\nOverriding a provider's wording does not add it to your allowlist.",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "description": "Yuno catalogue provider id in UPPER_SNAKE_CASE. Case-insensitive; normalized to upper case.",
+            "schema": {
+              "type": "string",
+              "example": "STRIPE"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The complete override document.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "The complete override document. At least one property must be present.",
+                "minProperties": 1,
+                "properties": {
+                  "instructions": {
+                    "type": "array",
+                    "description": "The connection steps shown to your own users. Every `link` must be https.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "description": "One instruction step. Accepts `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` and `sub_instructions` (nested up to 3 levels). `text` and `text_link` are either a plain string or a language map such as `{\"EN\": \"...\", \"ES\": \"...\"}`. Every `link` must be https."
+                    }
+                  },
+                  "setup_instructions": {
+                    "type": "array",
+                    "description": "Grouped setup steps.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "description": "One setup group. Accepts `title`, `order`, `instructions_type` and `instructions` (the same step shape)."
+                    }
+                  },
+                  "more_info_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Link to your own documentation for this provider. Must be an https URL.",
+                    "example": "https://docs.example.com/stripe"
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "description": "Display name that replaces the catalogue's. Accepted only for Yuno-owned providers (a catalogue id containing `YUNO`, e.g. `YUNO_3DS`); any other provider is rejected with `400`.",
+                    "example": "Acme Risk"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The stored override.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider_id": {
+                      "type": "string",
+                      "description": "Yuno catalogue provider id, UPPER_SNAKE_CASE.",
+                      "example": "STRIPE"
+                    },
+                    "instructions": {
+                      "type": "array",
+                      "description": "Connection steps replacing the catalogue's.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "One instruction step. Accepts `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` and `sub_instructions` (nested up to 3 levels). `text` and `text_link` are either a plain string or a language map such as `{\"EN\": \"...\", \"ES\": \"...\"}`. Every `link` must be https."
+                      }
+                    },
+                    "setup_instructions": {
+                      "type": "array",
+                      "description": "Grouped setup steps replacing the catalogue's.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "One setup group. Accepts `title`, `order`, `instructions_type` and `instructions` (the same step shape)."
+                      }
+                    },
+                    "more_info_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "Documentation link replacing the catalogue's, when overridden. Always https.",
+                      "example": "https://docs.example.com/stripe"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Display name replacing the catalogue's, when overridden. Only Yuno-owned providers can carry one.",
+                      "example": "Acme Risk"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true,
+                      "description": "When the override was first written.",
+                      "example": "2026-09-02T13:54:13Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true,
+                      "description": "When the override was last written.",
+                      "example": "2026-09-02T13:54:13Z"
+                    },
+                    "created_by": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true,
+                      "description": "The dashboard user who created it. Overrides written through this API carry the all-zero sentinel `00000000-0000-0000-0000-000000000000`, meaning \"written through the API\" rather than by a person in the dashboard.",
+                      "example": "00000000-0000-0000-0000-000000000000"
+                    },
+                    "updated_by": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true,
+                      "description": "The dashboard user who last updated it, with the same sentinel rule as `created_by`.",
+                      "example": "00000000-0000-0000-0000-000000000000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The document was rejected — invalid provider_id, unknown key, non-https link, `name` on a provider that is not Yuno-owned, or over 64 KB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "about:blank"
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "Invalid provider instructions"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "detail": {
+                      "type": "string",
+                      "example": "The instruction override was rejected"
+                    },
+                    "violations": {
+                      "type": "array",
+                      "description": "Every violation of the request, reported together rather than one per round trip.",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "name: only Yuno's own providers can be renamed; 'STRIPE' cannot"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body larger than 256 KB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Request body is too large"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

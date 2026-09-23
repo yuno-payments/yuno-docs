@@ -1,0 +1,173 @@
+---
+title: "Destination Allowlist"
+description: "Register the third-party hosts your PCI Proxy is allowed to call. Every destination must be on your allowlist before the proxy will send card data to it."
+keywords: ["pci proxy", "allowlist", "destination", "security"]
+---
+
+The PCI Proxy only sends card data to hosts you have explicitly registered. This is a
+deliberate safety control: even if your API credentials were stolen, an attacker could not
+forward your stored cards to a server you never approved. There is no "any host" mode.
+
+Managing your allowlist is self-serve — a hostname you add is usable within minutes, no
+support ticket required.
+
+<Warning>
+**A destination not on your allowlist is rejected**
+
+A proxy request to an unregistered host returns `403 DESTINATION_NOT_ALLOWED`. Register the
+host first with the endpoints below.
+</Warning>
+
+## How matching works
+
+The proxy only forwards to hosts that are registered **and enabled** on your allowlist.
+Matching is exact on the hostname:
+
+* **Case-insensitive:** `API.Stripe.com` and `api.stripe.com` are the same host.
+* **No wildcards:** `api.example.com` does not authorize `sandbox.example.com`.
+* **Subdomains are registered separately.**
+
+A request to a host that is not registered, or is registered but `DISABLED`, is rejected with
+`403 DESTINATION_NOT_ALLOWED` before any card data is read.
+
+## Register a destination
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hostname": "api.example-processor.com",
+    "purpose": "Direct acquiring — Processor X",
+    "account_id": null
+  }'
+```
+
+Returns `201` with the created entry, which starts in the `ENABLED` state. A hostname that is
+already registered returns `409 DESTINATION_EXISTS`; a value that is not a bare public hostname
+(a URL, a host with a port or path, an IP address, or a wildcard) returns `422 INVALID_HOSTNAME`;
+an `account_id` that is not a valid account for your organization returns `400 INVALID_ACCOUNT_ID`.
+
+`account_id` is optional. Left `null` (the default), the destination is allowed for **every
+account** in your organization. Set it to a specific account id to scope the destination to
+that account only — the host is then usable solely on proxy requests made under that account.
+
+The destination object returns `id`, `hostname`, `purpose`, `account_id`, `status`
+(`ENABLED` / `DISABLED`), `created_at`, and `updated_at`. When you call via the API the actor
+is your API key, so the object does not carry a user email.
+
+<Tip>
+**Authenticate the forwards to this destination**
+
+A destination can also carry persisted authentication — a dLocal HMAC signing profile or an
+mTLS client certificate — so the proxy authenticates every forward for you instead of you
+sending credentials on each request. Add an `authentication` array on registration, or manage
+it later. See [Destination Authentication](/docs/security-and-compliance/pci-proxy/destination-authentication).
+</Tip>
+
+## List your destinations
+
+```sh
+curl "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Returns `{"destinations": [ ... ]}` — without the header below, only your org-wide destinations
+(`account_id: null`).
+
+<Warning>
+**Account-scoped destinations need the `X-account-code` header**
+
+As covered in [Register a destination](#register-a-destination) above, a destination registered
+with `account_id` set is scoped to that account. This call only returns it when you pass
+`X-account-code: {account_id}` on the request:
+
+```sh
+curl "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "X-account-code: $ACCOUNT_ID"
+```
+
+The header acts as a strict filter, not an addition: with it, you get only that account's
+destinations; without it, you get only org-wide destinations (`account_id: null`). Neither call
+returns both at once. An account-scoped destination isn't deleted when it's missing from a
+plain, header-less list, it's just filtered out — the most common cause of a destination that
+was registered successfully but never seems to show up.
+</Warning>
+
+## Remove a destination
+
+```sh
+curl -X DELETE "https://api.y.uno/v1/pci-proxy/destinations/{id}" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Returns `204`. Removing a destination takes effect immediately — the next proxy request to
+that host is rejected.
+
+If the destination was registered with `account_id` set, pass `X-account-code: {account_id}` on
+this call too, the same way as when [listing your destinations](#list-your-destinations),
+otherwise it's treated as not found.
+
+## Enable or disable a destination
+
+Instead of removing a host, you can **disable** it — the record (and its audit history) is kept,
+but the forward path stops using it. Re-**enable** it to turn it back on. This is useful for
+temporarily suspending a destination without losing its configuration.
+
+```sh
+# Turn a destination off (keeps the record)
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations/{id}/disable" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+
+# Re-enable a disabled destination
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations/{id}/enable" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Each returns `200` with the updated destination object (its `status` set to `DISABLED` or
+`ENABLED`). Only `ENABLED` destinations are used by the forward path; a request to a `DISABLED`
+host returns `403 DESTINATION_NOT_ALLOWED`.
+
+The same `X-account-code: {account_id}` header applies here: if the destination was registered
+with `account_id` set, include it or the call treats the destination as not found.
+
+A destination moves through three states:
+
+```text
+      create
+        │
+        ▼
+   ┌───────────┐   disable    ┌────────────┐
+   │  ENABLED  │ ───────────► │  DISABLED  │
+   │ (usable)  │ ◄─────────── │ (blocked)  │
+   └───────────┘    enable    └────────────┘
+        │                           │
+        └──────────── delete ───────┘
+                       │
+                       ▼
+                   (removed)
+```
+
+## Audit trail
+
+Every allowlist change — **add, remove, enable, and disable** — is written to an append-only
+audit log recording who made the change, when, and which hostname. The audit record persists
+even after a destination is removed, so a deletion is never invisible: you can always see who
+removed a host and when. There is no way to alter or erase these audit records through the API.
+
+<Note>
+**Treat new-destination and deletion alerts seriously**
+
+Adding or removing a destination is a sensitive action: it changes where your cards can be sent.
+Yuno recommends restricting who can manage the allowlist, enabling notifications on allowlist
+changes, and reviewing any unexpected additions or deletions — they are the tripwire for a
+compromised dashboard account.
+</Note>
+

@@ -1,0 +1,74 @@
+---
+title: "Build with AI"
+description: "Point Claude Code, Cursor, Windsurf, VS Code, or any coding agent at Yuno's documentation and API so it integrates the SDK and creates payments with current context"
+---
+
+Yuno publishes its documentation and API in the formats coding agents read. Connect your agent once and it can scaffold the SDK, create checkout sessions and payments in sandbox, and read API responses with the current field names instead of guessing from training data.
+
+There are three things to connect, and you rarely need all of them:
+
+| You want the agent to | Connect | Auth |
+| :--- | :--- | :--- |
+| Read the docs while it writes your integration | Docs MCP server at `https://docs.y.uno/mcp` | None |
+| Call the Yuno API on your account (create customers, sessions, payments, refunds) | [Remote Yuno MCP Server](/docs/ai-capabilities/remote-yuno-mcp-server) at `https://mcp.prod.y.uno/mcp`, or the local `@yuno-payments/yuno-mcp` package | Your API keys |
+| Ship an AI product that takes payments | [Agent Toolkit](/docs/ai-capabilities/agent-toolkit) (`@yuno-payments/agent-toolkit`) | Your API keys |
+
+## Claude Code
+
+Add the docs server to Claude Code from the terminal:
+
+```bash
+claude mcp add --transport http yuno-docs https://docs.y.uno/mcp
+```
+
+To share it with everyone on the repository, commit a `.mcp.json` at the project root instead:
+
+```json
+{
+  "mcpServers": {
+    "yuno-docs": {
+      "type": "http",
+      "url": "https://docs.y.uno/mcp"
+    }
+  }
+}
+```
+
+Then ask for what you need in plain language, for example:
+
+* "Integrate the Yuno Seamless SDK in this Next.js app. Create the checkout session in a route handler and mount the SDK in a client component."
+* "Add a `/api/payments` route that creates a Yuno payment from the one-time token and follows the payment retry rules."
+* "Subscribe to `payment.purchase` and `payment.chargeback` webhooks and verify the HMAC signature."
+
+Claude Code also reads `AGENTS.md` files. Yuno publishes one at [docs.y.uno/AGENTS.md](https://docs.y.uno/AGENTS.md) with install commands, base URLs, credentials, and the four-step payment flow; copy it into your project or point the agent at the URL.
+
+## Cursor, Windsurf, and VS Code
+
+Add the same server through each editor's MCP settings. Step-by-step instructions for Cursor, Claude Desktop, Windsurf, and VS Code Copilot are on [Setup MCP](/setup-mcp). The configuration is the same everywhere: type `http`, URL `https://docs.y.uno/mcp`, no credentials.
+
+## Any agent
+
+Agents that do not speak MCP can still read everything:
+
+* **`https://docs.y.uno/llms.txt`** lists every page in a machine-readable index. Append `.md` to any docs URL to get that page as Markdown.
+* **`https://docs.y.uno/openapi.json`** (also `.yaml`) is the OpenAPI 3.1 spec for the Payments API, aggregated from the per-operation specs behind the API reference.
+* **[Developer resources](/docs/developers)** lists the entry points an agent should read first and the quick start for agents.
+
+## Let the agent act on your account
+
+When the agent should create real objects rather than write code, give it the API MCP server. The hosted endpoint is `https://mcp.prod.y.uno/mcp` with the `public-api-key`, `private-secret-key`, and `account-code` headers; the local option is `npx @yuno-payments/yuno-mcp@latest` with the same values as environment variables. Both expose customers, payment methods, checkout sessions, payments, payment links, subscriptions, recipients, and installment plans as tools. See [Building AI Integrations with Yuno's LLMs and MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) for the tool list and [Remote Yuno MCP Server](/docs/ai-capabilities/remote-yuno-mcp-server) for session limits.
+
+<Warning>
+  Use sandbox keys while the agent is iterating. The API MCP server executes what the agent asks for, including refunds and cancellations on production if you give it production keys.
+</Warning>
+
+## Verify what the agent wrote
+
+An agent with the docs connected still needs the same checks as a person:
+
+* Payments are created from your server with the one-time token, never from the browser.
+* `X-Idempotency-Key` is set on every API call.
+* The `yunoCreatePayment` callback follows the [payment retry rules](/docs/sdks/resources/references/web#payment-retry).
+* Webhook handlers verify `x-hmac-signature` before trusting the payload.
+
+If the agent is working in React or Next.js, point it at the React and Next.js guide under SDKs for the client-only mounting pattern.

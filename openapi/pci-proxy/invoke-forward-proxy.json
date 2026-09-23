@@ -1,0 +1,400 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "pci-proxy-invoke-forward-proxy",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/pci-proxy/forward": {
+      "post": {
+        "summary": "Invoke Forward Proxy",
+        "description": "Forwards your request to the destination indicated in the `yuno-proxy-destination-url` header, replacing `{{vaulted_token.<TOKEN>.<field>}}` expressions in the body and header values with real card data inside Yuno's PCI DSS Level 1 environment. The destination's status code, headers, and body are returned unchanged. `GET`, `PUT`, `PATCH`, and `DELETE` are also supported and forwarded verbatim. The full destination (including its path and query string) is specified in `yuno-proxy-destination-url`; a query string on the `/pci-proxy/forward` request itself is rejected. Every proxy response carries a `yuno-proxy-request-id` header; a `401` returned before the request reaches the proxy is the only exception.",
+        "operationId": "invokeForwardProxy",
+        "parameters": [
+          {
+            "name": "yuno-proxy-destination-url",
+            "in": "header",
+            "required": true,
+            "description": "The complete destination URL, including its path and any query string (for example `https://api.example-processor.com/charges/ch_123/capture?expand=true`). Must be a public HTTPS hostname on port 443, and the host must be registered on your destination allowlist; IP addresses and internal networks are rejected. It must not contain `{{vaulted_token...}}` expressions (card data must never appear in a URL).",
+            "schema": {
+              "type": "string",
+              "example": "https://api.example-processor.com/charges"
+            }
+          },
+          {
+            "name": "yuno-proxy-timeout",
+            "in": "header",
+            "required": false,
+            "description": "Destination timeout in seconds. Default 30, maximum 120.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120,
+              "example": 30
+            }
+          },
+          {
+            "name": "yuno-account-id",
+            "in": "header",
+            "required": false,
+            "description": "Optional account scope. Narrows which allowlisted destinations are permitted for this request; it does not affect token resolution (vaulted tokens are always scoped to your organization). Like all `yuno-*` headers it is removed before forwarding and never reaches the destination.",
+            "schema": {
+              "type": "string",
+              "example": "acc_123"
+            }
+          },
+          {
+            "name": "yuno-proxy-auth",
+            "in": "header",
+            "required": false,
+            "description": "Signing scheme for destinations that require HMAC request signing over the body. The proxy computes the signature over the resolved body (after expression substitution) and injects the destination's auth headers; your signing secret is used in memory and discarded — nothing is stored. Supported: `DLOCAL_HMAC` (the proxy generates `X-Date` and computes `Authorization: V2-HMAC-SHA256, Signature: <hex>` over `X-Login + X-Date + resolved body`; you send `X-Login`, `X-Trans-Key`, and `X-Version` as normal destination headers). An unknown value — or a `DLOCAL_HMAC` request missing the `X-Login` or `X-Trans-Key` headers — is rejected with `400 INVALID_REQUEST` before the destination is contacted.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DLOCAL_HMAC"
+              ],
+              "example": "DLOCAL_HMAC"
+            }
+          },
+          {
+            "name": "yuno-proxy-auth-secret-key",
+            "in": "header",
+            "required": false,
+            "description": "Your signing secret for this request (required when `yuno-proxy-auth` is present). Like every `yuno-*` header it is stripped before forwarding and excluded from logs.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The body the destination API expects, with vaulted token expressions where card data belongs. The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions anywhere in the raw body, so any content type is supported (JSON, form-encoded, XML). The JSON object below is illustrative. Supported fields: `number`, `expiration_month`, `expiration_year`, `holder_name`; when the card has a network token, `network_token_number` (DPAN), `network_token_expiration_month`, `network_token_expiration_year`; and `network_transaction_id` (NTID: the scheme's reference for the card's original transaction, for merchant-initiated transactions). The security code is not stored and cannot be injected; cryptograms are per-transaction and are not resolved — include the value directly in the body if your destination requires one. At most 20 distinct tokens per request; maximum body size 1 MB. Expressions are also resolved in header values. All non-expression content is forwarded untouched.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "example": {
+                  "amount": 2500,
+                  "currency": "USD",
+                  "card": {
+                    "number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}",
+                    "expiration_month": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}",
+                    "expiration_year": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}",
+                    "holder_name": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}"
+                  }
+                }
+              }
+            },
+            "*/*": {
+              "schema": {
+                "description": "Any other content type (form-encoded, XML, plain text) is forwarded as-is with expressions resolved in the raw body."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response from the destination, passed through unchanged (the actual status code is whatever the destination returned; check `yuno-proxy-destination-status`).",
+            "headers": {
+              "yuno-proxy-request-id": {
+                "description": "Unique identifier of this proxy invocation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "yuno-proxy-destination-status": {
+                "description": "HTTP status code returned by the destination. Present only when the destination was reached.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "yuno-proxy-replacements": {
+                "description": "Number of expressions replaced before forwarding.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "yuno-proxy-response-redactions": {
+                "description": "Number of card numbers redacted from the destination response (a non-zero value means the destination returned card data).",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "The destination's response body, unchanged."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed. Returned before the request reaches the proxy, so it carries no `yuno-proxy-*` headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Not authenticated": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "not authenticated"
+                      ]
+                    }
+                  },
+                  "Authorization unavailable": {
+                    "value": {
+                      "code": "AuthenticationFail",
+                      "messages": [
+                        "authorization unavailable"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Proxy-originated request error (invalid destination URL, expression problems, invalid timeout, too many tokens, or an invalid signing setup — unknown `yuno-proxy-auth`, missing `yuno-proxy-auth-secret-key`, or `DLOCAL_HMAC` without the `X-Login` or `X-Trans-Key` headers). The `yuno-proxy-destination-status` header is absent because the destination was not called.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Invalid request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "yuno-proxy-destination-url header is required"
+                      ]
+                    }
+                  },
+                  "Expression resolution failed": {
+                    "value": {
+                      "code": "EXPRESSION_RESOLUTION_FAILED",
+                      "messages": [
+                        "a vaulted_token expression could not be resolved: network_transaction_id"
+                      ]
+                    }
+                  },
+                  "Invalid account id": {
+                    "value": {
+                      "code": "INVALID_ACCOUNT_ID",
+                      "messages": [
+                        "account_id is not a valid account"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The destination is not allowed, or the PCI Proxy is not activated for your organization (production only).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Destination not allowed": {
+                    "value": {
+                      "code": "DESTINATION_NOT_ALLOWED",
+                      "messages": [
+                        "destination host is not registered on your allowlist"
+                      ]
+                    }
+                  },
+                  "Product not enabled": {
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "The PCI Proxy is enabled per organization. Contact your Key Account Manager (KAM) to activate it."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body over 1 MB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Request too large": {
+                    "value": {
+                      "code": "REQUEST_TOO_LARGE",
+                      "messages": [
+                        "request body exceeds 1 MB"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded for the account (enforced at the Yuno edge).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Too many requests": {
+                    "value": {
+                      "code": "TOO_MANY_REQUESTS",
+                      "messages": [
+                        "rate limit exceeded"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The destination could not be reached, or (when Yuno is configured service-wide to block rather than redact) its response contained card data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Destination unreachable": {
+                    "value": {
+                      "code": "DESTINATION_UNREACHABLE",
+                      "messages": [
+                        "connection to destination failed"
+                      ]
+                    }
+                  },
+                  "Response blocked": {
+                    "value": {
+                      "code": "RESPONSE_BLOCKED",
+                      "messages": [
+                        "destination returned card data"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "The destination did not respond within the timeout.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Destination timeout": {
+                    "value": {
+                      "code": "DESTINATION_TIMEOUT",
+                      "messages": [
+                        "destination did not respond within the configured timeout"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected proxy-side error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Proxy error": {
+                    "value": {
+                      "code": "PROXY_ERROR",
+                      "messages": [
+                        "internal error"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "schemas": {
+      "ProxyError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "enum": [
+              "NOT_AUTHENTICATED",
+              "AuthenticationFail",
+              "INVALID_REQUEST",
+              "EXPRESSION_RESOLUTION_FAILED",
+              "INVALID_ACCOUNT_ID",
+              "DESTINATION_NOT_ALLOWED",
+              "PRODUCT_NOT_ENABLED",
+              "REQUEST_TOO_LARGE",
+              "TOO_MANY_REQUESTS",
+              "DESTINATION_UNREACHABLE",
+              "DESTINATION_TIMEOUT",
+              "RESPONSE_BLOCKED",
+              "PROXY_ERROR"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

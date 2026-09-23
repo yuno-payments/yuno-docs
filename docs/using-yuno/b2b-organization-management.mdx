@@ -1,0 +1,121 @@
+---
+title: "B2B Organization Management"
+description: "Learn how to manage account groups, accounts, and users for whitelabel partnerships."
+---
+
+Yuno provides a suite of B2B Organization Management APIs designed for platforms and whitelabel partners who need to manage multiple sub-organizations and their users. These APIs allow you to automate your merchants' onboarding by creating a hierarchical structure of Account Groups, Accounts, and Users.
+
+<Note>
+  **Prerequisites**
+  To use these APIs, your organization must have the **whitelabel** property enabled in the Yuno Dashboard. Contact your Yuno account manager to enable this feature.
+</Note>
+
+## Core Management Flow
+
+Follow these steps to set up a new merchant environment.
+
+<Steps>
+  <Step title="Create an Account Group">
+    The account group acts as the parent entity for your merchant, centralizing the management of related accounts. Use the [Create Account Group](/reference/organizations/create-account-group) endpoint to initialize this group.
+
+    ```bash
+    curl --request POST \
+      --url https://api-sandbox.y.uno/v1/organizations/account-groups \
+      --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+      --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "Acme Payments",
+        "merchant_id": "acme_001"
+      }'
+    ```
+
+    **Output & Next Steps**: The response will include a unique `id` for the Account Group. Store this ID, as you will need it to create specific merchant accounts in the next step.
+  </Step>
+
+  <Step title="Create an Account">
+    Within the newly created account group, you can create one or more accounts. This structure allows you to separate business logic, regions, or business lines for the same merchant. Use the [Create Account](/reference/organizations/create-account) endpoint.
+
+    ```bash
+    curl --request POST \
+      --url https://api-sandbox.y.uno/v1/organizations/account-groups/{account_group_id}/accounts \
+      --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+      --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "Acme Production"
+      }'
+    ```
+
+    **Output & Next Steps**: You will receive an `id` for the merchant account. This ID is used to scope payments, sessions, and configurations specifically to this merchant environment.
+  </Step>
+
+  <Step title="Create a User and Assign Permissions">
+    Finally, create a physical user and grant them access to the account or the entire account group. Assigning roles (like `merchant-admin`) ensures the user has the necessary permissions to manage the merchant dashboard. Use the [Create User](/reference/organizations/create-user) endpoint.
+
+    ```bash
+    curl --request POST \
+      --url https://api-sandbox.y.uno/v1/organizations/users \
+      --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+      --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "email": "admin@acmepay.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "account_group_permissions": [
+          {
+            "account_group_id": "{account_group_id}",
+            "role_id": "merchant-admin"
+          }
+        ]
+      }'
+    ```
+
+    **Output & Next Steps**: The user will be created in the system. To allow them to log in to your whitelabel portal, use the [Authenticate Whitelabel User](/reference/organizations/authenticate-whitelabel-user) endpoint to generate a secure access token.
+  </Step>
+</Steps>
+
+## Nest account groups
+
+Account groups can be nested to mirror how your organization is structured: a group can hold accounts and sub-groups, and a sub-group can hold groups of its own. Every group has at most one parent, and a group cannot be nested inside its own subtree.
+
+A group is always created as a root. To nest it, set `parent_code` on [Update Account Group](/reference/organizations/update-account-group); send `parent_code: null` to detach it and make it a root again. Every account-group response reports the parent under `parent_code` (`null` for a root).
+
+```bash
+curl --request PATCH \
+  --url https://api-sandbox.y.uno/v1/organizations/account-groups/{account_group_id} \
+  --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+  --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "parent_code": "{parent_account_group_id}"
+  }'
+```
+
+Nesting is structural only: moving a group grants and revokes nothing, so existing user permissions are untouched. A group that still has sub-groups or accounts cannot be deleted — move or [remove them](/reference/organizations/remove-account-from-group) first.
+
+## Manage providers through the API
+
+Once your merchants can log in, the **Providers** tab of your white-label dashboard decides which payment providers they can connect to, and what your users read while they do it. That overlay is configurable through the API: which providers you offer, and the name, connection instructions, documentation link and logo shown for each one.
+
+See the [White-label Providers Overview](/reference/organizations/whitelabel/overview) for the common contract and the endpoints.
+
+{/* TODO(editorial): this hook lives here because no page currently documents the Dashboard's
+    white-label customization module itself. If the product team adds one, the link probably
+    belongs there too (or instead). */}
+
+## Environment Availability
+
+The B2B Organization Management APIs are available in both **Sandbox** and **Production** environments. For more information on how to manage your API keys and base URLs, visit the [Environments](/docs/using-yuno/environments) page.
+
+## Next Steps
+
+Explore the full API reference for more advanced management options:
+
+- [Account Groups Reference](/reference/organizations/list-account-groups)
+- [Accounts Reference](/reference/organizations/list-accounts)
+- [Users Reference](/reference/organizations/list-users)
+- [User Permissions Reference](/reference/organizations/retrieve-user-account-permissions)
+- [White-label Providers Reference](/reference/organizations/whitelabel/overview)
+

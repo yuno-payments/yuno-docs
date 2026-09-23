@@ -1,0 +1,193 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - Upload Logo",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers/{provider_id}/logo": {
+      "put": {
+        "summary": "Upload a Provider Logo",
+        "operationId": "upload-whitelabel-provider-logo",
+        "description": "Uploads your own logo for this provider. The image travels base64 in JSON, not multipart.\n\nA logo is the provider's identity rather than its wording, so it is held to the same rule as `name`: accepted only for Yuno-owned providers (a catalogue id containing `YUNO`) and rejected with `400` for anyone else's. The file must be a PNG or a JPEG — decided by the file's own bytes, never by the extension, so an SVG renamed `.png` is refused — and square, at least 200x200 pixels and at most 64 KB decoded. Rejections list every violation at once in `violations`.\n\nThe stored key is not returned: read the provider again for a fresh presigned `logo_url`. Writing a logo does not touch the instruction override, and does not add the provider to your allowlist.",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "description": "Yuno catalogue provider id in UPPER_SNAKE_CASE. Case-insensitive; normalized to upper case.",
+            "schema": {
+              "type": "string",
+              "example": "YUNO_3DS"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The logo, base64-encoded.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file_name",
+                  "base64_data"
+                ],
+                "properties": {
+                  "file_name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "description": "Original file name, at most 255 characters. Stored for display only; the format is decided by the bytes, never by this extension.",
+                    "example": "acme-risk.png"
+                  },
+                  "base64_data": {
+                    "type": "string",
+                    "description": "The image itself, base64-encoded. PNG or JPEG only (checked against the file's magic bytes), square, at least 200x200 pixels and at most 64 KB decoded.",
+                    "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Logo stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Always `stored` on success.",
+                      "example": "stored"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The logo was rejected — invalid provider_id, not PNG/JPEG, not square, smaller than 200x200, larger than 64 KB decoded, or the provider is not Yuno-owned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "about:blank"
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "Invalid provider logo"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "detail": {
+                      "type": "string",
+                      "example": "The logo was rejected"
+                    },
+                    "violations": {
+                      "type": "array",
+                      "description": "Every violation of the request, reported together rather than one per round trip.",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "The logo must be at least 200x200 pixels. This image is 1x1."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing API keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body larger than 256 KB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Request body is too large"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

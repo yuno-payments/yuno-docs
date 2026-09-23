@@ -1,0 +1,96 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Account Groups API - Update",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": { "type": "apiKey", "in": "header", "name": "PUBLIC-API-KEY", "x-default": "<Your PUBLIC-API-KEY>" },
+      "sec1": { "type": "apiKey", "in": "header", "name": "PRIVATE-SECRET-KEY", "x-default": "<Your PRIVATE-SECRET-KEY>" }
+    }
+  },
+  "security": [ { "sec0": [], "sec1": [] } ],
+  "paths": {
+    "/organizations/account-groups/{account_group_id}": {
+      "patch": {
+        "summary": "Update Account Group",
+        "operationId": "update-account-group",
+        "description": "Updates an account group. Every field is optional and only the fields present in the body are changed.\n\n`parent_code` nests the group under another group of the same organization. It has three states: **absent** leaves the current parent untouched; **`null`** detaches the group and promotes it back to a root, together with any sub-groups hanging off it; a **group `id`** nests the group under that group. Nesting is structural only — it grants and revokes nothing, so moving a group leaves every existing permission untouched.",
+        "parameters": [
+          {
+            "name": "account_group_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Account group UUID."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "description": "Account group name (min=1, max=255)." },
+                  "merchant_id": { "type": "string", "description": "Local identifier (min=1, max=255)." },
+                  "parent_code": {
+                    "type": ["string", "null"],
+                    "format": "uuid",
+                    "description": "The `id` of the group to nest this group under. Omit it to leave the parent unchanged; send `null` to detach the group and make it a root again. The parent must belong to the same organization and must not be the group itself or one of its descendants."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request. The `code` field tells the reason:\n\n- `PARENT_NOT_FOUND` — no group with that `parent_code` in this organization.\n- `INVALID_PARENT` — the group was sent as its own parent.\n- `PARENT_IS_DESCENDANT` — the target parent sits inside this group's own subtree, so the move would create a cycle.\n- `MAX_NESTING_DEPTH` — the move would push the tree past the maximum depth of 20 levels.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "description": "Machine-readable error code." },
+                    "messages": { "type": "array", "items": { "type": "string" }, "description": "Human-readable details." }
+                  }
+                },
+                "example": { "code": "PARENT_IS_DESCENDANT", "messages": ["Account group [LATAM] is inside [Acme], so it cannot become its parent."] }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found — no account group with that `account_group_id` in this organization."
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "name": { "type": "string" },
+                    "merchant_id": { "type": "string" },
+                    "parent_code": { "type": ["string", "null"], "format": "uuid", "description": "The `id` of the group this group is nested under. `null` for a root (top-level) group." },
+                    "created_at": { "type": "string", "format": "date-time" },
+                    "updated_at": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

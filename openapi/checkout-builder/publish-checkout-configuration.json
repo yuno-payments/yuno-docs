@@ -1,0 +1,295 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkout-builder",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.y.uno/v1"
+    },
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "description": "Merchant public API key. Found in Yuno dashboard → Settings → API Keys."
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "description": "Merchant private secret key, paired with the public key. Never embed in client-side code."
+      },
+      "accountCode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Account-Code",
+        "description": "UUID of the merchant account scope for the request. The tenant is resolved only from this header."
+      }
+    }
+  },
+  "security": [
+    {
+      "publicApiKey": [],
+      "privateSecretKey": [],
+      "accountCode": []
+    }
+  ],
+  "paths": {
+    "/checkouts/{checkout_code}": {
+      "put": {
+        "summary": "Publish Checkout Configuration",
+        "description": "Writes configuration and/or styling for the checkout in a single call. The body may contain a `config` object, a `styling` object, or both; at least one is required. Each part is validated independently before being applied; if any rule fails, the request is rejected with a single aggregated 400 and nothing is applied. Configuration is a sparse upsert (omitted payment methods keep their previous state; new methods cannot be created). Styling is a partial merge (omitted or null fields are preserved).",
+        "operationId": "publish-checkout-configuration",
+        "parameters": [
+          {
+            "name": "checkout_code",
+            "in": "path",
+            "description": "The unique identifier of the checkout to update (UUID, 36 chars). Non-UUID values are rejected with 400 before processing.",
+            "schema": { "type": "string" },
+            "required": true
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "Client-generated UUID. Re-sending the same request with the same key is safe and will not double-publish.",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "Configuration and styling": {
+                  "value": {
+                    "config": {
+                      "payment_methods": [
+                        {
+                          "payment_method_type": "CARD",
+                          "order_to_show": 0,
+                          "is_active": true,
+                          "active_enrollment_type": "BOTH",
+                          "conditions_to_override": [],
+                          "required_fields_to_override": {
+                            "is_active": true,
+                            "fields": [
+                              {
+                                "field_name": "security_code",
+                                "is_active": true,
+                                "current_value": "ALWAYS",
+                                "conditions_to_override": [
+                                  {
+                                    "name": "BR only",
+                                    "is_active": true,
+                                    "priority": 1,
+                                    "conditions": [
+                                      { "condition_type": "COUNTRY", "conditional": "ONE_OF", "values": ["BR"] }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "enrollment_fields": [],
+                            "is_enrollment_active": true
+                          }
+                        }
+                      ],
+                      "general_settings": {
+                        "country_documents": [
+                          { "country_code": "BR", "documents": ["CPF", "CNPJ"] }
+                        ]
+                      }
+                    },
+                    "styling": {
+                      "styles": {
+                        "global": { "accent_color": "#1A73E8", "primary_background_color": "#FFFFFF", "font_family": "Inter" },
+                        "header": { "logo": "https://cdn.example.com/logo.png", "font_weight": 600 },
+                        "button": { "corner_radius": 8, "font_weight": 500 }
+                      },
+                      "flags": { "force_default_styles": false }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "type": "object",
+                "description": "At least one of `config` or `styling` is required.",
+                "properties": {
+                  "config": {
+                    "type": "object",
+                    "description": "Checkout configuration: payment methods and general settings. Sparse upsert; omitted payment methods keep their previous state.",
+                    "properties": {
+                      "payment_methods": {
+                        "type": "array",
+                        "description": "Payment methods to update. Order is driven by `order_to_show` (lower = first).",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "payment_method_type": { "type": "string", "description": "Payment method type, e.g. CARD, PAYPAL, NU_PAY, GOOGLE_PAY.", "example": "CARD" },
+                            "order_to_show": { "type": "integer", "description": "Display order (>= 0). Lower is shown first.", "example": 0 },
+                            "is_active": { "type": "boolean", "description": "Whether the method is offered.", "example": true },
+                            "active_enrollment_type": { "type": "string", "enum": ["ENROLLMENT", "NO_ENROLLMENT", "BOTH", "NONE"], "description": "Enrollment posture for the method." },
+                            "conditions_to_override": { "type": "array", "description": "Payment-method-level condition sets that gate when the method appears. A client-supplied set `code` (UUID) is preserved.", "items": { "type": "object" } },
+                            "required_fields_to_override": {
+                              "type": "object",
+                              "description": "Per-field configuration. `fields` = non-enrolled flow; `enrollment_fields` = enrolled (saved-card) flow. At most one condition set per field (a second is rejected with 400).",
+                              "properties": {
+                                "is_active": { "type": "boolean" },
+                                "fields": { "type": "array", "items": { "type": "object" } },
+                                "enrollment_fields": { "type": "array", "items": { "type": "object" } },
+                                "is_enrollment_active": { "type": "boolean" }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "general_settings": {
+                        "type": "object",
+                        "properties": {
+                          "country_documents": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "country_code": { "type": "string", "description": "ISO 3166-1 alpha-2 country code.", "example": "BR" },
+                                "documents": { "type": "array", "items": { "type": "string" }, "example": ["CPF", "CNPJ"] }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "styling": {
+                    "type": "object",
+                    "description": "Checkout styling and SDK settings. Partial merge; omitted or null fields are preserved; use `flags.force_default_styles` to reset. `settings.urls`, `settings.click_to_pay`, `settings.form` and `settings.google_pay` are beta-locked and rejected if sent with a non-empty value.",
+                    "properties": {
+                      "styles": { "type": "object", "description": "global, header and button styles. All `*_color` fields must be a 6- or 8-digit hex color (#RRGGBB / #RRGGBBAA); `font_weight` must be one of 100..900 (step 100); `font_family` must be in the supported catalog or declared in `external_fonts`. Logos must be an HTTPS URL to a public host or a relative path (no data:/SVG/javascript:)." },
+                      "settings": {
+                        "type": "object",
+                        "description": "SDK settings, forwarded to the checkout SDK. `settings.urls`, `settings.click_to_pay`, `settings.form` and `settings.google_pay` are beta-locked and rejected if sent with a non-empty value.",
+                        "properties": {
+                          "card": {
+                            "type": "object",
+                            "description": "Card SDK settings.",
+                            "properties": {
+                              "save_on_success": { "type": "boolean", "description": "Offer to save the card for future payments." },
+                              "visualization_mode": { "type": "string", "description": "Card form visualization mode." },
+                              "enable_ocr": { "type": "boolean", "description": "Enable card scanning (OCR)." },
+                              "credit_card_only_processing": { "type": "boolean", "description": "Process credit cards only." },
+                              "enable_payment_retry": { "type": "boolean", "description": "Allow retrying a declined card payment." },
+                              "default_network": { "type": "string", "description": "Default card network: DOM or INT." }
+                            }
+                          },
+                          "sdk_type": { "type": "object" },
+                          "web_sdk": { "type": "object" },
+                          "payment_method_list": { "type": "object" },
+                          "ui": { "type": "object" }
+                        }
+                      },
+                      "flags": { "type": "object", "properties": { "force_default_styles": { "type": "boolean" } } },
+                      "external_fonts": { "type": "array", "description": "Custom fonts. `files[].url` must be an HTTPS URL to a public host.", "items": { "type": "object" } },
+                      "payment_link_styles": { "type": "object" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated checkout (configuration + styling composed). Its identifier is exposed as the top-level `id`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Success": {
+                    "value": {
+                      "id": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
+                      "name": "Main Checkout",
+                      "status": "PUBLISHED",
+                      "is_default": true,
+                      "config": { "payment_methods": [], "general_settings": {} },
+                      "styling": { "styles": {}, "settings": {}, "flags": {} }
+                    }
+                  }
+                },
+                "schema": { "type": "object" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed. All violations are aggregated into a single response. A malformed JSON body also returns 400.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Invalid parameters": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "payment_methods[0].order_to_show must be >= 0",
+                        "styles.global.accent_color must be a 6- or 8-digit hex color (#RRGGBB or #RRGGBBAA)"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "INVALID_PARAMETERS" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated, or the account is not in the beta allowlist.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": { "code": "NOT_AUTHENTICATED", "messages": ["Not authenticated"] }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "NOT_AUTHENTICATED" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The checkout was not found for this account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  }
+}

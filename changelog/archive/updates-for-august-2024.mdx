@@ -1,0 +1,111 @@
+---
+title: "Updates for August, 2024"
+---
+
+Explore the latest enhancements to the Payments object, including subscription agreement IDs, currency conversion support, and the ability to cancel or refund payments. Check out the updates below.
+
+There have been some updates on Payments object. Please check the updates below.
+
+* Subscription agreement ID
+* Payouts with transactions
+* Payments with currency conversion
+* ISO Code and message
+* Cancel or refund a Payment
+
+## Subscription Agreement ID
+
+For certain markets (MX for example) and payment processors, when a subscription-related payment is made, the ID of the agreement with the customer needs to be specified in the payment request to ensure correct processing. To facilitate this, we have enabled the `subscription_agreement_id` field inside the `stored_credentials` struct, allowing you to share the agreement made with the customer.
+
+```json
+"payment_method": {
+        "type":"CARD",
+        "vaulted_token": "eb8caa17-6407-457b-960e-125d8d7a90c1",
+        "detail": {
+           "card": {
+               "stored_credentials":{
+                  "reason":"CARD_ON_FILE",
+                  "usage": "USED",
+                  "subscription_agreement_id":"AA0001"
+              }
+           }
+        }
+    }
+```
+
+Please check the [stored credentials guide ](/docs/stored-credentials#subscription-agreement)documentation for more detail.
+
+## Payouts with transactions
+
+Payouts could be made to different payment methods, such as bank accounts and even card, depending on the provider. For Payouts to a card payment method where the merchant does not have the credit card information (not being PCI compliant) Yuno lets them send the Payout if the card was previously used in a payment. This is called a "Referenced Payout".
+
+In order to be able to use this, you'll need to first charge the customer using one of our PCI compliant solutions (Any Yuno SDK) and then make a Payout indicating the original transaction where we can find the credit card information.
+
+```json
+"withdrawal_method": {
+    "type": "STP_PAYOUT",
+    "provider_id": "STP",
+    "original_transaction_id":"9104911d-5df9-429e-8488-ad41abea1a4b"
+  }
+```
+
+Please check the [payouts](/docs/payouts) documentation for more detail.
+
+## Payments with currency conversion
+
+Yuno's currency conversion service allows you to settle payments in both your currency and your customer's. Currency conversion is the process of converting one currency into another. It involves using exchange rates to determine the equivalent amount in the target currency.
+
+The merchant can use the currency conversion service of an external provider and send the corresponding information directly in the payment in Yuno. In order to use this, please contact your technical account manager to make sure that the information is set properly, given that the currency conversion rate must be provided by an external service from the provider. Example:
+
+```json
+"amount": {
+        "currency": "COP",
+        "value": 5000, 
+        "currency_conversion": {
+            "provider_currency_conversion_id": "AAA01SADOIAJSDLAKSJM",
+            "cardholder_currency": "ARS",
+            "cardholder_amount": 1146.55    
+        }
+    }
+```
+
+Please check the [currency conversion](/docs/currency-conversion) documentation for more detail.
+
+## ISO Code and message
+
+We've added two new fields to the `Payment object` called `iso8583_response_code` and `iso8583_response_message`. Both fields represent the direct response from the provider regarding the international standard for financial transaction card originated interchange messaging ([ISO 8583](https://en.wikipedia.org/wiki/ISO_8583#Ver_2003)).
+
+```json
+"transactions": {
+        "id": "4450529a-a5f9-4856-9ba9-21aed302e209",
+        "type": "PURCHASE",
+        "status": "SUCCEEDED",
+        "category": "CARD",
+        "amount": 5000.00,
+        "provider_id": "ADYEN",
+        "payment_method": {
+              ...
+        },
+        "response_code": "SUCCEEDED",
+        "response_message": "Transaction successful",
+        "reason": null,
+        "description": "SUCCEDED",
+        "merchant_reference": "1234",
+        "provider_data": {
+            "id": "ADYEN",
+            "transaction_id": "FLX4WSXF7SFZDV65",
+            "account_id": "YunoPayments_Sandbox_TEST",
+            "status": "Authorised",
+            "status_detail": "Authorised",
+            "response_message": null,
+            "response_code": null,
+            "iso8583_response_code": "05",
+            "iso8583_response_message": "Approved or completed successfully"
+```
+
+If the [ABECS](https://api.abecs.org.br/wp-content/uploads/2023/04/20230406-Normativo-21-V3-aprovado-publicacao.pdf) (Brazilian Association of Credit Card and Services Companies) codes are returned by the payment provider, they will be shown in the iso\_code\_response\_code and message fields.
+
+Please check the [payments](/reference/the-payment-object) object for more detail.
+
+## Cancel or refund a Payment
+
+We've added a [new functionality](/reference/cancel-or-refund-a-payment) to the payments API where you can cancel or refund a payment just by providing the `payment id`, contrary to the [existing service](/reference/cancel-or-refund-payment-with-transaction) where the transaction\_id is necessary.  Please check the [payments](/reference/cancel-or-refund-a-payment) API reference for more detail.

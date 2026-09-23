@@ -1,0 +1,34 @@
+---
+title: "Automation"
+description: "Map the operational rules Yuno runs for you, from approval-rate failover and retries to holds, delayed capture, and dispute events, to the feature that configures each one"
+---
+
+Yuno runs the operational rules most payment teams otherwise script by hand. This page maps the job you need done to the feature that does it, so you can find the right switch without reading every page. Some of these are configured in the Dashboard and some on the API request itself; the last column tells you which.
+
+## What runs automatically
+
+| When you need to | Yuno does it with | Configure it in |
+| :--- | :--- | :--- |
+| Fail over when a provider's approval rate drops | [Monitors](/docs/using-yuno/dashboard-overview/monitors): alert by email or Opsgenie, redirect traffic to your fallback providers, keep a small share on the original provider to detect recovery, and return traffic when the rate recovers | Routing, on each route's condition set |
+| Retry a declined subscription renewal at the right moment | [Smart Retries](/docs/payment-features/subscriptions/retries): up to six attempts with a default, smart, or custom schedule, a stop on hard declines, and an optional cancel when retries are exhausted | The `retries` object on the subscription |
+| Retry a renewal on demand | [Retry Subscription](/reference/subscriptions/retry-subscription) endpoint | API |
+| Retry a capture or refund the provider failed | [Transaction Retries](/docs/payment-features/transaction-retries): up to seven attempts on a fixed schedule, with sub-statuses you can follow | `simplified_mode: true` on the capture or refund request |
+| Capture or release an authorization after a set time | [Delayed capture and delayed cancel](/docs/payment-features/Cancel-and-capture-flow): Yuno captures after `delayed_capture_settings.delay` or cancels after `delayed_cancel_settings.delay` | The payment request |
+| Decline, allow, or hold a payment based on who is paying | [Risk Conditions](/docs/using-yuno/dashboard-overview/risk-conditions): rules with allow, block, review, or test outcomes, plus blocklists, allowlists, and review lists | Risk Conditions, attached to your routes |
+| Skip fraud screening or 3DS for trusted customers | [Allowlists](/docs/using-yuno/dashboard-overview/risk-conditions#allowlists) with the outcome you choose | Risk Conditions |
+| Send a payment to a different provider by amount, BIN, brand, country, currency, installments, transaction type, or metadata | [Routing](/docs/using-yuno/dashboard-overview/routing) and [routing conditions](/reference/organizations/routing/routing-conditions), with Smart Routing for the rest | Routing |
+| Act on a chargeback or inquiry in your own systems | The `payment.chargeback` [webhook](/docs/webhooks/index), with the dispute `status` and `sub_status`, and the [Chargeback management](/docs/payouts-and-disputes/chargeback-management) view | Developers, Webhooks |
+| React to any payment, refund, capture, cancel, enrollment, or subscription change | [Webhooks](/docs/webhooks/configure-webhooks) for every object, signed with HMAC | Developers, Webhooks |
+
+## Combine them
+
+The features compose. A typical set-up for a subscription business:
+
+1. A route with a primary provider and a fallback, and a Monitor on it, so an approval-rate drop moves traffic without anyone watching a chart.
+2. Smart Retries on every subscription, so a declined renewal is retried at the best moment on whichever provider the route selects.
+3. Risk Conditions on the same route, so cards or customers you no longer trust are blocked or held before the provider is called.
+4. A webhook endpoint that consumes `payment.purchase`, `payment.refund`, `payment.chargeback`, and `subscription.*`, so your billing system stays in sync without polling.
+
+## What Yuno does not do
+
+Yuno does not expose a free-form trigger and action builder. There is no way to define "when this event happens, call this URL or send this email" from the Dashboard. If you need a rule that is not covered by the table above, the pattern is to consume the webhook for the event and call the [capture](/reference/payments/capture-authorization), [cancel](/reference/payments/cancel-payment), or [refund](/reference/payments/refund-payment) endpoint from your own system. Tell your account team about the rule as well; most requests of this kind map to a feature on the roadmap.

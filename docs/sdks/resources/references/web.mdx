@@ -1,0 +1,653 @@
+---
+title: Web Reference
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Reference all Web SDK parameters, SRI integration, payment retry, and enrollment options"
+---
+Parameters, customizations, and advanced features for all Web SDK flows. See [Quickstart guide](/docs/sdks/overview/quickstart) and [Choose the Right Integration for You](/docs/sdks/overview/choose-integration) for introductory information.
+
+## TypeScript support
+
+TypeScript: Yuno provides a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) for all available methods.
+
+## Subresource Integrity (SRI)
+
+This browser security feature lets you ensure a loaded script has not been tampered with. You provide a cryptographic hash alongside the script URL. The browser verifies the downloaded bytes match the declared hash before executing the code.
+
+* **Integrity**: Guarantees the exact code built and published is what runs in the browser.
+* **Immutability**: When paired with full semantic version URLs, it ensures stable, reproducible integrations.
+* **Defense-in-depth**: Mitigates risks from supply-chain or transport-layer compromise.
+
+### URL formats
+
+When implementing SRI, use the full semantic version URL format to ensure immutable, tamper-evident integrations.
+
+* **Full (immutable) URL with SRI**: Full semantic version path used for locked, tamper-evident integrations with an SRI hash.
+* **Partial (mutable) URL**: Version with major and minor (for example, v1.9). This version will receive patch improvements. This is useful if you like to avoid updates in your code base.
+
+### How to integrate the SDK with SRI
+
+Replace `src` and `integrity` with the environment/version you target. `crossorigin="anonymous"` lets the browser validate the SRI for cross-origin scripts.
+
+The hash can be found in [versions-sri.json](https://sdk-web.y.uno/versions-sri.json) at `latest.integrity` or within the `history` array.
+
+```html
+<script
+  src="https://sandbox.y.uno/sdk-static-bundles-ms/sdk-web/v1.9.4/main.js"
+  integrity="sha384-<paste-hash-here>"
+  crossorigin="anonymous"></script>
+```
+
+The example above targets sandbox. For production, use the `url` published alongside the hash in [versions-sri.json](https://sdk-web.y.uno/versions-sri.json) — each entry pairs a full-version `url` with the `integrity` that matches it, for example `https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.10.6/main.js`.
+
+<Note>
+SRI only works with these full-version URLs. The global paths such as `https://sdk-web.y.uno/v1.10/main.js` are republished on every patch release, so no hash stays valid for them and none is published.
+</Note>
+
+### Using NPM package
+
+```javascript
+import { loadScript } from '@yuno-payments/sdk-web'
+
+const yuno = await loadScript({
+  sri: true
+})
+```
+
+### Validation notes
+
+* Open DevTools Network tab and confirm main.js returns `200` from the full-version path.
+* Verify the response headers allow cross-origin fetches for static assets if served from a distinct origin (`crossorigin="anonymous"` is set).
+* Ensure the integrity attribute exactly matches the generated hash, including the sha384- prefix.
+* Any change to main.js changes the hash. When changing versions, always regenerate or retrieve the new sha384 value and update the integrity attribute.
+
+### SRI troubleshooting
+
+* Hash mismatchs cause the script to fail execution with an integrity error (for example, you updated the file but not the hash). To fix, rebuild, retrieve the new sha384 from [versions-sri.json](https://sdk-web.y.uno/versions-sri.json), and update integrity.
+
+* Browser blocks SRI on cross-origin request when the crossorigin attribute is missing or CORS is restrictive. To fix, add `crossorigin="anonymous"` and configure the static hosting to allow cross-origin fetches for JS assets.
+
+## Preload the SDK script
+
+When you use the NPM package, the browser only starts downloading `main.js` when your app calls `loadScript()`. In a single-page app that call often runs seconds after navigation, once your own bundle has downloaded and executed. On a slow mobile connection that delay, plus the download itself, can add several seconds before the SDK runs.
+
+Tell the browser about the script and the Yuno hosts from your HTML `<head>`, so the download and the connections start while the page is still being parsed.
+
+### Recommended setup
+
+Add these tags as the first elements in `<head>`, before your app bundle. This example is for a production account in the US region, using `@yuno-payments/sdk-web` 9.x:
+
+```html
+<head>
+  <link rel="preload" as="script" href="https://sdk-web.y.uno/v1.11/main.js">
+  <link rel="preconnect" href="https://api.y.uno" crossorigin>
+  <link rel="preconnect" href="https://sdk-web-card.prod.y.uno">
+  <link rel="dns-prefetch" href="https://sdk.prod.y.uno">
+  <link rel="dns-prefetch" href="https://icons.prod.y.uno">
+</head>
+```
+
+Keep your `loadScript()` call as it is:
+
+```javascript
+import { loadScript } from '@yuno-payments/sdk-web';
+
+const Yuno = await loadScript();
+```
+
+`loadScript()` still injects the `<script>` tag. Because the file is already in the browser's preload cache, the browser uses that copy instead of downloading it again.
+
+### Match the preload URL to your `loadScript` options
+
+The preload only helps when its `href` is exactly the URL `loadScript()` requests. That URL depends on the options you pass. For `@yuno-payments/sdk-web` 9.x (SDK `v1.11`):
+
+| `loadScript(...)` | Preload `href` | Preconnect hosts |
+| :--- | :--- | :--- |
+| `loadScript()` | `https://sdk-web.y.uno/v1.11/main.js` | `https://api.y.uno` and `https://sdk-web-card.prod.y.uno` |
+| `loadScript({ region: 'eu' })` | `https://sdk-web.prod.eu.y.uno/v1.11/main.js` | `https://api.eu.y.uno` and `https://sdk-web-card.prod.eu.y.uno` |
+| `loadScript({ env: 'sandbox' })` | `https://sdk-web.sandbox.y.uno/v1.11/main.js` | `https://api-sandbox.y.uno` and `https://sdk-web-card.sandbox.y.uno` |
+| `loadScript({ sri: true })` | `https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, with the `integrity` value the package uses and `crossorigin="anonymous"` | Same as `loadScript()` |
+| `loadScript({ sri: true, env: 'sandbox' })` | `https://sandbox.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, with the sandbox `integrity` value the package uses and `crossorigin="anonymous"` | Same as `loadScript({ env: 'sandbox' })` |
+| `loadScript({ sri: true, region: 'eu' })` | `https://prod.eu.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, with the same `integrity` value as the US bundle (the file is byte-identical) and `crossorigin="anonymous"` | Same as `loadScript({ region: 'eu' })` |
+
+The API host follows the environment and region of your public API key, so it is the same host your backend calls. The card form host follows the host `main.js` was loaded from.
+
+With `sri: true`, the preload tag looks like this:
+
+```html
+<link
+  rel="preload"
+  as="script"
+  href="https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js"
+  integrity="sha384-<same-hash-the-package-uses>"
+  crossorigin="anonymous">
+```
+
+<Note>
+With `sri: true`, the package pins a specific SDK version and its hash. Use that version in the preload, not the `latest` entry in [versions-sri.json](https://sdk-web.y.uno/versions-sri.json), which is usually newer than the version your package loads.
+</Note>
+
+To find the exact URL and hash your app requests, open DevTools, go to **Elements**, and inspect the `<script id="sdk-payments-script">` tag that `loadScript()` adds. Copy its `src`, and its `integrity` when present.
+
+Rules:
+
+* **Keep `crossorigin` on the API preconnect.** The SDK opens the same preconnect when it initializes. Without the attribute, the browser opens a connection that its CORS requests to the API cannot reuse.
+* **With `sri: true`, add `crossorigin="anonymous"` to the preload.** The injected script uses that mode. If the preload and the script use different modes, the browser downloads the file twice.
+* **A mismatch does not break anything.** If the URL or mode does not match, the browser downloads `main.js` twice and DevTools logs a warning that the preloaded resource was not used. You lose the speed-up, nothing else.
+
+### Keep the preload URL up to date
+
+The preload URL is written in your HTML, so it does not change when you upgrade the package. Update it yourself:
+
+* **Without SRI**, the URL contains only the major and minor SDK version (`v1.11`). Patch releases need no change. Update it when a package release moves to a new SDK minor version (for example 7.x loads `v1.9`, 8.x loads `v1.10`, 9.x loads `v1.11`); the README of the version you install states which one it loads.
+* **With SRI**, the URL and the hash pin the full SDK version (for example `v1.11.1`). Update both on every package upgrade that changes that version.
+
+<Note>
+When you upgrade `@yuno-payments/sdk-web`, update the preload `href` (and `integrity` when you use SRI) to the URL the new version loads. The package's [README on npm](https://www.npmjs.com/package/@yuno-payments/sdk-web) states the SDK version it loads. For the hash, use the entry for that version in the `history` list of [versions-sri.json](https://sdk-web.y.uno/versions-sri.json) (sandbox: [sdk-web.sandbox.y.uno/versions-sri.json](https://sdk-web.sandbox.y.uno/versions-sri.json)), or copy both values from the `<script id="sdk-payments-script">` tag in DevTools.
+</Note>
+
+### Check that it works
+
+Open DevTools, go to the **Network** panel, and reload the page. `main.js` should appear once, with **Initiator** set to the preload tag in your HTML and a start time close to the start of the page load. If `main.js` appears twice, or the **Console** shows that the preloaded resource was not used, the preload `href` or `crossorigin` mode does not match what `loadScript()` requests.
+
+<Warning>
+Do not replace the preload with your own `<script id="sdk-payments-script">` tag. `loadScript()` then skips its own injection, but it checks only the `id` and never the URL, so an outdated SDK version keeps running after you upgrade the package. If that script fails to load, `loadScript()` also never resolves or rejects.
+</Warning>
+
+## Key parameters (checkout session creation)
+
+When creating a checkout session on your backend, the following parameters are commonly used across web SDKs:
+
+<div className="nowrap-col1-table dense-table">
+
+| Parameter            | Required | Description                                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                                                                                         |
+| `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios. For example, you can display prices to customers in their preferred currency (for example, USD) while processing the payment in the local currency (for example, COP). |
+
+</div>
+
+## Payment and checkout parameters (full reference)
+
+Parameters for `await yuno.startCheckout()`, `await yuno.mountCheckout()`, and related payment flows. All parameters used in [Payment flows (Web)](/docs/sdks/full-checkout/web-payments) are listed here with full detail.
+
+### Core parameters
+
+<div className="nowrap-col1-table dense-table">
+
+| Parameter           | Type    | Required | Description                                                                                                                                                                                                                                                        |
+| ------------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `checkoutSession`   | string  | Yes      | Checkout session ID returned from your backend (Create checkout session API). Required for all payment flows.                                                                                                                                                      |
+| `elementSelector`   | string  | No*      | CSS selector for the element where the SDK mounts (for example, `#root`). Deprecated when used alone; prefer `renderMode.elementSelector` object to control APM and action areas independently. *Required when `renderMode.type` is `'element'` and using the object form. |
+| `countryCode`       | string  | Yes      | ISO country code where the payment runs (for example, `FR`, `US`). Determines available payment methods and compliance.                                                                                                                                                    |
+| `language`          | string  | No       | Language code for the UI (for example, `fr-FR`, `en-US`). Defaults to browser language when available. See [Supported languages](/docs/sdks/resources/languages-supported).                                                                                                                     |
+| `showLoading`       | boolean | No       | When `true`, shows the SDK loading spinner. Default `true`. Remains visible until `hideLoader()` or `await yuno.continuePayment()` is called.                                                                                                                                 |
+| `showPaymentStatus` | boolean | No       | When `true`, shows the payment result screen after the flow completes. Optional.                                                                                                                                                                                   |
+| `issuersFormEnable` | boolean | No       | When `true`, shows the issuer (bank) list form. Default `true`. Optional.                                                                                                                                                                                |
+| `savePaymentMethodEnabled` | boolean | No | When `true`, shows a "Save payment method for future payments" checkbox on direct-debit payment methods that support saving (the method's required fields include `save_on_success`) when the session has a customer. Default `false`. When the shopper ticks the checkbox, the one-time token carries `vault_on_success: true`; the key is omitted when it's left unticked. Does not cover card; card keeps its own `card.cardSaveEnable`. See [Direct-debit consent](#direct-debit-consent) and [Enrolling payment methods](#enrolling-payment-methods). *Available since Web SDK v1.10.12* |
+
+</div>
+
+### Callbacks
+
+<div className="nowrap-col1-table dense-table">
+
+| Parameter                         | Type     | Required | Description                                                                                                                                                                                               |
+| --------------------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `yunoCreatePayment(oneTimeToken)` | function | Yes      | Callback invoked when the user completes the card/APM step. Receive the one-time token; send it to your backend to create the payment via the API; then `await yuno.continuePayment()` to resume the flow. |
+| `yunoPaymentResult(status, subStatus)` | function | No  | Callback invoked when the payment flow finishes. Receives the [payment status](/reference/payments/status-and-response-codes/payment) (for example, `SUCCEEDED`, `DECLINED`, `PENDING`, `REJECTED`, `CANCELED`, `ERROR`) and an optional `subStatus` qualifying it. Use for UI updates or analytics. See [Shopper-cancelled steps](#shopper-cancelled-steps).  |
+| `yunoError(message, data)`        | function | No       | Callback invoked when an error occurs during the flow. Receives an error message and optional data object for debugging.                                                                                  |
+| `onLoading`                       | function | No       | Callback invoked when loading state changes (for example, SDK fetching config, processing payment, payment retry cloning a session). Use to show or hide your own loader.                                                                          |
+| `onChange`                        | function | No       | Callback invoked when form completeness changes. Receives `{ form: { isValid } }`. Use with `showPayButton: false` to control your own pay button. Covers every required field including secure iframe card fields. > **Available since Web SDK v1.10.11** |
+
+</div>
+
+### Shopper-cancelled steps
+
+Some steps render in a modal the shopper can dismiss: the 3DS challenge (closing it with the **X** or pressing the browser back button), and payment-instruction screens such as vouchers or payment codes. When that happens, the SDK reports:
+
+```javascript
+yunoPaymentResult('PENDING', 'CANCELLED_BY_USER')
+```
+
+No `yunoError` is emitted for these steps. Dismissing the modal closes the SDK UI, but it does **not** cancel the payment. The payment stays in flight and is resolved by the provider and by Yuno's backend. Yuno's backend remains the source of truth for the final status. A 3DS challenge in particular runs inside the issuer's own iframe, so the SDK cannot determine whether authentication already completed at the moment the shopper closes the modal. Reporting a terminal cancellation there could contradict a payment that goes on to be approved.
+
+<Note>
+`CANCELLED_BY_USER` is produced by the SDK to describe the shopper's gesture. It is **not** a payment sub-status and does not appear in the [Payment status reference](/reference/payments/status-and-response-codes/payment).
+</Note>
+
+Branch on `subStatus` to detect this case:
+
+```javascript
+yunoPaymentResult(status, subStatus) {
+  if (subStatus === 'CANCELLED_BY_USER') {
+    // The shopper dismissed the step. The payment is still being resolved.
+    // Wait for the webhook or query the payment before showing a final outcome.
+    return;
+  }
+  // ...handle the final status
+}
+```
+
+### Card form options (`card`)
+
+<div className="nowrap-col1-table dense-table">
+
+| Parameter                         | Type     | Required | Description                                                                                                                                                                                                 |
+| --------------------------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `card.styles`                     | string   | No       | Custom CSS string injected into the iframe to style the card form. Use to match your brand.                                                                                                                 |
+| `card.cardSaveEnable`             | boolean  | No       | When `true`, shows a checkbox to save or enroll the card for future use. Default `false`. Requires backend support for vaulting.                                                                            |
+| `card.texts`                      | object   | No       | Custom text for card form buttons and labels. Keys depend on SDK version (for example, placeholders, button labels).                                                                                                |
+| `card.onChange`                   | function | No       | Callback when card form state changes (loading, completed, network selected, reset). Receives `{ error, data }`; `data` can include IIN/BIN and instalment options. Use BIN for real-time tax calculations. |
+| `card.isCreditCardProcessingOnly` | boolean  | No       | When `true`, forces card transactions to process as credit only. Useful where the card can act as both credit and debit.                                                                                    |
+
+</div>
+
+### Render mode
+
+<div className="nowrap-col1-table dense-table">
+
+| Parameter                    | Type   | Required | Description                                                                                                                                                                           |
+| ---------------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `renderMode`                 | object | No       | Controls how payment forms are displayed. Omit to use defaults.                                                                                                                       |
+| `renderMode.type`            | string | No       | `'modal'` (default) or `'element'`. Modal shows forms in an overlay; element embeds in the given DOM element.                                                                         |
+| `renderMode.elementSelector` | object | No*      | Required if `type` is `'element'`. Provide `apmForm` (selector where APM UI is rendered) and `actionForm` (selector for button/area that opens provider-specific steps, for example PIX QR). |
+
+</div>
+
+
+### Custom texts
+
+<div className="nowrap-col1-table dense-table">
+
+| Parameter | Type   | Required | Description                                                                                                                                                         |
+| --------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `texts`   | object | No       | Custom text for payment form buttons and labels (for example, `customerForm.submitButton`, `paymentOtp.sendOtpButton`). Use to match your app's language or branding. |
+
+</div>
+
+### Express button styling (`externalButtons`)
+
+The `externalButtons` property in `startCheckout` and `startSeamlessCheckout` *(SDK 1.6+)* allows merchants to customize the appearance of Google Pay, Apple Pay, and PayPal express buttons. All properties are optional; sensible defaults are used when not provided.
+
+```js
+await yuno.startCheckout({
+  // ... other config
+  externalButtons: {
+    googlePay: { /* Google Pay options */ },
+    applePay: { /* Apple Pay options */ },
+    paypal: { /* PayPal options */ },
+  },
+})
+```
+
+<Note>
+The `externalButtons` configuration applies to all flows that render express buttons (including `mountCheckout`, `mountExternalButtons`, and `mountSeamlessExternalButtons`), as long as `startCheckout` or `startSeamlessCheckout` was called first with the configuration.
+</Note>
+
+#### Google Pay
+
+```js
+externalButtons: {
+  googlePay: {
+    buttonColor: 'default',
+    buttonType: 'pay',
+    buttonRadius: 30,
+    buttonLocale: 'en',
+    buttonSizeMode: 'fill',
+    buttonWidth: 240,
+    buttonHeight: 48,
+  }
+}
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Property         | Type                                                                                                   | Default          | Description                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------ | ---------------- | ------------------------------------------------------------------ |
+| `buttonColor`    | `'default'` \| `'black'` \| `'white'`                                                                 | Google decides   | Button background color                                            |
+| `buttonType`     | `'book'` \| `'buy'` \| `'checkout'` \| `'donate'` \| `'order'` \| `'pay'` \| `'plain'` \| `'subscribe'` | `'pay'`         | Button label text                                                  |
+| `buttonRadius`   | `number`                                                                                               | `30`             | Border radius in px                                                |
+| `buttonLocale`   | `string`                                                                                               | SDK language     | ISO 639-1 alpha-2 lowercase (for example, `'en'`, `'es'`, `'pt'`)         |
+| `buttonSizeMode` | `'fill'` \| `'static'`                                                                                 | `'fill'`         | Whether the button fills its container or uses a fixed size        |
+| `buttonWidth`    | `number`                                                                                               | `100%`           | Wrapper width in px                                                |
+| `buttonHeight`   | `number`                                                                                               | `40`             | Wrapper height in px                                               |
+
+</div>
+
+#### Apple Pay
+
+```js
+externalButtons: {
+  applePay: {
+    buttonType: 'buy',
+    buttonStyle: 'black',
+    locale: 'en',
+    buttonWidth: 200,
+    buttonHeight: 48,
+    buttonBorderRadius: 4,
+  }
+}
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Property             | Type                                                                                                                                                                                          | Default      | Description                                                |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------- |
+| `buttonType`         | `'plain'` \| `'add-money'` \| `'book'` \| `'buy'` \| `'check-out'` \| `'contribute'` \| `'donate'` \| `'order'` \| `'pay'` \| `'reload'` \| `'rent'` \| `'set-up'` \| `'subscribe'` \| `'support'` \| `'tip'` \| `'top-up'` | `'plain'` | Button label text |
+| `buttonStyle`        | `'black'` \| `'white'` \| `'white-outline'`                                                                                                                                                  | `'black'`    | Button background style                                    |
+| `locale`             | `string`                                                                                                                                                                                      | SDK language | ISO 639-1 alpha-2 lowercase (for example, `'en'`, `'es'`, `'pt'`) |
+| `buttonWidth`        | `number`                                                                                                                                                                                      | `100%`       | Wrapper width in px                                        |
+| `buttonHeight`       | `number`                                                                                                                                                                                      | `40`         | Wrapper height in px                                       |
+| `buttonBorderRadius` | `number`                                                                                                                                                                                      | `30`         | Border radius in px                                        |
+
+</div>
+
+#### PayPal
+
+```js
+externalButtons: {
+  paypal: {
+    color: 'gold',
+    shape: 'rect',
+    label: 'paypal',
+    layout: 'vertical',
+    height: 45,
+    width: 200,
+    borderRadius: 4,
+  }
+}
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Property       | Type                                                                         | Default                      | Description                                   |
+| -------------- | ---------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------- |
+| `color`        | `'gold'` \| `'blue'` \| `'silver'` \| `'white'` \| `'black'`               | PayPal decides               | Button background color                       |
+| `shape`        | `'rect'` \| `'pill'` \| `'sharp'`                                           | `'pill'`                     | Button shape                                  |
+| `label`        | `'paypal'` \| `'checkout'` \| `'buynow'` \| `'pay'` \| `'installment'`     | PayPal decides               | Button label text                             |
+| `layout`       | `'vertical'` \| `'horizontal'`                                              | PayPal decides               | Button layout direction                       |
+| `height`       | `number`                                                                     | `40`                         | Button height in px (valid range: 25–55)      |
+| `width`        | `number`                                                                     | `100%`                       | Wrapper width in px                           |
+| `borderRadius` | `number`                                                                     | PayPal decides (by shape)    | Border radius in px                           |
+
+</div>
+
+#### Full example
+
+```js
+const yuno = await window.Yuno.initialize(publicApiKey)
+
+await yuno.startCheckout({
+  checkoutSession,
+  countryCode: 'CO',
+  language: 'es',
+  renderMode: {
+    type: 'element',
+    elementSelector: {
+      apmForm: '#apm-root',
+      actionForm: '#action-root',
+    },
+  },
+  externalButtons: {
+    googlePay: {
+      buttonColor: 'black',
+      buttonType: 'pay',
+      buttonRadius: 4,
+      buttonSizeMode: 'fill',
+    },
+    applePay: {
+      buttonType: 'buy',
+      buttonStyle: 'black',
+      buttonBorderRadius: 4,
+    },
+    paypal: {
+      color: 'blue',
+      shape: 'rect',
+      label: 'pay',
+      height: 45,
+      borderRadius: 4,
+    },
+  },
+  // ... rest of config
+})
+```
+
+## Payment retry
+
+Payment retry lets a shopper fix and re-submit a **card** payment after it comes back `DECLINED` or `ERROR`, without restarting the checkout. Instead of tearing down the card form, the SDK keeps it open and surfaces the decline (field-level errors and a top error banner). It also clones the checkout session so the next attempt reuses the same flow.
+
+Retry is **disabled by default**. Yuno enables it per organization on request through a server-side flag — it is not a Dashboard or Checkout Builder toggle. It is a server-controlled setting, not a `startCheckout()` argument. It applies to non-enrolled card payments only. Enrolled cards, vaulted cards, and external-button payments are excluded.
+
+Payment retry is supported across all four Web integrations: **Seamless**, **Full Checkout**, **Lite**, and **Secure Fields**.
+
+<Note>Retry in Lite shipped in SDK v1.9.11.</Note>
+
+### Behavior by integration
+
+| Integration | What you need to do |
+| ----------- | ------------------- |
+| **Seamless** | Automatic. The SDK keeps the card form open and drives the retry itself. No extra integration required. |
+| **Full Checkout** | Manual. After creating the payment on your backend, check the response and call `continuePayment` (see below). |
+| **Lite** | Manual. Same as Full Checkout. |
+| **Secure Fields** | Manual. Same as Full Checkout. |
+
+### Triggering retry in Full Checkout, Lite, and Secure Fields
+
+For these three flows, after your backend creates the payment you must inspect the payment response and drive the SDK accordingly:
+
+- **Card payment that failed** (`payment_method.type === 'CARD'` and `status` is `DECLINED` or `ERROR`): call `continuePayment` to run the retry. The card form stays open with the decline shown.
+- **Additional action required** (`checkout.sdk_action_required === true`): call `continuePayment` so the SDK can show the required screens (for example, 3DS or a redirect).
+- **Nothing left for the SDK to do** (status is not `DECLINED`/`ERROR` **and** `checkout.sdk_action_required === false`): the SDK will not tear itself down, so you must unmount it manually with `unmountSdk`.
+
+```javascript
+// In your yunoCreatePayment callback, after creating the payment on your backend:
+const payment = await createPaymentOnYourBackend(oneTimeToken);
+
+const isCard = payment.payment_method?.type === 'CARD';
+const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+const actionRequired = payment.checkout?.sdk_action_required === true;
+
+if (isCard && failed) {
+  // Runs the retry flow: keeps the card form open with the decline shown.
+  await yuno.continuePayment();
+} else if (actionRequired) {
+  // Additional action needed (for example, 3DS or redirect).
+  await yuno.continuePayment({ showPaymentStatus: true });
+} else {
+  // No retry and no action required: clean up the SDK yourself.
+  await yuno.unmountSdk();
+}
+```
+
+<Warning>
+If the payment method is `CARD` and the status is `DECLINED` or `ERROR`, you **must** call `continuePayment`. If you don't, the card form will **not** close automatically. The shopper is left on the open form with no next step.
+
+When the status is anything other than `DECLINED`/`ERROR` **and** `checkout.sdk_action_required` is `false`, call `unmountSdk` to remove the SDK from the DOM. It does not unmount on its own in these flows.
+</Warning>
+
+<Warning>
+**Secure Fields:** set the `checkoutSession` on the `secureFields({ ... })` object, and **do not** pass it to `generateTokenWithInformation({ ... })`.
+
+Retry is armed when the SDK initializes the secure fields with a `checkoutSession`. On each retry, the SDK swaps in a freshly cloned session internally. If you also pass `checkoutSession` to `generateTokenWithInformation`, that fixed value overrides the cloned one and breaks the retry attempt.
+
+```javascript
+// ✅ Correct: checkoutSession only on secureFields
+const secureFields = await yuno.secureFields({
+  checkoutSession,
+  // ...other options
+});
+
+const token = await secureFields.generateTokenWithInformation({ /* no checkoutSession */ });
+
+// ❌ Incorrect: checkoutSession passed to generateTokenWithInformation overrides the cloned session on retry
+const token = await secureFields.generateTokenWithInformation({ checkoutSession });
+```
+</Warning>
+
+### Retry lifecycle and callbacks
+
+On a retried attempt the SDK does **not** fire `yunoPaymentResult` and does **not** mount the status page. Instead, it delivers the cloned checkout session to your `onLoading` callback:
+
+```javascript
+onLoading: ({ type, data }) => {
+  if (type === 'PAYMENT_RETRY') {
+    // A fresh checkout session has been cloned for the retry.
+    const newCheckoutSession = data.newCheckoutSession;
+    // The SDK will NOT fire yunoPaymentResult for this retry step.
+    // The shopper stays on the card form — no additional action needed.
+  }
+}
+```
+
+Each retry attempt flows through `yunoCreatePayment` → your backend → `continuePayment` (or automatic in Seamless) without a `yunoPaymentResult` callback between attempts. `yunoPaymentResult` fires only when the flow finishes — either the payment succeeds, the shopper exits, or the payment fails without being retryable.
+
+## Direct-debit consent
+
+*Available since Web SDK v1.10.12.*
+
+On direct-debit payment methods (ACH, SEPA Direct Debit, Bacs, PAD, and iDEAL when the account is saved), the checkout renders authorization/mandate text below the bank fields, when enabled via the Checkout Builder's [Authorization text](/docs/using-yuno/dashboard-overview/checkout-builder#authorization-text) panel.
+
+* **One-off copy** is shown by default.
+* **Recurrent copy** is shown instead when the account will be stored — either the shopper ticked the `savePaymentMethodEnabled` save checkbox, or the flow is an enrollment.
+
+SEPA and iDEAL additionally require a mandatory acceptance checkbox alongside the authorization text. Submit is blocked with the error "Accept the mandate to continue" until the shopper checks it.
+
+### Mandate evidence in the one-time token
+
+Whenever the authorization-text block is shown, the SDK includes the shopper's acceptance evidence in the one-time token, regardless of whether the save checkbox was ticked. The shape below reflects what's encoded inside that token — your backend still forwards it to [Create Payment](/reference/payments/create-payment) as the opaque `payment_method.token` string, the same as any other one-time token:
+
+```json
+{
+  "payment_method": {
+    "bank_transfer": {
+      "mandate": {
+        "mandate_template_key": "...",
+        "mandate_type": "ONE_OFF",
+        "accepted_at": "2026-09-02T15:04:00Z",
+        "creditor": "..."
+      }
+    }
+  }
+}
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Field                   | Description                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| `mandate_template_key`   | Identifies the authorization/mandate copy template the shopper was shown.                        |
+| `mandate_type`           | `ONE_OFF` or `RECURRENT`, matching the copy variant rendered.                                      |
+| `accepted_at`            | UTC timestamp of when the shopper accepted the mandate.                                            |
+| `creditor`                | Creditor value as rendered in the authorization text. Omitted when the backend sends no creditor. |
+
+</div>
+
+## updateCheckoutSession
+
+`updateCheckoutSession(checkoutSession)` replaces the active checkout session without unmounting the SDK. Use it to let the shopper switch to a different payment method after a failed payment.
+
+```javascript
+// After a failed payment, inject a new session so the shopper can pick another method:
+await yuno.updateCheckoutSession(newCheckoutSession);
+```
+
+The SDK keeps the current UI mounted and swaps the checkout session id in internal state. Nothing is re-fetched: the payment-method list, settings, styling, and country data are all fetched once at mount and stay on the mount-time session. If the new session exposes a different set of payment methods, styling, or country configuration, you must unmount and re-mount the SDK.
+
+<Note>
+`yuno.updateCheckoutSession()` automatically propagates to the Secure Fields instance — there is no need to call it on the SF instance directly.
+</Note>
+
+## Enrollment parameters (full reference)
+
+Parameters for `await yuno.mountEnrollment()`. All parameters used in [Enrollment flows (Web)](/docs/sdks/card-enrollment/web-enrollment) are listed here with full detail.
+
+<div className="code-nowrap-table dense-table">
+
+| Parameter              | Type     | Required | Description                                                                                                                                                                                                                                     |
+| ---------------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`      | string   | Yes      | Customer session ID from your backend (Create customer session API). Required. Associates the enrolled payment method with a specific customer.                                                                                                 |
+| `countryCode`          | string   | Yes      | ISO country code (for example, `US`, `BR`). Determines available enrollment options. See [Country coverage](/docs/sdks/resources/country-coverage).                                                                                                                          |
+| `language`             | string   | No       | Language code for the UI (for example, `en`, `en-US`). Defaults to browser language when available.                                                                                                                                                     |
+| `showLoading`          | boolean  | No       | When `true`, shows the loading spinner during enrollment. Default `true`.                                                                                                                                                                       |
+| `onLoading`            | function | No       | Callback when loading state changes during enrollment.                                                                                                                                                                                          |
+| `elementSelector`      | string   | No       | CSS selector where the enrollment form mounts. Required when not using default modal behavior.                                                                                                                                                  |
+| `card`                 | object   | No       | Card form options (same structure as payment flows: `type`, `styles`, `texts`, `onChange`, `isCreditCardProcessingOnly`, etc.).                                                                                                             |
+| `yunoEnrollmentStatus` | function | No       | Callback when enrollment ends. Receives `vaultedToken` and `status`. Status values: `CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`. |
+| `issuersFormEnable`    | boolean  | No       | When `true`, shows the issuer (bank) list form. Optional.                                                                                                                                                                                       |
+| `texts`                | object   | No       | Custom text for enrollment form buttons and labels.                                                                                                                                                                                             |
+
+</div>
+
+## Mount external buttons
+
+Use the `mountExternalButtons` method to render PayPal, Google Pay, and Apple Pay buttons in custom locations within your UI. This gives you control over where these buttons are displayed.
+
+```javascript
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay',
+  },
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay',
+  },
+  {
+    paymentMethodType: 'PAYPAL',
+    elementSelector: '#paypal',
+  },
+]);
+```
+
+### Parameters
+
+<div className="nowrap-col1-table dense-table">
+
+| Parameter           | Description                                                                                                    |
+| :------------------ | :------------------------------------------------------------------------------------------------------------- |
+| `paymentMethodType` | The payment method type. Must be `'APPLE_PAY'`, `'GOOGLE_PAY'`, or `'PAYPAL'`.                                 |
+| `elementSelector`   | The CSS selector for the HTML element where the button should be rendered (for example, `'#apple-pay'`, `'.button'`). |
+
+</div>
+
+### Unmounting buttons
+
+You can unmount a single external button by payment method type:
+
+```javascript
+await yuno.unmountExternalButton('APPLE_PAY');
+```
+
+Or unmount all external buttons at once:
+
+```javascript
+await yuno.unmountAllExternalButtons();
+```
+
+## Enrolling payment methods
+
+You can enroll payment methods (store cards for future use) directly during the payment flow by setting `payment_method.vault_on_success = true` in the [checkout session creation](/reference/checkout-sessions/the-checkout-session-object).
+
+When `vault_on_success` is set to `true`:
+
+* The payment method will be automatically enrolled if the payment status is `SUCCEEDED`
+* If the payment does not succeed, no vaulting will occur
+* The payment response will include a `vaulted_token` that you can use for future transactions
+
+**Example**:
+
+```json
+{
+    "account_id": "...",
+    "payment_method": {
+        "vault_on_success": true
+    }
+}
+```
+
+To generate and receive a `vaulted_token` when `vault_on_success = true`, the payment must reference an existing Yuno customer through `customer_payer.id` in the checkout session. Creating or sending the customer data inline inside the payment request does not create the customer on our side. As a result, no vaulting will occur.
+
+For enrollment flows, see [Enrollment flows (Web)](/docs/sdks/card-enrollment/web-enrollment).

@@ -1,0 +1,89 @@
+---
+title: "PCI Proxy Overview"
+description: "Send raw card data to any third-party API through Yuno's PCI DSS Level 1 environment, without bringing your own systems into PCI scope."
+keywords: ["pci proxy", "forward proxy", "detokenization", "vaulted_token", "pci compliance"]
+---
+
+Some payment operations require sending raw card data to a third party — a processor Yuno does not orchestrate for you, an airline or hotel supplier API, a fraud or issuer service, or your own acquiring connection. Handling that data directly would pull your systems into full PCI DSS scope.
+
+The Yuno PCI Proxy lets your servers make HTTPS requests to any third-party API **through Yuno's PCI DSS Level 1 environment**. You send a normal API request that references your stored cards by `vaulted_token`; Yuno replaces those references with the real card data inside its secure environment and forwards the request to the destination. The raw card number never touches your infrastructure, so your PCI scope does not change.
+
+<Note>
+**Requirements**
+
+The PCI Proxy works with cards you have already stored with Yuno. Cards are stored when a customer saves a payment method during checkout, or when you enroll one through the [Enroll Payment Method](/reference/payment-methods-direct-workflow/enroll-payment-method-api) endpoint.
+</Note>
+
+<Warning>
+**Destinations must be allowlisted**
+
+The proxy only calls hosts you have registered on your destination allowlist. A request to an
+unregistered host is rejected with `DESTINATION_NOT_ALLOWED`. Registration is self-serve and
+takes effect in minutes — see [Destination Allowlist](/docs/security-and-compliance/pci-proxy/allowlist).
+</Warning>
+
+## How it works
+
+1. Your server sends an HTTPS request to `https://api.y.uno/v1/pci-proxy/forward`, authenticated with your standard Yuno API credentials.
+2. You put the full destination URL (including its path and query) in the `yuno-proxy-destination-url` header, and reference card data in the request body or headers using expressions such as `{{vaulted_token.<TOKEN>.number}}`.
+3. Inside Yuno's PCI environment, the proxy resolves each expression to the real card data, then forwards your request — same method, headers, and body — to the destination over TLS.
+4. The destination's response is returned to you, along with diagnostic headers that tell you what the proxy did.
+
+The proxy is a pass-through: Yuno does not store your request or the destination's response, and request and response bodies are never written to logs.
+
+## Card data in responses
+
+If a destination echoes a full card number back in its response, returning it to you would put your systems back in PCI scope. To prevent that, the proxy scans each response for card numbers — the one it just injected, plus any other valid card number.
+
+By default the proxy **redacts** them, leaving only the last four digits, and reports how many in the `yuno-proxy-response-redactions` response header; a non-zero value is a sign your destination is returning card data you should not receive. Yuno can optionally be configured, as a service-wide setting, not per account, to instead **reject** any response that contains card data with `502 RESPONSE_BLOCKED`.
+
+## Card data you can reference
+
+| Expression | Resolves to |
+|---|---|
+| `{{vaulted_token.<TOKEN>.number}}` | The card number (PAN) |
+| `{{vaulted_token.<TOKEN>.expiration_month}}` | Two-digit expiration month (`MM`) |
+| `{{vaulted_token.<TOKEN>.expiration_year}}` | Four-digit expiration year (`YYYY`) |
+| `{{vaulted_token.<TOKEN>.holder_name}}` | The cardholder name |
+| `{{vaulted_token.<TOKEN>.network_token_number}}` | The network token number (DPAN), when the card has a network token |
+| `{{vaulted_token.<TOKEN>.network_token_expiration_month}}` | Network token two-digit expiration month (`MM`) |
+| `{{vaulted_token.<TOKEN>.network_token_expiration_year}}` | Network token four-digit expiration year (`YYYY`) |
+| `{{vaulted_token.<TOKEN>.network_transaction_id}}` | The network transaction ID (NTID): the card scheme's reference for the stored card's original transaction, required by many processors for merchant-initiated transactions |
+
+The `<TOKEN>` must be a `vaulted_token` that belongs to your organization. A token that does not exist or belongs to another organization is rejected with `EXPRESSION_RESOLUTION_FAILED`, before any card data is read. A field whose data is unavailable fails the same way — for example, a `network_token_*` field when the card has no network token, or `network_transaction_id` when the card has no NTID. All fields can be mixed in the same request.
+
+<Note>
+**Not provider tokens, not cryptograms**
+
+These expressions resolve a vaulted token to the data stored with it: the card (PAN, expiration, holder name), its network token (DPAN and its expiration), and its network transaction ID. Provider tokens are not resolved. Neither are **cryptograms**: a cryptogram is generated per transaction, so if your destination requires one, obtain it from [Generate Network Token Cryptogram](/reference/network-tokens/generate-network-token-cryptogram) right before the forward and include the value directly in the request body. If your organization is not PCI-certified, request it with `include_network_token: false` — the cryptogram-only response carries no PAN-equivalent data, and the `network_token_number` expression resolves the DPAN at forward time.
+</Note>
+
+<Note>
+**The security code (CVV) expression has a lifetime**
+
+`{{vaulted_token.<TOKEN>.security_code}}` resolves only while the security code is still available — by default for 3 hours after enrollment. It is never stored: it is held briefly after your customer enters it, and Yuno stops serving it once that window closes. Supply it as `card.security_code` when you enroll the card, and check `card_data.security_code_expires_in` on the payment method before relying on it. Outside that window, include the CVV directly in the request body yourself if your destination requires it; the proxy forwards it without storing it. Note that transmitting a raw security code keeps that request in your PCI scope.
+</Note>
+
+## Your PCI scope
+
+When you use the PCI Proxy together with Yuno's SDKs to collect cards, raw card data never enters your systems — it flows from the customer to Yuno, and from Yuno to the destination you choose. Most merchants operating this way qualify for the **SAQ A** self-assessment. See [PCI Compliance](/docs/security-and-compliance/pci-compliance) for the complete picture of how Yuno reduces your PCI scope.
+
+## Security controls
+
+* **HTTPS only.** The proxy connects to destinations over TLS 1.2 or higher, on port 443 only. Destinations must be public DNS hostnames — IP addresses and internal networks are rejected.
+* **Credential isolation.** Your Yuno API credentials and all `yuno-*` headers are stripped before the request is forwarded. The destination only sees the headers you intend it to see.
+* **No storage, no logging.** The proxy holds card data in memory only for the lifetime of the request. Request and response bodies are excluded from logs and traces.
+* **Full audit trail.** Every invocation produces an audit record (who, when, destination, outcome — never card data).
+
+## Limits
+
+| Limit | Value |
+|---|---|
+| Request and response body size | 1 MB |
+| Distinct vaulted tokens per request | 20 |
+| Destination timeout | 30 seconds by default, configurable up to 120 with the `yuno-proxy-timeout` header |
+| Supported methods | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` |
+
+## Get started
+
+Follow the [Forward Proxy guide](/docs/security-and-compliance/pci-proxy/forward-proxy) for a step-by-step integration, or go straight to the [API reference](/reference/pci-proxy/invoke-forward-proxy).
