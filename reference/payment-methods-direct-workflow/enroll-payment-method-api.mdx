@@ -18,21 +18,28 @@ We recommend listening to [Webhooks](/docs/configure-webhooks) to stay up to dat
 
 If a customer enrolls the same card multiple times, Yuno creates a new enrollment each time and returns a distinct `vaulted_token`. Use the card `fingerprint` in the enrollment response to detect duplicates on your side (the fingerprint may be `null` for some providers). See [Card Fingerprint](/docs/fingerprint).
 
+<Warning>
+**Only available for PCI certified merchants.**
+</Warning>
+
 ## Dry-run enrollment
 
-You can validate an enrollment without touching production money or sending a live enrollment to the provider by sending two optional request headers:
+Dry-run enrollment is supported only on this endpoint with `workflow` set to `DIRECT`. It lets you validate an enrollment without sending a live enrollment to the provider by sending two optional request headers:
 
 | Header | Required | Description |
 | ------ | -------- | ----------- |
 | `X-Dry-Run` | Optional | Set to `true` to simulate the enrollment instead of routing it to a provider. |
-| `X-Orchestrator-Dry-Run-Id` | Optional | Identifier used to pair this enrollment with the provider exchange you register for validation. Must be 3 to 255 characters. |
+| `X-Orchestrator-Dry-Run-Id` | Optional | Identifier used to pair this enrollment with the provider exchange you register for validation. When `X-Dry-Run` is `true`, it must be 3 to 255 characters; outside that range the request returns `400 INVALID_PARAMETERS`. Without `X-Dry-Run`, it is ignored. |
 
-When `X-Dry-Run: true` is set, the enrollment is simulated: Yuno makes no provider enrollment and sends no webhook. The response comes back with status `DRY_RUN` and sub_status `DRY_RUN`, and the returned `vaulted_token` can be used only on payments sent with `X-Dry-Run: true`. It cannot be used for a real payment.
+When `X-Dry-Run: true` is set, the enrollment is simulated: Yuno makes no provider enrollment and sends no webhook. The response comes back with status `DRY_RUN` and sub_status `DRY_RUN`. The returned `vaulted_token` works only on direct payments sent with `X-Dry-Run: true`; a real payment with it fails with `PAYMENT_METHOD_NOT_AVAILABLE`.
+
+Sending `X-Dry-Run: true` to any other enrollment flow returns `400 INVALID_PARAMETERS`. This applies to:
+
+- This endpoint with `workflow` set to `REDIRECT`.
+- Customer session enrollment.
+- The SDK and B2B init-enrollment flows.
+- The SDK enrollment flow.
 
 To grade the enrollment request against the provider exchange, send the same `X-Orchestrator-Dry-Run-Id` on this request and on `POST /v1/dry-run/provider-events` with `operation_type` set to `ENROLLMENT`. See [Register a Dry-Run Provider Event](/reference/dry-run/register-dry-run-provider-event).
 
 When Yuno makes no provider request for the enrollment (a provider token import, or card data enrolled without a provider connection), there is nothing to compare against, so the comparison stays partial.
-
-<Warning>
-**Only available for PCI certified merchants.**
-</Warning>
