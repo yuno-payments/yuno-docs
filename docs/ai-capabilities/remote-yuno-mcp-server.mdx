@@ -1,9 +1,9 @@
 ---
 title: "Remote Yuno MCP Server"
-description: "Provides a hosted MCP endpoint with API key auth, IP binding, rate limits, and session TTLs"
+description: "Provides a hosted MCP endpoint with OAuth 2.1 sign-in or API key headers, so agents can use Yuno without running the server"
 ---
 
-The Remote Yuno MCP Server implements the Model Context Protocol (MCP) to provide secure, remote access to Yuno services. It acts as a hardened proxy so AI agents and automation clients can call Yuno APIs over MCP with enterprise-grade security and session controls.
+The Remote Yuno MCP Server implements the Model Context Protocol (MCP) to provide secure, remote access to Yuno services. It acts as a hardened proxy so AI agents and automation clients can call Yuno APIs over MCP without running a server of their own.
 
 <Note>
   Looking for the one-click Claude/ChatGPT connector instead of building your own MCP client? See [Use Yuno with Claude and ChatGPT](/docs/ai-capabilities/use-yuno-with-claude-and-chatgpt).
@@ -11,27 +11,50 @@ The Remote Yuno MCP Server implements the Model Context Protocol (MCP) to provid
 
 ## Key capabilities
 
-### Security
+### Authentication
 
-* API key auth: Requires `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, and `YUNO_ACCOUNT_CODE`
-* IP validation: Sessions are bound to client IPs
-* Rate limiting: 15 requests per minute per session
-* Session timeouts: 30 minutes idle; 6 hours absolute
+* **OAuth 2.1**: MCP clients that support it, such as Claude and ChatGPT, sign in through Yuno using PKCE. Your Yuno credentials are entered once and stored encrypted on the server, so they are never distributed to the client.
+* **API key headers**: Alternatively, send `public-api-key`, `private-secret-key` and `account-code` on every request, as in the sample below.
+
+The Yuno environment — production, sandbox, staging or dev — is selected by the prefix of your public API key.
+
+Production keys (`prod_`) are accepted only on `https://mcp.prod.y.uno/mcp`. The sandbox, staging and dev hosts refuse them with `403 Forbidden`, so a production key cannot reach production data through a host named for a test environment.
 
 ### Protocols
 
 * Streamable HTTP transport for bidirectional communication
 * JSON-RPC 2.0 for standardized request/response
 
-### Session management
+### Stateless by design
 
-* Automatic creation, refresh, and cleanup
-* Scheduled cleanup every 5 minutes
-* Redis backend for persistent session and rate-limit storage
+Each request is handled on its own: there is no session to create, renew or expire, and the server keeps no state between calls. `GET` and `DELETE` on `/mcp` return `405 Method Not Allowed`.
+
+The one thing a client may need to carry from one call to the next is the `confirm_token` of the production confirmation step below.
+
+### Confirmation for destructive tools in production
+
+With a production key, tools that cancel, refund, capture, pause or delete run in two steps:
+
+1. The first call executes nothing. It returns a preview with `confirmation_required: true`, a `summary`, the validated `arguments` and a `confirm_token`.
+2. Call the same tool again with identical arguments plus `confirm_token`. Only this call performs the action.
+
+The token expires after 5 minutes and is bound to the tool and its arguments: if any argument changes, the call fails with `confirm_token is invalid or expired`. Call the tool again without `confirm_token` to get a new preview.
+
+<Warning>
+  The preview is not an error response, but it is not a success either. An agent or workflow that treats any non-error result as done will report a refund or capture that never happened. Check for `confirmation_required: true` before reading the result.
+</Warning>
+
+Tools that require confirmation: `paymentRefund`, `paymentCancel`, `paymentCancelOrRefund`, `paymentCancelOrRefundWithTransaction`, `paymentCaptureAuthorization`, `paymentLinkCancel`, `paymentMethodUnenroll`, `subscriptionPause`, `subscriptionCancel`, `recipientDelete` and `installmentPlanDelete`.
+
+Sandbox, staging and dev keys run these tools in a single call.
+
+### Read-only mode
+
+Send the header `x-yuno-mode: read-only` to expose only the retrieval tools. No tool can then create, modify or cancel anything, and the tool list your client loads on connect is much smaller.
 
 ## When to use the remote server
 
-Use the Remote MCP Server when you want centralized security, observability, and policy enforcement (IP binding, rate limits, TTLs). It's also useful when teams and tools should connect without distributing raw API credentials locally. For rapid prototyping on a developer machine, the [local MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) (CLI-launched) may be sufficient.
+Use the Remote MCP Server when you want a hosted endpoint instead of running the MCP server yourself, or when teams and tools should connect through OAuth sign-in without distributing raw API credentials locally. For rapid prototyping on a developer machine, the [local MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) (CLI-launched) may be sufficient.
 
 ## Connecting from MCP-compatible clients
 
