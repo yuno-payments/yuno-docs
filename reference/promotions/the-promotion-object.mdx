@@ -29,7 +29,7 @@ A promotion is a discount with a date window and a set of conditions. It can't b
 <ParamField body="name" type="string">
   The promotion name (MAX 255; MIN 3). The checkout uses it when it announces the discount.
 
-  Example: BBVA 10% off - Mother's Day
+  Example: 10% off with credit cards - Mother's Day
 </ParamField>
 
 <ParamField body="description" type="string">
@@ -61,10 +61,11 @@ A promotion is a discount with a date window and a set of conditions. It can't b
     <ParamField body="mode" type="enum">
       Possible values:
       - `AUTOMATIC` = Applies by itself to every payment that meets the conditions. The customer types nothing.
+      - `CODE` = Applies only when the payment's quote carries the promotion `code`. The customer types it at checkout, or your server sends it on the quote. **Not available yet:** today every promotion is `AUTOMATIC`; codes are coming in a later release.
     </ParamField>
 
     <ParamField body="code" type="string">
-      Reserved for promotion codes. Always `null` today.
+      Required when `mode` is `CODE`, `null` otherwise. 3 to 32 characters: `A-Z`, `0-9`, `_` and `-`. Unique per account among the promotions that can still apply; reusable once the earlier promotion with that code is disabled or its schedule has ended.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -86,15 +87,15 @@ A promotion is a discount with a date window and a set of conditions. It can't b
     </ParamField>
 
     <ParamField body="amounts" type="Array of objects">
-      `FIXED` only: one `{ currency, value }` per currency (ISO 4217), each above zero. Required for fixed discounts. `null` for a percentage discount. When the promotion also has an `amounts` condition, `discount.amounts` and `conditions.amounts.values` must list the same currencies, or create returns `400`.
+      `FIXED` only: one `{ currency, value }` per currency (ISO 4217), each above zero. Required for fixed discounts. `null` for a percentage discount. A fixed promotion applies only to payments in the currencies it lists, and the discount is capped at the payment amount. When the promotion also has an `amounts` condition, `discount.amounts` and `conditions.amounts.values` must list the same currencies, or create returns `400`.
 
-      Example: `[{ "currency": "ARS", "value": 3000.00 }]`
+      Example: `[{ "currency": "USD", "value": 30.00 }]`
     </ParamField>
   </Expandable>
 </ParamField>
 
 <ParamField body="conditions" type="object">
-  The conditions a payment must meet. **AND** across keys, **OR** inside each key's `values` list. Omit a key or send `null` for no condition on that dimension; an empty `values` list returns `400`.
+  The conditions a payment must meet. **AND** across keys, **OR** inside each key's `values` list. Omit a key or send `null` for no condition on that dimension; an empty `values` list returns `400`. An empty `conditions` object (`{}`) applies to every payment of the account.
 
   <Expandable title="properties">
     <ParamField body="bins" type="object">
@@ -165,7 +166,7 @@ A promotion is a discount with a date window and a set of conditions. It can't b
 
 ## How a promotion is chosen
 
-One payment gets one promotion. When two or more match, Yuno applies the one with the **biggest saving** for the customer, then the oldest. A promotion doesn't apply when its discount would leave a total of zero or less.
+One payment gets one promotion. When two or more match, Yuno applies the one with the **biggest saving** for the customer, then the oldest, then the smallest `id`. A fixed discount is capped at the payment amount, and a charge of zero is valid. A promotion whose discount is zero doesn't apply.
 
 ## Example
 
@@ -173,8 +174,8 @@ One payment gets one promotion. When two or more match, Yuno applies the one wit
 {
   "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
   "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-  "name": "BBVA 10% off - Mother's Day",
-  "description": "Bank deal with BBVA, claimed monthly.",
+  "name": "10% off with credit cards - Mother's Day",
+  "description": "Card deal, claimed monthly.",
   "schedule": { "starts_at": "2026-10-01T03:00:00Z", "ends_at": "2026-11-01T02:59:59Z" },
   "redemption": { "mode": "AUTOMATIC", "code": null },
   "discount": { "type": "PERCENTAGE", "value": 10 },
@@ -186,10 +187,28 @@ One payment gets one promotion. When two or more match, Yuno applies the one wit
     "payment_methods": { "values": ["CARD"] },
     "card_types": { "values": ["CREDIT"] },
     "countries": { "values": ["AR"] },
-    "amounts": { "values": [{ "currency": "ARS", "min": 10000.00, "max": 500000.00 }] }
+    "amounts": { "values": [{ "currency": "USD", "min": 100.00, "max": 5000.00 }] }
   },
   "status": "SCHEDULED",
   "created_at": "2026-09-14T12:04:18Z",
+  "disabled_at": null
+}
+```
+
+### Example with a code
+
+```json
+{
+  "id": "f3a2b1c0-8d9e-4f5a-b6c7-2e1d0f9a8b7c",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "name": "Welcome 10% off",
+  "description": "For new customers.",
+  "schedule": { "starts_at": "2026-10-01T00:00:00Z", "ends_at": null },
+  "redemption": { "mode": "CODE", "code": "WELCOME10" },
+  "discount": { "type": "PERCENTAGE", "value": 10 },
+  "conditions": {},
+  "status": "ACTIVE",
+  "created_at": "2026-09-20T09:00:00Z",
   "disabled_at": null
 }
 ```
