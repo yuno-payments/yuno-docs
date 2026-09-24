@@ -1,13 +1,13 @@
 ---
 title: "Create Promotion Quote"
 openapi: "/openapi/promotions/create-promotion-quote.json POST /promotions/quote"
-description: "Prices a payment before you create it and returns the quote_id that applies the promotion."
+description: "Prices a payment before you create it and returns a signed quote when a promotion applies."
 ---
 
 <Warning>
 **Promotions is enabled per organization**
 
-Until Yuno enables Promotions for your organization, this endpoint always answers `eligible: false`. Ask your Technical Account Manager or Key Account Manager. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).
+Until Yuno enables Promotions for your organization, this endpoint answers `204` (nothing applies). Ask your Technical Account Manager or Key Account Manager. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).
 </Warning>
 
 <Note>
@@ -19,21 +19,17 @@ The checkout asks for the quote by itself when the customer enters a card, and u
 ## How to use the quote
 
 1. Send the context of the payment you're about to create. `amount` is the original amount, before any promotion.
-2. If `eligible` is `true`, show `computed.total` to your customer. That's what they'll pay.
-3. Create the payment with the same original `amount` and the quote in `additional_data.order.discounts`:
+2. On `200`, show `charge_amount` to your customer. That's what they'll pay. The answer includes `quote_id`, a one-element `promotion` list (id, name, description), and the three amounts.
+3. Create the payment with the same original `amount` and `promotion.quote_id` set to `quote_id`. See [Create Payment](/reference/payments/create-payment) and [Promotions](/docs/payment-features/promotions).
 
-```json
-"additional_data": { "order": { "discounts": [ { "quote_id": "qte_0d91f7ac3b2e" } ] } }
-```
-
-A promotion applies **only** when the payment carries a `quote_id`. A payment without one is charged in full.
+A promotion applies **only** when the payment carries `promotion.quote_id`. A payment without one is charged in full.
 
 ## Rules
 
-* **Biggest saving wins.** When two or more promotions match, the quote is for the one that saves the customer the most, then the oldest. One promotion per payment.
-* **30 minutes.** A quote is valid until `quote.expires_at`. Inside that time the payment charges the quoted price, even if the promotion ended or was disabled in between.
-* **Quoted price or no payment.** If the quote expired, or the payment's amount, currency, card or account differs from what you quoted, Yuno rejects the payment. It never charges the full price instead. Get a new quote and try again.
-* **Nothing is consumed.** A quote is a read. Asking twice returns the same answer, and a quote you never use needs no cleanup.
-* **No match isn't an error.** The answer is `200` with `eligible: false`. Create the payment as usual, with no `quote_id`.
-* **`reason` says why.** `NO_MATCH`: no promotion applies to this payment. `ENGINE_UNAVAILABLE`: Yuno couldn't price the payment right now; retry, or create the payment without a `quote_id` to charge the regular price.
+* **Biggest saving wins.** When two or more promotions match, the quote is for the one that saves the customer the most, then the oldest. One promotion per payment; no stacking.
+* **30 minutes on the API path.** A quote is valid until `expires_at` (30 minutes when there is no checkout session). Inside that time the payment charges the quoted price, even if the promotion's end date passed after the quote was issued. Only [disabling](/reference/promotions/disable-promotion) the promotion stops its open quotes.
+* **Every condition must already be true.** A quote exists only when the promotion's conditions all hold for the context you send.
+* **Quoted price or no payment.** If the quote expired, or the payment's amount, currency, card or account differs from what you quoted, Yuno rejects the payment with `422 PROMOTION_NOT_APPLICABLE` (or `400 QUOTE_INVALID` for a malformed id). It never charges the full price instead. Get a new quote and try again.
+* **Nothing is consumed.** A quote is a read. Asking twice returns the same answer while it is valid, and a quote you never use needs no cleanup.
+* **No match isn't an error.** The answer is `204` when nothing applies. Create the payment as usual, with no `promotion.quote_id`.
 * **Never send a full card number.** `bin` is the first 6 to 8 digits.

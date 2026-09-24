@@ -10,7 +10,7 @@ A promotion is a discount you define once, for example "10% off with BBVA credit
 
 Promotions is off by default. Yuno turns it on for your **organization**, and it then works on the accounts of that organization. Ask your Technical Account Manager or Key Account Manager to enable it, in sandbox first and then in production.
 
-Until it's enabled, no promotion applies to your payments: [Create Promotion Quote](/reference/promotions/create-promotion-quote) always answers `eligible: false`, and the checkout shows the regular price.
+Until it's enabled, no promotion applies to your payments: [Create Promotion Quote](/reference/promotions/create-promotion-quote) answers `204`, and the checkout shows the regular price.
 </Warning>
 
 ## How it works
@@ -18,28 +18,13 @@ Until it's enabled, no promotion applies to your payments: [Create Promotion Quo
 A promotion reaches a payment in three steps. The **quote** is the link between them: it's the price the customer saw, and the payment charges that price.
 
 1. **Create the promotion.** Use the Yuno Dashboard or [Create Promotion](/reference/promotions/create-promotion). You set the discount, the dates, and the conditions a payment must meet (card BIN or BIN range, card type, payment method, country, currency, minimum or maximum amount).
-2. **Get a quote.** Before the payment, Yuno prices it: which promotion applies, the original amount, the discount, and the total. The answer carries a `quote.id`. With the Yuno checkout this happens by itself. With a direct API integration, you call [Create Promotion Quote](/reference/promotions/create-promotion-quote).
-3. **Create the payment with the quote.** Send the `quote_id` on [Create Payment](/reference/payments/create-payment). Yuno charges the quoted total and returns the breakdown.
-
-The `quote_id` goes inside the existing `additional_data.order.discounts` array of the payment, as an entry of its own:
-
-```json Where the quote_id goes
-{
-    "amount": { "currency": "ARS", "value": 25000.00 },
-    "additional_data": {
-        "order": {
-            "discounts": [
-                { "quote_id": "qte_0d91f7ac3b2e" }
-            ]
-        }
-    }
-}
-```
+2. **Get a quote.** Before the payment, Yuno prices it: which promotion applies, the original amount, the discount, and the charge. The answer carries `quote_id` and a one-element `promotion` list. With the Yuno checkout this happens by itself. With a direct API integration, you call [Create Promotion Quote](/reference/promotions/create-promotion-quote).
+3. **Create the payment with the quote.** Send `promotion.quote_id` on [Create Payment](/reference/payments/create-payment). Yuno charges the quoted total and returns the breakdown.
 
 <Note>
-**A promotion applies only when the payment carries a `quote_id`**
+**A promotion applies only when the payment carries `promotion.quote_id`**
 
-Yuno never discounts a payment by itself. A payment without a `quote_id` is charged in full, exactly as today, even when a promotion would have matched it.
+Yuno never discounts a payment by itself. A payment without a quote id is charged in full, exactly as today, even when a promotion would have matched it.
 </Note>
 
 ## Enable promotions for your organization
@@ -48,7 +33,7 @@ Yuno never discounts a payment by itself. A payment without a `quote_id` is char
 2. Once it's on, create your promotions from the Dashboard or the API. A promotion belongs to the accounts you list in `account_id` and never applies to the payments of another account.
 3. Test a payment in sandbox with a card that meets the conditions, then ask for production.
 
-Yuno can also turn Promotions off for an organization. When it's off, quotes answer `eligible: false` and the checkout shows the regular price, so the customer never sees a discount that the payment doesn't honour.
+Yuno can also turn Promotions off for an organization. When it's off, quotes answer `204` and the checkout shows the regular price, so the customer never sees a discount that the payment doesn't honour.
 
 ## Create a promotion
 
@@ -66,12 +51,13 @@ curl --request POST \
     "schedule": { "starts_at": "2026-10-01T03:00:00Z", "ends_at": "2026-11-01T02:59:59Z" },
     "redemption": { "mode": "AUTOMATIC" },
     "discount": { "type": "PERCENTAGE", "value": 10 },
-    "conditions": [
-        { "type": "BIN", "values": ["457896", "40263412"] },
-        { "type": "CARD_TYPE", "values": ["CREDIT"] },
-        { "type": "COUNTRY", "values": ["AR"] },
-        { "type": "CURRENCY", "values": ["ARS"] }
-    ]
+    "conditions": {
+        "bins": ["457896", "40263412"],
+        "payment_methods": ["CARD"],
+        "card_types": ["CREDIT"],
+        "countries": ["AR"],
+        "amounts": [{ "currency": "ARS", "min": 10000.00, "max": null }]
+    }
 }'
 ```
 
@@ -81,7 +67,7 @@ Things to know before you create one:
 * **There's no delete.** A disabled or expired promotion stays in your list.
 * **The status follows the dates.** `SCHEDULED` before `starts_at`, `ACTIVE` inside the window, `EXPIRED` after `ends_at`, and `DISABLED` once you disable it. Dates are UTC.
 * **All conditions must hold.** A promotion with no conditions applies to every payment of the account.
-* **Fixed discounts have a currency.** A `FIXED` discount, a `MIN_AMOUNT` and a `MAX_AMOUNT` apply only to payments in the same currency.
+* **Fixed discounts have a currency.** A `FIXED` discount uses `amount[]` (one entry per currency). Amount bounds use `conditions.amounts`.
 
 See [The Promotion Object](/reference/promotions/the-promotion-object) for every field.
 
@@ -96,7 +82,7 @@ When two or more promotions match the same payment, Yuno picks **the one that sa
 | Promotion A: 10% off | ARS 2,500 | |
 | Promotion B: ARS 3,000 off | ARS 3,000 | **Applies** |
 
-A promotion doesn't apply when its discount would leave a total of zero or less.
+A promotion doesn't apply when its discount would leave a total below zero. Zero-charge payments are possible when you set no minimum amount.
 
 ## What the customer sees at checkout
 
@@ -119,89 +105,10 @@ If the customer changes to a payment method that doesn't qualify, the summary go
 Without the Yuno checkout, you ask for the quote yourself, from your server, and send it on the payment:
 
 1. **Get the quote.** Call [Create Promotion Quote](/reference/promotions/create-promotion-quote) with the payment context: account, amount, country, payment method and, for cards, the card type and the first 6 to 8 digits.
-2. **Show the price.** If `eligible` is `true`, show `computed.total` to your customer. If it's `false`, create the payment as usual, with no `quote_id`. `reason` says why: `NO_MATCH` when no promotion applies, `ENGINE_UNAVAILABLE` when Yuno couldn't price the payment right now (retry if you want the discount).
-3. **Create the payment with the quote.** Send `quote.id` as `quote_id`, as shown below.
+2. **Show the price.** On `200`, show `charge_amount` to your customer. On `204`, create the payment as usual, with no `promotion.quote_id`.
+3. **Create the payment with the quote.** Send `quote_id` as `promotion.quote_id`, as shown in [Create Payment](/reference/payments/create-payment).
 
-### Create the payment with the quote
-
-Send the quote in the existing `additional_data.order.discounts` array. The entry carries only the `quote_id`. Keep `amount` as the **original** amount: Yuno subtracts the discount.
-
-```json Request
-{
-    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "country": "AR",
-    "amount": { "currency": "ARS", "value": 25000.00 },
-    "additional_data": {
-        "order": {
-            "discounts": [
-                { "quote_id": "qte_0d91f7ac3b2e" }
-            ]
-        }
-    }
-}
-```
-
-The response and the payment webhooks show what was charged and why:
-
-```json Response
-{
-    "id": "b2c9d0e1-6f0e-4c2a-9c55-7d8a0b311f2e",
-    "status": "SUCCEEDED",
-    "amount": { "currency": "ARS", "value": 22500.00 },
-    "additional_data": {
-        "order": {
-            "discounts": [
-                {
-                    "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
-                    "promotion_id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
-                    "code": null,
-                    "name": "BBVA 10% off - Mother's Day",
-                    "unit_amount": 2500.00,
-                    "applied": true,
-                    "application_id": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12"
-                }
-            ]
-        }
-    },
-    "applied_promotion": {
-        "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
-        "name": "BBVA 10% off - Mother's Day",
-        "code": null,
-        "application_id": "6f0e9c2a-1b7d-4e3f-8a21-0c5d9e7f4b12",
-        "quote_id": "qte_0d91f7ac3b2e",
-        "discount": { "type": "PERCENTAGE", "value": 10 },
-        "original_amount": { "currency": "ARS", "value": 25000.00 },
-        "discount_amount": { "currency": "ARS", "value": 2500.00 },
-        "charged_amount": { "currency": "ARS", "value": 22500.00 }
-    }
-}
-```
-
-* Yuno writes the promotion into `discounts`, and that's the line the payment provider receives.
-* `amount` in the response is what the customer **paid**. The original amount is in `applied_promotion.original_amount`.
-* Discounts are always positive numbers: `original_amount − discount_amount = charged_amount`.
-* Refunds and chargebacks work on the charged amount (22,500 in the example), as with any payment.
-* A payment without a promotion has no `applied_promotion` and looks exactly as it does today.
-
-<Warning>
-**Don't subtract the discount yourself**
-
-A `quote_id` entry asks Yuno to apply the discount. The entries you already send today with `id`, `name` and `unit_amount` are [informational](/docs/payment-features/payment-amount-details#discounts): Yuno passes them on and changes nothing. One entry is one or the other, never both.
-</Warning>
-
-### The customer pays the quoted price, or the payment is rejected
-
-A quote is valid for up to **30 minutes**. Inside that time the payment charges the quoted price, even if the promotion ended or you disabled it in between: a price you showed is a price you honour.
-
-If Yuno can't honour the quote, it **rejects the payment**. It never falls back to the full price, because charging an amount the customer didn't see leads to chargebacks. This happens when:
-
-| Reason | What to do |
-| --- | --- |
-| The quote expired | Get a new quote and create the payment again. |
-| The payment `amount` or currency isn't the one you quoted | Quote the final amount, after any change to the cart. |
-| The card, payment method or account isn't the one you quoted | Get a new quote for the card the customer is paying with. |
-| The `quote_id` isn't valid | Send the `quote.id` exactly as you received it. |
-| Promotions is temporarily unavailable | Retry, or create the payment without the `quote_id` to charge the regular price. |
+Send the **original** amount on the payment and put the quote id in `promotion.quote_id`. The response and webhooks carry a `promotion` object with the three amounts; `amount` is what was charged. See [Create Payment](/reference/payments/create-payment) and the sections below on paying with a quote.
 
 ## What's not included yet
 

@@ -20,7 +20,7 @@ A promotion is a discount with a date window and a set of conditions. It can't b
 </ParamField>
 
 <ParamField body="account_id" type="Array of strings">
-  The account the promotion belongs to (UUID). A promotion never applies to the payments of another account.
+  The accounts the promotion applies to (UUIDs). A promotion applies only to the accounts it names, never to every account of the organization.
 
   Example: ["493e9374-510a-4201-9e09-de669d75f256"]
 </ParamField>
@@ -84,44 +84,40 @@ A promotion is a discount with a date window and a set of conditions. It can't b
       Example: 10.5
     </ParamField>
 
-    <ParamField body="amount" type="object">
-      `FIXED` only: `currency` (ISO 4217) and `value`. The promotion applies only to payments in this currency. `null` for a percentage discount.
+    <ParamField body="amount" type="Array of objects">
+      `FIXED` only: one `{ currency, value }` per currency (ISO 4217). Required for fixed discounts. `null` for a percentage discount.
 
-      Example: \{ "currency": "ARS", "value": 3000.00 \}
+      Example: `[{ "currency": "ARS", "value": 3000.00 }]`
     </ParamField>
   </Expandable>
 </ParamField>
 
-<ParamField body="conditions" type="Array of objects">
-  The conditions a payment must meet. **All** of them must hold. An empty array means every payment of the account qualifies.
+<ParamField body="conditions" type="object">
+  The conditions a payment must meet. **Every** listed condition must hold. Omit a dimension or send an empty list when it does not apply.
 
   <Expandable title="properties">
-    <ParamField body="type" type="enum">
-      Possible values:
-      - `BIN` = The card starts with one of the BINs in `values` (6 to 8 digits each).
-      - `BIN_RANGE` = The card's BIN is between `from` and `to`, inclusive (8 digits).
-      - `PAYMENT_METHOD` = The payment method is in `values`, for example `CARD`. See [Payment type list](/reference/payment-type-list).
-      - `CARD_TYPE` = The card is `CREDIT` or `DEBIT`. A card whose type is unknown never meets this condition.
-      - `COUNTRY` = The payment country is in `values` ([ISO 3166-1](/reference/country-reference)).
-      - `CURRENCY` = The payment currency is in `values` ([ISO 4217](/reference/country-reference)).
-      - `MIN_AMOUNT` = The payment amount is at or above `amount`, in the same currency.
-      - `MAX_AMOUNT` = The payment amount is at or below `amount`, in the same currency.
+    <ParamField body="bins" type="Array of strings">
+      Card BIN prefixes (6 to 8 digits each).
     </ParamField>
 
-    <ParamField body="values" type="Array of strings">
-      For `BIN`, `PAYMENT_METHOD`, `CARD_TYPE`, `COUNTRY` and `CURRENCY`. Unknown values return `400`.
+    <ParamField body="bin_ranges" type="Array of objects">
+      Inclusive BIN ranges. Each entry has `start` and `end` (8 digits).
     </ParamField>
 
-    <ParamField body="from" type="string">
-      `BIN_RANGE` only. First BIN of the range.
+    <ParamField body="payment_methods" type="Array of strings">
+      Payment method types, for example `CARD`. See [Payment type list](/reference/payment-type-list).
     </ParamField>
 
-    <ParamField body="to" type="string">
-      `BIN_RANGE` only. Last BIN of the range, inclusive.
+    <ParamField body="card_types" type="Array of strings">
+      `CREDIT` or `DEBIT`. A card whose type is unknown never meets this condition.
     </ParamField>
 
-    <ParamField body="amount" type="object">
-      `MIN_AMOUNT` and `MAX_AMOUNT` only: `currency` and `value`. The condition holds only when the payment is in the same currency.
+    <ParamField body="countries" type="Array of strings">
+      Payment countries ([ISO 3166-1](/reference/country-reference)).
+    </ParamField>
+
+    <ParamField body="amounts" type="Array of objects">
+      Amount bounds per currency: `currency`, `min`, and optional `max` (`null` means no ceiling).
     </ParamField>
   </Expandable>
 </ParamField>
@@ -140,6 +136,10 @@ A promotion is a discount with a date window and a set of conditions. It can't b
   When the promotion was created (ISO 8601, UTC). When two promotions save the same amount, the oldest one applies.
 </ParamField>
 
+<ParamField body="disabled_at" type="timestamp">
+  When you disabled the promotion (ISO 8601, UTC). `null` while the promotion is not disabled. The only field that changes after creation.
+</ParamField>
+
 ## How a promotion is chosen
 
 One payment gets one promotion. When two or more match, Yuno applies the one with the **biggest saving** for the customer, then the oldest. A promotion doesn't apply when its discount would leave a total of zero or less.
@@ -154,16 +154,17 @@ One payment gets one promotion. When two or more match, Yuno applies the one wit
   "description": "Bank deal with BBVA, claimed monthly.",
   "schedule": { "starts_at": "2026-10-01T03:00:00Z", "ends_at": "2026-11-01T02:59:59Z" },
   "redemption": { "mode": "AUTOMATIC", "code": null },
-  "discount": { "type": "PERCENTAGE", "value": 10, "amount": null },
-  "conditions": [
-    { "type": "BIN", "values": ["457896", "40263412"] },
-    { "type": "PAYMENT_METHOD", "values": ["CARD"] },
-    { "type": "CARD_TYPE", "values": ["CREDIT"] },
-    { "type": "COUNTRY", "values": ["AR"] },
-    { "type": "CURRENCY", "values": ["ARS"] },
-    { "type": "MIN_AMOUNT", "amount": { "currency": "ARS", "value": 10000.00 } }
-  ],
+  "discount": { "type": "PERCENTAGE", "value": 10 },
+  "conditions": {
+    "bins": ["457896", "40263412"],
+    "bin_ranges": [{ "start": "45780000", "end": "45789999" }],
+    "payment_methods": ["CARD"],
+    "card_types": ["CREDIT"],
+    "countries": ["AR"],
+    "amounts": [{ "currency": "ARS", "min": 10000.00, "max": 500000.00 }]
+  },
   "status": "SCHEDULED",
-  "created_at": "2026-09-14T12:04:18Z"
+  "created_at": "2026-09-14T12:04:18Z",
+  "disabled_at": null
 }
 ```

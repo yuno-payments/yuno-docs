@@ -159,64 +159,93 @@
                     }
                   },
                   "conditions": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "required": [
-                        "type"
-                      ],
-                      "properties": {
-                        "type": {
+                    "type": "object",
+                    "description": "The conditions a payment must meet. Every listed condition must hold. Omit a dimension or send an empty list when it does not apply.",
+                    "properties": {
+                      "bins": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Card BIN prefixes (6 to 8 digits each)."
+                      },
+                      "bin_ranges": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "start",
+                            "end"
+                          ],
+                          "properties": {
+                            "start": {
+                              "type": "string",
+                              "description": "First BIN of the range (8 digits)."
+                            },
+                            "end": {
+                              "type": "string",
+                              "description": "Last BIN of the range (8 digits), inclusive."
+                            }
+                          }
+                        },
+                        "description": "Inclusive BIN ranges."
+                      },
+                      "payment_methods": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Payment method types, for example `CARD`. See [Payment type list](/reference/payment-type-list)."
+                      },
+                      "card_types": {
+                        "type": "array",
+                        "items": {
                           "type": "string",
                           "enum": [
-                            "BIN",
-                            "BIN_RANGE",
-                            "PAYMENT_METHOD",
-                            "CARD_TYPE",
-                            "COUNTRY",
-                            "CURRENCY",
-                            "MIN_AMOUNT",
-                            "MAX_AMOUNT"
-                          ],
-                          "description": "The dimension the condition checks."
+                            "CREDIT",
+                            "DEBIT"
+                          ]
                         },
-                        "values": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "description": "For `BIN` (6 to 8 digits each), `PAYMENT_METHOD`, `CARD_TYPE` (`CREDIT`, `DEBIT`), `COUNTRY` (ISO 3166-1 alpha-2) and `CURRENCY` (ISO 4217). Unknown values return `400`."
+                        "description": "Card types. A card whose type is unknown never meets this condition."
+                      },
+                      "countries": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
                         },
-                        "from": {
-                          "type": "string",
-                          "description": "`BIN_RANGE` only. First BIN of the range (8 digits)."
-                        },
-                        "to": {
-                          "type": "string",
-                          "description": "`BIN_RANGE` only. Last BIN of the range (8 digits), inclusive."
-                        },
-                        "amount": {
+                        "description": "Payment countries ([ISO 3166-1](/reference/country-reference))."
+                      },
+                      "amounts": {
+                        "type": "array",
+                        "items": {
                           "type": "object",
                           "required": [
                             "currency",
-                            "value"
+                            "min"
                           ],
                           "properties": {
                             "currency": {
                               "type": "string",
                               "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
                             },
-                            "value": {
+                            "min": {
                               "type": "number",
                               "format": "float",
-                              "description": "Multiple of 0.0001."
+                              "description": "Inclusive minimum in this currency."
+                            },
+                            "max": {
+                              "type": [
+                                "number",
+                                "null"
+                              ],
+                              "format": "float",
+                              "description": "Inclusive maximum in this currency. `null` means no ceiling."
                             }
-                          },
-                          "description": "`MIN_AMOUNT` and `MAX_AMOUNT` only. Inclusive bound. Holds only when the payment currency is the same."
-                        }
+                          }
+                        },
+                        "description": "Amount bounds per currency."
                       }
-                    },
-                    "description": "The conditions a payment must meet. All of them must hold. An empty array means every payment of the account qualifies."
+                    }
                   }
                 }
               },
@@ -239,46 +268,28 @@
                       "type": "PERCENTAGE",
                       "value": 10
                     },
-                    "conditions": [
-                      {
-                        "type": "BIN",
-                        "values": [
-                          "457896",
-                          "40263412"
-                        ]
-                      },
-                      {
-                        "type": "PAYMENT_METHOD",
-                        "values": [
-                          "CARD"
-                        ]
-                      },
-                      {
-                        "type": "CARD_TYPE",
-                        "values": [
-                          "CREDIT"
-                        ]
-                      },
-                      {
-                        "type": "COUNTRY",
-                        "values": [
-                          "AR"
-                        ]
-                      },
-                      {
-                        "type": "CURRENCY",
-                        "values": [
-                          "ARS"
-                        ]
-                      },
-                      {
-                        "type": "MIN_AMOUNT",
-                        "amount": {
+                    "conditions": {
+                      "bins": [
+                        "457896",
+                        "40263412"
+                      ],
+                      "payment_methods": [
+                        "CARD"
+                      ],
+                      "card_types": [
+                        "CREDIT"
+                      ],
+                      "countries": [
+                        "AR"
+                      ],
+                      "amounts": [
+                        {
                           "currency": "ARS",
-                          "value": 10000.0
+                          "min": 10000.0,
+                          "max": null
                         }
-                      }
-                    ]
+                      ]
+                    }
                   }
                 },
                 "Fixed amount, no conditions": {
@@ -296,12 +307,15 @@
                     },
                     "discount": {
                       "type": "FIXED",
-                      "amount": {
-                        "currency": "USD",
-                        "value": 5.0
-                      }
+                      "amount": [
+                        {
+                          "currency": "USD",
+                          "value": 5.0
+                        }
+                      ],
+                      "value": null
                     },
-                    "conditions": []
+                    "conditions": {}
                   }
                 }
               }
@@ -335,46 +349,28 @@
                         "value": 10,
                         "amount": null
                       },
-                      "conditions": [
-                        {
-                          "type": "BIN",
-                          "values": [
-                            "457896",
-                            "40263412"
-                          ]
-                        },
-                        {
-                          "type": "PAYMENT_METHOD",
-                          "values": [
-                            "CARD"
-                          ]
-                        },
-                        {
-                          "type": "CARD_TYPE",
-                          "values": [
-                            "CREDIT"
-                          ]
-                        },
-                        {
-                          "type": "COUNTRY",
-                          "values": [
-                            "AR"
-                          ]
-                        },
-                        {
-                          "type": "CURRENCY",
-                          "values": [
-                            "ARS"
-                          ]
-                        },
-                        {
-                          "type": "MIN_AMOUNT",
-                          "amount": {
+                      "conditions": {
+                        "bins": [
+                          "457896",
+                          "40263412"
+                        ],
+                        "payment_methods": [
+                          "CARD"
+                        ],
+                        "card_types": [
+                          "CREDIT"
+                        ],
+                        "countries": [
+                          "AR"
+                        ],
+                        "amounts": [
+                          {
                             "currency": "ARS",
-                            "value": 10000.0
+                            "min": 10000.0,
+                            "max": null
                           }
-                        }
-                      ],
+                        ]
+                      },
                       "status": "SCHEDULED",
                       "created_at": "2026-09-14T12:04:18Z"
                     },
@@ -483,64 +479,93 @@
                       }
                     },
                     "conditions": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": [
-                          "type"
-                        ],
-                        "properties": {
-                          "type": {
+                      "type": "object",
+                      "description": "The conditions a payment must meet. Every listed condition must hold. Omit a dimension or send an empty list when it does not apply.",
+                      "properties": {
+                        "bins": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Card BIN prefixes (6 to 8 digits each)."
+                        },
+                        "bin_ranges": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "start",
+                              "end"
+                            ],
+                            "properties": {
+                              "start": {
+                                "type": "string",
+                                "description": "First BIN of the range (8 digits)."
+                              },
+                              "end": {
+                                "type": "string",
+                                "description": "Last BIN of the range (8 digits), inclusive."
+                              }
+                            }
+                          },
+                          "description": "Inclusive BIN ranges."
+                        },
+                        "payment_methods": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Payment method types, for example `CARD`. See [Payment type list](/reference/payment-type-list)."
+                        },
+                        "card_types": {
+                          "type": "array",
+                          "items": {
                             "type": "string",
                             "enum": [
-                              "BIN",
-                              "BIN_RANGE",
-                              "PAYMENT_METHOD",
-                              "CARD_TYPE",
-                              "COUNTRY",
-                              "CURRENCY",
-                              "MIN_AMOUNT",
-                              "MAX_AMOUNT"
-                            ],
-                            "description": "The dimension the condition checks."
+                              "CREDIT",
+                              "DEBIT"
+                            ]
                           },
-                          "values": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            },
-                            "description": "For `BIN` (6 to 8 digits each), `PAYMENT_METHOD`, `CARD_TYPE` (`CREDIT`, `DEBIT`), `COUNTRY` (ISO 3166-1 alpha-2) and `CURRENCY` (ISO 4217). Unknown values return `400`."
+                          "description": "Card types. A card whose type is unknown never meets this condition."
+                        },
+                        "countries": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
                           },
-                          "from": {
-                            "type": "string",
-                            "description": "`BIN_RANGE` only. First BIN of the range (8 digits)."
-                          },
-                          "to": {
-                            "type": "string",
-                            "description": "`BIN_RANGE` only. Last BIN of the range (8 digits), inclusive."
-                          },
-                          "amount": {
+                          "description": "Payment countries ([ISO 3166-1](/reference/country-reference))."
+                        },
+                        "amounts": {
+                          "type": "array",
+                          "items": {
                             "type": "object",
                             "required": [
                               "currency",
-                              "value"
+                              "min"
                             ],
                             "properties": {
                               "currency": {
                                 "type": "string",
                                 "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
                               },
-                              "value": {
+                              "min": {
                                 "type": "number",
                                 "format": "float",
-                                "description": "Multiple of 0.0001."
+                                "description": "Inclusive minimum in this currency."
+                              },
+                              "max": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "format": "float",
+                                "description": "Inclusive maximum in this currency. `null` means no ceiling."
                               }
-                            },
-                            "description": "`MIN_AMOUNT` and `MAX_AMOUNT` only. Inclusive bound. Holds only when the payment currency is the same."
-                          }
+                            }
+                          },
+                          "description": "Amount bounds per currency."
                         }
-                      },
-                      "description": "The conditions a payment must meet. All of them must hold. An empty array means every payment of the account qualifies."
+                      }
                     },
                     "status": {
                       "type": "string",
