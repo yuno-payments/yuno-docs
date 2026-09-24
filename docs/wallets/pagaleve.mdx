@@ -96,44 +96,12 @@ Use PagaLeve to accept a standard, single Pix payment.
 
 ## Pix Parcelado (installment) payment
 
-PagaLeve supports Pix Parcelado, letting customers split a Pix payment into installments.
+PagaLeve supports Pix Parcelado, letting customers split a Pix payment into installments. The customer picks the installment plan on PagaLeve's own checkout page — Yuno doesn't return available plans up front, and no plan or installments data is sent in the Create Payment call.
 
 <Tabs>
   <Tab title="Yuno SDK">
-    ### Step 1: Get payment conditions
-    Request available installment options using the [APM installments](/reference/installments/apm-installments) endpoint.
-
-    ```bash
-    curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
-    --header 'public-api-key: {{your_public_api_key}}' \
-    --header 'private-secret-key: {{your_secret_api_key}}' \
-    --header 'X-account-code: {{your_account_code}}' \
-    --header 'Content-Type: application/json' \
-    --data '{
-      "country": "BR",
-      "payment_method": "PIX_PARCELADO",
-      "amount": {
-        "currency": "BRL",
-        "value": "250"
-      },
-      "customer": {
-        "document": {
-          "document_type": "CPF",
-          "document_number": "12345678900"
-        },
-        "email": "customer@email.com"
-      }
-    }'
-    ```
-
-    <Tip>
-    This is a one-time (non-enrolled) lookup, PagaLeve doesn't use an enrollment/vaulted token. The request above is confirmed correct.
-    </Tip>
-
-    Show the customer the plans and installment counts from the response so they know what to expect; the plan itself is not sent back in the next step.
-
-    ### Step 2: Create the payment
-    Create the payment with `payment_method.type` `"PIX_PARCELADO"`. No plan or installments data is sent in this call — instead, pass the order's line items in `additional_data.order.items`.
+    ### Step 1: Create the payment
+    Create the payment with `payment_method.type` `"PIX_PARCELADO"`. Pass the order's line items in `additional_data.order.items` so PagaLeve can build the installment offer.
 
     ```json
     {
@@ -172,26 +140,19 @@ PagaLeve supports Pix Parcelado, letting customers split a Pix payment into inst
     ```
 
     <Tip>
-    The response returns the redirect at `payment_method.payment_method_detail.bank_transfer.redirect_url` — Pix Parcelado is categorized as `BANK_TRANSFER` internally, so it uses the same detail object as other bank transfer methods. `installments` and `installments_plan_id` come back empty at creation; the payment starts out `Created`, and the final `Successful` or declined status arrives through the webhook. See [Status transitions](#status-transitions) below.
+    The response returns the redirect at `payment_method.payment_method_detail.bank_transfer.redirect_url` — Pix Parcelado is categorized as `BANK_TRANSFER` internally, so it uses the same detail object as other bank transfer methods. `installments` and `installments_plan_id` come back empty at creation; the customer chooses the installment count on PagaLeve's hosted checkout page after the redirect. The payment starts out `Created`, and the final `Successful` or declined status arrives through the webhook. See [Status transitions](#status-transitions) below.
     </Tip>
-
-    {/* TODO(editorial): confirm with Pedro how the customer's installment count is actually selected after this call — the create-payment example above only sends order items, not a plan id, and it's unconfirmed whether PagaLeve re-quotes/re-prompts on its own checkout or resolves it another way. */}
   </Tab>
 
   <Tab title="Direct API">
-    ### Step 1: Get payment conditions
-    Request available installment options for PagaLeve using the [APM installments](/reference/installments/apm-installments) endpoint (see request example above).
-
-    The response returns an array of installment plans, including `id`, available `installments`, and amounts. Show these to the customer so they know what to expect; the plan itself is not sent back in the next step.
-
-    ### Step 2: Create payment
-    Use [Create payment](/reference/create-payment) with the Direct workflow and `payment_method.type` `"PIX_PARCELADO"`. No plan or installments data is sent in this call — pass the order's line items in `additional_data.order.items` instead, the same shape shown in the SDK tab above.
+    ### Step 1: Create payment
+    Use [Create payment](/reference/create-payment) with the Direct workflow and `payment_method.type` `"PIX_PARCELADO"`. Pass the order's line items in `additional_data.order.items`, the same shape shown in the SDK tab above.
 
     <Tip>
-    See [Status transitions](#status-transitions) below for how PagaLeve reports status changes, and the SDK tab above for where the redirect URL comes back in the response.
+    See [Status transitions](#status-transitions) below for how PagaLeve reports status changes, and the SDK tab above for where the redirect URL comes back in the response and where the customer chooses the installment plan.
     </Tip>
 
-    ### Step 3: Retrieve payment
+    ### Step 2: Retrieve payment
     Use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm the final status.
   </Tab>
 </Tabs>
@@ -230,4 +191,3 @@ PagaLeve reports payment status through webhooks, processed asynchronously. For 
 * [Create checkout session](/reference/create-checkout-session)
 * [Create payment](/reference/create-payment)
 * [Retrieve payment by id](/reference/retrieve-payment-by-id)
-* [APM installments](/reference/installments/apm-installments)
