@@ -109,7 +109,28 @@ Without the Yuno checkout, you ask for the quote yourself, from your server, and
 2. **Show the price.** On `200`, show `charge_amount` to your customer. On `204`, create the payment as usual, with no `promotion.quote_id`.
 3. **Create the payment with the quote.** Send `quote_id` as `promotion.quote_id`, as shown in [Create Payment](/reference/payments/create-payment).
 
-Send the **original** amount on the payment and put the quote id in `promotion.quote_id`. The response and webhooks carry a `promotion` object with the three amounts; `amount` is what was charged. See [Create Payment](/reference/payments/create-payment) and the sections below on paying with a quote.
+Send the **original** amount on the payment and put the quote id in `promotion.quote_id`. The response and webhooks carry a `promotion` object with the three amounts; `amount` is what was charged. See [Create Payment](/reference/payments/create-payment).
+
+### When a quote cannot be honoured
+
+If Yuno can't honour the quote, it **rejects the payment** and never charges the full price silently.
+
+| HTTP | Code | When |
+| --- | --- | --- |
+| `422` | `PROMOTION_NOT_APPLICABLE` | The quote is validly formed but cannot apply. The body includes `reason` and optional `detail`. |
+| `400` | `QUOTE_INVALID` | The quote id is malformed or forged. |
+| `503` | `PROMOTION_ENGINE_UNAVAILABLE` | The promotions engine did not answer; nothing was charged. Retry the **same** payment once, then get a new quote. |
+| `503` | `CARD_FACTS_UNAVAILABLE` | Card type or BIN could not be read; nothing was charged. Retry the **same** payment once, then re-quote. |
+
+| `reason` | What to do |
+| --- | --- |
+| `PROMOTION_DISABLED`, `PROMOTION_NOT_FOUND` | The payment is rejected. Do not drop the quote and charge the full price; re-quote, or confirm the full price with the customer. |
+| `PROMOTIONS_DISABLED` | The payment is rejected. Do not drop the quote and charge the full price; re-quote, or confirm the full price with the customer. |
+| `QUOTE_EXPIRED` | Get a new quote. |
+| `QUOTE_AMOUNT_MISMATCH` | Send the quoted original amount (`detail.expected_original_amount`). |
+| `QUOTE_CONTEXT_MISMATCH` | Get a new quote for the real card or context. |
+| `CONDITIONS_NOT_MET` | Get a new quote for the real card. |
+| `QUOTE_ALREADY_USED`, `QUOTE_SESSION_ALREADY_USED` | Wait for the other payment's final status. |
 
 ## What's not included yet
 
