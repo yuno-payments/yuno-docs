@@ -6,7 +6,11 @@ openapi: "/openapi/organizations/routing/update-routing.json PATCH /routing/{rou
 
 Replaces the routing's full configuration. The body has the same shape as [Create a Routing](/reference/organizations/routing/create-routing) — the new `default_route` and `condition_sets[]` entirely supersede the previous live state. **There is no field-level merge.**
 
-`account_id` and `payment_method` are sticky to the `routing_id` — they're set at creation and cannot be changed by `PATCH`.
+`account_id` and `payment_method` are sticky to the `routing_id` — they're set at creation and cannot be changed by `PATCH`. Both are still required in the body and must match the routing.
+
+<Warning>
+Because `PATCH` replaces everything, it also removes what you configured in the dashboard that the API can't represent: smart routing steps, ending actions other than [Cancel](/reference/organizations/routing/routing-resource-shape#cancel-steps), percentage splits between providers, and outcome branches other than `APPROVED`, `DECLINED`, `DECLINE_GROUP` and `INTERNAL_ERROR`. [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) doesn't return them either, so sending a retrieved routing back doesn't keep them. If your routing uses any of these, change it in the dashboard instead.
+</Warning>
 
 ### Path Parameters
 
@@ -16,6 +20,14 @@ Replaces the routing's full configuration. The body has the same shape as [Creat
 
 ### Body
 
+<ParamField body="account_id" type="string (UUID)" required>
+  The account the routing belongs to. Must match the routing's account.
+</ParamField>
+
+<ParamField body="payment_method" type="enum" required>
+  Must match the routing's `payment_method`.
+</ParamField>
+
 <ParamField body="name" type="string" required>
   Free-form label.
 </ParamField>
@@ -24,22 +36,25 @@ Replaces the routing's full configuration. The body has the same shape as [Creat
   The route used when no `condition_sets[]` matches.
   <Expandable title="properties">
     <ParamField body="steps" type="object[]" required>
-      Each step is one provider attempt. `index` values are contiguous starting at 1.
+      Each step is either one provider attempt or a [Cancel step](/reference/organizations/routing/routing-resource-shape#cancel-steps). `index` values are contiguous starting at 1.
       <Expandable title="item">
         <ParamField body="index" type="integer" required>
             Step ordinal.
         </ParamField>
-        <ParamField body="provider_id" type="string" required>
-            Must match the provider of the connection.
+        <ParamField body="provider_id" type="string">
+            Required on provider steps; omit on a Cancel step. Must match the provider of the connection.
         </ParamField>
-        <ParamField body="connection_id" type="UUID" required>
-            Must be `ACTIVE` and support the `payment_method`.
+        <ParamField body="connection_id" type="UUID">
+            Required on provider steps; omit on a Cancel step. Must be `ACTIVE` and support the `payment_method`.
+        </ParamField>
+        <ParamField body="action" type="enum">
+            `CANCEL` rejects the payment without sending it to any provider. A Cancel step must be the only step of its route and has no `provider_id`, `connection_id` or `output`.
         </ParamField>
         <ParamField body="output" type="object[]">
-          Defines how to handle each possible outcome of this step.
+          Defines how to handle each possible outcome of this step. Not allowed on a Cancel step.
           <Expandable title="item">
             <ParamField body="status" type="string" required>
-              The outcome status that triggers this rule (e.g., `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `TIMEOUT`, `INTERNAL_ERROR`).
+              The outcome status that triggers this rule: `APPROVED`, `DECLINED`, `DECLINE_GROUP` or `INTERNAL_ERROR`.
             </ParamField>
             <ParamField body="decline_types" type="string[]">
               Required when `status` is `DECLINE_GROUP`. Specifies which decline subtypes trigger this rule (e.g., `INSUFFICIENT_FUNDS`, `DECLINED_BY_BANK`).
@@ -60,14 +75,14 @@ Replaces the routing's full configuration. The body has the same shape as [Creat
     <ParamField body="sort_number" type="integer" required>
         Priority of the condition set.
     </ParamField>
-    <ParamField body="name" type="string" required>
+    <ParamField body="name" type="string">
         Label for the set.
     </ParamField>
     <ParamField body="conditions" type="object[]" required>
         List of [Conditions](/reference/organizations/routing/routing-conditions) that must match.
     </ParamField>
     <ParamField body="route" type="object" required>
-        The steps to execute if this set matches.
+        The steps to execute if this set matches. Same shape as `default_route`; a route made of a single Cancel step rejects the matching payments.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -107,6 +122,7 @@ curl -X PATCH 'https://api.y.uno/v1/routing/r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e
   -H 'Content-Type: application/json' \
   -H 'X-Idempotency-Key: <UUID>' \
   -d '{
+    "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
     "payment_method": "CARD",
     "name": "Card routing v2 — adds BR installments rule",
     "default_route": {
@@ -129,6 +145,18 @@ curl -X PATCH 'https://api.y.uno/v1/routing/r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e
     "condition_sets": [
       {
         "sort_number": 1,
+        "name": "Reject foreign-issued cards",
+        "conditions": [
+          { "condition_type": "CARD_ISSUER_COUNTRY", "conditional": "NOT_ONE_OF", "values": ["BR"] }
+        ],
+        "route": {
+          "steps": [
+            { "index": 1, "action": "CANCEL" }
+          ]
+        }
+      },
+      {
+        "sort_number": 2,
         "name": "Brazil — 3 to 6 installments via Adyen",
         "description": "BR card transactions with 3–6 installments go to Adyen directly",
         "conditions": [
@@ -165,6 +193,14 @@ curl -X PATCH 'https://api.y.uno/v1/routing/r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e
   "condition_sets": [
     {
       "sort_number": 1,
+      "name": "Reject foreign-issued cards",
+      "conditions": [
+        { "condition_type": "CARD_ISSUER_COUNTRY", "conditional": "NOT_ONE_OF", "values": ["BR"] }
+      ],
+      "route": { "steps": [ { "index": 1, "action": "CANCEL" } ] }
+    },
+    {
+      "sort_number": 2,
       "name": "Brazil — 3 to 6 installments via Adyen",
       "conditions": [
         { "condition_type": "COUNTRY", "conditional": "EQUAL", "values": ["BR"] }
@@ -179,14 +215,8 @@ curl -X PATCH 'https://api.y.uno/v1/routing/r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e
 
 ```json 400 — Immutable Payment Method
 {
-  "type": "validation_error",
   "code": "ROUTING_PAYMENT_METHOD_IMMUTABLE",
-  "message": "payment_method cannot be changed on an existing routing",
-  "details": {
-    "routing_id": "r_...",
-    "current_payment_method": "CARD",
-    "received_payment_method": "PIX"
-  }
+  "messages": ["payment_method cannot be changed once the routing is created. Stored payment_method='CARD', requested='PIX'."]
 }
 ```
 </CodeGroup>
@@ -198,8 +228,10 @@ curl -X PATCH 'https://api.y.uno/v1/routing/r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e
 | HTTP | `code` |
 | --- | --- |
 | `404` | `ROUTING_NOT_FOUND`<br />Unknown `routing_id`, or id belongs to a different account. |
-| `400` | `ROUTING_VALIDATION_FAILED`<br />Schema or rule violation. |
-| `400` | `ROUTING_PROVIDER_NOT_AVAILABLE`<br />A step references an inactive/unknown connection. |
+| `400` | `INVALID_PARAMETERS`<br />A field is missing or has an invalid value, for example a step with neither `provider_id` nor `action`, or an `action` other than `CANCEL`. `messages` names the offending field. |
+| `400` | `INVALID_ROUTE_CONFIGURATION`<br />The routing breaks a route rule: step indexes not contiguous from 1, an `output[].next` that doesn't point to a later step, a Cancel step that isn't the only step of its route or that has `provider_id`, `connection_id` or `output`, an unknown `condition_type` or `conditional`, or a `connection_id` not found for the account and provider. `messages` explains which rule. |
+| `400` | `INVALID_PROVIDER_ID`<br />`provider_id` has an invalid format (letters, digits, `_` and `-`, up to 64 characters). |
+| `400` | `NAME_TOO_LONG`<br />`name` is longer than 50 characters. |
 | `400` | `ROUTING_PAYMENT_METHOD_IMMUTABLE`<br />Body's `payment_method` doesn't match the routing's `payment_method`. |
 | `409` | `ROUTING_VERSION_CONFLICT`<br />Another concurrent `PATCH` won the publish race. |
 | `403` | `INSUFFICIENT_SCOPE`<br />API key missing `routing:write`. |

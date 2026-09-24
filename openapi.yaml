@@ -84522,9 +84522,18 @@ paths:
                               provider_id:
                                 type: string
                                 example: STRIPE
+                                description: Absent on a Cancel step.
                               connection_id:
                                 type: string
                                 example: f1a3c4d5-...
+                                description: Absent on a Cancel step.
+                              action:
+                                type: string
+                                enum:
+                                  - CANCEL
+                                description: >-
+                                  Present only on a Cancel step, which rejects the payment without sending it to any
+                                  provider.
                     condition_sets:
                       type: array
                       items:
@@ -84542,6 +84551,9 @@ paths:
                               type: object
                           route:
                             type: object
+                            description: >-
+                              Same shape as default_route, including a Cancel step ({"index": 1, "action": "CANCEL"}) as
+                              its only step.
                     created_at:
                       type: string
                       format: date-time
@@ -84557,15 +84569,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: invalid_request
                   code:
                     type: string
                     example: ROUTING_VALIDATION_FAILED
-                  message:
-                    type: string
-                    example: account_id is required.
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - account_id is required.
       tags:
         - Organizations
     post:
@@ -84610,10 +84622,12 @@ paths:
                       type: array
                       items:
                         type: object
+                        description: >-
+                          A provider attempt, or a Cancel step ({"index": 1, "action": "CANCEL"}) that rejects the
+                          payment without sending it to any provider. A Cancel step must be the only step of its route
+                          and has no provider_id, connection_id or output.
                         required:
                           - index
-                          - provider_id
-                          - connection_id
                         properties:
                           index:
                             type: integer
@@ -84621,10 +84635,96 @@ paths:
                           provider_id:
                             type: string
                             example: STRIPE
+                            description: Required on provider steps; omit on a Cancel step.
                           connection_id:
                             type: string
                             format: uuid
                             example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
+                            description: Required on provider steps; omit on a Cancel step.
+                          action:
+                            type: string
+                            enum:
+                              - CANCEL
+                            description: CANCEL rejects the payment without sending it to any provider. Omit on provider steps.
+                condition_sets:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - sort_number
+                      - conditions
+                      - route
+                    properties:
+                      sort_number:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: Reject foreign-issued cards
+                      description:
+                        type: string
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - condition_type
+                            - conditional
+                            - values
+                          properties:
+                            condition_type:
+                              type: string
+                              example: CARD_ISSUER_COUNTRY
+                            conditional:
+                              type: string
+                              example: NOT_ONE_OF
+                            values:
+                              type: array
+                              items:
+                                type: string
+                              example:
+                                - BR
+                            key:
+                              type: string
+                              description: METADATA only.
+                            currency:
+                              type: string
+                              description: AMOUNT only.
+                      route:
+                        type: object
+                        required:
+                          - steps
+                        properties:
+                          steps:
+                            type: array
+                            items:
+                              type: object
+                              description: >-
+                                A provider attempt, or a Cancel step ({"index": 1, "action": "CANCEL"}) that rejects the
+                                payment without sending it to any provider. A Cancel step must be the only step of its
+                                route and has no provider_id, connection_id or output.
+                              required:
+                                - index
+                              properties:
+                                index:
+                                  type: integer
+                                  example: 1
+                                provider_id:
+                                  type: string
+                                  example: STRIPE
+                                  description: Required on provider steps; omit on a Cancel step.
+                                connection_id:
+                                  type: string
+                                  format: uuid
+                                  example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
+                                  description: Required on provider steps; omit on a Cancel step.
+                                action:
+                                  type: string
+                                  enum:
+                                    - CANCEL
+                                  description: >-
+                                    CANCEL rejects the payment without sending it to any provider. Omit on provider
+                                    steps.
       responses:
         '201':
           description: Created
@@ -84659,9 +84759,18 @@ paths:
                             provider_id:
                               type: string
                               example: STRIPE
+                              description: Absent on a Cancel step.
                             connection_id:
                               type: string
                               example: f1a3c4d5-...
+                              description: Absent on a Cancel step.
+                            action:
+                              type: string
+                              enum:
+                                - CANCEL
+                              description: >-
+                                Present only on a Cancel step, which rejects the payment without sending it to any
+                                provider.
                   condition_sets:
                     type: array
                     items:
@@ -84679,6 +84788,9 @@ paths:
                             type: object
                         route:
                           type: object
+                          description: >-
+                            Same shape as default_route, including a Cancel step ({"index": 1, "action": "CANCEL"}) as
+                            its only step.
                   created_at:
                     type: string
                     format: date-time
@@ -84700,15 +84812,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: validation_error
                   code:
                     type: string
-                    example: ROUTING_VALIDATION_FAILED
-                  message:
-                    type: string
-                    example: Steps must be contiguous
+                    example: INVALID_ROUTE_CONFIGURATION
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - route.steps[].index must be a contiguous sequence starting at 1; got [1, 3]
         '409':
           description: Conflict
           content:
@@ -84716,15 +84828,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: conflict
                   code:
                     type: string
                     example: ROUTING_ALREADY_EXISTS
-                  message:
-                    type: string
-                    example: A routing already exists for this payment method
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - A routing for payment_method 'CARD' already exists for this account.
       tags:
         - Organizations
   /routing/recommendations:
@@ -85021,9 +85133,18 @@ paths:
                             provider_id:
                               type: string
                               example: STRIPE
+                              description: Absent on a Cancel step.
                             connection_id:
                               type: string
                               example: f1a3c4d5-...
+                              description: Absent on a Cancel step.
+                            action:
+                              type: string
+                              enum:
+                                - CANCEL
+                              description: >-
+                                Present only on a Cancel step, which rejects the payment without sending it to any
+                                provider.
                   condition_sets:
                     type: array
                     items:
@@ -85041,6 +85162,9 @@ paths:
                             type: object
                         route:
                           type: object
+                          description: >-
+                            Same shape as default_route, including a Cancel step ({"index": 1, "action": "CANCEL"}) as
+                            its only step.
                   created_at:
                     type: string
                     format: date-time
@@ -85056,15 +85180,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: not_found
                   code:
                     type: string
                     example: ROUTING_NOT_FOUND
-                  message:
-                    type: string
-                    example: Routing '...' was not found
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Routing '...' not found.
       tags:
         - Organizations
     patch:
@@ -85084,6 +85208,140 @@ paths:
           schema:
             type: string
             format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account_id
+                - payment_method
+                - name
+                - default_route
+              properties:
+                account_id:
+                  type: string
+                  format: uuid
+                  example: 7825fc5e-e50a-4248-9ae8-5d3786afb0be
+                payment_method:
+                  type: string
+                  example: CARD
+                name:
+                  type: string
+                  example: Card routing
+                default_route:
+                  type: object
+                  required:
+                    - steps
+                  properties:
+                    steps:
+                      type: array
+                      items:
+                        type: object
+                        description: >-
+                          A provider attempt, or a Cancel step ({"index": 1, "action": "CANCEL"}) that rejects the
+                          payment without sending it to any provider. A Cancel step must be the only step of its route
+                          and has no provider_id, connection_id or output.
+                        required:
+                          - index
+                        properties:
+                          index:
+                            type: integer
+                            example: 1
+                          provider_id:
+                            type: string
+                            example: STRIPE
+                            description: Required on provider steps; omit on a Cancel step.
+                          connection_id:
+                            type: string
+                            format: uuid
+                            example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
+                            description: Required on provider steps; omit on a Cancel step.
+                          action:
+                            type: string
+                            enum:
+                              - CANCEL
+                            description: CANCEL rejects the payment without sending it to any provider. Omit on provider steps.
+                condition_sets:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - sort_number
+                      - conditions
+                      - route
+                    properties:
+                      sort_number:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: Reject foreign-issued cards
+                      description:
+                        type: string
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - condition_type
+                            - conditional
+                            - values
+                          properties:
+                            condition_type:
+                              type: string
+                              example: CARD_ISSUER_COUNTRY
+                            conditional:
+                              type: string
+                              example: NOT_ONE_OF
+                            values:
+                              type: array
+                              items:
+                                type: string
+                              example:
+                                - BR
+                            key:
+                              type: string
+                              description: METADATA only.
+                            currency:
+                              type: string
+                              description: AMOUNT only.
+                      route:
+                        type: object
+                        required:
+                          - steps
+                        properties:
+                          steps:
+                            type: array
+                            items:
+                              type: object
+                              description: >-
+                                A provider attempt, or a Cancel step ({"index": 1, "action": "CANCEL"}) that rejects the
+                                payment without sending it to any provider. A Cancel step must be the only step of its
+                                route and has no provider_id, connection_id or output.
+                              required:
+                                - index
+                              properties:
+                                index:
+                                  type: integer
+                                  example: 1
+                                provider_id:
+                                  type: string
+                                  example: STRIPE
+                                  description: Required on provider steps; omit on a Cancel step.
+                                connection_id:
+                                  type: string
+                                  format: uuid
+                                  example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
+                                  description: Required on provider steps; omit on a Cancel step.
+                                action:
+                                  type: string
+                                  enum:
+                                    - CANCEL
+                                  description: >-
+                                    CANCEL rejects the payment without sending it to any provider. Omit on provider
+                                    steps.
       responses:
         '200':
           description: OK
@@ -85118,9 +85376,18 @@ paths:
                             provider_id:
                               type: string
                               example: STRIPE
+                              description: Absent on a Cancel step.
                             connection_id:
                               type: string
                               example: f1a3c4d5-...
+                              description: Absent on a Cancel step.
+                            action:
+                              type: string
+                              enum:
+                                - CANCEL
+                              description: >-
+                                Present only on a Cancel step, which rejects the payment without sending it to any
+                                provider.
                   condition_sets:
                     type: array
                     items:
@@ -85138,6 +85405,9 @@ paths:
                             type: object
                         route:
                           type: object
+                          description: >-
+                            Same shape as default_route, including a Cancel step ({"index": 1, "action": "CANCEL"}) as
+                            its only step.
                   created_at:
                     type: string
                     format: date-time
@@ -85153,15 +85423,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: validation_error
                   code:
                     type: string
-                    example: ROUTING_VALIDATION_FAILED
-                  message:
-                    type: string
-                    example: Validation failed for update
+                    example: INVALID_ROUTE_CONFIGURATION
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - route.steps[].index must be a contiguous sequence starting at 1; got [1, 3]
         '404':
           description: Not Found
           content:
@@ -85169,15 +85439,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: not_found
                   code:
                     type: string
                     example: ROUTING_NOT_FOUND
-                  message:
-                    type: string
-                    example: Routing '...' was not found
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Routing '...' not found.
         '409':
           description: Conflict
           content:
@@ -85185,15 +85455,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: conflict
                   code:
                     type: string
                     example: ROUTING_VERSION_CONFLICT
-                  message:
-                    type: string
-                    example: Another concurrent PATCH won the publish race
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Routing was modified concurrently. Retry the request.
       tags:
         - Organizations
   /sellers:
