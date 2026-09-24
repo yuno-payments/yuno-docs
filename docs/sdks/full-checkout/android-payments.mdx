@@ -83,7 +83,7 @@ For the full list of parameters and YunoConfig details, see the [Android SDK Com
 | ------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `checkoutSession`         | Checkout session ID from your backend (Create checkout session API). Required.                               |
 | `countryCode`             | ISO country code (e.g. `US`). Required.                                                                      |
-| `callbackPaymentState`    | Callback: payment state (e.g. SUCCEEDED, FAIL, PROCESSING, REJECT).                                          |
+| `callbackPaymentState`    | Callback `(state, subState, message)`: payment state (e.g. SUCCEEDED, FAIL, PROCESSING, REJECT), its sub-state and, on error outcomes, a [`StatusMessage?`](/docs/sdks/resources/references/android#statusmessage-error-details). Third parameter added in SDK `2.22.0`. |
 | `merchantSessionId`       | Optional merchant session identifier.                                                                        |
 | `onInstallmentSelected`   | Optional callback fired when the shopper selects an installment option in the card form. See [Installment selection callback](#installment-selection-callback-oninstallmentselected). Available from SDK `2.20.0`. |
 | `YunoConfig` (initialize) | Optional: saveCardEnabled, keepLoader, language, styles. See Common Reference. |
@@ -165,7 +165,7 @@ Call the `startCheckout` method inside the `onCreate()` function of the activity
 startCheckout(
   checkoutSession: "checkout_session",
   countryCode: "country_code_iso",
-  callbackPaymentState: ((String?) -> Unit)?,
+  callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null,
   merchantSessionId: String? = null,
   onInstallmentSelected: ((InstallmentSelected?) -> Unit)? = null
 )
@@ -179,7 +179,7 @@ const val PAYMENT_STATE_FAIL = "FAIL"
 const val PAYMENT_STATE_PROCESSING = "PROCESSING"
 const val PAYMENT_STATE_REJECT = "REJECT"
 const val PAYMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
-const val PAYMENT_STATE_STATE_CANCELED_BY_USER = "CANCELED"
+const val PAYMENT_STATE_STATE_CANCELED_BY_USER = "CANCELED_BY_USER"
 ```
 
 Possible states:
@@ -191,7 +191,26 @@ Possible states:
 | `PROCESSING`     | The transaction is currently in progress, awaiting approval or verification.                                                    | No.                                                                                                           |
 | `REJECT`         | The transaction was rejected due to reasons like insufficient funds or suspected fraudulent activity.                           | Yes. Inform the user of the rejection, provide the reason if possible, and suggest actions.                   |
 | `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the payment process.                                           | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
-| `CANCELED`       | The user voluntarily canceled the transaction or abandoned the payment process.                                                 | No.                                                                                                           |
+| `CANCELED_BY_USER` | The user voluntarily canceled the transaction or abandoned the payment process.                                               | No.                                                                                                           |
+
+The callback receives three values: the state, its sub-state (the provider's detail, when any) and a `StatusMessage?` that is `null` on `SUCCEEDED`, `PROCESSING` and `CANCELED_BY_USER`, always present on `INTERNAL_ERROR`, and present on `REJECT` / `FAIL` when the backend returned a `response_code`:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "country_code_iso",
+  callbackPaymentState = { state, subState, message ->
+    when (state) {
+      "SUCCEEDED" -> showSuccess()
+      "REJECT", "FAIL" -> showDeclined(reason = message?.reason, code = message?.code)
+      "INTERNAL_ERROR" -> reportSdkError(message)   // never null here
+      else -> { }
+    }
+  },
+)
+```
+
+See [StatusMessage (error details)](/docs/sdks/resources/references/android#statusmessage-error-details) for the fields and when each one is populated.
 
 #### Installment selection callback (`onInstallmentSelected`)
 
@@ -201,7 +220,7 @@ Available from SDK `2.20.0`. Register the optional `onInstallmentSelected` callb
 startCheckout(
   checkoutSession = "checkout_session",
   countryCode = "country_code_iso",
-  callbackPaymentState = { state, subState -> /* ... */ },
+  callbackPaymentState = { state, subState, message -> /* ... */ },
   onInstallmentSelected = { selection ->
     if (selection != null) {
       // Update your cart total, e.g. with selection.amount?.totalValue
@@ -456,7 +475,7 @@ continuePayment(
     showPaymentStatus: Boolean = true,
     checkoutSession: String? = null,
     countryCode: String? = null,
-    callbackPaymentState: ((String?) -> Unit)? = null
+    callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null
 )
 ```
 

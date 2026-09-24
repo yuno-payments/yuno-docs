@@ -32,7 +32,7 @@ Parameters for payment flows. All parameters used in [Payment flows (Android)](/
 | ----------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`       | string   | Yes      | Checkout session ID from your backend (Create checkout session API). Required for all payment flows.                                                                                                                                                                         |
 | `countryCode`           | string   | Yes      | ISO country code where the payment runs (for example, `US`, `BR`). Determines available payment methods and compliance.                                                                                                                                                            |
-| `callbackPaymentState`| function | No       | Callback invoked when the payment state changes. Receives the current state, for example `SUCCEEDED`, `FAIL`, `PROCESSING`, `REJECT`. Use for UI updates, analytics, or navigation.                                                                                                  |
+| `callbackPaymentState`| function | No       | `((String?, String?, StatusMessage?) -> Unit)?`. Invoked with the payment state (`SUCCEEDED`, `FAIL`, `PROCESSING`, `REJECT`, `INTERNAL_ERROR`, `CANCELED_BY_USER`), its sub-state and, on error outcomes, a [`StatusMessage?`](#statusmessage-error-details). Third parameter added in SDK `2.22.0`. Use for UI updates, analytics, or navigation. |
 | `merchantSessionId`     | string   | No       | Optional merchant session identifier. Use to correlate the SDK session with your own session or order ID.                                                                                                                                                                   |
 | `onInstallmentSelected` | function | No       | Callback invoked when the shopper selects an installment option in the card form (`InstallmentSelected?` payload with `installment`, `label`, and `amount`). Fires for the default pre-selection, every selection, plan recalculations, and once with `null` when installments stop being available. Available from SDK `2.20.0`. See [Full (Android)](/docs/sdks/full-checkout/android-payments#installment-selection-callback-oninstallmentselected).      |
 
@@ -64,7 +64,7 @@ Parameters for enrollment flows. All parameters used in [Enrollment flows (Andro
 | `customerSession`        | string   | Yes      | Customer session ID from Create customer session API. Required. Associates the enrolled payment method with a specific customer.                                                                                                                                             |
 | `countryCode`            | string   | Yes      | ISO country code (for example, `US`, `BR`). Required for enrollment.                                                                                                                                                                                                                 |
 | `showEnrollmentStatus`   | boolean  | No       | When `true`, shows the enrollment result screen after the flow. Default `true`. Set to `false` to handle result only via callback.                                                                                                                                          |
-| `callbackEnrollmentState`| function | No       | Callback invoked when enrollment state changes. Requires registering `initEnrollment` in your Activity's `onCreate` (or equivalent). This lets the SDK deliver results. Optional when using `onActivityResult` with `requestCode`.                                               |
+| `callbackEnrollmentState`| function | No       | `((String?, StatusMessage?) -> Unit)?`. Invoked with the enrollment state and, on `INTERNAL_ERROR`, a [`StatusMessage?`](#statusmessage-error-details). Second parameter added in SDK `2.22.0`. Requires registering `initEnrollment` in your Activity's `onCreate` (or equivalent). Optional when using `onActivityResult` with `requestCode`. |
 | `requestCode`            | int      | No       | Optional request code used when capturing the enrollment result via `onActivityResult`. Use when you prefer activity-result flow over callbacks.                                                                                                                              |
 
 </div>
@@ -90,9 +90,88 @@ fun continuePayment(
     showPaymentStatus: Boolean = true,
     checkoutSession: String? = null,
     countryCode: String? = null,
-    callbackPaymentState: ((String?) -> Unit)? = null
+    callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null
 )
 ```
+
+## StatusMessage (error details)
+
+> **Available since Android SDK v2.22.0**
+
+Every payment and enrollment result callback, and the `returnStatus` of the render listeners, carries a `StatusMessage?` next to the state. It tells a **backend rejection** apart from an **SDK-internal failure** and gives you a code to act on, instead of a flat status string.
+
+```kotlin
+package com.yuno.payments.features.payment.models
+
+data class StatusMessage(
+    val source: String,          // "backend" or "sdk"
+    val code: String? = null,    // backend response_code, or an SDK error code
+    val reason: String? = null,  // human-readable detail
+    val raw: String? = null,     // redacted subset of the backend error body (backend only)
+    val context: String? = null, // where the SDK failed (sdk only), e.g. "startPayment"
+)
+```
+
+| Field | `source = "backend"` | `source = "sdk"` |
+| --- | --- | --- |
+| `code` | The transaction `response_code` (for example `INSUFFICIENT_FUNDS`) or the HTTP error `code` returned by Yuno. | An SDK error code: `UNEXPECTED_ERROR`, `LOADER_TIMEOUT` or `PAYMENT_METHOD_NOT_SELECTED` (from `2.25.0`). |
+| `reason` | The transaction `response_message`, falling back to its `reason`; for HTTP errors, the first backend `messages` entry. | A short description of the failure. |
+| `raw` | Allowlisted, size-capped subset of the backend error body: only `code`, `message`, `messages`, `type` and `request_id`, at most 2048 characters, otherwise `null`. It can still echo data you submitted, so do not log it verbatim. | Always `null`. |
+| `context` | Always `null`. | The SDK step that failed, for example `startPayment`, `continuePayment` or `enrollment`. |
+
+When it is populated:
+
+| Outcome | `message` |
+| --- | --- |
+| `SUCCEEDED`, `PROCESSING`, `CANCELED_BY_USER` (payments) / `CANCELED` (enrollment), user drop-off | Always `null`. |
+| `INTERNAL_ERROR` | Always present. `source = "sdk"` for SDK, render or network failures; `source = "backend"` when Yuno answered an HTTP error. |
+| `REJECT`, `FAIL` (payments) | Present with `source = "backend"` only when the backend returned a `response_code` for the transaction; `null` otherwise. |
+| `REJECT`, `FAIL` (enrollment) | `null`: enrollment declines carry no backend `response_code`. |
+
+```kotlin
+callbackPaymentState = { state, subState, message ->
+    when (state) {
+        "REJECT", "FAIL" -> showDeclined(code = message?.code, reason = message?.reason)
+        "INTERNAL_ERROR" -> when (message?.source) {
+            "backend" -> reportBackendError(message.code, message.raw)
+            else -> reportSdkError(message?.code, message?.context)
+        }
+        else -> { }
+    }
+}
+```
+
+### Render integration
+
+If you integrate through the render API, the same value reaches your listeners as the last parameter of `returnStatus`:
+
+```kotlin
+interface YunoPaymentRenderListener {
+    fun returnStatus(
+        resultCode: Int,
+        paymentStatus: String,
+        paymentSubStatus: String? = null,
+        message: StatusMessage? = null,
+    )
+    // showView, returnOneTimeToken, loadingListener unchanged
+}
+
+interface YunoEnrollmentRenderListener {
+    fun returnStatus(resultCode: Int, paymentStatus: String, message: StatusMessage? = null)
+    // showView, loadingListener unchanged
+}
+```
+
+### Migrating to 2.22.0
+
+`StatusMessage` is a **breaking change**: the SDK does not ship deprecated overloads of the previous signatures. When you upgrade from `2.21.x` or earlier:
+
+1. **Recompile your app against the new SDK.** Dropping the new AAR into an app built against an older version is not safe: a render listener compiled with the old `returnStatus` signature crashes at runtime with `AbstractMethodError` on the first error outcome, with no compile-time warning.
+2. **Add the third parameter to every `callbackPaymentState` lambda** (`startCheckout`, `startPayment`, `startPaymentLite`, `startPaymentSeamlessLite`, `continuePayment`, `continueCardPayment`): `{ state, subState -> }` becomes `{ state, subState, message -> }`. Kotlin lambdas must match the arity, so the old form fails to compile.
+3. **Add the second parameter to every `callbackEnrollmentState` lambda** (`initEnrollment`, `startEnrollment`, `enrollmentStatus`, `setupEnrollmentInfo`): `{ state -> }` becomes `{ state, message -> }`.
+4. **Update your `returnStatus` overrides** in `YunoPaymentRenderListener` and `YunoEnrollmentRenderListener` to the signatures above.
+
+Reading `message` is optional: ignoring the new parameter keeps your existing logic working. Release notes: [Android changelog](/changelog/android).
 
 ## Enrolling payment methods
 
@@ -150,7 +229,7 @@ activity.startCheckout(
         // then call continuePayment:
         activity.continuePayment(showPaymentStatus = true)
     },
-    callbackPaymentState = { state, subState ->
+    callbackPaymentState = { state, subState, message ->
         // Handle final payment state
     },
 )
