@@ -1,0 +1,214 @@
+---
+title: "The Promotion Object"
+description: "Documents the promotion object's attributes: discount, schedule, conditions, and status."
+noindex: true
+---
+
+<Warning>
+**Promotions is enabled per organization**
+
+Promotions works only after Yuno enables it for your organization. Ask your Technical Account Manager or Key Account Manager. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Warning>
+
+## Attributes
+
+A promotion is a discount with a date window and a set of conditions. It can't be edited after you create it: the only change is to disable it.
+
+<ParamField body="id" type="string">
+  The unique identifier of the promotion (UUID). Assigned by Yuno.
+
+  Example: b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31
+</ParamField>
+
+<ParamField body="account_id" type="string">
+  The account the promotion applies to (UUID). One promotion belongs to one account. If you run the same campaign on several accounts, create it once per account.
+
+  Example: 493e9374-510a-4201-9e09-de669d75f256
+</ParamField>
+
+<ParamField body="name" type="string">
+  The promotion name (MAX 255; MIN 3). The checkout uses it when it announces the discount.
+
+  Example: 10% off with credit cards - Mother's Day
+</ParamField>
+
+<ParamField body="description" type="string">
+  Shown with the name on the quote. Optional, up to 1000 characters.
+</ParamField>
+
+<ParamField body="schedule" type="object">
+  The window in which the promotion runs. Always UTC.
+
+  <Expandable title="properties">
+    <ParamField body="starts_at" type="timestamp">
+      When the promotion starts (ISO 8601). Now or in the future.
+
+      Example: 2026-10-01T03:00:00Z
+    </ParamField>
+
+    <ParamField body="ends_at" type="timestamp">
+      When the promotion ends (ISO 8601). `null` means no end date.
+
+      Example: 2026-11-01T02:59:59Z
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="redemption" type="object">
+  How the promotion is redeemed.
+
+  <Expandable title="properties">
+    <ParamField body="mode" type="enum">
+      Possible values:
+      - `AUTOMATIC` = Applies by itself to every payment that meets the conditions. The customer types nothing.
+      - `CODE` = Applies only when the payment's quote carries the promotion `code`. The customer types it at checkout, or your server sends it on the quote. **Not available yet:** today every promotion is `AUTOMATIC`; codes are coming in a later release.
+    </ParamField>
+
+    <ParamField body="code" type="string">
+      Required when `mode` is `CODE`, `null` otherwise. 3 to 32 characters: `A-Z`, `0-9`, `_` and `-`. Unique per account among the promotions that can still apply; reusable once the earlier promotion with that code is disabled or its schedule has ended.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="discount" type="object">
+  What the customer saves.
+
+  <Expandable title="properties">
+    <ParamField body="type" type="enum">
+      Possible values:
+      - `PERCENTAGE` = A percentage of the payment amount, set in `value`.
+      - `FIXED` = A fixed amount per currency, set in `amounts`.
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      `PERCENTAGE` only. Greater than 0 and up to 100, with up to two decimals. More decimals return `400`. `null` for a fixed discount.
+
+      Example: 10.5
+    </ParamField>
+
+    <ParamField body="amounts" type="Array of objects">
+      `FIXED` only: one `{ currency, value }` per currency (ISO 4217), each above zero. Required for fixed discounts. `null` for a percentage discount. A fixed promotion applies only to payments in the currencies it lists, and the discount is capped at the payment amount. When the promotion also has an `amounts` condition, `discount.amounts` and `conditions.amounts.values` must list the same currencies, or create returns `400`.
+
+      Example: `[{ "currency": "USD", "value": 30.00 }]`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="conditions" type="object">
+  The conditions a payment must meet. **AND** across keys, **OR** inside each key's `values` list. Omit a key or send `null` for no condition on that dimension; an empty `values` list returns `400`. An empty `conditions` object (`{}`) applies to every payment of the account.
+
+  <Expandable title="properties">
+    <ParamField body="bins" type="object">
+      Card BIN condition. A card matches when its BIN equals a prefix in `values` or falls in a `ranges` entry. When `bins` is present, at least one of `values` or `ranges` must be non-empty.
+
+      <Expandable title="properties">
+        <ParamField body="values" type="Array of strings">
+          BIN prefixes (6 to 8 digits each).
+        </ParamField>
+
+        <ParamField body="ranges" type="Array of objects">
+          Inclusive BIN ranges. Each entry has `start` and `end` (8 digits).
+        </ParamField>
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="payment_methods" type="object">
+      <Expandable title="properties">
+        <ParamField body="values" type="Array of strings">
+          Payment method types, for example `CARD`. See [Payment type list](/reference/payment-type-list).
+        </ParamField>
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="card_types" type="object">
+      <Expandable title="properties">
+        <ParamField body="values" type="Array of strings">
+          `CREDIT` or `DEBIT`. A card whose type is unknown never meets this condition.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="countries" type="object">
+      <Expandable title="properties">
+        <ParamField body="values" type="Array of strings">
+          Payment countries ([ISO 3166-1](/reference/country-reference)).
+        </ParamField>
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="amounts" type="object">
+      <Expandable title="properties">
+        <ParamField body="values" type="Array of objects">
+          Amount bounds per currency: `currency`, `min`, and `max` (both inclusive; `null` means no bound on that side). An entry with both `min` and `max` null filters by currency only.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="status" type="enum">
+  Computed from `schedule` at the moment you read the promotion.
+
+  Possible values:
+  - `SCHEDULED` = `starts_at` is in the future.
+  - `ACTIVE` = Running now. Payments that meet the conditions get a quote.
+  - `EXPIRED` = `ends_at` has passed.
+  - `DISABLED` = You disabled it. Final.
+</ParamField>
+
+<ParamField body="created_at" type="timestamp">
+  When the promotion was created (ISO 8601, UTC). When two promotions save the same amount, the oldest one applies.
+</ParamField>
+
+<ParamField body="disabled_at" type="timestamp">
+  When you disabled the promotion (ISO 8601, UTC). `null` while the promotion is not disabled. The only field that changes after creation.
+</ParamField>
+
+## How a promotion is chosen
+
+One payment gets one promotion. When two or more match, Yuno applies the one with the **biggest saving** for the customer, then the oldest, then the smallest `id`. A fixed discount is capped at the payment amount, and a charge of zero is valid. A promotion whose discount is zero doesn't apply.
+
+## Example
+
+```json
+{
+  "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "name": "10% off with credit cards - Mother's Day",
+  "description": "Card deal, claimed monthly.",
+  "schedule": { "starts_at": "2026-10-01T03:00:00Z", "ends_at": "2026-11-01T02:59:59Z" },
+  "redemption": { "mode": "AUTOMATIC", "code": null },
+  "discount": { "type": "PERCENTAGE", "value": 10 },
+  "conditions": {
+    "bins": {
+      "values": ["457896", "40263412"],
+      "ranges": [{ "start": "45780000", "end": "45789999" }]
+    },
+    "payment_methods": { "values": ["CARD"] },
+    "card_types": { "values": ["CREDIT"] },
+    "countries": { "values": ["AR"] },
+    "amounts": { "values": [{ "currency": "USD", "min": 100.00, "max": 5000.00 }] }
+  },
+  "status": "SCHEDULED",
+  "created_at": "2026-09-14T12:04:18Z",
+  "disabled_at": null
+}
+```
+
+### Example with a code
+
+```json
+{
+  "id": "f3a2b1c0-8d9e-4f5a-b6c7-2e1d0f9a8b7c",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "name": "Welcome 10% off",
+  "description": "For new customers.",
+  "schedule": { "starts_at": "2026-10-01T00:00:00Z", "ends_at": null },
+  "redemption": { "mode": "CODE", "code": "WELCOME10" },
+  "discount": { "type": "PERCENTAGE", "value": 10 },
+  "conditions": {},
+  "status": "ACTIVE",
+  "created_at": "2026-09-20T09:00:00Z",
+  "disabled_at": null
+}
+```

@@ -1,0 +1,74 @@
+---
+title: "Create Promotion Quote"
+openapi: "/openapi/promotions/create-promotion-quote.json POST /promotions/quote"
+description: "Prices a payment before you create it and returns a signed quote when a promotion applies."
+noindex: true
+---
+
+<Warning>
+**Promotions is enabled per organization**
+
+Until Yuno enables Promotions for your organization, this endpoint answers `204` (nothing applies). Ask your Technical Account Manager or Key Account Manager. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Warning>
+
+<Note>
+**Using the Yuno checkout? You don't call this endpoint**
+
+The checkout asks for the quote by itself when the customer enters a card, and updates the price and the discount in the order summary. Call this endpoint only from a direct API integration: from your server with your secret key, or from the browser with your public key inside an embedded sdk-web integration.
+</Note>
+
+## Two ways to call it
+
+* **Secret key, from your server.** Send `amount`. This is the flow described below.
+* **Public key, from the browser (embedded sdk-web).** Send `checkout_session` instead of `amount`; the amount comes from the session. Yuno validates `account_id` and `country` against that session.
+
+`payment_method` is required on both. A quote is valid for 30 minutes after it is issued, on both. Add `code` on either path to quote a promotion that requires one; omit it for automatic promotions.
+
+```json Secret key (server)
+{
+    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+    "amount": { "currency": "USD", "value": 250.00 },
+    "country": "AR",
+    "payment_method": { "type": "CARD", "bin": "457896", "card_type": "CREDIT" }
+}
+```
+
+```json Public key (browser)
+{
+    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+    "checkout_session": "chks_8f1c2e6a9b3d",
+    "country": "AR",
+    "payment_method": { "type": "CARD", "bin": "457896", "card_type": "CREDIT" }
+}
+```
+
+```json Payment with a promotion code
+{
+    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+    "amount": { "currency": "USD", "value": 250.00 },
+    "country": "AR",
+    "payment_method": { "type": "CARD", "bin": "457896", "card_type": "CREDIT" },
+    "code": "WELCOME10"
+}
+```
+
+## How to use the quote
+
+1. Send the context of the payment you're about to create. `amount` is the original amount, before any promotion. For a card, identify it in one of two ways inside `payment_method`: `bin` (the first 6 to 8 digits), or `token` or `vaulted_token`. Add `code` when the promotion requires one; omit it for automatic promotions.
+2. On `200`, show `charge_amount` to your customer. That's what they'll pay. The answer includes `quote_id`, `promotions` (one entry today: `id`, `name`, `description`, `discount`, `discount_amount`), and the three totals outside the list (`original_amount`, `discount_amount`, `charge_amount`).
+3. Create the payment with the same original `amount` and `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": "<quote_id>" }]`. See [Create Payment](/reference/payments/create-payment) and [Promotions](/docs/payment-features/promotions).
+
+A promotion applies **only** when the payment carries that `quote_id` on a discount line. A payment without one is charged in full.
+
+## Rules
+
+* **Biggest saving wins.** When two or more promotions match, the quote is for the one that saves the customer the most, then the oldest, then the smallest `id`. One promotion per payment; no stacking.
+* **30 minutes.** A quote is valid until `expires_at`, 30 minutes after it is issued. Inside that time the payment charges the quoted price, even if the promotion's end date passed after the quote was issued, or you [disabled](/reference/promotions/disable-promotion) the promotion after the quote was issued.
+* **Every condition must already be true.** A quote exists only when the promotion's conditions all hold for the context you send.
+* **Quoted price or no payment.** If the quote expired, or the payment's amount, currency, card or account differs from what you quoted, Yuno rejects the payment with `422` and one of the `PROMOTION_*` codes listed in [Promotions](/docs/payment-features/promotions#the-customer-pays-the-quoted-price-or-the-payment-is-rejected). It never re-prices. Get a new quote and try again.
+* **Nothing is consumed.** A quote is a read. Asking twice returns the same answer while it is valid, and a quote you never use needs no cleanup.
+* **No match isn't an error.** The answer is `204` when nothing applies. Create the payment as usual, with no `quote_id` on a discount line.
+* **BIN or token, never both, inside `payment_method`.** A server that holds the card number sends `payment_method.bin`, the first 6 to 8 digits. A server that holds a token sends `payment_method.token` or `payment_method.vaulted_token`, and Yuno resolves the BIN and the card type from the card, exactly as it does on the payment. Sending both is rejected with `400 INVALID_PARAMETERS`. Without a BIN, a promotion with a `bins` or `card_types` condition doesn't apply. A wallet (Apple Pay, Google Pay) has no BIN; quote it without `bin`.
+* **Never send a full card number.** `payment_method.bin` is 6 to 8 digits, digits only. More than 8 digits, fewer than 6, or anything but digits is rejected with `400 INVALID_PARAMETERS`.
+* **Promotion codes are not available yet.** Today every promotion is `AUTOMATIC`; codes are coming in a later release.
+* **A wrong or unusable code doesn't fall back to automatic.** Send `code` only for a promotion that requires one. No promotion with that code on the account answers `404 PROMOTION_NOT_FOUND`. A code that exists but can't apply right now (disabled, not started yet, ended, its conditions don't match, no discount for this currency, or the discount would be zero) answers `422 PROMOTION_NOT_APPLICABLE`, with the reason in `messages[]`. Both use the standard error body (`code` and `messages[]`), with no `reason` field. Automatic promotions never return these two; nothing applying is still `204`.

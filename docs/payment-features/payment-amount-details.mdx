@@ -245,7 +245,9 @@ curl --request POST \
 
 A dedicated array of objects (`additional_data.order.discounts`) allows you to specify the discounts that are included in the transaction.
 
-In the following example you can see a request that clarifies that a 500 USD discount amount is part of a 5000 USD final transaction. This field is for informational purposes, the `discounts` is already included in the final transaction amount and is not added separately.
+Each line has a `type`. `MERCHANT` (the default) is a discount you computed, with `id`, `name` and `unit_amount`. `YUNO_PROMOTION` is a [promotion quote](/docs/payment-features/promotions) Yuno computed, with `quote_id` only; it rejects `id`, `name` and `unit_amount`, a `MERCHANT` line rejects `quote_id`, and any mix returns `400`. A line with `quote_id` and no `type` is read as `YUNO_PROMOTION`. One quote per payment. On the response and on every `payment.*` webhook Yuno fills the `YUNO_PROMOTION` line (`quote_id`, `id` = the promotion id, `name`, `unit_amount` in the order currency) and adds a top-level `discount_amount`, the sum of those lines. Your `MERCHANT` lines are passed through unchanged. `amount` is never rewritten; the net amount charged is on the transaction.
+
+In the following example you can see a request that clarifies that a 5 USD discount amount is part of a 50 USD final transaction. Merchant-computed discounts are informational: the amount is already included in `amount` and is not added again.
 
 ```json Example
 curl --request POST \
@@ -264,7 +266,7 @@ curl --request POST \
     "merchant_reference" : "reference-{{$randomUUID}}",
     "amount": {
         "currency": "USD",
-        "value": 5000.00
+        "value": 50.00
     },
     "customer_payer": {
         "id":"967ecd18-d898-4b88-9400-dd5b01b18edc"
@@ -275,7 +277,7 @@ curl --request POST \
                 {
                   "id": "10OFF",
                   "name":"Offer",
-                  "unit_amount":500.00
+                  "unit_amount":5.00
                 }
               ]
           }
