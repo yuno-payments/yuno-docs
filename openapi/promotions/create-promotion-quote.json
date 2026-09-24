@@ -80,8 +80,25 @@
                     "description": "The country of the payment (MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference))."
                   },
                   "payment_method": {
-                    "type": "string",
-                    "description": "The payment method type the customer chose, for example `CARD`. See [Payment type list](/reference/payment-type-list)."
+                    "type": "object",
+                    "required": [
+                      "type"
+                    ],
+                    "description": "The payment method of the payment you are about to create, with the same shape as on [Create Payment](/reference/payments/create-payment). For a card, identify it in ONE of two ways: send `bin`, or send `token` or `vaulted_token` here. Never both a BIN and a token.",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "The payment method type the customer chose, for example `CARD`. See [Payment type list](/reference/payment-type-list)."
+                      },
+                      "token": {
+                        "type": "string",
+                        "description": "Cards only. The one-time token of the card from the Yuno SDK. Yuno resolves the BIN and the card type from it, so you send no `bin`."
+                      },
+                      "vaulted_token": {
+                        "type": "string",
+                        "description": "Cards only. The vaulted token of a saved card. Yuno resolves the BIN and the card type from it, so you send no `bin`."
+                      }
+                    }
                   },
                   "card_type": {
                     "type": "string",
@@ -89,16 +106,16 @@
                       "CREDIT",
                       "DEBIT"
                     ],
-                    "description": "Cards only. Needed for promotions with a `CARD_TYPE` condition."
+                    "description": "Cards only. Send it with `bin` when you know it; needed for promotions with a `CARD_TYPE` condition. With a token you can leave it out: Yuno resolves it from the card."
                   },
                   "bin": {
                     "type": "string",
-                    "description": "Cards only. The first 6 to 8 digits of the card. Never send the full card number. Needed for promotions with a `BIN` or `BIN_RANGE` condition."
+                    "description": "Cards only. The first 6 to 8 digits of the card, digits only. Fewer than 6 digits, more than 8 digits, or anything but digits is rejected with `400 INVALID_PARAMETERS`. Never send the full card number. Send `bin` when your server holds the card number; send a token in `payment_method` when it holds a token; never both. Needed for promotions with a `BIN` or `BIN_RANGE` condition when you send no token."
                   }
                 }
               },
               "examples": {
-                "Card payment": {
+                "Card payment with the BIN": {
                   "value": {
                     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
                     "amount": {
@@ -106,9 +123,38 @@
                       "value": 25000.0
                     },
                     "country": "AR",
-                    "payment_method": "CARD",
+                    "payment_method": {
+                      "type": "CARD"
+                    },
                     "card_type": "CREDIT",
                     "bin": "457896"
+                  }
+                },
+                "Card payment with a vaulted token": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "amount": {
+                      "currency": "ARS",
+                      "value": 25000.0
+                    },
+                    "country": "AR",
+                    "payment_method": {
+                      "type": "CARD",
+                      "vaulted_token": "330953e7-09d8-47cf-a99c-cfb7968f13f9"
+                    }
+                  }
+                },
+                "Payment without a card": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "amount": {
+                      "currency": "COP",
+                      "value": 250000.0
+                    },
+                    "country": "CO",
+                    "payment_method": {
+                      "type": "PSE"
+                    }
                   }
                 }
               }
@@ -243,14 +289,23 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "Result": {
+                  "BIN too long": {
+                    "summary": "BIN too long",
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
                         "bin must have 6 to 8 digits."
                       ]
-                    },
-                    "summary": "Result"
+                    }
+                  },
+                  "BIN and token together": {
+                    "summary": "BIN and token together",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "Send bin or a token in payment_method, not both."
+                      ]
+                    }
                   }
                 },
                 "schema": {

@@ -19,7 +19,7 @@ The checkout asks for the quote by itself when the customer enters a card, and u
 
 ## How to use the quote
 
-1. Send the context of the payment you're about to create. `amount` is the original amount, before any promotion.
+1. Send the context of the payment you're about to create. `amount` is the original amount, before any promotion. For a card, identify it in one of two ways: `bin` (the first 6 to 8 digits), or the card's `token` or `vaulted_token` inside `payment_method`.
 2. On `200`, show `charge_amount` to your customer. That's what they'll pay. The answer includes `quote_id`, a one-element `promotion` list (id, name, description), and the three amounts.
 3. Create the payment with the same original `amount` and `promotion.quote_id` set to `quote_id`. See [Create Payment](/reference/payments/create-payment) and [Promotions](/docs/payment-features/promotions).
 
@@ -33,4 +33,5 @@ A promotion applies **only** when the payment carries `promotion.quote_id`. A pa
 * **Quoted price or no payment.** If the quote expired, or the payment's amount, currency, card or account differs from what you quoted, Yuno rejects the payment with `422 PROMOTION_NOT_APPLICABLE` (or `400 QUOTE_INVALID` for a malformed id). It never charges the full price instead. Get a new quote and try again.
 * **Nothing is consumed.** A quote is a read. Asking twice returns the same answer while it is valid, and a quote you never use needs no cleanup.
 * **No match isn't an error.** The answer is `204` when nothing applies. Create the payment as usual, with no `promotion.quote_id`.
-* **Never send a full card number.** `bin` is the first 6 to 8 digits.
+* **BIN or token, never both.** A server that holds the card number sends `bin`, the first 6 to 8 digits. A server that holds a token sends `payment_method.token` or `payment_method.vaulted_token`, and Yuno resolves the BIN and the card type from the card, exactly as it does on the payment. Sending both is rejected with `400 INVALID_PARAMETERS`. Without a BIN, a promotion with a `BIN`, `BIN_RANGE` or `CARD_TYPE` condition doesn't apply.
+* **Never send a full card number.** `bin` is 6 to 8 digits, digits only. More than 8 digits, fewer than 6, or anything but digits is rejected with `400 INVALID_PARAMETERS`.
