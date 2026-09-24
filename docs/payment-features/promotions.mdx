@@ -107,30 +107,89 @@ Without the Yuno checkout, you ask for the quote yourself, from your server, and
 
 1. **Get the quote.** Call [Create Promotion Quote](/reference/promotions/create-promotion-quote) with the payment context: account, amount, country, payment method and, for cards, the card type and the first 6 to 8 digits.
 2. **Show the price.** On `200`, show `charge_amount` to your customer. On `204`, create the payment as usual, with no `promotion.quote_id`.
-3. **Create the payment with the quote.** Send `quote_id` as `promotion.quote_id`, as shown in [Create Payment](/reference/payments/create-payment).
+3. **Create the payment with the quote.** Send `quote_id` as `promotion.quote_id`, as shown below.
 
-Send the **original** amount on the payment and put the quote id in `promotion.quote_id`. The response and webhooks carry a `promotion` object with the three amounts; `amount` is what was charged. See [Create Payment](/reference/payments/create-payment).
+### Create the payment with the quote
 
-### When a quote cannot be honoured
+Send the **original** amount and `promotion.quote_id` (up to 500 characters) on [Create Payment](/reference/payments/create-payment). Yuno rejects a payment that sends the discounted amount instead of the original.
 
-If Yuno can't honour the quote, it **rejects the payment** and never charges the full price silently.
+```json Request
+{
+    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+    "country": "AR",
+    "amount": { "currency": "ARS", "value": 25000.00 },
+    "promotion": { "quote_id": "qte_0d91f7ac3b2e" }
+}
+```
+
+`promotion.quote_id` is the only place for a quote on the payment. The existing `additional_data.order.discounts` array keeps its meaning: [informational discounts](/docs/payment-features/payment-amount-details#discounts) you computed, passed on untouched. A quote id sent there is rejected.
+
+<Warning>
+**Don't subtract the discount yourself**
+
+Send the original `amount` and `promotion.quote_id`. Yuno computes the charge.
+</Warning>
+
+### What the payment carries
+
+The response and every payment webhook carry the charged amount in `amount` and a compact `promotion` object next to it. There is no promotion name on the payment: the checkout showed the name on the quote.
+
+```json Response
+{
+    "id": "b2c9d0e1-6f0e-4c2a-9c55-7d8a0b311f2e",
+    "status": "SUCCEEDED",
+    "amount": { "currency": "ARS", "value": 22500.00 },
+    "promotion": {
+        "quote_id": "qte_0d91f7ac3b2e",
+        "promotion_id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
+        "original_amount": { "currency": "ARS", "value": 25000.00 },
+        "discount_amount": { "currency": "ARS", "value": 2500.00 },
+        "charge_amount": { "currency": "ARS", "value": 22500.00 }
+    }
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `promotion.quote_id` | The quote the payment was charged with. |
+| `promotion.promotion_id` | The promotion's id. |
+| `promotion.original_amount` | The amount before the discount, the one sent on the quote. |
+| `promotion.discount_amount` | What the customer saved, always positive. |
+| `promotion.charge_amount` | What the customer paid. Equals the payment's `amount`. |
+
+* `original_amount − discount_amount = charge_amount`, which equals `amount`.
+* Refunds and chargebacks use the charged amount, as with any payment.
+* A payment without a quote has no `promotion` object (never `null`) and looks exactly as it does today.
+* In webhooks, `promotion` sits next to `amount` inside the payment, with the same fields.
+
+### The customer pays the quoted price, or the payment is rejected
+
+A quote is valid for up to **30 minutes** on the API path, or for the checkout session on the hosted checkout. Inside that time the payment charges the quoted price, even if the promotion's end date passed after the quote was issued. Only disabling the promotion stops its open quotes: those payments are rejected with reason `PROMOTION_DISABLED`.
+
+If Yuno can't honour the quote, it **rejects the payment** and never charges the full price silently. Re-quote and show the new price, or confirm the full price with the customer.
 
 | HTTP | Code | When |
 | --- | --- | --- |
 | `422` | `PROMOTION_NOT_APPLICABLE` | The quote is validly formed but cannot apply. The body includes `reason` and optional `detail`. |
-| `400` | `QUOTE_INVALID` | The quote id is malformed or forged. |
+| `400` | `QUOTE_INVALID` | The quote id is malformed, forged, or sent in the wrong place (for example `additional_data.order.discounts[].quote_id`). |
 | `503` | `PROMOTION_ENGINE_UNAVAILABLE` | The promotions engine did not answer; nothing was charged. Retry the **same** payment once, then get a new quote. |
 | `503` | `CARD_FACTS_UNAVAILABLE` | Card type or BIN could not be read; nothing was charged. Retry the **same** payment once, then re-quote. |
+
+`PROMOTION_NOT_APPLICABLE` reasons:
 
 | `reason` | What to do |
 | --- | --- |
 | `PROMOTION_DISABLED`, `PROMOTION_NOT_FOUND` | The payment is rejected. Do not drop the quote and charge the full price; re-quote, or confirm the full price with the customer. |
 | `PROMOTIONS_DISABLED` | The payment is rejected. Do not drop the quote and charge the full price; re-quote, or confirm the full price with the customer. |
 | `QUOTE_EXPIRED` | Get a new quote. |
+| `QUOTE_ACCOUNT_MISMATCH` | Use the quote on the account it was made for. |
 | `QUOTE_AMOUNT_MISMATCH` | Send the quoted original amount (`detail.expected_original_amount`). |
 | `QUOTE_CONTEXT_MISMATCH` | Get a new quote for the real card or context. |
 | `CONDITIONS_NOT_MET` | Get a new quote for the real card. |
+| `QUOTE_PRICE_DIVERGED` | Get a new quote. |
 | `QUOTE_ALREADY_USED`, `QUOTE_SESSION_ALREADY_USED` | Wait for the other payment's final status. |
+| `MULTIPLE_QUOTE_IDS` | Send only `promotion.quote_id`; remove the quote id from `additional_data.order.discounts`. |
+| `SUBSCRIPTION_QUOTE_UNSUPPORTED` | Do not send a quote on a subscription payment. |
 
 ## What's not included yet
 
