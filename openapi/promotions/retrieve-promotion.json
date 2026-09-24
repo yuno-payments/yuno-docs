@@ -60,9 +60,7 @@
                   "Result": {
                     "value": {
                       "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
-                      "account_id": [
-                        "493e9374-510a-4201-9e09-de669d75f256"
-                      ],
+                      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
                       "name": "BBVA 10% off - Mother's Day",
                       "description": "Bank deal with BBVA, claimed monthly.",
                       "schedule": {
@@ -76,29 +74,45 @@
                       "discount": {
                         "type": "PERCENTAGE",
                         "value": 10,
-                        "amount": null
+                        "amounts": null
                       },
                       "conditions": {
-                        "bins": [
-                          "457896",
-                          "40263412"
-                        ],
-                        "payment_methods": [
-                          "CARD"
-                        ],
-                        "card_types": [
-                          "CREDIT"
-                        ],
-                        "countries": [
-                          "AR"
-                        ],
-                        "amounts": [
-                          {
-                            "currency": "ARS",
-                            "min": 10000.0,
-                            "max": null
-                          }
-                        ]
+                        "bins": {
+                          "values": [
+                            "457896",
+                            "40263412"
+                          ],
+                          "ranges": [
+                            {
+                              "start": "45780000",
+                              "end": "45789999"
+                            }
+                          ]
+                        },
+                        "payment_methods": {
+                          "values": [
+                            "CARD"
+                          ]
+                        },
+                        "card_types": {
+                          "values": [
+                            "CREDIT"
+                          ]
+                        },
+                        "countries": {
+                          "values": [
+                            "AR"
+                          ]
+                        },
+                        "amounts": {
+                          "values": [
+                            {
+                              "currency": "ARS",
+                              "min": 10000.0,
+                              "max": null
+                            }
+                          ]
+                        }
                       },
                       "status": "ACTIVE",
                       "created_at": "2026-09-14T12:04:18Z"
@@ -114,11 +128,8 @@
                       "description": "The unique identifier of the promotion (UUID)."
                     },
                     "account_id": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      },
-                      "description": "The account the promotion belongs to (UUID, found in your [Yuno Dashboard](https://dashboard.y.uno/developers)). A promotion never applies to payments of another account."
+                      "type": "string",
+                      "description": "The account the promotion belongs to (UUID, found in your [Yuno Dashboard](https://dashboard.y.uno/developers)). One promotion applies to one account. If you run the same campaign on several accounts, create it once per account."
                     },
                     "name": {
                       "type": "string",
@@ -126,7 +137,7 @@
                     },
                     "description": {
                       "type": "string",
-                      "description": "Free text for your team. Never shown to the customer."
+                      "description": "Shown with the name on the quote. Optional, up to 1000 characters."
                     },
                     "schedule": {
                       "type": "object",
@@ -163,6 +174,13 @@
                             "AUTOMATIC"
                           ],
                           "description": "`AUTOMATIC` = applies by itself to every payment that meets the conditions."
+                        },
+                        "code": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Reserved for promotion codes. Always `null` today."
                         }
                       }
                     },
@@ -171,7 +189,7 @@
                       "required": [
                         "type"
                       ],
-                      "description": "What the customer saves.",
+                      "description": "What the customer saves. For `FIXED`, when the promotion also has an `amounts` condition, `discount.amounts` and `conditions.amounts.values` must list the same currencies or the request returns `400`.",
                       "properties": {
                         "type": {
                           "type": "string",
@@ -185,14 +203,14 @@
                             "number",
                             "null"
                           ],
-                          "description": "`PERCENTAGE` only. Greater than 0 and up to 100, with up to two decimals (for example `10.5`)."
+                          "description": "`PERCENTAGE` only. Greater than 0 and up to 100, with up to two decimals (for example `10.5`). `null` for a fixed discount."
                         },
-                        "amount": {
+                        "amounts": {
                           "type": [
                             "array",
                             "null"
                           ],
-                          "description": "`FIXED` only. One entry per currency. `null` for a percentage discount.",
+                          "description": "`FIXED` only. One entry per currency, each above zero. `null` for a percentage discount.",
                           "items": {
                             "type": "object",
                             "required": [
@@ -207,7 +225,7 @@
                               "value": {
                                 "type": "number",
                                 "format": "float",
-                                "description": "Multiple of 0.0001."
+                                "description": "Multiple of 0.0001. Greater than zero."
                               }
                             }
                           }
@@ -216,90 +234,118 @@
                     },
                     "conditions": {
                       "type": "object",
-                      "description": "The conditions a payment must meet. Every listed condition must hold. Omit a dimension or send an empty list when it does not apply.",
+                      "description": "Conditions a payment must meet. AND across keys, OR inside each key's values list. Omit a key or send `null` for no condition on that dimension; an empty `values` list returns `400`.",
                       "properties": {
                         "bins": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "description": "Card BIN prefixes (6 to 8 digits each)."
-                        },
-                        "bin_ranges": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "required": [
-                              "start",
-                              "end"
-                            ],
-                            "properties": {
-                              "start": {
-                                "type": "string",
-                                "description": "First BIN of the range (8 digits)."
+                          "type": "object",
+                          "description": "Card BIN condition. A card matches when its BIN equals a prefix in `values` or falls in a `ranges` entry. At least one of `values` or `ranges` when `bins` is present.",
+                          "properties": {
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
                               },
-                              "end": {
-                                "type": "string",
-                                "description": "Last BIN of the range (8 digits), inclusive."
-                              }
+                              "description": "BIN prefixes (6 to 8 digits each)."
+                            },
+                            "ranges": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "start",
+                                  "end"
+                                ],
+                                "properties": {
+                                  "start": {
+                                    "type": "string",
+                                    "description": "First BIN of the range (8 digits)."
+                                  },
+                                  "end": {
+                                    "type": "string",
+                                    "description": "Last BIN of the range (8 digits), inclusive."
+                                  }
+                                }
+                              },
+                              "description": "Inclusive BIN ranges (8-digit bounds)."
                             }
-                          },
-                          "description": "Inclusive BIN ranges."
+                          }
                         },
                         "payment_methods": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "description": "Payment method types, for example `CARD`. See [Payment type list](/reference/payment-type-list)."
+                          "type": "object",
+                          "properties": {
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Payment method types, for example `CARD`. See [Payment type list](/reference/payment-type-list)."
+                            }
+                          }
                         },
                         "card_types": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "enum": [
-                              "CREDIT",
-                              "DEBIT"
-                            ]
-                          },
-                          "description": "Card types. A card whose type is unknown never meets this condition."
+                          "type": "object",
+                          "properties": {
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "CREDIT",
+                                  "DEBIT"
+                                ]
+                              },
+                              "description": "Card types. A card whose type is unknown never meets this condition."
+                            }
+                          }
                         },
                         "countries": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "description": "Payment countries ([ISO 3166-1](/reference/country-reference))."
+                          "type": "object",
+                          "properties": {
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Payment countries ([ISO 3166-1](/reference/country-reference))."
+                            }
+                          }
                         },
                         "amounts": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "required": [
-                              "currency",
-                              "min"
-                            ],
-                            "properties": {
-                              "currency": {
-                                "type": "string",
-                                "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
-                              },
-                              "min": {
-                                "type": "number",
-                                "format": "float",
-                                "description": "Inclusive minimum in this currency."
-                              },
-                              "max": {
-                                "type": [
-                                  "number",
-                                  "null"
+                          "type": "object",
+                          "properties": {
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "currency"
                                 ],
-                                "format": "float",
-                                "description": "Inclusive maximum in this currency. `null` means no ceiling."
-                              }
+                                "properties": {
+                                  "currency": {
+                                    "type": "string",
+                                    "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
+                                  },
+                                  "min": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ],
+                                    "format": "float",
+                                    "description": "Inclusive minimum in this currency. `null` with `max` also `null` filters by currency only."
+                                  },
+                                  "max": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ],
+                                    "format": "float",
+                                    "description": "Inclusive maximum in this currency. `null` means no ceiling."
+                                  }
+                                }
+                              },
+                              "description": "Amount bounds per currency (`min` and `max` inclusive)."
                             }
-                          },
-                          "description": "Amount bounds per currency."
+                          }
                         }
                       }
                     },
@@ -316,6 +362,14 @@
                     "created_at": {
                       "type": "string",
                       "format": "date-time"
+                    },
+                    "disabled_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "description": "When you disabled the promotion (ISO 8601, UTC). `null` while not disabled."
                     }
                   }
                 }
