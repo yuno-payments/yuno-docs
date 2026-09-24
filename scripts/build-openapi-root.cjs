@@ -48,6 +48,7 @@ const PREFER = {
   "get /customers/{customer_id}/payment-methods/{payment_method_id}":
     "openapi/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api.json",
   "get /organizations/account-groups": "openapi/organizations/list-account-groups.json",
+  "get /recipients": "openapi/recipients-for-marketplace/list-recipients.json",
   "get /organizations/users": "openapi/organizations/list-users.json",
 };
 
