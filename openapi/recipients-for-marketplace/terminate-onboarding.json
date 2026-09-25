@@ -1,0 +1,365 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Recipients API",
+    "version": "1.0.0",
+    "description": "API for managing recipients in split payment scenarios. This feature enables merchants to split payments among multiple recipients, which is particularly beneficial for marketplace models where transactions need to be divided among different sellers or stakeholders."
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "INVALID_PARAMETERS"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "Invalid request"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/recipients/{recipient_id}/onboardings/{onboarding_id}/terminate": {
+      "post": {
+        "summary": "Terminate Onboarding",
+        "operationId": "terminate-onboarding",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipient_id",
+            "description": "The unique identifier of the recipient",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+          },
+          {
+            "in": "path",
+            "name": "onboarding_id",
+            "description": "The unique identifier of the onboarding to terminate",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "example": "104911d-5df9-429e-8488-ad41abea1a4b"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "fraud",
+                      "terms_of_service",
+                      "other"
+                    ],
+                    "description": "The reason for terminating the onboarding. It is forwarded to the provider where the provider supports it.",
+                    "example": "fraud"
+                  }
+                }
+              },
+              "examples": {
+                "Terminate for fraud": {
+                  "value": {
+                    "reason": "fraud"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Onboarding terminated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The unique identifier of the onboarding",
+                      "example": "104911d-5df9-429e-8488-ad41abea1a4b"
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "description": "Unique id of the account in Yuno",
+                      "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+                    },
+                    "recipient_id": {
+                      "type": "string",
+                      "description": "The unique identifier of the recipient",
+                      "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "PREVIOUSLY_ONBOARDED",
+                        "ONE_STEP_ONBOARDING",
+                        "TWO_STEP_ONBOARDING"
+                      ],
+                      "description": "Type of onboarding flow",
+                      "example": "ONE_STEP_ONBOARDING"
+                    },
+                    "workflow": {
+                      "type": "string",
+                      "enum": [
+                        "HOSTED_BY_PROVIDER",
+                        "HOSTED_BY_YUNO",
+                        "DIRECT"
+                      ],
+                      "description": "Workflow of the onboarding",
+                      "example": "DIRECT"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Current status of the onboarding. After a successful termination it is always `TERMINATED`.",
+                      "example": "TERMINATED"
+                    },
+                    "callback_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL to redirect after the onboarding process",
+                      "example": "https://merchant.example.com/webhook/onboarding"
+                    },
+                    "provider": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Provider id",
+                          "example": "ADYEN"
+                        },
+                        "connection_id": {
+                          "type": "string",
+                          "description": "Id of the connection in Yuno",
+                          "example": "104911d-5df9-429e-8488-ad41abea1a4b"
+                        },
+                        "recipient_id": {
+                          "type": "string",
+                          "description": "The unique identifier of the provider's recipient",
+                          "example": "AAAAA01"
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Onboarding creation date",
+                      "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Onboarding last update date",
+                      "example": "2024-01-15T12:00:00Z"
+                    }
+                  }
+                },
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "id": "104911d-5df9-429e-8488-ad41abea1a4b",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "recipient_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "type": "ONE_STEP_ONBOARDING",
+                      "workflow": "DIRECT",
+                      "status": "TERMINATED",
+                      "callback_url": "https://merchant.example.com/webhook/onboarding",
+                      "provider": {
+                        "id": "ADYEN",
+                        "connection_id": "104911d-5df9-429e-8488-ad41abea1a4b",
+                        "recipient_id": "AAAAA01"
+                      },
+                      "created_at": "2024-01-15T10:30:00Z",
+                      "updated_at": "2024-01-15T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid reason or the onboarding is not in a status that can be terminated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Invalid reason": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "reason must be one of: fraud, terms_of_service, other"
+                      ]
+                    }
+                  },
+                  "Invalid state": {
+                    "value": {
+                      "code": "INVALID_STATE",
+                      "messages": [
+                        "Onboarding cannot be terminated from its current status"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Forbidden": {
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - The recipient or onboarding does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Not Found": {
+                    "value": {
+                      "code": "NOT_FOUND",
+                      "messages": [
+                        "Onboarding not found"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - The provider requires action before the account can be terminated, or another lifecycle operation is in progress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Provider precondition failed - remaining balance": {
+                    "value": {
+                      "code": "PROVIDER_PRECONDITION_FAILED",
+                      "messages": [
+                        "NON_ZERO_BALANCE"
+                      ]
+                    }
+                  },
+                  "Provider precondition failed - open balance accounts": {
+                    "value": {
+                      "code": "PROVIDER_PRECONDITION_FAILED",
+                      "messages": [
+                        "OPEN_BALANCE_ACCOUNTS"
+                      ]
+                    }
+                  },
+                  "Lifecycle operation in progress": {
+                    "value": {
+                      "code": "LIFECYCLE_OPERATION_IN_PROGRESS",
+                      "messages": [
+                        "Another lifecycle operation is in progress for this onboarding"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "key": "charset",
+        "value": "utf-8"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}
