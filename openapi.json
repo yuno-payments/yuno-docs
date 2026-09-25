@@ -17298,7 +17298,7 @@
                       },
                       "vault_only": {
                         "type": "boolean",
-                        "description": "When `true`, Yuno stores the bank details from `payment_method.detail.bank_transfer` and enrolls the payment method immediately as `ENROLLED`, without any provider interaction at enrollment or unenrollment. Only available for bank transfer enrollments."
+                        "description": "When `true`, Yuno stores the bank details from `payment_method.detail.bank_transfer` and enrolls the payment method immediately as `ENROLLED`, without any provider interaction at enrollment or unenrollment. Only available for bank transfer enrollments. With `vault_only`, a `provider_data.connection_id` you send is stored but does not fix the connection of later charges (routing decides which connection a charge uses), and `provider_data.id` stays required."
                       },
                       "detail": {
                         "type": "object",
@@ -17411,18 +17411,15 @@
                   },
                   "provider_data": {
                     "type": "object",
-                    "description": "Provider data used for token migration or provider-token enrollment. Send this object when `token_source` is `PROVIDER_API`, `MIGRATION_FILE`, or `PROVIDER_TOKEN`. Usage must be agreed with your commercial advisor in Yuno.",
-                    "required": [
-                      "id"
-                    ],
+                    "description": "Provider data with three uses, all of which must be agreed with your commercial advisor in Yuno: (1) token migration; (2) provider-token enrollment; and (3) enrolling a new non-CARD payment method (for example `ACH_ENROLLMENT` or `SEPA_ENROLLMENT`) on a chosen connection of your account. For uses (1) and (2), send this object with `token_source` set to `PROVIDER_API`, `MIGRATION_FILE`, or `PROVIDER_TOKEN`. For use (3), send `provider_data.connection_id` with no `provider_data.payment_method_token`, no `token_source`, and without `payment_method.vault_only`; `provider_data.id` is then optional because the provider is taken from the connection, and if sent it must match the connection's provider (case-insensitive), otherwise the request fails with 400 `INVALID_CONNECTION_ID`. The connection must be part of your account's published route for that payment method and country, otherwise the request fails with 400 `INVALID_CONNECTION_ID`. Once Yuno has enabled it for your organization, the payment step of later charges of that payment method, including retries after a decline, uses that connection and its provider; until then, charges follow the route. Sending `provider_data.connection_id` with `type` `CARD` and neither `provider_data.payment_method_token` nor `token_source` is rejected with 400 `INVALID_PARAMETERS`.",
                     "properties": {
                       "id": {
                         "type": "string",
-                        "description": "The unique identifier of the payment provider."
+                        "description": "The unique identifier of the payment provider. Required, except when enrolling a new non-CARD payment method on a connection (`connection_id` with no `payment_method_token`, no `token_source`, and without `payment_method.vault_only`), where it is optional and, if sent, must match the connection's provider (case-insensitive)."
                       },
                       "token_source": {
                         "type": "string",
-                        "description": "Origin of the provided token. Note: `PROVIDER_TOKEN` is only supported when the top-level `type` is `CARD`. Using it with `ACH_ENROLLMENT` returns an error.",
+                        "description": "Origin of the provided token. Omit `token_source` entirely when enrolling a new non-CARD payment method on a connection (send `provider_data.connection_id`, optionally with a matching `provider_data.id`).",
                         "enum": [
                           "PROVIDER_API",
                           "MIGRATION_FILE",
@@ -17436,7 +17433,7 @@
                       "connection_id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Identifier of the provider connection. Required when `token_source` is `PROVIDER_API` or `PROVIDER_TOKEN`."
+                        "description": "Identifier of the provider connection. Required when `token_source` is `PROVIDER_API` or `PROVIDER_TOKEN`. Sent with no `payment_method_token`, no `token_source`, and without `payment_method.vault_only`, it enrolls a new non-CARD payment method on that connection of your account; see `provider_data` for the rules and errors."
                       }
                     }
                   },
@@ -17580,6 +17577,38 @@
                           }
                         }
                       }
+                    }
+                  }
+                },
+                "Enroll a bank transfer on a chosen connection": {
+                  "summary": "Enroll a new non-CARD payment method on a chosen connection",
+                  "value": {
+                    "account_id": "dbf0c133-86bc-4be0-94a5-ca2ff6778451",
+                    "country": "US",
+                    "type": "ACH_ENROLLMENT",
+                    "workflow": "DIRECT",
+                    "customer_payer": {
+                      "code": "<customer_code>",
+                      "email": "john@example.com",
+                      "ip_address": "203.0.113.5",
+                      "browser_info": {
+                        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+                      }
+                    },
+                    "payment_method": {
+                      "vault_on_success": true,
+                      "detail": {
+                        "bank_transfer": {
+                          "bank_account": "000123456789",
+                          "routing_number": "110000000",
+                          "beneficiary_name": "John Doe",
+                          "account_type": "CHECKINGS",
+                          "bank_account_mask_number": "****6789"
+                        }
+                      }
+                    },
+                    "provider_data": {
+                      "connection_id": "5c7a8f1e-2d4b-4e6a-9b3c-1f2e3d4c5b6a"
                     }
                   }
                 },
