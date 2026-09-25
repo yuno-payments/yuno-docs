@@ -34,7 +34,7 @@ Read these before writing code. Each one is a mistake models make repeatedly.
 3. **Webhook signature header is `x-hmac-signature`**: base64 HMAC-SHA256 over the raw request body. Never `x-yuno-signature`, `x-signature`, `yuno-signature` or `x-hub-signature-256`.
 4. **Amounts are decimal major units**: `{"currency": "USD", "value": 25}` is 25.00 USD. `2500` would charge 2,500 USD. `49.90 BRL` is `"value": 49.9`.
 5. **Sandbox host is `https://api-sandbox.y.uno`**. Default to it in test code and in any client where the environment is unset. Production is `https://api.y.uno` (EMEA: `https://api.eu.y.uno`).
-6. **Recurring card charges use `stored_credentials`**, nested at `payment_method.detail.card.stored_credentials`. `reason` is one of `CARD_ON_FILE`, `SUBSCRIPTION`, `UNSCHEDULED_CARD_ON_FILE`. There is no `RECURRING` reason.
+6. **Recurring card charges use `stored_credentials`**, nested at `payment_method.detail.card.stored_credentials`. For a wallet CIT (Apple Pay, Google Pay) the object sits under `payment_method.detail.wallet.stored_credentials` instead, and the MIT on the resulting `vaulted_token` goes back to `detail.card`. `reason` is one of `CARD_ON_FILE`, `SUBSCRIPTION`, `UNSCHEDULED_CARD_ON_FILE`. There is no `RECURRING` reason.
 7. **Prefer webhooks to polling** for payment status. Poll `GET /v1/payments/{id}` only as a fallback or for reconciliation.
 
 ## Quick reference
