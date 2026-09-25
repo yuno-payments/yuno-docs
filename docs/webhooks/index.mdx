@@ -23,16 +23,17 @@ Because Yuno retries delivery when it doesn't receive a confirmation, your endpo
 
 ### The identifier
 
-Every event payload includes `data.idempotency_key`. It stays stable across every retry of the same event, so you can use it to tell a duplicate delivery apart from a genuinely new event.
+For ordinary v2 payment events, the key is `data.payment.idempotency_key`; for subscription events, it is `data.idempotency_key`. It stays stable across every retry of the same event, so you can use it to tell a duplicate delivery apart from a genuinely new event.
+
+For `payment.split_update`, use `data.split_update.idempotency_key` instead: it identifies the split update operation. The payment's existing `data.payment.idempotency_key` can be shared by several different split updates. Scope your de-duplication record by account, event type, and operation key. In legacy v1 payloads, use the top-level `split_update.idempotency_key`.
 
 ### Coverage
 
-`data.idempotency_key` is currently included in:
+The key location depends on the event:
 
-- `payment` events
-- `refund` events
-- `chargeback` events
-- `subscription` events
+- Ordinary payment events, including refund and chargeback: `data.payment.idempotency_key`
+- Split update events: `data.split_update.idempotency_key`
+- Subscription events: `data.idempotency_key`
 
 <Warning>
 For `subscription.*` events the key identifies the **subscription**, not the event: it is the `X-Idempotency-Key` sent when the subscription was created, and it is repeated identically on every lifecycle event for that subscription. De-duplicate `subscription.*` events on `type_event` **plus** `data.idempotency_key` — matching on the key alone collapses every event for a subscription into one and silently drops `subscription.active`, `subscription.cancel` and the rest.
@@ -44,17 +45,25 @@ Support for `enrollment` events is planned but not yet available. Until then, en
 
 ### Why you might see the same event twice
 
-Each payload also includes a top-level `retry` field with the number of delivery attempts made for that event (`0` on the first attempt). If your endpoint doesn't return an HTTP 200 OK in time, Yuno resends the same event (same `data.idempotency_key`, incremented `retry`) following the schedule described in [Webhooks delivery and response requirements](#webhooks-delivery-and-response-requirements) above. Treat any event whose `type_event` and idempotency key you've already processed as a duplicate, regardless of its `retry` value.
+Each v2 payload also includes a top-level `retry` field with the number of delivery attempts made for that event (`0` on the first attempt). If your endpoint doesn't return an HTTP 200 OK in time, Yuno resends the same event (same event-specific idempotency key, incremented `retry`) following the schedule described in [Webhooks delivery and response requirements](#webhooks-delivery-and-response-requirements) above. Treat any event whose `type_event` and idempotency key you've already processed as a duplicate, regardless of its `retry` value.
 
 ### Recommended handling
 
-Store every `data.idempotency_key` you've successfully processed together with the event's `type_event`, and check incoming events against that store before acting on them:
+For v2 payloads, store the event-specific key you've successfully processed together with the account and event's `type_event`, and check incoming events against that store before acting on them:
 
 ```js
 async function handleWebhookEvent(event) {
   // Scope the key by event type: a subscription's key is the same on every
   // one of its lifecycle events.
-  const key = `${event.type_event}:${event.data.idempotency_key}`;
+  const operationKey = event.type_event === "payment.split_update"
+    ? event.data.split_update.idempotency_key
+    : event.type_event.startsWith("payment.")
+      ? event.data.payment?.idempotency_key
+      : event.data.idempotency_key;
+  if (!operationKey) {
+    throw new Error("Missing event key: use an event-specific fallback");
+  }
+  const key = `${event.account_id}:${event.type_event}:${operationKey}`;
 
   if (await store.has(key)) {
     // Already processed, acknowledge and skip.
@@ -66,7 +75,7 @@ async function handleWebhookEvent(event) {
 }
 ```
 
-Keep in mind that not every event type carries `data.idempotency_key` yet (see Coverage above). For event types without it, fall back to your own de-duplication key, such as the combination of resource ID and event type.
+Keep in mind that not every event type carries an idempotency key yet (see Coverage above). For event types without it, fall back to your own de-duplication key, such as the combination of resource ID and event type.
 
 ## Common Webhook Events
 
@@ -77,7 +86,24 @@ Yuno sends event notifications for various activities within the payment ecosyst
 | Event                | Description                                                                 |
 | -------------------- | --------------------------------------------------------------------------- |
 | `payment.purchase`   | Occurs when a payment is created or its status changes during a purchase flow. |
+| `payment.split_update` | Occurs after a split update is applied, including a manual resolution that applies the requested split or clears it. Explicit subscription required; see [Split update notifications](#split-update-notifications). |
 | `payment.chargeback` | Occurs when a chargeback or inquiry is received for a payment.              |
+
+### Split update notifications
+
+<Note>
+`payment.split_update` requires the split-update trigger to be available in your account's webhook catalog. Production subscription availability is pending; this event is not enabled by a purchase or refund subscription.
+</Note>
+
+Subscribe explicitly to `SPLIT_UPDATE` in `payment_triggers` when the catalog makes it available. Existing `PURCHASE` and `REFUND` subscriptions and their payloads do not change.
+
+A notification is initiated after the split update is recorded as applied. It is also initiated after a manual resolution commits `APPLY_REQUESTED` (apply the requested split) or `SET_EMPTY` (clear the split). `KEEP_PREVIOUS`, failed or unresolved updates, same-key request replays, and repeated resolutions do not initiate another notification.
+
+The payload includes `split_update.idempotency_key`, the original split update request key, and `split_update.updated_at`, the recorded completion timestamp of that operation. This timestamp is not the webhook send time or the payment's general update time. See the [v1 and v2 examples](/docs/webhooks/object-and-examples#split-update-webhooks).
+
+The event's `payment.transactions.split_marketplace` is the split recorded for that operation. It remains that operation's split even if a later update completes before delivery. Other payment fields are read when the notification is prepared, so the body is **not a complete historical payment snapshot**. For the latest state, retrieve the payment with `GET /v1/payments/{payment_id}`. Do not overwrite a newer split with an older event; use the operation timestamp when reconciling, and retrieve the payment when the order is ambiguous.
+
+Delivery is not exactly once and events may arrive out of order. The split update can succeed even if notification dispatch fails. Once a notification is accepted for webhook delivery, normal webhook retries can produce duplicate deliveries. De-duplicate by the split operation key, acknowledge receipt, and retrieve the payment when you need its current state.
 
 ### Refund events
 
