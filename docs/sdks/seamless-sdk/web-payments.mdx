@@ -119,22 +119,14 @@ await yuno.startSeamlessCheckout({
     hideCardholderName: false, // Optional: Set to true to hide cardholder name field
   },
   texts: {},
-  async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
-    await createPayment({ 
-      oneTimeToken, 
-      checkoutSession,
-      vault_on_success: true 
-    });
-    await yuno.continuePayment({ showPaymentStatus: true });
-  },
   onPaymentMethodSelected(data) {
     console.log("Payment method selected:", data);
   },
-  yunoPaymentResult(data) {
-    console.log("Payment result:", data);
+  async paymentResult(status, subStatus) {
+    console.log("Payment result:", status, subStatus);
     await yuno.hideLoader();
   },
-  yunoError(error, data) {
+  async error(error, data) {
     console.error("An error occurred:", error);
     await yuno.hideLoader();
   },
@@ -142,6 +134,8 @@ await yuno.startSeamlessCheckout({
 ```
 
 When using `startSeamlessCheckout`, specify the callbacks to handle payments. You can also customize the checkout interface using the `texts` objects.
+
+The Seamless SDK creates the payment itself from the checkout session, so there is no `createPayment` callback and no Create Payment call from your server. You get the outcome in `paymentResult`, and your server gets it from the `payment.purchase` webhook. The SDK also runs [payment retry](#payment-retry) for declined cards on its own, so you do not call `continuePayment`.
 
 ### Parameters
 
@@ -163,10 +157,9 @@ Configure the seamless checkout with the following options:
 |                             | ▪️ `type: element` - If you select `element`, you must inform the `elementSelector` to specify where the form should be rendered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `card`                      | Defines the configuration for the card form. It contains settings like custom styles, save card option, and optional `hideCardholderName` to hide the cardholder name field. When `hideCardholderName` is set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, or CVV collection. It also has no effect on BIN logic or 3DS/provider validations. |
 | `texts`                     | Allows you to set custom button texts for card and non-card payment forms.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `yunoCreatePayment`         | Placeholder function for creating a payment. This function will not be called but should be implemented. When creating the payment, you can include `vault_on_success: true` to enroll the payment method after a successful payment. See [Enrolling payment methods](#enrolling-payment-methods-in-seamless-flow) for more details.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `onPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `yunoPaymentResult`         | Callback called after the payment is completed. It receives the [payment status](/reference/payments/status-and-response-codes/payment) (for example, `SUCCEEDED`, `DECLINED`, `PENDING`, `ERROR`) and an optional `subStatus` qualifying it. See [Shopper-cancelled steps](/docs/sdks/resources/references/web#shopper-cancelled-steps).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `yunoError`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `paymentResult`         | Callback called after the payment is completed. It receives the [payment status](/reference/payments/status-and-response-codes/payment) (for example, `SUCCEEDED`, `DECLINED`, `PENDING`, `ERROR`) and an optional `subStatus` qualifying it. See [Shopper-cancelled steps](/docs/sdks/resources/references/web#shopper-cancelled-steps).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `error`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `onChange`                        | Reports whether the payment form is complete. Receives `{ form: { isValid } }`. Use with `showPayButton: false` to control your own pay button. Available since v1.10.11. |
 
 <Note>
@@ -288,13 +281,13 @@ await yuno.startCheckout({
   // IMPORTANT: create the payment in your backend RIGHT AWAY and call
   // continuePayment() — the Revolut widget stays open waiting for the order
   // to be completed with the created payment.
-  async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
+  async createPayment(oneTimeToken, tokenWithInformation) {
     await createPaymentInYourBackend({ oneTimeToken, checkoutSession });
     yuno.continuePayment();
   },
 
-  yunoPaymentResult(data) { /* final payment status */ },
-  yunoError: (error) => { /* flow errors (including widget cancellation) */ },
+  paymentResult(data) { /* final payment status */ },
+  error: (error) => { /* flow errors (including widget cancellation) */ },
 
   // Receives { isLoading, type } — Revolut Pay emits type: 'OTT' while the
   // token is generated and type: 'CREATE_PAYMENT' in the SDK-driven flow.
