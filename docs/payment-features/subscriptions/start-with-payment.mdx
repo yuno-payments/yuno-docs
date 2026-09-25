@@ -45,7 +45,7 @@ Retrying with the **same** key returns the original payment and does not create 
 <Note>
 **Available payment methods**
 
-As with every Yuno subscription, cards are the main payment method. See [Subscriptions](/docs/payment-features/subscriptions/index). To sign up a Pix Automático customer from a plan with the first payment, see [Start from a plan](#start-from-a-plan).
+See [Subscriptions](/docs/payment-features/subscriptions/index) for the payment methods subscriptions support. To sign up a Pix Automático customer from a plan with the first payment, see [Start from a plan](#start-from-a-plan).
 </Note>
 
 ## The `subscription` block
@@ -208,7 +208,7 @@ Two ways to follow the link:
 
 Send `subscription.plan_id` with the `id` of a [plan](/docs/payment-features/subscriptions/plans), and the subscription takes its price, cadence and trial from the plan. You don't send `amount` or a cadence. This route is built for [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#signing-up-from-a-plan-with-the-first-payment): the payment is the mandate setup, and the plan decides what the customer approves.
 
-Unlike inline terms, the subscription is created **before** the charge, once the plan checks pass. The first response already carries `subscription_code`, even while the payment is still pending. So "no subscription unless the charge completes" does not apply here; see [If the first payment fails](#if-the-first-payment-fails).
+With `plan_id`, the subscription is created **before** the charge, once the plan checks pass. The first response already carries `subscription_code`, even while the payment is still pending. So "no subscription unless the charge completes" does not apply here; see [If the first payment fails](#if-the-first-payment-fails).
 
 ```json Create Payment from a plan
 {
@@ -247,7 +247,7 @@ The payment's `amount` must equal the plan's price for the payment's `country`, 
 | `availability`         | No       | Same as with inline terms. |
 | `billing_cycles.total` | No       | Total number of cycles to bill. Must be `1` or greater; a lower value is rejected up front with `400 INVALID_REQUEST`. |
 | `metadata`             | No       | Metadata stored on the subscription. Same format as on [Create Subscription](/reference/subscriptions/create-subscription). |
-| `retries`              | No       | Retry settings. Same object as on [Create Subscription](/reference/subscriptions/create-subscription). When omitted, the subscription takes the plan's retry configuration; on a Pix Automático subscription that Yuno executes, the [Pix retry ladder](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder) applies (`retry_on_decline: true`). Sending `retries` for a plan that defines its own retry configuration is rejected with `400 INVALID_PARAMETERS`. On Pix Automático only `retry_on_decline` is accepted. |
+| `retries`              | No       | Retry settings. Same object as on [Create Subscription](/reference/subscriptions/create-subscription). When omitted, the subscription takes the plan's retry configuration; on a Pix Automático subscription that Yuno executes, for organizations with Pix Automático scheduling enabled, the [Pix retry ladder](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder) applies (`retry_on_decline: true`). Sending `retries` for a plan that defines its own retry configuration is rejected with `400 INVALID_PARAMETERS`. On Pix Automático only `retry_on_decline` is accepted. |
 
 </div>
 
@@ -265,7 +265,7 @@ The payment's `amount` must equal the plan's price for the payment's `country`, 
 The response carries three fields for this route:
 
 * `subscription_code`: the `id` of the new subscription.
-* `plan_id`: the plan the payment was created from.
+* `plan_id`: the subscription's plan when this payment was created.
 * `plan_assigned_at`: when the plan was assigned to the subscription.
 
 The same three fields are on [Retrieve Payment](/reference/payments/retrieve-payment-by-id) and on payment webhooks. The renewal payments Yuno generates for the subscription carry `plan_id` and `plan_assigned_at` too. On a payment made without a plan, `plan_id` and `plan_assigned_at` are absent, not `null`.
@@ -275,7 +275,7 @@ On a free-trial plan the payment shows the regular price in `amount.value`, whil
 ### If the first payment fails
 
 * **Free-trial plan:** see [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#while-a-free-trial-setup-awaits-approval). A refused setup cancels the subscription automatically.
-* **Plan without a trial:** a refused or expired first payment leaves the subscription `CREATED`. It is never billed, but it is not canceled either. Cancel it with [Cancel Subscription](/reference/subscriptions/cancel-subscription).
+* **Plan without a trial:** a refused first payment leaves the subscription `CREATED`. It is never billed, but it is not canceled either: cancel it with [Cancel Subscription](/reference/subscriptions/cancel-subscription). An expired first payment is different: the customer's bank can still deliver an approval after the QR code expires, which completes the payment and activates the subscription. Cancel it only if you don't want that.
 
 ### Errors from a plan
 
