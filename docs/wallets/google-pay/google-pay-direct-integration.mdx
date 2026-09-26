@@ -146,6 +146,47 @@ The Google Pay SDK returns the following object structure, which must be passed 
 }
 ```
 
+## Recurring payments (CIT and MIT)
+
+For recurring charges, vault the instrument on the first payment and charge the resulting `vaulted_token` afterwards. On the CIT, `payment_token` and `stored_credentials` sit together under `detail.wallet`. On the MIT, the instrument is a stored card, so `stored_credentials` moves to `detail.card`. The full `reason` and `usage` matrix is on [Stored credentials](/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
+
+CIT, first payment with the Google Pay sheet shown:
+
+```json
+"payment_method": {
+  "type": "GOOGLE_PAY",
+  "vault_on_success": true,
+  "detail": {
+    "wallet": {
+      "payment_token": "{\"protocolVersion\":\"ECv2\", ...}",
+      "stored_credentials": {
+        "reason": "SUBSCRIPTION",
+        "usage": "FIRST"
+      }
+    }
+  }
+}
+```
+
+MIT, later charge on the vaulted instrument, no Google Pay token:
+
+```json
+"payment_method": {
+  "type": "CARD",
+  "vaulted_token": "vaulted-token-from-the-cit-response",
+  "detail": {
+    "card": {
+      "stored_credentials": {
+        "reason": "SUBSCRIPTION",
+        "usage": "USED"
+      }
+    }
+  }
+}
+```
+
+`vault_on_success` requires `customer_payer.id`, and the `vaulted_token` is returned only in the CIT payment response, so store it on your side. Do not place `stored_credentials` under `detail.card` on the CIT: it is not validated for a wallet payment and may be dropped, which leaves the saved record without stored-credential flags and without a `network_transaction_id`.
+
 ## Card last four digits for device tokens
 
 When Google Pay returns a `CRYPTOGRAM_3DS` credential, the encrypted token decrypts to the **DPAN** — a device-specific number, not the card stored by the cardholder. Its last four digits are not the ones the cardholder recognizes, so `card_data.lfd` in the payment response is empty or shows the DPAN's last four.

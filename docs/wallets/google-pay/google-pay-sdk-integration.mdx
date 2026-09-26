@@ -126,6 +126,99 @@ If you need to call the payment API directly while using the SDK checkout flow, 
   When integrating wallets like Google Pay, the `payment_method.type` field is required even when using the SDK workflow. Set it to `GOOGLE_PAY`.
 </Warning>
 
+## Recurring payments (CIT and MIT)
+
+Google Pay recurring payments follow the same two steps as cards: a customer initiated transaction (CIT) that vaults the instrument, then merchant initiated transactions (MIT) on the resulting `vaulted_token`. The full `reason` and `usage` matrix is on [Stored credentials](/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
+
+### Customer Initiated Transaction (CIT)
+
+On the CIT, send `vault_on_success: true` and place `stored_credentials` under `detail.wallet`, because the payment method is still the wallet at this point:
+
+```json
+{
+  "account_id": "your-account-id",
+  "description": "Google Pay recurring setup",
+  "merchant_order_id": "order-123",
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": 5000
+  },
+  "checkout": {
+    "session": "checkout-session-id"
+  },
+  "customer_payer": {
+    "id": "customer-uuid",
+    "email": "customer@example.com"
+  },
+  "payment_method": {
+    "type": "GOOGLE_PAY",
+    "token": "one-time-token-from-the-sdk",
+    "vault_on_success": true,
+    "detail": {
+      "wallet": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "FIRST"
+        }
+      }
+    }
+  },
+  "workflow": "SDK_CHECKOUT"
+}
+```
+
+The key parameters for a CIT are:
+
+- **`vault_on_success: true`**: Vaults the decrypted card as a `CARD` record with `parent_payment_method_type: GOOGLE_PAY` and returns its `vaulted_token` in the payment response. It requires `customer_payer.id`.
+- **`detail.wallet.stored_credentials.usage: "FIRST"`**: Marks the first transaction of the recurring series. Yuno stores the `network_transaction_id` returned by the provider on the saved record.
+
+<Warning>
+  Do not place `stored_credentials` under `detail.card` on the CIT. It is not validated for a wallet payment and may be dropped, which leaves the saved record without stored-credential flags and without a `network_transaction_id`.
+</Warning>
+
+<Note>
+  The `vaulted_token` is returned only in the CIT payment response. Wallet-vaulted instruments are intentionally not included in [Retrieve Enrolled Payment Methods](/reference/retrieve-enrolled-payment-methods-api), so store the token on your side when the CIT succeeds.
+</Note>
+
+### Merchant Initiated Transaction (MIT)
+
+Subsequent charges use the `vaulted_token` as a stored card. No Google Pay token and no checkout session are needed:
+
+```json
+{
+  "account_id": "your-account-id",
+  "description": "Google Pay recurring payment",
+  "merchant_order_id": "order-124",
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": 5000
+  },
+  "customer_payer": {
+    "id": "customer-uuid"
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "vaulted-token-from-the-cit-response",
+    "detail": {
+      "card": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED"
+        }
+      }
+    }
+  },
+  "workflow": "DIRECT"
+}
+```
+
+The key parameters for an MIT are:
+
+- **`vaulted_token`**: The token returned in the CIT response.
+- **`detail.card.stored_credentials.usage: "USED"`**: Marks a subsequent transaction in the series. Yuno attaches the `network_transaction_id` from the CIT automatically.
+
 ## Enable and test Google Pay
 
 To test Google Pay in sandbox:

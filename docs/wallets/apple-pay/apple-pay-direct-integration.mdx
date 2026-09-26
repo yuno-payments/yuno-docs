@@ -31,18 +31,19 @@ The [create payment](/reference/create-payment) request for Apple Pay uses the f
 | `merchant_order_id` | Required | Required | Required |
 | `amount.currency`, `amount.value` | Required | Required | Required |
 | `workflow` | Required: `"DIRECT"` | Required: `"DIRECT"` | Required: `"DIRECT"` |
-| `payment_method.type` | Required: `"APPLE_PAY"` | Required: `"APPLE_PAY"` | Required: `"APPLE_PAY"` |
+| `payment_method.type` | Required: `"APPLE_PAY"` | Required: `"APPLE_PAY"` | Required: `"CARD"` (`"APPLE_PAY"` also accepted) |
 | `payment_method.detail.wallet.payment_token` | Required | Required | Not sent |
 | `payment_method.vaulted_token` | Not sent | Not sent | Required |
-| `payment_method.vault_on_success` | Optional | Required: `true` | Optional |
+| `payment_method.vault_on_success` | Optional | Required: `true` | Not sent |
 | `payment_method.detail.wallet.stored_credentials` | Not sent | Required: `usage: "FIRST"` | Not sent |
 | `payment_method.detail.card.stored_credentials` | Not sent | Not sent | Required: `usage: "USED"` |
-| `customer_payer` | Optional | Optional | Optional |
+| `customer_payer` | Optional | Required: `customer_payer.id` | Optional |
 | `soft_descriptor` (inside `detail.wallet`, or `detail.card` for MIT) | Optional | Optional | Optional |
 
 <Note>
   * `payment_token` is the complete Apple Pay SDK response sent as a JSON string (stringified).
   * If you do not send `workflow: "DIRECT"`, the API requires a `checkout.session` instead.
+  * `vault_on_success` needs `customer_payer.id`. Without it nothing is vaulted, the response carries no `vaulted_token`, and no error is returned.
   * Send the `X-Idempotency-Key` header on every create payment call to avoid duplicate charges.
   * The required fields for Apple Pay are the same for every provider. No provider requires additional customer data fields for Apple Pay.
 </Note>
@@ -218,9 +219,8 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
     },
     "workflow": "DIRECT",
     "payment_method": {
-        "vault_on_success": true,
         "vaulted_token": "98c16e23-ebdd-4d0f-85bd-e0ba7d2fedf6",
-        "type": "APPLE_PAY",
+        "type": "CARD",
         "detail": {
             "card": {
                 "soft_descriptor": "TEST",
