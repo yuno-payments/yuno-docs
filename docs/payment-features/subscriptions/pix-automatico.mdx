@@ -4,7 +4,9 @@ description: "Bill a Brazilian Pix Automático mandate as a subscription: the ca
 ---
 
 Yuno bills a Brazilian Pix Automático mandate as an ordinary subscription: you enroll the mandate
-first, then create the subscription against the resulting `vaulted_token`. Three things behave
+first, then create the subscription against the resulting `vaulted_token` — or, with a plan, set up
+the mandate and the subscription in the first payment
+([Signing up from a plan](#signing-up-from-a-plan-with-the-first-payment)). Three things behave
 differently from a card subscription, and all three are set by the Pix rail rather than by your
 request — the billing cadences the mandate can express, the date the debit instruction is handed to
 the rail, and the retry ladder that runs when a debit is refused.
@@ -39,12 +41,62 @@ mandate, exactly as you would for a card:
 method — and to the same cadence rules — as `PIX_AUTOMATIC`.
 
 Everything on this page describes subscriptions **Yuno executes**: `frequency.execution` is `YUNO`,
-so Yuno generates each debit instruction on schedule. On the one-call route, `frequency.execution`
-is sent explicitly and has no default — see
+so Yuno generates each debit instruction on schedule. On the one-call route with inline terms,
+`frequency.execution` is sent explicitly and has no default; with a `plan_id` it defaults to `YUNO` — see
 [Start a subscription with the first payment](/docs/payment-features/subscriptions/start-with-payment#execution-decides-who-bills).
 Where `frequency.execution` is `MERCHANT` you generate each charge yourself, the scheduling and
 retry behavior below does not apply, and the subscription cannot
 [schedule a cancellation](/reference/subscriptions/cancel-subscription#scheduling-a-cancellation-instead).
+
+## Signing up from a plan with the first payment
+
+The call above needs a mandate that is already enrolled. To set up the mandate and create the
+subscription in one call, send [Create Payment](/reference/payments/create-payment) with
+`payment_method.type` `PIX_AUTOMATIC` and `subscription.plan_id`. The request is described in
+[Start from a plan](/docs/payment-features/subscriptions/start-with-payment#start-from-a-plan). The
+customer approves the Pix Automático request in their bank app, and that approval authorizes the
+mandate.
+
+What the first payment does depends on the plan:
+
+* **Plan without a trial:** the payment is the first charge, at the plan's price. When the customer
+  approves, the payment succeeds and counts as billing cycle 1. The next debit is one cadence later.
+  The subscription stays `CREATED` until the provider confirms the mandate, then becomes active.
+  If the first payment is refused, the subscription stays `CREATED` and is never billed; cancel it
+  with [Cancel Subscription](/reference/subscriptions/cancel-subscription). If it expires, a late
+  approval from the bank can still complete it and activate the subscription; cancel it only if you
+  don't want that.
+* **Plan with a free trial:** send the regular price as the payment `amount`. The mandate setup is
+  sent to the provider at `0.00`, and the subscription's amount stays the regular price. The
+  subscription starts `TRIALING` at billing cycle 0 and bills nothing until the customer approves
+  the mandate. The trial starts when the customer approves (or at `availability.start_at`, if that is
+  later), and the first paid debit comes after the trial.
+
+The plan must fit what one Pix Automático mandate can express: either no trial, or a **free** trial
+on the same cadence as the regular phase. Anything else is rejected before the provider is called:
+
+```json Priced trial, or a trial on another cadence
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "Pix plans support only free trials with the regular billing cadence."
+  ]
+}
+```
+
+### While a free-trial setup awaits approval
+
+These rules apply to free-trial plans only, where nothing is collected until the customer approves.
+
+* **The provider refuses the setup:** Yuno cancels the subscription. It is never billed.
+* **The customer never approves:** Yuno cancels the subscription 31 days after the payment was
+  created. If an approval still arrives after that, Yuno asks the provider to revoke the mandate
+  and logs an alert.
+* **The payment shows `EXPIRED`:** this alone does not cancel the subscription. The bank can still
+  deliver an approval after the QR code expires, so Yuno keeps waiting until the 31-day limit.
+* Pause, resume, reactivate and [Change Subscription Plan](/reference/subscriptions/change-subscription-plan)
+  are rejected with `400 INVALID_STATE` until the mandate is approved. If the setup is canceled
+  without an approval, they stay rejected.
 
 ## Accepted billing cadences
 

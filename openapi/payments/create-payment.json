@@ -2927,19 +2927,19 @@
                   },
                   "subscription": {
                     "type": "object",
-                    "description": "Specifies the subscription object.",
+                    "description": "Specifies the subscription object. Send exactly one of three shapes: inline terms (`frequency`, `availability` and `amount`) to create a subscription, `plan_id` to create one from a plan, or `id` to charge an existing subscription. See [Start a subscription with the first payment](/docs/payment-features/subscriptions/start-with-payment).",
                     "properties": {
+                      "plan_id": {
+                        "type": "string",
+                        "description": "Identifier (UUID v4) of an active plan in your account. The subscription takes its price, cadence and trial from the plan, and the payment `amount` must equal the plan's price for the payment `country`. Cannot be sent with `id`, `amount`, `frequency.type`, `frequency.value`, `billing_date`, `trial`, `trial_period` or `phases` (`400 INVALID_REQUEST`). See [Start from a plan](/docs/payment-features/subscriptions/start-with-payment#start-from-a-plan)."
+                      },
                       "frequency": {
                         "type": "object",
-                        "description": "Specifies the frequency object (used when creating a payment along with the subscription).",
-                        "required": [
-                          "type",
-                          "execution"
-                        ],
+                        "description": "Specifies the frequency object. Required to create a subscription with inline terms. With `plan_id`, send only `execution` (defaults to `YUNO`); the plan owns `type` and `value`.",
                         "properties": {
                           "type": {
                             "type": "string",
-                            "description": "Frequency of the subscription payment. Pix Automático accepts one period of `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `YEAR`, always with `value` 1.",
+                            "description": "Frequency of the subscription payment. Required with inline terms; cannot be sent with `plan_id`. Pix Automático accepts one period of `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `YEAR`, always with `value` 1.",
                             "enum": [
                               "WEEK",
                               "MONTH",
@@ -2954,7 +2954,7 @@
                           },
                           "execution": {
                             "type": "string",
-                            "description": "Indicates if the payment is made by Yuno or the merchant.",
+                            "description": "Indicates if the payment is made by Yuno or the merchant. Required with inline terms; defaults to `YUNO` with `plan_id`.",
                             "enum": [
                               "YUNO",
                               "MERCHANT"
@@ -2964,7 +2964,7 @@
                       },
                       "availability": {
                         "type": "object",
-                        "description": "Specifies the availability object (used when creating a payment along with the subscription).",
+                        "description": "Specifies the availability object. Required to create a subscription with inline terms; optional with `plan_id`.",
                         "properties": {
                           "start_at": {
                             "type": "string",
@@ -2980,7 +2980,7 @@
                       },
                       "amount": {
                         "type": "object",
-                        "description": "Specifies the amount object (used when creating a payment along with the subscription).",
+                        "description": "Specifies the amount object. Required to create a subscription with inline terms. Cannot be sent with `plan_id`.",
                         "required": [
                           "value",
                           "currency",
@@ -3013,13 +3013,13 @@
                           "total": {
                             "type": "integer",
                             "minimum": 1,
-                            "description": "Total number of cycles to bill before the subscription completes. Validated after the charge — a value lower than 1 leaves the payment charged and the subscription not created."
+                            "description": "Total number of cycles to bill before the subscription completes. With inline terms it is validated after the charge — a value lower than 1 leaves the payment charged and the subscription not created. With `plan_id`, a value lower than 1 is rejected up front with `400 INVALID_REQUEST`."
                           }
                         }
                       },
                       "id": {
                         "type": "string",
-                        "description": "Identifier of an existing subscription to charge (omit when creating a new one)."
+                        "description": "Identifier of an existing subscription to charge. Omit it when creating a new one, and never send it with `plan_id`."
                       },
                       "billing_date": {
                         "type": "object",
@@ -3034,6 +3034,72 @@
                             "minimum": 1,
                             "maximum": 31,
                             "description": "Day of the month when the subscription payment is made"
+                          }
+                        }
+                      },
+                      "metadata": {
+                        "type": "array",
+                        "description": "Metadata stored on the subscription. Read only with `plan_id`; ignored with inline terms. Same format as on Create Subscription.",
+                        "items": {
+                          "properties": {
+                            "key": {
+                              "type": "string",
+                              "description": "The metadata key (MAX 48)."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "The metadata key value (MAX 512)."
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "retries": {
+                        "type": "object",
+                        "description": "Retry settings for the subscription. Read only with `plan_id`; ignored with inline terms. Same object as on Create Subscription. When omitted, the subscription takes the plan's retry configuration. Sending it for a plan that defines its own retry configuration returns `400 INVALID_PARAMETERS`. On Pix Automático only `retry_on_decline` is accepted.",
+                        "properties": {
+                          "retry_on_decline": {
+                            "type": "boolean",
+                            "description": "If we should retry a payment or not after a first decline. False by default."
+                          },
+                          "amount": {
+                            "type": "integer",
+                            "description": "The number of retries that the subscription plan will have to complete. 6 will be defined as default if this value is not set or higher than 6. (MAX 6).",
+                            "format": "int32"
+                          },
+                          "strategy": {
+                            "type": "string",
+                            "description": "The retry strategy. Allowed values: DEFAULT (the fixed retry schedule), SMART (machine-learning-based retry timing, applied from the second retry onward) or CUSTOM_SCHEDULE (uses the per-attempt schedule array you provide).",
+                            "enum": [
+                              "DEFAULT",
+                              "SMART",
+                              "CUSTOM_SCHEDULE"
+                            ]
+                          },
+                          "schedule": {
+                            "type": "array",
+                            "description": "Object that define the schedule strategy for each retry event, the amounts of objects should match the amount of retries defined. Up to 7 attempts; attempt numbers must run sequentially from 1, and each delay_seconds must be between 1 and 604800 (7 days). The schedule can be replaced later via Update Subscription.",
+                            "items": {
+                              "properties": {
+                                "attempt": {
+                                  "type": "number",
+                                  "description": "Number of the retry attempt"
+                                },
+                                "delay_seconds": {
+                                  "type": "number",
+                                  "description": "Specifies the amount of seconds between each retry."
+                                }
+                              },
+                              "type": "object"
+                            }
+                          },
+                          "stop_on_hard_decline": {
+                            "type": "boolean",
+                            "description": "When true, the retry schedule stops for the current billing cycle after a hard decline. On its own, the subscription remains ACTIVE and billing advances to the next cycle; no subscription is canceled or paused and no subscription webhook is emitted. If cancel_on_exhausted_retries is also true, the subscription is canceled instead."
+                          },
+                          "cancel_on_exhausted_retries": {
+                            "type": "boolean",
+                            "description": "When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of remaining ACTIVE and advancing to the next cycle. The subscription status becomes CANCELED, cancellation_source is set to RETRIES_EXHAUSTED, future billing stops, and a single SUBSCRIPTION.CANCEL webhook is emitted. Applies both when the retry schedule runs out and when stop_on_hard_decline ends the cycle early. Defaults to false, which preserves the existing behavior. Create-only: it cannot be changed later — Update Subscription rejects a different value with 400. The cancellation itself is final, so Retry Subscription is rejected afterwards."
                           }
                         }
                       }
@@ -4934,6 +5000,29 @@
                     "simplified_mode": false,
                     "subscription": {
                       "id": "1c9f0b2e-7d5a-4c3b-8e1f-9a0b1c2d3e4f"
+                    }
+                  }
+                },
+                "Pix Automático - Create Payment from a plan": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "merchant_order_id": "order-90220",
+                    "description": "Streaming BR — monthly",
+                    "country": "BR",
+                    "workflow": "DIRECT",
+                    "amount": {
+                      "currency": "BRL",
+                      "value": 49.9
+                    },
+                    "customer_payer": {
+                      "id": "a3b3a0f4-1f1e-4a19-9a2a-6f0f2d6bbd11"
+                    },
+                    "payment_method": {
+                      "type": "PIX_AUTOMATIC",
+                      "vault_on_success": true
+                    },
+                    "subscription": {
+                      "plan_id": "14898a9d-5a75-433d-ba17-f2ea5b33620c"
                     }
                   }
                 },
@@ -12519,6 +12608,15 @@
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -13529,6 +13627,15 @@
                           "format": "uuid",
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -14770,6 +14877,15 @@
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -15858,6 +15974,15 @@
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -16927,6 +17052,15 @@
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -17928,6 +18062,15 @@
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -18928,6 +19071,15 @@
                           "format": "uuid",
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -19962,6 +20114,15 @@
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -20959,6 +21120,15 @@
                           "format": "uuid",
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -21964,6 +22134,15 @@
                           "format": "uuid",
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -22982,6 +23161,15 @@
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -23548,6 +23736,15 @@
                           "format": "uuid",
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -24628,6 +24825,15 @@
                           "format": "uuid",
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -26194,6 +26400,15 @@
                           "format": "uuid",
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -28871,6 +29086,15 @@
                           "format": "uuid",
                           "nullable": true,
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
