@@ -1,0 +1,117 @@
+---
+title: "Testing your integration"
+description: "Test sandbox payments before going live. All test cards and scenarios live on the Testing Gateway page."
+---
+
+Test your Yuno integration in sandbox before processing real payments. This page explains how to set up your test environment and where to find test cards and scenarios.
+
+## Environments
+
+Yuno provides two environments. Use sandbox for development and testing; switch to production only when you're ready to process real payments.
+
+| Environment | Base URL | API keys |
+|-------------|----------|----------|
+| **Sandbox** | `https://api-sandbox.y.uno` | Dashboard → Developers (test keys) |
+| **Production** | `https://api.y.uno` | Dashboard → Developers (live keys) |
+
+<Warning>
+Sandbox and production use different API keys. Never use production keys in test code.
+</Warning>
+
+## Single source of truth for test cards
+
+<Info>
+**All sandbox test cards are documented on the [Yuno Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway) page.**
+
+The Testing Gateway is Yuno's canonical source for test card numbers and expected results. Do not rely on card numbers from other pages — they may be convenience placeholders. When testing, always refer to the Testing Gateway documentation for the current, verified test cards.
+</Info>
+
+The canonical Visa success card for Yuno Testing Gateway is:
+
+| Card Number | Expiration | CVV | Result |
+|-------------|------------|-----|--------|
+| `4507990000000002` | 11/28 | 123 | `SUCCEEDED` |
+
+For decline scenarios, 3DS challenges, and other card brands, see the full [Testing Gateway card tables](/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway).
+
+## Set up the Testing Gateway
+
+Before you can process test payments, configure the Yuno Test Payment Gateway in your sandbox account:
+
+1. **Connect the gateway**: Dashboard → [Connections](https://dashboard.y.uno/connections) → search "Yuno Test Payment Gateway" → Connect
+2. **Configure routing**: Dashboard → [Routing](https://dashboard.y.uno/routing) → Card → Set Up → add the Test Payment Gateway as a step → Publish
+3. **Enable the payment method**: Dashboard → [Checkout Builder](https://dashboard.y.uno/checkout-builder) → enable Card → Publish
+
+For detailed setup steps with screenshots, see [Set up the Yuno Test Payment Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway#set-up-the-yuno-test-payment-gateway).
+
+## Testing scenarios
+
+### Successful payments
+
+Use the `SUCCEEDED` test cards from the Testing Gateway. The payment `status` returns `SUCCEEDED` and the `sub_status` shows the capture state.
+
+### Declined payments
+
+Test decline handling with cards that return specific response codes:
+- `INSUFFICIENT_FUNDS`
+- `DECLINED_BY_BANK`
+- `DO_NOT_HONOR`
+- `INVALID_CARD_DATA`
+
+See the full decline card list on the [Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway#222---card-detail).
+
+### 3DS authentication
+
+Test 3D Secure flows using the 3DS test cards. Use OTP code `1234` for successful authentication.
+
+See [3DS test cards](/docs/direct-integration-use-cases/yuno-testing-gateway#223---3ds-test-cards) for the complete list.
+
+### Chargebacks
+
+Simulate chargebacks in sandbox by setting the payment `description` to `SUCCEEDED+CHARGEBACK <outcome>` where outcome is one of:
+- `action_required` — creates a chargeback requiring merchant action
+- `review` — creates a chargeback in review
+- `won` — merchant wins the dispute
+- `lost` — merchant loses the dispute
+
+See [Simulate a chargeback](/docs/direct-integration-use-cases/yuno-testing-gateway#simulate-a-chargeback).
+
+## Webhooks in sandbox
+
+Test your webhook endpoint receives events correctly:
+
+1. Configure your webhook URL in Dashboard → Developers → Webhooks
+2. Enable HMAC Authentication and save the webhook secret
+3. Process a test payment and verify your endpoint receives `payment.purchase`
+4. Verify the `x-hmac-signature` header matches your computed signature
+
+See [Configure webhooks](/docs/webhooks/configure-webhooks) and [Verify webhook signatures](/docs/webhooks/verify-webhook-signatures-hmac).
+
+## Go-live checklist
+
+Before switching to production:
+
+- [ ] All test scenarios pass (success, decline, 3DS, refund)
+- [ ] Webhook endpoint verifies signatures and handles retries
+- [ ] Error handling covers all response codes
+- [ ] Credentials are loaded from environment variables
+- [ ] Production API keys are securely stored (never in code)
+
+See the full [Integration checklist](/docs/how-yuno-works/integration-checklist) for a complete go-live guide.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Testing Gateway" icon="vial" href="/docs/direct-integration-use-cases/yuno-testing-gateway">
+    Full test card tables and setup instructions
+  </Card>
+  <Card title="Integration checklist" icon="list-check" href="/docs/how-yuno-works/integration-checklist">
+    Complete go-live checklist
+  </Card>
+  <Card title="Webhooks" icon="bell" href="/docs/webhooks/index">
+    Configure and verify webhook signatures
+  </Card>
+  <Card title="API environments" icon="server" href="/reference/getting-started/api-environments">
+    Environment details and regional endpoints
+  </Card>
+</CardGroup>
