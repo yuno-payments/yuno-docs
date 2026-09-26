@@ -152,7 +152,7 @@ Do not send `payment_method.token` together with `vaulted_token`: the vaulted to
      }
    }
    ```
-   `vault_on_success` needs `customer_payer.id`. Without it, nothing is vaulted. Save `vaulted_token` and `payment_method.detail.card.stored_credentials.network_transaction_id` from the response.
+   `vault_on_success` needs the `customer_payer.id` of an existing customer. Without it, nothing is vaulted and the response carries an empty `vaulted_token` with no error. Save `vaulted_token` and `payment_method.detail.card.stored_credentials.network_transaction_id` from the response.
 3. **Each monthly charge (customer absent).** New `X-Idempotency-Key`, vaulted token only, same `reason`, `usage: "USED"`, and the network transaction id from the first charge:
    ```json
    {
