@@ -1,5 +1,5 @@
-// PathCards — beautiful integration path cards for homepage
-// Icon + title + one-liner, hover lift effect
+// PathCards — Tailwind-first for Mintlify CSS generation
+// Beautiful integration path cards with hover lift
 
 const paths = [
   {
@@ -53,45 +53,54 @@ const paths = [
 ];
 
 export const PathCards = () => (
-  <div className="yuno-paths">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mb-8">
     {paths.map((p) => (
-      <a key={p.href} href={p.href} className="yuno-path-card">
-        <span className="yuno-path-card__icon">{p.icon}</span>
-        <span className="yuno-path-card__title">{p.title}</span>
-        <span className="yuno-path-card__desc">{p.desc}</span>
+      <a 
+        key={p.href} 
+        href={p.href} 
+        className="group flex flex-col gap-1 p-5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 no-underline transition-all duration-200 hover:border-[#3E4FE0] hover:shadow-lg hover:shadow-[#3E4FE0]/10 hover:-translate-y-0.5"
+      >
+        <span className="w-6 h-6 mb-1" style={{ color: '#3E4FE0' }}>{p.icon}</span>
+        <span className="text-base font-semibold text-slate-900 dark:text-slate-100">{p.title}</span>
+        <span className="text-sm text-slate-500 dark:text-slate-400 leading-snug">{p.desc}</span>
       </a>
     ))}
   </div>
 );
 
-// AgentCallout — elegant info strip for agents
+// AgentCallout — Tailwind-first elegant info strip
 export const AgentCallout = () => (
-  <div className="yuno-agent-callout">
-    <span className="yuno-agent-callout__icon">
+  <div 
+    className="flex items-start gap-3 max-w-3xl p-4 mb-6 rounded-xl border bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-slate-800 dark:to-slate-900"
+    style={{ borderColor: '#3E4FE0' }}
+  >
+    <span className="flex-shrink-0 w-5 h-5 mt-0.5" style={{ color: '#3E4FE0' }}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
         <line x1="12" y1="16" x2="12" y2="12" />
         <line x1="12" y1="8" x2="12.01" y2="8" />
       </svg>
     </span>
-    <span className="yuno-agent-callout__text">
-      <strong>Building with an agent?</strong>{' '}
-      <a href="/skill.md">skill.md</a> for workflows, <a href="https://docs.y.uno/llms.txt">llms.txt</a> for index. Test cards on <a href="/docs/direct-integration-use-cases/yuno-testing-gateway">Testing Gateway</a> only.
+    <span className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
+      <strong className="text-slate-900 dark:text-white">Building with an agent?</strong>{' '}
+      <a href="/skill.md" className="font-medium no-underline hover:underline" style={{ color: '#3E4FE0' }}>skill.md</a> for workflows,{' '}
+      <a href="https://docs.y.uno/llms.txt" className="font-medium no-underline hover:underline" style={{ color: '#3E4FE0' }}>llms.txt</a> for index. Test cards on{' '}
+      <a href="/docs/direct-integration-use-cases/yuno-testing-gateway" className="font-medium no-underline hover:underline" style={{ color: '#3E4FE0' }}>Testing Gateway</a> only.
     </span>
   </div>
 );
 
-// FooterLinks — compact also links
+// FooterLinks — Tailwind-first compact links
 export const FooterLinks = () => (
-  <nav className="yuno-footer-links">
-    <a href="/docs/how-yuno-works/what-is-yuno">What is Yuno</a>
-    <span className="yuno-footer-links__sep">·</span>
-    <a href="/docs/how-yuno-works/how-yuno-payment-flow-works">Payment flow</a>
-    <span className="yuno-footer-links__sep">·</span>
-    <a href="/docs/webhooks/index">Webhooks</a>
-    <span className="yuno-footer-links__sep">·</span>
-    <a href="/docs/how-yuno-works/testing">Testing</a>
-    <span className="yuno-footer-links__sep">·</span>
-    <a href="/changelog">Changelog</a>
+  <nav className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+    <a href="/docs/how-yuno-works/what-is-yuno" className="text-slate-600 dark:text-slate-300 no-underline hover:text-[#3E4FE0] dark:hover:text-[#6B78EB] transition-colors">What is Yuno</a>
+    <span className="text-slate-300 dark:text-slate-600">·</span>
+    <a href="/docs/how-yuno-works/how-yuno-payment-flow-works" className="text-slate-600 dark:text-slate-300 no-underline hover:text-[#3E4FE0] dark:hover:text-[#6B78EB] transition-colors">Payment flow</a>
+    <span className="text-slate-300 dark:text-slate-600">·</span>
+    <a href="/docs/webhooks/index" className="text-slate-600 dark:text-slate-300 no-underline hover:text-[#3E4FE0] dark:hover:text-[#6B78EB] transition-colors">Webhooks</a>
+    <span className="text-slate-300 dark:text-slate-600">·</span>
+    <a href="/docs/how-yuno-works/testing" className="text-slate-600 dark:text-slate-300 no-underline hover:text-[#3E4FE0] dark:hover:text-[#6B78EB] transition-colors">Testing</a>
+    <span className="text-slate-300 dark:text-slate-600">·</span>
+    <a href="/changelog" className="text-slate-600 dark:text-slate-300 no-underline hover:text-[#3E4FE0] dark:hover:text-[#6B78EB] transition-colors">Changelog</a>
   </nav>
 );
