@@ -6,35 +6,58 @@
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno",
-      "description": "Sandbox"
+      "url": "https://api-sandbox.y.uno"
     },
     {
-      "url": "https://api.y.uno",
-      "description": "Production (US)"
+      "url": "https://api.y.uno"
     },
     {
-      "url": "https://api.eu.y.uno",
-      "description": "Production (EMEA)"
+      "url": "https://api.eu.y.uno"
     }
   ],
   "paths": {
-    "/v1/payment-method-domains/{id}": {
+    "/v1/payment-methods/{payment_method}/domains/{domain_id}": {
       "get": {
-        "description": "",
+        "description": "Retrieves a domain registration by its `id`. Use the `id` returned by Register domain. Domains belong to the connection they were registered on; a domain that belongs to another organization returns 404.",
+        "operationId": "get_v1-payment-methods-payment-method-domains-domain-id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "payment_method",
+            "description": "Payment method the domain was registered for.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "APPLE_PAY",
+                "GOOGLE_PAY"
+              ]
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "domain_id",
+            "description": "The `id` of the domain registration (UUID), as returned by Register domain.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "OK",
             "content": {
               "application/json": {
                 "examples": {
                   "OK": {
                     "summary": "OK",
                     "value": {
-                      "id": "dom_1234567890abcdef",
+                      "id": "8a2f4b1c-6d3e-4f7a-9b21-0c5d8e7f6a43",
                       "account_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                       "domain": "checkout.example.com",
-                      "payment_method": "APPLE_PAY",
+                      "payment_method_type": "APPLE_PAY",
                       "status": "REGISTERED",
                       "created_at": "2026-01-22T10:30:00Z",
                       "updated_at": "2026-01-22T10:45:00Z"
@@ -46,22 +69,33 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "dom_1234567890abcdef"
+                      "description": "Unique identifier of the domain registration (UUID).",
+                      "example": "8a2f4b1c-6d3e-4f7a-9b21-0c5d8e7f6a43"
                     },
                     "account_id": {
                       "type": "string",
+                      "description": "The account the domain was registered under.",
                       "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
                     },
                     "domain": {
                       "type": "string",
+                      "description": "The registered domain, without protocol.",
                       "example": "checkout.example.com"
                     },
-                    "payment_method": {
+                    "payment_method_type": {
                       "type": "string",
+                      "description": "Payment method the domain was registered for.",
                       "example": "APPLE_PAY"
                     },
                     "status": {
                       "type": "string",
+                      "description": "`CREATED`: registration with the wallet provider is in progress. `REGISTERED`: the domain is verified and can show the wallet button. `ERROR`: the provider rejected the registration (for example, the association file was not reachable); register the domain again after fixing it. `INACTIVE`: the domain was deleted.",
+                      "enum": [
+                        "CREATED",
+                        "REGISTERED",
+                        "ERROR",
+                        "INACTIVE"
+                      ],
                       "example": "REGISTERED"
                     },
                     "created_at": {
@@ -76,23 +110,71 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid `payment_method` or `domain_id`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Invalid parameters": {
+                    "summary": "Invalid parameters",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "domain_id must be a valid UUID"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No domain with that `id` exists for your organization.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Not found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "RESOURCE_NOT_FOUND",
+                      "messages": [
+                        "Domain with id 8a2f4b1c-6d3e-4f7a-9b21-0c5d8e7f6a43 was not found"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true
-          }
-        ],
-        "operationId": "get_v1-payment-method-domains-id"
+        }
       }
     }
   },
   "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "RESOURCE_NOT_FOUND"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "securitySchemes": {
       "public-api-key": {
         "type": "apiKey",
