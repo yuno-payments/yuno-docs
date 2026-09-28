@@ -7775,9 +7775,108 @@
                       }
                     }
                   },
+                  "shipping_methods": {
+                    "type": "array",
+                    "description": "Delivery options the customer can pick from inside a wallet widget (Fast Checkout). The first method is preselected. The currency of every amount must match the session currency.",
+                    "items": {
+                      "required": [
+                        "id",
+                        "label",
+                        "amount",
+                        "summary_items"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Merchant-defined identifier of the delivery method (MAX 255). Echoed back as shipping.method.id on the payment."
+                        },
+                        "label": {
+                          "type": "string",
+                          "description": "Name the wallet displays for the method (MAX 255)."
+                        },
+                        "detail": {
+                          "type": "string",
+                          "description": "Optional secondary text, such as the delivery promise (MAX 255)."
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Cost of the delivery method.",
+                          "required": [
+                            "currency",
+                            "value"
+                          ],
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "ISO 4217 currency code. Must match the session currency."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "Cost value (multiple of 0.0001).",
+                              "format": "float"
+                            }
+                          }
+                        },
+                        "delivery_estimate": {
+                          "type": "object",
+                          "description": "Optional delivery window (date-only, format YYYY-MM-DD).",
+                          "properties": {
+                            "from": {
+                              "type": "string",
+                              "description": "Earliest delivery date."
+                            },
+                            "to": {
+                              "type": "string",
+                              "description": "Latest delivery date."
+                            }
+                          }
+                        },
+                        "summary_items": {
+                          "type": "array",
+                          "description": "Order breakdown the wallet sheet displays when this method is selected (at least one item; the last entry is the grand total).",
+                          "items": {
+                            "required": [
+                              "id",
+                              "label",
+                              "amount"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identifier of the line item (MAX 255)."
+                              },
+                              "label": {
+                                "type": "string",
+                                "description": "Name the wallet displays for the line item (MAX 255)."
+                              },
+                              "amount": {
+                                "type": "object",
+                                "description": "Amount of the line item. Currency must match the session currency.",
+                                "required": [
+                                  "currency",
+                                  "value"
+                                ],
+                                "properties": {
+                                  "currency": {
+                                    "type": "string",
+                                    "description": "ISO 4217 currency code."
+                                  },
+                                  "value": {
+                                    "type": "number",
+                                    "description": "Amount value (multiple of 0.0001).",
+                                    "format": "float"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
                   "metadata": {
                     "type": "array",
-                    "description": "Specifies a list of metadata objects. You can add up to 120 metadata objects.",
+                    "description": "Specifies a list of metadata objects. You can add up to 120 metadata objects.\n\nThe key `gateway_options` is reserved for provider-specific options. Its value must be a JSON-encoded array of objects, each with a string `key` and a string `value`, and may have up to 8192 characters. The full limits are described under `metadata` in Create payment. An invalid entry returns HTTP 400 with code `INVALID_PARAMETERS`.",
                     "items": {
                       "properties": {
                         "key": {
@@ -7786,7 +7885,7 @@
                         },
                         "value": {
                           "type": "string",
-                          "description": "The metadata key value (MAX 512)"
+                          "description": "The metadata key value (MAX 512). The reserved `gateway_options` key allows up to 8192 characters; see `metadata`."
                         }
                       },
                       "required": [
@@ -13672,7 +13771,7 @@
                   },
                   "metadata": {
                     "type": "array",
-                    "description": "Specifies a list of metadata objects. You can add up to 50 metadata objects.",
+                    "description": "Specifies a list of metadata objects. You can add up to 50 metadata objects.\n\nThe key `gateway_options` is reserved for provider-specific options. Its value must be a JSON-encoded array of objects, each with a string `key` and a string `value`, and may have up to 8192 characters. The full limits are described under `metadata` in Create payment. An invalid entry returns HTTP 400 with code `INVALID_PARAMETERS`.",
                     "items": {
                       "properties": {
                         "key": {
@@ -13681,7 +13780,7 @@
                         },
                         "value": {
                           "type": "string",
-                          "description": "The metadata key value (MAX 512)."
+                          "description": "The metadata key value (MAX 512). The reserved `gateway_options` key allows up to 8192 characters; see `metadata`."
                         }
                       },
                       "required": [
@@ -43144,7 +43243,7 @@
                   },
                   "metadata": {
                     "type": "array",
-                    "description": "Custom key–value tags to track this payment or add context (e.g., order_id, invoice, campaign). Up to 120 items.",
+                    "description": "Custom key–value tags to track this payment or add context (e.g., order_id, invoice, campaign). Up to 120 items.\n\n**Reserved key `gateway_options`.** Send one entry with the key `gateway_options` to pass provider-specific options. Its value is a JSON-encoded array of objects, each with a string `key` and a string `value`, for example `[{\"key\":\"option_name\",\"value\":\"option_value\"}]`. This entry has its own limits instead of the 512-character value limit:\n\n- The whole value has at most 8192 characters.\n- The array has at most 100 items.\n- Each item `key` has 1 to 128 characters.\n- Each item `value` has at most 512 characters.\n- A request has at most one `gateway_options` entry.\n\nYuno rejects the request with HTTP 400 and code `INVALID_PARAMETERS` when the entry breaks a limit, is not valid JSON, is not an array, or has an item with a field other than `key` and `value` or with a missing or non-string `key` or `value`.\n\nYuno forwards the options only to providers that are enabled for gateway options, and applies them to the purchase request sent to the provider. The same validation applies to `metadata` on refund, cancel, cancel-or-refund, split transfer reversal and split update requests, and on checkout session and customer creation.",
                     "items": {
                       "properties": {
                         "key": {
@@ -43153,7 +43252,7 @@
                         },
                         "value": {
                           "type": "string",
-                          "description": "The metadata key value (MAX 512. Value: MIN:1, MAX:512). **[Case Sensitive]**"
+                          "description": "The metadata key value (MAX 512. Value: MIN:1, MAX:512). **[Case Sensitive]** The reserved `gateway_options` key allows up to 8192 characters; see `metadata`."
                         }
                       },
                       "required": [
@@ -109770,23 +109869,49 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "Bad Request. `ROUTING_VALIDATION_FAILED` when `account_id` is missing, `INVALID_ACCOUNT_ID` when it belongs to a different organization.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "invalid_request"
-                    },
                     "code": {
                       "type": "string",
                       "example": "ROUTING_VALIDATION_FAILED"
                     },
-                    "message": {
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "account_id is required."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
                       "type": "string",
-                      "example": "account_id is required."
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
                     }
                   }
                 }
@@ -109983,17 +110108,43 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "validation_error"
-                    },
                     "code": {
                       "type": "string",
                       "example": "ROUTING_VALIDATION_FAILED"
                     },
-                    "message": {
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Steps must be contiguous"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
                       "type": "string",
-                      "example": "Steps must be contiguous"
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
                     }
                   }
                 }
@@ -110007,17 +110158,18 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "conflict"
-                    },
                     "code": {
                       "type": "string",
                       "example": "ROUTING_ALREADY_EXISTS"
                     },
-                    "message": {
-                      "type": "string",
-                      "example": "A routing already exists for this payment method"
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "A routing already exists for this payment method"
+                      ]
                     }
                   }
                 }
@@ -110496,6 +110648,31 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
             "content": {
@@ -110503,17 +110680,18 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "not_found"
-                    },
                     "code": {
                       "type": "string",
                       "example": "ROUTING_NOT_FOUND"
                     },
-                    "message": {
-                      "type": "string",
-                      "example": "Routing '...' was not found"
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Routing '...' was not found"
+                      ]
                     }
                   }
                 }
@@ -110645,17 +110823,43 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "validation_error"
-                    },
                     "code": {
                       "type": "string",
                       "example": "ROUTING_VALIDATION_FAILED"
                     },
-                    "message": {
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Validation failed for update"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
                       "type": "string",
-                      "example": "Validation failed for update"
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
                     }
                   }
                 }
@@ -110669,17 +110873,18 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "not_found"
-                    },
                     "code": {
                       "type": "string",
                       "example": "ROUTING_NOT_FOUND"
                     },
-                    "message": {
-                      "type": "string",
-                      "example": "Routing '...' was not found"
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Routing '...' was not found"
+                      ]
                     }
                   }
                 }
@@ -110693,17 +110898,18 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "example": "conflict"
-                    },
                     "code": {
                       "type": "string",
                       "example": "ROUTING_VERSION_CONFLICT"
                     },
-                    "message": {
-                      "type": "string",
-                      "example": "Another concurrent PATCH won the publish race"
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Another concurrent PATCH won the publish race"
+                      ]
                     }
                   }
                 }
