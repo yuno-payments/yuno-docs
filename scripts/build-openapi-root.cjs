@@ -44,7 +44,6 @@ const BASE_HOSTS = ["https://api-sandbox.y.uno", "https://api.y.uno", "https://a
 
 // Same endpoint documented on more than one nav-visible page: pick one.
 const PREFER = {
-  "post /payments": "openapi/payments/create-payment.json",
   "get /customers/{customer_id}/payment-methods/{payment_method_id}":
     "openapi/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api.json",
   "get /organizations/account-groups": "openapi/organizations/list-account-groups.json",
