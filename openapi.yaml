@@ -5656,6 +5656,84 @@ paths:
                       type: number
                       description: The alternative amount value (multiple of 0.0001).
                       format: float
+                shipping_methods:
+                  type: array
+                  description: >-
+                    Delivery options the customer can pick from inside a wallet widget (Fast Checkout). The first method
+                    is preselected. The currency of every amount must match the session currency.
+                  items:
+                    required:
+                      - id
+                      - label
+                      - amount
+                      - summary_items
+                    properties:
+                      id:
+                        type: string
+                        description: >-
+                          Merchant-defined identifier of the delivery method (MAX 255). Echoed back as
+                          shipping.method.id on the payment.
+                      label:
+                        type: string
+                        description: Name the wallet displays for the method (MAX 255).
+                      detail:
+                        type: string
+                        description: Optional secondary text, such as the delivery promise (MAX 255).
+                      amount:
+                        type: object
+                        description: Cost of the delivery method.
+                        required:
+                          - currency
+                          - value
+                        properties:
+                          currency:
+                            type: string
+                            description: ISO 4217 currency code. Must match the session currency.
+                          value:
+                            type: number
+                            description: Cost value (multiple of 0.0001).
+                            format: float
+                      delivery_estimate:
+                        type: object
+                        description: Optional delivery window (date-only, format YYYY-MM-DD).
+                        properties:
+                          from:
+                            type: string
+                            description: Earliest delivery date.
+                          to:
+                            type: string
+                            description: Latest delivery date.
+                      summary_items:
+                        type: array
+                        description: >-
+                          Order breakdown the wallet sheet displays when this method is selected (at least one item; the
+                          last entry is the grand total).
+                        items:
+                          required:
+                            - id
+                            - label
+                            - amount
+                          properties:
+                            id:
+                              type: string
+                              description: Identifier of the line item (MAX 255).
+                            label:
+                              type: string
+                              description: Name the wallet displays for the line item (MAX 255).
+                            amount:
+                              type: object
+                              description: Amount of the line item. Currency must match the session currency.
+                              required:
+                                - currency
+                                - value
+                              properties:
+                                currency:
+                                  type: string
+                                  description: ISO 4217 currency code.
+                                value:
+                                  type: number
+                                  description: Amount value (multiple of 0.0001).
+                                  format: float
                 metadata:
                   type: array
                   description: Specifies a list of metadata objects. You can add up to 120 metadata objects.
@@ -18763,6 +18841,9 @@ paths:
                               carrier_code:
                                 type: string
                                 description: IATA carrier code. See http://www.iata.org (MAX 2; MIN 2).
+                              carrier_name:
+                                type: string
+                                description: The name of the airline carrier (MAX 100; MIN 1).
                               flight_number:
                                 type: string
                                 description: The flight number assigned by the airline carrier (MAX 5; MIN 1).
@@ -20609,6 +20690,7 @@ paths:
                               arrival_airport: JFK
                               arrival_datetime: '2023-10-31T09:30:00.000-08:00'
                               carrier_code: AA
+                              carrier_name: American Airlines
                               flight_number: AA123
                               fare_basis_code: 'Y'
                               fare_class_code: S
@@ -24137,6 +24219,9 @@ paths:
                                       carrier_code:
                                         type: string
                                         example: AA
+                                      carrier_name:
+                                        type: string
+                                        example: American Airlines
                                       flight_number:
                                         type: string
                                         example: AA123
@@ -31046,6 +31131,9 @@ paths:
                               carrier_code:
                                 type: string
                                 description: IATA carrier code. See http://www.iata.org (MAX 2; MIN 2).
+                              carrier_name:
+                                type: string
+                                description: The name of the airline carrier (MAX 100; MIN 1).
                               flight_number:
                                 type: string
                                 description: The flight number assigned by the airline carrier (MAX 5; MIN 1).
@@ -32137,6 +32225,36 @@ paths:
                     - REDIRECT
                     - DIRECT
                     - SDK_SEAMLESS
+                taxes:
+                  type: object
+                  description: Specifies the order's tax object.
+                  required:
+                    - type
+                    - value
+                  properties:
+                    type:
+                      type: string
+                      description: Type of the tax.
+                      enum:
+                        - VAT
+                        - AIRPORT_TAX
+                        - CONSUMPTION_TAX
+                        - VAT_LAW_17934
+                        - VAT_LAW_19210
+                        - VAT_EXEMPTION
+                        - ISV
+                    tax_base:
+                      type: number
+                      description: The amount base to apply the tax defined.
+                      format: float
+                    value:
+                      type: number
+                      description: The amount of the tax.
+                      format: float
+                    percentage:
+                      type: number
+                      description: The percentage of the tax.
+                      format: float
                 payment_method:
                   type: object
                   description: The payment method object.
@@ -32433,6 +32551,59 @@ paths:
                                     and reference specific transactions, particularly in recurring payment scenarios,
                                     ensuring consistency and traceability across the payment lifecycle. (MAX 255; MIN
                                     3). [Stored credentials](/docs/stored-credentials)
+                                additional_data:
+                                  type: object
+                                  description: >-
+                                    This structure is used to send additional information about recurrence. It's
+                                    optional, and few providers require it (e.g. Mercado Pago). Contact your TAM to
+                                    confirm if it's needed for your integration.
+                                  properties:
+                                    billing_cycles:
+                                      type: object
+                                      description: >-
+                                        Specifies the `billing_cycles` object. Defines the number of charges associated
+                                        to the subscription. If using this object, you must enter data on all fields.
+                                      properties:
+                                        current:
+                                          type: integer
+                                          example: 1
+                                        total:
+                                          type: integer
+                                          description: The total number of billing cycles for the subscription (MIN 1).
+                                          format: int32
+                                    frequency:
+                                      type: object
+                                      description: >-
+                                        Specifies the frequency type (e.g., DAY, WEEK, MONTH, YEAR) and value. Enter
+                                        data on all fields if using this object.
+                                      properties:
+                                        type:
+                                          type: string
+                                          example: MONTH
+                                          description: Specifies the frequency type (e.g., DAY, WEEK, MONTH, YEAR).
+                                        value:
+                                          type: integer
+                                          description: Specifies the frequency value.
+                                    availability:
+                                      type: object
+                                      description: >-
+                                        Specifies the `availability` object. Defines a date interval based on starting
+                                        and ending dates when the subscription is available to use.
+                                      properties:
+                                        start_at:
+                                          type: string
+                                          description: >-
+                                            The start date that the subscription plan will be available to use. If not
+                                            set, the subscription is available from the moment it is created. `start_at`
+                                            becomes mandatory when using `finish_at`.
+                                          format: date-time
+                                        finish_at:
+                                          type: string
+                                          description: >-
+                                            The end date until the subscription plan will be available to use. If not
+                                            defined, the subscription does not have an expiration date. `finish_at`
+                                            becomes mandatory when using `start_at`.
+                                          format: date-time
                             external_providers_data:
                               type: array
                               description: >-
@@ -32497,6 +32668,9 @@ paths:
                               description: >-
                                 Indicates whether the wallet payment should be captured immediately (true) or only
                                 authorized for later capture (false)
+                            cryptogram:
+                              type: string
+                              description: Cryptogram for direct integrations with card wallets (MAX 526; MIN 3).
                             soft_descriptor:
                               type: string
                               description: >-
@@ -32519,9 +32693,9 @@ paths:
                                 Indicates the processing type of the transaction. Refer to the <a
                                 href="/docs/payment-features/stored-credentials#create-a-payment-with-processing-type"
                                 class="link_stored_credential">Stored credentials</a> documentation for more
-                                information.
-                                For an Apple Pay or Google Pay first payment with vault_on_success, send stored_credentials here (usage FIRST);
-                                later charges on the resulting vaulted_token use detail.card.stored_credentials.
+                                information. For an Apple Pay or Google Pay first payment with vault_on_success, send
+                                stored_credentials here (usage FIRST); later charges on the resulting vaulted_token use
+                                detail.card.stored_credentials.
                               properties:
                                 reason:
                                   type: string
@@ -33092,6 +33266,7 @@ paths:
                           base_fare: 200
                           base_fare_currency: USD
                           carrier_code: KL
+                          carrier_name: KLM Royal Dutch Airlines
                           departure_airport: EZE
                           departure_airport_timezone: '-03:00'
                           departure_datetime: '2024-07-03T05:00:00'
@@ -33341,6 +33516,7 @@ paths:
                           departure_airport_timezone: GMT-08
                           arrival_airport: JFK
                           carrier_code: AA
+                          carrier_name: American Airlines
                           flight_number: AA100
                           fare_basis_code: 'Y'
                           fare_class_code: S
@@ -34730,6 +34906,7 @@ paths:
                             arrival_airport_timezone: '+00:00'
                             arrival_datetime: ''
                             carrier_code: KL
+                            carrier_name: KLM Royal Dutch Airlines
                             flight_number: '842'
                             fare_basis_code: HL7LNR
                             fare_class_code: FR
@@ -35376,6 +35553,7 @@ paths:
                             arrival_airport_timezone: '+00:00'
                             arrival_datetime: ''
                             carrier_code: AA
+                            carrier_name: American Airlines
                             flight_number: AA100
                             fare_basis_code: 'Y'
                             fare_class_code: S
@@ -40331,6 +40509,9 @@ paths:
                                     carrier_code:
                                       type: string
                                       example: KL
+                                    carrier_name:
+                                      type: string
+                                      example: KLM Royal Dutch Airlines
                                     flight_number:
                                       type: string
                                       example: '842'
@@ -41992,6 +42173,9 @@ paths:
                                     carrier_code:
                                       type: string
                                       example: AA
+                                    carrier_name:
+                                      type: string
+                                      example: American Airlines
                                     flight_number:
                                       type: string
                                       example: AA123
@@ -53766,6 +53950,7 @@ paths:
                               arrival_airport: JFK
                               arrival_datetime: '2023-10-31T07:30:00.000-04:00'
                               carrier_code: AA
+                              carrier_name: American Airlines
                               flight_number: AA100
                               fare_basis_code: 'Y'
                               fare_class_code: M
@@ -57666,6 +57851,9 @@ paths:
                                         carrier_code:
                                           type: string
                                           example: AA
+                                        carrier_name:
+                                          type: string
+                                          example: American Airlines
                                         flight_number:
                                           type: string
                                           example: AA100
@@ -65333,6 +65521,7 @@ paths:
                               arrival_airport_timezone: '-08:00'
                               arrival_datetime: ''
                               carrier_code: UA
+                              carrier_name: United Airlines
                               flight_number: '842'
                               fare_basis_code: HL7LNR
                               fare_class_code: FR
@@ -65436,6 +65625,7 @@ paths:
                               arrival_airport_timezone: '+00:00'
                               arrival_datetime: ''
                               carrier_code: KL
+                              carrier_name: KLM Royal Dutch Airlines
                               flight_number: '842'
                               fare_basis_code: HL7LNR
                               fare_class_code: FR
@@ -65706,6 +65896,9 @@ paths:
                                         carrier_code:
                                           type: string
                                           example: UA
+                                        carrier_name:
+                                          type: string
+                                          example: United Airlines
                                         flight_number:
                                           type: string
                                           example: '842'
@@ -66025,6 +66218,9 @@ paths:
                                         carrier_code:
                                           type: string
                                           example: KL
+                                        carrier_name:
+                                          type: string
+                                          example: KLM Royal Dutch Airlines
                                         flight_number:
                                           type: string
                                           example: '842'
@@ -67388,6 +67584,7 @@ paths:
                               arrival_airport_timezone: '+00:00'
                               arrival_datetime: ''
                               carrier_code: KL
+                              carrier_name: KLM Royal Dutch Airlines
                               flight_number: '842'
                               fare_basis_code: HL7LNR
                               fare_class_code: FR
@@ -67491,6 +67688,7 @@ paths:
                               arrival_airport_timezone: '+00:00'
                               arrival_datetime: ''
                               carrier_code: KL
+                              carrier_name: KLM Royal Dutch Airlines
                               flight_number: '842'
                               fare_basis_code: HL7LNR
                               fare_class_code: FR
@@ -67761,6 +67959,9 @@ paths:
                                         carrier_code:
                                           type: string
                                           example: KL
+                                        carrier_name:
+                                          type: string
+                                          example: KLM Royal Dutch Airlines
                                         flight_number:
                                           type: string
                                           example: '842'
@@ -68076,6 +68277,9 @@ paths:
                                         carrier_code:
                                           type: string
                                           example: KL
+                                        carrier_name:
+                                          type: string
+                                          example: KLM Royal Dutch Airlines
                                         flight_number:
                                           type: string
                                           example: '842'
@@ -68594,6 +68798,9 @@ paths:
                               carrier_code:
                                 type: string
                                 description: IATA carrier code. See http://www.iata.org (MAX 2; MIN 2).
+                              carrier_name:
+                                type: string
+                                description: The name of the airline carrier (MAX 100; MIN 1).
                               flight_number:
                                 type: string
                                 description: The flight number assigned by the airline carrier (MAX 5; MIN 1).
@@ -69022,6 +69229,7 @@ paths:
                           departure_airport_timezone: GMT-05
                           arrival_airport: LAX
                           carrier_code: AA
+                          carrier_name: American Airlines
                           flight_number: AA348
                           fare_basis_code: 'Y'
                           fare_class_code: S
@@ -69183,6 +69391,7 @@ paths:
                               departure_airport_timezone: GMT-05
                               arrival_airport: BOM
                               carrier_code: PR
+                              carrier_name: Philippine Airlines
                               flight_number: AV348
                               fare_basis_code: 'Y'
                               fare_class_code: S
@@ -69594,6 +69803,9 @@ paths:
                                         carrier_code:
                                           type: string
                                           example: PR
+                                        carrier_name:
+                                          type: string
+                                          example: Philippine Airlines
                                         flight_number:
                                           type: string
                                           example: AV348
@@ -69868,6 +70080,12 @@ paths:
                     code: INVALID_REQUEST
                     messages:
                       - Invalid request
+                Invalid status:
+                  summary: The payment is already in a final state (for example, already captured)
+                  value:
+                    code: INVALID_STATUS
+                    messages:
+                      - Invalid transaction status.
               schema:
                 type: object
                 properties:
@@ -70145,6 +70363,7 @@ paths:
                             arrival_airport_timezone: '+00:00'
                             arrival_datetime: '2030-07-03T22:59:00'
                             carrier_code: AA
+                            carrier_name: American Airlines
                             flight_number: '123'
                             fare_basis_code: 'Y'
                             fare_class_code: S
@@ -70899,6 +71118,9 @@ paths:
                                 carrier_code:
                                   type: string
                                   example: AA
+                                carrier_name:
+                                  type: string
+                                  example: American Airlines
                                 flight_number:
                                   type: string
                                   example: '123'
@@ -71895,6 +72117,7 @@ paths:
                             arrival_airport_timezone: '+00:00'
                             arrival_datetime: '2030-07-03T22:59:00'
                             carrier_code: AA
+                            carrier_name: American Airlines
                             flight_number: '123'
                             fare_basis_code: 'Y'
                             fare_class_code: S
@@ -72650,6 +72873,9 @@ paths:
                                 carrier_code:
                                   type: string
                                   example: AA
+                                carrier_name:
+                                  type: string
+                                  example: American Airlines
                                 flight_number:
                                   type: string
                                   example: '123'
@@ -84480,21 +84706,39 @@ paths:
                       format: date-time
                       example: '2026-05-12T14:30:00Z'
         '400':
-          description: Bad Request
+          description: >-
+            Bad Request. `ROUTING_VALIDATION_FAILED` when `account_id` is missing, `INVALID_ACCOUNT_ID` when it belongs
+            to a different organization.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: invalid_request
                   code:
                     type: string
                     example: ROUTING_VALIDATION_FAILED
-                  message:
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - account_id is required.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
                     type: string
-                    example: account_id is required.
+                    example: NOT_AUTHENTICATED
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Not authenticated
       tags:
         - Organizations
     post:
@@ -84629,15 +84873,31 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: validation_error
                   code:
                     type: string
                     example: ROUTING_VALIDATION_FAILED
-                  message:
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Steps must be contiguous
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
                     type: string
-                    example: Steps must be contiguous
+                    example: NOT_AUTHENTICATED
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Not authenticated
         '409':
           description: Conflict
           content:
@@ -84645,15 +84905,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: conflict
                   code:
                     type: string
                     example: ROUTING_ALREADY_EXISTS
-                  message:
-                    type: string
-                    example: A routing already exists for this payment method
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - A routing already exists for this payment method
       tags:
         - Organizations
   /routing/recommendations:
@@ -84984,6 +85244,22 @@ paths:
                     type: string
                     format: date-time
                     example: '2026-05-12T14:30:00Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: NOT_AUTHENTICATED
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Not authenticated
         '404':
           description: Not Found
           content:
@@ -84991,15 +85267,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: not_found
                   code:
                     type: string
                     example: ROUTING_NOT_FOUND
-                  message:
-                    type: string
-                    example: Routing '...' was not found
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Routing '...' was not found
       tags:
         - Organizations
     patch:
@@ -85088,15 +85364,31 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: validation_error
                   code:
                     type: string
                     example: ROUTING_VALIDATION_FAILED
-                  message:
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Validation failed for update
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
                     type: string
-                    example: Validation failed for update
+                    example: NOT_AUTHENTICATED
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Not authenticated
         '404':
           description: Not Found
           content:
@@ -85104,15 +85396,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: not_found
                   code:
                     type: string
                     example: ROUTING_NOT_FOUND
-                  message:
-                    type: string
-                    example: Routing '...' was not found
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Routing '...' was not found
         '409':
           description: Conflict
           content:
@@ -85120,15 +85412,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: conflict
                   code:
                     type: string
                     example: ROUTING_VERSION_CONFLICT
-                  message:
-                    type: string
-                    example: Another concurrent PATCH won the publish race
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Another concurrent PATCH won the publish race
       tags:
         - Organizations
   /sellers:

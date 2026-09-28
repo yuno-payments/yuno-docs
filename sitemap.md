@@ -40,6 +40,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Connections](https://docs.y.uno/docs/using-yuno/dashboard-overview/connections.md)
 - [Routing](https://docs.y.uno/docs/using-yuno/dashboard-overview/routing.md)
 - [Monitors](https://docs.y.uno/docs/using-yuno/dashboard-overview/monitors.md)
+- [Automation](https://docs.y.uno/docs/using-yuno/dashboard-overview/automation.md)
 - [Checkout Builder](https://docs.y.uno/docs/using-yuno/dashboard-overview/checkout-builder.md)
 - [Payments](https://docs.y.uno/docs/using-yuno/dashboard-overview/payments.md)
 - [Insights](https://docs.y.uno/docs/using-yuno/dashboard-overview/insights.md)
@@ -98,6 +99,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Smart Retries](https://docs.y.uno/docs/payment-features/subscriptions/retries.md)
 - [Statement descriptor on recurring payments](https://docs.y.uno/docs/payment-features/subscriptions/soft-descriptor.md)
 - [Pix Automático](https://docs.y.uno/docs/payment-features/subscriptions/pix-automatico.md)
+- [Process Stripe Billing subscriptions with Yuno](https://docs.y.uno/docs/payment-features/subscriptions/stripe-billing.md)
 - [Stored Credentials](https://docs.y.uno/docs/payment-features/stored-credentials.md)
 - [Card verification results (AVS & CVV)](https://docs.y.uno/docs/payment-features/card-verification-results.md)
 - [Transaction Retries](https://docs.y.uno/docs/payment-features/transaction-retries.md)
@@ -105,6 +107,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Account Funding Transactions (AFTs)](https://docs.y.uno/docs/payment-features/account-funding-transactions-afts.md)
 - [Staged Digital Wallet Operators (SDWO)](https://docs.y.uno/docs/payment-features/staged-digital-wallet-operators-sdwo.md)
 - [Payment Details](https://docs.y.uno/docs/payment-features/payment-amount-details.md)
+- [Fast Checkout Shipping](https://docs.y.uno/docs/payment-features/fast-checkout-shipping.md)
 - [SCA Exemptions](https://docs.y.uno/docs/payment-features/sca-exemptions.md)
 - [Cancel and Capture Flow](https://docs.y.uno/docs/payment-features/Cancel-and-capture-flow.md)
 - [Network Token Authentication](https://docs.y.uno/docs/payment-features/network-token-authentication.md)
@@ -139,12 +142,19 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Direct Integration](https://docs.y.uno/docs/wallets/google-pay/google-pay-direct-integration.md)
 - [Integration Via Provider](https://docs.y.uno/docs/wallets/google-pay/integration-via-provider-google-pay.md)
 - [Google Pay with PIX](https://docs.y.uno/docs/wallets/google-pay/google-pay-with-pix.md)
+
+##### Express Checkout
+
+- [Android Express Checkout](https://docs.y.uno/docs/wallets/google-pay/google-pay-express-checkout-android.md)
+- [Samsung Pay](https://docs.y.uno/docs/wallets/samsung-pay.md)
 - [Click to Pay](https://docs.y.uno/docs/wallets/click-to-pay.md)
 - [NuPay](https://docs.y.uno/docs/wallets/nupay.md)
+- [PagaLeve](https://docs.y.uno/docs/wallets/pagaleve.md)
 
 ### AI Capabilities
 
 - [Model Context Protocol (MCP)](https://docs.y.uno/setup-mcp.md)
+- [Build with AI](https://docs.y.uno/docs/ai-capabilities/build-with-ai.md)
 - [Maia AI Technical Account Manager](https://docs.y.uno/docs/ai-capabilities/maia-ai-technical-account-manager.md)
 - [Use Yuno with Claude and ChatGPT](https://docs.y.uno/docs/ai-capabilities/use-yuno-with-claude-and-chatgpt.md)
 - [Building AI Integrations with Yuno's LLMs and MCP](https://docs.y.uno/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp.md)
@@ -183,7 +193,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [VTEX Plugin Overview](https://docs.y.uno/docs/plugins/vtex/index.md)
 - [Set up Yuno on VTEX](https://docs.y.uno/docs/plugins/vtex/set-up-yuno-on-vtex.md)
 - [Advanced Features](https://docs.y.uno/docs/plugins/vtex/advanced-features.md)
-- [Apple Pay & Google Pay enhanced experience](https://docs.y.uno/docs/plugins/vtex/apple-pay-google-pay-enhanced-experience.md)
+- [Wallet enhanced experience](https://docs.y.uno/docs/plugins/vtex/apple-pay-google-pay-enhanced-experience.md)
 - [Headless SDK integration](https://docs.y.uno/docs/plugins/vtex/direct-sdk-integration.md)
 - [FAQs](https://docs.y.uno/docs/plugins/vtex/faqs.md)
 
@@ -203,6 +213,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 ### Getting Started
 
 - [API Overview](https://docs.y.uno/reference/getting-started/api-reference-overview.md)
+- [Endpoint Overview](https://docs.y.uno/reference/getting-started/endpoint-overview.md)
 - [Authentication](https://docs.y.uno/reference/getting-started/authentication.md)
 - [Environments](https://docs.y.uno/reference/getting-started/api-environments.md)
 - [HTTP Response Codes](https://docs.y.uno/reference/getting-started/response-codes.md)
@@ -315,7 +326,6 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Cancel or Refund a Payment](https://docs.y.uno/reference/payments/cancel-or-refund-a-payment.md)
 - [Cancel or Refund a Payment with Transaction](https://docs.y.uno/reference/payments/cancel-or-refund-payment-with-transaction.md)
 - [Cancel Payment](https://docs.y.uno/reference/payments/cancel-payment.md)
-- [Authorize Payment](https://docs.y.uno/reference/payments/authorize-payment.md)
 - [Capture Authorization](https://docs.y.uno/reference/payments/capture-authorization.md)
 - [Dispute a Chargeback](https://docs.y.uno/reference/payments/disputes.md)
 - [Update a Chargeback Dispute](https://docs.y.uno/reference/payments/update-dispute.md)
@@ -444,8 +454,8 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Retrieve Account Group](https://docs.y.uno/reference/organizations/retrieve-account-group.md)
 - [Update Account Group](https://docs.y.uno/reference/organizations/update-account-group.md)
 - [Delete Account Group](https://docs.y.uno/reference/organizations/delete-account-group.md)
-- [Remove Account from Group](https://docs.y.uno/reference/organizations/remove-account-from-group.md)
 - [List Accounts of Group](https://docs.y.uno/reference/organizations/list-accounts-of-group.md)
+- [Remove Account from Group](https://docs.y.uno/reference/organizations/remove-account-from-group.md)
 
 #### Accounts
 
@@ -490,6 +500,8 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Get Provider Catalog](https://docs.y.uno/reference/organizations/connections/get-provider-catalog.md)
 - [Create a Connection](https://docs.y.uno/reference/organizations/connections/create-connection.md)
 - [Retrieve a Connection](https://docs.y.uno/reference/organizations/connections/retrieve-connection.md)
+- [Update a Connection](https://docs.y.uno/reference/organizations/connections/update-connection.md)
+- [Delete a Connection](https://docs.y.uno/reference/organizations/connections/delete-connection.md)
 
 #### Routing
 
@@ -499,6 +511,21 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [List Routings](https://docs.y.uno/reference/organizations/routing/list-routings.md)
 - [Retrieve a Routing](https://docs.y.uno/reference/organizations/routing/retrieve-routing.md)
 - [Update a Routing](https://docs.y.uno/reference/organizations/routing/update-routing.md)
+
+#### White-label providers
+
+- [White-label Providers Overview](https://docs.y.uno/reference/organizations/whitelabel/overview.md)
+- [List the White-label Provider Overlay](https://docs.y.uno/reference/organizations/whitelabel/list-providers.md)
+- [Retrieve a Provider Overlay](https://docs.y.uno/reference/organizations/whitelabel/retrieve-provider.md)
+- [Update a Provider's Visibility](https://docs.y.uno/reference/organizations/whitelabel/update-provider-visibility.md)
+- [Update Several Providers' Visibility](https://docs.y.uno/reference/organizations/whitelabel/update-providers-visibility.md)
+- [Replace the Provider Allowlist](https://docs.y.uno/reference/organizations/whitelabel/replace-provider-allowlist.md)
+- [Clear the Provider Allowlist](https://docs.y.uno/reference/organizations/whitelabel/clear-provider-allowlist.md)
+- [Retrieve a Provider's Instruction Override](https://docs.y.uno/reference/organizations/whitelabel/retrieve-provider-instructions.md)
+- [Replace a Provider's Instruction Override](https://docs.y.uno/reference/organizations/whitelabel/replace-provider-instructions.md)
+- [Delete a Provider's Instruction Override](https://docs.y.uno/reference/organizations/whitelabel/delete-provider-instructions.md)
+- [Upload a Provider Logo](https://docs.y.uno/reference/organizations/whitelabel/upload-provider-logo.md)
+- [Delete a Provider Logo](https://docs.y.uno/reference/organizations/whitelabel/delete-provider-logo.md)
 
 ### Reports
 
@@ -667,8 +694,15 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Advanced Features](https://docs.y.uno/docs/sdks/additional-platforms/react-native/advanced-features.md)
 - [Code Examples](https://docs.y.uno/docs/sdks/additional-platforms/react-native/code-examples.md)
 
+### Web Frameworks
+
+- [React and Next.js](https://docs.y.uno/docs/sdks/web-frameworks/react-and-nextjs.md)
+- [Migrate from Stripe Elements](https://docs.y.uno/docs/sdks/web-frameworks/migrate-from-stripe-elements.md)
+
 ### External Native Modules
 
+- [External Native Modules (iOS)](https://docs.y.uno/docs/sdks/external-native-modules/ios-overview.md)
+- [External Native Modules (Android)](https://docs.y.uno/docs/sdks/external-native-modules/android-overview.md)
 - [3DS Native SDKs (iOS)](https://docs.y.uno/docs/sdks/external-native-modules/netcetera-3ds-ios.md)
 - [3DS Native SDKs (Android)](https://docs.y.uno/docs/sdks/external-native-modules/netcetera-3ds-android.md)
 
