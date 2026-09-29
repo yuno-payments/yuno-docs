@@ -1,15 +1,29 @@
 ---
 title: "Webhooks (Domains)"
+description: "Planned domain registration events that Yuno does not emit yet, and how to read the registration status instead"
 hidden: true
 ---
 
-Configure webhook endpoints to receive real-time notifications about domain registration events.
+<Warning>
+  **These events are not emitted.** No Yuno service publishes `payment_method_domain.*` events today, so you cannot subscribe to them and nothing reaches your endpoint. This page describes a planned feature, and the event names and payload can change before it ships
+</Warning>
 
-## Webhook Configuration
+## Read the status from the API instead
 
-Webhooks are configured in the Yuno Dashboard under **Settings → Webhooks**. Once configured, all domain registration events will be sent to your webhook endpoint.
+Domain registration is synchronous. The [Register domain](/reference/domains/register-domain) response carries the final status of every domain in the request, so you need neither a callback nor polling to learn the result
 
-## Webhook Events
+| Status       | Meaning                                                                                 |
+| ------------ | --------------------------------------------------------------------------------------- |
+| `CREATED`    | The call to the wallet provider did not complete, and the status does not advance on its own |
+| `REGISTERED` | The domain is verified and can display the wallet button                                 |
+| `ERROR`      | The provider rejected the registration, for example the association file was unreachable |
+| `INACTIVE`   | The domain was unregistered                                                              |
+
+Call [Get domain](/reference/domains/get-domain) when you need to read a domain's status again later, for example after you fix an association file and register the domain a second time. A domain left in `CREATED` will not change: contact Yuno support to have the row cleared, then register the domain again
+
+## Planned events
+
+Yuno plans to publish the following events. None of them is available yet, and no delivery date is committed
 
 | Event                                       | Description                                                 |
 | ------------------------------------------- | ----------------------------------------------------------- |
@@ -18,122 +32,6 @@ Webhooks are configured in the Yuno Dashboard under **Settings → Webhooks**. O
 | `payment_method_domain.verification_failed` | Domain + payment method verification failed                 |
 | `payment_method_domain.deleted`             | Domain + payment method combination deleted                 |
 
-## Webhook Payload Format
+## Configuration and delivery
 
-```json
-{
-  "event": "payment_method_domain.verified",
-  "event_id": "evt_1234567890",
-  "created_at": "2026-01-22T10:40:00Z",
-  "data": {
-    "account_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "domains": [
-      {
-        "id": "dom_1234567890abcdef",
-        "domain": "checkout.example.com",
-        "payment_method": "APPLE_PAY",
-        "status": "VERIFIED",
-        "created_at": "2026-01-22T10:30:00Z",
-        "updated_at": "2026-01-22T10:40:00Z"
-      }
-    ]
-  }
-}
-```
-
-## Example: Multiple registrations send multiple webhooks
-
-When registering `checkout.example.com` with both `APPLE_PAY` and `GOOGLE_PAY`, you'll receive two separate webhooks:
-
-```json
-// Webhook 1 - APPLE_PAY verified
-{
-  "event": "payment_method_domain.verified",
-  "event_id": "evt_001",
-  "created_at": "2026-01-22T10:40:00Z",
-  "data": {
-    "account_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "domains": [
-      {
-        "id": "dom_1234567890abcdef",
-        "domain": "checkout.example.com",
-        "payment_method": "APPLE_PAY",
-        "status": "VERIFIED",
-        "created_at": "2026-01-22T10:30:00Z",
-        "updated_at": "2026-01-22T10:40:00Z"
-      }
-    ]
-  }
-}
-
-// Webhook 2 - GOOGLE_PAY verified
-{
-  "event": "payment_method_domain.verified",
-  "event_id": "evt_002",
-  "created_at": "2026-01-22T10:40:15Z",
-  "data": {
-    "account_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "domains": [
-      {
-        "id": "dom_2345678901bcdefg",
-        "domain": "checkout.example.com",
-        "payment_method": "GOOGLE_PAY",
-        "status": "VERIFIED",
-        "created_at": "2026-01-22T10:30:00Z",
-        "updated_at": "2026-01-22T10:40:15Z"
-      }
-    ]
-  }
-}
-```
-
-## Webhook Security
-
-All webhook requests include `X-Yuno-Signature` header for verification:
-
-```http
-X-Yuno-Signature: t=1674144000,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
-```
-
-### Signature Verification (Node.js example)
-
-```javascript
-const crypto = require('crypto');
-
-function verifyWebhookSignature(payload, signature, secret) {
-  const [timestamp, hash] = signature.split(',').map(s => s.split('=')[1]);
-  const signedPayload = `${timestamp}.${payload}`;
-  const expectedHash = crypto
-    .createHmac('sha256', secret)
-    .update(signedPayload)
-    .digest('hex');
-
-  return crypto.timingSafeEqual(
-    Buffer.from(hash),
-    Buffer.from(expectedHash)
-  );
-}
-
-// Usage in Express.js
-app.post('/webhooks/yuno/domains', (req, res) => {
-  const signature = req.headers['x-yuno-signature'];
-  const payload = JSON.stringify(req.body);
-
-  if (!verifyWebhookSignature(payload, signature, process.env.YUNO_WEBHOOK_SECRET)) {
-    return res.status(401).send('Invalid signature');
-  }
-
-  // Process webhook
-  const { event, data } = req.body;
-  const domainInfo = data.domains[0]; // Each webhook contains one domain
-  console.log(`Received ${event} for ${domainInfo.domain} + ${domainInfo.payment_method}`);
-
-  res.status(200).send('OK');
-});
-```
-
-## Webhook Retry Logic
-
-* Failed webhooks retry with exponential backoff: 1s, 5s, 30s, 2m, 10m, 30m, 1h
-* Webhooks expire after 24 hours
-* Webhook delivery status is visible in Dashboard
+When these events ship, they will follow the same rules as every other Yuno webhook: you register the endpoint in the Dashboard under **Developers › Webhooks**, HMAC signatures arrive in the `x-hmac-signature` header, and a failed delivery is retried up to seven times over 96 hours. Read [Configure webhooks](/docs/webhooks/configure-webhooks) and [Verify webhook signatures (HMAC)](/docs/webhooks/verify-webhook-signatures-hmac) for the behaviour that applies today

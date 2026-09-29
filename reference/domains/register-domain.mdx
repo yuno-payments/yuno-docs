@@ -1,6 +1,19 @@
 ---
 title: "Register Domain"
 openapi: "/openapi/domains/register-domain.json POST /v1/payment-methods/domains"
-hidden: true
-
+description: "Register the domains that display the Apple Pay or Google Pay button on a wallet connection"
 ---
+
+Registers one or more domains against a wallet connection. Yuno sends each domain to the wallet provider and stores the result on that connection
+
+Registration is synchronous. The response carries the final status of every domain you sent, so no polling is required: `REGISTERED` means the domain can display the wallet button, and `ERROR` carries the reason the wallet provider returned. Yuno sends no webhook for domain events, so read the result from this response and use [Get domain](/reference/domains/get-domain) when you need to read a status again later
+
+<Warning>
+  A domain stays in `CREATED` when the call to the wallet provider does not complete. Yuno writes the row once and never updates it, so the status does not advance on its own and reading it again will not change it. Contact Yuno support to have the row cleared, then register the domain again
+</Warning>
+
+<Note>
+  `X-Idempotency-Key` is required, and Yuno stores it for audit without enforcing it. A second call with the same key creates a new registration attempt and a new call to the wallet provider, so every retry adds another row to your domain list. Fix the cause of the failure, such as an association file that Apple could not reach, before you send the request again
+</Note>
+
+Apple allows 99 domain names per merchant identifier, and Yuno registers one identifier per Apple Pay connection, so a connection holds at most 99 domains. Read [Apple Pay prerequisites](/docs/wallets/apple-pay/prerequisites-apple-pay) for what to do when you reach that limit
