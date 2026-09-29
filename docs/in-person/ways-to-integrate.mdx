@@ -89,7 +89,21 @@ How a sale reaches the POS terminal depends on what you run in store. All four t
       }'
     ```
 
-    A sale can be cancelled from your server until the card is read; after that it completes or declines, and you refund it instead. If you get no webhook within 150 seconds, read the payment by its `id` before retrying, and reuse the same `X-Idempotency-Key` on any retry so a second sale is never created.
+    **Options on the request.** `in_person` takes a `terminal_id`, or a `store_id` and `lane` and Yuno picks the terminal on that lane. `options` lets you skip the instalment screen (`"installments": "SKIP"`), choose where the receipt goes (`"receipt": "CHECKOUT" | "TERMINAL" | "NONE"`) and show your own reference on the terminal (`"display_reference": "ORD-48213"`).
+
+    **The sale on the terminal has its own lifecycle.**
+
+    | Status | Meaning |
+    | --- | --- |
+    | `CREATED` | Accepted by Yuno, not yet on the terminal screen |
+    | `IN_PROGRESS` | On the terminal; the customer is paying |
+    | `SUCCEEDED` / `DECLINED` | The acquirer answered; the payment carries the result |
+    | `CANCELED` | Cancelled from your server or by the cashier before the card was read |
+    | `EXPIRED` | Nobody paid within the wait time; nothing was charged |
+
+    **Cancel from your server.** `POST /v1/payments/{id}/cancel` removes a sale that is still `CREATED` or `IN_PROGRESS` from the terminal screen, as long as the card has not been read. After the card is read the sale completes or declines; use a refund instead.
+
+    **Timeouts.** The terminal waits up to 120 seconds for the customer. If you get no webhook within 150 seconds of the request, read the payment by its `id` before retrying, and reuse the same `X-Idempotency-Key` on any retry so a second sale is never created.
 
     **You build:** one API call and a webhook handler. **Offline:** a sale cannot start without connectivity between your server, Yuno and the terminal; sales already on the terminal complete.
 
@@ -114,6 +128,10 @@ How a sale reaches the POS terminal depends on what you run in store. All four t
         Authorised, settled and deposited side by side, with the differences listed. See [Reconciliation](/docs/in-person/reconciliation).
       </Step>
     </Steps>
+
+<Frame caption="Settlement by store for one acquirer: authorised, settled, deposited and the variance.">
+      <img src="/images/in-person/dashboard-reconciliation-settlement.png" alt="Yuno dashboard, In-Person, Reconciliation: settlement by store table for one acquirer" />
+    </Frame>
 
     **You build:** nothing beyond giving access to the files. **Typical use:** large fleets that want the finance benefit while the terminal rollout is scheduled.
 
