@@ -2,6 +2,382 @@
   "sdk": "web",
   "releases": [
     {
+      "version": "1.11.19",
+      "release_date": "2026-09-25",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.19",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "`three_ds.completed` now reports the 3DS outcome instead of the payment outcome",
+          "description": "When the 3DS authentication succeeds and the acquirer then declines the payment, `three_ds.completed` reports `result: authenticated` and the decline stays on `payment.resolved`. The result is read from the last transaction of the payment the SDK already receives (its provider and response code). When that transaction is not available, for example when the final status arrives through the websocket, the result still follows the payment outcome as before. Known limit: providers that authenticate and authorize in a single transaction and do not expose a 3DS response code, today Adyen (about 200 Adyen 3DS sessions per week), report their 3DS declines as `authenticated` until CORECM-20259.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Brazil Pix: document type inferred from the number, and one Full name input instead of first + last name",
+          "description": "For Brazil, when the available documents are CPF and CNPJ (a PASSPORT entry is ignored for Pix), the document-type selector is no longer rendered: the field is labelled \"CPF / CNPJ\" and the type is inferred from the digits (11 or fewer → CPF, more → CNPJ), so masking, validation and the submitted payload are unchanged. The customer form also renders a single \"Full name\" input in place of first and last name, split on the first whitespace run into `first_name` / `last_name`; languages that write names without spaces (ja, ko, zh, th) keep the two inputs. The document auto-detect is on by default and can be switched off per account through the sdk-ms feature `document_type_auto_detect`. The Full name input is on for the Moon Active experience and otherwise opt-in per account through the sdk-ms feature `unified_full_name`; the all-merchants roll-out follows with a Checkout Builder choice (\"Full name\" vs \"First + last name\"). Each name part must have at least 2 characters (the same minimum the two separate inputs applied), so \"Ana B\" is rejected with the \"Enter your first and last name\" message; the 100-character cap is unchanged. Customer-field copy (global, no experience gate): the slim Full name input reads \"Enter full name\" instead of the first-name hint; the slim phone group carries one \"Phone\" label over the prefix selector and the number input keeps only its placeholder (only the number box turns red on error); in English the e-mail field is labelled \"Email\" (Stripe spelling); on the default floating-label form the prefix selector shows its \"Country\" label only while no prefix is selected, so the preselected flag + prefix sit centred in the box.",
+          "group": "Customer form",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "Slim card form keeps the installments while expiry and CVV are typed",
+          "description": "The slim card form keeps the installment options, and the shopper's selected plan, while the expiration date and CVV are being typed. Only card-number events refresh the card information and the installments, so a new card number still reloads them.",
+          "group": "Card form",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Rotating card-brand logos in the empty card-number field (Moon Active experience)",
+          "description": "When the Moon Active experience is enabled for the account, the empty card-number field now shows Visa, Mastercard and Amex plus a fourth slot that rotates Discover, Diners Club, Maestro and Elo every 3 seconds, until the shopper types enough digits for the brand to be detected. The SDK forwards the `moonActiveExperience` flag to the card form; the logos are rendered by sdk-web-card 1.89.3. Merchants without the Moon Active experience are unaffected.",
+          "group": "Card form",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-20235",
+        "CORECM-20096",
+        "CORECM-18835",
+        "CORECM-20342",
+        "CORECM-18925"
+      ]
+    },
+    {
+      "version": "1.11.17",
+      "release_date": "2026-09-24",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.17",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "PayPal Enrollment button no longer hidden or stuck on stale sessions",
+          "description": "The PayPal Enrollment express button (PayPal JS SDK v6) no longer requires `provider_token_id` to render for vault enrollment; only the billing agreement flow uses it. When the merchant creates the payment, the button now gives PayPal the setup token of the enrollment that payment created, falling back to the one from the config, and only the latest click waits for the payment, so a cancelled attempt can no longer be resolved by a later one.",
+          "group": "PayPal",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Venmo button on the PayPal v6 express button",
+          "description": "The PayPal express button now reads the merchant's ENABLE_FUNDING provider-config param: when it includes `venmo`, the SDK creates the PayPal JS SDK v6 instance with the `venmo-payments` component and renders a Venmo button under the PayPal button once PayPal confirms the buyer is eligible (US buyer paying in USD). Venmo pays the same PayPal order. On sandbox credentials the SDK also sends `testBuyerCountry=US`, as PayPal's Venmo test guide requires, so QA outside the US sees the button; production never sends it.",
+          "group": "PayPal",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "CHANGED",
+          "title": "Yuno Pay Button in the Enrollment Flow",
+          "description": "With the Yuno Pay button enabled, the enrollment Save button looks disabled until the form is complete and stays clickable to reveal pending errors. With the Yuno Pay button disabled, enrollment and payment forms keep the always-enabled button.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Apple Pay Card Acceptance Filters",
+          "description": "The Apple Pay request now takes merchantCapabilities and supportedCountries from the checkout session's wallet_card_acceptance (supported_funding_types and supported_countries), so ineligible cards are greyed out in the sheet. Sessions that declare nothing keep today's behaviour.",
+          "group": "Apple Pay",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "Google Pay sheet shows a translated \"Total\"",
+          "description": "The Google Pay payment sheet now labels the amount with \"Total\" in the checkout language instead of Google's default merchant line. When the payment includes a valid `summary_items` breakdown, the sheet keeps the breakdown's own total label.",
+          "group": "Google Pay",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Explicit institution number and transit number fields for Canadian PAD",
+          "description": "Canadian pre-authorized debit (PAD) now collects the bank's Institution number (3 digits) and Transit number (5 digits) as their own explicit fields, instead of relying on the shopper deriving a combined routing number. Both preserve leading zeros as strings and are optional everywhere, so existing integrations that still send `routing_id` are unaffected.",
+          "group": "Alternative Payment Methods",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-19322",
+        "CORECM-19552",
+        "CORECM-19741",
+        "CORECM-20291",
+        "ZPY-907"
+      ]
+    },
+    {
+      "version": "1.11.16",
+      "release_date": "2026-09-22",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.16",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Fraud scripts and the Samsung Pay Portuguese button follow the white-label host",
+          "description": "With `apiUrl` / `assetUrl` set in `Yuno.initialize()`, the Yuno-hosted Forter script, the Riskified SRI beacon and the Portuguese Samsung Pay button image loaded straight from `*.y.uno` instead of the merchant's proxy. They now load from the configured host first. If the proxy can't serve them (route missing, no CORS for SRI scripts, stale copy), they load from Yuno as before, so no fingerprint or button is lost. To keep them on the merchant host, the proxy must forward `/sdk-static-bundles-ms/*` (with its query string, and CORS for SRI) to `<env>.y.uno` and `/wallets/*` to `sdk.prod.y.uno`. Merchants that do not use white-label are unaffected.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-20136"
+      ]
+    },
+    {
+      "version": "1.11.15",
+      "release_date": "2026-09-22",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.15",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Fixed False Payment Timeout Error",
+          "description": "The processing loader no longer shows \"Transaction failed\" after it has been closed or while the page is in the background, and it now uses the timeout configured for the checkout.",
+          "group": "Payment Actions",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-20203"
+      ]
+    },
+    {
+      "version": "1.11.14",
+      "release_date": "2026-09-22",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.14",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Minimal card form copies are translated in every supported language",
+          "description": "The labels and placeholders of the minimal card form (`minimal_card_form_enabled`) were only translated in 10 of the 34 languages the SDK ships, so merchants on any other language — Greek among them — saw the raw translation keys (`minimal_card_number_label`, `minimal_card_number_placeholder`, …) inside the card form instead of the copies. The seven copies now exist in all 34 languages, reusing each language's existing card terminology. Merchants without the flag are unaffected.",
+          "group": "Card Payments",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": []
+    },
+    {
+      "version": "1.11.13",
+      "release_date": "2026-09-22",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.13",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Card brand icons follow the white-label host",
+          "description": "With `apiUrl` / `assetUrl` set in `Yuno.initialize()`, the card brand logo in the card number field (and the other icons inside the card fields) loaded from `icons.prod.y.uno` instead of the merchant's proxy. The SDK now passes both hosts to every card iframe it creates (card form, secure fields mediator, each secure field), so those icons load from the configured host. The saved-card preview logo also needs sdk-web-card 1.89.2. An empty `apiUrl` / `assetUrl` string is now treated as unset. Merchants that do not use white-label are unaffected.",
+          "group": "Card Payments",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Minimal card form for merchants with card as the only selectable method",
+          "description": "Behind the `minimal_card_form_enabled` feature flag (off by default, enabled per account by Yuno), the Full checkout renders a bare card form when card is the only selectable payment method and the unfolded card form is on: no radio row or list frame, a label above every field, expiry and CVV as two separate boxes, and the card brand shown at the start of the number field once the BIN resolves. Express buttons (Google Pay, Apple Pay, PayPal) keep rendering above it. The regular list is used whenever there is a second selectable method, a saved card, Click to Pay, or the slimmer form. Requires sdk-web-card 1.89.2. Merchants without the flag are unaffected.",
+          "group": "Card Payments",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-18774",
+        "CORECM-20101"
+      ]
+    },
+    {
+      "version": "1.11.12",
+      "release_date": "2026-09-21",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.12",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "CHANGED",
+          "title": "The Full checkout shows its payment methods once, fully loaded",
+          "description": "The Full and Seamless Full checkouts show a compact loader until the express buttons (Google Pay, Apple Pay, PayPal and the others) and the card fields are ready, then grow into the complete payment method list in one short animation, instead of showing the list first and adding each button as it loads. After 2 seconds the list is shown anyway and a slower button appears when it is ready. Enabled per merchant with the `reveal_methods_together_enabled` feature flag; without it the checkout loads as before.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-20111"
+      ]
+    },
+    {
+      "version": "1.11.11",
+      "release_date": "2026-09-21",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.11",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Payment Link: the selected payment method follows the Payment Link accent color",
+          "description": "On a Payment Link, the border of the selected payment method took the accent color of the SDK Checkout styling instead of the one published for the Payment Link in Checkout Builder. The Payment Link page now hands its accent color to the SDK, which uses it in place of the SDK Checkout one. Payment Links without published styling, and every other integration, keep the current behavior. No merchant integration changes are required.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-20110",
+        "YSHUB-6961"
+      ]
+    },
+    {
+      "version": "1.11.10",
+      "release_date": "2026-09-19",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.10",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "CHANGED",
+          "title": "Android phones no longer load Apple Pay resources",
+          "description": "Android phones now skip Apple Pay right away: the SDK no longer downloads the Apple Pay button code or Apple's SDK there, and no longer requests the Apple Pay configuration, including in the external buttons flows. On those phones Apple answered that the device cannot pay in nearly every production session, and these downloads took up to several seconds on slow connections, competing with the other wallet buttons. Because Apple Pay no longer takes the express slot on those phones, Google Pay is shown as the express button instead of in the payment method list. As a result, the rare Android phones where Apple allowed paying through a QR code no longer show the Apple Pay button. Android tablets and desktop browsers still ask Apple and keep showing it where Apple allows it, and so does any page that already loads Apple's SDK itself.",
+          "group": "Apple Pay",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-20056"
+      ]
+    },
+    {
+      "version": "1.11.9",
+      "release_date": "2026-09-18",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.9",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "PayPal Enrollment on JS SDK v6",
+          "description": "The PayPal enrollment button (vault and billing agreement) now uses PayPal's JS SDK v6, the same one as the PayPal payment button, so a checkout no longer downloads two PayPal SDKs and the button renders directly in the page instead of inside an iframe.",
+          "group": "PayPal",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "CHANGED",
+          "title": "The PayPal Enrollment button gets its configuration earlier on the Full checkout",
+          "description": "The Full and Seamless Full checkouts request some payment method configurations early, before the payment method list is known, so the express buttons that need them do not wait. The early PayPal request was almost never used, because very few checkouts enable the standard PayPal button. It is replaced by an early request for PayPal Enrollment, which is enabled far more often.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "CHANGED",
+          "title": "Devices that cannot pay with Apple Pay no longer request its configuration",
+          "description": "The Apple Pay button now asks Apple whether the device can pay before it requests the Apple Pay configuration, instead of after. On devices where the answer is no (most Android phones), the SDK skips the configuration request, the backend Apple Pay session behind it and the amount request, which frees network and main-thread time for the other wallet buttons. The early configuration requests of the Full checkouts follow the same rule. Every device that shows the Apple Pay button today keeps showing it, including third-party desktop browsers and the Android devices where Apple allows paying through a QR code.",
+          "group": "Apple Pay",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "CHANGED",
+          "title": "The Google Pay button checks eligibility earlier",
+          "description": "The Full and Seamless Full checkouts and the external buttons start the Google Pay eligibility check as soon as the checkout knows Google Pay is enabled, instead of after the payment method list renders, so the button appears sooner. Shoppers who cannot use Google Pay see exactly what they saw before.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "PayPal retry after a failed start",
+          "description": "When PayPal's checkout window failed to open, clicking the button again created a second payment for the same purchase. The retry now reuses the payment that was already created instead of creating another one.",
+          "group": "PayPal",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "Click to Pay email form is fully translated",
+          "description": "After the \"or\" separator fix in 1.11.8, the rest of the Click to Pay email form was still in English in Arabic, German, French, Italian, Japanese, Korean, Dutch, Polish, Russian, Swedish, Turkish, Vietnamese and Chinese (simplified and traditional): both option labels, the \"How does Click to Pay use my information?\" helper and its tooltip, and the \"add this card to Click to Pay\" checkbox are now translated. Filipino, Indonesian, Malay and Thai had no translation for this form and showed it in English; they are now translated too. The transaction error message is also translated in Korean and corrected in Japanese and Turkish, where it wrongly said the payment method could not be deleted.",
+          "group": "Payment Methods",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "CHANGED",
+          "title": "Express buttons load faster inside the Instagram and Facebook apps on Android",
+          "description": "Inside the Instagram and Facebook apps on Android, the fraud prevention scripts that the express buttons (PayPal, Google Pay, Apple Pay, Samsung Pay, Revolut Pay) and the preselected payment method start while the checkout loads now start once those buttons have finished loading, or after 3 seconds at most. The buttons appear sooner on these devices and are less likely to be hidden by the load timeout. If the shopper pays before the scripts have started, they start at that moment and the payment waits a little longer for the fraud data. Other browsers are unchanged.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "CHANGED",
+          "title": "Checkouts with a session request country data once",
+          "description": "Every checkout mount asked for country data twice when it had a checkout session: once by country and once by session. Both answers carry the same country list, links and payment method data, and the session one also carries the merchant's own document types, so the SDK now asks only by session and keeps the request by country for flows without a session. Phone prefixes, document types, privacy links and card brands come from that single answer across card, customer, Click to Pay and PayPal Braintree forms.",
+          "group": "Performance",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-19974",
+        "CORECM-19989",
+        "CORECM-20056",
+        "CORECM-20060",
+        "CORECM-20087",
+        "CORECM-20094",
+        "CORECM-20095",
+        "CORECM-20107",
+        "CORECM-20109"
+      ]
+    },
+    {
+      "version": "1.11.8",
+      "release_date": "2026-09-18",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.11.8",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Click to Pay shows the \"or\" separator in the shopper's language",
+          "description": "The separator between \"access my linked cards\" and \"enter the card manually\" in the Click to Pay email and one-time-code screens read \"Ó\" in Portuguese and Spanish, and stayed in English in fourteen other languages. It now reads \"OU\" in Portuguese, \"O\" in Spanish, and is translated in Arabic, German, French, Italian, Japanese, Korean, Dutch, Polish, Russian, Swedish, Turkish, Vietnamese and Chinese.",
+          "group": "Payment Methods",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-19718",
+        "CORECM-20095"
+      ]
+    },
+    {
       "version": "1.11.7",
       "release_date": "2026-09-17",
       "upgrade": {
@@ -201,6 +577,101 @@
       ],
       "consumed_tickets": [
         "CORECM-19916"
+      ]
+    },
+    {
+      "version": "1.10.25",
+      "release_date": "2026-09-24",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.10.25",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "`three_ds.completed` now reports the 3DS outcome instead of the payment outcome",
+          "description": "When the 3DS authentication succeeds and the acquirer then declines the payment, `three_ds.completed` reports `result: authenticated` and the decline stays on `payment.resolved`. The result is read from the last transaction of the payment the SDK already receives (its provider and response code). When that transaction is not available, for example when the final status arrives through the websocket, the result still follows the payment outcome as before. Known limit: providers that authenticate and authorize in a single transaction and do not expose a 3DS response code, today Adyen (about 200 Adyen 3DS sessions per week), report their 3DS declines as `authenticated` until CORECM-20259.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-20235"
+      ]
+    },
+    {
+      "version": "1.10.24",
+      "release_date": "2026-09-23",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.10.24",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "ADDED",
+          "title": "Venmo renders in sandbox for testers outside the US",
+          "description": "On sandbox credentials the SDK now loads the PayPal JS SDK with `buyer-country=US` whenever the merchant's ENABLE_FUNDING includes `venmo`, as PayPal's Venmo test guide requires, so QA outside the US sees the Venmo button. Production builds never send it.",
+          "group": "PayPal",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-19322"
+      ]
+    },
+    {
+      "version": "1.10.23",
+      "release_date": "2026-09-18",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.10.23",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Click to Pay shows the \"or\" separator in the shopper's language",
+          "description": "The separator between \"access my linked cards\" and \"enter the card manually\" in the Click to Pay email and one-time-code screens read \"Ó\" in Portuguese and Spanish, and stayed in English in fourteen other languages. It now reads \"OU\" in Portuguese, \"O\" in Spanish, and is translated in Arabic, German, French, Italian, Japanese, Korean, Dutch, Polish, Russian, Swedish, Turkish, Vietnamese and Chinese.",
+          "group": "Payment Methods",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-20095"
+      ]
+    },
+    {
+      "version": "1.10.22",
+      "release_date": "2026-09-17",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.10.22",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "PayPal button container grows with the rendered buttons",
+          "description": "The PayPal, PayPal enrollment and PayPal Braintree button containers now grow with the buttons PayPal decides to render (e.g. PayPal + Venmo + Pay Later) instead of overlapping the content below. With a single button nothing changes. Stable `__wrapper` and `__loading` class names were added for merchant styling.",
+          "group": "PayPal",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "PayPal enable-funding support (Venmo)",
+          "description": "The SDK now reads the merchant's ENABLE_FUNDING provider-config param and passes it as enable-funding when loading the PayPal JS SDK (button and enrollment flows), so funding sources such as Venmo can render.",
+          "group": "PayPal",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-18098",
+        "CORECM-19322",
+        "CORECM-20019",
+        "CORECM-20020"
       ]
     },
     {
@@ -1051,6 +1522,73 @@
       ]
     },
     {
+      "version": "1.9.46",
+      "release_date": "2026-09-24",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.9.46",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "`three_ds.completed` now reports the 3DS outcome instead of the payment outcome",
+          "description": "When the 3DS authentication succeeds and the acquirer then declines the payment, `three_ds.completed` reports `result: authenticated` and the decline stays on `payment.resolved`. The result is read from the last transaction of the payment the SDK already receives (its provider and response code). When that transaction is not available, for example when the final status arrives through the websocket, the result still follows the payment outcome as before. Known limit: providers that authenticate and authorize in a single transaction and do not expose a 3DS response code, today Adyen (about 200 Adyen 3DS sessions per week), report their 3DS declines as `authenticated` until CORECM-20259.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-20235"
+      ]
+    },
+    {
+      "version": "1.9.45",
+      "release_date": "2026-09-19",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.9.45",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Fixed SEPA Enrollment Bank Details",
+          "description": "Enrollment only sent the account number, beneficiary name and routing number when all three were filled in, so methods that do not ask for a routing number (SEPA Direct Debit) lost the other two. Each field is now sent whenever it has a value.",
+          "group": "Lite Web SDK",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "ANA-1080"
+      ]
+    },
+    {
+      "version": "1.9.44",
+      "release_date": "2026-09-18",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.9.44",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Click to Pay shows the \"or\" separator in the shopper's language",
+          "description": "The separator between \"access my linked cards\" and \"enter the card manually\" in the Click to Pay email and one-time-code screens read \"Ó\" in Portuguese and Spanish, and stayed in English in fourteen other languages. It now reads \"OU\" in Portuguese, \"O\" in Spanish, and is translated in Arabic, German, French, Italian, Japanese, Korean, Dutch, Polish, Russian, Swedish, Turkish, Vietnamese and Chinese.",
+          "group": "Payment Methods",
+          "migration_guide": null,
+          "links": []
+        }
+      ],
+      "consumed_tickets": [
+        "CORECM-19581",
+        "CORECM-20019",
+        "CORECM-20020",
+        "CORECM-20095",
+        "YSHUB-6785"
+      ]
+    },
+    {
       "version": "1.9.42",
       "release_date": "2026-09-14",
       "upgrade": {
@@ -1896,6 +2434,42 @@
           "title": "More Resilient Asset Resolution",
           "description": "Guard the webpack public path when running under Vite, skip duplicate `/v<x.y>` suffixes when the asset URL already includes one, and use the configured `apiUrl` directly as the API client base URL to avoid region-prefix corruption.",
           "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        }
+      ]
+    },
+    {
+      "version": "1.8.17",
+      "release_date": "2026-09-24",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.8.17",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "`three_ds.completed` now reports the 3DS outcome instead of the payment outcome",
+          "description": "When the 3DS authentication succeeds and the acquirer then declines the payment, `three_ds.completed` reports `result: authenticated` and the decline stays on `payment.resolved`. The result is read from the last transaction of the payment the SDK already receives (its provider and response code). When that transaction is not available, for example when the final status arrives through the websocket, the result still follows the payment outcome as before. Known limit: providers that authenticate and authorize in a single transaction and do not expose a 3DS response code, today Adyen (about 200 Adyen 3DS sessions per week), report their 3DS declines as `authenticated` until CORECM-20259.",
+          "group": "Core SDK",
+          "migration_guide": null,
+          "links": []
+        }
+      ]
+    },
+    {
+      "version": "1.8.16",
+      "release_date": "2026-09-18",
+      "upgrade": {
+        "snippet": "npm install @yuno-payments/sdk-web@1.8.16",
+        "language": "bash"
+      },
+      "entries": [
+        {
+          "type": "FIXED",
+          "title": "Click to Pay shows the \"or\" separator in the shopper's language",
+          "description": "The separator between \"access my linked cards\" and \"enter the card manually\" in the Click to Pay email and one-time-code screens read \"Ó\" in Portuguese and Spanish, and stayed in English in fourteen other languages. It now reads \"OU\" in Portuguese, \"O\" in Spanish, and is translated in Arabic, German, French, Italian, Japanese, Korean, Dutch, Polish, Russian, Swedish, Turkish, Vietnamese and Chinese.",
+          "group": "Payment Methods",
           "migration_guide": null,
           "links": []
         }
