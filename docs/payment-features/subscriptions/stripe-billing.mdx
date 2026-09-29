@@ -7,6 +7,21 @@ description: "Keep Stripe Billing as your subscription engine — plans, invoice
 
 Keep Stripe Billing as your subscription engine — plans, invoices, billing cycles, dunning — while Yuno processes every charge through your own providers and routing rules. Your subscription logic doesn't change: only the checkout moves to Yuno, and Yuno takes care of the rest.
 
+## Two paths
+
+There are two ways to move subscriptions onto this bridge, depending on whether the subscriber is new or already active on Stripe:
+
+| Path | Who | What the merchant does |
+| :--- | :--- | :--- |
+| New bridged signup | Customers creating a subscription or converting onto the bridge | Create Stripe Customer + Subscription with `payment_behavior: default_incomplete`, then collect the first payment through the **Yuno SDK**. Yuno vaults the card and activates the subscription. |
+| Existing Stripe subscribers | Subscribers already charging on Stripe (`sub_` active) | Yuno copies the card into its vault via **Stripe Forwarding** (no charge). When you activate the cohort, renewals start going through Yuno. Stripe keeps billing until you flip each subscription. |
+
+New signups are documented in the [step-by-step](#step-1--create-the-subscription-in-stripe) below. For existing subscribers, see [Existing subscribers](#existing-subscribers-migrate-the-base).
+
+<Info>
+  **Hybrid is per subscription.** Stripe-processed and Yuno-bridged subscriptions can coexist on the same Stripe account. Enabling the bridge does not force every subscriber onto the Yuno SDK overnight.
+</Info>
+
 ## How it works
 
 Stripe's [third-party payment processing](https://docs.stripe.com/billing/subscriptions/third-party-payment-processing) mode lets an external processor execute the charges for your Billing subscriptions. With Yuno:
@@ -35,7 +50,9 @@ Create the Customer and Subscription in Stripe exactly as you do today (use `pay
 
 ## Step 2 — Collect the first payment with Yuno
 
-Run your normal Yuno checkout and create the payment from your backend with two additions: `vault_on_success` and the `external_subscription` object linking the payment to your Stripe subscription (see [Create payment](/reference/payments/create-payment)):
+Run your normal Yuno checkout and create the payment from your backend with two additions: `vault_on_success` and the `external_subscription` object linking the payment to your Stripe subscription (see [Create payment](/reference/payments/create-payment)).
+
+**The `token` in the request must come from the Yuno SDK.** This is the one-time token returned by your checkout (Seamless, Lite, or Secure Fields). Stripe never sees the card; the card is vaulted in Yuno and only a reference is stored in your Stripe account.
 
 ```json
 {
@@ -61,7 +78,11 @@ That's it. When the payment is approved, Yuno automatically: creates a payment m
 
 ## Free trials
 
-When signup starts a **trial**, there is no first charge — the trigger is the **$0 card verification** of the enrollment flow instead. Create the Stripe subscription with `trial_end` as usual, then enroll the card through the [Enroll payment method](/reference/enroll-payment-method-api) endpoint with the `external_subscription` object nested inside `verify`:
+When signup starts a **trial**, there is no first charge. The trigger is the **$0 card verification** of the enrollment flow instead. Create the Stripe subscription with `trial_end` as usual, then enroll the card through the [Enroll payment method](/reference/enroll-payment-method-api) endpoint with the `external_subscription` object nested inside `verify`:
+
+<Info>
+  This enrollment flow is for **new trialing subscriptions**. If you need to migrate an existing, actively paying subscription to Yuno, see [Existing subscribers](#existing-subscribers-migrate-the-base). Do not ask existing paid subscribers to re-enter their card for a verification; use Stripe Forwarding instead.
+</Info>
 
 ```json
 {
@@ -103,6 +124,54 @@ Refund through the Yuno API or dashboard as with any payment. Yuno reports the r
 
 Collect a new payment (or run a new verification, for trialing subscriptions) sending the same `external_subscription.id`. Yuno vaults the new card and switches the subscription's default payment method in Stripe automatically. Renewals continue without interruption.
 
+## Existing subscribers (migrate the base)
+
+If you already have active Stripe subscriptions, you do not need to ask every subscriber to re-enter their card in the Yuno SDK. Yuno can copy the payment credentials from Stripe into its vault using **Stripe Forwarding**, then flip each subscription to charge through Yuno when you are ready.
+
+<Warning>
+  **Contact your Yuno team to schedule base migration.** This path is not self-serve from the Dashboard today. Yuno runs the copy job and activation on your behalf after onboarding.
+</Warning>
+
+### Prerequisites for base migration
+
+Before Yuno can migrate existing subscribers:
+
+- Complete the standard [bridge onboarding](#prerequisites) (Stripe third-party mode enabled, restricted key shared with Yuno).
+- Enable **Stripe Forwarding** toward Yuno on your Stripe account. This lets Stripe securely send card data to Yuno's vault without exposing it to your backend.
+- The restricted API key must include read access to subscriptions, customers, and charges, plus write access for Forwarding.
+
+### How the copy job works
+
+For each active subscription you want to migrate:
+
+1. Yuno creates a matching customer in its vault.
+2. Stripe Forwarding sends the card data to Yuno, where it is vaulted and enrolled.
+3. Yuno harvests the network transaction id from the most recent successful charge (this is required for compliant merchant-initiated transactions on renewals).
+4. Yuno maps the Stripe subscription id (`sub_...`) to the vaulted token.
+
+**This copy does not charge the card.** It does not change who bills the subscription. Stripe continues to process renewals until you activate the cohort.
+
+### Cohort activation
+
+When you are ready to move a group of subscriptions to Yuno:
+
+1. Yuno attaches its custom payment method reference as the `default_payment_method` on each subscription in Stripe.
+2. The next renewal Stripe issues goes through Yuno (merchant-initiated transaction with stored credentials), and Yuno reports the result back to Stripe.
+
+**Rollback:** if you need to revert a cohort, point `default_payment_method` back to the original Stripe card. The next renewal goes through Stripe again.
+
+### What does not migrate cleanly
+
+- **Link-saved credentials:** cards saved through Stripe Link stay Stripe-native. Forwarding does not cover Link tokens.
+- **Wallets (Apple Pay, Google Pay):** wallet credentials often need a separate migration decision. Discuss with your Yuno team whether to re-collect wallet credentials through the SDK.
+- **Card fingerprints:** the Yuno fingerprint differs from the Stripe fingerprint for the same card. If your systems rely on fingerprint matching, plan a mapping.
+
+### When to use SDK re-collect instead
+
+If Forwarding cannot cover a cohort (for example, a subscriber's original card expired, or you need to migrate a Link-saved credential), fall back to the same flow as [Changing the customer's card](#changing-the-customers-card): the subscriber enters their new card in the Yuno SDK, and Yuno updates the subscription's default payment method automatically.
+
 ## Not supported in this mode
 
 Per Stripe's third-party processing mode: Stripe Checkout, the Stripe-hosted invoice page, Smart Retries and recovery emails, Stripe-managed disputes, and Stripe-initiated refunds. Embedded Stripe pricing tables are not compatible (the checkout is Yuno's).
+
+**Hybrid coexistence is fully supported.** Subscriptions that stay processed by Stripe and subscriptions that go through the Yuno bridge can coexist on the same Stripe account. You do not have to migrate every subscriber at once. Each subscription is independent: some can remain on Stripe's native processing while others use the third-party bridge.
