@@ -6,10 +6,16 @@
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno/v1"
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
     },
     {
-      "url": "https://api.eu.y.uno/v1"
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
     }
   ],
   "components": {
@@ -41,7 +47,7 @@
     "/promotions/quote": {
       "post": {
         "summary": "Create Promotion Quote",
-        "description": "Prices a payment before you create it. Returns a signed quote when a promotion applies, or `204` when nothing applies. Nothing is consumed: the same request returns the same answer while the quote is valid. A quote lives 30 minutes after it is issued, on both credentials. Every condition of the promotion must already be true for a quote to exist. Promotions must be enabled for your organization by Yuno before you can use this endpoint. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).",
+        "description": "Prices a payment before you create it. Returns a signed quote when a promotion applies, or `204` when nothing applies. Nothing is consumed: asking again gives the same price, with a new `quote_id` and a new `expires_at`, and one quote can back several payments. A quote lives 30 minutes after it is issued, on both credentials. Every condition of the promotion must already be true for a quote to exist. Promotions must be enabled for your organization by Yuno before you can use this endpoint. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).",
         "operationId": "create-promotion-quote",
         "requestBody": {
           "content": {
@@ -84,14 +90,14 @@
                       "value": {
                         "type": "number",
                         "format": "float",
-                        "description": "Multiple of 0.0001."
+                        "description": "The amount in the currency's minor units: a whole number of them (two decimals for USD, none for JPY). A value with more decimals gets `204`; a zero-decimal currency with decimals is rejected with `400`."
                       }
                     },
                     "description": "The original amount of the payment, before any promotion. It must be the same `amount` you later send on the payment. Secret key only: send this, not `checkout_session`."
                   },
                   "checkout_session": {
                     "type": "string",
-                    "description": "Checkout session id. Use it with the public key instead of amount; the amount comes from the session."
+                    "description": "Checkout session id (UUID v4). Use it with the public key instead of `amount`; the amount comes from the session. The session must not have been used to pay yet, be at most 2 hours old, and belong to your organization. Never send it with the secret key."
                   },
                   "country": {
                     "type": "string",
@@ -102,7 +108,7 @@
                     "required": [
                       "type"
                     ],
-                    "description": "The payment method of the payment you are about to create, with the same shape as on [Create Payment](/reference/payments/create-payment). For a card, identify it in ONE of two ways: send `bin`, or send `token` or `vaulted_token`. Never both a BIN and a token.",
+                    "description": "The payment method of the payment you are about to create. For a card, identify it in ONE of three ways: send `bin`, or `token`, or `vaulted_token`. Any two of them together are rejected with `400 INVALID_PARAMETERS`.",
                     "properties": {
                       "type": {
                         "type": "string",
@@ -110,29 +116,25 @@
                       },
                       "token": {
                         "type": "string",
-                        "description": "Cards only. The one-time token of the card from the Yuno SDK. Yuno resolves the BIN and the card type from it, so you send no `bin`."
+                        "description": "Cards only. The one-time token of the card from the Yuno SDK. Yuno resolves the BIN and the card type from it, so you send no `bin`. Never together with `bin` or `vaulted_token`."
                       },
                       "vaulted_token": {
                         "type": "string",
-                        "description": "Cards only. The vaulted token of a saved card. Yuno resolves the BIN and the card type from it, so you send no `bin`."
+                        "description": "Cards only. The vaulted token of a saved card. Yuno resolves the BIN and the card type from it, so you send no `bin`. Never together with `bin` or `token`."
                       },
                       "bin": {
                         "type": "string",
-                        "description": "Cards only. The first 6 to 8 digits of the card, digits only. You can also send a longer card prefix, up to 19 digits, and Yuno uses its first 8 digits as the BIN. Fewer than 6 digits, more than 19 digits, or anything but digits is rejected with `400 INVALID_PARAMETERS`. The full card number is never required. Send `bin` when your server holds the card number; send a token when it holds a token; never both. Needed for promotions with a `bins` condition (values or ranges) when you send no token."
+                        "description": "Cards only. The first 6 to 8 digits of the card, digits only. You can also send a longer card prefix, up to 19 digits, and Yuno uses its first 8 digits as the BIN. Fewer than 6 digits, more than 19 digits, or anything but digits is rejected with `400 INVALID_PARAMETERS`. The full card number is never required. Send `bin` when your server holds the card number; send a token when it holds a token; never both. Needed for promotions with a `bins` condition (values or ranges) when you send no token. A 6-digit BIN matches only conditions that cover its whole 6-digit block, so send 8 digits when a promotion lists 8-digit prefixes or narrower ranges."
                       },
                       "card_type": {
                         "type": "string",
-                        "enum": [
-                          "CREDIT",
-                          "DEBIT"
-                        ],
-                        "description": "Cards only. Send it with `bin` when you know it; needed for promotions with a `card_types` condition. With a token you can leave it out: Yuno resolves it from the card."
+                        "description": "Cards only. The card type, for example `CREDIT` or `DEBIT`; it isn't case-sensitive. Send it with `bin` when you know it; needed for promotions with a `card_types` condition. With a token you can leave it out: Yuno resolves it from the card. A card type that the promotion's condition doesn't list gets `204`."
                       }
                     }
                   },
                   "code": {
                     "type": "string",
-                    "description": "The promotion code the customer typed. Omit it for automatic promotions. Not available yet: codes are coming in a later release."
+                    "description": "The promotion code, 3 to 32 letters, digits, `_` or `-`; it isn't case-sensitive. Omit it for automatic promotions. A quote with a `code` considers only the promotion that holds it. Your server sends it: the checkout has no field for the customer to type one, and the Dashboard creates automatic promotions only."
                   }
                 }
               },
@@ -232,7 +234,7 @@
                   "A promotion applies": {
                     "summary": "A promotion applies",
                     "value": {
-                      "quote_id": "qte_0d91f7ac3b2e",
+                      "quote_id": "qte_eyJ2IjoxLCJrIjoi…",
                       "promotions": [
                         {
                           "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
@@ -277,7 +279,7 @@
                   "properties": {
                     "quote_id": {
                       "type": "string",
-                      "description": "Opaque, about 400 characters, up to 1000. Send it unchanged on the payment as `quote_id` on an `additional_data.order.discounts` line with `type: YUNO_PROMOTION`. Never parse it."
+                      "description": "Opaque and long: about 340 to 730 characters today. Store it whole, up to 1000 characters, and send it unchanged on the payment as `quote_id` on an `additional_data.order.discounts` line with `type: YUNO_PROMOTION`. Never parse or shorten it."
                     },
                     "promotions": {
                       "type": "array",
@@ -288,6 +290,7 @@
                         "required": [
                           "id",
                           "name",
+                          "description",
                           "discount",
                           "discount_amount"
                         ],
@@ -299,11 +302,19 @@
                             "type": "string"
                           },
                           "description": {
-                            "type": "string"
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The promotion description. Always present; `null` when the promotion has none."
                           },
                           "discount": {
                             "type": "object",
-                            "description": "The promotion's discount definition: `{ type: PERCENTAGE, value }` or `{ type: FIXED, amounts: [...] }`.",
+                            "description": "The promotion's discount: `type` and `value`. `PERCENTAGE`: `value` is the percentage. `FIXED`: `value` is the fixed amount in the currency of the payment, before it is capped at the payment amount.",
+                            "required": [
+                              "type",
+                              "value"
+                            ],
                             "properties": {
                               "type": {
                                 "type": "string",
@@ -313,28 +324,7 @@
                                 ]
                               },
                               "value": {
-                                "type": [
-                                  "number",
-                                  "null"
-                                ]
-                              },
-                              "amounts": {
-                                "type": [
-                                  "array",
-                                  "null"
-                                ],
-                                "items": {
-                                  "type": "object",
-                                  "properties": {
-                                    "currency": {
-                                      "type": "string"
-                                    },
-                                    "value": {
-                                      "type": "number",
-                                      "format": "float"
-                                    }
-                                  }
-                                }
+                                "type": "number"
                               }
                             }
                           },
@@ -408,12 +398,12 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "BIN too long": {
-                    "summary": "BIN too long",
+                  "BIN not 6 to 19 digits": {
+                    "summary": "BIN not 6 to 19 digits",
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "payment_method.bin must have 6 to 19 digits."
+                        "The field 'payment_method.bin' must contain 6 to 19 digits."
                       ]
                     }
                   },
@@ -422,7 +412,16 @@
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "Send bin or a token in payment_method, not both."
+                        "The fields 'payment_method.bin' and 'payment_method.token' cannot be sent together."
+                      ]
+                    }
+                  },
+                  "Token and vaulted token together": {
+                    "summary": "Token and vaulted token together",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The fields 'payment_method.token' and 'payment_method.vaulted_token' cannot be sent together."
                       ]
                     }
                   },
@@ -431,16 +430,52 @@
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "Send checkout_session, not amount, when calling with the public key."
+                        "The field 'amount' is not allowed when using the public API key."
                       ]
                     }
                   },
-                  "account_id or country don't match the session": {
-                    "summary": "account_id or country don't match the session",
+                  "checkout_session sent with a secret key": {
+                    "summary": "checkout_session sent with a secret key",
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "account_id and country must match the checkout session."
+                        "The field 'checkout_session' is not allowed when using the secret key."
+                      ]
+                    }
+                  },
+                  "account_id doesn't match the session": {
+                    "summary": "account_id doesn't match the session",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'account_id' must match the checkout session."
+                      ]
+                    }
+                  },
+                  "country doesn't match the session": {
+                    "summary": "country doesn't match the session",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'country' must match the checkout session."
+                      ]
+                    }
+                  },
+                  "Checkout session already used": {
+                    "summary": "Checkout session already used",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The checkout session has already been used."
+                      ]
+                    }
+                  },
+                  "Checkout session expired": {
+                    "summary": "Checkout session expired",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The checkout session has expired."
                       ]
                     }
                   }
@@ -463,11 +498,52 @@
               }
             }
           },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid Credentials"
+                      ]
+                    }
+                  },
+                  "Not authenticated": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_CREDENTIALS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid Credentials"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
           "204": {
-            "description": "No promotion applies to this payment context, or Promotions is not enabled for your organization."
+            "description": "No promotion applies to this payment context, Promotions is not enabled for your organization, or Yuno could not price the payment in time. There is no body. Create the payment as usual, with no `quote_id` on a discount line."
           },
           "404": {
-            "description": "404. `code` only: no promotion with that code exists on this account.",
+            "description": "404. `code` only: no promotion of the account holds that code, or its promotion has not started yet.",
             "content": {
               "application/json": {
                 "examples": {
@@ -475,7 +551,7 @@
                     "value": {
                       "code": "PROMOTION_NOT_FOUND",
                       "messages": [
-                        "No promotion with this code exists on this account."
+                        "The promotion does not exist on the account."
                       ]
                     },
                     "summary": "Result"
@@ -499,8 +575,72 @@
               }
             }
           },
+          "408": {
+            "description": "408. Yuno took too long to answer. Treat it like a `204`: create the payment without a promotion.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Request timeout": {
+                    "value": {
+                      "code": "REQUEST_TIMEOUT",
+                      "messages": [
+                        "Request Timeout"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "REQUEST_TIMEOUT"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413. The body is larger than 16 KiB.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Request too large": {
+                    "value": {
+                      "code": "REQUEST_ENTITY_TOO_LARGE",
+                      "messages": [
+                        "Request entity too large"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "REQUEST_ENTITY_TOO_LARGE"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
-            "description": "422. `code` only: the promotion exists but cannot apply.",
+            "description": "422. `code` only: the promotion exists but cannot apply. The `reason` field says why.",
             "content": {
               "application/json": {
                 "examples": {
@@ -510,25 +650,18 @@
                       "code": "PROMOTION_NOT_APPLICABLE",
                       "messages": [
                         "The promotion is disabled."
-                      ]
+                      ],
+                      "reason": "DISABLED"
                     }
                   },
-                  "Promotion ended": {
-                    "summary": "Promotion ended",
+                  "Promotion expired": {
+                    "summary": "Promotion expired",
                     "value": {
                       "code": "PROMOTION_NOT_APPLICABLE",
                       "messages": [
-                        "The promotion ended."
-                      ]
-                    }
-                  },
-                  "Promotion not started": {
-                    "summary": "Promotion not started",
-                    "value": {
-                      "code": "PROMOTION_NOT_APPLICABLE",
-                      "messages": [
-                        "The promotion has not started yet."
-                      ]
+                        "The promotion expired."
+                      ],
+                      "reason": "EXPIRED"
                     }
                   },
                   "Conditions don't match": {
@@ -536,8 +669,9 @@
                     "value": {
                       "code": "PROMOTION_NOT_APPLICABLE",
                       "messages": [
-                        "The payment context doesn't meet the promotion's conditions."
-                      ]
+                        "The payment does not meet the conditions of the promotion."
+                      ],
+                      "reason": "CONDITIONS_NOT_MET"
                     }
                   },
                   "Currency doesn't match": {
@@ -545,8 +679,9 @@
                     "value": {
                       "code": "PROMOTION_NOT_APPLICABLE",
                       "messages": [
-                        "The promotion doesn't have a discount for this currency."
-                      ]
+                        "The promotion does not apply to the currency of the payment."
+                      ],
+                      "reason": "CURRENCY_MISMATCH"
                     }
                   },
                   "Discount would be zero": {
@@ -554,8 +689,9 @@
                     "value": {
                       "code": "PROMOTION_NOT_APPLICABLE",
                       "messages": [
-                        "The discount on this payment would be zero."
-                      ]
+                        "The promotion gives no discount on this amount."
+                      ],
+                      "reason": "ZERO_DISCOUNT"
                     }
                   }
                 },
@@ -571,6 +707,17 @@
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "DISABLED",
+                        "EXPIRED",
+                        "CONDITIONS_NOT_MET",
+                        "CURRENCY_MISMATCH",
+                        "ZERO_DISCOUNT"
+                      ],
+                      "description": "Why the promotion can't apply. Only a `422` carries it."
                     }
                   }
                 }
