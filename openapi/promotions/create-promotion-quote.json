@@ -124,17 +124,17 @@
                       },
                       "bin": {
                         "type": "string",
-                        "description": "Cards only. The first 6 to 8 digits of the card, digits only. You can also send a longer card prefix, up to 19 digits, and Yuno uses its first 8 digits as the BIN. Fewer than 6 digits, more than 19 digits, or anything but digits is rejected with `400 INVALID_PARAMETERS`. The full card number is never required. Send `bin` when your server holds the card number; send a token when it holds a token; never both. Needed for promotions with a `bins` condition (values or ranges) when you send no token. A 6-digit BIN matches only conditions that cover its whole 6-digit block, so send 8 digits when a promotion lists 8-digit prefixes or narrower ranges."
+                        "description": "Cards only. The BIN: the first 6 to 8 digits of the card, digits only. Fewer than 6 digits, more than 8 (a longer card prefix or the full card number included), or anything but digits is rejected with `400 INVALID_PARAMETERS`. Never send the full card number. Send `bin` when your server holds the card number; send a token when it holds a token; never both. Needed for promotions with a `bins` condition (values or ranges) when you send no token. A 6-digit BIN matches only conditions that cover its whole 6-digit block, so send 8 digits when a promotion lists 8-digit prefixes or narrower ranges."
                       },
                       "card_type": {
                         "type": "string",
-                        "description": "Cards only. The card type, for example `CREDIT` or `DEBIT`; it isn't case-sensitive. Send it with `bin` when you know it; needed for promotions with a `card_types` condition. With a token you can leave it out: Yuno resolves it from the card. A card type that the promotion's condition doesn't list gets `204`, or `422` with the reason `CONDITIONS_NOT_MET` when you send a `code`."
+                        "description": "Cards only. The card type, for example `CREDIT` or `DEBIT`; it isn't case-sensitive. Send it with `bin` when you know it; needed for promotions with a `card_types` condition. With a token you can leave it out: Yuno resolves it from the card. A card type that the promotion's condition doesn't list gets `204`."
                       }
                     }
                   },
                   "code": {
                     "type": "string",
-                    "description": "The promotion code, 3 to 32 letters, digits, `_` or `-`; it isn't case-sensitive. Omit it for automatic promotions. A quote with a `code` considers only the promotion that holds it. Your server sends it: the checkout has no field for the customer to type one, and the Dashboard creates automatic promotions only."
+                    "description": "Reserved for promotion codes, which aren't available yet: the Dashboard creates promotions that apply automatically, and no promotion can require a code today. Leave it out. A quote that carries a `code` finds no promotion."
                   }
                 }
               },
@@ -203,22 +203,6 @@
                     "payment_method": {
                       "type": "APPLE_PAY"
                     }
-                  }
-                },
-                "Payment with a promotion code": {
-                  "value": {
-                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-                    "amount": {
-                      "currency": "USD",
-                      "value": 250.0
-                    },
-                    "country": "AR",
-                    "payment_method": {
-                      "type": "CARD",
-                      "bin": "457896",
-                      "card_type": "CREDIT"
-                    },
-                    "code": "WELCOME10"
                   }
                 }
               }
@@ -398,12 +382,12 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "BIN not 6 to 19 digits": {
-                    "summary": "BIN not 6 to 19 digits",
+                  "BIN not 6 to 8 digits": {
+                    "summary": "BIN not 6 to 8 digits",
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The field 'payment_method.bin' must contain 6 to 19 digits."
+                        "The field 'payment_method.bin' must contain 6 to 8 digits."
                       ]
                     }
                   },
@@ -576,10 +560,10 @@
             }
           },
           "204": {
-            "description": "No promotion applies to this payment context, Promotions is not enabled for your organization or is switched off for a while, Yuno could not price the payment in time, or the promotion would make the charge zero. There is no body. Create the payment as usual, with no `quote_id` on a discount line."
+            "description": "No promotion applies to this payment context, Promotions is not enabled for your organization or is temporarily disabled by Yuno, Yuno could not price the payment in time, or the promotion would make the charge zero. There is no body. Create the payment as usual, with no `quote_id` on a discount line."
           },
           "404": {
-            "description": "404. `code` only: no promotion of the account holds that code, or its promotion has not started yet.",
+            "description": "404. The request carries a `code`. Promotion codes aren't available yet, so no promotion holds one: leave `code` out.",
             "content": {
               "application/json": {
                 "examples": {
@@ -669,91 +653,6 @@
                       "items": {
                         "type": "string"
                       }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "422. `code` only: the promotion exists but cannot apply. The `reason` field says why.",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Promotion disabled": {
-                    "summary": "Promotion disabled",
-                    "value": {
-                      "code": "PROMOTION_NOT_APPLICABLE",
-                      "messages": [
-                        "The promotion is disabled."
-                      ],
-                      "reason": "DISABLED"
-                    }
-                  },
-                  "Promotion expired": {
-                    "summary": "Promotion expired",
-                    "value": {
-                      "code": "PROMOTION_NOT_APPLICABLE",
-                      "messages": [
-                        "The promotion expired."
-                      ],
-                      "reason": "EXPIRED"
-                    }
-                  },
-                  "Conditions don't match": {
-                    "summary": "Conditions don't match",
-                    "value": {
-                      "code": "PROMOTION_NOT_APPLICABLE",
-                      "messages": [
-                        "The payment does not meet the conditions of the promotion."
-                      ],
-                      "reason": "CONDITIONS_NOT_MET"
-                    }
-                  },
-                  "Currency doesn't match": {
-                    "summary": "Currency doesn't match",
-                    "value": {
-                      "code": "PROMOTION_NOT_APPLICABLE",
-                      "messages": [
-                        "The promotion does not apply to the currency of the payment."
-                      ],
-                      "reason": "CURRENCY_MISMATCH"
-                    }
-                  },
-                  "Discount would be zero": {
-                    "summary": "Discount would be zero",
-                    "value": {
-                      "code": "PROMOTION_NOT_APPLICABLE",
-                      "messages": [
-                        "The promotion gives no discount on this amount."
-                      ],
-                      "reason": "ZERO_DISCOUNT"
-                    }
-                  }
-                },
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "PROMOTION_NOT_APPLICABLE"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "reason": {
-                      "type": "string",
-                      "enum": [
-                        "DISABLED",
-                        "EXPIRED",
-                        "CONDITIONS_NOT_MET",
-                        "CURRENCY_MISMATCH",
-                        "ZERO_DISCOUNT"
-                      ],
-                      "description": "Why the promotion can't apply. Only a `422` carries it."
                     }
                   }
                 }
