@@ -218,7 +218,8 @@ Example payload:
                             "image_url": null
                         }
                     ],
-                    "taxes": []
+                    "taxes": [],
+                    "discounts": []
                 },
                 "airline": null,
                 "seller_details": null
@@ -432,6 +433,62 @@ Example payload:
   Payments created with an `external_subscription` object (see [Create payment](/reference/payments/create-payment)) carry it in the webhook payload as a top-level `external_subscription` key with `id` and `customer_id`. The key is **omitted** (not sent as `null`) when the payment was created without it, which is why the example above does not show it. Both webhook versions carry the field.
 </Info>
 
+<Info>
+  When the payment carries a [Yuno promotion](/docs/payment-features/promotions), the payload also has `payment.discount_amount` (`currency` and `value`, the total discount), placed right after `amount`. The Yuno discount line comes first in `payment.additional_data.order.discounts` (`type: YUNO_PROMOTION`, `quote_id`, `id`, `unit_amount`, and `name` when Yuno has it), and your own discount lines follow it with `type: MERCHANT`. `payment.amount.value` stays the amount you sent, and `payment.transactions.amount` is the amount charged. Without a promotion, `discount_amount` is omitted and the discount lines are exactly as you sent them. Both webhook versions carry the field. The excerpt below shows only the fields that change.
+</Info>
+
+```json Payment with a Yuno promotion (excerpt)
+{
+    "type": "payment",
+    "type_event": "payment.purchase",
+    "version": 2,
+    "data": {
+        "payment": {
+            "status": "SUCCEEDED",
+            "sub_status": "APPROVED",
+            "amount": {
+                "currency": "USD",
+                "value": 250.0,
+                "refunded": 0.0,
+                "captured": 0.0
+            },
+            "discount_amount": {
+                "currency": "USD",
+                "value": 25.0
+            },
+            "additional_data": {
+                "order": {
+                    "discounts": [
+                        {
+                            "type": "YUNO_PROMOTION",
+                            "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
+                            "name": "10% off with credit cards - Mother's Day",
+                            "unit_amount": 25.0,
+                            "quote_id": "qte_…",
+                            "discount_indicator": null,
+                            "discount_rate": null
+                        },
+                        {
+                            "type": "MERCHANT",
+                            "id": "LOYALTY-5",
+                            "name": "Loyalty 5%",
+                            "unit_amount": 12.5,
+                            "discount_indicator": null,
+                            "discount_rate": null
+                        }
+                    ]
+                }
+            },
+            "transactions": {
+                "type": "PURCHASE",
+                "status": "SUCCEEDED",
+                "amount": 225.0
+            }
+        }
+    }
+}
+```
+
 ### Payment Webhook V1
 
 Example payload:
@@ -536,7 +593,8 @@ Example payload:
                   "manufacture_part_number":"XYZ123456",
                   "image_url":null
                }
-            ]
+            ],
+            "discounts":[]
          },
          "airline":null
       },
