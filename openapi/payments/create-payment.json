@@ -872,27 +872,79 @@
                           },
                           "discounts": {
                             "type": "array",
-                            "description": "Specifies the discounts array of objects.",
+                            "maxItems": 10,
+                            "description": "Specifies the discounts array of objects (up to 10). A line is either a discount you computed (`MERCHANT`, the default) or a Yuno promotion quote (`YUNO_PROMOTION`). Send the original `amount` with a `YUNO_PROMOTION` line: Yuno computes the discount, fills the line and charges the net. See [Promotions](/docs/payment-features/promotions).",
                             "items": {
-                              "properties": {
-                                "id": {
-                                  "type": "string",
-                                  "description": "ID of the discount (MAX 255; MIN 1)."
+                              "oneOf": [
+                                {
+                                  "title": "MERCHANT",
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "name",
+                                    "unit_amount"
+                                  ],
+                                  "properties": {
+                                    "type": {
+                                      "type": "string",
+                                      "enum": [
+                                        "MERCHANT"
+                                      ],
+                                      "description": "The type of the discount line. `MERCHANT` is the default."
+                                    },
+                                    "id": {
+                                      "type": "string",
+                                      "minLength": 3,
+                                      "maxLength": 255,
+                                      "description": "ID of the discount (MAX 255; MIN 3)."
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "minLength": 3,
+                                      "maxLength": 255,
+                                      "description": "Name of the discount (MAX 255; MIN 3)."
+                                    },
+                                    "unit_amount": {
+                                      "type": "number",
+                                      "format": "float",
+                                      "description": "The unit amount of the discount (multiple of 0.0001). Informational: it is already included in `amount`."
+                                    },
+                                    "discount_indicator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "Y",
+                                        "N"
+                                      ],
+                                      "description": "Whether a discount was applied to the line."
+                                    },
+                                    "discount_rate": {
+                                      "type": "number",
+                                      "description": "The discount rate applied to the line (multiple of 0.0001)."
+                                    }
+                                  }
                                 },
-                                "name": {
-                                  "type": "string",
-                                  "description": "Name of the discount (MAX 255; MIN 1)."
-                                },
-                                "unit_amount": {
-                                  "type": "number",
-                                  "description": "The unit amount of the discount (multiple of 0.0001).",
-                                  "format": "float"
+                                {
+                                  "title": "YUNO_PROMOTION",
+                                  "type": "object",
+                                  "required": [
+                                    "quote_id"
+                                  ],
+                                  "properties": {
+                                    "type": {
+                                      "type": "string",
+                                      "enum": [
+                                        "YUNO_PROMOTION"
+                                      ],
+                                      "description": "The type of the discount line. A line with `quote_id` and no `type` is read as `YUNO_PROMOTION`. This type is accepted only on Create Payment, and only one such line per payment."
+                                    },
+                                    "quote_id": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "description": "The id of a promotion quote (MAX 1000; no whitespace), unchanged from [Create Promotion Quote](/reference/promotions/create-promotion-quote). A `YUNO_PROMOTION` line does not accept `id`, `name` or `unit_amount`."
+                                    }
+                                  }
                                 }
-                              },
-                              "required": [
-                                "unit_amount"
-                              ],
-                              "type": "object"
+                              ]
                             }
                           },
                           "sales_channel": {
@@ -5047,6 +5099,41 @@
                       }
                     },
                     "workflow": "DIRECT"
+                  }
+                },
+                "Card - With a Yuno promotion": {
+                  "value": {
+                    "description": "Card payment with a Yuno promotion",
+                    "account_id": "<account_id>",
+                    "merchant_order_id": "0000023",
+                    "country": "US",
+                    "merchant_reference": "reference-001",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 5000
+                    },
+                    "customer_payer": {
+                      "id": "<customer_id>",
+                      "merchant_customer_id": "1690161049",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "johndoe@example.com"
+                    },
+                    "workflow": "DIRECT",
+                    "payment_method": {
+                      "type": "CARD",
+                      "vaulted_token": "<vaulted_token>"
+                    },
+                    "additional_data": {
+                      "order": {
+                        "discounts": [
+                          {
+                            "type": "YUNO_PROMOTION",
+                            "quote_id": "qte_…"
+                          }
+                        ]
+                      }
+                    }
                   }
                 }
               }
@@ -11119,6 +11206,371 @@
                       "simplified_mode": false
                     },
                     "summary": "Wallet Direct"
+                  },
+                  "Card - With a Yuno promotion": {
+                    "value": {
+                      "id": "6c44ed29-cc51-4479-a5eb-108afdaadd50",
+                      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                      "description": "Card payment with a Yuno promotion",
+                      "country": "US",
+                      "status": "SUCCEEDED",
+                      "sub_status": "APPROVED",
+                      "merchant_order_id": "1744403449",
+                      "created_at": "2025-04-11T20:30:49.825637Z",
+                      "updated_at": "2025-04-11T20:30:51.953868Z",
+                      "amount": {
+                        "captured": 0,
+                        "currency": "USD",
+                        "currency_conversion": null,
+                        "refunded": 0,
+                        "value": 15000
+                      },
+                      "discount_amount": {
+                        "currency": "USD",
+                        "value": 1500
+                      },
+                      "checkout": {
+                        "session": "7fb7093e-dc67-4c7a-80c5-d25cf5e6ff27",
+                        "sdk_action_required": false
+                      },
+                      "payment_method": {
+                        "vaulted_token": "dcc06b32-43ad-4627-aa75-c631eb50c2ac",
+                        "type": "CARD",
+                        "vault_on_success": true,
+                        "token": "8cabcd5c-1b40-4407-b14a-14ab21741865",
+                        "parent_payment_method_type": null,
+                        "payment_method_detail": {
+                          "card": {
+                            "verify": false,
+                            "capture": true,
+                            "installments": 1,
+                            "installments_plan_id": null,
+                            "first_installment_deferral": 0,
+                            "installments_type": "",
+                            "installment_amount": null,
+                            "soft_descriptor": "",
+                            "authorization_code": "835631",
+                            "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
+                            "voucher": null,
+                            "card_data": {
+                              "holder_name": "Fannie Weissnat",
+                              "iin": "41961111",
+                              "lfd": "0010",
+                              "number_length": 16,
+                              "security_code_length": 1,
+                              "brand": "VISA",
+                              "issuer_name": "METABANK",
+                              "issuer_code": null,
+                              "country_code": "US",
+                              "category": "PREPAID RELOADABLE",
+                              "type": "DEBIT",
+                              "three_d_secure": {
+                                "version": null,
+                                "electronic_commerce_indicator": null,
+                                "cryptogram": null,
+                                "transaction_id": null,
+                                "directory_server_transaction_id": null,
+                                "pares_status": null,
+                                "acs_id": null
+                              },
+                              "fingerprint": "5605f3e4-69e7-4a9f-9646-2ac8c2e33e12",
+                              "expiration_month": 3,
+                              "expiration_year": 24
+                            },
+                            "stored_credentials": {
+                              "reason": null,
+                              "usage": null,
+                              "subscription_agreement_id": null,
+                              "network_transaction_id": null
+                            }
+                          }
+                        }
+                      },
+                      "customer_payer": {
+                        "id": "94121f98-98f7-4d57-aa5f-228401d35b12",
+                        "merchant_customer_id": "1744402154",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "gender": "",
+                        "date_of_birth": "1990-02-28",
+                        "email": "john.doe2@gmail.com",
+                        "nationality": "US",
+                        "ip_address": "192.168.123.167",
+                        "device_fingerprint": "hi88287gbd8d7d782ge....",
+                        "device_fingerprints": [],
+                        "browser_info": {
+                          "user_agent": "string",
+                          "accept_header": "string",
+                          "accept_content": null,
+                          "accept_browser": null,
+                          "color_depth": "string",
+                          "screen_height": "string",
+                          "screen_width": "string",
+                          "javascript_enabled": true,
+                          "java_enabled": null,
+                          "browser_time_difference": null,
+                          "language": "string"
+                        },
+                        "document": {
+                          "document_type": "SSN",
+                          "document_number": "38799992"
+                        },
+                        "phone": {
+                          "number": "5551234567",
+                          "country_code": "1"
+                        },
+                        "billing_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 502",
+                          "country": "US",
+                          "state": "California",
+                          "city": "Los Angeles",
+                          "zip_code": "90001",
+                          "neighborhood": "Test"
+                        },
+                        "shipping_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 502",
+                          "country": "US",
+                          "state": "California",
+                          "city": "Los Angeles",
+                          "zip_code": "90001",
+                          "neighborhood": "Test"
+                        },
+                        "merchant_customer_created_at": "2023-08-05T14:43:58.980718Z"
+                      },
+                      "additional_data": {
+                        "order": {
+                          "discounts": [
+                            {
+                              "type": "YUNO_PROMOTION",
+                              "quote_id": "qte_…",
+                              "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
+                              "name": "10% off with credit cards - Mother's Day",
+                              "unit_amount": 1500,
+                              "discount_indicator": null,
+                              "discount_rate": null
+                            }
+                          ]
+                        }
+                      },
+                      "transactions": {
+                        "id": "9dc9524a-504d-4eaf-84ef-c881b46aab25",
+                        "type": "PURCHASE",
+                        "status": "SUCCEEDED",
+                        "category": "CARD",
+                        "amount": 13500,
+                        "provider_id": "YUNO_TEST_PAYMENT_GW",
+                        "payment_method": {
+                          "vaulted_token": "dcc06b32-43ad-4627-aa75-c631eb50c2ac",
+                          "type": "CARD",
+                          "vault_on_success": true,
+                          "token": "8cabcd5c-1b40-4407-b14a-14ab21741865",
+                          "parent_payment_method_type": null,
+                          "detail": {
+                            "card": {
+                              "verify": false,
+                              "capture": true,
+                              "installments": 1,
+                              "installments_plan_id": null,
+                              "first_installment_deferral": 0,
+                              "installments_type": "",
+                              "installment_amount": null,
+                              "soft_descriptor": "",
+                              "authorization_code": "835631",
+                              "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
+                              "voucher": null,
+                              "card_data": {
+                                "holder_name": "Fannie Weissnat",
+                                "iin": "41961111",
+                                "lfd": "0010",
+                                "number_length": 16,
+                                "security_code_length": 1,
+                                "brand": "VISA",
+                                "issuer_name": "METABANK",
+                                "issuer_code": null,
+                                "country_code": "US",
+                                "category": "PREPAID RELOADABLE",
+                                "type": "DEBIT",
+                                "three_d_secure": {
+                                  "version": null,
+                                  "electronic_commerce_indicator": null,
+                                  "cryptogram": null,
+                                  "transaction_id": null,
+                                  "directory_server_transaction_id": null,
+                                  "pares_status": null,
+                                  "acs_id": null
+                                },
+                                "fingerprint": "5605f3e4-69e7-4a9f-9646-2ac8c2e33e12",
+                                "expiration_month": 3,
+                                "expiration_year": 24
+                              },
+                              "stored_credentials": {
+                                "reason": null,
+                                "usage": null,
+                                "subscription_agreement_id": null,
+                                "network_transaction_id": null
+                              }
+                            }
+                          }
+                        },
+                        "response_code": "SUCCEEDED",
+                        "response_message": "Transaction successful",
+                        "reason": null,
+                        "description": "Test Payment",
+                        "merchant_reference": "1744403449",
+                        "provider_data": {
+                          "id": "YUNO_TEST_PAYMENT_GW",
+                          "transaction_id": "04d94195-a6ce-455a-b027-5f237f91a576",
+                          "account_id": "",
+                          "status": "SUCCEEDED",
+                          "sub_status": "",
+                          "status_detail": "",
+                          "response_message": null,
+                          "response_code": null,
+                          "raw_response": {
+                            "amount": {
+                              "currency": "USD",
+                              "value": 2100
+                            },
+                            "merchantAccount": "YunoPaymentsECOM",
+                            "reference": "34343434",
+                            "status": "received"
+                          },
+                          "third_party_transaction_id": "",
+                          "third_party_account_id": null,
+                          "iso8583_response_code": null,
+                          "iso8583_response_message": null
+                        },
+                        "connection_data": {
+                          "id": "90defca1-c913-4894-965c-ed536b65951a",
+                          "name": null
+                        },
+                        "created_at": "2025-04-11T20:30:51.097215Z",
+                        "updated_at": "2025-04-11T20:30:51.199007Z"
+                      },
+                      "transactions_history": [
+                        {
+                          "id": "9dc9524a-504d-4eaf-84ef-c881b46aab25",
+                          "type": "PURCHASE",
+                          "status": "SUCCEEDED",
+                          "category": "CARD",
+                          "amount": 15000,
+                          "provider_id": "YUNO_TEST_PAYMENT_GW",
+                          "payment_method": {
+                            "vaulted_token": "dcc06b32-43ad-4627-aa75-c631eb50c2ac",
+                            "type": "CARD",
+                            "vault_on_success": true,
+                            "token": "8cabcd5c-1b40-4407-b14a-14ab21741865",
+                            "parent_payment_method_type": null,
+                            "detail": {
+                              "card": {
+                                "verify": false,
+                                "capture": true,
+                                "installments": 1,
+                                "installments_plan_id": null,
+                                "first_installment_deferral": 0,
+                                "installments_type": "",
+                                "installment_amount": null,
+                                "soft_descriptor": "",
+                                "authorization_code": "835631",
+                                "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
+                                "voucher": null,
+                                "card_data": {
+                                  "holder_name": "Fannie Weissnat",
+                                  "iin": "41961111",
+                                  "lfd": "0010",
+                                  "number_length": 16,
+                                  "security_code_length": 1,
+                                  "brand": "VISA",
+                                  "issuer_name": "METABANK",
+                                  "issuer_code": null,
+                                  "country_code": "US",
+                                  "category": "PREPAID RELOADABLE",
+                                  "type": "DEBIT",
+                                  "three_d_secure": {
+                                    "version": null,
+                                    "electronic_commerce_indicator": null,
+                                    "cryptogram": null,
+                                    "transaction_id": null,
+                                    "directory_server_transaction_id": null,
+                                    "pares_status": null,
+                                    "acs_id": null
+                                  },
+                                  "fingerprint": "5605f3e4-69e7-4a9f-9646-2ac8c2e33e12",
+                                  "expiration_month": 3,
+                                  "expiration_year": 24
+                                },
+                                "stored_credentials": {
+                                  "reason": null,
+                                  "usage": null,
+                                  "subscription_agreement_id": null,
+                                  "network_transaction_id": null
+                                }
+                              }
+                            }
+                          },
+                          "response_code": "SUCCEEDED",
+                          "response_message": "Transaction successful",
+                          "reason": null,
+                          "description": "Test Payment",
+                          "merchant_reference": "1744403449",
+                          "provider_data": {
+                            "id": "YUNO_TEST_PAYMENT_GW",
+                            "transaction_id": "04d94195-a6ce-455a-b027-5f237f91a576",
+                            "account_id": "",
+                            "status": "SUCCEEDED",
+                            "sub_status": "",
+                            "status_detail": "",
+                            "response_message": null,
+                            "response_code": null,
+                            "raw_response": {
+                              "amount": {
+                                "currency": "USD",
+                                "value": 2100
+                              },
+                              "merchantAccount": "YunoPaymentsECOM",
+                              "reference": "34343434",
+                              "status": "received"
+                            },
+                            "third_party_transaction_id": "",
+                            "third_party_account_id": null,
+                            "iso8583_response_code": null,
+                            "iso8583_response_message": null
+                          },
+                          "connection_data": {
+                            "id": "90defca1-c913-4894-965c-ed536b65951a",
+                            "name": null
+                          },
+                          "created_at": "2025-04-11T20:30:51.097215Z",
+                          "updated_at": "2025-04-11T20:30:51.199007Z"
+                        }
+                      ],
+                      "callback_url": "http://www.google.com/?checkoutSession=7fb7093e-dc67-4c7a-80c5-d25cf5e6ff27",
+                      "workflow": "SDK_CHECKOUT",
+                      "metadata": [
+                        {
+                          "key": "ID",
+                          "value": "1234"
+                        }
+                      ],
+                      "fraud_screening": null,
+                      "payment_link_id": "",
+                      "subscription_code": null,
+                      "routing_rules": {
+                        "smart_routing": false,
+                        "monitors": false,
+                        "condition": {
+                          "id": 146526,
+                          "name": null,
+                          "description": null
+                        }
+                      },
+                      "simplified_mode": false
+                    }
                   }
                 },
                 "schema": {
@@ -11288,6 +11740,20 @@
                               "type": "integer",
                               "example": 15000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
                             }
                           }
                         },
@@ -11881,7 +12347,54 @@
                                 "account_funding": {},
                                 "tickets": {},
                                 "fulfillment": {},
-                                "discounts": {}
+                                "discounts": {
+                                  "type": "array",
+                                  "description": "The order's discounts. When the payment carries a Yuno promotion, the `YUNO_PROMOTION` line comes first and Yuno fills it; your own lines follow with `type: MERCHANT`.",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "type": {
+                                        "type": "string",
+                                        "enum": [
+                                          "MERCHANT",
+                                          "YUNO_PROMOTION"
+                                        ],
+                                        "description": "The type of the discount line. Present when the payment carries a Yuno promotion."
+                                      },
+                                      "quote_id": {
+                                        "type": "string",
+                                        "description": "The promotion quote id. `YUNO_PROMOTION` lines only."
+                                      },
+                                      "id": {
+                                        "type": "string",
+                                        "description": "ID of the discount. On a `YUNO_PROMOTION` line, the promotion id."
+                                      },
+                                      "name": {
+                                        "type": "string",
+                                        "description": "Name of the discount. On a `YUNO_PROMOTION` line, the promotion name, when Yuno has it."
+                                      },
+                                      "unit_amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "description": "The amount of the discount. On a `YUNO_PROMOTION` line, the discount in the payment currency."
+                                      },
+                                      "discount_indicator": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ],
+                                        "description": "Whether a discount was applied to the line (`Y` or `N`)."
+                                      },
+                                      "discount_rate": {
+                                        "type": [
+                                          "number",
+                                          "null"
+                                        ],
+                                        "description": "The discount rate applied to the line."
+                                      }
+                                    }
+                                  }
+                                }
                               }
                             },
                             "seller_details": {}
@@ -12614,6 +13127,20 @@
                               "type": "integer",
                               "example": 20000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
                             }
                           }
                         },
@@ -13610,6 +14137,20 @@
                               "type": "integer",
                               "example": 2000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
                             }
                           }
                         },
@@ -14853,6 +15394,20 @@
                             }
                           }
                         },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -15941,6 +16496,20 @@
                             }
                           }
                         },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -17010,6 +17579,20 @@
                             }
                           }
                         },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -18011,6 +18594,20 @@
                             }
                           }
                         },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -19009,6 +19606,20 @@
                               "type": "integer",
                               "example": 5000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
                             }
                           }
                         },
@@ -20045,6 +20656,20 @@
                             }
                           }
                         },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -21040,6 +21665,20 @@
                               "type": "integer",
                               "example": 5000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
                             }
                           }
                         },
@@ -22045,6 +22684,20 @@
                               "type": "integer",
                               "example": 5000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
                             }
                           }
                         },
@@ -23065,6 +23718,20 @@
                             }
                           }
                         },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -23629,6 +24296,20 @@
                               "type": "integer",
                               "example": 100,
                               "default": 0
+                            }
+                          }
+                        },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
                             }
                           }
                         },
@@ -24712,6 +25393,20 @@
                             }
                           }
                         },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
+                            }
+                          }
+                        },
                         "checkout": {
                           "type": "object",
                           "properties": {
@@ -25344,6 +26039,20 @@
                               "type": "integer",
                               "example": 500,
                               "default": 0
+                            }
+                          }
+                        },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
                             }
                           }
                         },
@@ -26379,6 +27088,20 @@
                               "type": "integer",
                               "example": 5000,
                               "default": 0
+                            }
+                          }
+                        },
+                        "discount_amount": {
+                          "type": "object",
+                          "description": "The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the discount, the same as `amount.currency`."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "The discount."
                             }
                           }
                         },
@@ -28921,6 +29644,30 @@
                         "Request with the same idempotency is already in process. Try again in a few seconds."
                       ]
                     }
+                  },
+                  "Invalid discount line": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'additional_data.order.discounts[0].id' must not be sent on a YUNO_PROMOTION discount line."
+                      ]
+                    }
+                  },
+                  "Promotion line on another route": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "additional_data.order.discounts[0].type: YUNO_PROMOTION is accepted only on POST /v1/payments"
+                      ]
+                    }
+                  },
+                  "Idempotency key already used": {
+                    "value": {
+                      "code": "IDEMPOTENCY_DUPLICATED",
+                      "messages": [
+                        "Idempotency is duplicated."
+                      ]
+                    }
                   }
                 },
                 "schema": {
@@ -29001,6 +29748,87 @@
                       "items": {
                         "type": "string",
                         "example": "The merchant has no authorization to use this API"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422. The payment carries a `YUNO_PROMOTION` line that Yuno cannot honour. Nothing was charged and no payment was created. See [Promotions](/docs/payment-features/promotions#the-customer-pays-the-quoted-price-or-the-payment-is-rejected).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Quote id not valid": {
+                    "value": {
+                      "code": "PROMOTION_QUOTE_INVALID",
+                      "messages": [
+                        "The quote id is not valid."
+                      ]
+                    }
+                  },
+                  "Quote expired": {
+                    "value": {
+                      "code": "PROMOTION_QUOTE_EXPIRED",
+                      "messages": [
+                        "The quote expired."
+                      ]
+                    }
+                  },
+                  "Quote for another account": {
+                    "value": {
+                      "code": "PROMOTION_ACCOUNT_MISMATCH",
+                      "messages": [
+                        "The quote is for another account."
+                      ]
+                    }
+                  },
+                  "Amount differs from the quote": {
+                    "value": {
+                      "code": "PROMOTION_AMOUNT_MISMATCH",
+                      "messages": [
+                        "The amount of the payment differs from the amount of the quote."
+                      ]
+                    }
+                  },
+                  "Payment differs from the quote": {
+                    "value": {
+                      "code": "PROMOTION_CONTEXT_MISMATCH",
+                      "messages": [
+                        "The payment differs from the quote."
+                      ]
+                    }
+                  },
+                  "Quote could not be verified": {
+                    "value": {
+                      "code": "PROMOTION_ENGINE_UNAVAILABLE",
+                      "messages": [
+                        "The promotions engine did not answer. Retry the payment."
+                      ]
+                    }
+                  },
+                  "Promotion on a subscription": {
+                    "value": {
+                      "code": "PROMOTION_SUBSCRIPTION_UNSUPPORTED",
+                      "messages": [
+                        "YUNO_PROMOTION discount lines are not supported on subscriptions."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_QUOTE_EXPIRED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "The quote expired."
                       }
                     }
                   }
