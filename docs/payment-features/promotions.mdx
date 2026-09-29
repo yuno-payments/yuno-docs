@@ -93,7 +93,7 @@ Only payment links get this. With the Web SDK the checkout doesn't render a pric
 
 ## Web SDK integration
 
-With the Web SDK (Full and Lite checkout, and external buttons), the SDK asks Yuno for the quote with your public key as soon as the customer has typed the first six digits of a card. It doesn't change your page: you show the price and send the quote on the payment. Promotions aren't applied in Seamless.
+With the Web SDK (Full and Lite checkout, and external buttons), the SDK asks Yuno for the quote with your public key as soon as the customer has typed the first six digits of a card, or picks another payment method that isn't a saved card. It doesn't change your page: you show the price and send the quote on the payment. Promotions aren't applied in Seamless.
 
 1. **Show the price.** Pass `onPromotionQuoteUpdated` to `startCheckout`. It receives the quote (the same object [Create Promotion Quote](/reference/promotions/create-promotion-quote) returns) when a promotion applies, and `null` when it no longer does, for example after the customer changes the card or the quote expires. Show `charge_amount`, the discount and the promotion's name and description, and go back to the regular price on `null`.
 2. **Send the quote on the payment.** When the customer pays, your `yunoCreatePayment` callback receives `tokenWithInformation`. When a quote is live for that card, `tokenWithInformation.quote` holds it. From your server, create the payment with the original `amount` and `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": tokenWithInformation.quote.quote_id }]`, as shown [below](#create-the-payment-with-the-quote). Without the line the payment is charged in full.
@@ -137,7 +137,7 @@ Send the original `amount` and the `quote_id` on a discount line. Yuno computes 
 
 ### What the payment carries
 
-`amount` on the response and on every `payment.*` webhook is the amount you sent, never rewritten. The net amount charged is on the transaction (`transactions.amount`, a number in the payment currency). The total Yuno discount is a new top-level `discount_amount`, the sum of the `YUNO_PROMOTION` lines. Yuno fills your `YUNO_PROMOTION` discount line (`quote_id`, `id` = the promotion id, `unit_amount` = the discount in the payment currency and, when Yuno has it, `name`). Your own `MERCHANT` lines keep their `id`, `name` and `unit_amount`. Yuno asks the provider to charge the net amount; the discount line reaches a provider only where its connector maps order discounts.
+`amount` on the response and on every `payment.*` webhook is the amount you sent, never rewritten. The net amount charged is on the transaction (`transactions.amount`, a number in the payment currency). The total Yuno discount is a new top-level `discount_amount`, the sum of the `YUNO_PROMOTION` lines. Yuno fills your `YUNO_PROMOTION` discount line (`quote_id`, `id` = the promotion id, `unit_amount` = the discount in the payment currency and, when Yuno has it, `name`). Your own `MERCHANT` lines keep their `id`, `name` and `unit_amount`. Yuno asks the provider to charge the net amount; the discount line reaches a provider, without its `quote_id`, only where its connector maps order discounts.
 
 ```json Response
 {
@@ -215,7 +215,7 @@ The verify compares the account, the amount, the expiry, and the checkout sessio
 
 ## What's not included yet
 
-* **Subscriptions and recurring payments.** Promotions apply to one-time payments; a payment that carries a subscription is rejected with `PROMOTION_SUBSCRIPTION_UNSUPPORTED`.
+* **Subscriptions and recurring payments.** Promotions apply to one-time payments; a payment that carries a subscription is rejected with `PROMOTION_SUBSCRIPTION_UNSUPPORTED`, and the checkout page of a subscription payment link shows no promotion and charges the regular price.
 * **Other payment routes.** The quote line is accepted on Create Payment only, not on multi-method payments, payment links or checkout sessions created through the API, or capture. A payment link opened in its checkout page is discounted when the customer pays.
 * **Seamless.** The SDK creates the payment itself, so no promotion is asked or applied.
 * **Combining promotions.** One promotion per payment.
