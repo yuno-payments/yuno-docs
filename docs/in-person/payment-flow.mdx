@@ -1,0 +1,56 @@
+---
+hidden: true
+noindex: true
+title: "Payment flow"
+description: "A chip-and-PIN sale on a Yuno terminal, step by step, and why the acquirer is chosen before the PIN."
+---
+
+A chip-and-PIN sale, step by step. Contactless below the floor limit follows the same path without the PIN and instalment steps.
+
+<Steps>
+  <Step title="Sale starts">
+    Your POS sends the amount and a reference to the terminal. The terminal shows the amount and the payment methods enabled for the store.
+  </Step>
+  <Step title="Yuno chooses the acquirer">
+    From the rules for that store: amount, method, acquirer health. The choice happens now because the PIN will be encrypted with that acquirer's key.
+  </Step>
+  <Step title="Card read">
+    Chip or contactless, on the terminal's certified kernel. The card range decides which instalment plans can be offered.
+  </Step>
+  <Step title="Instalments (Mexico)">
+    The plans available for this card and acquirer are shown; the customer picks one and confirms the monthly amount and total.
+  </Step>
+  <Step title="PIN">
+    Entered on the secure keypad, encrypted to the chosen acquirer. From here the sale can only go to that acquirer.
+  </Step>
+  <Step title="Authorisation">
+    The terminal sends the message directly to the acquirer and receives approve or decline. A timeout is reversed with the same acquirer, never retried with another.
+  </Step>
+  <Step title="Result">
+    The terminal shows the result, hands receipt data to your POS, and reports the sale to Yuno with the acquirer's identifiers.
+  </Step>
+  <Step title="Payment recorded, webhook sent">
+    Yuno creates the payment with `channel: IN_PERSON` and emits the same events as an online payment.
+  </Step>
+  <Step title="Settlement and reconciliation">
+    The acquirer settles to you directly. Yuno matches its settlement file against each sale, per store, and flags any difference.
+  </Step>
+</Steps>
+
+<Note>
+  **A declined card is a new sale.** In store, an issuer decline is final: there is no silent retry with another acquirer, because the PIN was encrypted for the first one. Routing improves cost and resilience across sales, not the outcome of one.
+</Note>
+
+## Instalments
+
+In Mexico, interest-free instalments (meses sin intereses) are offered on the terminal. Yuno sends the terminal the plans available for that card and the chosen acquirer, the customer picks one and confirms the terms before entering the PIN. Which plans are on offer is configured per store, and the same configuration drives your online checkout.
+
+## When something goes wrong
+
+| What happens | What the customer sees | What Yuno does |
+| --- | --- | --- |
+| Issuer declines | The reason from the acquirer, and "try another card" | Records the declined payment and sends `payment.declined` |
+| No answer from the acquirer | "We could not confirm the payment" | The terminal reverses with the same acquirer; nothing is charged; `payment.reversed` |
+| Cashier cancels before the card is read | "Payment cancelled" | Nothing left the terminal; no payment is created |
+| Card removed mid-read | "Insert your card again" | Nothing was charged |
+| Store loses its connection to Yuno | Nothing; sales continue | The terminal uses the last routing rules and reports sales when the connection returns |

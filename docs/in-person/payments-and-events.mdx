@@ -1,0 +1,41 @@
+---
+hidden: true
+noindex: true
+title: "Payments and events"
+description: "What an in-store payment looks like in the Payments API and which webhooks you receive."
+---
+
+In-store sales use the same `payment` resource as online. What is new is the `channel` and a `terminal` block, so you can filter, report and reconcile by store without a separate integration.
+
+<Warning>
+  The example below is **illustrative**. Field names are indicative until general availability.
+</Warning>
+
+```json Payment (in-person)
+{
+  "id": "pay_3f1c…",
+  "channel": "IN_PERSON",
+  "status": "SUCCEEDED",
+  "amount": { "currency": "MXN", "value": 1250.00 },
+  "payment_method": { "type": "CARD", "entry_mode": "CHIP", "brand": "VISA", "last_four": "4242" },
+  "installments": { "count": 6, "interest_free": true },
+  "provider": { "id": "BBVA_MX", "authorization_code": "004312" },
+  "terminal": { "id": "term_8a…", "store_id": "store_polanco_01", "lane": "3" },
+  "created_at": "2027-02-12T18:41:07Z"
+}
+```
+
+## Events
+
+Your existing webhook endpoint receives in-store payments with no change. Filter on `channel` if you want to treat them differently.
+
+| Event | When | Notes |
+| --- | --- | --- |
+| `payment.created` | The sale is recorded by Yuno | Same as online. Carries `channel` and `terminal`. |
+| `payment.succeeded` / `payment.declined` | The acquirer answered | Same as online. Decline reason from the acquirer. |
+| `payment.reversed` | A timed-out authorisation was reversed | In-person only. Nothing was charged. |
+| `terminal.online` / `terminal.offline` | A terminal's connection to Yuno changes | In-person only. Also visible in the dashboard. |
+
+## Reconciliation
+
+Each in-store payment carries the identifiers the acquirer returns (system trace number, retrieval reference, merchant and terminal IDs, business date and batch). Yuno matches the acquirer's settlement file against them, per store and per acquirer, and shows authorised, settled and deposited side by side with the differences listed. The same reconciliation you use for online, extended to the store.
