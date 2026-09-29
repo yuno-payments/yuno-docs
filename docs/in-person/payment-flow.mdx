@@ -1,0 +1,113 @@
+---
+hidden: true
+noindex: true
+title: "Payment flow"
+description: "A chip-and-PIN sale on a POS terminal, step by step: why the acquirer is chosen before the PIN, what contactless and instalments change, voids, refunds, batch close, and what happens when a sale fails."
+---
+
+A chip-and-PIN sale, step by step. A contactless tap below the brand's limit follows the same path without the PIN step.
+
+<Frame caption="One chip-and-PIN sale. The amber band is the moment the sale is bound to one acquirer.">
+  <img src="/images/in-person/payment-sequence.svg" alt="One chip-and-PIN sale. The amber band is the moment the sale is bound to one acquirer." />
+</Frame>
+
+<Steps>
+  <Step title="Sale starts">
+    Your checkout system sends the amount and a reference to the POS terminal (or your server does, in the Cloud type, or the cashier keys it in). The terminal shows the amount and the payment methods enabled for the store.
+  </Step>
+  <Step title="The terminal chooses the acquirer">
+    With the store's published rules: amount, method, instalments requested and acquirer health. The choice happens now because the PIN will be encrypted with that acquirer's key.
+  </Step>
+  <Step title="Card read">
+    Chip or contactless, on the terminal's certified kernel. The card's issuer decides which of the acquirer's instalment plans can be offered.
+  </Step>
+  <Step title="Instalments">
+    The plans available for this card and acquirer are shown; the customer picks one and confirms the monthly amount and total. If your checkout system already sent a plan, the terminal uses it and does not ask.
+  </Step>
+  <Step title="PIN">
+    Entered on the secure keypad, encrypted to the chosen acquirer. From here the sale can only go to that acquirer.
+  </Step>
+  <Step title="Authorisation">
+    The Yuno Payment App sends the message directly to the acquirer and receives approve or decline. A timeout is reversed with the same acquirer, never retried with another.
+  </Step>
+  <Step title="Result">
+    The terminal shows the result and hands the result and receipt lines to your checkout system.
+  </Step>
+  <Step title="Payment recorded, webhook sent">
+    The terminal reports the sale to Yuno with the acquirer's identifiers. Yuno creates the payment with `channel: IN_PERSON`, links it to the customer, and sends the same events as an online payment. If the store's connection to Yuno is down, the report waits on the terminal and arrives later with the same ID.
+  </Step>
+  <Step title="Batch, settlement and reconciliation">
+    The sale joins the terminal's open batch for that acquirer. The acquirer settles to you directly, and Yuno matches its settlement file against each sale, per store. See [Reconciliation](/docs/in-person/reconciliation).
+  </Step>
+</Steps>
+
+<Note>
+  **A declined card is a new sale.** In store, an issuer decline is final: there is no silent retry with another acquirer, because the PIN was encrypted for the first one and an authorisation is only ever sent to one acquirer. Routing improves cost and resilience across sales, not the outcome of one.
+</Note>
+
+## How the terminal picks the acquirer
+
+The Yuno Payment App applies the routing version it last received from Yuno Cloud. The first rule that matches the sale gives an ordered list of acquirers, and the first one that can take the sale wins. Voids and refunds skip this: they go to the sale's original acquirer.
+
+<Frame caption="The acquirer is chosen on the POS terminal, from the published rules, before the PIN.">
+  <img src="/images/in-person/routing-decision.svg" alt="How the POS terminal picks the acquirer: the first matching rule gives an ordered route; the first acquirer that passes the checks wins; otherwise the default route; otherwise the sale fails" />
+</Frame>
+
+## Chip and contactless
+
+|  | Chip (insert) | Contactless (tap) |
+| --- | --- | --- |
+| **PIN** | As the card requires | Not below the brand's contactless limit; above it, the card asks for the PIN on the keypad or for the card to be inserted |
+| **Instalments** | Offered when the card and the acquirer allow | Same; chosen before the PIN |
+| **Acquirer choice** | Before the PIN | Before the PIN |
+| **Typical use** | Larger baskets, instalments | Small baskets, speed at the counter |
+
+The contactless limit is set per market by the card brands and applied by the terminal's kernel configuration.
+
+## Instalments
+
+Instalment plans are offered on the POS terminal from the catalogue of the acquirer that takes the sale: interest-free plans funded by the merchant, or the issuer's own plans, as each acquirer and card support them. Which plans each acquirer offers is configured per store, and a sale with instalments is only routed to an acquirer that offers the plan. The chosen plan is on the payment and on the receipt.
+
+## Other payment methods
+
+Besides cards, the POS terminal can take the local methods your market uses, such as QR payments and wallets. Each method is integrated on demand, following the provider's API specification, and appears on the terminal as one more option. Its payments follow the same statuses, webhooks and reconciliation as cards.
+
+## Voids, refunds and cancellations
+
+| Action | Where | Result |
+| --- | --- | --- |
+| Cancel before the card is read | Checkout system, server or terminal | Nothing left the terminal; nothing is charged |
+| Reverse after a timeout | Automatic, by the terminal | Sent to the same acquirer; the payment shows `ERROR` / `REVERSED_BY_TIMEOUT`; no charge stands |
+| Void before the batch closes | Checkout system, same POS terminal, no card | Sent to the original acquirer; the payment shows `CANCELED` and never settles |
+| Refund at the terminal | Checkout system, with the card present | Sent to the original acquirer; linked to the original payment |
+| Refund without the card | Dashboard or API | Sent to the original acquirer; linked to the original payment |
+
+Voids and refunds never follow the routing rules: they always go to the acquirer that approved the sale.
+
+## Batch close
+
+Each POS terminal keeps one open batch per acquirer. It closes them every night at the time set for the store, or when your checkout system asks. Once a batch is closed, its sales can only be refunded, not voided. If the acquirer's totals for the batch differ from the terminal's, the difference shows up in reconciliation.
+
+## Two cards on one sale
+
+A basket paid with two cards is two payments with the same order reference, one after the other, each routed and authorised on its own. If the second card declines, the first payment stands; refund it if the sale is abandoned.
+
+## Receipts
+
+The terminal produces the receipt lines (masked card, brand, application label, amount, instalment plan, authorisation code, date and time) and hands them to the checkout system for printing. Receipt text and layout are configuration; they never touch the certified core.
+
+## When something goes wrong
+
+<Frame caption="Two different outages. Losing Yuno keeps the store selling; losing the acquirer does not.">
+  <img src="/images/in-person/connectivity.svg" alt="Two different outages. Losing Yuno keeps the store selling; losing the acquirer does not." />
+</Frame>
+
+| What happens | What the customer sees | What Yuno does |
+| --- | --- | --- |
+| Issuer declines | The reason, and "try another card" | Records the declined payment and sends the webhook |
+| No answer from the acquirer | "We could not confirm the payment" | The terminal reverses with the same acquirer; no charge stands; the next sale can go to another acquirer |
+| Cashier cancels before the card is read | "Payment cancelled" | Nothing left the terminal |
+| Card removed mid-read | "Insert your card again" | Nothing was charged |
+| Store loses its connection to Yuno | Nothing; sales continue | The terminal uses the last routing rules and reports sales when the connection returns |
+| An acquirer is down | Nothing, if another acquirer can take the sale | The terminals skip that acquirer for new sales until it recovers |
+| The store's network is down | A clean decline | Nothing is charged; the cashier takes another method |
