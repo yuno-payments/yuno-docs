@@ -84,6 +84,20 @@ How a sale reaches the terminal depends on what you run in store. Yuno supports 
       }'
     ```
 
+    **Options on the request.** `terminal` takes a `terminal_id`, or a `store_id` and `lane` and Yuno picks the terminal on that lane. `options` lets you skip the instalment screen (`"installments": "SKIP"`), choose where the receipt goes (`"receipt": "POS" | "TERMINAL" | "NONE"`) and show your own reference on the terminal (`"display_reference": "ORD-48213"`).
+
+    **The sale on the terminal has its own lifecycle.**
+
+    | Status | Meaning |
+    | --- | --- |
+    | `CREATED` | Accepted by Yuno, not yet on the terminal screen |
+    | `IN_PROGRESS` | On the terminal; the customer is paying |
+    | `SUCCEEDED` / `DECLINED` | The acquirer answered; the payment carries the result |
+    | `CANCELED` | Cancelled from your server or by the cashier before the card was read |
+    | `EXPIRED` | Nobody paid within the wait time; nothing was charged |
+
+    **Cancel from your server.** `POST /v1/payments/{id}/cancel` removes a sale that is still `CREATED` or `IN_PROGRESS` from the terminal screen, as long as the card has not been read. After the card is read the sale completes or declines; use a refund instead.
+
     **You build:** one API call and a webhook handler; you likely have both already. **Yuno provides:** the terminal side.
     **Timeouts:** the terminal waits up to 120 seconds for the customer; if you get no webhook within 150 seconds of the request, query the payment by `id` before retrying, and reuse the `X-Idempotency-Key` on any retry so a second sale is never created.
     **Offline:** a sale cannot start without connectivity between your server, Yuno and the terminal; sales already on the terminal complete.
