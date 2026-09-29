@@ -2,87 +2,175 @@
 hidden: true
 noindex: true
 title: "Payments and events"
-description: "What an in-store payment looks like in the Payments API, its statuses, how to list in-person payments, and which webhooks you receive."
+description: "What an in-store payment looks like in the Payments API, how it links to the customer and to subscriptions, its statuses and decline codes, and which webhooks you receive."
 ---
 
-In-store sales use the same `payment` resource as online. What is new is the `channel` and a `terminal` block, so you can filter, report and reconcile by store without a separate integration.
+In-store sales use the same `payment` resource as online, with the same `status` and `sub_status`. What is new is the `channel` and an `in_person` block, so you can filter, report and reconcile by store, and see the same customer across channels, without a separate integration.
 
 ## The payment
 
 ```json Payment (in-person)
 {
-  "id": "pay_3f1c…",
+  "id": "4f8a2c6e-1b3d-4e5f-9a7c-2d4e6f8a0b13",
+  "account_id": "5beead35-0cd5-4e1c-9a13-b8f48f7f8f3a",
   "channel": "IN_PERSON",
   "status": "SUCCEEDED",
-  "amount": { "currency": "MXN", "value": 1250.00 },
-  "payment_method": { "type": "CARD", "entry_mode": "CHIP", "brand": "VISA", "last_four": "4242" },
-  "installments": { "count": 6, "interest_free": true },
-  "provider": { "id": "BBVA_MX", "authorization_code": "004312", "stan": "003812", "rrn": "627412003812" },
-  "terminal": { "id": "term_8a…", "store_id": "store_polanco_01", "lane": "3" },
+  "sub_status": "APPROVED",
   "merchant_order_id": "ORD-48213",
-  "created_at": "2027-02-12T18:41:07Z"
+  "amount": { "currency": "USD", "value": 125.00, "refunded": 0 },
+  "customer_payer": { "id": "33a9e979-5c1b-4f0e-9d2a-7b3c1e8f6a20" },
+  "payment_method": {
+    "type": "CARD",
+    "detail": {
+      "card": {
+        "entry_mode": "CHIP",
+        "cardholder_verification": "ONLINE_PIN",
+        "installments": 6,
+        "authorization_code": "004312",
+        "retrieval_reference_number": "627412003812",
+        "card_data": {
+          "brand": "VISA",
+          "iin": "450799",
+          "lfd": "4242",
+          "type": "CREDIT",
+          "payment_account_reference": "V0010013022298169667651235942"
+        },
+        "emv": { "aid": "A0000000031010", "application_label": "VISA CREDIT" }
+      }
+    }
+  },
+  "in_person": {
+    "store_id": "7d1c0f5e-3b6a-4e2f-9d4b-2a8e6c1f0b93",
+    "terminal_id": "9b2e4d6f-1a3c-4e5b-8d7f-0c2a4e6b8d13",
+    "lane": "3",
+    "business_date": "2026-10-14",
+    "batch_number": "000118",
+    "routing": { "selected_acquirer": "ACQUIRER_A", "rule_name": "Instalments to Acquirer A" }
+  },
+  "transactions": [
+    {
+      "type": "PURCHASE",
+      "status": "SUCCEEDED",
+      "provider_id": "ACQUIRER_A",
+      "response_code": "SUCCEEDED",
+      "provider_data": {
+        "iso8583_response_code": "00",
+        "stan": "003812",
+        "acquirer_merchant_id": "8012345",
+        "acquirer_terminal_id": "TA104512"
+      }
+    }
+  ],
+  "created_at": "2026-10-14T18:41:07Z"
 }
 ```
 
 | Field | What it carries |
 | --- | --- |
-| `channel` | `IN_PERSON` for every sale taken on a terminal; online payments keep their current channel |
-| `payment_method.entry_mode` | `CHIP`, `CONTACTLESS` or `SWIPE` |
-| `installments` | The plan the customer chose, when any |
-| `provider` | The acquirer that authorised, with its identifiers (authorisation code, STAN, RRN) used for reconciliation |
-| `terminal` | Where the sale happened: terminal, store and lane |
-| `merchant_order_id` | The reference your POS sent, so you can join the payment to your own order |
+| `id` | Created by the POS terminal when the sale starts; the same ID the checkout system received |
+| `channel` | `IN_PERSON` for every sale taken on a POS terminal; online payments keep their current channel |
+| `customer_payer` | The Yuno customer the card belongs to, the same one you see in online payments |
+| `payment_method.detail.card` | Entry mode (`CHIP`, `CONTACTLESS`), how the cardholder was verified, instalments, authorisation code, masked card, the card's payment account reference and the EMV application |
+| `in_person` | Where and when: store, terminal, lane, business date, batch, and which rule chose the acquirer |
+| `transactions[].provider_data` | The acquirer's identifiers (STAN, RRN, merchant and terminal ID) and its raw response code, used for reconciliation |
+| `merchant_order_id` | The reference your checkout system sent, so you can join the payment to your own order |
+
+The PIN, the full card number, the expiry date and the card's cryptogram never reach your checkout system or your servers.
+
+## One customer, in store and online
+
+Every card carries a payment account reference (PAR): an identifier of the card account that is not the card number and is safe to store. Yuno reads it on the POS terminal and on online payments, and links both to the same `customer_payer`. For you this means:
+
+- You know who pays in store: repeat customers, how often they come, which stores they visit.
+- In-store and online purchases of the same customer sit side by side, for loyalty, analytics and customer service.
+- A refund or a dispute can be traced to the customer, whatever the channel of the original purchase.
+
+The link is made on card data only; to attach your own customer ID to an in-store sale, send it in the sale's metadata from your checkout system.
+
+## Subscriptions started in store
+
+A customer can start a subscription at the counter. Your checkout system sends the subscription plan with the sale; the POS terminal takes the first payment and asks the customer to accept that the card is kept for the next charges. Yuno stores the card as a token (never the card number on your side), creates the subscription on the same account, and runs the following charges online, like any Yuno subscription. The in-store payment and the online charges share the same `customer_payer` and appear together in the dashboard.
 
 ## Statuses
 
-| Status | Meaning |
+<Frame caption="How an in-person payment moves between statuses.">
+  <img src="/images/in-person/status-lifecycle.svg" alt="Payment statuses: a sale ends approved, declined, aborted or reversed; an approved sale can later be voided or refunded in part or in full" />
+</Frame>
+
+| `status` / `sub_status` | Meaning |
 | --- | --- |
-| `CREATED` | The terminal has started the sale (Cloud type only; the other types report the sale after authorisation) |
-| `SUCCEEDED` | Authorised by the acquirer |
-| `DECLINED` | The issuer or acquirer declined; `sub_status` carries the mapped reason |
-| `REVERSED` | The terminal got no answer in time and reversed with the same acquirer; nothing was charged |
-| `REFUNDED` | A refund was taken, from the terminal, the dashboard or the API |
+| `SUCCEEDED` / `APPROVED` | Authorised by the acquirer |
+| `DECLINED` / `DECLINED` | The issuer or acquirer declined; `response_code` carries the reason |
+| `CANCELED` / `ABORTED` | Cancelled before the card was read; nothing reached an acquirer |
+| `ERROR` / `REVERSED_BY_TIMEOUT` | No answer in time; the terminal reversed with the same acquirer; no charge stands (`PENDING_REVERSE` while the reversal is being confirmed) |
+| `CANCELED` / `CANCELED` | Voided before the batch closed |
+| `REFUNDED` / `REFUNDED` | Fully refunded |
+| `SUCCEEDED` / `PARTIALLY_REFUNDED` | Part of the amount was refunded |
+
+## Decline reasons
+
+Each acquirer's response code (ISO 8583 field 39) is mapped to Yuno's `response_code`, the same catalogue as online. The original value stays in `provider_data.iso8583_response_code`. The ones cashiers see most:
+
+| `response_code` | ISO 8583 | What the cashier does |
+| --- | --- | --- |
+| `DO_NOT_HONOR` | 05 | Ask for another card |
+| `INSUFFICIENT_FUNDS` | 51 | Ask for another card or a lower amount |
+| `EXPIRED_CARD` | 54 | Ask for another card |
+| `INCORRECT_PIN` | 55 | Start a new sale so the customer can enter the PIN again |
+| `PIN_TRIES_EXCEEDED` | 75 | Ask for another card; the card is blocked for PIN |
+| `PIN_REQUIRED` | 65 | Contactless declined: insert the card and enter the PIN |
+| `PROVIDER_TIMEOUT` | 68 or no answer | Nothing charged; try again |
 
 ## List in-person payments
 
-The existing list endpoint filters by channel, store and terminal, so a store's day is one call.
+The payments list filters by channel, store, terminal and business date, so a store's day is one call.
 
 ```bash List a store's in-person payments
-curl "https://api.y.uno/v1/payments?channel=IN_PERSON&store_id=store_polanco_01&created_from=2027-02-12" \
-  -H "Authorization: Bearer <secret-key>"
+curl "https://api.y.uno/v1/payments?account_id=<account_id>&channel=IN_PERSON&store_id=<store_id>&business_date=2026-10-14" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
 ```
 
 ## Events
 
-Your existing webhook endpoint receives in-store payments with no change. Filter on `channel` if you want to treat them differently.
+Your existing webhook endpoint receives in-store payments with no change: same envelope, same signature (`x-hmac-signature`), same retries. Filter on `data.payment.channel` if you want to treat them differently.
 
-| Event | When | Notes |
+| Event (`type_event`) | When | Notes |
 | --- | --- | --- |
-| `payment.created` | The sale is recorded by Yuno | Same as online. Carries `channel` and `terminal`. |
-| `payment.succeeded` / `payment.declined` | The acquirer answered | Same as online. Decline reason from the acquirer. |
-| `payment.reversed` | A timed-out authorisation was reversed | In-person only. Nothing was charged. |
-| `payment.refunded` | A refund was taken at the terminal | Linked to the original payment. |
-| `terminal.online` / `terminal.offline` | A terminal's connection to Yuno changes | In-person only. Also visible in the dashboard. |
-| `terminal.app_updated` | A terminal picked up a new app version | In-person only. |
+| `payment.purchase` | A sale finished, approved or declined | Same as online; read `status` and `sub_status` |
+| `payment.cancel` | A sale was voided | Same as online |
+| `payment.refund` | A refund was taken, at the terminal or from the dashboard or API | Same as online |
+| `payment.reverse` | A timed-out authorisation was reversed | In-person. No charge stands |
+| `terminal.online` / `terminal.offline` | A POS terminal's connection to Yuno changes | In-person. Also visible in the dashboard |
+| `terminal.app_updated` | A POS terminal installed a new app version | In-person |
+| `host.degraded` / `host.recovered` | An acquirer's timeouts or errors cross the threshold, or recover | In-person. Terminals stop choosing an acquirer that is down |
+| `batch.closed` | A batch closed at the acquirer | In-person. Carries the terminal's and the acquirer's totals |
+| `reconciliation.difference_detected` | A settlement file left a difference for a store and acquirer | In-person |
 
-```json Webhook: payment.succeeded
+```json Webhook: payment.purchase (in-person)
 {
-  "type": "payment.succeeded",
-  "created_at": "2027-02-12T18:41:09Z",
+  "type": "payment",
+  "type_event": "payment.purchase",
+  "account_id": "5beead35-0cd5-4e1c-9a13-b8f48f7f8f3a",
+  "retry": 0,
+  "version": 2,
   "data": {
-    "id": "pay_3f1c…",
-    "channel": "IN_PERSON",
-    "status": "SUCCEEDED",
-    "amount": { "currency": "MXN", "value": 1250.00 },
-    "provider": { "id": "BBVA_MX", "authorization_code": "004312" },
-    "terminal": { "id": "term_8a…", "store_id": "store_polanco_01", "lane": "3" },
-    "merchant_order_id": "ORD-48213"
+    "payment": {
+      "id": "4f8a2c6e-1b3d-4e5f-9a7c-2d4e6f8a0b13",
+      "channel": "IN_PERSON",
+      "status": "SUCCEEDED",
+      "sub_status": "APPROVED",
+      "merchant_order_id": "ORD-48213",
+      "amount": { "currency": "USD", "value": 125.00 },
+      "customer_payer": { "id": "33a9e979-5c1b-4f0e-9d2a-7b3c1e8f6a20" },
+      "in_person": { "store_id": "7d1c0f5e-3b6a-4e2f-9d4b-2a8e6c1f0b93", "lane": "3" }
+    }
   }
 }
 ```
 
 ## Delivery and idempotency
 
-- Events are signed and retried the same way as your online webhooks; nothing changes in your handler beyond reading `channel`.
-- When a terminal was offline, its queued sales are reported when it reconnects and arrive as `payment.created` followed by the final status, with the original `created_at`. Each sale keeps the identifier it was created with, so a repeated report never creates a second payment.
+- Events are signed and retried the same way as your online webhooks; de-duplicate on the payment's `idempotency_key`.
+- When a POS terminal couldn't reach Yuno, its sales are reported when it reconnects, with their original `created_at`. Each sale keeps the ID the terminal gave it, so a repeated report never creates a second payment.
 - Order of arrival is not guaranteed across terminals; order per payment is.
