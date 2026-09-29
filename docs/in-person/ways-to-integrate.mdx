@@ -2,31 +2,14 @@
 hidden: true
 noindex: true
 title: "Integration types"
-description: "Standalone, local, cloud or reconciliation first: how your stores connect to Yuno In-Person Payments, and how to choose."
+description: "Standalone, local, cloud or reconciliation first: how your stores connect to Yuno In-Person Payments, what each one asks of you, and how to choose."
 ---
 
-How a sale reaches the terminal depends on what you run in store. Yuno supports the four models most merchants already know from terminal integrations, and they share the same payment object, webhooks and dashboard, so a merchant can start with one and add another later.
+How a sale reaches the terminal depends on what you run in store. Yuno supports the four models merchants already know from terminal integrations. They share the same payment object, webhooks and dashboard, so a merchant can start with one and add another later.
 
 <Frame>
   <img src="/images/in-person/ways-to-integrate.svg" alt="Four integration types: standalone (cashier keys the amount on the terminal), local (your POS starts the sale over the store network), cloud (your server creates the sale and Yuno wakes the terminal, planned), and reconciliation first (your existing terminals and acquirers, reconciled by Yuno)" />
 </Frame>
-
-## The four types
-
-<CardGroup cols={2}>
-  <Card title="Standalone" icon="tablet-screen-button">
-    **Available in the pilot.** The terminal runs the whole sale on its own: the cashier keys the amount, the customer pays, the receipt prints. No POS integration. The simplest way to put Yuno on a fleet, and the fallback when the POS is down.
-  </Card>
-  <Card title="Local" icon="network-wired">
-    **Available in the pilot.** Your POS starts the sale and receives the result over the terminal's local interface on the store network, the way most tills already talk to their terminal today. Your acquiring contracts and your POS software do not change.
-  </Card>
-  <Card title="Cloud" icon="cloud">
-    **Planned.** Your server creates the in-person payment through the Payments API, Yuno wakes the registered terminal in that store, the customer pays, and you receive the result by webhook. Nothing to install on the till. The path for platforms and POS providers whose merchants own the terminals; being designed with pilot partners.
-  </Card>
-  <Card title="Reconciliation first" icon="scale-balanced">
-    **Available in the pilot.** Connect the acquirers behind your existing terminals and get store-level reconciliation and the fleet dashboard before a single terminal runs Yuno's app. A common first step for large fleets, and unique to Yuno.
-  </Card>
-</CardGroup>
 
 ## Compare
 
@@ -35,7 +18,8 @@ How a sale reaches the terminal depends on what you run in store. Yuno supports 
 | **Where the sale starts** | On the terminal | Your POS | Your server | Your existing setup |
 | **What talks to the terminal** | Nothing; the cashier | Your POS, over the store network | Yuno Cloud | Nothing changes |
 | **Runs on** | Your terminals, Yuno app | Your terminals, Yuno app | Your terminals, Yuno app | Your current terminals and app |
-| **If the store loses internet** | Sales continue; authorisation needs the acquirer link | Same | Cannot start a sale until connectivity returns | Not affected |
+| **You build** | Nothing | The local interface on your POS | The API call and a webhook handler | Nothing |
+| **If the store loses internet** | Sales continue while the acquirer link is up | Same | Cannot start a sale until connectivity returns | Not affected |
 | **Multi-acquirer routing** | Yes | Yes | Yes | No |
 | **Best for** | Small counters, pop-ups, fallback | Retail chains with their own POS | Platforms, billing and POS providers | Any fleet, before or alongside the above |
 | **Availability** | Pilot, Q1 2027 | Pilot, Q1 2027 | Planned | Pilot, Q1 2027 |
@@ -43,6 +27,83 @@ How a sale reaches the terminal depends on what you run in store. Yuno supports 
 <Info>
   **Which one for you?** If you own the terminals and the POS software, go **Local**, and keep **Standalone** as the fallback mode of the same app. If you are a platform whose merchants own the terminals, **Cloud** is the path we are designing with you, and **Reconciliation first** is available meanwhile. Either way, the online integration you already have does not change.
 </Info>
+
+## Each type in detail
+
+<Tabs>
+  <Tab title="Standalone">
+    The terminal runs the whole sale on its own. No POS integration; the cashier keys the amount.
+
+    <Steps>
+      <Step title="Cashier keys the amount">The terminal shows the amount and the payment methods enabled for the store.</Step>
+      <Step title="Customer pays">Card read, instalment plan where it applies, PIN. Yuno has already chosen the acquirer from the store's rules.</Step>
+      <Step title="Result on the terminal">Approved or declined on screen; receipt printed or shown as a code, depending on the model.</Step>
+      <Step title="Yuno records the sale">The payment appears in the dashboard and your webhooks with `channel: IN_PERSON`, like every other type.</Step>
+    </Steps>
+
+    **You build:** nothing. **Yuno provides:** the app, routing, reconciliation, dashboard.
+    **Offline:** sales continue while the terminal can reach the acquirer; the sale record reaches Yuno when the connection to Yuno returns.
+    **Typical use:** small counters, pop-up stores, and the fallback mode when a POS is down.
+  </Tab>
+  <Tab title="Local">
+    Your POS starts the sale and receives the result through the terminal's local interface on the store network, the way most tills already talk to their terminal today.
+
+    <Steps>
+      <Step title="POS sends the sale">Amount, currency, reference, store and lane, over the local interface.</Step>
+      <Step title="Terminal runs the payment">Method, card, instalments, PIN, authorisation with the chosen acquirer.</Step>
+      <Step title="POS receives the result">Approved or declined, authorisation code, masked card, instalment plan, receipt data. The POS prints.</Step>
+      <Step title="Yuno records the sale">Same payment, same webhooks, plus the reference your POS sent so you can join it to your own order.</Step>
+    </Steps>
+
+    | Direction | Fields |
+    | --- | --- |
+    | POS to terminal | amount, currency, reference, store, lane |
+    | Terminal to POS | approved or declined, authorisation code, masked card, instalment plan, receipt data |
+
+    **You build:** the local interface on your POS, or configure the one it already has. **Yuno provides:** everything else.
+    **Offline:** same as Standalone. The POS and terminal keep working on the store network.
+    **Typical use:** retail chains with their own POS software. This is the type the first pilot runs.
+  </Tab>
+  <Tab title="Cloud">
+    <Warning>**Planned.** Being designed with pilot partners; the request below is illustrative.</Warning>
+
+    Your server creates the in-person payment through the Payments API. Yuno wakes the registered terminal in that store, the customer pays, and you receive the result by webhook. Nothing to install on the till.
+
+    <Steps>
+      <Step title="Create the payment">Your server calls the Payments API with the amount, the store and the terminal, or a lane and Yuno picks the terminal.</Step>
+      <Step title="Terminal wakes">The terminal shows the amount and takes the payment as in the other types.</Step>
+      <Step title="Webhook">`payment.succeeded` or `payment.declined` reaches your endpoint with the terminal data.</Step>
+    </Steps>
+
+    ```bash Create an in-person payment (illustrative)
+    curl -X POST https://api.y.uno/v1/payments \
+      -H "Authorization: Bearer <secret-key>" \
+      -H "X-Idempotency-Key: 8f1c…" \
+      -d '{
+        "channel": "IN_PERSON",
+        "amount": { "currency": "MXN", "value": 1250.00 },
+        "terminal": { "store_id": "store_polanco_01", "lane": "3" },
+        "merchant_order_id": "ORD-48213"
+      }'
+    ```
+
+    **You build:** one API call and a webhook handler; you likely have both already. **Yuno provides:** the terminal side.
+    **Offline:** a sale cannot start without connectivity between your server, Yuno and the terminal; sales already on the terminal complete.
+    **Typical use:** platforms, billing and POS providers whose merchants own the terminals.
+  </Tab>
+  <Tab title="Reconciliation first">
+    Connect the acquirers behind your existing terminals and get store-level reconciliation and the fleet dashboard before a single terminal runs Yuno's app.
+
+    <Steps>
+      <Step title="Acquirer files">Your acquirers deliver their settlement files to Yuno over SFTP, per merchant ID.</Step>
+      <Step title="Sales from your estate">Your current authorisations reach Yuno from your existing systems or as exports, per store.</Step>
+      <Step title="Matched per store">Authorised, settled and deposited side by side, with the differences listed. See [Reconciliation](/docs/in-person/reconciliation).</Step>
+    </Steps>
+
+    **You build:** nothing beyond giving access to the files. **Yuno provides:** the matching and the views.
+    **Typical use:** large fleets that want the finance benefit while the terminal rollout is planned. Unique to Yuno.
+  </Tab>
+</Tabs>
 
 ## Design your integration
 
@@ -53,7 +114,7 @@ Decisions in the order they come up. Most take a conversation with your Yuno con
     One Yuno account, the same one you use online. Stores and lanes are registered so every payment carries where it happened.
   </Step>
   <Step title="Terminals">
-    Ingenico AXIUM 5000 and 7000 first, Verifone next. Yuno's app is signed and distributed to your fleet; you keep ownership and maintenance of the hardware.
+    Ingenico AXIUM 5000 and 7000 first, Verifone next. See [Terminals and fleet](/docs/in-person/terminals).
   </Step>
   <Step title="Integration type">
     Standalone, Local, Cloud or Reconciliation first, from the table above. A store can run Local with Standalone as fallback.
@@ -65,37 +126,6 @@ Decisions in the order they come up. Most take a conversation with your Yuno con
     Your existing endpoint receives in-store payments with no change. Filter on `channel` if you want to treat them differently. See [Payments and events](/docs/in-person/payments-and-events).
   </Step>
   <Step title="Reconciliation and dashboard">
-    Settlement files from each acquirer are matched per store; terminals, store health and reconciliation are visible in the dashboard from day one.
+    Settlement files from each acquirer are matched per store; terminals, store health and reconciliation are visible in the dashboard from day one. See [Reconciliation](/docs/in-person/reconciliation).
   </Step>
 </Steps>
-
-## What the local interface needs from your POS
-
-For the Local type, the app exposes an interface on the terminal. Your POS sends the sale and receives the result; nothing else changes.
-
-| Direction | Fields |
-| --- | --- |
-| POS to terminal | amount, currency, reference, store, lane |
-| Terminal to POS | approved or declined, authorisation code, masked card, instalment plan, receipt data |
-
-The interface mirrors what most tills already speak to their terminal today, so the change on the POS side is configuration rather than development. Details are shared during pilot onboarding.
-
-## What the dashboard shows
-
-Three views come with In-Person Payments, inside the Yuno dashboard you already use.
-
-- **Terminals.** Every terminal by store and region: online or offline, app version, last sale.
-- **Store health.** Approval, declines and timeouts per store and per acquirer, so a struggling lane or a struggling acquirer shows up the same afternoon.
-- **Reconciliation.** Authorised, settled and deposited per store and acquirer, matched automatically, with the differences listed.
-
-<Frame caption="Terminals: every terminal by store, online or offline, app version, last sale.">
-  <img src="/images/in-person/dashboard-terminals.png" alt="Yuno dashboard, In-Person, Terminals tab" />
-</Frame>
-
-<Frame caption="Store health: approval, declines and timeouts per store and acquirer.">
-  <img src="/images/in-person/dashboard-health.png" alt="Yuno dashboard, In-Person, Store health tab" />
-</Frame>
-
-<Frame caption="Reconciliation: authorised, settled and deposited, with the differences.">
-  <img src="/images/in-person/dashboard-reconciliation.png" alt="Yuno dashboard, In-Person, Reconciliation tab" />
-</Frame>

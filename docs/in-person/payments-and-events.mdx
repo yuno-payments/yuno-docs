@@ -2,14 +2,16 @@
 hidden: true
 noindex: true
 title: "Payments and events"
-description: "What an in-store payment looks like in the Payments API and which webhooks you receive."
+description: "What an in-store payment looks like in the Payments API, its statuses, how to list in-person payments, and which webhooks you receive."
 ---
 
 In-store sales use the same `payment` resource as online. What is new is the `channel` and a `terminal` block, so you can filter, report and reconcile by store without a separate integration.
 
 <Warning>
-  The example below is **illustrative**. Field names are indicative until general availability.
+  The examples below are **illustrative**. Field and event names are indicative until general availability.
 </Warning>
+
+## The payment
 
 ```json Payment (in-person)
 {
@@ -19,10 +21,39 @@ In-store sales use the same `payment` resource as online. What is new is the `ch
   "amount": { "currency": "MXN", "value": 1250.00 },
   "payment_method": { "type": "CARD", "entry_mode": "CHIP", "brand": "VISA", "last_four": "4242" },
   "installments": { "count": 6, "interest_free": true },
-  "provider": { "id": "BBVA_MX", "authorization_code": "004312" },
+  "provider": { "id": "BBVA_MX", "authorization_code": "004312", "stan": "003812", "rrn": "627412003812" },
   "terminal": { "id": "term_8a…", "store_id": "store_polanco_01", "lane": "3" },
+  "merchant_order_id": "ORD-48213",
   "created_at": "2027-02-12T18:41:07Z"
 }
+```
+
+| Field | What it carries |
+| --- | --- |
+| `channel` | `IN_PERSON` for every sale taken on a terminal; online payments keep their current channel |
+| `payment_method.entry_mode` | `CHIP`, `CONTACTLESS` or `SWIPE` |
+| `installments` | The plan the customer chose, when any |
+| `provider` | The acquirer that authorised, with its identifiers (authorisation code, STAN, RRN) used for reconciliation |
+| `terminal` | Where the sale happened: terminal, store and lane |
+| `merchant_order_id` | The reference your POS sent, so you can join the payment to your own order |
+
+## Statuses
+
+| Status | Meaning |
+| --- | --- |
+| `CREATED` | The terminal has started the sale (Cloud type only; the other types report the sale after authorisation) |
+| `SUCCEEDED` | Authorised by the acquirer |
+| `DECLINED` | The issuer or acquirer declined; `sub_status` carries the mapped reason |
+| `REVERSED` | The terminal got no answer in time and reversed with the same acquirer; nothing was charged |
+| `REFUNDED` | A refund was taken, from the terminal with the card present |
+
+## List in-person payments
+
+The existing list endpoint filters by channel, store and terminal, so a store's day is one call.
+
+```bash List a store's in-person payments (illustrative)
+curl "https://api.y.uno/v1/payments?channel=IN_PERSON&store_id=store_polanco_01&created_from=2027-02-12" \
+  -H "Authorization: Bearer <secret-key>"
 ```
 
 ## Events
@@ -34,8 +65,28 @@ Your existing webhook endpoint receives in-store payments with no change. Filter
 | `payment.created` | The sale is recorded by Yuno | Same as online. Carries `channel` and `terminal`. |
 | `payment.succeeded` / `payment.declined` | The acquirer answered | Same as online. Decline reason from the acquirer. |
 | `payment.reversed` | A timed-out authorisation was reversed | In-person only. Nothing was charged. |
+| `payment.refunded` | A refund was taken at the terminal | Linked to the original payment. |
 | `terminal.online` / `terminal.offline` | A terminal's connection to Yuno changes | In-person only. Also visible in the dashboard. |
+| `terminal.app_updated` | A terminal picked up a new app version | In-person only. |
 
-## Reconciliation
+```json Webhook: payment.succeeded (illustrative)
+{
+  "type": "payment.succeeded",
+  "created_at": "2027-02-12T18:41:09Z",
+  "data": {
+    "id": "pay_3f1c…",
+    "channel": "IN_PERSON",
+    "status": "SUCCEEDED",
+    "amount": { "currency": "MXN", "value": 1250.00 },
+    "provider": { "id": "BBVA_MX", "authorization_code": "004312" },
+    "terminal": { "id": "term_8a…", "store_id": "store_polanco_01", "lane": "3" },
+    "merchant_order_id": "ORD-48213"
+  }
+}
+```
 
-Each in-store payment carries the identifiers the acquirer returns (system trace number, retrieval reference, merchant and terminal IDs, business date and batch). Yuno matches the acquirer's settlement file against them, per store and per acquirer, and shows authorised, settled and deposited side by side with the differences listed. The same reconciliation you use for online, extended to the store.
+## Delivery and idempotency
+
+- Events are signed and retried the same way as your online webhooks; nothing changes in your handler beyond reading `channel`.
+- When a terminal was offline, its queued sales are reported when it reconnects and arrive as `payment.created` followed by the final status, with the original `created_at`. Each sale keeps the identifier it was created with, so a repeated report never creates a second payment.
+- Order of arrival is not guaranteed across terminals; order per payment is.

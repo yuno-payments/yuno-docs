@@ -1,0 +1,50 @@
+---
+hidden: true
+noindex: true
+title: "Reconciliation"
+description: "How Yuno matches every in-store sale against each acquirer's settlement file, per store and per acquirer, and what the outcomes mean."
+---
+
+Every in-store sale is matched against what the acquirer settled and what reached your bank, per store and per acquirer. It is the same reconciliation you use for online payments, extended to the store, and it can start on your current fleet before any terminal runs Yuno's app.
+
+<Frame caption="Each sale is matched against the acquirer's settlement file. Every sale ends in one of four outcomes.">
+  <img src="/images/in-person/reconciliation-flow.svg" alt="Reconciliation flow: in-person payments recorded by Yuno Cloud and settlement files from each acquirer feed the matcher, which produces four outcomes per sale: matched, amount conflict, status conflict, not settled" />
+</Frame>
+
+## How a sale is matched
+
+| What Yuno has | Where it comes from |
+| --- | --- |
+| The payment, with store, terminal, acquirer and amount | Recorded when the terminal reports the sale |
+| System trace number (STAN) and retrieval reference (RRN) | Returned by the acquirer at authorisation, stored on the payment |
+| Merchant and terminal IDs, business date, batch | The acquirer's identifiers for the sale |
+| The settlement file | Pulled from each acquirer daily over SFTP |
+
+A sale matches when the acquirer's line carries the same STAN, RRN, merchant ID and business date as the payment. Matching is automatic; the target is more than 99% of sales matched without anyone touching them.
+
+## Outcomes
+
+| Outcome | Meaning | What to do |
+| --- | --- | --- |
+| **Matched** | Authorised, settled and the amount agrees | Nothing |
+| **Amount conflict** | Settled for a different amount than authorised (fees, partial capture, currency) | Review the difference; usually a fee or a partial refund |
+| **Status conflict** | Yuno recorded one result, the acquirer settled another (for example a reversed sale that still settled) | Raise with the acquirer; Yuno keeps the evidence |
+| **Not settled** | Authorised, but absent from the settlement files so far | Wait for the next file; after the settlement window, chase as a receivable |
+
+<Frame caption="Reconciliation per store and acquirer: volume share, settlement outcome, and the differences listed.">
+  <img src="/images/in-person/dashboard-reconciliation.png" alt="Yuno dashboard, In-Person, Reconciliation tab" />
+</Frame>
+
+## Per store, per acquirer
+
+The dashboard shows authorised, settled and deposited side by side for each store and each acquirer, with the differences listed and the sale behind each one a click away. Exports follow the same format as online reconciliation, so finance tooling built for one works for the other.
+
+## Reconcile before you migrate
+
+Reconciliation does not need Yuno's app on the terminal. If your acquirers can deliver settlement files for your existing estate, Yuno reconciles those sales today, per store, against the authorisations your current terminals produce. For a large fleet this is the usual first step: the finance team sees the benefit while the terminal rollout is still being planned.
+
+## Refunds and reversals
+
+- A **timeout reversal** (the terminal never got an answer) is sent to the same acquirer and shows on the payment as `REVERSED`; it never appears in a settlement file.
+- A **refund from the terminal** is a new payment of type refund, linked to the original, and reconciles on its own line.
+- Refunds from Yuno Cloud without the card present are planned; ask your Yuno contact for the date.

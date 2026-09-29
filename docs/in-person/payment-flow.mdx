@@ -2,7 +2,7 @@
 hidden: true
 noindex: true
 title: "Payment flow"
-description: "A chip-and-PIN sale on a Yuno terminal, step by step, and why the acquirer is chosen before the PIN."
+description: "A chip-and-PIN sale on a Yuno terminal, step by step: why the acquirer is chosen before the PIN, what contactless and instalments change, and what happens when a sale fails."
 ---
 
 A chip-and-PIN sale, step by step. Contactless below the floor limit follows the same path without the PIN and instalment steps.
@@ -13,7 +13,7 @@ A chip-and-PIN sale, step by step. Contactless below the floor limit follows the
 
 <Steps>
   <Step title="Sale starts">
-    Your POS sends the amount and a reference to the terminal. The terminal shows the amount and the payment methods enabled for the store.
+    Your POS sends the amount and a reference to the terminal, or the cashier keys it in. The terminal shows the amount and the payment methods enabled for the store.
   </Step>
   <Step title="Yuno chooses the acquirer">
     From the rules for that store: amount, method, acquirer health. The choice happens now because the PIN will be encrypted with that acquirer's key.
@@ -37,7 +37,7 @@ A chip-and-PIN sale, step by step. Contactless below the floor limit follows the
     Yuno creates the payment with `channel: IN_PERSON` and emits the same events as an online payment.
   </Step>
   <Step title="Settlement and reconciliation">
-    The acquirer settles to you directly. Yuno matches its settlement file against each sale, per store, and flags any difference.
+    The acquirer settles to you directly. Yuno matches its settlement file against each sale, per store, and flags any difference. See [Reconciliation](/docs/in-person/reconciliation).
   </Step>
 </Steps>
 
@@ -45,11 +45,39 @@ A chip-and-PIN sale, step by step. Contactless below the floor limit follows the
   **A declined card is a new sale.** In store, an issuer decline is final: there is no silent retry with another acquirer, because the PIN was encrypted for the first one. Routing improves cost and resilience across sales, not the outcome of one.
 </Note>
 
+## Chip, contactless and the floor limit
+
+| | Chip (insert) | Contactless (tap) |
+| --- | --- | --- |
+| **PIN** | Always | Not below the floor limit; above it, the terminal asks for the card to be inserted |
+| **Instalments** | Offered when the card and acquirer allow | Not offered below the floor limit |
+| **Acquirer choice** | Before the PIN | Before the card is read |
+| **Typical use** | Larger baskets, instalments | Small baskets, speed at the counter |
+
+The floor limit is set per market by the card brands and the acquirers, not per store; in Mexico it is $1,500 MXN at the time of writing.
+
 ## Instalments
 
-In Mexico, interest-free instalments (meses sin intereses) are offered on the terminal. Yuno sends the terminal the plans available for that card and the chosen acquirer, the customer picks one and confirms the terms before entering the PIN. Which plans are on offer is configured per store, and the same configuration drives your online checkout.
+In Mexico, interest-free instalments (meses sin intereses) are offered on the terminal. Yuno sends the terminal the plans available for that card and the chosen acquirer, the customer picks one and confirms the terms before entering the PIN. Which plans are on offer is configured per store, and the same configuration drives your online checkout. The chosen plan is on the payment (`installments.count`, `installments.interest_free`) and on the receipt.
+
+## Refunds and cancellations
+
+| Action | Where | Result |
+| --- | --- | --- |
+| Cancel before the card is read | Terminal or POS | Nothing left the terminal; no payment is created |
+| Reverse after a timeout | Automatic, by the terminal | Sent to the same acquirer; the payment shows `REVERSED`; nothing is charged |
+| Refund a settled sale | Terminal, with the card present | A new refund payment linked to the original |
+| Refund from Yuno Cloud without the card | Planned | Ask your Yuno contact for the date |
+
+## Receipts
+
+The terminal produces the receipt data (masked card, brand, amount, instalment plan, acquirer, authorisation code, date and time) and hands it to the POS for printing, or prints it itself on models with a printer. Receipt text and layout are configuration; they never touch the certified core.
 
 ## When something goes wrong
+
+<Frame caption="Two different outages. Losing Yuno keeps the store selling; losing the acquirer does not.">
+  <img src="/images/in-person/connectivity.svg" alt="Diagram of two outage cases: when the store loses its connection to Yuno Cloud, the terminal uses its last routing rules, authorises with the acquirer and queues the sale record; when the acquirer or the network is unreachable, the terminal declines cleanly and the cashier retries or takes another method" />
+</Frame>
 
 | What happens | What the customer sees | What Yuno does |
 | --- | --- | --- |
@@ -58,3 +86,4 @@ In Mexico, interest-free instalments (meses sin intereses) are offered on the te
 | Cashier cancels before the card is read | "Payment cancelled" | Nothing left the terminal; no payment is created |
 | Card removed mid-read | "Insert your card again" | Nothing was charged |
 | Store loses its connection to Yuno | Nothing; sales continue | The terminal uses the last routing rules and reports sales when the connection returns |
+| Store loses the acquirer or the network | A clean decline with the reason | Nothing is charged. Accepting sales offline is not in the first release |
