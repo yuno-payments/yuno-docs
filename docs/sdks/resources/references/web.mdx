@@ -201,20 +201,20 @@ Parameters for `await yuno.startCheckout()`, `await yuno.mountCheckout()`, and r
 | `yunoError(message, data)`        | function | No       | Callback invoked when an error occurs during the flow. Receives an error message and optional data object for debugging.                                                                                  |
 | `onLoading`                       | function | No       | Callback invoked when loading state changes (for example, SDK fetching config, processing payment, payment retry cloning a session). Use to show or hide your own loader.                                                                          |
 | `onChange`                        | function | No       | Callback invoked when form completeness changes. Receives `{ form: { isValid } }`. Use with `showPayButton: false` to control your own pay button. Covers every required field including secure iframe card fields. > **Available since Web SDK v1.10.11** |
-| `onPromotionQuoteUpdated(quote)`  | function | No       | Callback invoked with the promotion quote when a promotion applies, and with `null` when it no longer does. Use it to show the discounted price. Never called when Promotions is not enabled for your organization. See [Promotions](#promotions). |
+| `onPromotionQuoteUpdated(quote)`  | function | No       | Callback invoked with the promotion quote when a promotion applies, and with `null` when there is no live quote (the promotion no longer applies, or the SDK is asking again). Use it to show the discounted price. Never called when Promotions is not enabled for your organization. See [Promotions](#promotions). |
 | `onBinComplete(binComplete)`      | function | No       | Callback invoked with `{ bin, card_type }` when the first 6 to 8 digits of the card, or its type, change, and with `null` when the number is cleared or has fewer than 6 digits. Passing it turns the SDK's own promotion quote requests off. See [Promotions](#promotions). |
 
 </div>
 
 ### Promotions
 
-When [Promotions](/docs/payment-features/promotions) is enabled for your organization, the SDK asks Yuno for a promotion quote while the shopper fills in the payment, and hands it to your page. The SDK doesn't render a price: your page shows it, and your server sends the quote on the payment. See [Web SDK integration](/docs/payment-features/promotions#web-sdk-integration) for the whole flow.
+When [Promotions](/docs/payment-features/promotions) is enabled for your organization, the SDK asks Yuno for a promotion quote while the shopper fills in the payment, and hands it to your page. The SDK doesn't render a price: your page shows it, and your server sends the quote on the payment. See the [Promotions guide](/docs/payment-features/promotions) for the whole flow.
 
 * **Where it applies.** Full checkout (`mountCheckout`), Lite checkout (`mountCheckoutLite`, cards) and external buttons (`mountExternalButtons`). Seamless doesn't ask for quotes and doesn't apply promotions.
 * **When it asks.** As soon as the shopper has typed the first 6 digits of a card, again as the number reaches 7 and 8 digits and when the card type is known, and when the shopper picks a payment method that isn't a card. It never asks for a saved card. The request carries your public key, the checkout session and the `countryCode` you passed, and no amount, so `countryCode` must match the country of the session.
-* **When nothing applies.** The SDK stays silent: no promotion (`204`), an error, a timeout or an expired quote leave the regular price and no callback is called. A quote never blocks the checkout.
+* **When nothing applies.** The SDK stays silent: no promotion (`204`), an error, a timeout or a quote that has already expired when it arrives leave the regular price and no callback is called. A quote never blocks the checkout.
 
-`onPromotionQuoteUpdated(quote)` receives the quote when a promotion applies. It receives `null` afterwards when the promotion no longer applies: the shopper changes the card or the payment method, the quote expires (the SDK then asks again) or the checkout is unmounted.
+`onPromotionQuoteUpdated(quote)` receives the quote when a promotion applies. It receives `null` afterwards whenever there is no live quote for what the shopper has now: the promotion no longer applies, the shopper changes the card number or the payment method, the quote expires or the checkout is unmounted. When the SDK asks again (a new digit of the card, the card type, an expired quote) a new quote follows if one applies, so `null` can arrive right before it: update your price from the latest call and don't animate a change on every callback.
 
 ```javascript
 yuno.startCheckout({
