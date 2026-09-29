@@ -315,7 +315,6 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Cancel or Refund a Payment](https://docs.y.uno/reference/payments/cancel-or-refund-a-payment.md)
 - [Cancel or Refund a Payment with Transaction](https://docs.y.uno/reference/payments/cancel-or-refund-payment-with-transaction.md)
 - [Cancel Payment](https://docs.y.uno/reference/payments/cancel-payment.md)
-- [Authorize Payment](https://docs.y.uno/reference/payments/authorize-payment.md)
 - [Capture Authorization](https://docs.y.uno/reference/payments/capture-authorization.md)
 - [Dispute a Chargeback](https://docs.y.uno/reference/payments/disputes.md)
 - [Update a Chargeback Dispute](https://docs.y.uno/reference/payments/update-dispute.md)
@@ -444,6 +443,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Retrieve Account Group](https://docs.y.uno/reference/organizations/retrieve-account-group.md)
 - [Update Account Group](https://docs.y.uno/reference/organizations/update-account-group.md)
 - [Delete Account Group](https://docs.y.uno/reference/organizations/delete-account-group.md)
+- [Remove Account from Group](https://docs.y.uno/reference/organizations/remove-account-from-group.md)
 - [List Accounts of Group](https://docs.y.uno/reference/organizations/list-accounts-of-group.md)
 
 #### Accounts

@@ -1,4 +1,7 @@
-
+// DocsBot "Ask AI" floating button disabled — subscription cancelled (Caio, Slack, 2026-09-25).
+// Left commented instead of deleted so it's easy to find and re-enable if we resume the plan.
+// Mintlify's native "Ask a question..." bar (Ctrl+I) is unaffected — it's a separate, built-in feature.
+/*
 (function () {
   function setup() {
     window.DocsBotAI = window.DocsBotAI || {};
@@ -51,5 +54,4 @@
     setup();
   }
 })();
-
-
+*/
