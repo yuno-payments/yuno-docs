@@ -1,6 +1,6 @@
 ---
 title: "Refund Payments"
-description: "Shows how to fully or partially refund a captured payment using the Refund Payment endpoint."
+description: "Shows how to fully or partially refund a captured payment, choose between the refund endpoints, and interpret the refund result."
 ---
 
 In this guide, you will find instructions on refunding a previously created payment on Yuno.
@@ -17,6 +17,7 @@ To refund a payment, you need to:
   * `transaction_id`: The unique identifier of the transaction. You will use a different source for this information, depending on how you captured the payment.
     * If you created and captured the payment using only one operation, you obtain the `transaction_id` from the parameter `transaction.id` after creating the payment with the [Create Payment](/reference/create-payment) endpoint.
     * If you performed the authorization and then the payment capture, you will use the `transaction_id` from the parameter `id` received after capturing the payment using the [Capture Payment](/reference/capture-authorization) endpoint.
+    * If you retrieve the payment later with the [Retrieve Payment by ID](/reference/retrieve-payment-by-id) endpoint, take the `id` of the transaction whose `type` is `PURCHASE` or `CAPTURE` from the `transactions` array. The `id` of a `REFUND` transaction cannot be used to refund.
 
 <Note>
 **Explore Yuno Postman Collections**
@@ -28,24 +29,41 @@ Yuno provides [Postman Collections](/reference/postman-collections) that you can
 
 If you initiate a refund, it will reimburse a charge created earlier but not yet refunded. The amount will be credited back to the original payment method that was charged.
 
-Use the [Refund Payment endpoint with transaction](/reference/refund-payment) to perform the refund. To identify the payment to be refunded, you need to provide its `id` and the `transaction_id`. In case you don't need to return a specific transaction, use the [Refund Payment endpoint](/reference/cancel-or-refund-a-payment) to perform the refund based on payment. In addition, you need to inform the amount to be refunded using the object `amount` in the request body:
+Yuno offers three endpoints to refund a payment. They share the same request body, and every call requires an `X-Idempotency-Key` header with a new value for each attempt:
+
+* [Refund Payment](/reference/refund-payment): Refunds a specific transaction. Provide the payment `id` and the `transaction_id`. Use it when you want to control exactly which transaction is refunded.
+* [Cancel or Refund a Payment](/reference/cancel-or-refund-a-payment): Works at the payment level, so no `transaction_id` is needed. Yuno cancels the payment if it has not been captured and refunds it if it has. The `reason` field is required.
+* [Cancel or Refund a Payment with Transaction](/reference/cancel-or-refund-payment-with-transaction): Applies the same automatic decision to a specific `transaction_id`.
+
+In addition, you need to inform the amount to be refunded using the object `amount` in the request body:
 
 * Complete refund: Leave the `amount` empty.
 * Partial refund: Provide the refund value using the parameter `amount`.
 
-To confirm you have successfully refunded the payment, check if the parameters from the [Refund Payment endpoint](/reference/refund-payment) response contain the following values:
+<Warning>
+**One refund at a time**
 
-* `status = REFUNDED`
-* `sub_status = REFUNDED`
-* `transaction.type = REFUND`
-* `transaction.status = SUCCEEDED`
+Do not start a new refund on the same transaction while a previous one is still in progress. Wait until the previous refund reaches a final status (`SUCCEEDED`, `DECLINED`, or `ERROR`) before sending the next one.
+</Warning>
 
-If the response contains the above values, the refund was successful.
+## Refund results
+
+The response contains a new transaction with `transaction.type = REFUND`. Use its `status` to interpret the result of the refund:
+
+* `SUCCEEDED`: The provider accepted the refund. For a complete refund, the payment moves to `status = REFUNDED` and `sub_status = REFUNDED`. For a partial refund, the payment keeps `status = SUCCEEDED` and its `sub_status` changes to `PARTIALLY_REFUNDED`.
+* `PENDING`: The provider confirms the refund asynchronously. The payment shows `status = REFUNDED` and `sub_status = PENDING_PROVIDER_CONFIRMATION` until the confirmation arrives. Use webhooks or the retrieve endpoints to get the final status, as described in [Check the payment status](#check-the-payment-status).
+* `DECLINED` or `ERROR`: The provider, or the cardholder's issuer, rejected the refund. No funds move and the payment keeps its previous `status` and `sub_status`. Check the transaction's `response_code` and `response_message` for the reason. Once the cause is solved, send the refund again with a new `X-Idempotency-Key`, or set `simplified_mode` to `true` in the request so Yuno retries the refund automatically, as described in [Transaction Retries](/docs/payment-features/transaction-retries).
+
+<Note>
+**Provider-dependent behavior**
+
+Whether a refund is confirmed synchronously or stays `PENDING`, whether partial refunds and several refunds on the same transaction are allowed, and for how long after the purchase a refund is accepted all depend on the provider that processed the payment. Many card acquirers process a refund as an online transaction against the cardholder's account and answer with a final status right away, which also means the issuer can decline it. If your integration relies on any of these behaviors, confirm them with Yuno for the providers in your routing.
+</Note>
 
 <Note>
 **Refund Processing Time**
 
-Refunds processing time varies depending on the payment type. While in test mode, refunds are processed instantly in the Sandbox environment.
+Refunds processing time varies depending on the payment type. While in test mode, refunds are processed instantly in the Sandbox environment. If your sandbox connection points to the provider's own test environment, the refund is sent to that environment and requires a successful test purchase first.
 </Note>
 
 ### Check the payment status

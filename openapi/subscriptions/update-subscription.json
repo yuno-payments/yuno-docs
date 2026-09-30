@@ -6,10 +6,16 @@
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno/v1"
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
     },
     {
-      "url": "https://api.eu.y.uno/v1"
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
     }
   ],
   "components": {
@@ -35,14 +41,14 @@
     }
   ],
   "paths": {
-    "/subscriptions/{id}": {
+    "/subscriptions/{subscription_id}": {
       "patch": {
         "summary": "Update Subscription",
         "description": "",
         "operationId": "update-subscription",
         "parameters": [
           {
-            "name": "id",
+            "name": "subscription_id",
             "in": "path",
             "description": "The unique identifier of the subscription.",
             "schema": {
@@ -240,7 +246,7 @@
                   },
                   "retries": {
                     "type": "object",
-                    "description": "Specified the 'retries' object. If we need to retry declined transactions in Yuno and the amount if necessary. If modified, the retries will apply to the next payment intent.",
+                    "description": "The retries configuration to apply going forward. Accepts the same object as Create Subscription — including strategy and schedule — except cancel_on_exhausted_retries, which is create-only. Changes apply the next time retries are scheduled: a billing cycle already running its retries finishes on the configuration it started with, and the update takes effect from the next cycle.",
                     "properties": {
                       "retry_on_decline": {
                         "type": "boolean",
@@ -248,19 +254,49 @@
                       },
                       "amount": {
                         "type": "integer",
-                        "description": "The number of retries that the subscription plan will have to completion. If not set, or higher than 7, 7 will be defined as default. Max: 7",
+                        "description": "The number of retries the subscription will attempt, for the DEFAULT and SMART strategies. The maximum equals your environment's configured retry schedule length — 6 in production; a higher value is rejected with 400 (Max retries attempts exceeded). With CUSTOM_SCHEDULE the amount is derived from the length of the schedule array instead.",
                         "format": "int32"
+                      },
+                      "strategy": {
+                        "type": "string",
+                        "description": "The retry strategy. Allowed values: DEFAULT (the fixed retry schedule), SMART (machine-learning-based retry timing, applied from the second retry onward) or CUSTOM_SCHEDULE (uses the per-attempt schedule array you provide). Sending a schedule without a strategy implies CUSTOM_SCHEDULE.",
+                        "enum": [
+                          "DEFAULT",
+                          "SMART",
+                          "CUSTOM_SCHEDULE"
+                        ]
+                      },
+                      "schedule": {
+                        "type": "array",
+                        "description": "Per-attempt retry schedule; replaces the stored schedule as a whole. Up to 7 attempts, attempt numbers must run sequentially from 1, and each delay_seconds must be between 1 and 604800 (7 days). Sending it implies strategy CUSTOM_SCHEDULE and sets the retry amount to the schedule length.",
+                        "items": {
+                          "properties": {
+                            "attempt": {
+                              "type": "number",
+                              "description": "Number of the retry attempt"
+                            },
+                            "delay_seconds": {
+                              "type": "number",
+                              "description": "Specifies the amount of seconds between each retry."
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "stop_on_hard_decline": {
+                        "type": "boolean",
+                        "description": "When true, the retry schedule stops for the current billing cycle after a hard decline. On its own, the subscription remains ACTIVE and billing advances to the next cycle; no subscription is canceled or paused and no subscription webhook is emitted. If cancel_on_exhausted_retries is also true, the subscription is canceled instead."
                       },
                       "cancel_on_exhausted_retries": {
                         "type": "boolean",
-                        "description": "When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of remaining ACTIVE and advancing to the next cycle. cancellation_source is set to RETRIES_EXHAUSTED and a single SUBSCRIPTION.CANCEL webhook is emitted. Defaults to false. The cancellation itself is final, so Retry Subscription is rejected afterwards."
+                        "description": "Create-only: this flag cannot be changed after the subscription is created — sending a value different from the one stored on the subscription returns 400 (The field 'retries.cancel_on_exhausted_retries' can only be set when the subscription is created); echoing the current value is accepted. When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of remaining ACTIVE and advancing to the next cycle. cancellation_source is set to RETRIES_EXHAUSTED and a single SUBSCRIPTION.CANCEL webhook is emitted. Defaults to false. The cancellation itself is final, so Retry Subscription is rejected afterwards."
                       }
                     }
                   },
                   "plan_change": {
                     "type": "object",
                     "nullable": true,
-                    "description": "Schedules a move to another plan, effective at the next billing cycle. The subscription must be ACTIVE or TRIALING and already on a plan; the target plan must be ACTIVE. Only one change can be pending at a time. Send `\"plan_change\": null` to undo a pending change before it applies. `amount`, `frequency`, `billing_date` and `country` are managed by the plan and cannot be sent for a plan-linked subscription — combining any of them with `plan_change` returns 400.",
+                    "description": "Moves the subscription to another plan. `effective: NEXT_BILLING_CYCLE` (the default) schedules the change for the next renewal — no proration, no mid-cycle charge. `effective: IMMEDIATE` applies the change in place, in this call: the subscription keeps its `id`, the new plan's price bills from the next charge, and `billing_cycle_behavior` decides what happens to the billing anchor. The subscription must be ACTIVE or TRIALING and already on a plan; the target plan must be ACTIVE. For scheduled changes only one can be pending at a time — send `\"plan_change\": null` to undo it before it applies (an IMMEDIATE change while another is pending returns 409). `amount`, `frequency`, `billing_date` and `country` are managed by the plan and cannot be sent for a plan-linked subscription — combining any of them with `plan_change` returns 400.",
                     "required": [
                       "plan_id"
                     ],
@@ -271,15 +307,37 @@
                       },
                       "effective": {
                         "type": "string",
-                        "enum": ["NEXT_BILLING_CYCLE"],
-                        "description": "When the change applies. NEXT_BILLING_CYCLE is the default and only supported value: the current cycle bills the current plan's price, the next one bills the new plan's."
+                        "enum": [
+                          "NEXT_BILLING_CYCLE",
+                          "IMMEDIATE"
+                        ],
+                        "description": "When the change applies. NEXT_BILLING_CYCLE (default): the current cycle bills the current plan's price, the next one bills the new plan's. IMMEDIATE: the subscription moves to the target plan in this call - unlike a scheduled change, this also works in the final billing cycle."
                       },
                       "phases_behavior": {
                         "type": "string",
-                        "enum": ["START_FROM_REGULAR", "HONOR_PHASES"],
+                        "enum": [
+                          "START_FROM_REGULAR",
+                          "HONOR_PHASES"
+                        ],
                         "description": "What happens when the target plan has phases. START_FROM_REGULAR (default) enters the regular phase directly — no re-lived trials. HONOR_PHASES enters through the target plan's phase schedule."
+                      },
+                      "billing_cycle_behavior": {
+                        "type": "string",
+                        "enum": [
+                          "KEEP",
+                          "RESTART"
+                        ],
+                        "description": "What happens to the billing anchor when the plan changes in place with `effective: IMMEDIATE`. KEEP (default — omitting the field behaves identically): the next charge date is untouched. RESTART: the next charge re-anchors to the moment of the change plus the new plan's frequency — the anchor alone resets; billing cycle counters, the retry configuration and the subscription status survive. RESTART requires `effective: IMMEDIATE` and returns 400 with a scheduled change; KEEP alongside a scheduled change is accepted and simply schedules the change as usual. Write-only: this field is never echoed in any response."
                       }
                     }
+                  },
+                  "billing_cycle_behavior": {
+                    "type": "string",
+                    "enum": [
+                      "KEEP",
+                      "RESTART"
+                    ],
+                    "description": "For subscriptions that are not linked to a plan: re-anchors billing in the same way as `plan_change.billing_cycle_behavior`, typically combined with a `frequency` change in the same call (e.g. monthly to yearly, restarting the cycle from today). KEEP (default): the next charge date is untouched. RESTART: re-anchors the next charge to now plus the (possibly updated) frequency; the anchor alone resets — cycle counters, the retry configuration and the subscription status survive. On a subscription that has not started yet (CREATED — accepted here, unlike `plan_change`), the anchor clamps to its start date. Rules: cannot be combined with `plan_change` (400 — use the nested field); on a plan-linked subscription this field returns 400 (managed through `plan_change`); a PAUSED subscription returns 409 INVALID_SUBSCRIPTION_STATUS. Write-only: never echoed in any response."
                   },
                   "metadata": {
                     "type": "object",
@@ -376,7 +434,8 @@
                     },
                     "description": {
                       "type": "string",
-                      "example": "Subscription Test"
+                      "example": "Subscription Test",
+                      "nullable": true
                     },
                     "merchant_reference": {
                       "type": "string",
@@ -384,7 +443,8 @@
                     },
                     "soft_descriptor": {
                       "type": "string",
-                      "example": "ACME SUBSCRIPTION"
+                      "example": "ACME SUBSCRIPTION",
+                      "nullable": true
                     },
                     "status": {
                       "type": "string",
@@ -398,7 +458,7 @@
                           "example": "USD"
                         },
                         "value": {
-                          "type": "integer",
+                          "type": "number",
                           "example": 15000,
                           "default": 0
                         }
@@ -424,7 +484,8 @@
                         "total": {
                           "type": "integer",
                           "example": 12,
-                          "default": 0
+                          "default": 0,
+                          "nullable": true
                         },
                         "current": {
                           "type": "integer",
@@ -487,19 +548,27 @@
                         },
                         "direction": {
                           "type": "string",
-                          "enum": ["UPGRADE", "DOWNGRADE"],
+                          "enum": [
+                            "UPGRADE",
+                            "DOWNGRADE"
+                          ],
                           "description": "Whether the target plan is an upgrade or a downgrade. Informational only.",
                           "example": "UPGRADE"
                         },
                         "effective": {
                           "type": "string",
-                          "enum": ["NEXT_BILLING_CYCLE"],
+                          "enum": [
+                            "NEXT_BILLING_CYCLE"
+                          ],
                           "description": "When the change applies.",
                           "example": "NEXT_BILLING_CYCLE"
                         },
                         "phases_behavior": {
                           "type": "string",
-                          "enum": ["START_FROM_REGULAR", "HONOR_PHASES"],
+                          "enum": [
+                            "START_FROM_REGULAR",
+                            "HONOR_PHASES"
+                          ],
                           "description": "What happens when the target plan has phases.",
                           "example": "START_FROM_REGULAR"
                         },
@@ -540,6 +609,50 @@
                         "Invalid request."
                       ]
                     }
+                  },
+                  "PIX AUTOMATICO CADENCE NOT SUPPORTED": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with value 1."
+                      ]
+                    }
+                  },
+                  "PLAN CHANGE BEHAVIOR INVALID VALUE": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "RESET is invalid for plan_change.billing_cycle_behavior field"
+                      ]
+                    },
+                    "summary": "plan_change.billing_cycle_behavior accepts only KEEP or RESTART."
+                  },
+                  "BEHAVIOR COMBINED WITH PLAN CHANGE": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "The billing_cycle_behavior field cannot be combined with plan_change; use plan_change.billing_cycle_behavior."
+                      ]
+                    },
+                    "summary": "When you send plan_change, put the behaviour inside it rather than at the top level."
+                  },
+                  "RESTART REQUIRES IMMEDIATE": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "The plan_change.billing_cycle_behavior value RESTART requires effective IMMEDIATE."
+                      ]
+                    },
+                    "summary": "RESTART re-anchors the billing date, so it is only valid on an immediate plan change."
+                  },
+                  "PLAN CHANGE ALREADY SCHEDULED": {
+                    "value": {
+                      "code": "PLAN_CHANGE_ALREADY_SCHEDULED",
+                      "messages": [
+                        "A plan change is already scheduled for this subscription. Undo it first with plan_change: null."
+                      ]
+                    },
+                    "summary": "Only one plan change may be pending at a time."
                   }
                 }
               }

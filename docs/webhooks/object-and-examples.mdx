@@ -80,7 +80,23 @@ Example payload:
 </Info>
 
 <Info>
+  When the payment carries a shipping selection — for example, picked inside a wallet widget with [Fast Checkout shipping](/docs/payment-features/fast-checkout-shipping) — the payload includes a top-level `payment.shipping` node (same shape as on [the payment object](/reference/the-payment-object)) in both V1 and V2 versions, and `payment.customer_payer.shipping_address` is filled from it when the payer had none. The `shipping` key is omitted when the payment has no selection.
+</Info>
+
+<Info>
   Each transaction includes `connection_data`, which identifies the provider connection that processed it. Use `connection_data.id` as the stable identifier to attribute transactions to a specific connection when you operate multiple connections for the same provider. `connection_data.name` is the display name configured in the Yuno dashboard and can be `null` on some events, such as follow-up transactions.
+</Info>
+
+<Info>
+  The `transactions` field carries a different meaning per surface. In webhook payloads, `data.payment.transactions` is a **single object** — the transaction that triggered the event — and `transactions_history` carries the full list of the payment's transactions when it is enabled for the payment (see the note below). In the payment retrieve endpoints (`GET /payments/{payment_id}` and `GET /payments?merchant_order_id=`), `transactions` is an **array** containing every transaction of the payment.
+</Info>
+
+<Info>
+  `transactions_history` is **opt-in**: it is populated only when the payment was created with `response_additional_data.transactions_history: true` in the [Create Payment](/reference/payments/create-payment) request. Otherwise webhooks deliver it as an empty array `[]` — the default, which keeps payload sizes small. This matters for payments your routing retries across providers: without the flag, the final webhook shows only the last transaction, and the earlier attempts are only visible via `GET /payments/{payment_id}`. Payments created by Yuno-managed flows that do not set the flag (for example, subscription renewals) also deliver `[]`. Chargeback events always include the full history.
+</Info>
+
+<Info>
+  Field naming: the customer geolocation is serialized as `geo_location` in webhook payloads and as `geolocation` in the payment retrieve endpoints. Parse each surface accordingly.
 </Info>
 
 ```json
@@ -164,6 +180,24 @@ Example payload:
                 "phone": {
                     "country_code": "598",
                     "number": "12345678"
+                }
+            },
+            "shipping": {
+                "method": {
+                    "id": "express",
+                    "label": "Express shipping",
+                    "amount": {
+                        "currency": "GBP",
+                        "value": 5.00
+                    }
+                },
+                "address": {
+                    "address_line_1": "221B Baker Street",
+                    "address_line_2": "Flat 2",
+                    "city": "London",
+                    "state": "England",
+                    "zip_code": "NW1 6XE",
+                    "country": "GB"
                 }
             },
             "additional_data": {
@@ -394,6 +428,10 @@ Example payload:
 }
 ```
 
+<Info>
+  Payments created with an `external_subscription` object (see [Create payment](/reference/payments/create-payment)) carry it in the webhook payload as a top-level `external_subscription` key with `id` and `customer_id`. The key is **omitted** (not sent as `null`) when the payment was created without it, which is why the example above does not show it. Both webhook versions carry the field.
+</Info>
+
 ### Payment Webhook V1
 
 Example payload:
@@ -462,6 +500,24 @@ Example payload:
          "phone":{
             "country_code":"57",
             "number":"3991111111"
+         }
+      },
+      "shipping":{
+         "method":{
+            "id":"express",
+            "label":"Express shipping",
+            "amount":{
+               "currency":"GBP",
+               "value":5.00
+            }
+         },
+         "address":{
+            "address_line_1":"221B Baker Street",
+            "address_line_2":"Flat 2",
+            "city":"London",
+            "state":"England",
+            "zip_code":"NW1 6XE",
+            "country":"GB"
          }
       },
       "additional_data":{
@@ -1419,6 +1475,10 @@ The next JSON object presents an example of a data structure related to an enrol
 
 ```
 
+<Info>
+  When an enrollment is created with `verify.external_subscription` (see [Enroll payment method](/reference/enroll-payment-method-api)), the object is echoed in the **enrollment response** and persisted on the **verification payment** — it is not part of the enrollment webhook payload. To correlate later, use the verification payment: its id comes back in the enrollment response (`verify.payment.id`) and the object is returned by [Retrieve payment](/reference/retrieve-payment-by-id) and in payment webhooks.
+</Info>
+
 ## Payouts
 
 The next JSON object presents an example of a data structure related to a payout event.
@@ -1564,6 +1624,9 @@ The next JSON object presents an example of a data structure related to a `subsc
         "current": 1,
         "next_at": "2026-02-28T18:25:49.995376Z"
       },
+      "current_period_start": "2026-01-28T18:25:49.995376Z",
+      "current_period_end": "2026-02-28T18:25:49.995376Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1640,6 +1703,9 @@ Sent when a subscription transitions from any other valid status into `ACTIVE`. 
         "current": 2,
         "next_at": "2025-12-04T00:32:25.485281Z"
       },
+      "current_period_start": "2025-12-04T00:29:25.485281Z",
+      "current_period_end": "2025-12-04T00:32:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1715,6 +1781,9 @@ Sent when a subscription enters a plan's trial phase from another status. Enteri
         "current": 2,
         "next_at": "2025-12-04T00:32:25.485281Z"
       },
+      "current_period_start": "2025-12-04T00:29:25.485281Z",
+      "current_period_end": "2025-12-04T00:32:25.485281Z",
+      "current_phase_end": "2025-12-04T00:32:25.485281Z",
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1757,6 +1826,9 @@ This event is only emitted for accounts where the `PAST_DUE` status is enabled. 
         "current": 3,
         "next_at": "2025-12-04T00:35:25.485281Z"
       },
+      "current_period_start": "2025-12-04T00:32:25.485281Z",
+      "current_period_end": "2025-12-04T00:35:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1776,6 +1848,10 @@ This event is only emitted for accounts where the `PAST_DUE` status is enabled. 
 
 Sent when a subscription is paused. Use this event to update the status in your system and pause related services.
 
+<Note>
+**A paused subscription's window is frozen where it was, not moved forward.** `current_period_start`/`current_period_end` (and `current_phase_end`, if the subscription is inside a phase) keep whatever window was current at the moment of pause — Yuno does not advance them while billing is suspended. The longer a subscription stays paused, the further `current_period_end` falls into the past; on prod, the large majority of currently-paused subscriptions already show an elapsed window. Don't treat `current_period_end` as "the next charge date" without also checking `status` — for a paused subscription it isn't one.
+</Note>
+
 ```json JSON
 {
   "type": "subscription",
@@ -1793,6 +1869,14 @@ Sent when a subscription is paused. Use this event to update the status in your 
         "type": "FIXED",
         "value": 36000
       },
+      "billing_cycles": {
+        "total": 5,
+        "current": 3,
+        "next_at": "2025-12-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:32:25.485281Z",
+      "current_period_end": "2025-12-04T00:35:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       }
@@ -1838,6 +1922,9 @@ Sent when a paused subscription is resumed and transitions back to the `ACTIVE` 
         "current": 2,
         "next_at": "2026-07-14T19:19:31.914Z"
       },
+      "current_period_start": "2026-06-14T19:19:31.914Z",
+      "current_period_end": "2026-07-14T19:19:31.914Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -1921,6 +2008,14 @@ Treat `cancellation_source` as open-ended. New values can be added as Yuno intro
         "type": "FIXED",
         "value": 36000
       },
+      "billing_cycles": {
+        "total": 5,
+        "current": 5,
+        "next_at": "2026-01-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:35:25.485281Z",
+      "current_period_end": "2026-01-04T00:35:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       }
@@ -1928,6 +2023,8 @@ Treat `cancellation_source` as open-ended. New values can be added as Yuno intro
   }
 }
 ```
+
+A terminal subscription reports its final billing period rather than an empty one — the pair above is frozen at whatever window was current when the subscription reached `CANCELED`, the same way a `PAUSED` subscription freezes its window (see the [`subscription.pause`](#subscription-pause) note).
 
 ### subscription.complete
 
@@ -1950,6 +2047,14 @@ Sent when a subscription reaches its end date or total billing cycles and transi
         "type": "FIXED",
         "value": 36000
       },
+      "billing_cycles": {
+        "total": 5,
+        "current": 5,
+        "next_at": "2026-01-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:35:25.485281Z",
+      "current_period_end": "2026-01-04T00:35:25.485281Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       }
@@ -1995,6 +2100,9 @@ Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification
         "current": 2,
         "next_at": "2026-07-14T19:19:31.914Z"
       },
+      "current_period_start": "2026-06-14T19:19:31.914Z",
+      "current_period_end": "2026-07-14T19:19:31.914Z",
+      "current_phase_end": null,
       "customer_payer": {
         "code": "a9f9140a-1216-481c-8356-1a125078f905"
       },
@@ -2074,6 +2182,9 @@ Sent for plan-based subscriptions when a `$0` cycle is executed, either a trial 
         "current": 2,
         "next_at": "2026-07-14T19:19:31.914Z"
       },
+      "current_period_start": "2026-06-14T19:19:31.914Z",
+      "current_period_end": "2026-07-14T19:19:31.914Z",
+      "current_phase_end": "2026-07-14T19:19:31.914Z",
       "payments": []
     },
     "cycle": 1,
@@ -2262,6 +2373,71 @@ A scheduled change is applied at the renewal that first bills the new plan, in p
 }
 ```
 
+### subscription.cancel_scheduled
+
+Sent when a cancellation is scheduled via `POST /v1/subscriptions/{id}/cancel` with a `schedule` block. `cancel_scheduled` describes the pending schedule — see [Cancel Subscription](/reference/subscriptions/cancel-subscription#scheduling-a-cancellation-instead).
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.cancel_scheduled",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 9.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    },
+    "cancel_scheduled": {
+      "mode": "AFTER_CYCLES",
+      "after_cycles": 3,
+      "at": "<example>",
+      "requested_at": "<example>",
+      "past_due_behavior": "EXHAUST_RETRIES"
+    }
+  }
+}
+```
+
+### subscription.cancel_schedule_canceled
+
+Sent when a pending scheduled cancellation is undone via `"schedule": null` on `POST /v1/subscriptions/{id}/cancel`. Not sent when the schedule instead fires — `subscription.cancel` fires then.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.cancel_schedule_canceled",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 9.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    }
+  }
+}
+```
+
 ### Renewal charges and failures (no `subscription.error`)
 
 <Warning>
@@ -2417,87 +2593,114 @@ The next JSON object presents an example of a data structure related to an onboa
 
 ## Marketplace Split Transfers
 
+Standalone transfer notifications include the saved `direction` at the top level of the delivered JSON body. Existing transfers use `PLATFORM_TO_RECIPIENT`. Recipient-to-platform availability follows the [create endpoint](/reference/transfers/create-standalone-transfer).
+
+The examples below show selected fields from the delivered body. The headings are the subscription event types; the delivered body is the transfer object itself, without an envelope and without an event-type field. Identify a reversal notification by its `status` (`REVERSED` or `REVERSED_PARTIAL`) and by a transaction of type `SPLIT_TRANSFER_REVERSE`. `provider_data` describes the provider account that processed the transfer; each transaction's `raw_response` carries the provider's raw response, JSON-serialized as a string.
+
+<Note>
+Per engineering, the `type_event` these two events are recorded under internally is `transfer.transfer` — the delivered webhook body itself carries no `type`/`type_event` envelope, as noted above.
+</Note>
+
 ### split_transfer.succeeded
 
 Sent when a marketplace split transfer completes successfully.
 
 ```json
 {
-    "type": "split_transfer",
-    "type_event": "succeeded",
-    "trace_id": "abc123",
-    "transfer_id": "TRF_7kB2mQ9xPnL4vR",
-    "account_id": "2c05976d-1234-1234-1234-6421883de48d",
-    "retry": 0,
-    "version": 1,
-    "data": {
-        "id": "TRF_7kB2mQ9xPnL4vR",
-        "recipient_id": "550e8400-e29b-41d4-a716-446655440000",
-        "amount": {
-            "currency": "USD",
-            "value": 150.00
-        },
-        "status": "SUCCEEDED",
-        "description": "Weekly marketplace earnings",
-        "merchant_reference": "TRANSFER-2026-02-15-001",
-        "metadata": [],
-        "provider": "adyen",
-        "transactions": [
-            {
-                "code": "7ac2c5f3-7c79-4e99-b45e-aa5952620188",
-                "type": "SPLIT_TRANSFER",
-                "status": "SUCCEEDED",
-                "provider_transfer_id": "tr_1T9eKVIiMnPsFcbbRTb8ObsZ",
-                "created_at": "2026-03-11T04:25:06.229027Z",
-                "updated_at": "2026-03-11T04:25:07.917364Z"
-            }
-        ],
-        "created_at": "2026-03-11T04:25:06.208761Z",
-        "updated_at": "2026-03-11T04:25:07.928000342Z",
-        "completed_at": "2026-03-11T04:25:07.927971142Z"
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "recipient_id": "d246d578-266c-47c3-92b6-1748d780711b",
+  "direction": "PLATFORM_TO_RECIPIENT",
+  "amount": {
+    "currency": "USD",
+    "value": 4
+  },
+  "status": "SUCCEEDED",
+  "description": "Weekly marketplace earnings",
+  "merchant_reference": null,
+  "metadata": [],
+  "provider_data": {
+    "id": "STRIPE",
+    "recipient_id": "acct_1H2c3d4E5f6G7h8I",
+    "transfer_id": "tr_example",
+    "response_code": null,
+    "response_message": null
+  },
+  "transactions": [
+    {
+      "code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+      "type": "SPLIT_TRANSFER",
+      "status": "SUCCEEDED",
+      "parent_transaction_code": null,
+      "provider_transfer_id": "tr_example",
+      "provider_response_code": null,
+      "provider_response_message": null,
+      "raw_response": "{\"id\":\"tr_example\",\"status\":\"paid\"}",
+      "reason": null,
+      "created_at": "2026-09-15T10:00:00Z",
+      "updated_at": "2026-09-15T10:00:00Z"
     }
+  ],
+  "created_at": "2026-09-15T10:00:00Z",
+  "updated_at": "2026-09-15T10:00:00Z",
+  "completed_at": "2026-09-15T10:00:00Z"
 }
 ```
 
 ### split_transfer_reverse.succeeded
 
-Sent when a marketplace split transfer reversal completes successfully.
+The notification identifies the original transfer, retains its direction, and includes both the original and reversal transactions. In this partial-reversal example, `status` is `REVERSED_PARTIAL` and `amount` is the USD 1 reversal amount. The reversal transaction points to the original transaction through `parent_transaction_code`. This notification is distinct from the reversal HTTP response, which does not include direction. It is delivered under the original transfer's `id`; `description` and `merchant_reference` carry the values sent in the reverse request.
 
 ```json
 {
-    "type": "split_transfer_reverse",
-    "type_event": "succeeded",
-    "trace_id": "xyz789",
-    "transfer_id": "TRF_7kB2mQ9xPnL4vR",
-    "account_id": "2c05976d-1234-1234-1234-6421883de48d",
-    "retry": 0,
-    "version": 1,
-    "data": {
-        "id": "TRF_REV_9xPnL4vR7kB2mQ",
-        "recipient_id": "550e8400-e29b-41d4-a716-446655440000",
-        "amount": {
-            "currency": "USD",
-            "value": 50.00
-        },
-        "status": "SUCCEEDED",
-        "description": "Reversal of partial earnings",
-        "merchant_reference": "REVERSE-2026-02-16-001",
-        "metadata": [],
-        "provider": "adyen",
-        "transactions": [
-            {
-                "code": "8bd3d6f4-8d80-5f00-c56f-bb6063731299",
-                "type": "SPLIT_TRANSFER_REVERSE",
-                "status": "SUCCEEDED",
-                "provider_transfer_id": "tr_2U0fLWIjNoQtGdccSUc9PbtA",
-                "created_at": "2026-03-12T05:26:07.229027Z",
-                "updated_at": "2026-03-12T05:26:08.917364Z"
-            }
-        ],
-        "created_at": "2026-03-12T05:26:07.208761Z",
-        "updated_at": "2026-03-12T05:26:08.928000342Z",
-        "completed_at": "2026-03-12T05:26:08.927971142Z"
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "recipient_id": "d246d578-266c-47c3-92b6-1748d780711b",
+  "direction": "PLATFORM_TO_RECIPIENT",
+  "amount": {
+    "currency": "USD",
+    "value": 1
+  },
+  "status": "REVERSED_PARTIAL",
+  "description": "Reversal due to order cancelled",
+  "merchant_reference": "reverse-merchant-ref",
+  "metadata": null,
+  "provider_data": {
+    "id": "STRIPE",
+    "recipient_id": "acct_1H2c3d4E5f6G7h8I",
+    "transfer_id": "trr_example",
+    "response_code": null,
+    "response_message": null
+  },
+  "transactions": [
+    {
+      "code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+      "type": "SPLIT_TRANSFER",
+      "status": "SUCCEEDED",
+      "parent_transaction_code": null,
+      "provider_transfer_id": "tr_example",
+      "provider_response_code": null,
+      "provider_response_message": null,
+      "raw_response": "{\"id\":\"tr_example\",\"status\":\"paid\"}",
+      "reason": null,
+      "created_at": "2026-09-15T10:00:00Z",
+      "updated_at": "2026-09-15T10:00:00Z"
+    },
+    {
+      "code": "0e5b4d60-4811-4a48-90c1-398d28dbce8c",
+      "type": "SPLIT_TRANSFER_REVERSE",
+      "status": "SUCCEEDED",
+      "parent_transaction_code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+      "provider_transfer_id": "trr_example",
+      "provider_response_code": null,
+      "provider_response_message": null,
+      "raw_response": "{\"id\":\"trr_example\",\"status\":\"reversed\"}",
+      "reason": "ORDER_CANCELLED",
+      "created_at": "2026-09-15T10:05:00Z",
+      "updated_at": "2026-09-15T10:05:00Z"
     }
+  ],
+  "created_at": "2026-09-15T10:00:00Z",
+  "updated_at": "2026-09-15T10:05:00Z",
+  "completed_at": "2026-09-15T10:05:00Z"
 }
 ```
 

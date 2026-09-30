@@ -83,10 +83,60 @@ When any of these fields are enabled as required in the Checkout Builder, the Ap
   Each additional required field adds an extra step to the Apple Pay payment sheet, increasing friction for the customer. This can negatively impact conversion rates. Yuno recommends enabling only the fields that are strictly necessary for your business or regulatory requirements.
 </Note>
 
+<Note>
+  Holder name (cardholder name) is disabled by default for Apple Pay, unlike cards, where it's enabled by default. Enable it from the Checkout Builder if your integration needs it.
+</Note>
+
 | Platform | Minimum version |
 |----------|-----------------|
 | Web      | 1.8.0           |
 | iOS      | 2.15.0          |
+
+### Filter eligible cards
+
+Send `wallet_card_acceptance` when you create the checkout session to limit which cards the customer can select in the Apple Pay payment sheet. Cards that do not match are shown greyed out.
+
+```json
+{
+  "country": "BR",
+  "customer_id": "070a34cb-4649-4a4e-b231-065a53060379",
+  "merchant_order_id": "order-123",
+  "payment_description": "Apple Pay one-time payment",
+  "amount": {
+    "currency": "BRL",
+    "value": 100
+  },
+  "wallet_card_acceptance": {
+    "supported_countries": ["BR"],
+    "supported_networks": ["VISA", "MASTERCARD", "ELO"],
+    "supported_funding_types": ["CREDIT"]
+  }
+}
+```
+
+| Field | Values | What it does |
+|-------|--------|--------------|
+| `supported_countries` | ISO 3166-1 alpha-2 codes | Only cards issued in these countries can be selected. It filters by the country that issued the card, not by the customer's location: `["BR"]` greys out a card issued in the US. |
+| `supported_networks` | Card networks, for example `VISA`, `MASTERCARD`, `AMEX`, `ELO` | Only cards from these networks can be selected. It replaces the default list (`AMEX`, `DISCOVER`, `ELECTRON`, `ELO`, `MASTERCARD`, `VISA`, `MAESTRO`): `["VISA"]` allows Visa only. |
+| `supported_funding_types` | `CREDIT`, `DEBIT` | Only cards of these funding types can be selected: `["CREDIT"]` allows credit cards only, `["DEBIT"]` debit cards only, and `["CREDIT", "DEBIT"]` both. |
+
+- Every field is optional. A field you do not send keeps the default behaviour.
+- Values must be uppercase. An empty list is rejected with `400 INVALID_PARAMETERS`.
+- The object can only be set when the session is created. Updating the session does not change it.
+- The filters apply only to the Apple Pay payment sheet. Cards entered in the card form are not affected.
+
+<Note>
+  The Apple Pay button is still displayed when none of the customer's cards is eligible. The customer sees every card greyed out in the payment sheet.
+</Note>
+
+<Note>
+  If your account is set to process credit cards only, the `supported_funding_types` sent on the session takes precedence for Apple Pay.
+</Note>
+
+| Platform | Minimum version |
+|----------|-----------------|
+| Web      | 1.11.17         |
+| iOS      | Coming soon     |
 
 ## Recurring payments with SDK
 
@@ -199,12 +249,17 @@ The following example shows a complete CIT request:
 The key parameters for a CIT are:
 
 - **`vault_on_success: true`**: This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
-- **`stored_credentials.usage: "FIRST"`**: Indicates this is the initial transaction in a recurring series
+- **`customer_payer.id`**: Required together with `vault_on_success`. It must reference an existing customer (create it first with [Create Customer](/reference/customers/create-customer)). Without it the payment still succeeds but nothing is vaulted: the response carries an empty `vaulted_token` and no error
+- **`detail.wallet.stored_credentials.usage: "FIRST"`**: Indicates this is the initial transaction in a recurring series
 - **`verify`**: When `true`, enables a card verification flow through the wallet (for example, a zero-dollar authorization) instead of a regular payment charge.
 
 <Note>
   Set `verify: true` for free trial flows where `amount` is `0`. Omit the field for standard paid CITs.
 </Note>
+
+<Warning>
+  Do not place `stored_credentials` under `detail.card` on the CIT. It is not validated for a wallet payment, and the two-step Apple Pay flow does not carry it into the saved payment method, which leaves the record without stored-credential flags and without a `network_transaction_id`.
+</Warning>
 
 <Note>
   The `vaulted_token` is returned only in the CIT payment response. Wallet-vaulted instruments are intentionally not included in [Retrieve Enrolled Payment Methods](/reference/retrieve-enrolled-payment-methods-api), so don't rely on the customer's payment-methods list to rediscover the token — store it (with any display metadata you need) when the CIT succeeds. A stored token can still be resolved individually with [Retrieve Enrolled Payment Method by ID](/reference/retrieve-enrolled-payment-method-by-id-api). See [Stored Credentials](/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
@@ -233,7 +288,7 @@ The following example shows a complete MIT request:
         }
       }
     },
-    "type": "APPLE_PAY"
+    "type": "CARD"
   },
   "customer_payer": {
     "id": "customer-id"
@@ -241,15 +296,16 @@ The following example shows a complete MIT request:
   "merchant_order_id": "recurring-order-456",
   "country": "US",
   "description": "Apple Pay recurring payment",
-  "workflow": "SDK_CHECKOUT"
+  "workflow": "DIRECT"
 }
 ```
 
 The key parameters for an MIT are:
 
 - **`vaulted_token`**: The token returned in the CIT response; used to charge the customer in subsequent billing cycles without requiring re-authorization
-- **`stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
-- **No `payment_token` required**: Uses the stored token instead
+- **`type: "CARD"`**: The vaulted instrument is a card record. `"APPLE_PAY"` is also accepted together with a `vaulted_token`
+- **`detail.card.stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
+- **`workflow: "DIRECT"`**: A server-to-server charge; no checkout session and no `payment_token` are needed
 
 Monitor payment status through [webhooks](/docs/webhooks) to handle edge cases and provide customer notifications.
 
@@ -257,7 +313,11 @@ Monitor payment status through [webhooks](/docs/webhooks) to handle edge cases a
 
 When a payment is completed with Apple Pay, the iOS SDK returns the full OTT (One-Time Token) service response. Within this response, the `card_data` object contains card-related information associated with the Apple Pay payment, including the DPAN BIN (the first digits of the Device Primary Account Number used in the transaction).
 
-Merchants can use this object to retrieve card details such as brand, type, issuer, and the `iin` field, which represents the DPAN BIN.
+Merchants can use this object to retrieve card details such as brand, type, issuer, and the `iin` field, which represents the DPAN BIN. You can use this to evaluate BIN-based promotions and discounts, and for reporting.
+
+<Note>
+  **Limitation**: the `iin` reflects the default card selected in the payment sheet when the payment is created. If the shopper switches cards in the payment sheet, the `iin` may not match the card used for the final payment. Avoid presenting BIN-based promotions as guaranteed until the payment is confirmed.
+</Note>
 
 ### Example OTT response (iOS SDK)
 

@@ -27,7 +27,7 @@ For merchants preferring a pre-built UI solution, consider using Yuno's [Full Ch
 
 Before starting the Yuno Android SDK integration, ensure your project meets the technical requirements. Also, ensure the following prerequisites are in place:
 
-* **Minimum SDK Version**: `minSdkVersion` 21 or above
+* **Minimum SDK Version**: `minSdkVersion` 23 or above (Android 6.0). Required since Yuno Android SDK 2.24.0
 * **Java**: Java 8 enabled
 * **AndroidX**: Use AndroidX instead of older support libraries
 * **Android Gradle Plugin**: 4.0.0 or above
@@ -391,8 +391,8 @@ Call `continueCardPayment` to let the SDK resume the payment. The SDK executes t
 ```kotlin
 fun ApiClientPayment.continueCardPayment(
     activity: ComponentActivity,
-    showPaymentStatus: Boolean = false,
-    callbackPaymentState: ((String?, String?) -> Unit)? = null,
+    showPaymentStatus: Boolean = true,
+    callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null,
 )
 ```
 
@@ -402,7 +402,7 @@ fun ApiClientPayment.continueCardPayment(
 | :--- | :--- | :--- |
 | `activity` | `ComponentActivity` | The activity the SDK uses to present the pending action. |
 | `showPaymentStatus` | `Boolean` | If `true`, the SDK shows its payment status screen when the flow finishes. Set it to `false` to use only the callback. |
-| `callbackPaymentState` | `((String?, String?) -> Unit)?` | Invoked on the main thread with the final payment state and sub-status once the flow completes. |
+| `callbackPaymentState` | `((String?, String?, StatusMessage?) -> Unit)?` | Invoked on the main thread with the final payment state, its sub-status and, on error outcomes, a [`StatusMessage?`](/docs/sdks/resources/references/android#statusmessage-error-details). Third parameter added in SDK `2.22.0`. |
 
 ### Usage
 
@@ -414,13 +414,19 @@ Yuno.apiClientPayment(
 ).continueCardPayment(
     activity = this,
     showPaymentStatus = false,
-) { paymentState, paymentSubState ->
+) { paymentState, paymentSubState, message ->
     when (paymentState) {
         "SUCCEEDED" -> { }
         "PROCESSING" -> { }
-        "REJECT", "FAIL" -> { }
+        "REJECT", "FAIL" -> {
+            // message is present when the backend returned a response_code
+            val declineCode = message?.code
+        }
         "CANCELED_BY_USER" -> { }
-        "INTERNAL_ERROR" -> { }
+        "INTERNAL_ERROR" -> {
+            // message is always present: source "sdk" or "backend", code, reason, context
+            val failure = message
+        }
         else -> { }
     }
 }

@@ -1,0 +1,146 @@
+---
+title: "Destination Authentication"
+description: "Register a destination's authentication once — HMAC signing credentials or an mTLS client certificate — and let the PCI Proxy authenticate every forward for you. Secrets are write-only and encrypted at rest."
+keywords: ["pci proxy", "authentication", "mtls", "hmac", "signing", "client certificate", "rotation"]
+---
+
+Instead of sending signing credentials on every forward, you can attach authentication to an
+allowlisted destination once. From then on, any forward to that host is authenticated by the
+proxy automatically: HMAC-signed, presented with your mTLS client certificate, or both.
+
+Two authentication types are supported today, and they can be combined on one destination:
+
+| Type | What the proxy does on each forward |
+|---|---|
+| `DLOCAL_HMAC` | Signs the outgoing request with your dLocal credentials: sets `X-Login`, `X-Trans-Key`, `X-Date`, and the `Authorization` HMAC signature |
+| `MTLS` | Presents your client certificate during the TLS handshake with the destination |
+
+<Info>
+**Your secrets are write-only**
+
+Secret material — signing keys and private keys — is accepted on registration and never
+returned by any endpoint. It is encrypted with a dedicated KMS key before it is stored;
+the plaintext exists only in memory while a request is being signed. Reads echo only
+non-secret material: the `x_login` identifier, or the certificate's fingerprint and expiry.
+</Info>
+
+## Precedence: per-request headers always win
+
+The [per-request signing headers](/docs/security-and-compliance/pci-proxy/forward-proxy#signed-destinations-hmac-request-signing)
+(`yuno-proxy-auth` + `yuno-proxy-auth-secret-key`) keep working exactly as before. On any
+forward:
+
+1. If the request carries `yuno-proxy-auth*` headers, those credentials are used.
+2. Otherwise, if the destination has a persisted profile, the proxy uses it.
+3. Otherwise, the request is forwarded without authentication, as a plain allowlist entry.
+
+When a persisted `DLOCAL_HMAC` profile is applied, the proxy sets all four headers
+(`X-Login`, `X-Trans-Key`, `X-Date`, `Authorization`) from the profile — values you send for
+those headers on that request are replaced. An mTLS certificate is presented whenever the
+destination has an `MTLS` profile, regardless of how the request is signed.
+
+If the same hostname is registered both organization-wide and for a specific account, the
+account-scoped destination — and its authentication — wins for requests carrying that
+`yuno-account-id`.
+
+## Register a destination with authentication
+
+Add an `authentication` array to the [destination registration](/docs/security-and-compliance/pci-proxy/allowlist#register-a-destination) —
+at most one entry per type:
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hostname": "api.dlocal.com",
+    "purpose": "Direct payins - dLocal",
+    "authentication": [
+      {
+        "type": "DLOCAL_HMAC",
+        "x_login": "sak_live_...",
+        "x_trans_key": "...",
+        "secret_key": "..."
+      }
+    ]
+  }'
+```
+
+An mTLS entry carries the certificate and its private key in PEM format. The certificate may
+include intermediates; the private key is write-only:
+
+```json
+{
+  "type": "MTLS",
+  "certificate": "-----BEGIN CERTIFICATE-----\n...",
+  "private_key": "<your PEM private key>"
+}
+```
+
+The response — like every read of the destination — echoes only non-secret material:
+
+```json
+{
+  "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  "hostname": "api.dlocal.com",
+  "status": "ENABLED",
+  "authentication": [
+    { "type": "DLOCAL_HMAC", "x_login": "sak_live_..." },
+    {
+      "type": "MTLS",
+      "certificate_fingerprint": "sha256:9f86d081...",
+      "certificate_expires_at": "2027-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+An invalid configuration returns `422 INVALID_AUTHENTICATION`: an unknown `type`, a duplicated
+`type`, a missing or empty required field, an unexpected field, a certificate or key that does
+not parse, a key that does not match the certificate, or an expired certificate.
+
+## Rotate credentials
+
+Rotation is a full replace of the destination's authentication — send the complete new
+configuration; there is no partial patch:
+
+```sh
+curl -X PUT "https://api.y.uno/v1/pci-proxy/destinations/{id}/authentication" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "authentication": [
+      { "type": "DLOCAL_HMAC", "x_login": "sak_live_new", "x_trans_key": "...", "secret_key": "..." }
+    ]
+  }'
+```
+
+Returns `200` with the destination and its new authentication summary. The overwrite is
+idempotent and takes effect immediately — the next forward already uses the new credentials.
+Use `certificate_expires_at` on your reads to schedule certificate rotation before expiry.
+
+## Remove authentication
+
+```sh
+curl -X DELETE "https://api.y.uno/v1/pci-proxy/destinations/{id}/authentication" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Returns `200`. The destination keeps working as a plain allowlist entry; forwards to it are
+simply no longer authenticated by the proxy. Deleting the destination itself also removes its
+authentication.
+
+Every authentication change is recorded in the destination audit trail as `AUTH_SET` or
+`AUTH_REMOVED`.
+
+## Errors
+
+| Status | Code | When |
+|---|---|---|
+| `400` | `INVALID_PARAMETERS` | Malformed body, an empty `authentication` array on `PUT`, or an invalid destination id |
+| `404` | `NOT_FOUND` | The destination does not exist or is not visible to your account scope |
+| `422` | `INVALID_AUTHENTICATION` | The authentication configuration is invalid (static message; the specific reason is not disclosed) |
+| `502` | `DESTINATION_UNREACHABLE` | On forwards: the destination rejected the TLS handshake — check that your client certificate is the one the destination expects and has not expired |

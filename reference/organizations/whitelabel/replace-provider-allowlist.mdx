@@ -1,0 +1,89 @@
+---
+title: "Replace the Provider Allowlist"
+description: "Replaces the whole set of providers your organization offers with the ids in the body."
+openapi: "/openapi/organizations/whitelabel/replace-provider-allowlist.json PUT /whitelabel/providers"
+---
+
+Replaces the whole set of providers your organization offers with the ids in the body.
+
+**A provider the body omits stops being offered.** This is a replace, not a merge — use [Update Several Providers' Visibility](/reference/organizations/whitelabel/update-providers-visibility) to change some providers without restating the rest.
+
+Removing a provider **keeps** its instruction override, so toggling it off and on again does not lose your wording.
+
+### Body
+
+<ParamField body="provider_ids" type="string[]" required>
+  The complete set of provider ids your organization offers. UPPER_SNAKE_CASE catalogue ids (`[A-Z0-9_]`), at most 100 characters each, at most 500 entries. Case-insensitive — normalized to upper case.
+
+  An **empty array is a legal request** and clears the allowlist, the same end state as [Clear the Provider Allowlist](/reference/organizations/whitelabel/clear-provider-allowlist). A save-everything admin screen therefore needs no special case for "the last provider was unticked".
+</ParamField>
+
+<Warning>
+Under the opt-in rule, an empty `provider_ids` leaves your organization with no allowlist entries at all — it is **not** a "show everything" switch. Send the ids you want to offer rather than clearing the list to widen it.
+</Warning>
+
+### Response
+
+The refreshed overlay, in the same shape as [List the White-label Provider Overlay](/reference/organizations/whitelabel/list-providers).
+
+<ResponseField name="filtered" type="boolean">
+  Whether your organization has at least one allowlist entry, after this change.
+</ResponseField>
+<ResponseField name="providers" type="object[]">
+  The union of your allowlist, your instruction overrides, and your logo overrides.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X PUT 'https://api.y.uno/v1/whitelabel/providers' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{ "provider_ids": ["STRIPE", "ADYEN", "YUNO_3DS"] }'
+```
+
+```json 200 OK
+{
+  "filtered": true,
+  "providers": [
+    {
+      "provider_id": "ADYEN",
+      "allowed": true,
+      "has_instruction_override": false
+    },
+    {
+      "provider_id": "STRIPE",
+      "allowed": true,
+      "has_instruction_override": true,
+      "more_info_url": "https://docs.example.com/stripe"
+    },
+    {
+      "provider_id": "YUNO_3DS",
+      "allowed": true,
+      "has_instruction_override": false,
+      "logo_url": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+    }
+  ]
+}
+```
+
+```json 400 Bad Request
+{
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "provider_ids contains an invalid catalogue id"
+}
+```
+</CodeGroup>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | Envelope | When |
+|---|---|---|
+| `400` | problem+json | An unknown field, more than 500 ids, or an id that is not a valid catalogue id. |
+| `401` | `NOT_AUTHENTICATED` | Missing or invalid API keys. |
+| `413` | — | Request body larger than 256 KB. |
+
+</div>

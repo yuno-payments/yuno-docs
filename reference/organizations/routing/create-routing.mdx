@@ -136,11 +136,11 @@ curl -X POST 'https://api.y.uno/v1/routing' \
     "condition_sets": [
       {
         "sort_number": 1,
-        "name": "Brazil — 3 to 6 installments via Adyen",
-        "description": "BR card transactions with 3–6 installments go to Adyen directly",
+        "name": "Brazil — BRL 300 to 600 via Adyen",
+        "description": "BR card transactions between BRL 300 and 600 go to Adyen directly",
         "conditions": [
-          { "condition_type": "COUNTRY",      "conditional": "EQUAL",   "values": ["BR"] },
-          { "condition_type": "INSTALLMENTS", "conditional": "BETWEEN", "values": ["3", "6"] }
+          { "condition_type": "COUNTRY", "conditional": "EQUAL",   "values": ["BR"] },
+          { "condition_type": "AMOUNT",  "conditional": "BETWEEN", "values": ["300.00", "600.00"], "currency": "BRL" }
         ],
         "route": {
           "steps": [
@@ -175,7 +175,7 @@ curl -X POST 'https://api.y.uno/v1/routing' \
   "condition_sets": [
     {
       "sort_number": 1,
-      "name": "Brazil — 3 to 6 installments via Adyen",
+      "name": "Brazil — BRL 300 to 600 via Adyen",
       "conditions": [
         { "condition_type": "COUNTRY", "conditional": "EQUAL", "values": ["BR"] }
       ],
@@ -189,19 +189,15 @@ curl -X POST 'https://api.y.uno/v1/routing' \
 
 ```json 400 — Non-contiguous Index
 {
-  "type": "validation_error",
   "code": "ROUTING_VALIDATION_FAILED",
-  "message": "default_route.steps[].index must be contiguous starting at 1",
-  "details": { "path": "default_route.steps[1].index", "expected": 2, "received": 3 }
+  "messages": ["default_route.steps[].index must be contiguous starting at 1"]
 }
 ```
 
 ```json 409 — Already Exists
 {
-  "type": "conflict",
   "code": "ROUTING_ALREADY_EXISTS",
-  "message": "A routing already exists for account 'acc-uuid' and payment_method 'CARD'",
-  "details": { "payment_method": "CARD", "existing_routing_id": "r_..." }
+  "messages": ["A routing already exists for account 'acc-uuid' and payment_method 'CARD'"]
 }
 ```
 </CodeGroup>
@@ -212,9 +208,10 @@ curl -X POST 'https://api.y.uno/v1/routing' \
 
 | HTTP | `code` |
 | --- | --- |
-| `400` | `ROUTING_VALIDATION_FAILED`<br />Schema or rule violation. `details` names the offending field/path. |
+| `400` | `ROUTING_VALIDATION_FAILED`<br />Schema or rule violation. `messages` names the offending field/path. |
 | `400` | `ROUTING_PROVIDER_NOT_AVAILABLE`<br />A step references a `(provider_id, connection_id)` not active for the account on this `payment_method`. |
 | `409` | `ROUTING_ALREADY_EXISTS`<br />A routing already exists for this `(account, payment_method)`. Use `PATCH` to update it. |
-| `403` | `INSUFFICIENT_SCOPE`<br />API key missing `routing:write`. |
+| `401` | `NOT_AUTHENTICATED`<br />Missing `public-api-key` or `private-secret-key` header. |
+| `401` | `INVALID_CREDENTIALS`<br />Wrong key pair, or a Dashboard **Customized API key** was used. Use an account key or organization key instead. |
 
 </div>

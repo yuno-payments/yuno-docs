@@ -1,0 +1,164 @@
+---
+title: "Replace a Provider's Instruction Override"
+description: "Stores your own connection instructions for one provider, replacing the Yuno catalogue's wording where you override it."
+openapi: "/openapi/organizations/whitelabel/replace-provider-instructions.json PUT /whitelabel/providers/{provider_id}/instructions"
+---
+
+Stores your own connection instructions for this provider, replacing the Yuno catalogue's wording where you override it.
+
+<Warning>
+**The document is stored whole, not merged.** A field this body omits is cleared, and the provider reverts to the catalogue's value for it. The safe edit is: read the current document with [Retrieve a Provider's Instruction Override](/reference/organizations/whitelabel/retrieve-provider-instructions), change the one field, and put the whole thing back.
+</Warning>
+
+At least one of `instructions`, `setup_instructions`, `more_info_url` and `name` must be present. Unknown top-level keys are rejected rather than ignored, and the serialised document may not exceed 64 KB.
+
+Overriding a provider's wording does **not** add it to your allowlist — editing text never changes what you offer.
+
+### Path Parameters
+
+<ParamField path="provider_id" type="string" required>
+  Yuno catalogue provider id in UPPER_SNAKE_CASE. Case-insensitive — normalized to upper case.
+</ParamField>
+
+### Body
+
+<ParamField body="instructions" type="object[]">
+  The connection steps shown to your own users.
+  <Expandable title="step">
+    <ParamField body="step" type="integer">
+      Position of the step.
+    </ParamField>
+    <ParamField body="text" type="string | object">
+      The step's text. Either a plain string or a language map such as `{"EN": "...", "ES": "..."}`.
+    </ParamField>
+    <ParamField body="text_link" type="string | object">
+      Link label. Same shape rules as `text`.
+    </ParamField>
+    <ParamField body="link" type="string">
+      Target URL. **Must be https** — the dashboard renders it as an href.
+    </ParamField>
+    <ParamField body="type" type="string">
+      Step type.
+    </ParamField>
+    <ParamField body="has_sub_instructions" type="boolean">
+      Whether this step carries nested steps.
+    </ParamField>
+    <ParamField body="sub_instructions_type" type="string">
+      Type of the nested steps.
+    </ParamField>
+    <ParamField body="sub_instructions" type="object[]">
+      Nested steps, in the same shape. Up to 3 levels deep.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="setup_instructions" type="object[]">
+  Grouped setup steps.
+  <Expandable title="group">
+    <ParamField body="title" type="string">
+      Group heading.
+    </ParamField>
+    <ParamField body="order" type="integer">
+      Position of the group.
+    </ParamField>
+    <ParamField body="instructions_type" type="string">
+      Type of the steps in this group.
+    </ParamField>
+    <ParamField body="instructions" type="object[]">
+      The steps, in the same shape as `instructions` above.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="more_info_url" type="string">
+  Link to your own documentation for this provider. Must be an https URL.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Display name that replaces the catalogue's. At most 255 characters.
+
+  Accepted **only for Yuno-owned providers** — a catalogue id containing `YUNO`, such as `YUNO_3DS` or `YUNO_FRAUD_SCREENING`. Any other provider is rejected with `400`.
+</ParamField>
+
+### Response
+
+The stored document, in the same shape as [Retrieve a Provider's Instruction Override](/reference/organizations/whitelabel/retrieve-provider-instructions), including the read-only `created_at`, `updated_at`, `created_by` and `updated_by` fields.
+
+<CodeGroup>
+```bash cURL
+curl -X PUT 'https://api.y.uno/v1/whitelabel/providers/STRIPE/instructions' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "more_info_url": "https://docs.example.com/stripe",
+    "instructions": [
+      {
+        "step": 1,
+        "text": { "EN": "Open your Stripe dashboard.", "ES": "Abre tu panel de Stripe." },
+        "type": "TEXT"
+      },
+      {
+        "step": 2,
+        "text": "Copy the secret API key and paste it below.",
+        "text_link": "Where do I find my key?",
+        "link": "https://docs.example.com/stripe#api-keys",
+        "type": "LINK"
+      }
+    ]
+  }'
+```
+
+```json 200 OK
+{
+  "provider_id": "STRIPE",
+  "more_info_url": "https://docs.example.com/stripe",
+  "instructions": [
+    {
+      "step": 1,
+      "text": { "EN": "Open your Stripe dashboard.", "ES": "Abre tu panel de Stripe." },
+      "type": "TEXT"
+    },
+    {
+      "step": 2,
+      "text": "Copy the secret API key and paste it below.",
+      "text_link": "Where do I find my key?",
+      "link": "https://docs.example.com/stripe#api-keys",
+      "type": "LINK"
+    }
+  ],
+  "created_at": "2026-09-02T13:54:13Z",
+  "updated_at": "2026-09-02T13:54:13Z",
+  "created_by": "00000000-0000-0000-0000-000000000000",
+  "updated_by": "00000000-0000-0000-0000-000000000000"
+}
+```
+
+```json 400 — rename refused
+{
+  "title": "Invalid provider instructions",
+  "status": 400,
+  "detail": "The instruction override was rejected",
+  "violations": [
+    "name: only Yuno's own providers can be renamed; 'STRIPE' cannot"
+  ]
+}
+```
+</CodeGroup>
+
+<Note>
+`violations` lists **every** problem with the document at once — fix them together rather than resubmitting to discover the next one.
+</Note>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | Envelope | When |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | `provider_id` is not a valid catalogue id. |
+| `400` | problem+json | The document was rejected: an unknown top-level key, a non-https `link` or `more_info_url`, `name` on a provider that is not Yuno-owned, an empty document, or more than 64 KB. |
+| `401` | `NOT_AUTHENTICATED` | Missing or invalid API keys. |
+| `413` | — | Request body larger than 256 KB. |
+
+</div>

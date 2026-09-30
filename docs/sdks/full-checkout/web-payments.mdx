@@ -31,40 +31,44 @@ The first step is including the library in your project. The integration guide p
 npm install @yuno-payments/sdk-web
 ```
 
-When using the NPM package, you can use the `loadScript` method to handle script loading with Subresource Integrity (SRI) support:
+When using the NPM package, `loadScript` injects the SDK script and resolves with the `Yuno` object. Pass `sri: true` to have the browser verify the script against its published hash. Initializing is a separate step: call `Yuno.initialize` with your public API key to get the instance you use for the rest of the integration.
 
 ```javascript
 import { loadScript } from '@yuno-payments/sdk-web';
 
-const yuno = await loadScript({
-  apiKey: 'YOUR_PUBLIC_KEY',
-  integrity: 'sha384-...', // Find the hash in our GitHub repository
-});
+const Yuno = await loadScript({ sri: true });
+const yuno = await Yuno.initialize('YOUR_PUBLIC_KEY');
 ```
+
+<Note>
+If your account is in the EU region, pass `region: 'eu'` to `loadScript` as well.
+</Note>
+
+<Tip>
+`loadScript()` only starts downloading the SDK when your app calls it. Add a preload for `main.js` and preconnects to the Yuno hosts in your HTML `<head>` so the download starts while the page loads. See [Preload the SDK script](/docs/sdks/resources/references/web#preload-the-sdk-script).
+</Tip>
 
 **Option 2: HTML Script Tag**
 
 ```html
 <script 
-  src="https://sdk-web.y.uno/v1.9/main.js"
-  integrity="sha384-..."
-  crossorigin="anonymous"
+  src="https://sdk-web.y.uno/v1.10/main.js"
   async
   defer
 ></script>
 ```
 
 <Note>
-Find the latest SRI hashes for each version in [versions-sri.json](https://sdk-web.y.uno/versions-sri.json).
+`v1.10` is a global path: it receives every patch released on that line, so you get fixes without changing your integration.
+
+Do not add an `integrity` attribute to this URL. Because the file is republished on each patch release, any hash you pin to it stops matching and the browser blocks the script. Subresource Integrity requires the immutable full-version URL instead — see [Subresource Integrity](/docs/sdks/resources/references/web#subresource-integrity-sri).
 </Note>
 
 **Option 3: Dynamic JavaScript**
 
 ```javascript
 const script = document.createElement('script');
-script.src = 'https://sdk-web.y.uno/v1.9/main.js';
-script.integrity = 'sha384-...';
-script.crossOrigin = 'anonymous';
+script.src = 'https://sdk-web.y.uno/v1.10/main.js';
 script.async = true;
 script.defer = true;
 document.head.appendChild(script);
@@ -88,6 +92,7 @@ These are the parameters covered in this guide. For the full list of parameters 
 | `yunoPaymentResult(status, subStatus)` | Callback: payment finished. Receives [payment status](/reference/payments/status-and-response-codes/payment) (e.g. `SUCCEEDED`, `DECLINED`, `PENDING`) and an optional `subStatus` qualifying it. See [Shopper-cancelled steps](/docs/sdks/resources/references/web#shopper-cancelled-steps). |
 | `yunoError(message, data)`        | Callback: error during the flow.                                                                              |
 | `onLoading`                       | Callback: loading state updates.                                                                              |
+| `onChange`                        | Reports whether the payment form is complete. Receives `{ form: { isValid } }`. Use with `showPayButton: false` to control your own pay button. Available since v1.10.11. |
 | `card`                            | Card form options (e.g. `onChange`, `isCreditCardProcessingOnly`). Optional.                                  |
 
 ## full-checkout

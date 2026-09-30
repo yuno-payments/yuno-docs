@@ -9,6 +9,10 @@ Click to Pay is an online payment solution designed to streamline and secure onl
 
 *Networks available in Yuno*: [MasterCard](https://www.mastercard.us/en-us/personal/ways-to-pay/click-to-pay.html)
 
+<Note>
+  Passkey support is currently available for **Mastercard** only. Visa passkey support is in development.
+</Note>
+
 ## Key features and benefits
 
 * **Ease of Use**: It enables consumers to make online purchases with a single click, eliminating the need to enter credit card details for each purchase manually.
@@ -44,6 +48,10 @@ To integrate and start offering Click to Pay to your customers, follow these 4 s
 
 Merchants can choose how Click to Pay appears at checkout. Both experiences support passkeys across web and mobile platforms.
 
+<Note>
+  **Passkey behavior**: a shopper's first transaction always authenticates with 3DS, since they don't have a passkey yet. Once that transaction completes, a passkey is created and subsequent transactions authenticate with it instead. A passkey is tied to the same device, browser, and card: if any of these changes, a new passkey must be created.
+</Note>
+
 ### 1. Standalone Payment Method (APM Flow)
 Click to Pay appears as a separate payment button alongside cards and other methods.
 * **Mandatory Enrollment**: Account creation is mandatory for all users.
@@ -55,12 +63,26 @@ Click to Pay is embedded within the card payment method and is invisible until t
 * **Optional Enrollment**: Enrollment is via a checkbox. If declined, the user proceeds with manual card entry (the transaction still shows `CLICK_TO_PAY` in the one-time token (OTT)).
 * **Visibility**: Best for low-friction UX where enrollment feels optional.
 
-<Info>
-**Certification Note**
-The golden flow with passkeys in Mobile is currently in certification.
-</Info>
-
 <Frame><img src="/images/reference/click-to-pay/image5.png" /></Frame>
+
+## Card vaulting on successful payment
+
+When a shopper enrolls during checkout — mandatorily in the APM flow, or by accepting the enrollment checkbox in the Golden Flow — their card is vaulted into their Click to Pay wallet once the payment is approved. Vaulting happens as part of the successful payment; no separate enrollment call is needed.
+
+On the shopper's next visit, Click to Pay recognizes them (by device or by email lookup) and surfaces their vaulted cards directly in the checkout, so returning shoppers can pay without re-entering card details.
+
+## Payment status lifecycle
+
+For Click to Pay, passkey authentication happens **before** the payment exists: the shopper authenticates inside the Click to Pay experience, and only once authentication completes is the one-time token (OTT) generated — the OTT already carries the result of that authentication. You then create the payment using the OTT. If the passkey step does not complete, the flow aborts and no payment is created.
+
+After creating the payment, continue the flow in the SDK with `continuePayment`. The SDK evaluates the payment's status at that point:
+
+* `READY_TO_PAY` — or `PENDING` with sub-status `WAITING_ADDITIONAL_STEP` or `DELAYED_PROVIDER_RESPONSE` — means the provider requires an additional step (for example 3DS, a redirect, or a provider OTP), and the SDK executes it.
+* Any other status means the payment is already resolved, and the SDK reports the final status.
+
+These intermediate statuses are conditional: a payment that requires no additional step never passes through them.
+
+See [Payment statuses](/reference/payments/status-and-response-codes/payment) for the full lifecycle.
 
 ## Activation Guide
 
@@ -73,7 +95,7 @@ Follow the steps below based on your desired configuration:
 4. Define the payment method route in **Routing** and enable Click to Pay in the **Checkout Builder**.
 
 ### Option 2: Click to Pay + Passkey
-*Supported on web browsers only (not supported in WebView).*
+*Supported on web and mobile platforms. Not supported in WebView.*
 1. Request the **DPA ID** from the card network (for example, Mastercard).
 2. Add the **Click to Pay connection** using the DPA ID.
 3. Add the **card connection** and configure the **Acquirer BIN**.
@@ -87,12 +109,20 @@ Follow the steps below based on your desired configuration:
 4. Request the Yuno backend team to enable the **Golden Flow** flag.
 
 ### Option 4: Click to Pay + Golden Flow + Passkey
-*Supported on web browsers only (not supported in WebView).*
+*Supported on web and mobile platforms. Not supported in WebView.*
 1. Request the **DPA ID** from the card network (for example, Mastercard).
 2. Add the **Click to Pay connection**.
 3. Add the **card connection** and configure the **Acquirer BIN**.
 4. Request the Yuno backend team to enable **Passkey**, **Dual Payload**, and **Golden Flow** flags.
 5. Create checkout sessions with a `price` for Passkey to work correctly.
+
+## Click to Pay on VTEX
+
+Click to Pay is also supported for VTEX stores through the [Yuno VTEX plugin](/docs/plugins/vtex). The activation steps above (connection, routing, Checkout Builder) apply the same way.
+
+<Info>
+Click to Pay relies on a customer record existing in Yuno. When using the VTEX plugin, set the **Create Customer** field to **Yes** in your Yuno provider configuration so the plugin creates or updates the customer record on every payment. See the [VTEX plugin FAQs](/docs/plugins/vtex/faqs) for details.
+</Info>
 
 ## SDK integration (Click to Pay Passkey)
 
@@ -182,3 +212,25 @@ override fun onNewIntent(intent: Intent) {
 }
 ```
 </CodeGroup>
+
+## Authentication method
+
+Every Click to Pay transaction returns an `authentication_method` field in the payment response, indicating exactly how the shopper was authenticated: for example, passkey (FIDO2), 3DS, OTP, SMS or email, federated login, and SPC, among others.
+
+This is useful for fraud prevention, routing decisions, and tracking metrics such as approval rate by authentication method.
+
+<Note>
+  This field is backward compatible: transactions that don't use Click to Pay simply return the field without a relevant value.
+</Note>
+
+To read it, call [Get payment](/reference/payments/retrieve-payment-by-id-v2) and look for `authentication_method` in the transaction.
+
+## Card type filter and CVV behavior
+
+**Card type filter**: you can block a debit or credit funding source in Click to Pay transactions. This is useful for combo cards, where the shopper would otherwise be able to choose either type: for example, showing only the credit option when a merchant wants to block debit.
+
+<Note>
+  This isn't self-service yet. Reach out to Yuno's on-call team to configure it for your account. Self-service configuration for all payment methods is in development.
+</Note>
+
+**CVV with network token**: starting from SDK version 1.7, Click to Pay only requests the CVV field when the card does **not** support network token. Before version 1.7, the CVV was always required, even when the card had a network token. There's no merchant opt-in or opt-out, this behavior is automatic once you update to version 1.7. It applies only to the Click to Pay flow (both the standalone APM flow and the Golden Flow), not to the standard card flow.

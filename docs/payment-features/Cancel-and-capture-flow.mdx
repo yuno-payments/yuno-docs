@@ -11,6 +11,7 @@ This guide outlines all available approaches for capture and cancel operations a
   * [Real-time capture](#real-time-capture)
   * [Manual capture](#manual-capture)
   * [Delayed capture](#delayed-capture)
+  * [Apple Pay and Google Pay](#apple-pay-and-google-pay)
 * [**Cancel modes**](#cancel-modes)
   * [Manual cancel](#manual-cancel)
   * [Delayed cancel](#delayed-cancel)
@@ -118,6 +119,30 @@ The `delay` field is required when using delayed capture operations and must fol
 * `"P1M"` for 1 month
 
 If you call the [capture API](/reference/capture-authorization) before the scheduled time, your call will override the delay and execute the capture immediately. **This action automatically cancels the scheduled Yuno trigger**. Alternatively, you can capture the payment manually through your [Yuno dashboard](https://dashboard.y.uno/).
+
+### Apple Pay and Google Pay
+
+The capture modes above also apply to Apple Pay and Google Pay payments that Yuno decrypts and processes as card payments, which is how the [Apple Pay](/docs/wallets/apple-pay/apple-pay-direct-integration) and [Google Pay](/docs/wallets/google-pay/google-pay-direct-integration) direct integrations and the SDK integrations of both wallets work. Where you send the `capture` field depends on how you create the payment:
+
+* **Direct API integration** (`workflow: "DIRECT"` with the wallet token in `payment_method.detail.wallet.payment_token`): send `capture` inside `payment_method.detail.wallet`, next to the token.
+* **SDK integration** (payment created with the one-time token returned by the SDK in `payment_method.token`): send `capture` inside `payment_method.detail.card`, exactly as for a card payment. In this flow, `payment_method.detail.card.capture` takes precedence over a `capture` value sent at the wallet level.
+
+```json
+{
+  "workflow": "DIRECT",
+  "payment_method": {
+    "type": "APPLE_PAY",
+    "detail": {
+      "wallet": {
+        "payment_token": "{...}",
+        "capture": false
+      }
+    }
+  }
+}
+```
+
+The authorization is then captured or canceled with the same endpoints and dashboard actions as a card authorization. As with cards, whether the provider supports authorizations for wallet payments, and for how long, depends on the provider.
 
 ## Cancel modes
 
@@ -395,6 +420,16 @@ This example shows a complete payment request with both delayed capture and canc
 While this example shows both `delayed_capture_settings` and `delayed_cancel_settings` configured together, Yuno recommends using only one at a time to avoid unexpected behaviors.
 </Info>
 
+## Review a payment before you capture it
+
+Manual capture is also the way to approve each payment yourself before money moves. The pattern:
+
+1. Authorize with `capture: false`. The customer's funds are reserved, not taken.
+2. Run your own checks: stock, delivery address, an internal fraud desk, or a call to your risk provider. If you want Yuno to hold suspicious payments for you instead, put a [review list or a rule with the Review outcome](/docs/using-yuno/dashboard-overview/risk-conditions#review-lists) on the route; those payments are held before they reach the provider and you approve or decline them from the **Held payments** tab in Risk Conditions.
+3. Call [Capture Authorization](/reference/payments/capture-authorization) to take the funds, or [Cancel](/reference/payments/cancel-payment) to release them. Add `delayed_cancel_settings` to the payment so an authorization you never decide on is released automatically.
+
+The customer is never charged for a payment you reject, and no refund is needed.
+
 ## When to use each mode
 
 ### Use real-time capture when:
@@ -408,6 +443,7 @@ While this example shows both `delayed_capture_settings` and `delayed_cancel_set
 * You need to verify inventory before finalizing the payment
 * You want to capture a different amount than authorized
 * You have complex business logic that determines whether to capture or cancel
+* You want to approve every payment yourself before the customer is charged
 * You need maximum control over the capture timing
 
 ### Use delayed capture when:

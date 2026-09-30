@@ -6,10 +6,16 @@
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno/v1"
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
     },
     {
-      "url": "https://api.eu.y.uno/v1"
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
     }
   ],
   "components": {
@@ -178,6 +184,44 @@
                             "description": "Timestamp when the quote expires (ISO 8601). Must be > `created_at`. The payment is rejected if `expires_at < now()` at validation time."
                           }
                         }
+                      }
+                    }
+                  },
+                  "taxes": {
+                    "type": "object",
+                    "description": "Specifies the order's tax object.",
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "Type of the tax.",
+                        "enum": [
+                          "VAT",
+                          "AIRPORT_TAX",
+                          "CONSUMPTION_TAX",
+                          "VAT_LAW_17934",
+                          "VAT_LAW_19210",
+                          "VAT_EXEMPTION",
+                          "ISV"
+                        ]
+                      },
+                      "tax_base": {
+                        "type": "number",
+                        "description": "The amount base to apply the tax defined.",
+                        "format": "float"
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "The amount of the tax.",
+                        "format": "float"
+                      },
+                      "percentage": {
+                        "type": "number",
+                        "description": "The percentage of the tax.",
+                        "format": "float"
                       }
                     }
                   },
@@ -525,14 +569,24 @@
                           "account_funding": {
                             "type": "object",
                             "description": "The account funding transaction details object necessary for [AFTs](/docs/account-funding-transactions-afts).",
+                            "required": [
+                              "beneficiary"
+                            ],
                             "properties": {
+                              "funding_type": {
+                                "type": "string",
+                                "description": "The type of account funding operation. Accepted by the API but not yet read by any provider integration.",
+                                "enum": [
+                                  "RECHARGE",
+                                  "P2P",
+                                  "M2M",
+                                  "TRANSFER",
+                                  "BILL_PAYMENT"
+                                ]
+                              },
                               "sender": {
                                 "type": "object",
                                 "description": "The sender object necessary for account funding transactions",
-                                "required": [
-                                  "first_name",
-                                  "country"
-                                ],
                                 "properties": {
                                   "first_name": {
                                     "type": "string",
@@ -692,10 +746,6 @@
                               "beneficiary": {
                                 "type": "object",
                                 "description": "The beneficiary object necessary for account funding transactions.",
-                                "required": [
-                                  "first_name",
-                                  "country"
-                                ],
                                 "properties": {
                                   "first_name": {
                                     "type": "string",
@@ -724,6 +774,10 @@
                                   "country": {
                                     "type": "string",
                                     "description": "The Beneficiary's country  (ISO 3166-1 MAX 2; MIN 2)"
+                                  },
+                                  "account_number": {
+                                    "type": "string",
+                                    "description": "The beneficiary's account identifier inside the wallet (MAX 255)."
                                   },
                                   "date_of_birth": {
                                     "type": "string",
@@ -959,6 +1013,10 @@
                                 "carrier_code": {
                                   "type": "string",
                                   "description": "IATA carrier code. See http://www.iata.org (MAX 2; MIN 2)."
+                                },
+                                "carrier_name": {
+                                  "type": "string",
+                                  "description": "The name of the airline carrier (MAX 100; MIN 1)."
                                 },
                                 "flight_number": {
                                   "type": "string",
@@ -1791,6 +1849,17 @@
                     "type": "string",
                     "description": "Identification of the payment transaction defined by the merchant (MAX 255; MIN 3). Optional to complement the merchant_order_id."
                   },
+                  "response_additional_data": {
+                    "type": "object",
+                    "description": "Controls additional data returned in the payment response and in the payment webhooks.",
+                    "properties": {
+                      "transactions_history": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "When `true`, the payment response and the payment webhooks (for example, `payment.purchase`) include the full list of the payment's transactions in the `transactions_history` array — including attempts declined by previous providers when the payment was routed through more than one provider. When omitted or `false` (the default), `transactions_history` is returned as an empty array `[]` to keep payload sizes small."
+                      }
+                    }
+                  },
                   "customer_payer": {
                     "type": "object",
                     "description": "Specifies customer object for payments.",
@@ -2425,7 +2494,7 @@
                               },
                               "stored_credentials": {
                                 "type": "object",
-                                "description": "Indicates the processing type of the transaction. Refer to the <a href=\"../docs/stored-credentials#create-a-payment-with-processing-type\" class=\"link_stored_credential\">Stored credentials</a> documentation for more information.",
+                                "description": "Indicates the processing type of the transaction. Refer to the <a href=\"/docs/payment-features/stored-credentials#create-a-payment-with-processing-type\" class=\"link_stored_credential\">Stored credentials</a> documentation for more information.",
                                 "properties": {
                                   "reason": {
                                     "type": "string",
@@ -2438,7 +2507,7 @@
                                   },
                                   "usage": {
                                     "type": "string",
-                                    "description": "This field Iets you indicate if this is the first time the vaulted_token/network_token is used for a payment.",
+                                    "description": "This field lets you indicate if this is the first time the vaulted_token/network_token is used for a payment.",
                                     "enum": [
                                       "FIRST",
                                       "USED"
@@ -2451,6 +2520,58 @@
                                   "network_transaction_id": {
                                     "type": "string",
                                     "description": "Unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle. (MAX 255; MIN 3). [Stored credentials](/docs/stored-credentials)"
+                                  },
+                                  "additional_data": {
+                                    "type": "object",
+                                    "description": "This structure is used to send additional information about recurrence. It's optional, and few providers require it (e.g. Mercado Pago). Contact your TAM to confirm if it's needed for your integration.",
+                                    "properties": {
+                                      "billing_cycles": {
+                                        "type": "object",
+                                        "description": "Specifies the `billing_cycles` object. Defines the number of charges associated to the subscription. If using this object, you must enter data on all fields.",
+                                        "properties": {
+                                          "current": {
+                                            "type": "integer",
+                                            "example": 1
+                                          },
+                                          "total": {
+                                            "type": "integer",
+                                            "description": "The total number of billing cycles for the subscription (MIN 1).",
+                                            "format": "int32"
+                                          }
+                                        }
+                                      },
+                                      "frequency": {
+                                        "type": "object",
+                                        "description": "Specifies the frequency type (e.g., DAY, WEEK, MONTH, YEAR) and value. Enter data on all fields if using this object.",
+                                        "properties": {
+                                          "type": {
+                                            "type": "string",
+                                            "example": "MONTH",
+                                            "description": "Specifies the frequency type (e.g., DAY, WEEK, MONTH, YEAR)."
+                                          },
+                                          "value": {
+                                            "type": "integer",
+                                            "description": "Specifies the frequency value."
+                                          }
+                                        }
+                                      },
+                                      "availability": {
+                                        "type": "object",
+                                        "description": "Specifies the `availability` object. Defines a date interval based on starting and ending dates when the subscription is available to use.",
+                                        "properties": {
+                                          "start_at": {
+                                            "type": "string",
+                                            "description": "The start date that the subscription plan will be available to use. If not set, the subscription is available from the moment it is created. `start_at` becomes mandatory when using `finish_at`.",
+                                            "format": "date-time"
+                                          },
+                                          "finish_at": {
+                                            "type": "string",
+                                            "description": "The end date until the subscription plan will be available to use. If not defined, the subscription does not have an expiration date. `finish_at` becomes mandatory when using `start_at`.",
+                                            "format": "date-time"
+                                          }
+                                        }
+                                      }
+                                    }
                                   }
                                 }
                               },
@@ -2529,13 +2650,17 @@
                                 "type": "string",
                                 "description": "Registered domain used during the wallet flow. (MAX 255; MIN 3)."
                               },
+                              "cryptogram": {
+                                "type": "string",
+                                "description": "Cryptogram for direct integrations with card wallets (MAX 526; MIN 3)."
+                              },
                               "verify": {
                                 "type": "boolean",
                                 "description": "Enables card verification flow through the wallet. When true, a verification transaction (e.g., zero-dollar auth) is performed instead of a regular payment."
                               },
                               "stored_credentials": {
                                 "type": "object",
-                                "description": "Indicates the processing type of the transaction. Refer to the <a href=\"../docs/stored-credentials#create-a-payment-with-processing-type\" class=\"link_stored_credential\">Stored credentials</a> documentation for more information.",
+                                "description": "Indicates the processing type of the transaction. Refer to the <a href=\"/docs/payment-features/stored-credentials#create-a-payment-with-processing-type\" class=\"link_stored_credential\">Stored credentials</a> documentation for more information. For an Apple Pay or Google Pay first payment with vault_on_success, send stored_credentials here (usage FIRST); later charges on the resulting vaulted_token use detail.card.stored_credentials.",
                                 "properties": {
                                   "reason": {
                                     "type": "string",
@@ -2548,7 +2673,7 @@
                                   },
                                   "usage": {
                                     "type": "string",
-                                    "description": "This field Iets you indicate if this is the first time the vaulted_token/network_token is used for a payment.",
+                                    "description": "This field lets you indicate if this is the first time the vaulted_token/network_token is used for a payment.",
                                     "enum": [
                                       "FIRST",
                                       "USED"
@@ -2710,7 +2835,7 @@
                               },
                               "stored_credentials": {
                                 "type": "object",
-                                "description": "Indicates the processing type of the transaction. Refer to the [stored credentials](/docs/stored-credentials#create-a-payment-with-processing-type) documentation for more information.",
+                                "description": "Indicates the processing type of the transaction. Refer to the [stored credentials](/docs/payment-features/stored-credentials#create-a-payment-with-processing-type) documentation for more information.",
                                 "properties": {
                                   "reason": {
                                     "type": "string",
@@ -2721,7 +2846,7 @@
                                   },
                                   "usage": {
                                     "type": "string",
-                                    "description": "This field Iets you indicate if this is the first time the vaulted_token/network_token is used for a payment.",
+                                    "description": "This field lets you indicate if this is the first time the vaulted_token/network_token is used for a payment.",
                                     "enum": [
                                       "FIRST",
                                       "USED"
@@ -2877,6 +3002,23 @@
                       ]
                     }
                   },
+                  "external_subscription": {
+                    "type": "object",
+                    "description": "Links this payment to a subscription managed in an external billing platform. When present on an approved payment with a vaulted card, Yuno takes over the subscription's recurring charges. Cannot be sent together with the `subscription` object (returns `INVALID_REQUEST`). The object is returned in the payment response, in Retrieve Payment and in payment webhooks.",
+                    "required": [
+                      "id"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The subscription's identifier in the external billing platform (for example `sub_...` for Stripe Billing). Required when the object is present. (MIN 3; MAX 255)"
+                      },
+                      "customer_id": {
+                        "type": "string",
+                        "description": "The customer's identifier in the external billing platform that owns the subscription (for example `cus_...`). Recommended; resolved from the subscription when omitted."
+                      }
+                    }
+                  },
                   "subscription": {
                     "type": "object",
                     "description": "Specifies the subscription object.",
@@ -2891,9 +3033,13 @@
                         "properties": {
                           "type": {
                             "type": "string",
-                            "description": "Frequency of the subscription payment.",
+                            "description": "Frequency of the subscription payment. Pix Automático accepts one period of `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `YEAR`, always with `value` 1.",
                             "enum": [
-                              "MONTH"
+                              "WEEK",
+                              "MONTH",
+                              "QUARTER",
+                              "HALF_YEAR",
+                              "YEAR"
                             ]
                           },
                           "value": {
@@ -3129,6 +3275,7 @@
                             "base_fare": 200,
                             "base_fare_currency": "USD",
                             "carrier_code": "KL",
+                            "carrier_name": "KLM Royal Dutch Airlines",
                             "departure_airport": "EZE",
                             "departure_airport_timezone": "-03:00",
                             "departure_datetime": "2024-07-03T05:00:00",
@@ -3450,6 +3597,7 @@
                             "departure_airport_timezone": "GMT-08",
                             "arrival_airport": "JFK",
                             "carrier_code": "AA",
+                            "carrier_name": "American Airlines",
                             "flight_number": "AA100",
                             "fare_basis_code": "Y",
                             "fare_class_code": "S",
@@ -4007,7 +4155,7 @@
                     "workflow": "DIRECT",
                     "payment_method": {
                       "detail": {
-                        "card": {
+                        "wallet": {
                           "verify": false
                         }
                       },
@@ -5146,6 +5294,7 @@
                               "arrival_airport_timezone": "+00:00",
                               "arrival_datetime": "",
                               "carrier_code": "KL",
+                              "carrier_name": "KLM Royal Dutch Airlines",
                               "flight_number": "842",
                               "fare_basis_code": "HL7LNR",
                               "fare_class_code": "FR",
@@ -5890,6 +6039,7 @@
                               "arrival_airport_timezone": "+00:00",
                               "arrival_datetime": "",
                               "carrier_code": "AA",
+                              "carrier_name": "American Airlines",
                               "flight_number": "AA100",
                               "fare_basis_code": "Y",
                               "fare_class_code": "S",
@@ -10293,9 +10443,6 @@
                       "payment_link_code": ""
                     }
                   },
-                  "Wallet - Direct": {
-                    "value": ""
-                  },
                   "Split Marketplace": {
                     "value": {
                       "id": "1fb43d3e-879b-4051-a82c-754e7b894029",
@@ -10829,10 +10976,6 @@
                       },
                       "simplified_mode": false
                     }
-                  },
-                  "Wallet - Direct 1": {
-                    "value": "",
-                    "summary": "Wallet - Direct 1"
                   },
                   "Wallet Direct": {
                     "value": {
@@ -11640,6 +11783,10 @@
                                         "type": "string",
                                         "example": "KL"
                                       },
+                                      "carrier_name": {
+                                        "type": "string",
+                                        "example": "KLM Royal Dutch Airlines"
+                                      },
                                       "flight_number": {
                                         "type": "string",
                                         "example": "842"
@@ -11828,7 +11975,7 @@
                                 "account_funding": {},
                                 "tickets": {},
                                 "fulfillment": {},
-                                "discounts": []
+                                "discounts": {}
                               }
                             },
                             "seller_details": {}
@@ -13852,6 +13999,10 @@
                                       "carrier_code": {
                                         "type": "string",
                                         "example": "AA"
+                                      },
+                                      "carrier_name": {
+                                        "type": "string",
+                                        "example": "American Airlines"
                                       },
                                       "flight_number": {
                                         "type": "string",
