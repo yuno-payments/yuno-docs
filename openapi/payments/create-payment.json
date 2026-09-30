@@ -2921,7 +2921,7 @@
                     "properties": {
                       "plan_id": {
                         "type": "string",
-                        "description": "Identifier (UUID v4) of an active plan in your account. The subscription takes its price, cadence and trial from the plan, and the payment `amount` must equal the plan's price for the payment `country`. Cannot be sent with `id`, `amount`, `frequency.type`, `frequency.value`, `billing_date`, `trial`, `trial_period` or `phases` (`400 INVALID_REQUEST`). See [Start from a plan](/docs/payment-features/subscriptions/start-with-payment#start-from-a-plan)."
+                        "description": "Identifier (UUID v4) of an active plan in your account. The subscription takes its price, cadence and trial from the plan, and the payment `amount` must equal the plan's price for the payment `country`. Retries are not set in this call: the subscription uses the plan's retry configuration. Cannot be sent with `id`, `amount`, `frequency.type`, `frequency.value`, `billing_date`, `trial`, `trial_period` or `phases` (`400 INVALID_REQUEST`). See [Create a subscription from a plan](/docs/payment-features/subscriptions/start-with-payment#create-a-subscription-from-a-plan)."
                       },
                       "frequency": {
                         "type": "object",
@@ -3042,55 +3042,6 @@
                             }
                           },
                           "type": "object"
-                        }
-                      },
-                      "retries": {
-                        "type": "object",
-                        "description": "Retry settings for the subscription. Read only with `plan_id`; ignored with inline terms. Same object as on Create Subscription. When omitted, the subscription takes the plan's retry configuration. Sending it for a plan that defines its own retry configuration returns `400 INVALID_PARAMETERS`. On Pix Automático only `retry_on_decline` is accepted.",
-                        "properties": {
-                          "retry_on_decline": {
-                            "type": "boolean",
-                            "description": "If we should retry a payment or not after a first decline. False by default."
-                          },
-                          "amount": {
-                            "type": "integer",
-                            "description": "The number of retries that the subscription plan will have to complete. 6 will be defined as default if this value is not set or higher than 6. (MAX 6).",
-                            "format": "int32"
-                          },
-                          "strategy": {
-                            "type": "string",
-                            "description": "The retry strategy. Allowed values: DEFAULT (the fixed retry schedule), SMART (machine-learning-based retry timing, applied from the second retry onward) or CUSTOM_SCHEDULE (uses the per-attempt schedule array you provide).",
-                            "enum": [
-                              "DEFAULT",
-                              "SMART",
-                              "CUSTOM_SCHEDULE"
-                            ]
-                          },
-                          "schedule": {
-                            "type": "array",
-                            "description": "Object that define the schedule strategy for each retry event, the amounts of objects should match the amount of retries defined. Up to 7 attempts; attempt numbers must run sequentially from 1, and each delay_seconds must be between 1 and 604800 (7 days). The schedule can be replaced later via Update Subscription.",
-                            "items": {
-                              "properties": {
-                                "attempt": {
-                                  "type": "number",
-                                  "description": "Number of the retry attempt"
-                                },
-                                "delay_seconds": {
-                                  "type": "number",
-                                  "description": "Specifies the amount of seconds between each retry."
-                                }
-                              },
-                              "type": "object"
-                            }
-                          },
-                          "stop_on_hard_decline": {
-                            "type": "boolean",
-                            "description": "When true, the retry schedule stops for the current billing cycle after a hard decline. On its own, the subscription remains ACTIVE and billing advances to the next cycle; no subscription is canceled or paused and no subscription webhook is emitted. If cancel_on_exhausted_retries is also true, the subscription is canceled instead."
-                          },
-                          "cancel_on_exhausted_retries": {
-                            "type": "boolean",
-                            "description": "When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of remaining ACTIVE and advancing to the next cycle. The subscription status becomes CANCELED, cancellation_source is set to RETRIES_EXHAUSTED, future billing stops, and a single SUBSCRIPTION.CANCEL webhook is emitted. Applies both when the retry schedule runs out and when stop_on_hard_decline ends the cycle early. Defaults to false, which preserves the existing behavior. Create-only: it cannot be changed later — Update Subscription rejects a different value with 400. The cancellation itself is final, so Retry Subscription is rejected afterwards."
-                          }
                         }
                       }
                     }
