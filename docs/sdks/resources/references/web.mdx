@@ -201,55 +201,54 @@ Parameters for `await yuno.startCheckout()`, `await yuno.mountCheckout()`, and r
 | `yunoError(message, data)`        | function | No       | Callback invoked when an error occurs during the flow. Receives an error message and optional data object for debugging.                                                                                  |
 | `onLoading`                       | function | No       | Callback invoked when loading state changes (for example, SDK fetching config, processing payment, payment retry cloning a session). Use to show or hide your own loader.                                                                          |
 | `onChange`                        | function | No       | Callback invoked when form completeness changes. Receives `{ form: { isValid } }`. Use with `showPayButton: false` to control your own pay button. Covers every required field including secure iframe card fields. > **Available since Web SDK v1.10.11** |
-| `onPromotionQuoteUpdated(quote)`  | function | No       | Callback invoked with the promotion quote when a promotion applies, and with `null` when there is no live quote (the promotion no longer applies, or the SDK is asking again). Use it to show the discounted price. Never called when Promotions is not enabled for your organization. See [Promotions](#promotions). |
-| `onBinComplete(binComplete)`      | function | No       | Callback invoked with `{ bin, card_type }` when the first 6 to 8 digits of the card, or its type, change, and with `null` when the number is cleared or has fewer than 6 digits. Passing it turns the SDK's own promotion quote requests off. See [Promotions](#promotions). |
+| `onPromotionQuoteUpdated(offer)`  | function | No       | Callback invoked with the promotion that applies to the payment method the shopper has selected, and with `null` when there is none (no promotion applies, or the SDK is asking again). Use it to show the discounted price, and treat `null` as the regular price. See [Promotions](#promotions). |
 
 </div>
 
 ### Promotions
 
-When [Promotions](/docs/payment-features/promotions) is enabled for your organization, the SDK asks Yuno for a promotion quote while the shopper fills in the payment, and hands it to your page. The SDK doesn't render a price: your page shows it, and your server sends the quote on the payment. See the [Promotions guide](/docs/payment-features/promotions) for the whole flow.
+When [Promotions](/docs/payment-features/promotions) is enabled for your organization, the SDK asks Yuno for a promotion quote while the shopper fills in the payment, shows the shopper that a discount is available, and hands the promotion to your page. The SDK doesn't change the price: your page shows it, and your server sends the quote on the payment. See the [Promotions guide](/docs/payment-features/promotions) for the whole flow.
 
-* **Where it applies.** Full checkout (`mountCheckout`) and Lite checkout (`mountCheckoutLite`), cards only. Seamless doesn't ask for quotes and doesn't apply promotions. External buttons (`mountExternalButtons`, wallets) aren't a supported target for this release — don't build on a quote from them.
-* **When it asks.** As soon as the shopper has typed the first 6 digits of a card, again as the number reaches 7 and 8 digits and when the card type is known. It never asks for a saved card. The request carries your public key, the checkout session and the `countryCode` you passed, and no amount, so `countryCode` must match the country of the session.
-* **When nothing applies.** The SDK stays silent: no promotion (`204`, which also covers Promotions being temporarily disabled by Yuno and a promotion that would make the charge zero), an error, a timeout or a quote that has already expired when it arrives leave the regular price and no callback is called. A quote never blocks the checkout.
+* **Where it applies.** Full checkout (`mountCheckout`) and Lite checkout (`mountCheckoutLite`), cards only: a card the shopper types and the shopper's saved cards. Seamless doesn't ask for quotes and doesn't apply promotions. Wallets and external buttons (`mountExternalButtons`) don't get a quote in this release.
+* **When it asks.** As soon as the SDK has identified the card from the first digits the shopper types, and again when the card type is known. Each saved card is asked for once, with its own token, up to 5 saved cards. The request carries your public key, the checkout session and the `countryCode` you passed, and no amount, so `countryCode` must match the country of the session.
+* **What the shopper sees.** A label, never a price: a note in the card form ("Your card has a 10% discount available.") or a tag on the payment method or saved card it applies to ("10% off"). Yuno decides where the label goes; there's nothing to configure.
+* **When nothing applies.** The SDK shows no label and your page keeps the regular price: no promotion (`204`, which also covers Promotions being temporarily disabled by Yuno and a promotion that would make the charge zero), an error, an answer that takes longer than 600 ms, or a quote that has already expired when it arrives. A quote never blocks the checkout.
 * **Currency conversion.** A payment with a Yuno promotion can't carry a currency conversion: Yuno rejects it with `422 PROMOTION_CONTEXT_MISMATCH`, because a promotion is priced in the payment's own currency. Don't use both on the same payment.
 
-`onPromotionQuoteUpdated(quote)` receives the quote when a promotion applies. It receives `null` afterwards whenever there is no live quote for what the shopper has now: the promotion no longer applies, the shopper changes the card number or the payment method, the quote expires or the checkout is unmounted. When the SDK asks again (a new digit of the card, the card type, an expired quote) a new quote follows if one applies, so `null` can arrive right before it: update your price from the latest call and don't animate a change on every callback.
+`onPromotionQuoteUpdated(offer)` receives the promotion that applies to the payment method the shopper has selected (for a saved card, to that card). It receives `null` whenever there is none for what the shopper has now: no promotion applies, the shopper changes the card number or the payment method, the quote expires or the checkout is unmounted. When the SDK asks again (more digits of the card, the card type, a quote about to expire) a new promotion follows if one applies, so `null` can arrive right before it: update your price from the latest call and don't animate a change on every callback.
 
 ```javascript
 yuno.startCheckout({
   checkoutSession,
   countryCode: "AR",
-  onPromotionQuoteUpdated(quote) {
-    if (quote) {
-      showPrice(quote.charge_amount, quote.original_amount, quote.promotions[0].name);
+  onPromotionQuoteUpdated(offer) {
+    if (offer?.computed) {
+      showPrice(offer.computed.total, offer.computed.original, offer.name);
     } else {
       showRegularPrice();
     }
   },
   async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
-    // Send tokenWithInformation.quote?.quote_id to your server with the token
+    // Send tokenWithInformation.quote (when present) to your server with the token
   },
 });
 ```
 
-The quote is the object [Create Promotion Quote](/reference/promotions/create-promotion-quote) returns:
+The promotion your callback receives:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `quote_id` | string | The signed quote id. Send it unchanged on the payment, as `quote_id` on an `additional_data.order.discounts` line with `type: YUNO_PROMOTION`. |
-| `promotions` | array | The promotion that applies (one entry today): `id`, `name`, `description` (string or `null`), `discount` (`{ type, value }`) and `discount_amount` (`{ currency, value }`). |
-| `original_amount` | object | `{ currency, value }`. The amount before the discount. |
-| `discount_amount` | object | `{ currency, value }`. The total discount. |
-| `charge_amount` | object | `{ currency, value }`. What the shopper pays. Never zero: a promotion that would make it zero doesn't apply. |
-| `expires_at` | string | ISO 8601 UTC instant, 30 minutes after the quote was issued. |
+| `quoteId` | string | The signed quote id. |
+| `promotionId` | string | The id of the promotion. |
+| `name` | string | The name of the promotion. |
+| `discount` | object | `{ type, value }`, as in [Create Promotion Quote](/reference/promotions/create-promotion-quote). Can be absent. |
+| `paymentMethodTypes` | array | The payment methods it applies to, for example `["CARD"]`. |
+| `expiresAt` | string | ISO 8601 UTC instant, 30 minutes after the quote was issued. |
+| `computed` | object or `null` | The amounts: `original` (before the discount), `discount` and `total` (what the shopper pays), each `{ currency, value }`. The total is never zero: a promotion that would make it zero doesn't apply. |
 
-**Send the quote on the payment.** `tokenWithInformation.quote` is the same object. It is present only when a live quote exists for the payment method of that token (for a card, a quote whose BIN matches the card); otherwise `tokenWithInformation` is unchanged and you create the payment at the regular price. Create the payment from your server with the original `amount` and `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": tokenWithInformation.quote.quote_id }]`. The quote id doesn't travel with the token: without the line the payment is charged in full, and a payment that carries an expired quote id is rejected with `422 PROMOTION_QUOTE_EXPIRED`. A payment is rejected with `422 PROMOTION_ENGINE_UNAVAILABLE` when Yuno can't verify the quote in time, or when Promotions is temporarily disabled by Yuno after the quote. In both cases, create the payment again without the promotion line and with a new `X-Idempotency-Key`: the shopper pays the regular price.
+**Send the quote on the payment.** When a quote is live for the payment method of the token (for a card, a quote whose BIN matches the card; for a saved card, that card), `tokenWithInformation.quote` holds the discount line, ready to send: `{ "type": "YUNO_PROMOTION", "quote_id": "…" }`. Otherwise it's absent and you create the payment at the regular price. Create the payment from your server with the original `amount` and `additional_data.order.discounts: [tokenWithInformation.quote]`. The quote doesn't travel with the token: without the line the payment is charged in full.
 
-**Ask for the quotes yourself.** Pass `onBinComplete` to switch the SDK's own quote requests off, and ask [Create Promotion Quote](/reference/promotions/create-promotion-quote) from your server or your page. The SDK calls `onBinComplete` with `{ bin, card_type }` each time the BIN (6 to 8 digits) or the card type (`CREDIT`, `DEBIT` or `VOUCHER`, once known) changes, and with `null` when the number is cleared or has fewer than 6 digits.
-
-For a wallet, the SDK asks when the shopper picks it. The wallet's own payment sheet still shows the amount of the checkout session, and the quote reaches `yunoCreatePayment` only if it arrived before the token was created.
+**When Yuno rejects the quote.** A payment that carries an expired quote is rejected with `422 PROMOTION_QUOTE_EXPIRED`, and one Yuno can't verify in time, or sent after Promotions was temporarily disabled by Yuno, with `422 PROMOTION_ENGINE_UNAVAILABLE`. Either call `yuno.refreshPromotionQuote()`, so the SDK asks for a new quote without remounting the checkout and the shopper reviews the price and pays again, or create the payment again without the promotion line and with a new `X-Idempotency-Key`, at the regular price.
 
 ### Shopper-cancelled steps
 
