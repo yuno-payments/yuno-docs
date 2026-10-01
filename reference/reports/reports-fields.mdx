@@ -11,6 +11,7 @@ Yuno provides several report types:
 * [Transaction ](/reference/reports-fields#transaction-report)
 * [Reconciliation Overview](/reference/reports-fields#reconciliation-overview)
 * [Settlements & Fees](/reference/reports-fields#settlements--fees)
+* [Settlement Payouts](/reference/reports-fields#settlement-payouts)
 * [Communications](/reference/reports-fields#communications-report)
 * [Fraud Transactions](/reference/reports-fields#fraud-transactions-report)
 * [Payouts](/reference/reports-fields#payouts-report)
@@ -2156,6 +2157,169 @@ The report fields are subject to modifications, and new fields can be added to t
       <td>enum</td>
       <td>Country of the merchant account (MAX 2; MIN 2; ISO 3166-1).</td>
       <td>US</td>
+    </tr>
+    <tr>
+      <td><code>payout_batch_id</code></td>
+      <td>string</td>
+      <td>Identifier of the provider report or batch from which the settlement line was ingested. Matches <code>payout_batch_id</code> in the Settlement Payouts report. Optional column, requested with <code>columns</code>, available for merchants on Yuno's new reconciliation engine.</td>
+      <td>0526f07e-cd82-5737-82c1-55a10692425d</td>
+    </tr>
+  </tbody>
+</table>
+</Accordion>
+
+## Settlement Payouts
+
+The Settlement Payouts report lists the payouts (bank transfers) that each payment provider reports having paid to your merchant accounts. Each row is one payout line as informed by the provider: who paid, to which account, when, and the gross, fees and net amounts of the transfer. Use it to match the deposits you see on your bank statement against what the provider declared.
+
+This report is different from the [Payouts report](/reference/reports-fields#payouts-report), which covers the payouts that you send to beneficiaries through Yuno.
+
+<Note>
+**Availability**
+
+The Settlement Payouts report is available for merchants on Yuno's new reconciliation engine. Requesting it for an organization that is not yet on the new engine returns a 400 error.
+</Note>
+
+Payout rows are not reconciled transaction by transaction, so they carry no reconciliation status. To see which settlement lines belong to a payout, cross the `payout_batch_id` column with the same column in the Settlements & Fees report.
+
+By default the report returns the first 17 columns below, in that order. The remaining columns are optional and are requested with the `columns` parameter. Note that `columns` replaces the default selection instead of extending it: to add `settlement_date` you must also list every default column you want to keep.
+
+<Accordion title="Settlement Payouts field details">
+<table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>payout_id</code></td>
+      <td>string</td>
+      <td>Identifier of the payout (transfer) as assigned by the provider. Groups the settlement lines paid in the same transfer. It is not a batch identifier and its format depends on the provider.</td>
+      <td>TX61083816600XT</td>
+    </tr>
+    <tr>
+      <td><code>payout_batch_id</code></td>
+      <td>string</td>
+      <td>Identifier of the provider report or batch from which the payout line was ingested. The settlement lines ingested from the same report carry the same value in the Settlements & Fees report, which lets you link both reports.</td>
+      <td>0526f07e-cd82-5737-82c1-55a10692425d</td>
+    </tr>
+    <tr>
+      <td><code>payout_date</code></td>
+      <td>date</td>
+      <td>Date on which the provider paid the funds (ISO 8601, YYYY-MM-DD).</td>
+      <td>2026-09-03</td>
+    </tr>
+    <tr>
+      <td><code>payout_type</code></td>
+      <td>enum</td>
+      <td>How the payout was obtained. Possible values: STATED (reported by the provider in its settlement files), DERIVED (inferred by Yuno by adding up the settlement components; not yet available).</td>
+      <td>STATED</td>
+    </tr>
+    <tr>
+      <td><code>provider_id</code></td>
+      <td>enum</td>
+      <td>Identifier of the provider that paid the funds.</td>
+      <td>ADYEN</td>
+    </tr>
+    <tr>
+      <td><code>acquirer</code></td>
+      <td>enum</td>
+      <td>Name of the acquirer that paid the funds. Same value as <code>provider_id</code>, kept for consistency with the Settlements & Fees report.</td>
+      <td>ADYEN</td>
+    </tr>
+    <tr>
+      <td><code>account_id</code></td>
+      <td>string</td>
+      <td>Account that received the funds, as named by the provider: a merchant account, a bank account or a recipient identifier. It is not the Yuno account identifier.</td>
+      <td>Yuno_main</td>
+    </tr>
+    <tr>
+      <td><code>type</code></td>
+      <td>enum</td>
+      <td>Type of payout line as informed by the provider. Possible values include PAYOUT, WITHDRAWAL, TED, MERCHANTPAYOUT.</td>
+      <td>PAYOUT</td>
+    </tr>
+    <tr>
+      <td><code>settlement_currency</code></td>
+      <td>enum</td>
+      <td>Currency in which the payout was made (MAX 3; MIN 3; ISO 4217).</td>
+      <td>BRL</td>
+    </tr>
+    <tr>
+      <td><code>settlement_gross_amount</code></td>
+      <td>decimal</td>
+      <td>Gross amount of the payout as informed by the provider (multiple of 0.0001).</td>
+      <td>20215.42</td>
+    </tr>
+    <tr>
+      <td><code>settlement_fees</code></td>
+      <td>decimal</td>
+      <td>Fees deducted by the provider in the payout (multiple of 0.0001). Some providers express fees as negative values.</td>
+      <td>353.53</td>
+    </tr>
+    <tr>
+      <td><code>settlement_net_amount</code></td>
+      <td>decimal</td>
+      <td>Net amount paid as informed by the provider (multiple of 0.0001). It is not always gross minus fees: some providers also deduct refunds and adjustments within the payout.</td>
+      <td>18041.97</td>
+    </tr>
+    <tr>
+      <td><code>description</code></td>
+      <td>string</td>
+      <td>Free text informed by the provider: bank, branch and account, status, tax identifier, forecast date, among others.</td>
+      <td>Payout Date=2026-09-03, Bank=001, Branch=0001, Account=123456</td>
+    </tr>
+    <tr>
+      <td><code>report_date</code></td>
+      <td>date</td>
+      <td>Date of the provider file or report from which the row was taken (ISO 8601, YYYY-MM-DD). It can be later than <code>payout_date</code>.</td>
+      <td>2026-09-03</td>
+    </tr>
+    <tr>
+      <td><code>source_file_type</code></td>
+      <td>string</td>
+      <td>Section or file of the provider report from which the row was taken. Empty for older ingestions.</td>
+      <td>settlement</td>
+    </tr>
+    <tr>
+      <td><code>updated_at</code></td>
+      <td>timestamp</td>
+      <td>Date and time at which Yuno last processed the row (ISO 8601, UTC, no zone designator).</td>
+      <td>2026-09-03T02:16:16.000000</td>
+    </tr>
+    <tr>
+      <td><code>primary_key</code></td>
+      <td>string</td>
+      <td>Stable identifier of the row. Use it to detect changes between two runs of the report.</td>
+      <td>9770dff205e82f7d0f7bbb85b63caeed</td>
+    </tr>
+    <tr>
+      <td><code>settlement_date</code></td>
+      <td>timestamp</td>
+      <td>Date and time of the payout. The time is only present when the provider informs it. Optional column.</td>
+      <td>2026-09-03 00:00:00</td>
+    </tr>
+    <tr>
+      <td><code>currency</code></td>
+      <td>enum</td>
+      <td>Alias of <code>settlement_currency</code> (MAX 3; MIN 3; ISO 4217). Optional column.</td>
+      <td>BRL</td>
+    </tr>
+    <tr>
+      <td><code>provider_uuid</code></td>
+      <td>string</td>
+      <td>Unique identifier of the provider in Yuno's catalog (MAX 64; MIN 36). Optional column.</td>
+      <td>432ee183-ee45-454f-99de-a22f8ff9bbf5</td>
+    </tr>
+    <tr>
+      <td><code>organization_code</code></td>
+      <td>string</td>
+      <td>Unique identifier of the organization (MAX 64; MIN 36). Optional column.</td>
+      <td>376ac140-175d-479b-a23f-34934f9902be</td>
     </tr>
   </tbody>
 </table>
