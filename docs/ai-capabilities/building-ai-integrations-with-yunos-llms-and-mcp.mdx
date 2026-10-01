@@ -11,6 +11,10 @@ This guide introduces how to work with both components: how the LLM layer helps 
   Looking for the one-click Claude/ChatGPT connector instead of building your own MCP client? See [Use Yuno with Claude and ChatGPT](/docs/ai-capabilities/use-yuno-with-claude-and-chatgpt).
 </Note>
 
+<Note>
+  Just need an agent to search and read Yuno's documentation, with no API credentials and no ability to act on your account? See the read-only [Documentation MCP](/setup-mcp) instead.
+</Note>
+
 ## Machine-ready content in plain text
 
 To help large language models understand and support Yuno integrations, Yuno provides a dedicated set of Markdown (.md) files designed specifically for machine readability. These files describe Yuno’s APIs, product behavior, and implementation details in a format that’s easy for LLMs to parse and analyze.
@@ -81,64 +85,102 @@ The Yuno MCP server makes the following tools available to AI agents and automat
 | `installmentPlans.delete`                | Delete an installment plan by ID                                               |
 | `documentation.read`                     | Access Yuno API documentation and guides                                       |
 
-## Using the MCP with Cursor or Claude Desktop
+<Note>
+  The [Remote Yuno MCP Server](/docs/ai-capabilities/remote-yuno-mcp-server) accepts snake_case tool arguments only. An unknown key such as `idempotencyKey` is rejected, and the error names `idempotency_key`. `paymentAuthorize` places a hold or refuses the call with `UNSUPPORTED_AUTHORIZATION`.
+</Note>
 
-You can use this MCP server with Cursor or Claude Desktop to enable AI-driven payment flows, customer creation, and more.
+## Using the MCP with Cursor, Claude Code, Claude Desktop, or Codex
+
+You can use this MCP server with Cursor, Claude Code, Claude Desktop, or Codex to enable AI-driven payment flows, customer creation, and more.
 
 ### 1. Set up your Yuno API credentials
 
 Set your Yuno API credentials using environment variables (see config examples below).
 
-### 2. Add the MCP server to Cursor
+### 2. Add the MCP server to your client
 
-* Open Cursor Settings (`Cmd+Shift+P` → "Cursor Settings")
-* Go to the **MCP** section and click **Add new global MCP server**
-* Add the following config (replace the path with your actual build output):
+<Tabs>
+  <Tab title="Cursor">
+    * Open Cursor Settings (`Cmd+Shift+P` → "Cursor Settings")
+    * Go to the **MCP** section and click **Add new global MCP server**
+    * Add the following config (replace the path with your actual build output):
 
-```json
-{
-  "mcpServers": {
-    "yuno-mcp": {
-      "type": "command",
-      "command": "npx @yuno-payments/yuno-mcp@latest",
-      "env": {
-        "YUNO_ACCOUNT_CODE": "your_account_code",
-        "YUNO_PUBLIC_API_KEY": "your_public_api_key",
-        "YUNO_PRIVATE_SECRET_KEY": "your_private_secret_key",
-        "YUNO_COUNTRY_CODE": "your_country_code",
-        "YUNO_CURRENCY": "your_currency"
+    ```json
+    {
+      "mcpServers": {
+        "yuno-mcp": {
+          "type": "command",
+          "command": "npx @yuno-payments/yuno-mcp@latest",
+          "env": {
+            "YUNO_ACCOUNT_CODE": "your_account_code",
+            "YUNO_PUBLIC_API_KEY": "your_public_api_key",
+            "YUNO_PRIVATE_SECRET_KEY": "your_private_secret_key",
+            "YUNO_COUNTRY_CODE": "your_country_code",
+            "YUNO_CURRENCY": "your_currency"
+          }
+        }
       }
     }
-  }
-}
-```
+    ```
+  </Tab>
 
-### 3. Add the MCP server to Claude Desktop
+  <Tab title="Claude Code">
+    Run:
 
-* Open Claude Desktop settings → "Developer" tab → Edit Config.
-* Add the following config:
+    ```bash
+    claude mcp add yuno-mcp \
+      -e YUNO_ACCOUNT_CODE=your_account_code \
+      -e YUNO_PUBLIC_API_KEY=your_public_api_key \
+      -e YUNO_PRIVATE_SECRET_KEY=your_private_secret_key \
+      -e YUNO_COUNTRY_CODE=your_country_code \
+      -e YUNO_CURRENCY=your_currency \
+      -- npx @yuno-payments/yuno-mcp@latest
+    ```
 
-```json
-{
-  "mcpServers": {
-    "yuno-mcp": {
-      "command": "npx",
-      "args": ["@yuno-payments/yuno-mcp@latest"],
-      "env": {
-        "YUNO_ACCOUNT_CODE": "your_account_code",
-        "YUNO_PUBLIC_API_KEY": "your_public_api_key",
-        "YUNO_PRIVATE_SECRET_KEY": "your_private_secret_key",
-        "YUNO_COUNTRY_CODE": "your_country_code",
-        "YUNO_CURRENCY": "your_currency"
+    Use `--scope project` instead of the default `local` scope to share this server with your team via `.mcp.json` (do not commit real credentials, use a secrets-aware `.mcp.json` pattern or per-developer env overrides).
+  </Tab>
+
+  <Tab title="Claude Desktop">
+    * Open Claude Desktop settings → "Developer" tab → Edit Config.
+    * Add the following config:
+
+    ```json
+    {
+      "mcpServers": {
+        "yuno-mcp": {
+          "command": "npx",
+          "args": ["@yuno-payments/yuno-mcp@latest"],
+          "env": {
+            "YUNO_ACCOUNT_CODE": "your_account_code",
+            "YUNO_PUBLIC_API_KEY": "your_public_api_key",
+            "YUNO_PRIVATE_SECRET_KEY": "your_private_secret_key",
+            "YUNO_COUNTRY_CODE": "your_country_code",
+            "YUNO_CURRENCY": "your_currency"
+          }
+        }
       }
     }
-  }
-}
-```
+    ```
+  </Tab>
 
-### 4. Test the integration
+  <Tab title="Codex">
+    Run:
 
-* In Cursor or Claude, select a Markdown file or chat and ask the agent to create a payment, customer, or checkout session using the yuno-mcp tool
+    ```bash
+    codex mcp add yuno-mcp \
+      --env YUNO_ACCOUNT_CODE=your_account_code \
+      --env YUNO_PUBLIC_API_KEY=your_public_api_key \
+      --env YUNO_PRIVATE_SECRET_KEY=your_private_secret_key \
+      --env YUNO_COUNTRY_CODE=your_country_code \
+      --env YUNO_CURRENCY=your_currency \
+      -- npx @yuno-payments/yuno-mcp@latest
+    ```
+  </Tab>
+</Tabs>
+
+### 3. Test the integration
+
+* In your client, select a Markdown file or chat and ask the agent to create a payment, customer, or checkout session using the yuno-mcp tool
 * Make sure your environment variables are set correctly
 
 ## Environment variables
