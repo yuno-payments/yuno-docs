@@ -74,9 +74,9 @@ A fixed discount is capped at the payment amount, but a promotion never makes a 
 
 ## What the customer sees at checkout
 
-In the checkout page of a payment link you don't build anything. As soon as the customer has typed the first six digits of a card (or, on a link whose first payment method isn't a card, selects that method), the checkout asks Yuno for the quote. When a promotion applies, the checkout:
+In the checkout page of a payment link you don't build anything. As soon as the checkout has identified the card from the first digits the customer types, it asks Yuno for the quote. When a promotion applies, the checkout:
 
-1. Shows the promotion's name and, if you set one, its description, above the price rows.
+1. Shows the promotion's name above the price rows.
 2. **Updates the order summary**: the original price, the discount, and the new total. The pay button keeps saying "Pay": the new total is in the summary.
 
 If the customer changes the card, or changes to a payment method that doesn't qualify, the summary goes back to the regular price. When no promotion applies, the checkout looks exactly as it does today. If Yuno rejects the payment because of the quote (a `PROMOTION_*` error, see [below](#the-customer-pays-the-quoted-price-or-the-payment-is-rejected)), the checkout asks for a new quote, shows "The price changed. Review it and pay again.", and the customer presses Pay again.
@@ -87,16 +87,16 @@ If the customer changes the card, or changes to a payment method that doesn't qu
 | Discount | − 25.00 |
 | **Total Due** | **225.00** |
 
-Only payment links get this. With the Web SDK the checkout doesn't render a price: your page does, as described next.
+Only payment links get this. With the Web SDK the checkout doesn't change the price: your page does, as described next.
 
 ## Web SDK integration
 
-With the Web SDK (Full and Lite checkout), the SDK asks Yuno for the quote with your public key as soon as the customer has typed the first six digits of a card. It doesn't change your page: you show the price and send the quote on the payment. Promotions aren't applied in Seamless. Wallets aren't included yet (see [below](#whats-not-included-yet)), so external buttons never get a quote today.
+With the Web SDK (Full and Lite checkout), the SDK asks Yuno for the quote with your public key as soon as it has identified the card from the first digits the customer types, and for each of the customer's saved cards. When a promotion applies, it shows a label next to the card ("10% off"), but it doesn't change the price: you show the price and send the quote on the payment. Promotions aren't applied in Seamless. Wallets aren't included yet (see [below](#whats-not-included-yet)), so external buttons never get a quote today.
 
-1. **Show the price.** Pass `onPromotionQuoteUpdated` to `startCheckout`. It receives the quote (the same object [Create Promotion Quote](/reference/promotions/create-promotion-quote) returns) when a promotion applies, and `null` when there is no live quote: the promotion no longer applies, the customer changed the card or the quote expired. The SDK then asks again and a new quote follows if one applies, so `null` can arrive right before it. Show `charge_amount`, the discount and the promotion's name and description, and go back to the regular price on `null`.
-2. **Send the quote on the payment.** When the customer pays, your `yunoCreatePayment` callback receives `tokenWithInformation`. When a quote is live for that card, `tokenWithInformation.quote` holds it. From your server, create the payment with the original `amount` and `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": tokenWithInformation.quote.quote_id }]`, as shown [below](#create-the-payment-with-the-quote). Without the line the payment is charged in full.
+1. **Show the price.** Pass `onPromotionQuoteUpdated` to `startCheckout`. It receives the promotion that applies to the payment method the customer has selected, and `null` when there is none: no promotion applies, the customer changed the card or the payment method, or the quote expired. The SDK then asks again and a new promotion follows if one applies, so `null` can arrive right before it. Show its `computed.total` (what the customer pays), `computed.discount` and `name`, and go back to the regular price on `null`. The [Web SDK reference](/docs/sdks/resources/references/web#promotions) lists every field.
+2. **Send the quote on the payment.** When the customer pays, your `yunoCreatePayment` callback receives `tokenWithInformation`. When a quote is live for that card, `tokenWithInformation.quote` holds the discount line, `{ "type": "YUNO_PROMOTION", "quote_id": "…" }`. From your server, create the payment with the original `amount` and `additional_data.order.discounts: [tokenWithInformation.quote]`, as shown [below](#create-the-payment-with-the-quote). Without the line the payment is charged in full.
 
-A quote never blocks the checkout: a `204`, an error or a timeout leaves the regular price and calls nothing. The [Web SDK reference](/docs/sdks/resources/references/web) lists the callbacks.
+A quote never blocks the checkout: a `204`, an error or a timeout leaves the regular price and the SDK shows no label. The [Web SDK reference](/docs/sdks/resources/references/web) lists the callbacks.
 
 ## Direct API integration
 
