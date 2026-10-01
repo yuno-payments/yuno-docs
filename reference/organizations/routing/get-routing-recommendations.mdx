@@ -16,7 +16,7 @@ The transaction itself never passes through Yuno. **Yuno recommends; you decide 
 
 1. You report your off-Yuno transaction outcomes through the [Transaction Reporting API](/reference/reporting/report-transactions). Only payments with `origin: REPORTED` feed the statistics — Yuno-processed traffic is a different population and is deliberately kept out.
 2. Before routing a payment, you call this endpoint with the payment context and your candidate providers.
-3. Yuno computes statistics per candidate — approval rate, average provider latency, sample size — over a rolling **30-day** window of your reported payments, segmented by provider, country and payment method — and by card BIN when you send one (see [BIN-level statistics](#bin-level-statistics)) — and returns the ranking ordered by your objective.
+3. Yuno computes statistics per candidate — approval rate, average provider latency, sample size — over a rolling **30-day** window of your reported payments, segmented by provider, country and payment method — by card BIN when you send one (see [BIN-level statistics](#bin-level-statistics)), and by `CIT`/`MIT` initiation when you send one (see [initiation-level statistics](#initiation-level-statistics)) — and returns the ranking ordered by your objective.
 4. You route the payment yourself and report its outcome. If the reported event carries the same `merchant_order_id` you sent here, Yuno attributes the outcome to this recommendation automatically — closing the loop without you storing `recommendation_id`.
 
 Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` counts as approved and `SUCCEEDED + DECLINED` as decided. Payments in any other status (e.g. `ERROR`, pending) are ignored for the rate and latency, though they still count toward `sample_size`.
@@ -58,7 +58,7 @@ Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` 
       </Expandable>
     </ParamField>
     <ParamField body="initiation" type="enum">
-      Optional. `CIT` (customer-initiated) or `MIT` (merchant-initiated).
+      Optional. `CIT` (cardholder-initiated) or `MIT` (merchant-initiated). When you send it, and the same initiation has enough reported history in the segment, the ranking is scored on that initiation's own statistics (see [initiation-level statistics](#initiation-level-statistics)); otherwise it falls back to the whole segment. Omit it to rank on the whole segment exactly as before.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -129,6 +129,12 @@ If you report the card BIN on your `CARD` events (`payment_method_details.card.b
 4. **Payment method** — provider and payment method across countries.
 
 A BIN with no reported history simply falls through to the country and payment-method segments: the response is exactly what you would get without sending it. A value that is not exactly 6 or 8 digits is ignored, never rejected.
+
+## Initiation-level statistics
+
+If you report `initiation` (`CIT` or `MIT`) on your events (in the [Transaction Reporting API](/reference/reporting/report-transactions)), send the same `payment.initiation` here. CIT and MIT approve very differently per provider, so — at each segment level above — the ranking first tries the history with the **same initiation**, and only if that does not reach the minimum sample does it use the whole level. The effective order is: BIN8 + initiation → BIN8 → BIN6 + initiation → BIN6 → country + initiation → country → payment method + initiation → payment method.
+
+Events you reported without an initiation count only in the non-initiation (whole-level) statistics. A request **without** `payment.initiation` is scored on the whole segment, exactly as before this field was used — the response is unchanged. `approval_rate`, `avg_latency_ms` and `sample_size` always reflect the segment actually used.
 
 ## Choosing an objective
 
