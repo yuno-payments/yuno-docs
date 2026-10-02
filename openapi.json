@@ -68,6 +68,9 @@
       "name": "Entity Transfers (Banking Connectivity)"
     },
     {
+      "name": "Fx Rates"
+    },
+    {
       "name": "Installments"
     },
     {
@@ -19987,6 +19990,252 @@
         },
         "tags": [
           "Dry Run"
+        ]
+      }
+    },
+    "/fx-rates": {
+      "get": {
+        "summary": "Get FX rates",
+        "description": "Returns Yuno's official daily FX rate for one or every currency, expressed as units of the currency per 1 USD. With no dates it returns the latest available day.",
+        "operationId": "getFxRates",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your public API key."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your private secret key. Never expose it client-side."
+          },
+          {
+            "in": "query",
+            "name": "start_date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-09-28"
+            },
+            "description": "First day of the range, inclusive, as `YYYY-MM-DD`. Omit it to get the latest available day."
+          },
+          {
+            "in": "query",
+            "name": "end_date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-09-30"
+            },
+            "description": "Last day of the range, inclusive, as `YYYY-MM-DD`. Only valid together with `start_date`, defaults to it, and cannot be later than yesterday (UTC)."
+          },
+          {
+            "in": "query",
+            "name": "currency",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "example": "COP"
+            },
+            "description": "One 3-letter currency code. Omit it to get every currency published for those days."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK — the rates published for the requested days.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "base_currency": {
+                      "type": "string",
+                      "description": "Always `USD` in this version. Explicit so the reading is unambiguous.",
+                      "example": "USD"
+                    },
+                    "rates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "fx_date": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Day the rate is published for.",
+                            "example": "2026-09-28"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "description": "3-letter currency code. Mostly ISO 4217; the published set also includes codes that are not fiat currencies, such as `BTC`, `XAU` and `XAG`.",
+                            "example": "COP"
+                          },
+                          "rate": {
+                            "type": "number",
+                            "description": "Units of this currency per 1 unit of `base_currency`, with up to 15 decimal places. `USD` is published with a rate of 1. Parse it with a decimal type: a double silently rounds it.",
+                            "example": 3306.859716727783
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "one_day_every_currency": {
+                    "summary": "One day, every currency",
+                    "value": {
+                      "base_currency": "USD",
+                      "rates": [
+                        {
+                          "fx_date": "2026-09-28",
+                          "currency": "BRL",
+                          "rate": 5.3214
+                        },
+                        {
+                          "fx_date": "2026-09-28",
+                          "currency": "COP",
+                          "rate": 3306.859716727783
+                        },
+                        {
+                          "fx_date": "2026-09-28",
+                          "currency": "USD",
+                          "rate": 1
+                        }
+                      ]
+                    }
+                  },
+                  "no_rate_published": {
+                    "summary": "A day with no published rate",
+                    "value": {
+                      "base_currency": "USD",
+                      "rates": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — `INVALID_PARAMETERS` (a query parameter is missing its companion, malformed, or out of range).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "end_date_without_start_date": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The query parameter 'end_date' can only be used together with 'start_date'."
+                      ]
+                    }
+                  },
+                  "end_date_after_yesterday": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The query parameter 'end_date' must not be later than yesterday (UTC)."
+                      ]
+                    }
+                  },
+                  "range_over_the_limit": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The range between 'start_date' and 'end_date' must not exceed 31 days when 'currency' is omitted."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — `PRODUCT_NOT_ENABLED` (the product is not enabled for your organization).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "product_not_enabled": {
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "The FX Rates API is enabled per organization. Contact your Key Account Manager (KAM) to activate it."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable — `SERVICE_UNAVAILABLE` (the rate source is temporarily unreachable).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "service_unavailable": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "messages": [
+                        "The FX rates service is temporarily unavailable, please retry."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Fx Rates"
         ]
       }
     },
@@ -90927,6 +91176,15 @@
                         "Invalid request"
                       ]
                     }
+                  },
+                  "Invalid status": {
+                    "summary": "The payment is already in a final state (for example, already captured)",
+                    "value": {
+                      "code": "INVALID_STATUS",
+                      "messages": [
+                        "Invalid transaction status."
+                      ]
+                    }
                   }
                 },
                 "schema": {
@@ -108804,7 +109062,7 @@
                         "latency_ms": {
                           "type": "integer",
                           "minimum": 0,
-                          "description": "Optional. The provider's response time as observed by you, in milliseconds (round-trip of the authorization call). Feeds latency analytics per provider.",
+                          "description": "Optional. The provider's response time as observed by you, in milliseconds (round-trip of the authorization call). Feeds latency analytics per provider and the LATENCY and BALANCED objectives of Routing Recommendations: events without it carry no latency to rank on.",
                           "examples": [
                             180
                           ]
@@ -108819,6 +109077,17 @@
                           "description": "Optional. The credential you sent to the provider for this transaction: `FPAN` — the real card number (funding PAN); `DPAN` — the card's network token; `PROVIDER_TOKEN` — a token issued by that provider for the stored card (e.g. a saved-card or stored-payment-method token on the provider's own vault). Powers approval-rate analysis per token type.",
                           "examples": [
                             "DPAN"
+                          ]
+                        },
+                        "initiation": {
+                          "type": "string",
+                          "enum": [
+                            "CIT",
+                            "MIT"
+                          ],
+                          "description": "Optional. How the transaction was initiated at the provider: `CIT` — cardholder-initiated (the customer was present at checkout); `MIT` — merchant-initiated (e.g. a subscription renewal). Any other value rejects the event with `INVALID_EVENT` and the message \"The field 'initiation' must be CIT or MIT.\" Powers approval-rate statistics split by initiation in Routing Recommendations. Omit it to keep the event exactly as before.",
+                          "examples": [
+                            "MIT"
                           ]
                         },
                         "payment_method_details": {
@@ -108908,6 +109177,7 @@
                         "provider_id": "ADYEN",
                         "latency_ms": 180,
                         "token_type_used": "DPAN",
+                        "initiation": "MIT",
                         "payment_method_details": {
                           "card": {
                             "bin": "45717360"
