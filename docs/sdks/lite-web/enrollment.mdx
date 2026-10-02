@@ -110,6 +110,96 @@ Configure the lite enrollment with the following options:
 Common status values include `ENROLLED`, `DECLINED`, `CANCELED`, and `ERROR`.
 </Note>
 
+## PayPal enrollment with element render mode
+
+<Note>
+Available from Web SDK **1.10.13**.
+</Note>
+
+By default, `mountEnrollmentLite` opens the Yuno modal for PayPal enrollment. The shopper clicks your PayPal button, sees the modal, and has to click PayPal a second time. With element render mode the PayPal button renders directly on your page, and the shopper completes the enrollment in one click.
+
+### How it works
+
+Add an empty container to your page, then pass `renderMode: { type: 'element', elementSelector }` to `mountEnrollmentLite`. The SDK renders the real PayPal button inside that container and shows a loading skeleton until PayPal finishes loading.
+
+The PayPal button replaces your own button — do not place your button in front of it. If you do not pass `renderMode`, the modal behavior stays exactly as before.
+
+### Integration steps
+
+1. Remove your existing PayPal button.
+2. Add an empty `<div>` where the PayPal button should appear.
+3. Pass `renderMode` with `type: 'element'` and an `elementSelector` pointing at that `<div>`.
+
+```html
+<div id="paypal-enrollment"></div>
+```
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  countryCode: "US",
+  language: "en-US",
+  renderMode: {
+    type: "element",
+    elementSelector: "#paypal-enrollment",
+  },
+  yunoEnrollmentStatus(data) {
+    console.log("Enrollment status:", data);
+  },
+  yunoError(error, data) {
+    console.error("An error occurred:", error);
+  },
+});
+```
+
+The button takes 100% of the container width unless you set `width`.
+
+### Customizing the PayPal button
+
+Optional. Pass `externalButtons.paypal` to `mountEnrollmentLite` to style the button, using the same properties as the [PayPal express button](/docs/sdks/resources/references/web#paypal) in checkout. The defaults differ from checkout, so they are listed in full below.
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  countryCode: "US",
+  language: "en-US",
+  renderMode: {
+    type: "element",
+    elementSelector: "#paypal-enrollment",
+  },
+  externalButtons: {
+    paypal: {
+      color: "blue",
+      shape: "pill",
+      label: "paypal",
+      height: 48,
+      width: 300,
+      locale: "en_US",
+    },
+  },
+  // ... rest of config
+});
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Property | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `color` | `'gold'` \| `'blue'` \| `'silver'` \| `'white'` \| `'black'` | PayPal decides | Button background color |
+| `shape` | `'rect'` \| `'pill'` \| `'sharp'` | `'rect'` | Button shape |
+| `label` | `'paypal'` \| `'checkout'` \| `'buynow'` \| `'pay'` \| `'installment'` | PayPal decides | Button label text |
+| `height` | `number` | `48` | Button height in px (valid range: 25–55) |
+| `width` | `number` | 100% of the container | Wrapper width in px |
+| `locale` | `string` | PayPal decides from the shopper's browser | Button language, in PayPal's `language_COUNTRY` format (for example `en_US`, `es_ES`, `pt_BR`). See PayPal's [supported locales](https://developer.paypal.com/sdk/js/configuration/#locale). |
+
+</div>
+
+### Result
+
+- The shopper clicks the PayPal button, approves in the PayPal popup, and the SDK completes the enrollment.
+- `yunoEnrollmentStatus` receives the `vaultedToken` with status `ENROLLED`.
+- If the shopper closes the popup, `yunoError` receives `CANCELED_BY_USER`.
+
 ## Step 5: Initiate the enrollment (Required)
 
 After mounting the SDK using `await yuno.mountEnrollment()`, the form will be displayed in the specified element. The user can then proceed with entering their payment method details to complete the enrollment.

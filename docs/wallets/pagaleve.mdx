@@ -1,0 +1,196 @@
+---
+title: "PagaLeve"
+description: "Accept Pix Parcelado (installment Pix) and one-time Pix payments with PagaLeve, using either Yuno's SDK or Direct API workflows."
+---
+
+This guide explores how to integrate PagaLeve, a Pix-based payment provider for Brazil, into your checkout. Yuno supports both the **Yuno SDK** (recommended) and **Direct API** workflows. You'll learn how to:
+
+* Make one-time Pix payments with PagaLeve
+* Make Pix Parcelado (installment Pix) payments with PagaLeve
+
+{/* TODO(editorial): PIX_PARCELADO isn't in the published OpenAPI spec yet — tracked as its own follow-up, doesn't block this page. */}
+
+## Requirements
+
+Before starting, you need:
+
+* A Yuno account with Dashboard access
+* API keys and an `account_id` (found in the dashboard)
+* A PagaLeve connection set up in your Yuno account (see [Connections](/docs/using-yuno/dashboard-overview/connections))
+
+## Create and manage customers
+
+Create the customer once using your external `merchant_customer_id`, then retrieve by Yuno `id` or by `merchant_customer_id` as needed.
+
+1. Use the [Create Customer](/reference/create-customer) endpoint and provide your own `merchant_customer_id` (the unique id of the customer in your system). The response returns `id` which is the Yuno customer id.
+2. Use [Retrieve Customer](/reference/retrieve-customer) with the Yuno `id`.
+3. Use [Retrieve Customer by External Id](/reference/retrieve-customer-by-external-id) with query parameter `merchant_customer_id`.
+
+<Tip>
+Creating a Yuno customer record first is not required. PagaLeve accepts customer info (CPF, email, name, phone, birth date, address) directly in the Create Payment call, the same as plain Pix. Creating the customer up front is still recommended for consistency with your other payment methods.
+</Tip>
+
+## One-time Pix payment
+
+Use PagaLeve to accept a standard, single Pix payment.
+
+<Tabs>
+  <Tab title="Yuno SDK">
+    ### Step 1: Create a checkout session
+    Start by creating a checkout session using the [Create Checkout Session](/reference/create-checkout-session) endpoint.
+
+    ```json
+    {
+      "account_id": "{{account_id}}",
+      "country": "BR",
+      "customer_id": "{{customer_id}}",
+      "merchant_order_id": "order-0000024",
+      "payment_description": "One-time Pix Payment with PagaLeve",
+      "amount": {
+        "currency": "BRL",
+        "value": 15000
+      }
+    }
+    ```
+
+    The response returns a `checkout_session` ID.
+
+    ### Step 2: Initialize the SDK
+    Initialize Yuno's SDK (Web, Android, or iOS) with the `checkout_session` ID. PagaLeve renders as an available payment option in the SDK interface, using payment method type `"PIX"` for a one-time payment.
+
+    <Tip>
+    The customer completes the payment on PagaLeve's hosted checkout page. If your PagaLeve connection has `TRANSPARENT_CHECKOUT` enabled, the customer completes it inside the SDK instead, through a checkout URL. Either way, PagaLeve confirms the result to Yuno through a webhook. See [Status transitions](#status-transitions) below.
+    </Tip>
+  </Tab>
+
+  <Tab title="Direct API">
+    ### Step 1: Create a payment
+    Use [Create payment](/reference/create-payment) with the Direct workflow.
+
+    ```json
+    {
+      "description": "One-time Pix Payment with PagaLeve",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000024",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 150
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "callback_url": "https://your-callback.com",
+      "workflow": "DIRECT",
+      "payment_method": {
+        "type": "PIX"
+      }
+    }
+    ```
+
+    <Tip>
+    The response returns the checkout's `redirect_url` in the payment method detail. Redirect the customer there to complete the payment; PagaLeve confirms the result to Yuno via webhook. See [Status transitions](#status-transitions) below for how PagaLeve's states map to Yuno's.
+    </Tip>
+
+    ### Step 2: Confirm payment
+    Use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm the final status.
+  </Tab>
+</Tabs>
+
+## Pix Parcelado (installment) payment
+
+PagaLeve supports Pix Parcelado, letting customers split a Pix payment into installments. The customer picks the installment plan on PagaLeve's own checkout page — Yuno doesn't return available plans up front, and no plan or installments data is sent in the Create Payment call.
+
+<Tabs>
+  <Tab title="Yuno SDK">
+    ### Step 1: Create the payment
+    Create the payment with `payment_method.type` `"PIX_PARCELADO"`. Pass the order's line items in `additional_data.order.items` so PagaLeve can build the installment offer.
+
+    ```json
+    {
+      "description": "Pix Parcelado Payment with PagaLeve",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000023",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 250
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "SDK_CHECKOUT",
+      "checkout": {
+        "session": "{{checkout_session_id}}"
+      },
+      "payment_method": {
+        "type": "PIX_PARCELADO"
+      },
+      "additional_data": {
+        "order": {
+          "items": [
+            {
+              "id": "{{sku}}",
+              "name": "{{item_name}}",
+              "quantity": 1,
+              "unit_amount": 250,
+              "category": "{{item_category}}"
+            }
+          ]
+        }
+      }
+    }
+    ```
+
+    <Tip>
+    The response returns the redirect at `payment_method.payment_method_detail.bank_transfer.redirect_url` — Pix Parcelado is categorized as `BANK_TRANSFER` internally, so it uses the same detail object as other bank transfer methods. `installments` and `installments_plan_id` come back empty at creation; the customer chooses the installment count on PagaLeve's hosted checkout page after the redirect. The payment starts out `Created`, and the final `Successful` or declined status arrives through the webhook. See [Status transitions](#status-transitions) below.
+    </Tip>
+  </Tab>
+
+  <Tab title="Direct API">
+    ### Step 1: Create payment
+    Use [Create payment](/reference/create-payment) with the Direct workflow and `payment_method.type` `"PIX_PARCELADO"`. Pass the order's line items in `additional_data.order.items`, the same shape shown in the SDK tab above.
+
+    <Tip>
+    See [Status transitions](#status-transitions) below for how PagaLeve reports status changes, and the SDK tab above for where the redirect URL comes back in the response and where the customer chooses the installment plan.
+    </Tip>
+
+    ### Step 2: Retrieve payment
+    Use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm the final status.
+  </Tab>
+</Tabs>
+
+<Info>
+**Limitations**
+
+* Currency is limited to BRL.
+* Pix and Pix Parcelado share the same refund flow, both are refundable the same way, including `DUPLICATE`, `FRAUDULENT`, and `REQUESTED_BY_CUSTOMER` reasons.
+* PagaLeve doesn't use an enrollment/vaulting pattern, unlike NuPay. Every payment is a one-time checkout.
+</Info>
+
+## Status transitions
+
+PagaLeve reports payment status through webhooks, processed asynchronously. For `CANCELED` and `EXPIRED`, the webhook publishes the status directly. For the other success states, it first captures the payment via the `ProcessPayment` endpoint.
+
+| PagaLeve state | Yuno status |
+| --- | --- |
+| `NEW` | Created |
+| `ACCEPTED` | Pending provider confirmation |
+| `AUTHORIZED` | Successful |
+| `COMPLETED` | Successful |
+| `RELEASED` | Successful |
+| `CAPTURED` | Successful |
+| `CANCELED` | Cancelled by user |
+| `EXPIRED` | Expired by provider |
+| `PAYMENT_DECLINED` | Declined by provider |
+
+{/* TODO(editorial): confirm with Pedro what READY_TO_PAY refers to — a real production Pix Parcelado trace showed the payment at "READY_TO_PAY / CREATED" right after creation, and it's unconfirmed whether READY_TO_PAY is a distinct PagaLeve state missing from this table or just another name for the same initial state as NEW/Created. */}
+
+## Endpoints
+
+* [Create customer](/reference/create-customer)
+* [Retrieve customer](/reference/retrieve-customer)
+* [Retrieve customer by external id](/reference/retrieve-customer-by-external-id)
+* [Create checkout session](/reference/create-checkout-session)
+* [Create payment](/reference/create-payment)
+* [Retrieve payment by id](/reference/retrieve-payment-by-id)

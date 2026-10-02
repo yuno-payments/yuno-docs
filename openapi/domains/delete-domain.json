@@ -6,58 +6,124 @@
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno"
+      "url": "https://api-sandbox.y.uno",
+      "description": "Sandbox"
     },
     {
-      "url": "https://api.eu.y.uno"
+      "url": "https://api.y.uno",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno",
+      "description": "Production (EMEA)"
     }
   ],
   "paths": {
-    "/v1/payment-method-domains/{id}": {
-      "post": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": ""
-          },
-          "204": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                },
-                "examples": {
-                  "No Content": {
-                    "summary": "No Content",
-                    "value": "{}"
-                  }
-                }
-              }
-            },
-            "description": "No Content"
-          }
-        },
+    "/v1/payment-methods/{payment_method}/domains/{domain_id}": {
+      "delete": {
+        "description": "Unregisters a domain from the wallet provider and marks the registration as `INACTIVE`, freeing its slot on the connection. Use it to remove domains you no longer use before registering new ones. The domain must be in `CREATED`, `REGISTERED` or `ERROR` status. A deleted domain cannot be restored: register it again if you need it back.",
+        "operationId": "delete_v1-payment-methods-payment-method-domains-domain-id",
         "parameters": [
           {
             "in": "path",
-            "name": "id",
+            "name": "payment_method",
+            "description": "Payment method the domain was registered for.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "APPLE_PAY",
+                "GOOGLE_PAY"
+              ]
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "domain_id",
+            "description": "The `id` of the domain registration (UUID), as returned by Register domain.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             },
             "required": true
           }
         ],
-        "operationId": "post_v1-payment-method-domains-id",
         "requestBody": {
+          "required": false,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "reason": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "description": "Optional free-text reason kept for audit purposes. Defaults to `Removed via API`."
                   }
+                }
+              },
+              "examples": {
+                "With reason": {
+                  "summary": "With reason",
+                  "value": {
+                    "reason": "Seller no longer active"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content: the domain was unregistered (body is empty)."
+          },
+          "400": {
+            "description": "Invalid parameters, or the domain is already `INACTIVE`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Already inactive": {
+                    "summary": "Already inactive",
+                    "value": {
+                      "code": "CANNOT_UNREGISTER",
+                      "messages": [
+                        "domain is not in an active state"
+                      ]
+                    }
+                  },
+                  "Invalid parameters": {
+                    "summary": "Invalid parameters",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "domain_id must be a valid UUID"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No domain with that `id` exists for your organization.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Not found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "RESOURCE_NOT_FOUND",
+                      "messages": [
+                        "Domain with id 8a2f4b1c-6d3e-4f7a-9b21-0c5d8e7f6a43 was not found"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -67,6 +133,23 @@
     }
   },
   "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "RESOURCE_NOT_FOUND"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "securitySchemes": {
       "public-api-key": {
         "type": "apiKey",

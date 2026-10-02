@@ -1,0 +1,109 @@
+---
+hidden: true
+noindex: true
+title: "Connect your checkout system"
+description: "How your checkout system talks to the POS terminal in the Local type: pairing, the calls it makes, how to recover a sale after a crash, voids, refunds, batch close and receipts."
+---
+
+In the Local type, your checkout system talks only to the POS terminal, inside the store. It never talks to the acquirer and never touches card data or the PIN. This page lists what your checkout system sends, what it gets back, and the rules that keep a cardholder from being charged twice.
+
+The calls below can be made straight from your checkout software, or through the Yuno SDK for your platform if you prefer a client library to raw HTTP. If your checkout system already speaks a terminal protocol, the Yuno Payment App can expose that same interface, so your checkout software changes as little as possible. The interface below is the one Yuno provides for new integrations.
+
+## Transport and pairing
+
+- **Store network:** HTTPS to the POS terminal's IP address on port 8443, with mutual TLS.
+- **Cable:** USB or RS-232, carrying the same messages, each one signed with the checkout system's key.
+
+Each POS terminal accepts commands from one paired checkout system. To pair, a supervisor opens **Settings › Pair checkout** on the terminal, which shows a six-digit code and the start of the terminal certificate's fingerprint. Your checkout system checks the fingerprint, sends the code with a certificate request, and stores the client certificate it gets back. From then on every call uses that certificate. Pairing a new checkout system revokes the previous one.
+
+## The calls
+
+| Call | What it does |
+| --- | --- |
+| `POST /pairing` | Pair this checkout system with the POS terminal (once per lane) |
+| `GET /status` | Is the terminal ready? During a sale: which step it is on and what the cardholder sees |
+| `POST /sales` | Start a sale and wait for the result |
+| `POST /sales/abort` | Cancel the sale while the terminal is still waiting for the card |
+| `POST /voids` | Cancel an approved sale before its batch closes |
+| `POST /refunds` | Refund all or part of a sale, with the card |
+| `POST /batches/close` | Close the terminal's batches (if your store closes from the checkout) |
+| `GET /transactions?pos_reference=` | Find a sale by your reference, for example after a crash |
+| `GET /transactions/{payment_id}/receipt` | Receipt lines for a reprint |
+
+## A sale
+
+```json Request · POST /sales
+{
+  "amount": { "value": 125.00, "currency": "USD" },
+  "pos_reference": "ORD-48213",
+  "cashier_id": "0457",
+  "installments": { "count": 6 }
+}
+```
+
+Optional fields: `installments` when the customer chose a plan at the checkout, and `subscription` (a plan ID) to start a subscription with this sale; see [Payments and events](/docs/in-person/payments-and-events#subscriptions-started-in-store).
+
+The call stays open while the customer pays (up to 120 seconds for the card) and returns when the sale is over. Set your checkout system's HTTP timeout above that, for example 150 seconds.
+
+```json Response (approved)
+{
+  "payment_id": "4f8a2c6e-1b3d-4e5f-9a7c-2d4e6f8a0b13",
+  "pos_reference": "ORD-48213",
+  "status": "SUCCEEDED",
+  "sub_status": "APPROVED",
+  "response_code": "SUCCEEDED",
+  "amount": { "value": 125.00, "currency": "USD" },
+  "installments": { "count": 6 },
+  "card": { "brand": "VISA", "lfd": "4242", "entry_mode": "CHIP", "cardholder_verification": "ONLINE_PIN" },
+  "acquirer": { "code": "ACQUIRER_A", "acquirer_merchant_id": "8012345", "acquirer_terminal_id": "TA104512" },
+  "authorization_code": "004312",
+  "retrieval_reference_number": "627412003812",
+  "receipt": { "cardholder_copy": ["..."], "merchant_copy": ["..."] }
+}
+```
+
+The `payment_id` is created by the POS terminal when the sale starts and is the same ID you see in the Payments API, webhooks and reports. Store it with your order.
+
+| Result (`status` / `sub_status`) | What happened | What the checkout system does |
+| --- | --- | --- |
+| `SUCCEEDED` / `APPROVED` | Approved | Close the ticket, print |
+| `DECLINED` / `DECLINED` | Declined; `response_code` says why | Show the reason, offer another card or tender |
+| `CANCELED` / `ABORTED` | Cancelled before the card, or no card in time | Nothing was charged; start again when ready |
+| `ERROR` / `REVERSED_BY_TIMEOUT` | The acquirer didn't answer; the terminal reversed with the same acquirer | No charge stands; try again, the next attempt can go to another acquirer |
+
+A declined sale is a normal `200` response, not an error. Errors (`TERMINAL_BUSY`, `NOT_PAIRED`, `NO_ACQUIRER_AVAILABLE`…) mean no sale was started.
+
+## Never charge twice
+
+<Frame caption="What the checkout system does when it lost the answer to a sale.">
+  <img src="/images/in-person/recovery.svg" alt="Recovery at the till: retry with the same idempotency key if you still have it; otherwise search by your reference and reuse an approved sale; start a new sale only if none exists" />
+</Frame>
+
+- **Send an idempotency key** (`X-Idempotency-Key`) with every sale and keep it with the ticket. If your connection drops, retry with the same key: the terminal returns the sale that is already running or finished instead of starting another one.
+- **After a crash or a lost response, look before you charge.** Call `GET /transactions?pos_reference=ORD-48213`. If there is an approved sale, use it; start a new sale only if there is none or the last one ended without approval.
+- **Reusing your reference is allowed** after a decline, a cancellation or a timeout (the customer tries another card). It is rejected only if that reference already has an approved sale.
+
+## Voids and refunds
+
+<Frame caption="When a sale can be voided and when it can only be refunded.">
+  <img src="/images/in-person/void-refund-timeline.svg" alt="Timeline: a void is possible from the approved sale until the batch closes; a refund is possible from the sale onwards, through settlement and deposit" />
+</Frame>
+
+|  | Void | Refund |
+| --- | --- | --- |
+| When | Before the sale's batch closes | Any time after the sale |
+| Where | The POS terminal that took the sale | Any POS terminal of the store with that acquirer, or the dashboard and API |
+| Card | Not needed | Present at the terminal and checked against the original; not needed from the dashboard or API |
+| Amount | The whole sale | All or part |
+| Goes to | The sale's original acquirer, always | The sale's original acquirer, always |
+| Payment afterwards | `CANCELED` | `REFUNDED`, or `SUCCEEDED` / `PARTIALLY_REFUNDED` |
+
+Voids and refunds never follow the routing rules: they go to the acquirer that approved the sale. If the acquirer declines or doesn't answer, the sale stays as it was.
+
+## Batch close
+
+The POS terminal keeps one open batch per acquirer. By default it closes them every night at the time set for the store; your checkout system can also close them with `POST /batches/close`. After the close, the acquirer settles the batch and a sale can no longer be voided, only refunded.
+
+## Receipts
+
+The terminal returns the receipt lines and your checkout system prints them; terminals with a printer can print them too. The cardholder copy carries the card brand and last four digits, the application label and AID, the entry mode, the instalment plan, the authorisation code and the reference; it does not carry the full merchant or terminal ID. Header and footer text come from the store's configuration.

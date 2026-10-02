@@ -5,6 +5,116 @@ description: "Latest updates and version history for the Yuno Web SDK"
 
 import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
+## v1.11.22
+*October 1, 2026*
+
+**Card**
+
+- <ChangelogBadge type="added" /> **Promotion hint above the card form and the quote as an event**  
+  When the session has promotions enabled, the SDK asks for a quote right after card-info returns and shows, above the card fields, that the card has a discount available. The chip and the banner show the discount amount, they disappear on card change and they never show on error or timeout. The quote is also handed to the host page through the new `onPromotionQuoteUpdated` callback, which receives the offer when the card qualifies and null whenever it stops applying, so a page-owned order summary can show and roll back the discounted total; the offer never carries a saved card's token. A card token also carries the quote on the second argument of the `createPayment` and `yunoCreatePayment` callbacks, as `quote: { type: 'YUNO_PROMOTION', quote_id }`, which the merchant forwards in `additional_data.order.discounts` of the payment so the discount is charged. A wallet token never carries it. A stored card is quoted too, by its `vaulted_token` rather than a BIN it never exposes, so a shopper paying with a saved card sees the same discount and carries the same quote on the token. Merchants can pin how the promotion is presented through `features.promotions_card_display` and `features.promotions_express_display`; both default to the contextual rule, so an unconfigured merchant sees no change. A checkout that never mounts a card form produces no BIN and so cannot be quoted: `features.promotions_batch_enabled`, off by default, switches those surfaces to a quote that covers the whole payment method list and runs before a card is typed. When a payment is rejected because its quote no longer holds, the host page can call `refreshPromotionQuote()` on the Yuno instance to ask for a fresh quote for the current card, which reaches the page through `onPromotionQuoteUpdated` and does nothing when promotions are off.
+
+## v1.11.21
+*October 1, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="added" /> **"Saved account" label on saved payment methods other than cards**  
+  The payment-method list now shows a translated "Saved account" line under every saved payment method other than a card, so a saved entry and the option to pay with a new account of the same method can be told apart even when the name carries no identifier. Enrolled cards keep their preview and Mercado Pago wallet rows are unchanged. For styling, the row label carries the `sdk-payments-payment-list__payment-method--saved` modifier and the two lines are `sdk-payments-saved-account-preview__name` and `sdk-payments-saved-account-preview__label`.
+
+- <ChangelogBadge type="changed" /> **One Mercado Pago section in every state**  
+  The Mercado Pago saved methods now live under a single Mercado Pago heading whatever happens: the section asks for the account e-mail when the checkout session does not carry one, shows a placeholder while the wallet loads, lists the saved methods once it answers, and steps aside entirely when Mercado Pago cannot be reached, so the shopper sees the regular list with no notice. Its privacy notice always links to Mercado Pago's privacy page for the shopper's country, the link Mercado Pago asked for. The separate Mercado Pago row that used to open a panel for those cases no longer renders in the full checkout. The section header shows the Mercado Pago logo on the same rounded-square tile as every other brand icon in the list.
+
+- <ChangelogBadge type="changed" /> **Mercado Pago square tile served from the SDK assets**  
+  The Mercado Pago section header now loads its square tile from the SDK brands bucket, like every other brand icon, instead of carrying it inside the bundle.
+
+- <ChangelogBadge type="added" /> **Status-screen mode reported on the checkout.opened analytics event**  
+  The `checkout.opened` event now carries a `status_screen` attribute recording whether the merchant renders Yuno's payment status screen (`yuno`) or its own (`merchant`, when the SDK is initialised with `showPaymentStatus: false`). Integrations whose options do not include the setting, such as Secure Fields, omit the attribute rather than report a default they never chose. Analytics only: no change to checkout behaviour, the status screen, or any merchant callback.
+
+- <ChangelogBadge type="changed" /> **Mercado Pago saved methods follow the Checkout Builder preference**  
+  When the Checkout Builder marks Mercado Pago as the preferred method, the shopper's first saved Mercado Pago method is pre-selected as soon as the wallet answers, instead of the merchant's first method staying selected. Merchants that prefer another method see no change.
+
+- <ChangelogBadge type="changed" /> **Mercado Pago saved methods load earlier**  
+  The Full checkout now downloads Mercado Pago's script and fetches the Mercado Pago configuration while the SDK is still booting, instead of after the payment list has rendered. The shopper's saved Mercado Pago methods appear sooner; sessions without Mercado Pago are not affected.
+
+- <ChangelogBadge type="changed" /> **Processing state for the Yuno Pay Button**  
+  With the Yuno Pay button enabled, submitting a card, enrolled card, enrollment or alternative payment method form shows a Processing spinner inside the button, hides the full-screen loader and locks the form fields, the modal close button and the payment method list. Outside seamless the lock ends when the one-time token is created. In seamless the SDK now creates the payment and runs the next payment step right after the token, without the create-payment event, and keeps the lock until that step is rendered. Methods without a form follow the same rule through the Yuno Pay button. With the Yuno Pay button disabled, forms keep the current behavior.
+
+**Google Pay**
+
+- <ChangelogBadge type="fixed" /> **Google Pay on Android Chrome no longer fails with CALLBACK_TIMED_OUT**  
+  On Android Chrome, the Google Pay sheet could stop with CALLBACK_TIMED_OUT and the shopper could not pay. The SDK no longer requests Google's payment-authorization callback, so there is no callback left to time out; `onLoading` for the one-time token now fires when the Google Pay sheet returns the payment data. `onLoading` also reports `isLoading: false` when the token or the payment request fails after the sheet closes, so it is no longer left at `true`.
+
+## v1.11.20
+*September 29, 2026*
+
+- <ChangelogBadge type="fixed" /> **Address suggestion list and Mercado Pago security code field have unique ids again**  
+  Since 1.11.0, the ids of the address suggestion list and of the Mercado Pago security code field could repeat when the SDK rendered more than one component on the same page, so the Mercado Pago security code field could be mounted into the wrong element. These two elements now get an id that is unique on the page.
+
+**Core SDK**
+
+- <ChangelogBadge type="added" /> **Unified PayPal enrollment on the PAYPAL payment method**  
+  The PayPal external button now picks its flow for the PAYPAL payment method from the routed connection in the merchant config: the vault save session or the billing agreement session when the PAYPAL entry carries PayPal enrollment data, and the existing PayPal button or redirect otherwise. Lite enrollment and the checkout enrollment hand-off accept a PAYPAL enrollment that returns a PayPal SDK provider action. PAYPAL_ENROLLMENT, PAYPAL_BA_ENROLLMENT and PAYPAL_BRAINTREE behave as before.
+
+- <ChangelogBadge type="fixed" /> **Unified PayPal billing agreement in Lite, Braintree kept out of the unified PAYPAL method**  
+  Lite enrollment of the PAYPAL payment method now runs the billing agreement session when the PayPal enrollment id equals the PayPal token id, the same rule checkout uses, instead of starting a vault save session with a billing agreement token. The unified PAYPAL method no longer has a Braintree path: Braintree is not activated for PAYPAL, so a PAYPAL config or enrollment routed to Braintree is logged once as unsupported: Seamless renders no PayPal button and reports the button as failed, and the enrollment stays on Lite. Checkout and Lite share one billing agreement rule. PAYPAL_BRAINTREE keeps its own flow unchanged.
+
+**Customer form**
+
+- <ChangelogBadge type="fixed" /> **Customer fields no longer show characters they rejected**  
+  Since 1.11.0, customer fields that only accept certain characters (phone and document number with real-time validation, and other masked customer fields) could keep showing a character they had rejected, such as a letter in a phone number, while the value sent with the payment was already clean. The field now always shows the value that will be sent, and the cursor stays where the shopper was typing.
+
+## v1.11.19
+*September 25, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **`three_ds.completed` now reports the 3DS outcome instead of the payment outcome**  
+  When the 3DS authentication succeeds and the acquirer then declines the payment, `three_ds.completed` reports `result: authenticated` and the decline stays on `payment.resolved`. The result is read from the last transaction of the payment the SDK already receives (its provider and response code). When that transaction is not available, for example when the final status arrives through the websocket, the result still follows the payment outcome as before. Known limit: providers that authenticate and authorize in a single transaction and do not expose a 3DS response code, today Adyen (about 200 Adyen 3DS sessions per week), report their 3DS declines as `authenticated` until.
+
+**Customer form**
+
+- <ChangelogBadge type="added" /> **Brazil Pix: document type inferred from the number, and one Full name input instead of first + last name**  
+  For Brazil, when the available documents are CPF and CNPJ (a PASSPORT entry is ignored for Pix), the document-type selector is no longer rendered: the field is labelled "CPF / CNPJ" and the type is inferred from the digits (11 or fewer → CPF, more → CNPJ), so masking, validation and the submitted payload are unchanged. The customer form also renders a single "Full name" input in place of first and last name, split on the first whitespace run into `first_name` / `last_name`; languages that write names without spaces (ja, ko, zh, th) keep the two inputs. The document auto-detect is on by default and can be switched off per account through the sdk-ms feature `document_type_auto_detect`. The Full name input is on for the Moon Active experience and otherwise opt-in per account through the sdk-ms feature `unified_full_name`; the all-merchants roll-out follows with a Checkout Builder choice ("Full name" vs "First + last name"). Each name part must have at least 2 characters (the same minimum the two separate inputs applied), so "Ana B" is rejected with the "Enter your first and last name" message; the 100-character cap is unchanged. Customer-field copy (global, no experience gate): the slim Full name input reads "Enter full name" instead of the first-name hint; the slim phone group carries one "Phone" label over the prefix selector and the number input keeps only its placeholder (only the number box turns red on error); in English the e-mail field is labelled "Email" (Stripe spelling); on the default floating-label form the prefix selector shows its "Country" label only while no prefix is selected, so the preselected flag + prefix sit centred in the box.
+
+**Card form**
+
+- <ChangelogBadge type="fixed" /> **Slim card form keeps the installments while expiry and CVV are typed**  
+  The slim card form keeps the installment options, and the shopper's selected plan, while the expiration date and CVV are being typed. Only card-number events refresh the card information and the installments, so a new card number still reloads them.
+
+- <ChangelogBadge type="added" /> **Rotating card-brand logos in the empty card-number field (Moon Active experience)**  
+  When the Moon Active experience is enabled for the account, the empty card-number field now shows Visa, Mastercard and Amex plus a fourth slot that rotates Discover, Diners Club, Maestro and Elo every 3 seconds, until the shopper types enough digits for the brand to be detected. The SDK forwards the `moonActiveExperience` flag to the card form; the logos are rendered by sdk-web-card 1.89.3. Merchants without the Moon Active experience are unaffected.
+
+## v1.11.17
+*September 24, 2026*
+
+**PayPal**
+
+- <ChangelogBadge type="fixed" /> **PayPal Enrollment button no longer hidden or stuck on stale sessions**  
+  The PayPal Enrollment express button (PayPal JS SDK v6) no longer requires `provider_token_id` to render for vault enrollment; only the billing agreement flow uses it. When the merchant creates the payment, the button now gives PayPal the setup token of the enrollment that payment created, falling back to the one from the config, and only the latest click waits for the payment, so a cancelled attempt can no longer be resolved by a later one.
+
+- <ChangelogBadge type="added" /> **Venmo button on the PayPal v6 express button**  
+  The PayPal express button now reads the merchant's ENABLE_FUNDING provider-config param: when it includes `venmo`, the SDK creates the PayPal JS SDK v6 instance with the `venmo-payments` component and renders a Venmo button under the PayPal button once PayPal confirms the buyer is eligible (US buyer paying in USD). Venmo pays the same PayPal order. On sandbox credentials the SDK also sends `testBuyerCountry=US`, as PayPal's Venmo test guide requires, so QA outside the US sees the button; production never sends it.
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Yuno Pay Button in the Enrollment Flow**  
+  With the Yuno Pay button enabled, the enrollment Save button looks disabled until the form is complete and stays clickable to reveal pending errors. With the Yuno Pay button disabled, enrollment and payment forms keep the always-enabled button.
+
+**Apple Pay**
+
+- <ChangelogBadge type="added" /> **Apple Pay Card Acceptance Filters**  
+  The Apple Pay request now takes merchantCapabilities and supportedCountries from the checkout session's wallet_card_acceptance (supported_funding_types and supported_countries), so ineligible cards are greyed out in the sheet. Sessions that declare nothing keep today's behaviour.
+
+**Google Pay**
+
+- <ChangelogBadge type="fixed" /> **Google Pay sheet shows a translated "Total"**  
+  The Google Pay payment sheet now labels the amount with "Total" in the checkout language instead of Google's default merchant line. When the payment includes a valid `summary_items` breakdown, the sheet keeps the breakdown's own total label.
+
+**Alternative Payment Methods**
+
+- <ChangelogBadge type="added" /> **Explicit institution number and transit number fields for Canadian PAD**  
+  Canadian pre-authorized debit (PAD) now collects the bank's Institution number (3 digits) and Transit number (5 digits) as their own explicit fields, instead of relying on the shopper deriving a combined routing number. Both preserve leading zeros as strings and are optional everywhere, so existing integrations that still send `routing_id` are unaffected.
+
 ## v1.11.16
 *September 22, 2026*
 
@@ -186,6 +296,22 @@ import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
 - <ChangelogBadge type="fixed" /> **Regional static hosts: chunks and card iframes follow the host the SDK was loaded from**  
   Until now the bundle served from `sdk-web.<region>.y.uno` (EU: `sdk-web.prod.eu.y.uno`, MENA: `sdk-web.mena.staging.y.uno`) still fetched every lazy chunk from the US host it was built for and both card iframes from `sdk-web-card.prod.y.uno`. The SDK now records the host `main.js` was actually loaded from and, when it is a Yuno static host other than the built one, serves lazy chunks from that same directory and loads the card form and secure-field iframes from the matching `sdk-web-card.<region>` host. The same build works on every regional bucket, so no build variants or infra changes are needed. Merchant `apiUrl` / `assetUrl` overrides keep precedence, and a bundle self-hosted on a non-Yuno domain behaves as before. No merchant integration changes are required.
+
+## v1.10.25
+*September 24, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **`three_ds.completed` now reports the 3DS outcome instead of the payment outcome**  
+  When the 3DS authentication succeeds and the acquirer then declines the payment, `three_ds.completed` reports `result: authenticated` and the decline stays on `payment.resolved`. The result is read from the last transaction of the payment the SDK already receives (its provider and response code). When that transaction is not available, for example when the final status arrives through the websocket, the result still follows the payment outcome as before. Known limit: providers that authenticate and authorize in a single transaction and do not expose a 3DS response code, today Adyen (about 200 Adyen 3DS sessions per week), report their 3DS declines as `authenticated` until.
+
+## v1.10.24
+*September 23, 2026*
+
+**PayPal**
+
+- <ChangelogBadge type="added" /> **Venmo renders in sandbox for testers outside the US**  
+  On sandbox credentials the SDK now loads the PayPal JS SDK with `buyer-country=US` whenever the merchant's ENABLE_FUNDING includes `venmo`, as PayPal's Venmo test guide requires, so QA outside the US sees the Venmo button. Production builds never send it.
 
 ## v1.10.23
 *September 18, 2026*
@@ -554,6 +680,22 @@ import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 - <ChangelogBadge type="breaking" /> **Full-width action button in modal footers**  
   The action button in the shared modal footer now spans the full width on every viewport, with the "Powered by Yuno" privacy tag centered above it. Lite keeps the tag below the button. Embedded forms rendered with `renderMode: element` are unchanged.
 
+## v1.9.47
+*September 30, 2026*
+
+**Google Pay**
+
+- <ChangelogBadge type="fixed" /> **Fixed Google Pay CALLBACK_TIMED_OUT on Android Chrome**  
+  Google Pay on Android Chrome could show CALLBACK_TIMED_OUT and block the payment. The SDK no longer requests Google's payment-authorization callback; onLoading for the one-time token now fires when the sheet returns the payment data. onLoading also reports isLoading false when the token or the payment request fails after the sheet closes, so it is no longer left at true.
+
+## v1.9.46
+*September 24, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **`three_ds.completed` now reports the 3DS outcome instead of the payment outcome**  
+  When the 3DS authentication succeeds and the acquirer then declines the payment, `three_ds.completed` reports `result: authenticated` and the decline stays on `payment.resolved`. The result is read from the last transaction of the payment the SDK already receives (its provider and response code). When that transaction is not available, for example when the final status arrives through the websocket, the result still follows the payment outcome as before. Known limit: providers that authenticate and authorize in a single transaction and do not expose a 3DS response code, today Adyen (about 200 Adyen 3DS sessions per week), report their 3DS declines as `authenticated` until.
+
 ## v1.9.45
 *September 19, 2026*
 
@@ -912,6 +1054,14 @@ import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
 - <ChangelogBadge type="fixed" /> **More Resilient Asset Resolution**  
   Guard the webpack public path when running under Vite, skip duplicate `/v<x.y>` suffixes when the asset URL already includes one, and use the configured `apiUrl` directly as the API client base URL to avoid region-prefix corruption.
+
+## v1.8.17
+*September 24, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **`three_ds.completed` now reports the 3DS outcome instead of the payment outcome**  
+  When the 3DS authentication succeeds and the acquirer then declines the payment, `three_ds.completed` reports `result: authenticated` and the decline stays on `payment.resolved`. The result is read from the last transaction of the payment the SDK already receives (its provider and response code). When that transaction is not available, for example when the final status arrives through the websocket, the result still follows the payment outcome as before. Known limit: providers that authenticate and authorize in a single transaction and do not expose a 3DS response code, today Adyen (about 200 Adyen 3DS sessions per week), report their 3DS declines as `authenticated` until.
 
 ## v1.8.16
 *September 18, 2026*
