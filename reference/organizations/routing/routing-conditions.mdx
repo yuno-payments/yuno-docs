@@ -27,7 +27,7 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 | `CARD_ISSUER_COUNTRY` | Card-issuing bank's country, resolved by Yuno's BIN lookup at processing time | ISO 3166-1 alpha-2 | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `AMOUNT` | Transaction amount. Sent as `AMOUNT` with a sibling `currency` field; Yuno stores it internally as `CURRENCY_AND_AMOUNT` | Decimal as **string** (e.g. `"100.00"`); requires sibling `currency` | `EQUAL`, `NOT_EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `NOT_BETWEEN` | no |
 | `CARD_TYPE` | Card funding source | `CREDIT`, `DEBIT`, `PREPAID` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
-| `CARD_BRAND` | Card scheme | `VISA`, `MASTERCARD`, `AMEX`, `ELO`, `HIPERCARD`, `DINERS`, `DISCOVER`, `JCB`, `UNIONPAY`, `MAESTRO`, `CB` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
+| `CARD_BRAND` | Card scheme | One of the 70 values in [Card brands](#card-brands) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `CARD_BIN` | First 6–8 digits of the PAN | 6–8 digit numeric string | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `TRANSACTION_TYPE` | Payment intent type | `PURCHASE`, `AUTHORIZATION`, `RECURRING`, `MIT`, `CIT` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
 | `METADATA` | `payment.metadata[<key>]` | Any string the merchant sets; requires sibling `key` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
@@ -49,12 +49,58 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 | `BETWEEN` | exactly 2 | inclusive on both ends |
 | `NOT_BETWEEN` | exactly 2 | inverse of `BETWEEN` |
 
+#### Card brands
+
+`CARD_BRAND` accepts exactly these 70 values. A value outside the list is rejected at save time with
+`400 INVALID_CARD_BRAND`, naming the offending value.
+
+```
+ALELO                 AMERICAN_EXPRESS      ARGENCARD             ATM_CARD
+AURA                  BANKCARD_INACTIVE     BELKART               BP_FUEL_CARD
+CABAL                 CARNET                CARTES_BANCAIRES      CHINA_UNION_PAY
+CHJONES_FUEL_CARD     CIRRUS                CMI                   CODENSA
+DANKORT               DINACARD              DINERS                DISCOVER
+DUET                  EBT                   EDENRED               EFTPOS
+ELO                   EUROSHELL_FUEL_CARD   FUEL_CARD             GE_CAPITAL
+GLOBAL_BC             HIPERCARD             HRG_STORE_CARD        HUMOCARD
+JCB                   LOCAL_BRAND           LOYALTY_CARD          LUKOIL_FUEL_CARD
+MAESTRO               MASTERCARD            MEEZA                 NEWDAY
+NSPK_MIR              OUROCARD              PAGOBANCOMAT          PAYPAK
+PAYPAL                PHH_FUEL_CARD         PRIVADAS              PRIVATE_LABEL
+PROSTIR               RBS_GIFT_CARD         RED_FUEL_CARD         RED_LIQUID_FUEL_CARD
+RUPAY                 SBERCARD              SODEXO                STAR_REWARDS
+TARJETA_CENCOSUD      TARJETA_NARANJA       TROY                  UATP
+UK_FUEL_CARD          UZCARD                VERVE                 VISA
+VOYAGER               VPAY                  VR_VALE_REFEICAO      WEXCARD
+YUNO                  YUNO_TEST
+```
+
+<Warning>
+These values do not exist in the list above, so a rule carrying one never matches a payment:
+
+| Invalid value | Use instead |
+|---|---|
+| `AMEX` | `AMERICAN_EXPRESS` |
+| `AMERICAN EXPRESS` (with a space) | `AMERICAN_EXPRESS` |
+| `UNIONPAY` | `CHINA_UNION_PAY` |
+| `CB` | `CARTES_BANCAIRES` |
+| `DINERS_CLUB` | `DINERS` |
+| `DINERS CLUB INTERNATIONAL` | `DINERS` |
+
+`AMEX`, `UNIONPAY` and `CB` appeared in earlier versions of this page. The others are values that
+have been sent against the API and accepted before save-time validation existed.
+
+Existing rules holding any of these are **not** rejected on a later save — they are kept as they
+are — but they will never match a payment, so correct them.
+</Warning>
+
 #### Special cases
 
 - **`AMOUNT` requires `currency`.** Comparisons are FX-naive; only payments whose currency matches the rule's `currency` are evaluated.
 - **`METADATA` requires `key`.** Compares `payment.metadata[key]`. If the key is absent on the payment, the condition does **not** match — absence is not equality.
 - **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
 - **`COUNTRY` vs `CARD_ISSUER_COUNTRY`.** The two are sourced independently: `COUNTRY` matches the transaction country your backend submits in the payment request, while `CARD_ISSUER_COUNTRY` matches the issuer country Yuno's own BIN lookup derives from the card number. The same payment can be `COUNTRY = US` and `CARD_ISSUER_COUNTRY = GB` at once. The BIN lookup runs before a provider is selected, is identical in sandbox and production, and reflects real-world BIN-registry data — never the processor's view of the card.
+- **Not to be confused with Communications Campaigns.** That product has its own rule engine, where `AMOUNT_AND_CURRENCY` with `BETWEEN` takes three values `["min", "max", "currency"]`. Routing's `AMOUNT` takes **two** values plus a sibling `currency`, and a third value is rejected.
 - **Numeric values are submitted as strings** to match the `values: string[]` schema. Yuno parses them based on the `condition_type`.
 
 #### Testing `CARD_ISSUER_COUNTRY` rules in sandbox
