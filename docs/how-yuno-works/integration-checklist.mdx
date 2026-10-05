@@ -1,0 +1,244 @@
+---
+title: "Integration checklist"
+description: "Step-by-step checklist to integrate Yuno: connect providers, configure routing, build checkout, set up webhooks, and go live."
+---
+
+<Info>
+**Path:** Connect → Route → Checkout → Webhooks → Go live. Complete each section in order.
+</Info>
+
+## Before you start
+
+<Steps>
+  <Step title="Create your Yuno account">
+    Contact [sales@y.uno](mailto:sales@y.uno) to request an account. You'll receive credentials for the [Dashboard](https://dashboard.y.uno).
+  </Step>
+  <Step title="Get your API credentials">
+    Dashboard → [Developers](https://dashboard.y.uno/developers) → copy your `public-api-key`, `private-secret-key`, and `account_id`.
+    
+    Store these securely. Never commit secret keys to source control.
+  </Step>
+  <Step title="Choose your integration path">
+    - **SDK checkout** — Pre-built UI, no PCI scope. [Start here →](/docs/sdks/overview/quickstart)
+    - **Direct API** — Full control, requires PCI compliance. [Start here →](/docs/direct-integration-use-cases/direct-flow)
+    - **Payment Links** — No-code, share links with customers. [Start here →](/docs/using-yuno/dashboard-overview/payment-links)
+  </Step>
+</Steps>
+
+---
+
+## 1. Connect payment providers
+
+Connect the providers you want to process payments through. Start with the Yuno Test Payment Gateway for sandbox testing.
+
+<Steps>
+  <Step title="Add a connection">
+    Dashboard → [Connections](https://dashboard.y.uno/connections) → search for your provider → Connect → enter credentials → Save.
+    
+    For sandbox, add **Yuno Test Payment Gateway** (no credentials required).
+  </Step>
+  <Step title="Verify the connection">
+    The connection appears in your Connections list with a green status.
+  </Step>
+</Steps>
+
+**Docs:** [Connections](/docs/using-yuno/dashboard-overview/connections)
+
+---
+
+## 2. Configure routing
+
+Routing determines which provider processes each payment. Create routes for each payment method.
+
+<Steps>
+  <Step title="Create a route">
+    Dashboard → [Routing](https://dashboard.y.uno/routing) → select a payment method (e.g., Card) → Set Up → Create new route.
+  </Step>
+  <Step title="Add conditions (optional)">
+    Route by country, currency, card brand, or amount. Example: route Visa to Provider A, Mastercard to Provider B.
+  </Step>
+  <Step title="Add provider steps">
+    Add your connected provider as a step. Add fallback providers if the primary fails.
+  </Step>
+  <Step title="Publish">
+    Click Publish to activate the route. Test in sandbox before publishing to production.
+  </Step>
+</Steps>
+
+**Docs:** [Routing](/docs/using-yuno/dashboard-overview/routing)
+
+---
+
+## 3. Enable payment methods
+
+Make payment methods available in your checkout.
+
+<Steps>
+  <Step title="Enable methods">
+    Dashboard → [Checkout Builder](https://dashboard.y.uno/checkout-builder) → toggle on the payment methods you want to offer.
+  </Step>
+  <Step title="Publish">
+    Click Publish settings to activate.
+  </Step>
+</Steps>
+
+**Docs:** [Checkout Builder](/docs/using-yuno/dashboard-overview/checkout-builder)
+
+---
+
+## 4. Build your checkout
+
+### Option A: SDK checkout (recommended)
+
+The SDK handles the payment form, validation, and 3DS. No PCI scope required.
+
+```javascript
+// 1. Server: create checkout session
+const session = await createCheckoutSession({
+  account_id: ACCOUNT_ID,
+  merchant_order_id: "order-123",
+  payment_description: "Order #123",
+  country: "US",
+  amount: { currency: "USD", value: 99.99 }
+});
+
+// 2. Browser: initialize SDK
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  elementSelector: "#payment-form",
+  countryCode: "US",
+  async yunoCreatePayment(oneTimeToken) {
+    // 3. Server: create payment
+    await createPayment({ oneTimeToken, checkoutSession: session.checkout_session });
+    yuno.continuePayment();
+  }
+});
+await yuno.mountCheckout();
+```
+
+**Docs:** [SDK Quickstart](/docs/sdks/overview/quickstart) · [Web SDK](/docs/sdks/full-checkout/web-payments)
+
+### Option B: Direct API
+
+Call the API directly for full control. Requires PCI compliance for card handling.
+
+**Docs:** [Direct flow](/docs/direct-integration-use-cases/direct-flow) · [Create payment](/reference/payments/create-payment)
+
+---
+
+## 5. Handle webhooks
+
+Webhooks notify you when payment status changes. Always verify the signature before processing.
+
+<Steps>
+  <Step title="Configure your endpoint">
+    Dashboard → Developers → Webhooks → add your HTTPS endpoint URL.
+  </Step>
+  <Step title="Enable HMAC">
+    Enable "Use HMAC Authentication" and save the webhook secret.
+  </Step>
+  <Step title="Verify signatures">
+    Compute HMAC-SHA256 over the raw request body using your webhook secret. Compare with the `x-hmac-signature` header.
+    
+    ```javascript
+    const expected = crypto.createHmac("sha256", WEBHOOK_SECRET)
+      .update(rawBody)
+      .digest("base64");
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+      return res.sendStatus(401);
+    }
+    ```
+  </Step>
+  <Step title="Handle events">
+    Process `payment.purchase` when `status === "SUCCEEDED"`. De-duplicate using `data.idempotency_key`.
+  </Step>
+</Steps>
+
+**Docs:** [Configure webhooks](/docs/webhooks/configure-webhooks) · [Verify signatures](/docs/webhooks/verify-webhook-signatures-hmac)
+
+---
+
+## 6. Test in sandbox
+
+Test all scenarios before going live. All test cards are on the [Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway) page.
+
+| Scenario | How to test |
+|----------|-------------|
+| Successful payment | Use Visa `4507990000000002` |
+| Declined payment | Use decline test cards |
+| 3DS authentication | Use 3DS test cards, OTP `1234` |
+| Refund | Call refund endpoint on a succeeded payment |
+| Webhook delivery | Verify your endpoint receives events |
+
+**Docs:** [Testing guide](/docs/how-yuno-works/testing) · [Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway)
+
+---
+
+## 7. Go live
+
+<Steps>
+  <Step title="Switch to production credentials">
+    Dashboard → switch to Production environment → Developers → copy production keys.
+  </Step>
+  <Step title="Update your code">
+    Change the base URL to `https://api.y.uno` and use production API keys.
+  </Step>
+  <Step title="Connect production providers">
+    Add your provider connections with production credentials.
+  </Step>
+  <Step title="Publish production routing">
+    Create and publish routes in your production environment.
+  </Step>
+  <Step title="Monitor">
+    Dashboard → [Payments](https://dashboard.y.uno/payments) to monitor transactions.
+  </Step>
+</Steps>
+
+---
+
+## Go-live checklist
+
+Before processing real payments, verify:
+
+### Code quality
+- [ ] API keys loaded from environment variables, not hardcoded
+- [ ] Secret key (`private-secret-key`) only used server-side
+- [ ] Every payment/refund/cancel sends a unique `X-Idempotency-Key`
+- [ ] Retries reuse the same idempotency key
+
+### Payment handling
+- [ ] Amounts in major units (e.g., `10` for $10.00, not `1000`)
+- [ ] Payment `status` and `sub_status` checked at payment level
+- [ ] All 2xx responses treated as success
+- [ ] Error responses logged with `code` and `messages`
+
+### Webhooks
+- [ ] HMAC signature verified over raw body
+- [ ] Bad signatures rejected with 401
+- [ ] Events de-duplicated on `data.idempotency_key`
+- [ ] Endpoint returns 200 quickly; slow work processed async
+
+### Security
+- [ ] Production keys stored securely (secrets manager, not code)
+- [ ] HTTPS enforced on all endpoints
+- [ ] PCI compliance verified (if handling card data directly)
+
+---
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Testing" icon="vial" href="/docs/how-yuno-works/testing">
+    Test scenarios and sandbox setup
+  </Card>
+  <Card title="Webhooks" icon="bell" href="/docs/webhooks/index">
+    Event types and payload examples
+  </Card>
+  <Card title="Payment features" icon="credit-card" href="/docs/payment-features/stored-credentials">
+    Subscriptions, installments, split payments
+  </Card>
+  <Card title="API reference" icon="code" href="/reference/getting-started/api-reference-overview">
+    Full endpoint documentation
+  </Card>
+</CardGroup>
