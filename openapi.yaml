@@ -33,6 +33,7 @@ tags:
   - name: Entities (Banking Connectivity)
   - name: Entity Onboarding (Banking Connectivity)
   - name: Entity Transfers (Banking Connectivity)
+  - name: Fx Rates
   - name: Installments
   - name: Network Tokens
   - name: Organizations
@@ -15151,6 +15152,178 @@ paths:
           description: Rate limit exceeded
       tags:
         - Dry Run
+  /fx-rates:
+    get:
+      summary: Get FX rates
+      description: >-
+        Returns Yuno's official daily FX rate for one or every currency, expressed as units of the currency per 1 USD.
+        With no dates it returns the latest available day.
+      operationId: getFxRates
+      parameters:
+        - in: header
+          name: PUBLIC-API-KEY
+          schema:
+            type: string
+          description: Your public API key.
+        - in: header
+          name: PRIVATE-SECRET-KEY
+          schema:
+            type: string
+          description: Your private secret key. Never expose it client-side.
+        - in: query
+          name: start_date
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2026-09-28'
+          description: First day of the range, inclusive, as `YYYY-MM-DD`. Omit it to get the latest available day.
+        - in: query
+          name: end_date
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2026-09-30'
+          description: >-
+            Last day of the range, inclusive, as `YYYY-MM-DD`. Only valid together with `start_date`, defaults to it,
+            and cannot be later than yesterday (UTC).
+        - in: query
+          name: currency
+          required: false
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 3
+            example: COP
+          description: One 3-letter currency code. Omit it to get every currency published for those days.
+      responses:
+        '200':
+          description: OK — the rates published for the requested days.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  base_currency:
+                    type: string
+                    description: Always `USD` in this version. Explicit so the reading is unambiguous.
+                    example: USD
+                  rates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fx_date:
+                          type: string
+                          format: date
+                          description: Day the rate is published for.
+                          example: '2026-09-28'
+                        currency:
+                          type: string
+                          description: >-
+                            3-letter currency code. Mostly ISO 4217; the published set also includes codes that are not
+                            fiat currencies, such as `BTC`, `XAU` and `XAG`.
+                          example: COP
+                        rate:
+                          type: number
+                          description: >-
+                            Units of this currency per 1 unit of `base_currency`, with up to 15 decimal places. `USD` is
+                            published with a rate of 1. Parse it with a decimal type: a double silently rounds it.
+                          example: 3306.859716727783
+              examples:
+                one_day_every_currency:
+                  summary: One day, every currency
+                  value:
+                    base_currency: USD
+                    rates:
+                      - fx_date: '2026-09-28'
+                        currency: BRL
+                        rate: 5.3214
+                      - fx_date: '2026-09-28'
+                        currency: COP
+                        rate: 3306.859716727783
+                      - fx_date: '2026-09-28'
+                        currency: USD
+                        rate: 1
+                no_rate_published:
+                  summary: A day with no published rate
+                  value:
+                    base_currency: USD
+                    rates: []
+        '400':
+          description: Bad request — `INVALID_PARAMETERS` (a query parameter is missing its companion, malformed, or out of range).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                end_date_without_start_date:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - The query parameter 'end_date' can only be used together with 'start_date'.
+                end_date_after_yesterday:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - The query parameter 'end_date' must not be later than yesterday (UTC).
+                range_over_the_limit:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - >-
+                        The range between 'start_date' and 'end_date' must not exceed 31 days when 'currency' is
+                        omitted.
+        '403':
+          description: Forbidden — `PRODUCT_NOT_ENABLED` (the product is not enabled for your organization).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                product_not_enabled:
+                  value:
+                    code: PRODUCT_NOT_ENABLED
+                    messages:
+                      - >-
+                        The FX Rates API is enabled per organization. Contact your Key Account Manager (KAM) to activate
+                        it.
+        '503':
+          description: Service unavailable — `SERVICE_UNAVAILABLE` (the rate source is temporarily unreachable).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                service_unavailable:
+                  value:
+                    code: SERVICE_UNAVAILABLE
+                    messages:
+                      - The FX rates service is temporarily unavailable, please retry.
+      tags:
+        - Fx Rates
   /installments-plans:
     get:
       summary: Get Installments Plans
@@ -79123,93 +79296,71 @@ paths:
         - Pre Debit Notifications
   /recipients:
     get:
-      summary: List Recipients
-      operationId: list-recipients
-      parameters:
-        - name: limit
-          in: query
-          description: Maximum number of recipients to return
-          required: false
-          schema:
-            type: integer
-            default: 20
-            minimum: 1
-            maximum: 100
-        - name: offset
-          in: query
-          description: Number of recipients to skip for pagination
-          required: false
-          schema:
-            type: integer
-            default: 0
-            minimum: 0
-        - name: national_entity
-          in: query
-          description: Filter recipients by national entity type
-          required: false
-          schema:
-            type: string
-            enum:
-              - INDIVIDUAL
-              - ENTITY
-        - name: country
-          in: query
-          description: Filter recipients by country
-          required: false
-          schema:
-            type: string
-        - name: merchant_recipient_id
-          in: query
-          description: Filter recipients by the merchant's own recipient id
-          required: false
-          schema:
-            type: string
+      summary: Get Recipient by Merchant ID
+      operationId: get-recipient-by-merchant-id
       responses:
         '200':
-          description: List of recipients retrieved successfully
+          description: Success Response
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/RecipientResponse_5'
-                  pagination:
-                    type: object
-                    properties:
-                      total:
-                        type: integer
-                        description: Total number of recipients
-                      limit:
-                        type: integer
-                        description: Number of recipients per page
-                      offset:
-                        type: integer
-                        description: Current offset
-                      has_more:
-                        type: boolean
-                        description: Whether there are more recipients to fetch
+                $ref: '#/components/schemas/RecipientResponse_4'
               examples:
                 Success Response:
                   value:
-                    data:
-                      - id: 9104911d-5df9-429e-8488-ad41abea1a4b
-                        account_id: 9104911d-5df9-429e-8488-ad41abea1a4b
-                        merchant_recipient_id: AAAA01
-                        national_entity: INDIVIDUAL
-                        first_name: John
-                        last_name: Doe
-                        email: john.doe@email.com
-                        country: CO
-                        created_at: '2024-01-15T10:30:00Z'
-                        updated_at: '2024-01-15T10:30:00Z'
-                    pagination:
-                      total: 1
-                      limit: 20
-                      offset: 0
-                      has_more: false
+                    id: 9104911d-5df9-429e-8488-ad41abea1a4b
+                    account_id: 9104911d-5df9-429e-8488-ad41abea1a4b
+                    merchant_recipient_id: AAAA01
+                    national_entity: INDIVIDUAL
+                    first_name: John
+                    last_name: Doe
+                    legal_name: Arcos dorados S.A.
+                    email: john.doe@email.com
+                    country: CO
+                    document:
+                      document_number: '1093333333'
+                      document_type: CC
+                    phone:
+                      country_code: '57'
+                      number: '3132450765'
+                    address:
+                      address_line_1: 'Calle 34 # 56 - 78'
+                      address_line_2: Apartamento 502, Torre I
+                      city: Bogota
+                      country: CO
+                      state: Cundinamarca
+                      zip_code: '111111'
+                    withdrawal_methods:
+                      - bank:
+                          code: '246'
+                          branch: XXXX
+                          account: '1093333333'
+                          account_type: SAVINGS
+                    onboardings:
+                      - type: PREVIOUSLY_ONBOARDED
+                        workflow: HOSTED_BY_PROVIDER
+                        callback_url: https://www.google.com
+                        provider:
+                          id: PAGARME
+                    split_configuration:
+                      calculation_type: PERCENTAGE
+                      percentage: 10.5
+                      rounding_mode: STANDARD
+                      currency: USD
+                    created_at: '2024-01-15T10:30:00Z'
+                    updated_at: '2024-01-15T10:30:00Z'
+        '400':
+          description: Missing merchant_recipient_id or no matching recipient (RECIPIENT_NOT_FOUND).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Recipient Not Found:
+                  value:
+                    code: RECIPIENT_NOT_FOUND
+                    messages:
+                      - Recipient not found.
         '401':
           description: Unauthorized
           content:
@@ -79218,6 +79369,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 Unauthorized:
+                  summary: Unauthorized
                   value:
                     code: INVALID_CREDENTIALS
                     messages:
@@ -79230,10 +79382,23 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 Forbidden:
+                  summary: Forbidden
                   value:
                     code: AUTHORIZATION_REQUIRED
                     messages:
                       - The merchant has no authorization to use this API.
+      description: >-
+        Retrieves a single recipient by merchant_recipient_id within your organization. No account_id is required. Returns a
+        top-level recipient object, or 400 RECIPIENT_NOT_FOUND when no recipient matches. For a paginated collection, use
+        GET /recipients/list.
+      parameters:
+        - name: merchant_recipient_id
+          in: query
+          required: true
+          description: The recipient identifier assigned by the merchant.
+          schema:
+            type: string
+            minLength: 1
       tags:
         - Recipients For Marketplace
     post:
@@ -79724,6 +79889,154 @@ paths:
                     code: AUTHORIZATION_REQUIRED
                     messages:
                       - The merchant has no authorization to use this API.
+      tags:
+        - Recipients For Marketplace
+  /recipients/list:
+    get:
+      summary: List Recipients
+      operationId: list-recipients
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of recipients to return
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of recipients to skip for pagination
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: national_entity
+          in: query
+          description: Filter recipients by national entity type
+          required: false
+          schema:
+            type: string
+            enum:
+              - INDIVIDUAL
+              - ENTITY
+        - name: country
+          in: query
+          description: Filter recipients by country
+          required: false
+          schema:
+            type: string
+        - name: merchant_recipient_id
+          in: query
+          description: >-
+            Exact merchant recipient ID filter. Returns the same data array and pagination envelope; no match returns an
+            empty array with total 0.
+          required: false
+          schema:
+            type: string
+            minLength: 1
+        - name: account_id
+          in: query
+          description: Authorized account UUID. Required unless X-Account-Code is supplied in the request header.
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: X-Account-Code
+          in: header
+          description: Authorized account UUID when account_id is omitted. If both are present, account_id takes precedence.
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of recipients retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RecipientResponse_5'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        description: Total number of recipients
+                      limit:
+                        type: integer
+                        description: Number of recipients per page
+                      offset:
+                        type: integer
+                        description: Current offset
+                      has_more:
+                        type: boolean
+                        description: Whether there are more recipients to fetch
+              examples:
+                Success Response:
+                  value:
+                    data:
+                      - id: 9104911d-5df9-429e-8488-ad41abea1a4b
+                        account_id: 9104911d-5df9-429e-8488-ad41abea1a4b
+                        merchant_recipient_id: AAAA01
+                        national_entity: INDIVIDUAL
+                        first_name: John
+                        last_name: Doe
+                        email: john.doe@email.com
+                        country: CO
+                        created_at: '2024-01-15T10:30:00Z'
+                        updated_at: '2024-01-15T10:30:00Z'
+                    pagination:
+                      total: 1
+                      limit: 20
+                      offset: 0
+                      has_more: false
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Unauthorized:
+                  value:
+                    code: INVALID_CREDENTIALS
+                    messages:
+                      - Invalid credentials
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Forbidden:
+                  value:
+                    code: AUTHORIZATION_REQUIRED
+                    messages:
+                      - The merchant has no authorization to use this API.
+        '503':
+          description: Recipient listing is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: >-
+        Returns a paginated list scoped to the authorized account and organization. merchant_recipient_id is an
+        exact-match filter; the response remains an envelope even for zero or one match. Reads are eventually
+        consistent.
       tags:
         - Recipients For Marketplace
   /recipients/onboardings/reverse-transfer/{transfer_id}:
@@ -83821,7 +84134,8 @@ paths:
                         minimum: 0
                         description: >-
                           Optional. The provider's response time as observed by you, in milliseconds (round-trip of the
-                          authorization call). Feeds latency analytics per provider.
+                          authorization call). Feeds latency analytics per provider and the LATENCY and BALANCED
+                          objectives of Routing Recommendations: events without it carry no latency to rank on.
                         examples:
                           - 180
                       token_type_used:
@@ -83837,6 +84151,19 @@ paths:
                           provider's own vault). Powers approval-rate analysis per token type.
                         examples:
                           - DPAN
+                      initiation:
+                        type: string
+                        enum:
+                          - CIT
+                          - MIT
+                        description: >-
+                          Optional. How the transaction was initiated at the provider: `CIT` — cardholder-initiated (the
+                          customer was present at checkout); `MIT` — merchant-initiated (e.g. a subscription renewal).
+                          Any other value rejects the event with `INVALID_EVENT` and the message "The field 'initiation'
+                          must be CIT or MIT." Powers approval-rate statistics split by initiation in Routing
+                          Recommendations. Omit it to keep the event exactly as before.
+                        examples:
+                          - MIT
                       payment_method_details:
                         type: object
                         additionalProperties: false
@@ -83919,6 +84246,7 @@ paths:
                       provider_id: ADYEN
                       latency_ms: 180
                       token_type_used: DPAN
+                      initiation: MIT
                       payment_method_details:
                         card:
                           bin: '45717360'
@@ -98027,6 +98355,7 @@ components:
               - PRECHARGEBACK
               - PURCHASE
               - REFUND
+              - SPLIT_UPDATE
               - VERIFY
           example:
             - AUTHORIZE
@@ -98214,6 +98543,7 @@ components:
               - PRECHARGEBACK
               - PURCHASE
               - REFUND
+              - SPLIT_UPDATE
               - VERIFY
           example:
             - AUTHORIZE
