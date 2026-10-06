@@ -171,8 +171,8 @@
   }
 
   window.addEventListener('message', (event) => {
-    // Security check: only allow same origin and the official diagrams github pages origin
-    const allowedOrigins = [window.location.origin, 'https://writechoiceorg.github.io'];
+    // Security check: only allow same origin and the official diagrams host
+    const allowedOrigins = [window.location.origin, 'https://yuno-diagrams-public.pages.dev'];
     if (!allowedOrigins.includes(event.origin)) return;
 
     if (event.data && event.data.type === 'diagram-expand') {

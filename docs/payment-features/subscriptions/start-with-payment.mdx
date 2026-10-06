@@ -14,21 +14,17 @@ The `subscription` block on [Create Payment](/reference/payments/create-payment)
 * **[Create Subscription](/reference/subscriptions/create-subscription)**: you already hold a `vaulted_token` for the customer — for example, they enrolled a card earlier. See the [subscriptions overview](/docs/payment-features/subscriptions/index) for that flow. To move an existing subscriber onto another plan, use [Change Subscription Plan](/reference/subscriptions/change-subscription-plan) — creating a second subscription leaves the first one active and billing.
 * **[Payment links](/reference/payment-links/create-payment-link)**: the `subscription` block is not supported on payment-link create — it is ignored rather than rejected, so the link returns `201` and no subscription is ever created. Take the payment on the link with `vault_on_success`, then call [Create Subscription](/reference/subscriptions/create-subscription) with the resulting `vaulted_token`.
 
-Both routes produce a subscription you manage with the same endpoints — [pause](/reference/subscriptions/pause-subscription), [resume](/reference/subscriptions/resume-subscription), [cancel](/reference/subscriptions/cancel-subscription), [retrieve](/reference/subscriptions/retrieve-subscription). They are not configured identically: the `subscription` block on Create Payment carries a smaller field set, and cannot set `retries`, `trial_period`, `plan_id`, `metadata`, `soft_descriptor` or a subscription `name`. In particular **[Smart Retries](/docs/payment-features/subscriptions/retries) are off** on a subscription created this way — a declined renewal is not retried until you turn them on with [Update Subscription](/reference/subscriptions/update-subscription).
+Both routes produce a subscription you manage with the same endpoints — [pause](/reference/subscriptions/pause-subscription), [resume](/reference/subscriptions/resume-subscription), [cancel](/reference/subscriptions/cancel-subscription), [retrieve](/reference/subscriptions/retrieve-subscription). They are not configured identically: the `subscription` block on Create Payment carries a smaller field set, and cannot set `trial_period`, `soft_descriptor` or a subscription `name`. `metadata` is read only together with `plan_id`, and a subscription created from a plan takes the plan's retry configuration — see [Create a subscription from a plan](#create-a-subscription-from-a-plan). When you send the subscription's terms in the call instead (`frequency`, `availability` and `amount`, called *inline terms* on this page), `retries` and `metadata` are ignored, and **[Smart Retries](/docs/payment-features/subscriptions/retries) are off** on a subscription created this way — a declined renewal is not retried until you turn them on with [Update Subscription](/reference/subscriptions/update-subscription).
 </Note>
 
 ## How the one call works
+
+These steps apply when you send the subscription's terms in the call itself: `frequency`, `availability` and `amount`. If you send a `plan_id` instead, the order changes and Yuno creates the subscription **before** the charge. See [Create a subscription from a plan](#create-a-subscription-from-a-plan).
 
 1. **You call [Create Payment](/reference/payments/create-payment)** with the payment you'd send anyway — amount, country, payment method, customer — plus a `subscription` object describing the recurrence.
 2. **Yuno charges the customer.** This is a normal card payment: it routes, it can decline.
 3. **If the charge completes, Yuno creates the subscription** and records that payment as its first billing cycle. The payment response comes back with `subscription_code` — the `id` of the new subscription.
 4. **Yuno bills every following cycle on its own**, on the cadence you set in `frequency`, until the subscription completes, is canceled, or runs out of billing cycles.
-
-<Warning>
-**Known limitation on the first cycle**
-
-When a payment-first subscription is activated, an additional billing attempt may be generated against the first cycle — the cycle the payment you just made already covers. This is a known limitation on this route and is being tracked. Reconcile the subscription's charges with [List Subscription Payments](/reference/subscriptions/list-subscription-payments) before treating the first cycle as settled.
-</Warning>
 
 If the charge doesn't complete, no subscription is created — you get a declined payment and that's the whole outcome. When the charge does complete, the payment is linked to the new subscription as its first billing cycle; confirm that link from `subscription_code` on the payment response and from [Retrieve Subscription](/reference/subscriptions/retrieve-subscription) rather than assuming it.
 
@@ -43,12 +39,16 @@ Retrying with the **same** key returns the original payment and does not create 
 <Note>
 **Available payment methods**
 
-As with every Yuno subscription, only cards can be used. See [Subscriptions](/docs/payment-features/subscriptions/index).
+See [Subscriptions](/docs/payment-features/subscriptions/index) for the payment methods subscriptions support. To sign up a Pix Automático customer from a plan with the first payment, see [Create a subscription from a plan](#create-a-subscription-from-a-plan).
 </Note>
 
 ## The `subscription` block
 
-Send `subscription` alongside the normal Create Payment fields. To start a **new** subscription, send `frequency`, `availability`, and `amount`, and leave `id` out.
+Send `subscription` alongside the normal Create Payment fields. The block has three shapes, and you send exactly one of them:
+
+* **New subscription with inline terms:** send `frequency`, `availability`, and `amount`, and leave `id` and `plan_id` out. The table below describes this shape.
+* **New subscription from a plan:** send `plan_id`. See [Create a subscription from a plan](#create-a-subscription-from-a-plan).
+* **Existing subscription:** send `id`. See [Charging an existing subscription](#charging-an-existing-subscription).
 
 `checkout.session` is required on Create Payment unless you send `"workflow": "DIRECT"` or `"workflow": "REDIRECT"` — the `subscription` block does not change that. Create a session with [Create checkout session](/reference/checkout-sessions/create-checkout-session) and send its identifier as `checkout.session`.
 
@@ -70,7 +70,7 @@ Send `subscription` alongside the normal Create Payment fields. To start a **new
 
 </div>
 
-The `availability` object itself is required when you're creating a new subscription, but both fields inside it are optional — send `{}` if you want the subscription to start now and run until you cancel it.
+With inline terms, the `availability` object itself is required, but both fields inside it are optional — send `{}` if you want the subscription to start now and run until you cancel it. With `plan_id`, `availability` is optional altogether — see [Fields you can send with `plan_id`](#fields-you-can-send-with-plan_id).
 
 <Warning>
 **`customer_payer` is required for this flow**
@@ -148,7 +148,7 @@ Keep `subscription_code` — it is the subscription's `id`, and it's what you pa
 
 ## `execution` decides who bills
 
-`frequency.execution` tells Yuno who is responsible for generating each recurring charge, and it is required — there is no default.
+`frequency.execution` tells Yuno who is responsible for generating each recurring charge. With inline terms it is required — there is no default. With `plan_id` it defaults to `YUNO`.
 
 * **`YUNO`** — Yuno's engine owns the schedule. It generates every charge after the first one and emits the per-cycle `payment.purchase` webhooks. **This is what you want for this flow.**
 * **`MERCHANT`** — you own the schedule. Yuno stores the subscription as a record of the arrangement but never charges on it; you send each rebill yourself as a merchant-initiated payment. The lifecycle operations that only make sense against a Yuno-run schedule — [Pause](/reference/subscriptions/pause-subscription), [Resume](/reference/subscriptions/resume-subscription), [Update](/reference/subscriptions/update-subscription), [Retry](/reference/subscriptions/retry-subscription), and [Change plan](/reference/subscriptions/change-subscription-plan) — are rejected with `400 BAD_REQUEST`.
@@ -156,7 +156,7 @@ Keep `subscription_code` — it is the subscription's `id`, and it's what you pa
 <Note>
 **Retries are the one exception to "same subscription object"**
 
-The `subscription` block on Create Payment has no `retries` object, so a subscription created this way starts with `retry_on_decline: false` — a declined renewal is not retried, on either `execution` value. Turn [Smart Retries](/docs/payment-features/subscriptions/retries) on afterwards with [Update Subscription](/reference/subscriptions/update-subscription).
+With inline terms, the `subscription` block on Create Payment reads no `retries` object, so a subscription created this way starts with `retry_on_decline: false` — a declined renewal is not retried, on either `execution` value. With `plan_id`, see [Create a subscription from a plan](#create-a-subscription-from-a-plan). Turn [Smart Retries](/docs/payment-features/subscriptions/retries) on afterwards with [Update Subscription](/reference/subscriptions/update-subscription).
 </Note>
 
 <Warning>
@@ -198,9 +198,123 @@ Two ways to follow the link:
 `subscription.active` fires once, when the subscription first becomes active. It is not re-sent on later renewals. Track each renewal through the per-cycle `payment.purchase` webhook instead. See [Subscriptions](/docs/payment-features/subscriptions/index#renewal-events).
 </Note>
 
+## Create a subscription from a plan
+
+If you already have a [plan](/docs/payment-features/subscriptions/plans), you can sign a customer up to it in the same call that takes their first payment. Send the plan's `id` as `subscription.plan_id` on Create Payment. The subscription takes its price, cadence and trial from the plan, so you don't send `amount` or a cadence inside the `subscription` block.
+
+This works with any payment method the plan allows, including cards and Pix Automático:
+
+* **Card:** send the card payment as in the [complete example](#complete-example), with `plan_id` as the only field in the `subscription` block. The plan can't have a trial or other phases: on a payment method other than Pix Automático, a plan with phases is rejected with `400 INVALID_PARAMETERS`.
+* **[Pix Automático](/docs/payment-features/subscriptions/pix-automatico#signing-up-from-a-plan-with-the-first-payment):** the payment is the mandate setup, and the plan decides what the customer approves. Plans with a free trial are supported.
+
+<Warning>
+**With a plan, the subscription exists before the customer pays**
+
+With `plan_id`, Yuno creates the subscription **before** the charge, as soon as the plan checks pass. The first response already carries `subscription_code`, even while the payment is still pending. The rule on the rest of this page, "no subscription unless the charge completes", does not apply here. See [If the first payment fails](#if-the-first-payment-fails) for what to clean up.
+</Warning>
+
+### The request
+
+```json Create Payment from a plan
+{
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "merchant_order_id": "order-90220",
+  "description": "Streaming BR — monthly",
+  "country": "BR",
+  "workflow": "DIRECT",
+  "amount": {
+    "currency": "BRL",
+    "value": 49.90
+  },
+  "customer_payer": {
+    "id": "a3b3a0f4-1f1e-4a19-9a2a-6f0f2d6bbd11"
+  },
+  "payment_method": {
+    "type": "PIX_AUTOMATIC",
+    "vault_on_success": true
+  },
+  "subscription": {
+    "plan_id": "14898a9d-5a75-433d-ba17-f2ea5b33620c"
+  }
+}
+```
+
+The payment's `amount` must equal the plan's price for the payment's `country`, in the same currency. Yuno resolves that price in this order: the regular phase's price for the country, then the plan's `country_prices` entry for the country, then the plan's `base_amount`. On a free-trial plan you still send the regular price; the trial decides what is charged first.
+
+### Fields you can send with `plan_id`
+
+<div className="nowrap-col1-table dense-table">
+
+| Field                  | Required | Description |
+| :--------------------- | :------- | :---------- |
+| `plan_id`              | Yes      | UUID (v4) of an active plan in your account. |
+| `frequency.execution`  | No       | `YUNO` or `MERCHANT`. Defaults to `YUNO`. Only `execution` can be sent inside `frequency`: the plan owns `type` and `value`. |
+| `availability`         | No       | Same as with inline terms. |
+| `billing_cycles.total` | No       | Total number of cycles to bill. Must be `1` or greater; a lower value is rejected up front with `400 INVALID_REQUEST`. |
+| `metadata`             | No       | Metadata stored on the subscription. Same format as on [Create Subscription](/reference/subscriptions/create-subscription). |
+
+</div>
+
+**Retries come from the plan.** The subscription takes the plan's retry configuration, so `retries` is not a field of this call: sending it is rejected with `400 INVALID_PARAMETERS`. On a Pix Automático subscription that Yuno executes, for organizations with Pix Automático scheduling enabled, the [Pix retry ladder](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder) applies (`retry_on_decline: true`).
+
+### Fields you cannot send with `plan_id`
+
+The plan already defines these fields, so each one is rejected with `400 INVALID_REQUEST`, even when its value is `null`:
+
+`id`, `amount`, `frequency.type`, `frequency.value`, `billing_date`, `trial`, `trial_period`, `phases`
+
+The error message names the field:
+
+```json plan_id with a forbidden field
+{
+  "code": "INVALID_REQUEST",
+  "messages": [
+    "The field 'subscription.amount' cannot be sent with 'subscription.plan_id'"
+  ]
+}
+```
+
+For `frequency.type` and `frequency.value` the message reads "Only 'subscription.frequency.execution' can be sent with 'subscription.plan_id'".
+
+### What the response adds
+
+The payment response carries three fields for this route:
+
+* `subscription_code`: the `id` of the new subscription.
+* `plan_id`: the subscription's plan when this payment was created.
+* `plan_assigned_at`: when the plan was assigned to the subscription.
+
+The same three fields are on [Retrieve Payment](/reference/payments/retrieve-payment-by-id) and on payment webhooks. The renewal payments Yuno generates for the subscription carry `plan_id` and `plan_assigned_at` too. On a payment made without a plan, `plan_id` and `plan_assigned_at` are absent, not `null`.
+
+On a free-trial plan the payment shows the regular price in `amount.value`, while its transaction is `0.00`: that is the mandate setup, which collects nothing. A refund of that payment is rejected with `400 INVALID_PARAMETERS`, because nothing was collected.
+
+### If the first payment fails
+
+* **Free-trial plan:** see [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#while-a-free-trial-setup-awaits-approval). A refused setup cancels the subscription automatically.
+* **Plan without a trial:** a refused first payment leaves the subscription `CREATED`. It is never billed, but it is not canceled either: cancel it with [Cancel Subscription](/reference/subscriptions/cancel-subscription). An expired first payment is different: the customer's bank can still deliver an approval after the QR code expires, which completes the payment and activates the subscription. Cancel it only if you don't want that.
+
+### Errors from a plan
+
+The request checks fail with `400` before anything is created. The plan checks fail with `400` before the provider is called: no money moves, no subscription is created, and the payment is stored with status `ERROR`.
+
+<div className="nowrap-col1-table dense-table">
+
+| Condition | Code |
+| :-------- | :--- |
+| `plan_id` is not a valid UUID v4, a forbidden field is sent with it, or `billing_cycles.total` is lower than `1` | `INVALID_REQUEST` |
+| The plan does not exist, or belongs to another account | `PLAN_NOT_FOUND` |
+| The plan is not active (for example, canceled) | `INVALID_STATE` |
+| The payment method is not allowed by the plan | `INCORRECT_PAYMENT_METHOD_TYPE` |
+| The payment `amount` or currency differs from the plan's price for the country | `INVALID_PARAMETERS` |
+| Pix Automático plan with a priced trial, or a trial on a different cadence than the regular phase | `INVALID_PARAMETERS` |
+| A plan with phases (for example, a trial) and a payment method other than Pix Automático | `INVALID_PARAMETERS` |
+| `retries` sent with `plan_id` | `INVALID_PARAMETERS` |
+
+</div>
+
 ## Charging an existing subscription
 
-The same `subscription` block has a second shape: send `id` with the UUID of a subscription that already exists, and the payment is attached to that subscription instead of creating a new one. In that shape you omit `frequency`, `availability`, and `amount` — the subscription already defines them.
+The same `subscription` block has a third shape: send `id` with the UUID of a subscription that already exists, and the payment is attached to that subscription instead of creating a new one. In that shape you omit `frequency`, `availability`, and `amount` — the subscription already defines them.
 
 ```json Create Payment for an existing subscription
 {
@@ -238,6 +352,8 @@ Set the billing day on the subscriptions surface with [Create Subscription](/ref
 
 ## Errors
 
+This section covers a subscription whose terms you send in the call (`frequency`, `availability` and `amount`). For `plan_id`, see [Errors from a plan](#errors-from-a-plan).
+
 A bad `subscription` block can fail at two different moments, and the difference matters: one of them happens before the customer is charged, the other after.
 
 ### Rejected before any charge
@@ -250,7 +366,7 @@ These are caught when the request is validated, so the call fails with a `400`, 
 * `amount.value` or `amount.currency` missing, or a currency that isn't a valid ISO 4217 code.
 * `subscription.amount.currency` different from the payment's `amount.currency`.
 * `subscription.amount.type` = `FIXED` with a `subscription.amount.value` different from the payment's `amount.value`.
-* `frequency`, `availability`, or `amount` missing while creating a new subscription (all three are required unless you send `id`).
+* `frequency`, `availability`, or `amount` missing while creating a new subscription (all three are required unless you send `id` or `plan_id`).
 * `customer_payer` missing — a payment always needs a payer, so this is refused before anything is charged.
 
 ### Validated when the subscription is created

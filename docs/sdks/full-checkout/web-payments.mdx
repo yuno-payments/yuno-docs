@@ -88,7 +88,7 @@ These are the parameters covered in this guide. For the full list of parameters 
 | `language`                        | Language code for the UI (e.g. `fr-FR`, `ar`). Optional; defaults to browser language when available.               |
 | `showLoading`                     | Show SDK loading spinner. Optional.                                                                           |
 | `showPaymentStatus`               | Show payment result screen. Optional.                                                                         |
-| `yunoCreatePayment(oneTimeToken)` | Callback: send one-time token to your backend to create the payment; then call `await yuno.continuePayment()`.      |
+| `yunoCreatePayment(oneTimeToken, tokenWithInformation)` | Callback: send one-time token to your backend to create the payment (accepts `tokenWithInformation` matching the [SDK checkout token response schema](/reference/checkout-sessions/create-one-time-use-token-sdk-checkout)); then call `await yuno.continuePayment()`. |
 | `yunoPaymentResult(status, subStatus)` | Callback: payment finished. Receives [payment status](/reference/payments/status-and-response-codes/payment) (e.g. `SUCCEEDED`, `DECLINED`, `PENDING`) and an optional `subStatus` qualifying it. See [Shopper-cancelled steps](/docs/sdks/resources/references/web#shopper-cancelled-steps). |
 | `yunoError(message, data)`        | Callback: error during the flow.                                                                              |
 | `onLoading`                       | Callback: loading state updates.                                                                              |
@@ -183,10 +183,16 @@ After the customer fills out the requested data in Yuno's payment forms, the SDK
 yunoCreatePayment(oneTimeToken);
 ```
 
-You can also use `tokenWithInformation` to receive additional information provided by the customer in the checkout, such as installments or document type/number:
+You can also use `tokenWithInformation` (or inspect it as the second argument) to receive additional information provided by the customer in the checkout (matching the [SDK checkout token schema](/reference/checkout-sessions/create-one-time-use-token-sdk-checkout)), such as installments, document type/number, or for ACH transfers, `tokenWithInformation.bank_transfer?.bank_name` (Web SDK 1.11.24 / 1.10.26; account and routing numbers are never returned):
 
 ```javascript
-yunoCreatePayment(oneTimeToken, tokenWithInformation);
+async function yunoCreatePayment(oneTimeToken, tokenWithInformation) {
+  // Read ACH bank name if needed:
+  const bankName = tokenWithInformation.bank_transfer?.bank_name;
+  
+  await createPayment({ oneTimeToken, checkoutSession });
+  await yuno.continuePayment({ showPaymentStatus: true });
+}
 ```
 
 When a [promotion](/docs/payment-features/promotions) applies to the card, `tokenWithInformation.quote` holds its discount line, `{ "type": "YUNO_PROMOTION", "quote_id": "…" }`. Send it with the token to your backend and add it to the payment in Step 7. See [Promotions](/docs/sdks/resources/references/web#promotions).
