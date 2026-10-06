@@ -160,7 +160,6 @@ If the payment response has `sdk_action_required: true`, call the SDK method `co
 - https://docs.y.uno/reference/reference-lists
 - https://docs.y.uno/docs/glossary (Yuno terminology)
 - https://docs.y.uno/sitemap.md (markdown sitemap of every page)
-- https://github.com/yuno-payments/yuno-docs (source for this site, including this file)
 
 ## Conventions
 
