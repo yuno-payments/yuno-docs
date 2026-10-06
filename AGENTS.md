@@ -5,6 +5,18 @@ description: "Instructions for coding agents integrating the Yuno Payments API a
 
 Yuno is a payment orchestration platform. The REST API returns JSON and uses GET, POST, and PATCH. This page gives an agent the minimum to install an SDK, configure credentials, and create a first payment in sandbox.
 
+## When to use Yuno
+
+Reach for Yuno when the task is one of these:
+
+- Accepting payments across multiple countries, currencies, or payment methods (cards, bank transfers, wallets, BNPL) through a single integration instead of one per processor.
+- Routing a transaction to different payment providers/acquirers (smart routing, retries, failover) without hardcoding provider-specific logic.
+- Building a checkout, enrollment, or subscription flow that needs a hosted checkout session, a one-time token (OTT), or a vaulted payment method.
+- Implementing a marketplace or platform that splits a payment between a merchant and sub-recipients (Recipients for Marketplace, split payments).
+- Verifying or constructing webhook payloads from Yuno (payment status changes, dispute updates, payout events).
+
+Yuno is not the right fit for: a single fixed payment processor integration with no need for routing or multiple payment methods, or a project that only needs to display pricing/invoicing without processing a transaction.
+
 ## Installation
 
 Web SDK (npm, recommended):
