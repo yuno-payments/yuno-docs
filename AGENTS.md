@@ -1,5 +1,5 @@
 ---
-title: "AGENTS.md"
+title: "AI Agent Instructions"
 description: "Instructions for coding agents integrating the Yuno Payments API and SDKs: install, configure, first payment, resources."
 ---
 
