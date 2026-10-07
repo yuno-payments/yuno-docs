@@ -3019,6 +3019,23 @@
                       }
                     }
                   },
+                  "external_invoice": {
+                    "type": "object",
+                    "description": "Links this payment to an invoice of an external billing platform, so that a payment you collect with Yuno pays that invoice (for example a balance top-up). Yuno checks the invoice before it charges. When the payment is approved, Yuno reports it to the invoice; when it is declined, Yuno records a failed attempt and the invoice stays open. A smaller amount than the amount remaining is accepted on one-off invoices; invoices of subscriptions that Stripe charges automatically need the exact amount. Cannot be sent together with `external_subscription` or `subscription` (returns `INVALID_REQUEST`). The object is returned in the payment response, in Retrieve Payment and in payment webhooks. See [Pay a Stripe invoice (top-ups)](/docs/payment-features/subscriptions/stripe-billing-top-ups) for the amount rules and the error codes.",
+                    "required": [
+                      "id"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The invoice's identifier in the external billing platform (for example `in_...` for Stripe Billing). Required when the object is present. (MIN 3; MAX 255)"
+                      },
+                      "customer_id": {
+                        "type": "string",
+                        "description": "The customer's identifier in the external billing platform that owns the invoice (for example `cus_...`). Optional. When you send it, it must be the invoice's customer. (MIN 3; MAX 255 when present)"
+                      }
+                    }
+                  },
                   "subscription": {
                     "type": "object",
                     "description": "Specifies the subscription object. Send exactly one of three shapes: inline terms (`frequency`, `availability` and `amount`) to create a subscription, `plan_id` to create one from a plan, or `id` to charge an existing subscription. See [Start a subscription with the first payment](/docs/payment-features/subscriptions/start-with-payment).",
@@ -5205,6 +5222,30 @@
                       }
                     },
                     "workflow": "DIRECT"
+                  }
+                },
+                "Card - With external invoice (top-up)": {
+                  "summary": "Pay a specific Stripe invoice with a card (top-up)",
+                  "value": {
+                    "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
+                    "merchant_order_id": "topup-0001",
+                    "description": "Balance top-up",
+                    "country": "US",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 50
+                    },
+                    "customer_payer": {
+                      "id": "1a71c7b7-80c2-4ba5-b601-4d34d48c0e18"
+                    },
+                    "payment_method": {
+                      "type": "CARD",
+                      "token": "<one_time_token_from_sdk>"
+                    },
+                    "external_invoice": {
+                      "id": "in_1QwZzz",
+                      "customer_id": "cus_RplXYZ"
+                    }
                   }
                 }
               }
@@ -29214,6 +29255,62 @@
                         "Request with the same idempotency is already in process. Try again in a few seconds."
                       ]
                     }
+                  },
+                  "External invoice - amount above remaining": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING",
+                      "messages": [
+                        "Invalid Request. The amount can not be greater than the amount remaining on the invoice (12.00 USD)."
+                      ]
+                    }
+                  },
+                  "External invoice - invoice not open": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_NOT_OPEN",
+                      "messages": [
+                        "Invalid Request. The invoice is not open and can not be paid."
+                      ]
+                    }
+                  },
+                  "External invoice - customer mismatch": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_CUSTOMER_MISMATCH",
+                      "messages": [
+                        "Invalid Request. The customer of the external_invoice does not match the customer of the invoice."
+                      ]
+                    }
+                  },
+                  "External invoice - currency mismatch": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_CURRENCY_MISMATCH",
+                      "messages": [
+                        "Invalid Request. The payment currency does not match the invoice currency."
+                      ]
+                    }
+                  },
+                  "External invoice - invoice not found": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_NOT_FOUND",
+                      "messages": [
+                        "Invalid Request. The invoice does not exist."
+                      ]
+                    }
+                  },
+                  "External invoice - payment rejected": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_REJECTED",
+                      "messages": [
+                        "Invalid Request. The invoice can not be paid with this payment."
+                      ]
+                    }
+                  },
+                  "External invoice - sent with external_subscription": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid Request. external_invoice and external_subscription can not be sent together. Please send only one of them."
+                      ]
+                    }
                   }
                 },
                 "schema": {
@@ -29278,6 +29375,14 @@
                       "code": "AUTHORIZATION_REQUIRED",
                       "messages": [
                         "The merchant has no authorization to use this API"
+                      ]
+                    }
+                  },
+                  "External invoice - account not enabled": {
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "External subscriptions are not enabled for this account. Please contact your Key Account Manager."
                       ]
                     }
                   }
