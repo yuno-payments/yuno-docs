@@ -25,12 +25,12 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 |---|---|---|---|---|
 | `COUNTRY` | Transaction country — the top-level `country` field you submit in `POST /v1/payments` (never the card) | ISO 3166-1 alpha-2 (e.g. `"US"`, `"BR"`) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
 | `CARD_ISSUER_COUNTRY` | Card-issuing bank's country, resolved by Yuno's BIN lookup at processing time | ISO 3166-1 alpha-2 | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
-| `AMOUNT` | Transaction amount. Sent as `AMOUNT` with a sibling `currency` field; Yuno stores it internally as `CURRENCY_AND_AMOUNT` | Decimal as **string** (e.g. `"100.00"`); requires sibling `currency` | `EQUAL`, `NOT_EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `NOT_BETWEEN` | no |
+| `AMOUNT` | Transaction amount. Sent as `AMOUNT` with a sibling `currency` field; Yuno stores it internally as `CURRENCY_AND_AMOUNT` | Decimal as **string** (e.g. `"100.00"`); requires sibling `currency` | `EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN` | no |
 | `CARD_TYPE` | Card funding source | `CREDIT`, `DEBIT`, `PREPAID` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
-| `CARD_BRAND` | Card scheme | One of the 70 values in [Card brands](#card-brands) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
-| `CARD_BIN` | First 6–8 digits of the PAN | 6–8 digit numeric string | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
+| `CARD_BRAND` | Card scheme | One of the values in [Card brands](#card-brands) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
+| `CARD_BIN` | First 6–8 digits of the PAN | 6–8 digit numeric string | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `BETWEEN` (see [Special cases](#special-cases)) | yes |
 | `TRANSACTION_TYPE` | Payment intent type | `PURCHASE`, `AUTHORIZATION`, `RECURRING`, `MIT`, `CIT` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
-| `METADATA` | `payment.metadata[<key>]` | Any string the merchant sets; requires sibling `key` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
+| `METADATA` | `payment.metadata[<key>]` | Any string the merchant sets; requires sibling `key` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `IS`, `IS_NOT`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `CONTAINS` | no |
 
 <Warning>
 `CURRENCY` and `INSTALLMENTS` are **not** valid standalone `condition_type` values. Sending either one rejects the whole routing with `400 INVALID_ROUTE_CONFIGURATION`. To filter by currency, use `AMOUNT` with the sibling `currency` field.
@@ -38,21 +38,51 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 
 #### `conditional` operators
 
-| Operator | Cardinality of `values[]` | Semantics |
-|---|---|---|
-| `EQUAL` | exactly 1 | `attribute == values[0]` |
-| `NOT_EQUAL` | exactly 1 | `attribute != values[0]` |
-| `ONE_OF` | ≥ 1 | `attribute ∈ values` |
-| `NOT_ONE_OF` | ≥ 1 | `attribute ∉ values` |
-| `GREATER_THAN` | exactly 1 | numeric `attribute > values[0]` |
-| `LESS_THAN` | exactly 1 | numeric `attribute < values[0]` |
-| `BETWEEN` | exactly 2 | inclusive on both ends |
-| `NOT_BETWEEN` | exactly 2 | inverse of `BETWEEN` |
+| Operator | Cardinality of `values[]` | Semantics | Rejected at save time |
+|---|---|---|---|
+| `EQUAL` | exactly 1 | `attribute == values[0]` | no |
+| `NOT_EQUAL` | exactly 1 | `attribute != values[0]` | no |
+| `ONE_OF` | ≥ 1 | `attribute ∈ values` | no |
+| `NOT_ONE_OF` | ≥ 1 | `attribute ∉ values` | no |
+| `GREATER_THAN` | exactly 1 | numeric `attribute > values[0]` | yes |
+| `LESS_THAN` | exactly 1 | numeric `attribute < values[0]` | no |
+| `LESS_OR_EQUAL_THAN` | exactly 1 | comparison depends on the `condition_type` — see below | yes |
+| `BETWEEN` | exactly 2 | inclusive on both ends | yes |
+| `CONTAINS` | exactly 1 | `attribute` contains `values[0]` as a substring | yes |
+
+<Warning>
+There is no `NOT_BETWEEN` operator. It is not a member of the `conditional` enum, so sending it
+rejects the whole routing at deserialization — use `BETWEEN` on the complementary ranges instead.
+</Warning>
+
+`LESS_OR_EQUAL_THAN` does not apply to any `condition_type` in the table above — it is used only by
+`VOLUME_PAYMENTS_LIMIT`, which carries its own threshold semantics rather than the generic numeric
+comparison, so do not read a plain `<=` into it. That condition type is not documented on this page
+yet, so treat the table above as the common set, not the complete one.
+
+`CONTAINS` is a substring test for `METADATA`, which is the type this page documents for it. Other
+condition types may implement it differently — `ADDITIONAL_FIELD`, for one, compares `values[0]` for
+equality rather than containment — so do not carry the substring semantics across types.
+
+The **Rejected at save time** column is the value count only. A `yes` means
+`POST`/`PUT` returns `400` when the count does not match, naming the condition type and operator.
+A `no` means the count is not checked at save time, and what a wrong count does at evaluation
+depends on the operator — do not rely on it being harmless.
+
+Where enforcement applies it is **exact**, not a minimum: a surplus value is rejected just as a
+missing one is. `BETWEEN` with `["0", "60", "EUR"]` is a `400`, not a silently truncated range.
+
+<Note>
+A value count already stored on a routing version is kept. If a version holds a condition whose
+count predates this check, saving that version again does not fail on it — only a newly introduced
+wrong count is rejected. This also holds for a version duplicated from such a source.
+</Note>
 
 #### Card brands
 
-`CARD_BRAND` accepts exactly these 70 values. A value outside the list is rejected at save time with
-`400 INVALID_CARD_BRAND`, naming the offending value.
+`CARD_BRAND` accepts the values below. A value outside the list is rejected at save time with
+`400 INVALID_CARD_BRAND`, naming the offending value. The list is validated against two internal
+sources at save time, so a newly supported scheme may be accepted before it appears here.
 
 ```
 ALELO                 AMERICAN_EXPRESS      ARGENCARD             ATM_CARD
@@ -101,6 +131,7 @@ are — but they will never match a payment, so correct them.
 - **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
 - **`COUNTRY` vs `CARD_ISSUER_COUNTRY`.** The two are sourced independently: `COUNTRY` matches the transaction country your backend submits in the payment request, while `CARD_ISSUER_COUNTRY` matches the issuer country Yuno's own BIN lookup derives from the card number. The same payment can be `COUNTRY = US` and `CARD_ISSUER_COUNTRY = GB` at once. The BIN lookup runs before a provider is selected, is identical in sandbox and production, and reflects real-world BIN-registry data — never the processor's view of the card.
 - **Not to be confused with Communications Campaigns.** That product has its own rule engine, where `AMOUNT_AND_CURRENCY` with `BETWEEN` takes three values `["min", "max", "currency"]`. Routing's `AMOUNT` takes **two** values plus a sibling `currency`, and a third value is rejected.
+- **`CARD_BIN` with `BETWEEN`** expresses an issuer range and is validated more strictly than the generic two-value rule: exactly two values, both the same length, that length either 6 or 8, all digits, and the first less than or equal to the second. Anything else is `400 INVALID_ROUTE_CONFIGURATION` — so `["411111", "41111111"]` (mismatched lengths) and `["500000", "400000"]` (descending) are both rejected. Unlike every other condition type, a stored `CARD_BIN BETWEEN` is **not** grandfathered: a version holding a malformed one is rejected on every subsequent save until it is corrected.
 - **Numeric values are submitted as strings** to match the `values: string[]` schema. Yuno parses them based on the `condition_type`.
 
 #### Testing `CARD_ISSUER_COUNTRY` rules in sandbox
