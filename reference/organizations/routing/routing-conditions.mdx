@@ -52,10 +52,21 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 #### Special cases
 
 - **`AMOUNT` requires `currency`.** Comparisons are FX-naive; only payments whose currency matches the rule's `currency` are evaluated.
-- **`METADATA` requires `key`.** Compares `payment.metadata[key]`. If the key is absent on the payment, the condition does **not** match — absence is not equality.
+- **`METADATA` requires `key`.** Compares `payment.metadata[key]`. If the key is absent on the payment (or the payment has no `metadata`), the condition does **not** match, whatever the operator. This includes the negative operators: a payment without the key does **not** match `NOT_EQUAL` or `NOT_ONE_OF` either. See the note below for how to route payments that don't carry the key.
 - **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
 - **`COUNTRY` vs `CARD_ISSUER_COUNTRY`.** The two are sourced independently: `COUNTRY` matches the transaction country your backend submits in the payment request, while `CARD_ISSUER_COUNTRY` matches the issuer country Yuno's own BIN lookup derives from the card number. The same payment can be `COUNTRY = US` and `CARD_ISSUER_COUNTRY = GB` at once. The BIN lookup runs before a provider is selected, is identical in sandbox and production, and reflects real-world BIN-registry data — never the processor's view of the card.
 - **Numeric values are submitted as strings** to match the `values: string[]` schema. Yuno parses them based on the `condition_type`.
+
+<Note>
+**Routing payments that don't carry a metadata key**
+
+Because a missing key never matches, a rule such as `METADATA` `QA` `NOT_EQUAL` `"true"` skips every payment that has no `QA` key. To split traffic by the presence of a key, match the payments that **do** carry it, and let everything else fall through:
+
+1. Put a condition set with `METADATA` `QA` `EQUAL` `"true"` first (lower `sort_number`).
+2. Put the condition set for all other payments after it, **without** a `METADATA` condition on `QA`.
+
+Payments with `QA = "true"` match the first set; payments without the key, or with any other value, reach the second.
+</Note>
 
 #### Testing `CARD_ISSUER_COUNTRY` rules in sandbox
 
