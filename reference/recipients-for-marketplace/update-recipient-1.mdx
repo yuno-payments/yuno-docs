@@ -5,3 +5,29 @@ description: "Update the details of an existing marketplace recipient, identifie
 ---
 
 Updates an existing recipient. Only specified fields will be updated.
+
+## Bank-account updates
+
+For Zoop and Pagar.me onboardings with a provider recipient ID, an explicit `withdrawal_methods.bank` update waits for the provider result. Other recipient fields retain their existing update behavior.
+
+Without `onboarding_id`, Yuno combines the bank fields you send with the recipient's saved bank account to form one account for eligible onboardings. It does not combine your request with each provider's different bank account. Send a complete account if the saved account does not provide the missing fields. Brazilian account types are `CHECKINGS` and `SAVINGS`.
+
+With `onboarding_id`, the bank update targets only that onboarding and leaves the recipient default and other onboardings unchanged. Omitted fields come from the onboarding's saved account, or the recipient default if the onboarding has no saved bank record. If the onboarding shows no bank account, send a complete account.
+
+For example, a store changes its payout account from A to B. Zoop confirms B, but Pagar.me does not confirm the change. Yuno keeps B for Zoop, preserves Pagar.me's previous saved account, and updates the recipient default to B. The request returns an error describing the outcomes. **An error does not mean every provider stayed unchanged.** Successful provider changes are not rolled back.
+
+The recipient default advances after at least one provider confirms the update. If every attempted provider refuses or has an unknown result, the old default remains. When there is no eligible provider-bound target, the account can be saved locally. Reading a saved account from Yuno is not an independent confirmation of an unknown provider outcome.
+
+## Bank errors and retries
+
+| Response | Meaning | Action |
+| --- | --- | --- |
+| `400 INVALID_PARAMETERS` | The account is incomplete or invalid, or a provider explicitly refused it. A multi-provider request can still have applied to another provider. | Read all outcome messages and correct the indicated fields. |
+| `409 PROVIDER_TIMEOUT_AMBIGUOUS` | At least one result is unconfirmed. This can include provider refusals that the connector cannot distinguish from an uncertain write. | Inspect the provider account before submitting a different bank. Resend the same intended account after the approximately three-minute cooldown. |
+| `409 ONBOARDING_OPERATION_IN_PROGRESS` | Another operation holds the account, or one or more targets could not be attempted. | Follow the response guidance and retry the same intended request. |
+
+The cooldown reduces overlapping operations; it does not guarantee that a late provider write has finished. Do not retry automatically with a different account. Diagnostic messages can identify safe field names while omitting sensitive provider details.
+
+In a request containing both bank and other recipient fields, Yuno processes the bank first. If no provider confirms the bank, the other fields are not processed. If at least one provider confirms it, Yuno also processes the other fields and still returns an error for the remaining providers. Confirmed bank changes are not rolled back if a later non-bank update fails.
+
+Bank results do not themselves change onboarding lifecycle status. Providers can independently send onboarding events after a bank change, so an onboarding webhook may still arrive.
