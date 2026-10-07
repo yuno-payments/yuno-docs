@@ -7,6 +7,14 @@ Some charges are not part of a subscription: a customer tops up a balance, or pa
 
 You link the payment to the invoice with the `external_invoice` object on [Create payment](/reference/payments/create-payment). It works for one-off invoices and for the invoices of Stripe Billing subscriptions. The [amount rules](#amount-rules) differ between the two.
 
+<Warning>
+**Paying a Stripe invoice is enabled per account**
+
+Paying a Stripe invoice is off by default. Yuno turns it on for each Yuno account that is onboarded for Stripe Billing, and it checks the `account_id` of the payment: another account of the same organization is not enabled until it is onboarded too. Ask your Technical Account Manager or Key Account Manager to enable it, in sandbox first and then in production.
+
+Until the account is enabled, a payment that carries `external_invoice` is refused with `403 PRODUCT_NOT_ENABLED`.
+</Warning>
+
 ## How it works
 
 1. **Create the invoice in Stripe.** Create and finalize the invoice so that it is open. Keep the invoice id (`in_...`) and the customer id (`cus_...`).
@@ -16,7 +24,7 @@ You link the payment to the invoice with the `external_invoice` object on [Creat
 ## Prerequisites
 
 * A Yuno account with your providers connected and routing published.
-* The same onboarding as [Stripe Billing subscriptions](/docs/payment-features/subscriptions/stripe-billing#prerequisites): your Yuno account is enabled for this feature, and Yuno holds a restricted Stripe key that can read invoices and write payment records.
+* The same onboarding as [Stripe Billing subscriptions](/docs/payment-features/subscriptions/stripe-billing#prerequisites): Yuno holds a restricted Stripe key that can read invoices and write payment records, and your Yuno account is enabled for this feature (see the note above).
 
 ## Create the payment
 
@@ -51,7 +59,7 @@ Things to know:
 * Send the amount in **major units** (50.00, not 5000).
 * Send an `X-Idempotency-Key` with the request. If you retry the same request with the same key, Yuno returns the same payment and does not charge twice.
 * A payment can carry at most **one** of `external_subscription`, `external_invoice` and `subscription`. Sending `external_invoice` together with one of the others returns `400 INVALID_REQUEST`.
-* Your Yuno account must be enabled for this feature. If it is not, the API answers `403 PRODUCT_NOT_ENABLED`, the same answer as for `external_subscription`.
+* The account in `account_id` must be enabled for this feature (see the note at the top of the page). If it is not, the API answers `403 PRODUCT_NOT_ENABLED`, the same answer as for `external_subscription`.
 
 When the payment is created, the response carries the object back:
 
@@ -133,7 +141,7 @@ Yuno also validates the object itself, before it checks the invoice:
 | `400 INVALID_REQUEST` | `external_invoice` is sent together with `external_subscription` | Invalid Request. external_invoice and external_subscription can not be sent together. Please send only one of them. |
 | `400 INVALID_REQUEST` | `external_invoice` is sent together with `subscription` | Invalid Request. external_invoice and subscription can not be sent together. Please send only one of them. |
 | `400 INVALID_REQUEST` | `id` is missing or blank, or `id` or `customer_id` is shorter than 3 or longer than 255 characters | Invalid Request. The message names the field, for example `external_invoice.id`. |
-| `403 PRODUCT_NOT_ENABLED` | Your Yuno account is not enabled for this feature | External subscriptions are not enabled for this account. Please contact your Key Account Manager. |
+| `403 PRODUCT_NOT_ENABLED` | The account of the payment (`account_id`) is not enabled for this feature | External subscriptions are not enabled for this account. Please contact your Key Account Manager. |
 
 If Yuno can't run the invoice check at that moment, for example because the service that reads the invoice is unavailable, the payment goes ahead without it and the invoice is reconciled afterwards.
 
@@ -141,7 +149,7 @@ If Yuno can't run the invoice check at that moment, for example because the serv
 
 * **Retry the same request.** A retry with the same `X-Idempotency-Key` returns the same payment and is not charged twice.
 * **Try again after a decline.** A declined payment leaves the invoice open. To try again, create a new payment for the invoice with a new `X-Idempotency-Key`.
-* **Don't pay an invoice twice.** Paying an invoice that is already paid is refused with `EXTERNAL_INVOICE_NOT_OPEN`. The check and the charge are separate steps, so two payments sent at the same moment for the same invoice can both pass the check. Send the payments for an invoice one after the other.
+* **Don't pay an invoice twice.** Paying an invoice that is already paid is refused with `EXTERNAL_INVOICE_NOT_OPEN`. Send one payment at a time for each invoice, and wait for its result before you send the next.
 
 ## Not supported
 
