@@ -8,11 +8,19 @@ Seamless was the simplest legacy entry point on Android: after wiring up the lau
 
 In the unified API the same flow is the **default behavior** of `Transaction.start(paymentSelected)`. No controller overrides beyond `onStatus`. The structural change is the result-delivery model: was a lambda passed to the start call, now is a callback through `onStatus` on a `TransactionController`.
 
-| Before | After |
-|---|---|
-| `Activity.startCheckout(…)` + `Activity.startPaymentSeamlessLite(paymentSelected, showPaymentStatus, callbackPaymentState)` | `Transaction(config).start(paymentSelected)` + `onStatus` controller |
-| Free-form lambda `(state, subState) -> Unit` | `TransactionController.onStatus(status: TransactionStatus)` |
-| `PaymentSelected` | `PaymentMethodSelected` |
+## Before you start
+
+- Replace the `com.yuno.sdk.*` and `com.yuno.presentation.*` imports with their `com.yuno.payments.sdk.api.*` counterparts (the side-by-side lists them). Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Seamless you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | No equivalent: Seamless never let you create it | Override `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | Always | No override | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
 
 ## Side-by-side
 
@@ -106,25 +114,36 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 
 </CodeGroup>
 
-## Field mapping
+## What changes
 
-| Before (Seamless) | After (unified) | Notes |
-|---|---|---|
-| `startCheckout.checkoutSession` | `TransactionConfig.checkoutSession` | Same. |
-| `startCheckout.countryCode` | `TransactionConfig.countryCode` | Same. |
-| `startPaymentSeamlessLite(paymentSelected, showPaymentStatus, callbackPaymentState)` | `Transaction(config).start(paymentSelected)` | Single entry point. The `showPaymentStatus` argument moved into `TransactionConfig.showStatusScreen`. |
-| `callbackPaymentState: (state, subState) -> Unit` | `TransactionController.onStatus(status: TransactionStatus)` | See [Result mapping in Lite](/docs/yuno-sdk/migration/android/payment/lite#result-mapping) for the per-value rename. |
-| `PaymentSelected` | `PaymentMethodSelected` | Class renamed. |
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
 
-## Behavior changes
+### Initialization and config
 
-<Warning>
-**`showStatusScreen` default flipped.** In Seamless, `showPaymentStatus` defaulted to `true` and the SDK presented its built-in result screen. In the unified API, `showStatusScreen` defaults to **`false`**. Set it to `true` in `TransactionConfig` if you relied on the SDK's built-in result screen.
-</Warning>
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `import com.yuno.sdk.*` | `import com.yuno.payments.sdk.api.*` | Renamed | |
+| `Yuno.initialize(context, apiKey)` | `SdkPayments.initialize(context, apiKey)` | Renamed | |
+| `checkoutSession`, `countryCode` arguments of `startCheckout` | The same fields on `TransactionConfig` | Moved | Same values; the config also takes the `controller` (see Controller). |
+| `showPaymentStatus` argument of `startPaymentSeamlessLite` | `TransactionConfig.showStatusScreen` | Moved | See the note below. |
 
-- **You now need a controller instance.** Even for the simplest case you implement `TransactionController` (just `onStatus`). Pass it through `TransactionConfig.controller`.
-- **No more `Activity` extension functions.** `startPaymentSeamlessLite` was an extension on `Activity`. In the unified API the entry point is a regular `Transaction` instance; it doesn't need an `Activity` to construct.
-- **`CANCELED_BY_USER` was renamed `USER_CANCEL`.**
+<Note>
+**The SDK result screen is off by default now.** Set `showStatusScreen = true` to keep it.
+</Note>
+
+### Controller
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| *(no controller: a lambda passed to the start call)* | `TransactionController` | New | Even the simplest case needs a controller instance: implement `TransactionController` with just `onStatus` and pass it as `TransactionConfig.controller`. The SDK does not retain it: keep it alive for the whole transaction. |
+| `callbackPaymentState: (state, subState) -> Unit` | `onStatus(status: TransactionStatus)` | Moved | The result arrives through the controller instead of a lambda passed to the start call. Still the single outcome callback, once per transaction, also when the SDK shows its result screen. The raw `(state, subState)` pair becomes a `TransactionStatus` object: `status` and `substatus` come from the backend, with the same values as before except `CANCELED_BY_USER`, renamed `USER_CANCEL`. The SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Entry points
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `startCheckout(…)` + `startPaymentSeamlessLite(paymentSelected, showPaymentStatus, callbackPaymentState)` | `Transaction(config).start(paymentSelected)` | Renamed | Build the config, then `start`: single entry point, and the outcome arrives in `onStatus`. You still pick the method and pass it. The `Activity` extension functions become one call on a regular `Transaction` instance, which doesn't need an `Activity` to construct. |
+| `PaymentSelected` | `PaymentMethodSelected` | Renamed | Same role: the value you pass to `start`. |
 
 ## Related
 

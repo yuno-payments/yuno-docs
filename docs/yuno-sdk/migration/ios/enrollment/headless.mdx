@@ -8,12 +8,10 @@ Headless enrollment was a pure-tokenization API: you collected the data in your 
 
 In the unified API, headless enrollment is no longer a separate client. It's the same `Transaction.start(paymentSelected:)` with `transactionData` set on the `PaymentMethodSelected`. The SDK runs the enrollment internally and reports completion through `onStatus`.
 
-| Before | After |
-|---|---|
-| `Yuno.apiClientEnroll(countryCode:customerSession:)` | `SdkPayments.Transaction(config:)` |
-| `EnrollmentCollectedData` / `CollectedData` / `CardData` | `SdkPayments.PaymentMethodSelected` + `SdkPayments.TransactionData` + `SdkPayments.CardTransactionData` |
-| `continueEnrollment(data:)` | `start(paymentSelected:)` with `transactionData` |
-| Result map with `vaultedToken` | `onStatus(status:)` (token retrieved from your backend) |
+## Before you start
+
+- Replace `import YunoSDK` with `import SdkPayments`. Your public API key and the customer sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- There is no payment to create: `createPayment` is not invoked during enrollment, so overriding it has no effect.
 
 ## Side-by-side
 
@@ -76,26 +74,37 @@ final class EnrollmentModel: SdkPayments.TransactionController {
 
 </CodeGroup>
 
-<Warning>
-**The vaulted token is no longer returned to the client.** Headless enrollment's `continueEnrollment(...)` returned `[String: String]` containing `vaultedToken`. The unified API does not surface the token to the client. Fetch it from your backend's list-customer-payment-methods endpoint after the success status arrives in `onStatus`.
-</Warning>
+## What changes
 
-## Field mapping
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
 
-| Before (Headless) | After (unified) | Notes |
-|---|---|---|
-| `Yuno.apiClientEnroll(countryCode:customerSession:)` | `SdkPayments.Transaction(config:)` | The transaction object replaces the headless client. |
-| `EnrollmentCollectedData.customerSession` | `SdkPayments.TransactionConfig.customerSession` | Moves to config. |
-| `CollectedData.type` | `SdkPayments.PaymentMethodSelected.paymentMethodType` | Moves to the parent object. |
-| `CollectedData.card` (`CardData`) | `SdkPayments.TransactionData.card` (`SdkPayments.CardTransactionData`) | Same fields, namespaced under `transactionData`. |
-| `CollectedData.customer` | `SdkPayments.TransactionData.customer` | Moves under `transactionData`. |
-| `continueEnrollment(data:)` returning `[String: String]` | `start(paymentSelected:)` + `onStatus(status:)` | The SDK reports completion through `onStatus`. |
+### Initialization and config
 
-## Behavior changes
+| Headless | Unified | Change | What to do |
+|---|---|---|---|
+| `import YunoSDK` | `import SdkPayments` | Renamed | |
+| `Yuno.initialize(apiKey:)` | `SdkPayments.initialize(apiKey:)` | Renamed | |
+| `EnrollmentCollectedData` / `CollectedData` | `SdkPayments.PaymentMethodSelected` + `SdkPayments.TransactionData` | Renamed | The wrapper splits in two: the method goes on `PaymentMethodSelected`, the collected data under its `transactionData` (next rows). |
+| `EnrollmentCollectedData.customerSession` and the `customerSession:` argument of `apiClientEnroll` | `SdkPayments.TransactionConfig.customerSession` | Moved | Moves to the config; pass it once. |
+| `countryCode:` argument of `apiClientEnroll` | `SdkPayments.TransactionConfig.countryCode` | Moved | |
+| `CollectedData.type` | `SdkPayments.PaymentMethodSelected.paymentMethodType` | Moved | Moves to the parent object. |
+| `CollectedData.card` (`CardData`) | `SdkPayments.TransactionData.card` (`SdkPayments.CardTransactionData`) | Moved | Same fields, namespaced under `transactionData`. See [`TransactionData`](/docs/yuno-sdk/reference/objects-you-pass#transaction-data). |
+| `CollectedData.customer` | `SdkPayments.TransactionData.customer` | Moved | Moves under `transactionData`. |
+| `CollectedData.vaultedToken` | `SdkPayments.PaymentMethodSelected.vaultedToken` | Moved | Nothing required. It is ignored during enrollment: enrollment exists to produce a vaulted token, so there's nothing linked yet to reference. |
 
-- **No `vaultedToken` on the client.** Fetch it from your backend after success.
-- **`createPayment` is not invoked** during enrollment.
-- **`vaultedToken` on `PaymentMethodSelected` is ignored.** Enrollment exists to produce a vaulted token; there's nothing linked yet to reference.
+### Controller
+
+| Headless | Unified | Change | What to do |
+|---|---|---|---|
+| *(none)* | `SdkPayments.TransactionController` | New | Conform a class and pass it as `TransactionConfig.controller`. The SDK does not retain it: keep it alive for the whole transaction. |
+| `[String: String]` result of `continueEnrollment` (`vaultedToken`, `customerSession`, `status`) | `onStatus(status:)` | Moved | Now the single outcome callback, once per transaction. `status` and `substatus` come from the backend; the SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. **The vaulted token is no longer returned to the client**: fetch it from your backend's list-customer-payment-methods endpoint after the success status arrives. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Entry points
+
+| Headless | Unified | Change | What to do |
+|---|---|---|---|
+| `Yuno.apiClientEnroll(countryCode:customerSession:)` | `SdkPayments.Transaction(config:)` | Renamed | The transaction object replaces the headless client. Build the config, then the transaction. |
+| `continueEnrollment(data:)` | `start(paymentSelected:)` | Renamed | Pass the collected data as `transactionData` on `PaymentMethodSelected`. The call no longer returns a result: the SDK runs the enrollment internally and reports completion through `onStatus`. |
 
 ## Related
 

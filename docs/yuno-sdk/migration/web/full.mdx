@@ -6,11 +6,19 @@ description: "Migrate Web Full integrations (yuno.startCheckout with the embedde
 
 Full mode rendered the SDK's payment-method drawer inside your layout. The user picked a method, the SDK rendered the corresponding form, tokenized, processed the payment, and reported the result. In the unified API the same flow uses a single `Transaction` plus `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`. The returned `views.paymentMethodList` exposes a `.mount({ elementSelector })` method.
 
-| Before | After |
-|---|---|
-| `yuno.startCheckout(config)` (auto-mounts the payment list) | `sdkPayments.transaction(config)` + `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` + `views.paymentMethodList.mount({ elementSelector })` |
-| `yunoPaymentMethodSelected(arg)` (notification at session level) | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` |
-| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` |
+## Before you start
+
+- Load the unified SDK bundle instead of the legacy one and initialize it as the side-by-side shows: `window.Yuno.initialize(...)` becomes `SdkPayments.initialize(...)`. Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Full you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | `yunoCreatePayment` implemented | Override `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | No `yunoCreatePayment` | No override | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
 
 ## Side-by-side
 
@@ -70,28 +78,43 @@ views.paymentMethodList?.mount({ elementSelector: '#root' })
 
 </CodeGroup>
 
-## Field mapping
+## What changes
 
-| Before (Full) | After (unified) | Notes |
-|---|---|---|
-| `yuno.startCheckout({ elementSelector: '#root' })` | `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` → `views.paymentMethodList?.mount({ elementSelector: '#root' })` | Get a view handle, then call `.mount(...)` with the selector + any per-view config. |
-| `paymentListConfig` | `paymentListConfig` (on `TransactionConfig`) | Same shape, same fields. |
-| `yunoPaymentMethodSelected({ type, name })` | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | Receives a typed `PaymentMethodSelected` you pass to `start()`. |
-| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | `TransactionStatus` object with `.status`, `.substatus`, and `.message`. |
-| `yunoCreatePayment(ott, info)` | `createPayment(token)` | Promise-based, single argument. |
-| `yunoError(message, data?)` | *(removed)* | Errors flow through `onStatus`, or a rejected `start()` Promise. |
-| `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Boolean signal only. |
-| `onRendered()` | *(removed)* | |
-| `renderMode: { type, elementSelector }` | `elementSelector` (on `sdkPayments.transaction(config)`) | Modal mode no longer exists. Set `elementSelector` on the transaction config to render a selected method's form. It's optional and used only by form-based flows; the payment-method list itself renders where you pass `elementSelector` to `views.paymentMethodList.mount({ elementSelector })`. |
-| `yuno.continuePayment()` | *(automatic)* | SDK orchestrates 3DS / status polling internally. |
-| `yuno.mountStatusPayment(...)` | *(removed)* | SDK's built-in result screen is controlled by `showStatusScreen` on the config; defaults to `false`. |
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. The last column is the only thing you have to do beyond the rename.
 
-## Behavior changes
+### Initialization and config
 
-- **Explicit list mounting.** In Full mode, `startCheckout` auto-mounted the list at `elementSelector`. The unified API hands you a view handle from `getPaymentMethodsViews({ types: ['paymentMethodList'] })` and you call `views.paymentMethodList?.mount({ elementSelector })` explicitly. This makes the intent ("render the drawer here") visible at the call site.
-- **`onPaymentSelected` is required.** You must wire it inside `getPaymentMethodsViews` and call `transaction.start({ paymentMethod })` from it. The legacy `yunoPaymentMethodSelected` was advisory; the new callback is the driver.
-- **No more `yunoError` / `onRendered` / `onCreateOneTimeToken`.** Drop these.
-- **Controller convention.** Override = no `on` prefix (`createPayment`, `showLoading`). Observer = with `on` prefix (`onStatus`, `onPaymentSelected`).
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
+| `checkoutSession`, `countryCode`, `language` on the `startCheckout` config | The same fields on the transaction config | Moved | Same fields, single factory: `sdkPayments.transaction({ checkoutSession, countryCode, language, … })`. |
+| `paymentListConfig` | `paymentListConfig` on the transaction config | Moved | Same shape, same fields. |
+| `renderMode: { type, elementSelector }` | `elementSelector` on the transaction config | Moved | Modal mode no longer exists. Set `elementSelector` on the transaction config to render a selected method's form. It's optional and used only by form-based flows; the payment-method list itself renders where you pass `elementSelector` to `views.paymentMethodList.mount({ elementSelector })` (see Views). |
+| `yuno.mountStatusPayment(...)` | *(removed)* | Removed | The SDK's built-in result screen is controlled by `showStatusScreen` on the transaction config; it defaults to `false`. |
+
+### Callbacks
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renamed | Still the single outcome callback, now a field on the transaction config. It receives one `TransactionStatus` object with `.status`, `.substatus` and `.message`. Naming convention across the new callbacks: overrides have no `on` prefix (`createPayment`, `showLoading`), observers do (`onStatus`, `onPaymentSelected`). See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `yunoCreatePayment(ott, info)` | `createPayment(token)` | Renamed | Optional. Promise-based, single argument. Create the payment and resolve: resolving is what used to be `continuePayment()`. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment). |
+| `yunoError(message, data?)` | *(removed)* | Removed | Errors flow through `onStatus`, or a rejected `start()` Promise. |
+| `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Renamed | Optional. Boolean signal only. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+| `onRendered()` / `onCreateOneTimeToken()` | *(removed)* | Removed | Drop these. |
+| `yunoPaymentMethodSelected({ type, name })` (notification at session level) | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | Renamed | Required. The legacy callback was advisory; the new one is the driver: wire it inside `getPaymentMethodsViews` and call `transaction.start({ paymentMethod })` from it. It receives a typed [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) you pass to `start()`. |
+
+### Views
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.startCheckout({ elementSelector: '#root' })` (auto-mounts the payment list) | `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`, then `views.paymentMethodList?.mount({ elementSelector: '#root' })` | Moved | Explicit list mounting: `startCheckout` auto-mounted the list at `elementSelector`. The unified API hands you a view handle, and you call `.mount(...)` with the selector plus any per-view config. This makes the intent ("render the drawer here") visible at the call site. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). |
+
+### Entry points
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.startCheckout(config)` | `sdkPayments.transaction(config)` | Renamed | Single factory: build the transaction with the config (fields and callbacks above), then mount the list (see Views) and `start` from `onPaymentSelected`. |
+| `yuno.continuePayment()` | *(removed)* | Removed | Delete the call: the SDK orchestrates 3DS and status polling internally once `createPayment` resolves. |
 
 ## Related
 
