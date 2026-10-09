@@ -77,6 +77,7 @@ All paths are relative to the base URL.
 | Resource | Method and path | Purpose |
 |----------|----------|---------|
 | Customers | `POST /v1/customers` | Create a customer. Needed for vaulting |
+| Payment methods | `POST /v1/customers/{customer_id}/payment-methods` | Enroll (vault) a payment method for an existing customer; the response carries the vaulted token |
 | Checkout session | `POST /v1/checkout/sessions` | Start an SDK payment flow |
 | Payments | `POST /v1/payments` | Create a payment (SDK or DIRECT) |
 | Payments | `GET /v1/payments/{payment_id}` | Read payment `status` and `sub_status` |
@@ -92,8 +93,13 @@ Read the **payment-level** `status` and `sub_status`. A payment can have several
 | `status` | Meaning | Fulfil the order? |
 |---|---|---|
 | `SUCCEEDED` | Captured | Yes |
-| `PENDING` | Waiting on 3DS, an async method or provider confirmation | Wait for the webhook |
-| `DECLINED`, `REJECTED`, `ERROR`, `CANCELLED`, `EXPIRED`, `REFUNDED` | Not paid, or reversed | No |
+| `PENDING` | Waiting on 3DS, an async method or provider confirmation. `sub_status` `AUTHORIZED` means funds are held but not captured | Wait for the webhook |
+| `CREATED`, `READY_TO_PAY` | Not started: the payment exists but the shopper has not paid yet | Not yet |
+| `VERIFIED` | Zero-amount card verification succeeded; no money moved | No, nothing was charged |
+| `DECLINED`, `REJECTED`, `ERROR`, `CANCELED`, `EXPIRED`, `REFUNDED` | Not paid, or reversed | No |
+| `IN_DISPUTE`, `CHARGEBACK`, `FRAUD` | Paid, then contested or flagged after the fact | Already fulfilled; handle the dispute |
+
+These are the 14 top-level values on the [payment status reference](https://docs.y.uno/reference/payments/status-and-response-codes/payment). The spelling is `CANCELED`, one L, as in the API.
 
 For an authorize-only payment, `sub_status` tells you whether the funds are authorized or captured.
 
