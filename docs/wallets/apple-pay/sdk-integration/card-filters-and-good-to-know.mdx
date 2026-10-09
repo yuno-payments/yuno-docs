@@ -1,0 +1,108 @@
+---
+title: "Card filters and good to know"
+description: "Filter the cards eligible in the Apple Pay sheet, read the DPAN BIN from the one-time token and handle a cancelled Apple Pay flow."
+---
+
+## Filter eligible cards
+
+Send `wallet_card_acceptance` when you create the checkout session to limit which cards the customer can select in the Apple Pay payment sheet. Cards that do not match are shown greyed out.
+
+```json
+{
+  "country": "BR",
+  "customer_id": "070a34cb-4649-4a4e-b231-065a53060379",
+  "merchant_order_id": "order-123",
+  "payment_description": "Apple Pay one-time payment",
+  "amount": {
+    "currency": "BRL",
+    "value": 100
+  },
+  "wallet_card_acceptance": {
+    "supported_countries": ["BR"],
+    "supported_networks": ["VISA", "MASTERCARD", "ELO"],
+    "supported_funding_types": ["CREDIT"]
+  }
+}
+```
+
+| Field | Values | What it does |
+|-------|--------|--------------|
+| `supported_countries` | ISO 3166-1 alpha-2 codes | Only cards issued in these countries can be selected. It filters by the country that issued the card, not by the customer's location: `["BR"]` greys out a card issued in the US. |
+| `supported_networks` | Card networks, for example `VISA`, `MASTERCARD`, `AMEX`, `ELO` | Only cards from these networks can be selected. It replaces the default list (`AMEX`, `DISCOVER`, `ELECTRON`, `ELO`, `MASTERCARD`, `VISA`, `MAESTRO`): `["VISA"]` allows Visa only. |
+| `supported_funding_types` | `CREDIT`, `DEBIT` | Only cards of these funding types can be selected: `["CREDIT"]` allows credit cards only, `["DEBIT"]` debit cards only, and `["CREDIT", "DEBIT"]` both. |
+
+- Every field is optional. A field you do not send keeps the default behaviour.
+- Values must be uppercase. An empty list is rejected with `400 INVALID_PARAMETERS`.
+- The object can only be set when the session is created. Updating the session does not change it.
+- The filters apply only to the Apple Pay payment sheet. Cards entered in the card form are not affected.
+
+<Note>
+  The Apple Pay button is still displayed when none of the customer's cards is eligible. The customer sees every card greyed out in the payment sheet.
+</Note>
+
+<Note>
+  If your account is set to process credit cards only, the `supported_funding_types` sent on the session takes precedence for Apple Pay.
+</Note>
+
+| Platform | Minimum version |
+|----------|-----------------|
+| Web      | 1.11.17         |
+| iOS      | Coming soon     |
+
+## Obtain DPAN BIN in OTT response
+
+When a payment is completed with Apple Pay, the iOS SDK returns the full OTT (One-Time Token) service response. Within this response, the `card_data` object contains card-related information associated with the Apple Pay payment, including the DPAN BIN (the first digits of the Device Primary Account Number used in the transaction).
+
+Merchants can use this object to retrieve card details such as brand, type, issuer, and the `iin` field, which represents the DPAN BIN. You can use this to evaluate BIN-based promotions and discounts, and for reporting.
+
+<Note>
+  **Limitation**: the `iin` reflects the default card selected in the payment sheet when the payment is created. If the shopper switches cards in the payment sheet, the `iin` may not match the card used for the final payment. Avoid presenting BIN-based promotions as guaranteed until the payment is confirmed.
+</Note>
+
+### Example OTT response (iOS SDK)
+
+The following example shows the SDK response containing the `card_data` object with the `iin` field:
+
+```json
+{
+  "vault_on_success": false,
+  "country": "US",
+  "card_data": {
+    "category": "CLASSIC",
+    "lfd": "8880",
+    "fingerprint": null,
+    "issuer_name": "BANK",
+    "security_code_length": 0,
+    "brand": "VISA",
+    "issuer_code": null,
+    "type": "CREDIT",
+    "holder_name": "",
+    "country_code": "US",
+    "iin": "49411598",
+    "number_length": 0
+  },
+  "vaulted_token": null,
+  "installment": null,
+  "token": "0ac7f1c8-aba4-4600-b080-f88e9f328c1f",
+  "type": "CARD"
+}
+```
+
+## Apple Pay Cancel Flow
+
+When a user cancels the Apple Pay flow, the SDK reports the status `CANCELED_BY_USER`.
+
+### Metadata and paymentCreated
+
+The `oldClosePaymentFlow` method (and related cancel events) now includes an optional `metadata` parameter with the `paymentCreated` field. This allows merchants to know if a payment was already created on the backend before the user canceled the flow.
+
+- **`paymentCreated: true`**: A payment was created (for example, during OTT creation phase). Merchants should check the payment status and potentially trigger an `abandonPayment` call.
+- **`paymentCreated: false`**: No payment was created before cancellation.
+
+The SDK automatically sets `paymentCreated = true` during the `onvalidatemerchant` phase to ensure correct tracking and abandonment of pending payments.
+
+## Related documentation
+
+- [Setup and one-time payments](/docs/wallets/apple-pay/apple-pay-sdk-integration)
+- [Recurring payments](/docs/wallets/apple-pay/sdk-integration/recurring-payments)
+- [Express checkout](/docs/wallets/apple-pay/sdk-integration/express-checkout)
