@@ -136,7 +136,9 @@ struct CheckoutView: View {
 | `paymentFlow.continuePayment() async -> some View?` | *(removed)* | The SDK now handles continuation internally and may emit a second `showView` call with `step == .ACTION` if a 3DS challenge is required. |
 | `YunoPaymentDelegate.yunoPaymentResult(_:)` | `SdkPayments.TransactionController.onStatus(status:)` | `status` and `substatus` are passed through from the backend. See [`Status`](/docs/yuno-sdk/reference/status). |
 | `YunoLoaderDelegate.onLoading(isLoading:)` | `SdkPayments.TransactionController.showLoading(isLoading:)` | Same semantics, renamed. **Render is the only legacy mode where the loader callback was actually invoked**, so existing Render integrations almost certainly need to migrate this. |
+| `YunoPaymentDelegate.onInstallmentSelected(_:)` | `SdkPayments.TransactionController.onInstallmentSelected(_:)` | Optional in both. Same trigger and payload fields; the payload is now the `SdkPayments.InstallmentSelected` struct instead of `YunoInstallmentSelected`. Fires when the shopper selects or changes an installment in the SDK's card form, including the SDK's default auto-selection, and with `nil` when the selection no longer applies. See [`onInstallmentSelected`](/docs/yuno-sdk/controllers/on-installment-selected). |
 | `YunoPaymentDelegate.checkoutSession` / `countryCode` / `language` / `viewController` | `SdkPayments.TransactionConfig.checkoutSession` / `countryCode` / `language` / `viewController` | All move from the delegate to the config. |
+| `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Same role: forward the URL your app receives when it returns from an external redirect so the SDK resumes the transaction. See [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). |
 
 ## Behavior changes
 
@@ -144,18 +146,6 @@ struct CheckoutView: View {
 - **Two view steps.** `showView` can be called more than once per transaction. `step == .FORM` for the data-capture form, `step == .ACTION` for a 3DS challenge or external redirect. Decide how to embed each in your layout. (In Render this used to require a separate `continuePayment()` call.)
 - **3DS handled by the SDK.** If you previously rendered 3DS yourself via `continuePayment()`, the SDK now does it as another `showView(... step: .ACTION)`. You can keep embedding it inside your layout.
 - **Controller retention.** Keep the instance you pass as `controller` alive for the duration of the transaction.
-
-## Checklist
-
-- [ ] Replace conformance to `YunoPaymentDelegate` with `SdkPayments.TransactionController`.
-- [ ] Move `checkoutSession`, `countryCode`, `language`, `viewController` from the delegate into `SdkPayments.TransactionConfig`.
-- [ ] Remove the `Yuno.startPaymentRenderFlow(...)` call. Use `SdkPayments.Transaction(config:).start(paymentSelected:)` instead.
-- [ ] Remove the explicit `paymentFlow.formView(...)` fetch. Override `showView` and store the delivered view in your model.
-- [ ] Replace `paymentFlow.submitForm()` with `process.onSubmit()` (the `process` you received in `showView`).
-- [ ] Remove `paymentFlow.continuePayment()`. The SDK now triggers a second `showView` with `step == .ACTION` if a 3DS challenge is required.
-- [ ] Rename `onLoading(isLoading:)` to `showLoading(isLoading:)`.
-- [ ] Rename `yunoPaymentResult(_:)` to `onStatus(status:)` and switch the enum cases.
-- [ ] Re-run your sandbox test suite, including 3DS scenarios.
 
 ## Related
 
