@@ -35,7 +35,7 @@ The proxy is a pass-through: Yuno does not store your request or the destination
 
 If a destination echoes a full card number back in its response, returning it to you would put your systems back in PCI scope. To prevent that, the proxy scans each response for card numbers — the one it just injected, plus any other valid card number.
 
-By default the proxy **redacts** them, leaving only the last four digits, and reports how many in the `yuno-proxy-response-redactions` response header; a non-zero value is a sign your destination is returning card data you should not receive. Redaction is the default behavior. Yuno can optionally be configured — as a service-wide setting, not per account — to instead **reject** any response that contains card data with `502 RESPONSE_BLOCKED`.
+By default the proxy **redacts** them, leaving only the last four digits, and reports how many in the `yuno-proxy-response-redactions` response header; a non-zero value is a sign your destination is returning card data you should not receive. Yuno can optionally be configured, as a service-wide setting, not per account, to instead **reject** any response that contains card data with `502 RESPONSE_BLOCKED`.
 
 ## Card data you can reference
 
@@ -45,19 +45,23 @@ By default the proxy **redacts** them, leaving only the last four digits, and re
 | `{{vaulted_token.<TOKEN>.expiration_month}}` | Two-digit expiration month (`MM`) |
 | `{{vaulted_token.<TOKEN>.expiration_year}}` | Four-digit expiration year (`YYYY`) |
 | `{{vaulted_token.<TOKEN>.holder_name}}` | The cardholder name |
+| `{{vaulted_token.<TOKEN>.network_token_number}}` | The network token number (DPAN), when the card has a network token |
+| `{{vaulted_token.<TOKEN>.network_token_expiration_month}}` | Network token two-digit expiration month (`MM`) |
+| `{{vaulted_token.<TOKEN>.network_token_expiration_year}}` | Network token four-digit expiration year (`YYYY`) |
+| `{{vaulted_token.<TOKEN>.network_transaction_id}}` | The network transaction ID (NTID): the card scheme's reference for the stored card's original transaction, required by many processors for merchant-initiated transactions |
 
-The `<TOKEN>` must be a `vaulted_token` that belongs to your organization. A token that does not exist or belongs to another organization is rejected with `EXPRESSION_RESOLUTION_FAILED`, before any card data is read.
+The `<TOKEN>` must be a `vaulted_token` that belongs to your organization. A token that does not exist or belongs to another organization is rejected with `EXPRESSION_RESOLUTION_FAILED`, before any card data is read. A field whose data is unavailable fails the same way — for example, a `network_token_*` field when the card has no network token, or `network_transaction_id` when the card has no NTID. All fields can be mixed in the same request.
 
 <Note>
-**Card (PAN) data only**
+**Not provider tokens, not cryptograms**
 
-These expressions resolve a vaulted token to the stored **card** data — the PAN, expiration, and holder name. Yuno also issues provider tokens and network tokens, but this forward-proxy flow is specifically for retrieving the card (PAN) data from a vaulted token; it does not resolve provider or network tokens.
+These expressions resolve a vaulted token to the data stored with it: the card (PAN, expiration, holder name), its network token (DPAN and its expiration), and its network transaction ID. Provider tokens are not resolved. Neither are **cryptograms**: a cryptogram is generated per transaction, so if your destination requires one, obtain it from [Generate Network Token Cryptogram](/reference/network-tokens/generate-network-token-cryptogram) right before the forward and include the value directly in the request body. If your organization is not PCI-certified, request it with `include_network_token: false` — the cryptogram-only response carries no PAN-equivalent data, and the `network_token_number` expression resolves the DPAN at forward time.
 </Note>
 
 <Note>
-**No `vaulted_token` expression for the security code (CVV)**
+**The security code (CVV) expression has a lifetime**
 
-Card networks do not allow the security code to be stored after a payment is authorized, so a stored payment method has no CVV to inject — there is no `{{vaulted_token.<TOKEN>.security_code}}` expression. If your destination requires the CVV and you have it, include it directly in the request body yourself; the proxy forwards it without storing it. Note that transmitting a raw security code keeps that request in your PCI scope.
+`{{vaulted_token.<TOKEN>.security_code}}` resolves only while the security code is still available — by default for 3 hours after enrollment. It is never stored: it is held briefly after your customer enters it, and Yuno stops serving it once that window closes. Supply it as `card.security_code` when you enroll the card, and check `card_data.security_code_expires_in` on the payment method before relying on it. Outside that window, include the CVV directly in the request body yourself if your destination requires it; the proxy forwards it without storing it. Note that transmitting a raw security code keeps that request in your PCI scope.
 </Note>
 
 ## Your PCI scope

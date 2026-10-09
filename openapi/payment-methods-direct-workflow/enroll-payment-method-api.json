@@ -6,7 +6,16 @@
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno/v1"
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
     }
   ],
   "components": {
@@ -90,8 +99,7 @@
                       "PY",
                       "PE",
                       "US",
-                      "UY",
-                      ""
+                      "UY"
                     ]
                   },
                   "type": {
@@ -100,7 +108,8 @@
                     "enum": [
                       "CARD",
                       "ACH_ENROLLMENT",
-                      "NU_PAY_ENROLLMENT"
+                      "NU_PAY_ENROLLMENT",
+                      "SEPA_ENROLLMENT"
                     ]
                   },
                   "workflow": {
@@ -123,6 +132,10 @@
                   "parent_type": {
                     "type": "string",
                     "description": "Type of the parent payment method, used when enrolling a tokenized/derived method (e.g. `CARD`)."
+                  },
+                  "account_updater": {
+                    "type": "boolean",
+                    "description": "Per-card control for Card Account Updater. When set to `false`, this card is excluded from Card Account Updater and will not receive automatic card-detail updates. When omitted, the card follows your account's Account Updater configuration. Applies at enrollment."
                   },
                   "card_data": {
                     "type": "object",
@@ -153,7 +166,7 @@
                       },
                       "holder_name": {
                         "type": "string",
-                        "description": "Cardholder’s full name as it appears on the card (MAX 26; MIN 3) - only available for PCI certified merchants."
+                        "description": "Cardholder’s full name as it appears on the card (MAX 26; MIN 2) - only available for PCI certified merchants."
                       },
                       "brand": {
                         "type": "string",
@@ -225,6 +238,10 @@
                       "vault_on_success": {
                         "type": "boolean",
                         "description": "When `true`, the payment method is vaulted (saved) after a successful enrollment."
+                      },
+                      "vault_only": {
+                        "type": "boolean",
+                        "description": "When `true`, Yuno stores the bank details from `payment_method.detail.bank_transfer` and enrolls the payment method immediately as `ENROLLED`, without any provider interaction at enrollment or unenrollment. Only available for bank transfer enrollments."
                       },
                       "detail": {
                         "type": "object",
@@ -322,6 +339,10 @@
                                     "type": "string",
                                     "format": "date-time",
                                     "description": "Date and time when the mandate was last updated (ISO 8601)."
+                                  },
+                                  "creditor_id": {
+                                    "type": "string",
+                                    "description": "Creditor identifier of the direct debit mandate (for example, the SEPA creditor identifier shown on the payer's bank statement). MIN 1 / MAX 128."
                                   }
                                 }
                               }
@@ -376,6 +397,20 @@
                       "currency": {
                         "type": "string",
                         "description": "Currency of the card verification. For a full list of currency codes, see [Country reference](/reference/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                      },
+                      "external_subscription": {
+                        "type": "object",
+                        "description": "Links the card verification to a subscription managed in an external billing platform. The object is echoed in the enrollment response and persisted on the verification payment (`verify.payment.id` in the response) — correlate later through Retrieve Payment and payment webhooks; it is not returned by the payment-method retrieve endpoint or enrollment webhooks. Requires `vault_on_success` to be `true`; sending it otherwise returns `INVALID_PARAMETERS`.",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Identifier of the subscription in your system."
+                          },
+                          "customer_id": {
+                            "type": "string",
+                            "description": "Identifier of the subscription's customer in your system."
+                          }
+                        }
                       },
                       "metadata": {
                         "type": "array",
@@ -502,6 +537,37 @@
                           }
                         }
                       }
+                    }
+                  }
+                },
+                "SEPA mandate import (vault-only)": {
+                  "value": {
+                    "account_id": "dbf0c133-86bc-4be0-94a5-ca2ff6778451",
+                    "country": "DE",
+                    "type": "SEPA_ENROLLMENT",
+                    "payment_method": {
+                      "vault_only": true,
+                      "detail": {
+                        "bank_transfer": {
+                          "bank_account": "DE89370400440532013000",
+                          "bank_account_mask_number": "****3000",
+                          "beneficiary_name": "Max Mustermann",
+                          "account_holder_type": "INDIVIDUAL",
+                          "mandate": {
+                            "id": "MNDT-2019-000123",
+                            "info": "SEPA Core Direct Debit mandate",
+                            "creditor_id": "DE98ZZZ09999999999",
+                            "received_status": "RECEIVED",
+                            "existing_status": "ACTIVE",
+                            "created_at": "2019-05-04T00:00:00Z"
+                          }
+                        }
+                      }
+                    },
+                    "customer_payer": {
+                      "first_name": "Max",
+                      "last_name": "Mustermann",
+                      "email": "max@example.com"
                     }
                   }
                 },
@@ -761,7 +827,9 @@
                           "type": "string",
                           "example": "www.example.com"
                         },
-                        "action": {},
+                        "action": {
+                          "type": "string"
+                        },
                         "redirect_url": {
                           "type": "string",
                           "example": null
@@ -855,6 +923,19 @@
                             },
                             "payment": {}
                           }
+                        },
+                        "provider_data": {
+                          "type": "object",
+                          "description": "Additional data from the provider",
+                          "properties": {
+                            "raw_request": {
+                              "type": "object",
+                              "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                            },
+                            "raw_response": {
+                              "type": "object"
+                            }
+                          }
                         }
                       }
                     },
@@ -896,7 +977,13 @@
                           "example": "9c298b36-b005-42ed-92e1-808b2a785e5f"
                         },
                         "callback_url": {},
-                        "action": {},
+                        "action": {
+                          "type": "string"
+                        },
+                        "redirect_url": {
+                          "type": "string",
+                          "example": null
+                        },
                         "created_at": {
                           "type": "string",
                           "example": "2023-09-04T16:37:55.314018Z"
@@ -1141,6 +1228,10 @@
                                               }
                                             }
                                           },
+                                          "raw_request": {
+                                            "type": "object",
+                                            "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                          },
                                           "third_party_transaction_id": {}
                                         }
                                       },
@@ -1173,6 +1264,19 @@
                                   }
                                 }
                               }
+                            }
+                          }
+                        },
+                        "provider_data": {
+                          "type": "object",
+                          "description": "Additional data from the provider",
+                          "properties": {
+                            "raw_request": {
+                              "type": "object",
+                              "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                            },
+                            "raw_response": {
+                              "type": "object"
                             }
                           }
                         }

@@ -14,11 +14,11 @@ description: "Enroll payment methods using the Lite SDK on Web with a customizab
 import GenericOrientation from '/snippets/GenericOrientation.mdx'
 
 <GenericOrientation />
-Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK enrollment functionality in your application.
+Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK enrollment capability in your app.
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Lite SDK implementation, see the [SDK Integration Overview](/docs/sdks/overview/quickstart) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Lite SDK implementation, see the [Quickstart Guide](/docs/sdks/overview/quickstart) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -26,7 +26,7 @@ The integration guide provides three flexible methods:
 2. Dynamic JavaScript injection
 3. NPM module installation
 
-Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the lite enrollment functionality.
+Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the lite enrollment capability.
 
 <Note>
 **TypeScript Library**
@@ -73,10 +73,10 @@ await yuno.mountEnrollment({
     texts: {},
   },
   texts: {},
-  yunoEnrollmentStatus(data) {
+  enrollmentStatus(data) {
     console.log("Enrollment status:", data);
   },
-  yunoError(error, data) {
+  error(error, data) {
     console.error("An error occurred:", error);
     await yuno.hideLoader();
   },
@@ -97,17 +97,108 @@ Configure the lite enrollment with the following options:
 | `language`             | Language for enrollment forms.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `showLoading`          | Controls the visibility of the Yuno loading/spinner page during the enrollment process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `onLoading`            | Required to receive notifications about server calls or loading events during the enrollment process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `issuersFormEnable`    | Enables the issuer's form (e.g., a list of banks).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `issuersFormEnable`    | Enables the issuer's form (for example, a list of banks).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `card`                 | Defines the configuration for the card form.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `texts`                | Allows you to set custom button texts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `yunoEnrollmentStatus` | Callback invoked when the enrollment process finishes. Receives `{ vaultedToken, status }`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `yunoError`            | Callback invoked when there is an error in the enrollment process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `enrollmentStatus` | Callback invoked when the enrollment process finishes. Receives `{ vaultedToken, status }`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `error`            | Callback invoked when there is an error in the enrollment process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `onChange`                        | Reports whether the enrollment form is complete. Receives `{ form: { isValid } }`. Available since v1.10.11. |
 
 <Note>
 **Status Values**
 
 Common status values include `ENROLLED`, `DECLINED`, `CANCELED`, and `ERROR`.
 </Note>
+
+## PayPal enrollment with element render mode
+
+<Note>
+Available from Web SDK **1.10.13**.
+</Note>
+
+By default, `mountEnrollmentLite` opens the Yuno modal for PayPal enrollment. The shopper clicks your PayPal button, sees the modal, and has to click PayPal a second time. With element render mode the PayPal button renders directly on your page, and the shopper completes the enrollment in one click.
+
+### How it works
+
+Add an empty container to your page, then pass `renderMode: { type: 'element', elementSelector }` to `mountEnrollmentLite`. The SDK renders the real PayPal button inside that container and shows a loading skeleton until PayPal finishes loading.
+
+The PayPal button replaces your own button — do not place your button in front of it. If you do not pass `renderMode`, the modal behavior stays exactly as before.
+
+### Integration steps
+
+1. Remove your existing PayPal button.
+2. Add an empty `<div>` where the PayPal button should appear.
+3. Pass `renderMode` with `type: 'element'` and an `elementSelector` pointing at that `<div>`.
+
+```html
+<div id="paypal-enrollment"></div>
+```
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  countryCode: "US",
+  language: "en-US",
+  renderMode: {
+    type: "element",
+    elementSelector: "#paypal-enrollment",
+  },
+  enrollmentStatus(data) {
+    console.log("Enrollment status:", data);
+  },
+  error(error, data) {
+    console.error("An error occurred:", error);
+  },
+});
+```
+
+The button takes 100% of the container width unless you set `width`.
+
+### Customizing the PayPal button
+
+Optional. Pass `externalButtons.paypal` to `mountEnrollmentLite` to style the button, using the same properties as the [PayPal express button](/docs/sdks/resources/references/web#paypal) in checkout. The defaults differ from checkout, so they are listed in full below.
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  countryCode: "US",
+  language: "en-US",
+  renderMode: {
+    type: "element",
+    elementSelector: "#paypal-enrollment",
+  },
+  externalButtons: {
+    paypal: {
+      color: "blue",
+      shape: "pill",
+      label: "paypal",
+      height: 48,
+      width: 300,
+      locale: "en_US",
+    },
+  },
+  // ... rest of config
+});
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Property | Type | Default | Description |
+| -------- | ---- | ------- | ----------- |
+| `color` | `'gold'` \| `'blue'` \| `'silver'` \| `'white'` \| `'black'` | PayPal decides | Button background color |
+| `shape` | `'rect'` \| `'pill'` \| `'sharp'` | `'rect'` | Button shape |
+| `label` | `'paypal'` \| `'checkout'` \| `'buynow'` \| `'pay'` \| `'installment'` | PayPal decides | Button label text |
+| `height` | `number` | `48` | Button height in px (valid range: 25–55) |
+| `width` | `number` | 100% of the container | Wrapper width in px |
+| `locale` | `string` | PayPal decides from the shopper's browser | Button language, in PayPal's `language_COUNTRY` format (for example `en_US`, `es_ES`, `pt_BR`). See PayPal's [supported locales](https://developer.paypal.com/sdk/js/configuration/#locale). |
+
+</div>
+
+### Result
+
+- The shopper clicks the PayPal button, approves in the PayPal popup, and the SDK completes the enrollment.
+- `enrollmentStatus` receives the `vaultedToken` with status `ENROLLED`.
+- If the shopper closes the popup, `error` receives `CANCELED_BY_USER`.
 
 ## Step 5: Initiate the enrollment (Required)
 
@@ -121,7 +212,7 @@ In addition to the code examples provided, you can access the [Demo App](https:/
 
 ## Error handling
 
-Handle errors returned by the SDK in your app (e.g. failed enrollment, validation errors). For HTTP status and response codes, see [Status and response codes](/reference/getting-started/response-codes) in the API reference.
+Handle errors returned by the SDK in your app, such as failed enrollment or validation errors. For HTTP status and response codes, see [Status and response codes](/reference/getting-started/response-codes) in the API reference.
 
 ## Stay updated
 
