@@ -1,7 +1,21 @@
 ---
 title: "List Recipients"
-openapi: "/openapi/recipients-for-marketplace/list-recipients.json GET /recipients"
-description: "Retrieve a list of recipients registered in the marketplace"
+openapi: "/openapi/recipients-for-marketplace/list-recipients.json GET /recipients/list"
+description: "Retrieve a paginated list of recipients for an authorized account."
 ---
 
-Retrieves a list of recipients for the authenticated account. Supports pagination and filtering.
+Provide `account_id` as a query parameter, or `X-Account-Code` as a header. If both are present, the query parameter takes precedence. Results are scoped to that authorized account and your organization, ordered by creation date, newest first.
+
+Use `merchant_recipient_id` for an exact match, optionally combined with `country` and `national_entity`. Every successful response contains `data` as an array and `pagination` as an object, including when only one recipient matches. No match returns HTTP `200` with `data: []` and `pagination.total: 0`.
+
+`limit` defaults to `20` and accepts `1` to `100`. `offset` defaults to `0` and accepts any nonnegative integer. Empty or repeated filter values are invalid.
+
+Each item contains the recipient's base fields. Related collections such as `withdrawal_methods`, `documentation`, `legal_representatives` and `onboardings` are not enriched. Use [Get Recipient](/reference/recipients-for-marketplace/get-recipient) for the full recipient.
+
+<Warning>
+  Listing results, including merchant-ID filters, are eventually consistent. A recipient you just created, updated or deleted may take time to reflect in the list. Use [Get Recipient](/reference/recipients-for-marketplace/get-recipient) by its Yuno ID for an immediate read from the primary store. Listing data-access failures return `503`; they are not represented as empty results.
+</Warning>
+
+<Note>
+  This list is available at `GET /v1/recipients/list`. The existing [Get Recipient by Merchant ID](/reference/recipients-for-marketplace/get-recipient-by-merchant-id) lookup (`GET /v1/recipients?merchant_recipient_id=...`) remains unchanged: it returns a top-level recipient object and `400 RECIPIENT_NOT_FOUND` when no recipient matches. Existing lookup callers do not need to migrate. GET by Yuno ID and PATCH/DELETE contracts are unchanged.
+</Note>

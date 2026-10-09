@@ -99,6 +99,22 @@ This object represents the payment created after generating the checkout session
   Example: null
 </ParamField>
 
+<ParamField body="plan_id" type="string">
+  optional
+
+  The `id` of the plan the subscription was on when this payment was created. Present only on a payment created with `subscription.plan_id` and on the renewal payments Yuno generates for that subscription. Absent on every other payment. See [Create a subscription from a plan](/docs/payment-features/subscriptions/start-with-payment#create-a-subscription-from-a-plan).
+
+  Example: 14898a9d-5a75-433d-ba17-f2ea5b33620c
+</ParamField>
+
+<ParamField body="plan_assigned_at" type="string">
+  optional
+
+  When the plan was assigned to the subscription, in UTC ([ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)). Present only on payments that carry `plan_id`.
+
+  Example: 2026-09-24T22:53:42.814482Z
+</ParamField>
+
 <ParamField body="simplified_mode" type="boolean">
   optional
 
@@ -619,7 +635,7 @@ This object represents the payment created after generating the checkout session
                   Example: AA0001
                 </ParamField>
 
-                <ParamField body="network_Transaction_id" type="string">
+                <ParamField body="network_transaction_id" type="string">
                   Unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle (MAX 255; MIN 3).
 
                   Example: 583103536844189
@@ -989,8 +1005,8 @@ This object represents the payment created after generating the checkout session
               </Expandable>
             </ParamField>
 
-            <ParamField body="store_credentials" type="object">
-              Indicates the processing type of the transaction. This object is used to send additional information about recurrence. It's optional, and few providers require it (e.g. Mercado Pago). Contact your TAM to confirm if it's needed for your integration.
+            <ParamField body="stored_credentials" type="object">
+              Indicates the processing type of the transaction. In the create-payment request, this is the node to use for an Apple Pay or Google Pay CIT with `vault_on_success` (`usage: FIRST`); later charges on the resulting `vaulted_token` use `detail.card.stored_credentials`. In the response, the wallet transaction returns this field as `null` and the value is carried on the `CARD` transaction under `transactions[].payment_method.detail.card.stored_credentials`. See [Stored credentials](/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
 
               <Expandable title="properties">
 
@@ -1012,7 +1028,7 @@ This object represents the payment created after generating the checkout session
                   Example: AA0001
                 </ParamField>
 
-                <ParamField body="network_Transaction_id" type="string">
+                <ParamField body="network_transaction_id" type="string">
                   Unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle (MAX 255; MIN 3).
 
                   Example: 583103536844189
@@ -1703,6 +1719,86 @@ This object represents the payment created after generating the checkout session
   </Expandable>
 </ParamField>
 
+<ParamField body="shipping" type="object">
+  The shipping selection attached to the payment. Present only when the payment has one — for example, when the customer picks a saved shipping address and delivery method inside a wallet widget ([Fast Checkout shipping](/docs/payment-features/fast-checkout-shipping)). The key is omitted when the payment has no shipping selection. Returned on `GET /payments/{id}` and payment webhooks. On `POST /payments` it is present only for one-time-token flows where the token already carries the selection — in Fast Checkout the selection arrives after creation, via the provider notification.
+
+  <Expandable title="properties">
+
+    <ParamField body="method" type="object">
+      The delivery method the customer selected.
+
+      <Expandable title="properties">
+
+        <ParamField body="id" type="string">
+          The merchant-defined identifier of the delivery method. Matches one of the `shipping_methods[].id` sent on the checkout session.
+
+          Example: express
+        </ParamField>
+
+        <ParamField body="label" type="string">
+          The display label of the delivery method.
+
+          Example: Express shipping
+        </ParamField>
+
+        <ParamField body="amount" type="object">
+          The delivery fee, already included in the payment amount.
+
+          <Expandable title="properties">
+
+            <ParamField body="currency" type="string">
+              The delivery fee currency (ISO 4217). Equals the payment currency.
+            </ParamField>
+
+            <ParamField body="value" type="number">
+              The delivery fee in major units.
+            </ParamField>
+
+          </Expandable>
+        </ParamField>
+
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="address" type="object">
+      The shipping address the customer selected.
+
+      <Expandable title="properties">
+
+        <ParamField body="address_line_1" type="string">
+          The main address line.
+
+          Example: 221B Baker Street
+        </ParamField>
+
+        <ParamField body="address_line_2" type="string">
+          The secondary address line.
+        </ParamField>
+
+        <ParamField body="city" type="string">
+          The city name.
+        </ParamField>
+
+        <ParamField body="state" type="string">
+          The state or region.
+        </ParamField>
+
+        <ParamField body="zip_code" type="string">
+          The postal code.
+        </ParamField>
+
+        <ParamField body="country" type="string">
+          The country code (ISO 3166-1 alpha-2).
+
+          Example: GB
+        </ParamField>
+
+      </Expandable>
+    </ParamField>
+
+  </Expandable>
+</ParamField>
+
 <ParamField body="additional_data" type="object">
   Specifies the additional_data object. This object is not mandatory. However, if you send this information, the
             payment experience will be enhanced for your user.
@@ -1790,6 +1886,12 @@ This object represents the payment created after generating the checkout session
               IATA carrier code (MAX 2; MIN 2). See <a href="http://www.iata.org">http://www.iata.org</a> .
 
               Example: KL
+            </ParamField>
+
+            <ParamField body="carrier_name" type="string">
+              The name of the airline carrier (MAX 100; MIN 1). Optional.
+
+              Example: KLM Royal Dutch Airlines
             </ParamField>
 
             <ParamField body="departure_airport" type="string">
@@ -3408,7 +3510,7 @@ This object represents the payment created after generating the checkout session
                       Example: AA0001
                     </ParamField>
 
-                    <ParamField body="network_Transaction_id" type="string">
+                    <ParamField body="network_transaction_id" type="string">
                       Unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle (MAX 255; MIN 3).
 
                       Example: 583103536844189
