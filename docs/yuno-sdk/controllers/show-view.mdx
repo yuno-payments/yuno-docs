@@ -11,6 +11,8 @@ description: "Invoked when the SDK has a view to present (form or action)."
 WebViews: for example, 3DS challenges or redirects required by some payment methods, are always presented by the SDK full-screen. They do not come through `showView`, so overriding it does not change that behavior.
 </Note>
 
+`showView` is available on iOS and Android. On Web the SDK renders the form inside the element you pass as `elementSelector`, so there is no view to hand over. To submit that form from your own button, see [Web: submit from your own button](#web-submit-from-your-own-button).
+
 ## Behavior
 
 If you do not override this controller, the SDK presents the view full-screen with its own header and submit button.
@@ -65,6 +67,39 @@ You don't need to handle success or failure here. The result of submission flows
 ## Threading
 
 On iOS and Android, `showView` is invoked on the main thread. You can update UI directly from inside this handler.
+
+## Web: submit from your own button
+
+On Web, hide the SDK's Pay button with [`showPayButton: false`](/docs/yuno-sdk/reference/objects-you-pass#showpaybutton-web-only) and call `transaction.submit()` from your own button. It is the Web counterpart of `process.onSubmit()`.
+
+```javascript
+const transaction = sdkPayments.transaction({
+    checkoutSession,
+    countryCode: 'CO',
+    elementSelector: '#payment-form',
+    showPayButton: false,
+    onStatus: (result) => { /* final status */ },
+})
+
+await transaction.start({ paymentMethod: { type: 'CARD' } })
+
+document.querySelector('#my-pay-button').addEventListener('click', () => {
+    transaction.submit()
+})
+```
+
+`submit()` validates the form and, if valid, continues the transaction. The result flows through [`createPayment`](/docs/yuno-sdk/controllers/create-payment) (if overridden) and [`onStatus`](/docs/yuno-sdk/controllers/on-status), the same as when the user clicks the SDK's Pay button.
+
+| When you call `submit()` | What happens |
+|---|---|
+| The form is valid | The form is submitted. |
+| The form is invalid | The form shows its field errors and `onStatus` receives `INTERNAL_ERROR` with code `FORM_INVALID`. The user can correct the form and you can call `submit()` again. |
+| A payment is already in progress | Nothing. The call is ignored, so a double click does not create a second payment. |
+| The form has not finished loading | `onStatus` receives `FORM_INVALID`, the same as an invalid form. Enable your button once `start()` has resolved. |
+| Before `start()` is called, or after `unmount()` | It throws. Call `start()` first. |
+| The payment method is a wallet | It throws. The user pays by tapping the wallet button. |
+| The SDK's [payment methods list](/docs/yuno-sdk/features/payment-methods-list) is mounted and `start()` has not mounted a form | It throws. On the list, your button calls `transaction.start({ paymentMethod })` with the selected method. |
+| The transaction is an enrollment | It throws. `submit()` is available for payment transactions only. |
 
 ## Related
 
