@@ -6,11 +6,19 @@ description: "Migrate Web Lite integrations (yuno.startCheckout + yuno.mountChec
 
 Lite mode pre-selected the payment method on the merchant side, then handed off to the SDK to render the form for that method, tokenize, create the payment, handle 3DS, and report back. In the unified API this is the **default behavior** of `transaction.start({ paymentMethod })`. No controller overrides beyond `onStatus` needed.
 
-| Before | After |
-|---|---|
-| `yuno.startCheckout(config)` + `yuno.mountCheckoutLite({ paymentMethodType, vaultedToken })` | `sdkPayments.transaction(config).start({ paymentMethod })` |
-| Controller fields on `startCheckout` config (`yunoPaymentResult`, `yunoCreatePayment`, `yunoError`, `onLoading`, `onRendered`, …) | `onStatus`, `showLoading`, `createPayment` on `TransactionConfig` |
-| `Yuno.initialize(publicApiKey)` returning the instance via promise | `SdkPayments.initialize(publicApiKey)` returning `SdkPayments` |
+## Before you start
+
+- Load the unified SDK bundle instead of the legacy one and initialize it as the side-by-side shows: `window.Yuno.initialize(...)` becomes `SdkPayments.initialize(...)`. Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Lite you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | `yunoCreatePayment` implemented | Override `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | No `yunoCreatePayment` | No override | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
 
 ## Side-by-side
 
@@ -64,38 +72,37 @@ await transaction.start({
 
 </CodeGroup>
 
-## Field mapping
+## What changes
 
-| Before (Lite) | After (unified) | Notes |
-|---|---|---|
-| `window.Yuno.initialize(...)` | `SdkPayments.initialize(...)` | Global renamed for clarity. |
-| `yuno.startCheckout({ checkoutSession, countryCode, language, … })` | `sdkPayments.transaction({ checkoutSession, countryCode, language, … })` | Same fields, single factory. |
-| `elementSelector` (where to mount the SDK) | `elementSelector` (on `sdkPayments.transaction(config)`) | Optional field on the transaction config; the form renders inside that element. Used only by form-based flows (headless and other flows ignore it). Not required. |
-| `renderMode: { type: 'modal' \| 'element', elementSelector }` | `elementSelector` (on `sdkPayments.transaction(config)`) | Modal mode no longer exists. The form renders inside the element you pass on the transaction config. |
-| `card: CardConfig` | `card: CardConfig` | Same shape. |
-| `yunoCreatePayment(ott, info)` | `createPayment(token) => Promise<void>` | Promise-based, single argument (full `OneTimeToken`). |
-| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Single `TransactionStatus` object (`status`, `substatus`, `message`). |
-| `yunoError(message, data?)` | *(removed)* | Errors flow through `onStatus` (a `TransactionStatus` with `message` set), or a rejected `start()` Promise. |
-| `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Drops the deprecated `type` field. |
-| `onRendered()` / `onCreateOneTimeToken()` | *(removed)* | Not exposed in the unified API. |
-| `yuno.mountCheckoutLite({ paymentMethodType, vaultedToken })` | `transaction.start({ paymentMethod: { type: paymentMethodType, vaultedToken } })` | The Lite pre-selection becomes the `paymentMethod` argument of `start()`. |
-| `yuno.continuePayment()` | *(automatic)* | The SDK orchestrates 3DS internally; no manual continue call. |
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. The last column is the only thing you have to do beyond the rename.
 
-### Result mapping
+### Initialization and config
 
-The result shape is now wrapped: `onStatus` receives a `TransactionStatus` object instead of two positional arguments.
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
+| `checkoutSession`, `countryCode`, `language` on the `startCheckout` config | The same fields on the transaction config | Moved | Same fields, single factory: `sdkPayments.transaction({ checkoutSession, countryCode, language, … })`. |
+| `elementSelector` on the `startCheckout` config | `elementSelector` on the transaction config | Moved | Optional, not required: the form renders inside that element. Used only by form-based flows; headless and other flows ignore it (no error). Wallet and list views take their own `elementSelector` on `.mount()` (see [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list)). |
+| `renderMode: { type: 'modal' \| 'element', elementSelector }` | `elementSelector` on the transaction config | Moved | Modal mode no longer exists. The form renders inside the element you pass on the transaction config. |
+| `card: CardConfig` | `card: CardConfig` on the transaction config | Moved | Same shape. |
 
-| Before `yunoPaymentResult` args | After `TransactionStatus` fields |
-|---|---|
-| `status: 'SUCCEEDED' \| 'REJECT' \| 'FAIL' \| 'PROCESSING' \| 'READY'` | `result.status` (same literal union) |
-| `subStatus: string?` | `result.substatus` |
+### Callbacks
 
-## Behavior changes
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renamed | Still the single outcome callback, now a field on the transaction config. It receives one `TransactionStatus` object (`status`, `substatus`, `message`) instead of two positional arguments: `status` keeps the same literal union (`'SUCCEEDED' \| 'REJECT' \| 'FAIL' \| 'PROCESSING' \| 'READY'`) and `subStatus` becomes `result.substatus`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `yunoCreatePayment(ott, info)` | `createPayment(token) => Promise<void>` | Renamed | Optional. Promise-based, single argument: `token` is the full `OneTimeToken`. Create the payment and resolve: resolving is what used to be `continuePayment()`, the SDK then orchestrates 3DS and status polling. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment). |
+| `yunoError(message, data?)` | *(removed)* | Removed | All terminal outcomes flow through `onStatus` (a `TransactionStatus` with `message` set) or a rejected `start()` Promise. |
+| `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Renamed | Optional. Drops the deprecated `type` field. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+| `onRendered()` / `onCreateOneTimeToken()` | *(removed)* | Removed | Not exposed in the unified API. |
 
-- **`continuePayment` is internal.** Lite required calling `yuno.continuePayment()` from inside `yunoCreatePayment` to advance the flow. The unified API orchestrates 3DS and status polling automatically when `createPayment` resolves.
-- **`yunoError` removed.** All terminal outcomes flow through `onStatus`, or a rejected `start()` Promise.
-- **`elementSelector` is an optional transaction-config field.** Pass it to `sdkPayments.transaction({ ..., elementSelector })`. It's used only by form-based flows; headless and other flows ignore it (no error), and it's not required. Wallet/list views take their own `elementSelector` on `.mount()` (see [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list)).
-- **Global rename.** `window.Yuno` → `window.SdkPayments`.
+### Entry points
+
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.startCheckout(config)` | `sdkPayments.transaction(config)` | Renamed | Single factory: build the transaction with the config (fields and callbacks above), then `start`. |
+| `yuno.mountCheckoutLite({ paymentMethodType, vaultedToken })` | `transaction.start({ paymentMethod: { type: paymentMethodType, vaultedToken } })` | Renamed | The Lite pre-selection becomes the `paymentMethod` argument of `start()`. |
+| `yuno.continuePayment()` | *(removed)* | Removed | Delete the call. Lite required calling it from inside `yunoCreatePayment` to advance the flow; the SDK now orchestrates 3DS and status polling automatically when `createPayment` resolves. |
 
 ## Related
 

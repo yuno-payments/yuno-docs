@@ -8,14 +8,23 @@ Seamless mode was the **SDK-managed variant**: the SDK created the payment inter
 
 In the unified API the same flow is a normal `Transaction` **without** `createPayment` wired (presence of `createPayment` flips to manual mode; its absence stays managed). The merchant triggers payment by calling `transaction.start({ paymentMethod })` directly, typically from inside `onPaymentSelected` after the user picks a method.
 
-| Before | After |
-|---|---|
-| `yuno.startSeamlessCheckout(config)` + `yuno.mountSeamlessCheckout()` (Full) | `sdkPayments.transaction(config)` + `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` + `views.paymentMethodList?.mount({ elementSelector })` |
-| `yuno.mountSeamlessExternalButtons([{ elementSelector, paymentMethodType }])` | `getPaymentMethodsViews({ types: ['applePay', 'googlePay', 'paypal'], onPaymentSelected })` + per-view `.mount({ elementSelector, ...config })` |
-| `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` |
-| Managed payment creation | Managed payment creation (no `createPayment` on config) |
+## Before you start
 
-## Side-by-side: Seamless Full
+- Load the unified SDK bundle instead of the legacy one and initialize it as the side-by-side shows: `window.Yuno.initialize(...)` becomes `SdkPayments.initialize(...)`. Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Seamless you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | No equivalent: Seamless never let you create it | Override `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | Always | No override | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Side-by-side
+
+### Seamless Full
 
 <CodeGroup>
 
@@ -61,7 +70,7 @@ views.paymentMethodList?.mount({ elementSelector: '#root' })
 
 </CodeGroup>
 
-## Side-by-side: Seamless External Buttons
+### Seamless External Buttons
 
 <CodeGroup>
 
@@ -102,22 +111,40 @@ views.paypal?.mount({ elementSelector: '#paypal' })
 
 </CodeGroup>
 
-## Field mapping
+## What changes
 
-| Before (Seamless) | After (unified) | Notes |
-|---|---|---|
-| `yuno.startSeamlessCheckout(config)` | `sdkPayments.transaction(config)` | Single factory. Don't wire `createPayment`, as that would flip to manual mode (non-Seamless behavior). |
-| `yuno.mountSeamlessCheckout()` | `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` → `views.paymentMethodList?.mount({ elementSelector })` | Get a view handle, then call `.mount(...)` with the selector. |
-| `yuno.mountSeamlessExternalButtons([{ elementSelector, paymentMethodType }])` | `getPaymentMethodsViews({ types: ['applePay', 'googlePay', 'paypal'], onPaymentSelected })` → `views.applePay?.mount({ elementSelector, ...config })`, etc. | Per-view styling (button color, type, etc.) lives on each `.mount()` call. |
-| `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` | Called from `onPaymentSelected` after the user picks a method. The form renders into the optional `elementSelector` set on `sdkPayments.transaction(config)`. |
-| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | `PaymentResult` wrapper with `.status` and `.substatus`. |
-| `yuno.unmountSeamlessExternalButton(type)` / `yuno.unmountSeamlessExternalButtons()` | *(handled by `transaction.cancel()` or letting the transaction complete)* | Per-button unmount removed. |
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
 
-## Behavior changes
+### Initialization and config
 
-- **`Seamless` factory is gone.** Use the regular `sdkPayments.transaction(...)` factory. Don't wire `createPayment`: its absence keeps the SDK in managed mode (the same model Seamless had).
-- **`yuno.startPayment()` is gone.** The merchant-triggered start is now `transaction.start({ paymentMethod })`, called with the method the user picked. When the chosen method renders a form, it uses the optional `elementSelector` set on `sdkPayments.transaction(config)`. The list/wallet views keep their own `elementSelector` on `.mount()`.
-- **Per-button unmount removed.** Use `transaction.cancel()` or let the transaction complete.
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
+| `checkoutSession`, `countryCode`, `language` on the `startSeamlessCheckout` config | The same fields on the transaction config | Moved | Same values, single factory. |
+| `elementSelector` on the `startSeamlessCheckout` config | `elementSelector` on the transaction config | Moved | Optional: when the chosen method renders a form, it renders into this element (form flows only). The list and wallet views keep their own `elementSelector` on `.mount()` (see Views). |
+
+### Callbacks
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renamed | Still the single outcome callback, now a field on the transaction config. `PaymentResult` wrapper with `.status` and `.substatus`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| *(none)* | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | New | Wire it in `getPaymentMethodsViews` and call `transaction.start({ paymentMethod })` from it, with the method the user picked (see Entry points). |
+| *(none: payment creation was always managed)* | `createPayment` | New | Don't wire it. Its presence flips to manual mode (non-Seamless behavior); its absence keeps the SDK in managed mode, the same model Seamless had. |
+
+### Views
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.mountSeamlessCheckout()` | `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`, then `views.paymentMethodList?.mount({ elementSelector })` | Renamed | Get a view handle, then call `.mount(...)` with the selector. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). |
+| `yuno.mountSeamlessExternalButtons([{ elementSelector, paymentMethodType }])` | `getPaymentMethodsViews({ types: ['applePay', 'googlePay', 'paypal'], onPaymentSelected })`, then `views.applePay?.mount({ elementSelector, ...config })`, etc. | Renamed | One `.mount()` per wallet button. Per-view styling (button color, type, etc.) lives on each `.mount()` call. |
+| `yuno.unmountSeamlessExternalButton(type)` / `yuno.unmountSeamlessExternalButtons()` | *(removed)* | Removed | Per-button unmount removed: use `transaction.cancel()` or let the transaction complete. |
+
+### Entry points
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.startSeamlessCheckout(config)` | `sdkPayments.transaction(config)` | Renamed | The `Seamless` factory is gone: use the regular factory, without `createPayment` (see Callbacks). |
+| `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` | Renamed | The merchant-triggered start now takes the method the user picked: call it from `onPaymentSelected`. When the chosen method renders a form, it uses the optional `elementSelector` set on the transaction config. |
 
 ## Related
 

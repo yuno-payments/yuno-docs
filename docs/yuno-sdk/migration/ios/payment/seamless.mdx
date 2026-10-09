@@ -8,12 +8,19 @@ Seamless was the simplest legacy entry point: a single `await` call that returne
 
 In the unified API the same flow is the **default behavior** of `Transaction.start(paymentSelected:)`. No controller overrides needed beyond `onStatus`. The only structural change is the result-delivery model: was async-return, now is a callback through `onStatus`.
 
-| Before | After |
-|---|---|
-| `Yuno.startPaymentSeamlessLite(with:paymentSelected:showPaymentStatus:)` async → `Yuno.Result` | `SdkPayments.Transaction(config:).start(paymentSelected:)` + `onStatus` controller |
-| `SeamlessParams` | `SdkPayments.TransactionConfig` |
-| Result returned from `await` | Delivered through `onStatus(status:)` |
-| No delegate | `SdkPayments.TransactionController` (just for `onStatus`) |
+## Before you start
+
+- Replace `import YunoSDK` with `import SdkPayments`. Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Seamless you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | No equivalent: Seamless never let you create it | Override `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | Always | No override | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
 
 ## Side-by-side
 
@@ -89,29 +96,36 @@ final class Checkout: SdkPayments.TransactionController {
 
 </CodeGroup>
 
-## Field mapping
+## What changes
 
-| Before (Seamless) | After (unified) | Notes |
-|---|---|---|
-| `SeamlessParams.checkoutSession` | `SdkPayments.TransactionConfig.checkoutSession` | Same. |
-| `SeamlessParams.countryCode` | `SdkPayments.TransactionConfig.countryCode` | Same. |
-| `SeamlessParams.language` | `SdkPayments.TransactionConfig.language` | Same. |
-| `SeamlessParams.viewController` | `SdkPayments.TransactionConfig.viewController` | Still iOS-only. |
-| `Yuno.startPaymentSeamlessLite(with:paymentSelected:showPaymentStatus:)` async | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Builder-style. The `showPaymentStatus` argument moved into `SdkPayments.TransactionConfig.showStatusScreen`. |
-| Returned `Yuno.Result` | `SdkPayments.TransactionStatus` delivered through `onStatus` | `status` and `substatus` are passed through from the backend. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
-| `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Same role: forward the URL your app receives when it returns from an external redirect so the SDK resumes the transaction. See [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). |
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
 
-## Behavior changes
+### Initialization and config
 
-<Warning>
-**Result is now callback-based, not async-return.** Seamless returned `Yuno.Result` from an `await` call. The unified API delivers the result through the `onStatus` controller. You cannot `await` it inline anymore. If your code is structured around the awaited return value (chained logic, returning to caller), you'll need to refactor to react inside `onStatus`.
-</Warning>
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `import YunoSDK` | `import SdkPayments` | Renamed | |
+| `Yuno.initialize(apiKey:)` | `SdkPayments.initialize(apiKey:)` | Renamed | |
+| `SeamlessParams.checkoutSession`, `.countryCode`, `.language`, `.viewController` | The same fields on `SdkPayments.TransactionConfig` | Renamed | Same values; `viewController` stays iOS-only and optional in SwiftUI. The config also takes the `controller` (see Controller). |
+| `showPaymentStatus:` argument of `startPaymentSeamlessLite` | `SdkPayments.TransactionConfig.showStatusScreen` | Moved | See the note below. |
 
-<Warning>
-**`showStatusScreen` default flipped.** In Seamless, `showPaymentStatus` defaulted to `true`. In the unified API, `showStatusScreen` defaults to **`false`**. Set it to `true` in `SdkPayments.TransactionConfig` if you relied on the SDK's built-in result screen.
-</Warning>
+<Note>
+**The SDK result screen is off by default now.** Set `showStatusScreen: true` to keep it.
+</Note>
 
-- **You now need a controller instance.** Even for the simplest case you implement a `SdkPayments.TransactionController` (just `onStatus`). The SDK does not retain it strongly. Keep it alive for the duration of the transaction.
+### Controller
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| *(no delegate)* | `SdkPayments.TransactionController` | New | Even the simplest case needs a controller instance: conform a class with just `onStatus` and pass it as `TransactionConfig.controller`. The SDK does not retain it: keep it alive for the whole transaction. |
+| `Yuno.Result` returned by `await` | `onStatus(status:)` with `SdkPayments.TransactionStatus` | Moved | The result is callback-based now: you cannot `await` it inline, so if your code chained logic on the returned value or returned it to the caller, refactor it to react inside `onStatus`. Still the single outcome callback, once per transaction, also when the SDK shows its result screen. `status` and `substatus` come from the backend; the SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Entry points
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `Yuno.startPaymentSeamlessLite(with:paymentSelected:showPaymentStatus:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Renamed | Build the config, then `start`. Nothing to `await`: the outcome arrives in `onStatus`. You still pick the method and pass it. |
+| `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Renamed | Same role: forward the URL your app receives after an external redirect. See [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). |
 
 ## Related
 

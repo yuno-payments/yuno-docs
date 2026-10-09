@@ -6,10 +6,10 @@ description: "Migrate Android Lite enrollment (Activity.startEnrollment) to the 
 
 `startEnrollment` ran the enrollment flow end-to-end: the merchant picked the method, and the SDK rendered the form and the result screen. The unified equivalent is `Transaction.start(paymentSelected = PaymentMethodSelected(paymentMethodType = "<type>"))`: no `transactionData`, the SDK renders the form for that type. No controller overrides beyond `onStatus`.
 
-| Before | After |
-|---|---|
-| `Activity.initEnrollment(callback)` + `Activity.startEnrollment(...)` | `Transaction(config).start(paymentSelected = PaymentMethodSelected(...))` |
-| Lambda `callbackEnrollmentState: (String?) -> Unit` | `TransactionController.onStatus(status: TransactionStatus)` |
+## Before you start
+
+- Replace the `com.yuno.sdk.*` imports with their `com.yuno.payments.sdk.api.*` counterparts (the side-by-side lists them). Your public API key and the customer sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- There is no payment to create: `createPayment` is not invoked during enrollment, so overriding it has no effect.
 
 ## Side-by-side
 
@@ -78,21 +78,34 @@ class EnrollmentActivity : ComponentActivity(), TransactionController {
 
 </CodeGroup>
 
-## Field mapping
+## What changes
 
-| Before | After `TransactionConfig` / `TransactionController` | Notes |
-|---|---|---|
-| `customerSession` (arg) | `TransactionConfig.customerSession` | Mutually exclusive with `checkoutSession`. |
-| `countryCode` (arg) | `TransactionConfig.countryCode` | Same. |
-| `YunoConfig.styles` / `YunoConfig.language` | `TransactionConfig.appearance` / `TransactionConfig.language` | Move from app-wide to per-transaction. |
-| `callbackEnrollmentState: (String?) -> Unit` | `TransactionController.onStatus(status)` | `status` and `substatus` are passed through from the backend. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
 
-## Behavior changes
+### Initialization and config
 
-- **You pick the method.** As in the legacy SDK, the merchant decides which method to enroll and passes it to `start(paymentSelected)` via `paymentMethodType`. The SDK does not render a list of enrollable methods.
-- **`paymentSelected` is always non-null.** Pass a `PaymentMethodSelected` with the `paymentMethodType`.
-- **`createPayment` is not invoked** during enrollment.
-- **No `Context` argument on each call.** `SdkPayments.initialize` keeps the application context.
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `import com.yuno.sdk.*` | `import com.yuno.payments.sdk.api.*` | Renamed | |
+| `Yuno.initialize(context, apiKey)` | `SdkPayments.initialize(context, apiKey)` | Renamed | It keeps the application context: no later call takes a `Context` argument. |
+| `customerSession` argument of `startEnrollment` | `TransactionConfig.customerSession` | Moved | The argument becomes a config field. Mutually exclusive with `checkoutSession`. |
+| `countryCode` argument of `startEnrollment` | `TransactionConfig.countryCode` | Moved | The argument becomes a config field. |
+| `YunoConfig.styles` / `YunoConfig.language` | `TransactionConfig.appearance` / `TransactionConfig.language` | Moved | Pass them per transaction instead of once at startup. |
+| `showEnrollmentStatus` argument of `startEnrollment` | `TransactionConfig.showStatusScreen` | Moved | Same role. |
+| *(none)* | `PaymentMethodSelected` | New | Build it with the `paymentMethodType` to enroll and pass it to `start`: `paymentSelected` is always non-null. |
+
+### Controller
+
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| Lambda passed to `initEnrollment` (`callbackEnrollmentState`) | `TransactionController` | Renamed | The lambda becomes an interface: implement `TransactionController` and pass it as `TransactionConfig.controller`. The SDK does not retain it: keep it alive for the whole transaction. |
+| `callbackEnrollmentState: (String?) -> Unit` | `onStatus(status: TransactionStatus)` | Renamed | Still the single outcome callback, once per transaction, also when the SDK shows its result screen. The raw state string becomes a `TransactionStatus` object: `status` and `substatus` are passed through from the backend; the SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Entry points
+
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `initEnrollment(callback)` + `startEnrollment(customerSession, countryCode, showEnrollmentStatus)` | `Transaction(config).start(paymentSelected)` | Renamed | Build the config, then `start`. As before, you pick the method: pass it via `paymentMethodType`. The SDK does not render a list of enrollable methods. |
 
 ## Related
 
