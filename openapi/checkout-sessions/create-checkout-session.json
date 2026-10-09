@@ -6,7 +6,16 @@
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno/v1"
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
     }
   ],
   "components": {
@@ -67,26 +76,7 @@
                   },
                   "country": {
                     "type": "string",
-                    "description": "The customer's country (MAX 2; MIN 2; [ISO 3166-1](country-reference)).",
-                    "enum": [
-                      "AR",
-                      "BO",
-                      "BR",
-                      "CL",
-                      "CO",
-                      "CR",
-                      "EC",
-                      "SV",
-                      "GT",
-                      "HN",
-                      "MX",
-                      "NI",
-                      "PA",
-                      "PY",
-                      "PE",
-                      "US",
-                      "UY"
-                    ]
+                    "description": "Country where the transaction must be processed (MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference))."
                   },
                   "account_id": {
                     "type": "string",
@@ -128,6 +118,105 @@
                         "type": "number",
                         "description": "The alternative amount value (multiple of 0.0001).",
                         "format": "float"
+                      }
+                    }
+                  },
+                  "shipping_methods": {
+                    "type": "array",
+                    "description": "Delivery options the customer can pick from inside a wallet widget (Fast Checkout). The first method is preselected. The currency of every amount must match the session currency.",
+                    "items": {
+                      "required": [
+                        "id",
+                        "label",
+                        "amount",
+                        "summary_items"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Merchant-defined identifier of the delivery method (MAX 255). Echoed back as shipping.method.id on the payment."
+                        },
+                        "label": {
+                          "type": "string",
+                          "description": "Name the wallet displays for the method (MAX 255)."
+                        },
+                        "detail": {
+                          "type": "string",
+                          "description": "Optional secondary text, such as the delivery promise (MAX 255)."
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Cost of the delivery method.",
+                          "required": [
+                            "currency",
+                            "value"
+                          ],
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "ISO 4217 currency code. Must match the session currency."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "Cost value (multiple of 0.0001).",
+                              "format": "float"
+                            }
+                          }
+                        },
+                        "delivery_estimate": {
+                          "type": "object",
+                          "description": "Optional delivery window (date-only, format YYYY-MM-DD).",
+                          "properties": {
+                            "from": {
+                              "type": "string",
+                              "description": "Earliest delivery date."
+                            },
+                            "to": {
+                              "type": "string",
+                              "description": "Latest delivery date."
+                            }
+                          }
+                        },
+                        "summary_items": {
+                          "type": "array",
+                          "description": "Order breakdown the wallet sheet displays when this method is selected (at least one item; the last entry is the grand total).",
+                          "items": {
+                            "required": [
+                              "id",
+                              "label",
+                              "amount"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identifier of the line item (MAX 255)."
+                              },
+                              "label": {
+                                "type": "string",
+                                "description": "Name the wallet displays for the line item (MAX 255)."
+                              },
+                              "amount": {
+                                "type": "object",
+                                "description": "Amount of the line item. Currency must match the session currency.",
+                                "required": [
+                                  "currency",
+                                  "value"
+                                ],
+                                "properties": {
+                                  "currency": {
+                                    "type": "string",
+                                    "description": "ISO 4217 currency code."
+                                  },
+                                  "value": {
+                                    "type": "number",
+                                    "description": "Amount value (multiple of 0.0001).",
+                                    "format": "float"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   },
@@ -285,6 +374,47 @@
                   "checkout_id": {
                     "type": "string",
                     "description": "The unique identifier (UUID) of the Custom Checkout to use for this session. Optional. When omitted, the session uses the account's default checkout."
+                  },
+                  "wallet_card_acceptance": {
+                    "type": "object",
+                    "description": "Optional. Limits which cards the customer can select in the Apple Pay payment sheet. Cards that do not match are shown greyed out. Every field is optional; a field that is not sent keeps the default behaviour. Values must be uppercase, and an empty list is rejected with 400 INVALID_PARAMETERS. It can only be set when the session is created.",
+                    "properties": {
+                      "supported_countries": {
+                        "type": "array",
+                        "description": "Countries that issued the card, as ISO 3166-1 alpha-2 codes. This is the card's issuing country, not the customer's location.",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "BR"
+                        ]
+                      },
+                      "supported_networks": {
+                        "type": "array",
+                        "description": "Card networks the customer can select. Replaces the default list (AMEX, DISCOVER, ELECTRON, ELO, MASTERCARD, VISA, MAESTRO).",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "VISA",
+                          "MASTERCARD"
+                        ]
+                      },
+                      "supported_funding_types": {
+                        "type": "array",
+                        "description": "Funding types the customer can select: CREDIT, DEBIT, or both.",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "CREDIT",
+                            "DEBIT"
+                          ]
+                        },
+                        "example": [
+                          "CREDIT"
+                        ]
+                      }
+                    }
                   }
                 }
               },

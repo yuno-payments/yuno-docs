@@ -33,7 +33,13 @@ Each payment has one or more associated transactions. The following documentatio
 
 ## Transaction codes
 
-With every transaction, you´ll receive a `response_code` detailing more info about it. The details related to each status are presented below. Use the following buttons to navigate to the desired content.
+With every transaction, you'll receive a `response_code` detailing more info about it. The details related to each status are presented below. Use the following buttons to navigate to the desired content.
+
+Provider response details, when available, appear in the transaction's `provider_data` object. For refunds and cancellations, synchronous responses currently populate `provider_data.response_code` with Yuno's normalized code. Asynchronous updates can populate it with the provider's own code, so this field is not guaranteed to contain the original provider code for these operations. Use the transaction's `response_code` for Yuno's normalized result.
+
+When supplied by the provider, the original response is available in `provider_data.raw_response`, and the provider's message is available in `provider_data.response_message`. Their availability and content depend on the integration.
+
+To look up what a specific provider code maps to, use the [payment error code decoder](https://www.y.uno/payment-error-codes). The decoder is a reference mapping maintained against each provider's published documentation, so use it as a guide rather than as a description of a specific integration's behavior.
 
 
 <CardGroup cols={3}>
@@ -61,6 +67,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 | `SUCCEEDED` | Transaction successful | N/A | 0,8,10,11,16,32 |
 | `FRAUD_VERIFIED` | Transaction verified by fraud provider | N/A | - |
 | `SUCCEEDED_THREE_D_SECURE` | 3DS validation successful | N/A | - |
+| `PENDING_IN_REVIEW` | Transaction authorized, pending manual review | N/A | - |
 
 </div>
 
@@ -93,6 +100,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 | `ACTION_REQUIRED` | Payment created but requires additional user action. This occurs in 3D Secure authentication flows, payment method redirections, Headless SDK flows requiring continuePayment, or async payment methods with additional steps. Check the `redirect_url` or `sdk_action_required` field for next steps. | N/A | - |
 | `SUCCEEDED` | Transaction created successfully | N/A | - |
 | `RECEIVED` | Transaction received | N/A | - |
+| `FRAUD_REPORTED` | Fraud reported by the card network before a formal chargeback. Only on transactions with `type = PRE_CHARGEBACK` | N/A | - |
 
 </div>
 
@@ -112,6 +120,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 | `PENDING_FRAUD_REVIEW` | Transaction is being analyzed by fraud provider | N/A | - |
 | `PENDING_PROVIDER_CONFIRMATION` | Transaction waiting confirmation | N/A | - |
 | `PENDING_REVIEW` | Transaction waiting fraud review confirmation | N/A | - |
+| `WAITING_ADDITIONAL_STEP` | Transaction waiting for an additional step to be completed | N/A | - |
 
 </div>
 
@@ -130,28 +139,38 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 
 | response_code | Description | Hard/Soft decline | ISO 8583 code |
 | --- | --- | --- | --- |
+| `ACCESS_DENIED` | Access denied | - | - |
 | `ACCOUNT_STATUS` | Contact your fraud provider to verify your account status. | N/A | - |
 | `ACQUIRE_CONTINGENCY` | Acquire service unavailable | SOFT | 22, 80, 90, 91, 92, 96 |
 | `AUTHENTICATION_ATTEMPT` | Authentication attempt without completion | N/A | - |
 | `AUTHENTICATION_FAILED_THREE_D_SECURE` | 3D validation failed | N/A | - |
+| `AUTHENTICATION_FAILED_3DS` | 3D validation failed | N/A | - |
 | `BAD_FILLED_INFO` | Card does not match the parameters from the issuer | HARD | 30,89 |
 | `BANK_NOT_SUPPORTED` | Bank not supported by switch | SOFT | 31 |
+| `BRAND_NOT_SUPPORTED` | Card brand not supported | - | - |
 | `CALL_FOR_AUTHORIZE` | Card acceptor call acquirer's security department | SOFT | 66 |
 | `CANCELLED_BY_USER` | Cancelled by user | SOFT | 17 |
+| `CARD_AUTHENTICATION_FAILED` | Card authentication failed | N/A | - |
+| `CARD_HOLDER_DECLINED` | The cardholder declined the transaction | N/A | - |
+| `CARD_NOT_ENROLLED` | No card record. The card is not enrolled in 3DS | N/A | - |
+| `CHALLENGE_CANCELED` | The shopper cancelled the 3DS challenge | N/A | - |
 | `COUNTRY_NOT_SUPPORTED` | This transaction cannot be processed due to an unsupported country | HARD | - |
 | `CURRENCY_NOT_ALLOWED` | Currency not allowed | HARD | - |
 | `DECLINED_BY_BANK` | Rejected by the bank. Refer to card issuer | SOFT | - |
 | `DECLINED_BY_PROVIDER` | Rejected by the provider. Refer to the provider_data | SOFT | - |
 | `DISABLED` | Restricted card | SOFT | - |
 | `DO_NOT_HONOR` | Do not honor | SOFT | 5 |
+| `DO_NOT_TRY_AGAIN` | Do not try again | - | - |
 | `DUPLICATED_TRANSACTION` | Duplicate transmission of the transaction | SOFT | 26,94 |
 | `EXPIRED` | Expired alternative payment method | SOFT |  |
 | `EXPIRED_CARD` | Expired card | HARD | 33,54 |
+| `EXPIRED_TIMEOUT` | The transaction was not completed in time and expired | N/A | - |
 | `FIRST_USE` | Blocked first use | SOFT | 78 |
 | `FRAUD_VALIDATION` | Security violation | SOFT | 34, 59, 63, 64 |
 | `FRAUD_VERIFICATION_DECLINED` | - | - | - |
 | `INSUFFICIENT_FUNDS` | Not sufficient funds | SOFT | 51 |
 | `INVALID_AMOUNT` | Invalid amount | SOFT | 13,64 |
+| `INVALID_ACCOUNT` | Invalid account | - | - |
 | `INVALID_CARD_DATA` | Card does not match the parameters from the issuer. | HARD | 56 |
 | `INVALID_CARD_NUMBER` | Card does not match the parameters from the issuer. | HARD | 14 |
 | `INVALID_API` | Trying to verify the payment with an unauthorized IP address | HARD | - |
@@ -159,6 +178,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 | `INVALID_CREDENTIALS` | Fraud provider invalid credentials set in Yuno. | HARD | - |
 | `INVALID_ISSUER` | Invalid issuer | SOFT | 15 |
 | `INVALID_MERCHANT` | Invalid merchant or service provider | SOFT | 3 |
+| `INVALID_OTP` | Invalid OTP | - | - |
 | `INVALID_PARAMETERS` | Invalid parameters | HARD | - |
 | `INVALID_SECURITY_CODE` | Invalid card's security code | HARD | 56,82 |
 | `INVALID_STATUS` | Invalid status | SOFT | - |
@@ -177,18 +197,24 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 | `RETRY_AFTER_8_D` | Retry after 8 days | HARD |  |
 | `RETRY_AFTER_10_D` | Retry after 10 days | HARD |  |
 | `REJECTED_THREE_D_SECURE_REQUIRED` | 3DS validation rejection | SOFT | - |
+| `REJECTED_3D_SECURE_REQUIRED` | 3DS validation rejection | SOFT | - |
 | `REFER_TO_CARD_ISSUER` | Rejected by the bank. Refer to card issuer | SOFT | 01 |
 | `REPORTED_LOST` | Lost card | HARD | 41 |
 | `REPORTED_STOLEN` | Stolen card, pick-up | HARD | 43 |
 | `REQUESTS_EXCEEDED` | Requests limit for the provider account reached. | SOFT | - |
 | `RESTRICTED_BY_BANK` | Rejected by the bank. Refer to card issuer's special conditions | SOFT | 62 |
+| `RESTRICTED_CARD` | Restricted card | - | - |
+| `SUSPECTED_FRAUD` | The issuer or fraud provider flagged the transaction as suspected fraud | N/A | - |
 | `TERMINAL_ERROR` | Your merchant account is not properly configured for the transaction | SOFT | 58 |
 | `THREE_D_SECURE_REQUIRED` | Antifraud provider requires a 3DS challenge for further validation. | SOFT |  |
+| `TRANSACTION_DATA_INVALID` | The provider rejected the transaction data | N/A | - |
+| `TRY_AGAIN_LATER` | Retry the transaction later | - | - |
 | `TRANSACTION_NOT_FOUND` | Transaction not found | HARD | 25 |
 | `UNAVAILABLE_PAYMENT_METHOD` | Requested function not supported | HARD | - |
 | `UNSUPPORTED_OPERATION` | Requested function not supported | HARD | 40 |
 | `UNKNOWN_ERROR` | Unknown error | SOFT | - |
 | `USER_RESTRICTION` | Transaction not permitted for cardholder | HARD | 57 |
+| `UPDATED_INFORMATION` | Update information | - | - |
 
 </div>
 
@@ -272,6 +298,7 @@ Merchant Advice Codes provide guidance from issuers/providers about retry behavi
 | `TO_REVERSE` | The transaction will be reversed | HARD | - |
 | `PROVIDER_INVALID_RESPONSE` | Invalid response | HARD | 20 |
 | `PROVIDER_INVALID_API_VERSION` | Invalid API version | HARD | - |
+| `DOCUMENT_TYPE_NOT_SUPPORTED` | The document type sent is not supported by the provider | HARD | - |
 
 </div>
 
@@ -303,7 +330,7 @@ Merchant Advice Codes provide guidance from issuers/providers about retry behavi
 | --- | --- | --- | --- |
 | `CLOSED` | - | N/A | - |
 | `EXPIRED` | - | N/A | - |
-| `PARTIALLY_CHARGEBACKED` | - | N/A | - |
+| `PARTIALLY_CHARGE_BACKED` | Funds were partially charged back | N/A | - |
 | `REVIEW_LOST` | The Chargeback dispute was lost | N/A | - |
 
 </div>
@@ -319,7 +346,7 @@ Merchant Advice Codes provide guidance from issuers/providers about retry behavi
 
 | response_code | Description | Hard/Soft decline | ISO 8583 code |
 | --- | --- | --- | --- |
-| `PREVENTED` | Predispute deflected by provider/network. No evidence required. Terminal. | N/A | - |
+| `CHARGEBACK_AVOIDED` | Predispute deflected by provider/network. No evidence required. Terminal. | N/A | - |
 
 </div>
 
@@ -331,9 +358,9 @@ Merchant Advice Codes provide guidance from issuers/providers about retry behavi
 
 ***
 
-### Chargebacks specific response\_codes
+### Chargebacks specific response_codes
 
-For more details, please refer to the [reason codes page](/docs/reason-codes) in the [Chargeback guides](/docs/chargeback-management) section.
+For more details, please refer to the [reason codes page](/docs/payouts-and-disputes/reason-codes) in the [Chargeback guides](/docs/payouts-and-disputes/chargeback-management) section.
 
 
 <Accordion title={<><code>CREATED</code> status details</>}>
@@ -343,7 +370,7 @@ For more details, please refer to the [reason codes page](/docs/reason-codes) in
 | response_code | Category | Description |
 | --- | --- | --- |
 | `EMV_LIABILITY_SHIFT_COUNTERFEIT`<br />EMV Liability Shift Counterfeit Fraud | Fraud | The cardholder is claiming that they did not authorize or participate in a transaction that you processed. |
-| `EMV_LIABILITY_SHIFT_NOT_COUNTERFEIT`<br />EMV Liability Shift Non-Counterfeit Fraud | Fraud | The cardholder is claiming that they did not authorize or participate in a transaction that you processed. |
+| `EMV_LIABILITY_SHIFT_NON_COUNTERFEIT_FRAUD`<br />EMV Liability Shift Non-Counterfeit Fraud | Fraud | The cardholder is claiming that they did not authorize or participate in a transaction that you processed. |
 | `CARD_PRESENT_FRAUD`<br />Other Fraud – Card-Present Environment | Fraud | The cardholder is claiming that they did not authorize or participate in a key-entered or unattended transaction conducted in a card-present environment. |
 | `NON_CARD_PRESENT_FRAUD`<br />Other Fraud – Card-Absent Environment | Fraud | The cardholder did not authorize or participate in a transaction conducted in a card-not-present environment, such as internet, mail-order, phone-order, and others. |
 | `SCHEME_MONITORING_PROGRAM`<br />Other Fraud - Scheme Monitoring Program | Fraud | Scheme Fraud Monitoring program |

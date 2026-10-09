@@ -59,7 +59,7 @@ Register customer info through the [Create Customer](/reference/create-customer)
 <Note>
 **Customer complementary information**
 
-Providing optional details like phone, billing address, and shipping address enhances the payment experience. If you include these fields, certain sub-fields become required.
+Optional details like phone, billing address, and shipping address are not required to enroll a payment method, but some providers use them for fraud checks. If you include these fields, certain sub-fields become required.
 </Note>
 
 After creating the customer, you'll receive an `id` that identifies them in Yuno. If your customer already has an `id`, skip this step.
@@ -74,7 +74,7 @@ The enrollment workflow varies by payment method type:
 * **Checkout workflow**: Requires customer session for most payment methods (Cards, Nupay, PayPal, Daviplata, dLocal methods, Astropay, Adyen PIX Biométrico)
 * **Direct workflow**: Available for Cards only (PCI compliant merchants). Proceed directly to Step 3 using the customer `id` generated in Step 1.
 * **SDK workflow**: Payment methods like Nequi and Bancolombia Tokenbox require SDK implementation. WALLET\_CONNECT (MercadoPago) supports both SDK and Checkout workflows. Consult the [SDK documentation](/docs/sdks/overview/quickstart) for details.
-* **SDK Seamless workflow**: You can enroll payment methods during the seamless payment flow by setting `vault_on_success: true` when creating the payment. The payment method will be automatically enrolled if the payment succeeds.
+* **SDK Seamless workflow**: You can enroll payment methods during the seamless payment flow by setting `vault_on_success: true` when creating the payment. The payment method will be automatically enrolled if the payment succeeds. For wallets (Apple Pay / Google Pay), the instrument is vaulted as a hidden record: the `vaulted_token` is returned in the payment response but does not appear in the customer's payment-methods listing — see the note in [Step 5](#step-5-retrieve-payment-methods).
 </Warning>
 
 Create a customer session to store the customer's payment preferences using the [Create Customer Session](/reference/create-customer-session) endpoint. Use the `id` from Step 1 as the `customer_id`.
@@ -103,7 +103,7 @@ Enroll the payment method using one of the following endpoints:
 * [**Direct workflow**](/reference/enroll-payment-method-api): Pass the payment method `type` to the `type` parameter. (Only available for `CARD` payment methods used by PCI compliant merchants)
 * [**SDK workflow**](/docs/sdks/overview/quickstart): Payment methods like `NEQUI` and `BANCOLOMBIA_TOKENBOX` require SDK implementation. `WALLET_CONNECT` (MercadoPago) supports both SDK and Checkout workflows.
 
-Redirect the user to the payment provider page to complete enrollment. You'll receive this URL in Step 5.
+The enrollment response includes a redirect URL to the payment provider page. Step 5 explains where to find it and how to complete enrollment.
 
 ### Step 5: Retrieve payment methods
 
@@ -115,6 +115,12 @@ The customer must provide authorization on the payment provider page. Retrieve t
 Redirect the user to complete authorization. Once enrollment is complete, proceed to the next step.
 
 To confirm enrollment, retrieve the enrolled payment methods and verify the `status` is `ENROLLED`.
+
+<Note>
+**Wallet-vaulted instruments are not listed**
+
+Instruments vaulted through a wallet payment (Apple Pay / Google Pay with `vault_on_success: true`) are stored as hidden records: they do not appear in the enrolled payment methods listing, even though their `vaulted_token` is valid and chargeable. Store that token from the payment response, and resolve it individually with [Retrieve Enrolled Payment Method by ID](/reference/retrieve-enrolled-payment-method-by-id-api) if needed. See [Stored Credentials](/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
+</Note>
 
 <Note>
 **Fingerprint**

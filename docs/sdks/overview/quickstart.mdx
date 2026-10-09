@@ -7,9 +7,9 @@ metadata:
 description: "Implement Yuno's full payment flow on Web, iOS, and Android with pre-built checkout UI"
 ---
 
-Welcome to the Yuno SDKs quickstart guide. This guide shows you how to easily implement our full payment flow, Yuno's most straightforward solution with pre-built UI and automatic payment method display.
+Welcome to the Yuno SDKs quickstart guide. This guide shows you how to easily implement Yuno's full payment flow, its most straightforward solution with pre-built UI and automatic payment method display.
 
-Choose your platform and follow the steps to start process your first payments with Yuno.
+Choose your platform and follow the steps to start processing your first payments with Yuno.
 
 <Tabs>
     <Tab title="Web SDK integration">
@@ -19,10 +19,12 @@ Choose your platform and follow the steps to start process your first payments w
     npm install @yuno-payments/sdk-web
     ```
 
+    To start the SDK download while the page loads, add a preload and preconnects to your HTML `<head>`. See [Preload the SDK script](/docs/sdks/resources/references/web#preload-the-sdk-script).
+
     Or include via CDN:
 
     ```html
-    <script src="https://sdk-web.y.uno/v1.9/main.js"></script>
+    <script src="https://sdk-web.y.uno/v1.10/main.js"></script>
     ```
 
     ### 2. Initialize and process payment
@@ -35,6 +37,7 @@ Choose your platform and follow the steps to start process your first payments w
 
     // Create checkout session on your backend
     // Your backend calls: POST https://api-sandbox.y.uno/v1/checkout/sessions
+    // Backend adds: account_id, merchant_order_id, payment_description (server-side)
     const session = await fetch('/api/create-session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,9 +53,11 @@ Choose your platform and follow the steps to start process your first payments w
     checkoutSession: session.checkout_session,
     elementSelector: '#payment-form',
     countryCode: 'US',
-    async yunoCreatePayment(oneTimeToken) {
+    async createPayment(oneTimeToken) {
         // Your backend calls: POST https://api-sandbox.y.uno/v1/payments
-        // with { payment_method: { token: oneTimeToken }, checkout_session: ... }
+        // with header: X-Idempotency-Key
+        // and body: { account_id, description, country, merchant_order_id, amount,
+        //             checkout: { session }, payment_method: { token: oneTimeToken }, ... }
         const payment = await fetch('/api/process-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -84,7 +89,7 @@ Choose your platform and follow the steps to start process your first payments w
     </script>
     ```
 
-    **Test with**: Card `4111 1111 1111 1111`, any future date, any CVV
+    See [Test cards](#test-cards) below.
 
     For a comprehensive overview of all Web SDK parameters, see [Web SDK Common Reference](/docs/sdks/resources/references/web).
 
@@ -168,7 +173,7 @@ Choose your platform and follow the steps to start process your first payments w
     }
     ```
 
-    **Test with**: Card `4111 1111 1111 1111`, any future date, any CVV
+    See [Test cards](#test-cards) below.
 
     For a comprehensive overview of all iOS SDK parameters, see [iOS SDK Common Reference](/docs/sdks/resources/references/ios).
 
@@ -231,12 +236,12 @@ Choose your platform and follow the steps to start process your first payments w
                 startCheckout(
                     checkoutSession = session.id,
                     countryCode = "US",
-                    callbackPaymentState = { state, subState ->
+                    callbackPaymentState = { state, subState, message ->
                         when (state) {
                             "SUCCEEDED" -> println("Payment succeeded!")
-                            "FAILED" -> println("Payment failed")
+                            "FAIL" -> println("Payment failed: ${message?.code}")
                             "PROCESSING" -> println("Payment processing")
-                            "REJECT" -> println("Payment rejected")
+                            "REJECT" -> println("Payment rejected: ${message?.reason}")
                             else -> println("Payment state: $state")
                         }
                     }
@@ -286,7 +291,7 @@ Choose your platform and follow the steps to start process your first payments w
     }
     ```
 
-    **Test with**: Card `4111 1111 1111 1111`, any future date, any CVV
+    See [Test cards](#test-cards) below.
 
     For a comprehensive overview of all Android SDK parameters, see [Android SDK Common Reference](/docs/sdks/resources/references/android).
 
@@ -294,6 +299,50 @@ Choose your platform and follow the steps to start process your first payments w
 
     </Tab>
 </Tabs>
+
+## Handling a failed payment
+
+The Web SDK can recover from a failed payment without reloading the page. Two mechanisms work together:
+
+* *Payment retry* — inline card retry when the payment returns `DECLINED` or `ERROR`. In *Seamless* the SDK handles retry automatically. In *Full Checkout*, *Lite*, and *Secure Fields* you call `continuePayment` after your backend confirms the decline. Works for non-enrolled credit and debit cards. See [Payment retry](/docs/sdks/resources/references/web#payment-retry) for the full reference.
+
+* *Switching payment methods* — call `updateCheckoutSession(newSession)` to inject a fresh checkout session without unmounting the SDK. Picking from the already-rendered payment-method list after a session swap works; a *different* set of payment methods requires unmounting and re-mounting the SDK — not a page reload. See [updateCheckoutSession](/docs/sdks/resources/references/web#updatecheckoutsession).
+
+```javascript
+// Inside your createPayment callback:
+const payment = await createPaymentOnYourBackend(oneTimeToken);
+
+const isCard = payment.payment_method?.type === 'CARD';
+const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+
+if (isCard && failed) {
+  // Card retry: keeps the card form open with the decline shown.
+  await yuno.continuePayment();
+} else if (payment.checkout?.sdk_action_required) {
+  // Additional action: 3DS, bank redirect, etc.
+  await yuno.continuePayment({ showPaymentStatus: true });
+} else {
+  // No further SDK action — unmount.
+  await yuno.unmountSdk();
+}
+```
+
+<Note>
+On a retried attempt the SDK does **not** fire `paymentResult`. It delivers the cloned checkout session to your `onLoading` callback as `{ type: 'PAYMENT_RETRY', data: { newCheckoutSession } }`. Register `onLoading` in your `startCheckout` configuration to receive it:
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  // ...
+  onLoading: ({ type, data }) => {
+    if (type === 'PAYMENT_RETRY') {
+      // A fresh session has been cloned for the retry.
+      const newCheckoutSession = data.newCheckoutSession;
+    }
+  }
+});
+```
+</Note>
 
 ## Backend integration
 
@@ -304,21 +353,25 @@ Your backend must implement two API endpoints to work with Yuno:
 Before displaying the payment UI, your backend creates a checkout session:
 
 - **Endpoint**: `POST https://api-sandbox.y.uno/v1/checkout/sessions`
-- **Required**: Customer ID, amount, country
+- **Required (OpenAPI)**: `account_id`, `merchant_order_id`, `payment_description`, `country`
+- **Also send**: `customer_id` (from Create Customer) and `amount` `{ currency, value }`
+- **Optional for SDK**: `workflow` (`SDK_CHECKOUT` | `SDK_SEAMLESS` | `CHECKOUT`), `callback_url`, `checkout_id`
 - **Returns**: `checkout_session` ID (used in SDK)
 - **Reference**: [Create checkout session API](/reference/checkout-sessions/create-checkout-session)
 
 **Example request**:
 ```json
 {
+  "account_id": "YOUR_ACCOUNT_ID",
+  "merchant_order_id": "order-001",
+  "payment_description": "Sandbox quickstart payment",
   "country": "US",
-  "customer_payer": {
-    "id": "customer-123"
-  },
+  "customer_id": "YOUR_CUSTOMER_UUID",
   "amount": {
     "currency": "USD",
-    "value": "2500"
-  }
+    "value": 100
+  },
+  "workflow": "SDK_CHECKOUT"
 }
 ```
 
@@ -327,23 +380,46 @@ Before displaying the payment UI, your backend creates a checkout session:
 In the One-Time Token (OTT) callback, your backend creates the payment:
 
 - **Endpoint**: `POST https://api-sandbox.y.uno/v1/payments`
-- **Required**: One-time token (from SDK callback), checkout session
+- **Required header**: `X-Idempotency-Key` (unique UUID per attempt) — see [Authentication](/reference/getting-started/authentication)
+- **Required body (OpenAPI)**: `account_id`, `description`, `country`, `merchant_order_id`, `amount`, `payment_method`, `checkout`
+- **`payment_method.token`** = one-time token from the SDK callback
+- **`checkout.session`** = checkout session id from step 1
 - **Returns**: Payment status and `sdk_action_required` field
 - **Reference**: [Create payment API](/reference/payments/create-payment)
+
+**Example headers**:
+```http
+public-api-key: YOUR_PUBLIC_API_KEY
+private-secret-key: YOUR_PRIVATE_SECRET_KEY
+X-Idempotency-Key: YOUR_UUID
+content-type: application/json
+accept: application/json
+```
 
 **Example request**:
 ```json
 {
-  "payment_method": {
-    "token": "one-time-token-from-sdk"
+  "account_id": "YOUR_ACCOUNT_ID",
+  "description": "Sandbox quickstart payment",
+  "country": "US",
+  "merchant_order_id": "order-001",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  },
+  "customer_payer": {
+    "id": "YOUR_CUSTOMER_UUID"
   },
   "checkout": {
-    "session": "checkout-session-id"
+    "session": "YOUR_CHECKOUT_SESSION_UUID"
+  },
+  "payment_method": {
+    "token": "ONE_TIME_TOKEN_FROM_SDK"
   }
 }
 ```
 
-**Important**: If the API response has `sdk_action_required: true`, you must call the SDK's `continuePayment()` method to complete async payment methods (3DS authentication, PIX, bank redirects, etc.).
+**Important**: If the API response has `sdk_action_required: true` or `checkout.sdk_action_required: true`, you must call the SDK's `continuePayment()` method to complete async payment methods (3DS authentication, PIX, bank redirects, etc.).
 
 ## Parameters
 
@@ -353,7 +429,7 @@ Primary parameters used in this quickstart:
 | --------- | ----------- |
 | `publicKey` / `apiKey` | Your Yuno public API key (frontend). From [Yuno Dashboard](https://dashboard.y.uno/) → **Developers** > **Credentials**. |
 | `checkoutSession` | Checkout session ID returned by your backend (create session endpoint). Required to start payment. |
-| `countryCode` | ISO country code for the payment (e.g. `US`, `CO`). See [Country coverage](/docs/sdks/resources/country-coverage). |
+| `countryCode` | ISO country code for the payment (for example, `US`, `CO`). See [Country coverage](/docs/sdks/resources/country-coverage). |
 | `elementSelector` (Web) | CSS selector for the element where the payment form is mounted (e.g. `#payment-form`). |
 
 Full parameter reference: [Payment flows (Web)](/docs/sdks/full-checkout/web-payments), [Payment flows (iOS)](/docs/sdks/full-checkout/ios-payments), [Payment flows (Android)](/docs/sdks/full-checkout/android-payments).
@@ -369,7 +445,7 @@ A lightweight integration that gives you full control over the payment method di
 - [iOS Implementation](/docs/sdks/lite-ios/checkout)
 
 ### Secure Fields
-Build your own payment forms from scratch using our UI components for maximum customization (Web Only).
+Build your own payment forms from scratch using Yuno's UI components for maximum customization (Web Only).
 - [Secure Fields Guide](/docs/sdks/customization/secure-fields/index)
 
 ## Test cards

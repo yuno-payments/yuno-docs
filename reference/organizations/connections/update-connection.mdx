@@ -1,0 +1,198 @@
+---
+title: "Update a Connection"
+description: "Partially updates a connection. Only the fields you send are applied; secrets stay masked."
+openapi: "/openapi/organizations/connections/update-connection.json PATCH /connections/{connection_id}"
+---
+
+Partially updates a connection you previously created. Only the fields present in the body are applied — anything you omit keeps its current value.
+
+<Note>
+**What you can't change here:** `provider_id`, `flow_type`, `payment_methods` and the `INTEGRATION_TYPE` param are immutable. To change any of them, create a new connection and repoint your routing rules at it.
+</Note>
+
+### Path Parameters
+
+<ParamField path="connection_id" type="string" required>
+  The id returned by [Create a Connection](/reference/organizations/connections/create-connection). Must belong to the account your API key is scoped to.
+</ParamField>
+
+### Body
+
+<ParamField body="account_id" type="string" required>
+  UUID of the account the connection belongs to.
+</ParamField>
+
+<ParamField body="merchant_connection_id" type="string">
+  New label for this connection. Max 255 characters, and must still be unique within the account. Omit it to keep the current label.
+</ParamField>
+
+<ParamField body="params" type="object[]">
+  Params to change, as a **flat array** of `{param_id, value}` pairs — the same shape as [Create a Connection](/reference/organizations/connections/create-connection).
+
+  Params are **merged by `param_id`** over the connection's current params: a `param_id` you don't send keeps its current value. You only need to send what you're actually changing. Every `param_id` you do send is validated against the provider catalog.
+
+  <Expandable title="item">
+    <ParamField body="param_id" type="string" required>
+      The exact `param_id` from the catalog. Casing matters.
+    </ParamField>
+    <ParamField body="value" type="string | boolean | number | array" required>
+      Match the `field_type` from the catalog.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="costs" type="object[]">
+  Cost configuration. Unlike `params`, `costs` is **not merged** — when present it *replaces* the connection's entire cost table. Omit it to leave the existing costs untouched.
+  <Expandable title="item">
+    <ParamField body="sort_number" type="integer">
+      Order of priority for the cost entry.
+    </ParamField>
+    <ParamField body="cost_name" type="string">
+      Label for the cost entry.
+    </ParamField>
+    <ParamField body="currency" type="string">
+      ISO 4217 currency code. Must be one supported by the provider.
+    </ParamField>
+    <ParamField body="cost_values" type="object">
+        <Expandable title="successful | unsuccessful">
+            <ParamField body="fixed_fee" type="number">
+                Fixed fee amount.
+            </ParamField>
+            <ParamField body="percentage" type="number">
+                Percentage fee.
+            </ParamField>
+        </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+Returns the refreshed connection, in the same shape as [Retrieve a Connection](/reference/organizations/connections/retrieve-connection).
+
+<ResponseField name="connection_id" type="string">
+  Unique identifier for the connection. Unchanged by an update.
+</ResponseField>
+<ResponseField name="merchant_connection_id" type="string">
+  Your internal label for this connection.
+</ResponseField>
+<ResponseField name="provider_id" type="string">
+  The provider this connection belongs to.
+</ResponseField>
+<ResponseField name="status" type="string">
+  Current status.
+</ResponseField>
+<ResponseField name="flow_type" type="string">
+  Always `PAYIN`.
+</ResponseField>
+<ResponseField name="payment_methods" type="string[]">
+  List of supported payment methods.
+</ResponseField>
+<ResponseField name="params" type="object[]">
+  The connection's full param set after the merge — not just the ones you sent. Sensitive values are masked as `***`.
+</ResponseField>
+<ResponseField name="costs" type="object[]">
+  Cost configuration for the connection.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  ISO 8601 timestamp. Bumped by a successful update.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL — rotate a secret
+curl -X PATCH 'https://api.y.uno/v1/connections/f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "params": [
+      { "param_id": "API_KEY", "value": "sk_live_new..." }
+    ]
+  }'
+```
+
+```bash cURL — rename
+curl -X PATCH 'https://api.y.uno/v1/connections/f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "merchant_connection_id": "stripe-us-prod-002"
+  }'
+```
+
+```json 200 OK
+{
+  "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+  "merchant_connection_id": "stripe-us-prod-002",
+  "provider_id": "STRIPE",
+  "status": "ACTIVE",
+  "flow_type": "PAYIN",
+  "payment_methods": ["CARD", "GOOGLE_PAY", "APPLE_PAY"],
+  "params": [
+    { "param_id": "API_KEY",             "value": "***" },
+    { "param_id": "PUBLISHABLE_KEY",     "value": "pk_live_..." },
+    { "param_id": "INTEGRATION_TYPE",    "value": "PAYMENT_INTENTS" },
+    { "param_id": "3DS_ENABLED",         "value": true },
+    { "param_id": "ORIGIN_URL",          "value": "https://checkout.acme.com" }
+  ],
+  "costs": [
+    {
+      "sort_number": 1,
+      "cost_name": "Transaction Fee",
+      "currency": "USD",
+      "cost_values": {
+        "successful":   { "fixed_fee": 0.30, "percentage": 2.9 },
+        "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
+      }
+    }
+  ],
+  "created_at": "2026-05-12T10:24:00Z",
+  "updated_at": "2026-05-12T11:02:17Z"
+}
+```
+
+```json 400 — Unknown Param
+{
+  "type": "validation_error",
+  "code": "UNKNOWN_PARAM",
+  "message": "Param 'FOO' is not part of the catalog for provider 'STRIPE'",
+  "details": { "provider_id": "STRIPE", "param_id": "FOO" }
+}
+```
+
+```json 409 — Conflict
+{
+  "type": "conflict",
+  "code": "CONNECTION_MERCHANT_ID_CONFLICT",
+  "message": "A connection with merchant_connection_id 'stripe-us-prod-002' already exists in this account",
+  "details": { "merchant_connection_id": "stripe-us-prod-002" }
+}
+```
+</CodeGroup>
+
+<Note>
+**Secret handling:** params marked `secret: true` in the catalog are always returned as `"value": "***"`. Sending `"***"` back is not how you keep a secret — just omit the `param_id` entirely and its stored value is preserved.
+</Note>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` |
+| --- | --- |
+| `400` | `UNKNOWN_PARAM`<br />A `param_id` isn't part of the provider's catalog. |
+| `400` | `INVALID_PARAM_VALUE`<br />A value doesn't match the catalog's `field_type` or allowed options. |
+| `400` | `UNSUPPORTED_CURRENCY`<br />A `costs[].currency` isn't in the provider's supported list. |
+| `400` | `VALIDATION_ERROR`<br />`connection_id` isn't a valid UUID, or `merchant_connection_id` exceeds 255 characters. |
+| `400` | `MALFORMED_BODY`<br />The body isn't valid JSON. |
+| `401` | `NOT_AUTHENTICATED`<br />Missing or invalid API key. |
+| `404` | `CONNECTION_NOT_FOUND`<br />Unknown `connection_id`, or the id belongs to a different account. |
+| `409` | `CONNECTION_MERCHANT_ID_CONFLICT`<br />`merchant_connection_id` already exists in this account. |
+
+</div>

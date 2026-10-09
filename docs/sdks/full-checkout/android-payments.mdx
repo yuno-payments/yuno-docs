@@ -16,7 +16,7 @@ The Android SDK makes it easy to integrate payment flows into your Android app.
 
 ## Requirements
 
-* **Minimum SDK Version**: `minSdkVersion` 21 or above
+* **Minimum SDK Version**: `minSdkVersion` 23 or above (Android 6.0). Required since Yuno Android SDK 2.24.0
 * **Java**: Java 8 enabled
 * **AndroidX**: Use AndroidX instead of older support libraries
 * **Android Gradle Plugin**: 4.0.0 or above
@@ -83,8 +83,9 @@ For the full list of parameters and YunoConfig details, see the [Android SDK Com
 | ------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `checkoutSession`         | Checkout session ID from your backend (Create checkout session API). Required.                               |
 | `countryCode`             | ISO country code (e.g. `US`). Required.                                                                      |
-| `callbackPaymentState`    | Callback: payment state (e.g. SUCCEEDED, FAIL, PROCESSING, REJECT).                                          |
+| `callbackPaymentState`    | Callback `(state, subState, message)`: payment state (e.g. SUCCEEDED, FAIL, PROCESSING, REJECT), its sub-state and, on error outcomes, a [`StatusMessage?`](/docs/sdks/resources/references/android#statusmessage-error-details). Third parameter added in SDK `2.22.0`. |
 | `merchantSessionId`       | Optional merchant session identifier.                                                                        |
+| `onInstallmentSelected`   | Optional callback fired when the shopper selects an installment option in the card form. See [Installment selection callback](#installment-selection-callback-oninstallmentselected). Available from SDK `2.20.0`. |
 | `YunoConfig` (initialize) | Optional: saveCardEnabled, keepLoader, language, styles. See Common Reference. |
 
 ## full-checkout
@@ -164,8 +165,9 @@ Call the `startCheckout` method inside the `onCreate()` function of the activity
 startCheckout(
   checkoutSession: "checkout_session",
   countryCode: "country_code_iso",
-  callbackPaymentState: ((String?) -> Unit)?,
-  merchantSessionId: String? = null
+  callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null,
+  merchantSessionId: String? = null,
+  onInstallmentSelected: ((InstallmentSelected?) -> Unit)? = null
 )
 ```
 
@@ -177,19 +179,76 @@ const val PAYMENT_STATE_FAIL = "FAIL"
 const val PAYMENT_STATE_PROCESSING = "PROCESSING"
 const val PAYMENT_STATE_REJECT = "REJECT"
 const val PAYMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
-const val PAYMENT_STATE_STATE_CANCELED_BY_USER = "CANCELED"
+const val PAYMENT_STATE_STATE_CANCELED_BY_USER = "CANCELED_BY_USER"
 ```
 
 Possible states:
 
-| **State**        | **Description**                                                                                                                 | **Additional action required**                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `SUCCEEDED`      | The transaction or payment process was successfully completed without any errors.                                               | No.                                                                                                           |
-| `FAIL`           | The transaction failed due to errors such as data validation issues, server connection failures, or technical/network problems. | Yes. Investigate the cause of failure (validation, network, server) and take corrective measures.             |
-| `PROCESSING`     | The transaction is currently in progress, awaiting approval or verification.                                                    | No.                                                                                                           |
-| `REJECT`         | The transaction was rejected due to reasons like insufficient funds or suspected fraudulent activity.                           | Yes. Inform the user of the rejection, provide the reason if possible, and suggest actions.                   |
-| `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the payment process.                                           | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
-| `CANCELED`       | The user voluntarily canceled the transaction or abandoned the payment process.                                                 | No.                                                                                                           |
+| **State**          | **Description**                                                                                                                 | **Additional action required**                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `SUCCEEDED`        | The transaction or payment process was successfully completed without any errors.                                               | No.                                                                                                           |
+| `FAIL`             | The transaction failed due to errors such as data validation issues, server connection failures, or technical/network problems. | Yes. Investigate the cause of failure (validation, network, server) and take corrective measures.             |
+| `PROCESSING`       | The transaction is currently in progress, awaiting approval or verification.                                                    | No.                                                                                                           |
+| `REJECT`           | The transaction was rejected due to reasons like insufficient funds or suspected fraudulent activity.                           | Yes. Inform the user of the rejection, provide the reason if possible, and suggest actions.                   |
+| `INTERNAL_ERROR`   | An unexpected internal error occurred within the system handling the payment process.                                           | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
+| `CANCELED_BY_USER` | The user voluntarily canceled the transaction or abandoned the payment process.                                                 | No.                                                                                                           |
+
+The callback receives three values: the state, its sub-state (the provider's detail, when any) and a `StatusMessage?` that is `null` on `SUCCEEDED`, `PROCESSING` and `CANCELED_BY_USER`, always present on `INTERNAL_ERROR`, and present on `REJECT` / `FAIL` when the backend returned a `response_code`:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "country_code_iso",
+  callbackPaymentState = { state, subState, message ->
+    when (state) {
+      "SUCCEEDED" -> showSuccess()
+      "REJECT", "FAIL" -> showDeclined(reason = message?.reason, code = message?.code)
+      "INTERNAL_ERROR" -> reportSdkError(message)   // never null here
+      else -> { }
+    }
+  },
+)
+```
+
+See [StatusMessage (error details)](/docs/sdks/resources/references/android#statusmessage-error-details) for the fields and when each one is populated.
+
+#### Installment selection callback (`onInstallmentSelected`)
+
+Available from SDK `2.20.0`. Register the optional `onInstallmentSelected` callback to keep your cart total in sync with the installment plan the shopper picks in the card form:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "country_code_iso",
+  callbackPaymentState = { state, subState, message -> /* ... */ },
+  onInstallmentSelected = { selection ->
+    if (selection != null) {
+      // Update your cart total, e.g. with selection.amount?.totalValue
+    } else {
+      // Installments are no longer available — restore your base total
+    }
+  },
+)
+```
+
+The callback receives an `InstallmentSelected?` payload:
+
+| Field                   | Type                  | Description                                                                                                   |
+| ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `installment`           | `Int`                 | Number of installments selected (e.g. `3`).                                                                    |
+| `label`                 | `String`              | The exact installment label rendered in the form, localized (e.g. `3x de R$875.00 - Total R$2,625.00`).        |
+| `amount`                | `InstallmentAmount?`  | `currency`, `value`, and `totalValue` as raw strings, exactly as reported by the installments plan.            |
+| `additionalData`        | `Map<String, Any?>?`  | Reserved for future use. Currently always `null`.                                                              |
+| `isMerchantInstallment` | `Boolean?`            | Reserved for the merchant-installments feature. Currently always `null` on Android.                            |
+
+Firing semantics:
+
+* Fires once when a default installment is pre-selected as the plan renders, so your total is correct from first paint.
+* Fires on every selection the shopper makes.
+* Fires with the recalculated default after the plan changes (for example, a BIN change).
+* Fires once with `null` when installments stop being available after a selection was already reported (for example, the shopper switches to a card without installments) — restore your base total.
+* Does not fire when the card form renders without installments, and registering no callback keeps the SDK behavior unchanged.
+* The callback runs on the main thread. Exceptions thrown inside it are caught by the SDK and never interrupt the payment flow.
 
 #### Payment status validation
 
@@ -199,7 +258,7 @@ This section explains how the SDK handles payment status when users cancel or le
 
 For synchronous payment methods like Google Pay, when a user cancels or closes the wallet UI before a payment service provider (PSP) response is received:
 
-* **SDK Status**: Returns `CANCELED` (CANCELLED_BY_USER)
+* **SDK Status**: Returns `CANCELED_BY_USER`
 * **Backend payment status**: Remains `PENDING` until PSP timeout or merchant cancellation
 * **Important**: The SDK will not return `REJECT` or `PROCESSING` in this scenario
 
@@ -416,7 +475,7 @@ continuePayment(
     showPaymentStatus: Boolean = true,
     checkoutSession: String? = null,
     countryCode: String? = null,
-    callbackPaymentState: ((String?) -> Unit)? = null
+    callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null
 )
 ```
 

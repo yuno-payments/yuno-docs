@@ -6,7 +6,16 @@
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno"
+      "url": "https://api-sandbox.y.uno",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno",
+      "description": "Production (EMEA)"
     }
   ],
   "paths": {
@@ -24,7 +33,7 @@
                       "type": "string",
                       "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
                     },
-                    "payment_method": {
+                    "payment_method_type": {
                       "type": "string",
                       "example": "APPLE_PAY"
                     },
@@ -35,7 +44,7 @@
                         "properties": {
                           "id": {
                             "type": "string",
-                            "example": "dom_1234567890abcdef"
+                            "example": "8a2f4b1c-6d3e-4f7a-9b21-0c5d8e7f6a43"
                           },
                           "domain": {
                             "type": "string",
@@ -43,6 +52,13 @@
                           },
                           "status": {
                             "type": "string",
+                            "description": "`CREATED`: registration with the wallet provider is in progress. `REGISTERED`: the domain is verified and can show the wallet button. `ERROR`: the provider rejected the registration (for example, the association file was not reachable); register the domain again after fixing it. `INACTIVE`: the domain was deleted.",
+                            "enum": [
+                              "CREATED",
+                              "REGISTERED",
+                              "ERROR",
+                              "INACTIVE"
+                            ],
                             "example": "REGISTERED"
                           },
                           "created_at": {
@@ -63,17 +79,17 @@
                     "summary": "Accepted",
                     "value": {
                       "account_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                      "payment_method": "APPLE_PAY",
+                      "payment_method_type": "APPLE_PAY",
                       "domains": [
                         {
-                          "id": "dom_1234567890abcdef",
+                          "id": "8a2f4b1c-6d3e-4f7a-9b21-0c5d8e7f6a43",
                           "domain": "checkout.example.com",
                           "status": "REGISTERED",
                           "created_at": "2026-01-22T10:30:00Z",
                           "updated_at": "2026-01-22T10:30:00Z"
                         },
                         {
-                          "id": "dom_3456789012cdefgh",
+                          "id": "c71e2d9a-5b04-4e6f-8a3d-2f1b7c9e0d55",
                           "domain": "shop.example.com",
                           "status": "REGISTERED",
                           "created_at": "2026-01-22T10:30:00Z",
@@ -94,7 +110,9 @@
             "name": "X-Idempotency-Key",
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required: requests without it are rejected with 400 INVALID_PARAMETERS. Stored for audit only and not enforced today: every call creates a new registration attempt and a new call to the wallet provider, even when it repeats a previous key.",
+            "required": true
           }
         ],
         "operationId": "post_v1-payment-methods-domains",
@@ -110,27 +128,40 @@
                   },
                   "connection_id": {
                     "type": "string",
-                    "description": "The unique identifier of the connection (MAX 64; MIN 36)"
+                    "description": "The unique identifier of the wallet connection the domains are registered on (UUID). With Yuno's Apple Pay certificate, a connection holds at most 99 domains."
                   },
                   "payment_method_type": {
                     "type": "string",
-                    "description": "Single payment method to register for all domains."
+                    "description": "Single payment method to register for all domains.",
+                    "enum": [
+                      "APPLE_PAY",
+                      "GOOGLE_PAY"
+                    ]
                   },
                   "domains": {
                     "type": "array",
                     "items": {
                       "properties": {
                         "url": {
-                          "type": "string"
+                          "type": "string",
+                          "description": "Fully qualified domain name, without scheme or path (for example, `checkout.example.com`)."
                         }
                       },
-                      "type": "object"
+                      "type": "object",
+                      "required": [
+                        "url"
+                      ]
                     },
-                    "description": "Array of domains to register."
+                    "description": "Domains to register, 1 to 50 per request. Each subdomain is a separate domain.",
+                    "minItems": 1,
+                    "maxItems": 50
                   }
                 },
                 "required": [
-                  "account_id"
+                  "account_id",
+                  "connection_id",
+                  "payment_method_type",
+                  "domains"
                 ]
               },
               "examples": {
