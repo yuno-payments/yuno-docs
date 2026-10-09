@@ -1,0 +1,186 @@
+---
+hidden: true
+title: "Native modules"
+sidebarTitle: "Add native modules"
+description: "Add a third-party native SDK, antifraud or 3DS, to the Yuno SDK as an optional module, without changing your transaction code."
+---
+
+The Yuno SDK stays small on purpose: every third-party native SDK ships as a separate, optional module. You add only the modules your account uses, the SDK picks them up when the app starts, and your `Transaction` code does not change.
+
+<Note>
+Installing a module does not make the SDK use it. A module runs only when the provider is enabled for your Yuno account and the backend requests it for the current transaction.
+</Note>
+
+## How it works
+
+1. You add the module to your app next to the SDK, as a package product, a pod or a Gradle dependency.
+2. When the app starts, the module registers itself with the SDK. On iOS with CocoaPods you call its `register()` once; everywhere else there is no code to write.
+3. During a transaction, the SDK asks Yuno which providers apply and uses the matching module: it collects a device fingerprint and attaches it to the payment, or runs the 3DS challenge natively instead of in a WebView.
+
+## Available modules
+
+| Module | What it adds | iOS | Android |
+|---|---|---|---|
+| ClearSale antifraud | Collects the ClearSale device fingerprint and sends it as the payment's `customer.device_fingerprint` | `YunoAntifraudClearsale` | `yuno-sdk-antifraud-clearsale` |
+| PayPal Magnes antifraud | Collects PayPal's Magnes device data and attaches it to the payment | `YunoAntifraudMagnes` | Not available |
+| Koin antifraud | Collects the Koin device fingerprint and sends it as `customer.device_fingerprint` | Not available | `yuno-sdk-antifraud-koin` |
+| Netcetera 3DS | Runs 3D Secure challenges natively in your app, for payments and enrollment | `SdkPaymentsNetcetera` | `yuno-sdk-3ds-netcetera` |
+
+Minimum platform: iOS 14.0, Android 6.0 (API 23). Every module requires the same SDK version you install from [Get Started](/docs/yuno-sdk/get-started#install).
+
+## Install
+
+<Tabs>
+  <Tab title="iOS">
+
+**Swift Package Manager.** Every module lives in the same package as the SDK, so there is one URL to add. In Xcode go to **File > Add Package Dependencies...**, add `https://github.com/yuno-payments/yuno-sdk-ios`, pin the same version as the SDK, and in the product list tick `SdkPayments` plus the modules you need: `YunoAntifraudClearsale`, `YunoAntifraudMagnes`, `SdkPaymentsNetcetera`.
+
+**CocoaPods.** Add the pods you need next to `SdkPayments`. Each module pod depends on the SDK, so the versions stay compatible:
+
+```ruby
+platform :ios, '14.0'
+
+target 'YourApp' do
+  use_frameworks!
+  pod 'SdkPayments'
+  # Add only the modules your account uses
+  pod 'YunoClearsaleAntifraud'
+  pod 'YunoAntifraudMagnes'
+  pod 'SdkPaymentsNetcetera'
+end
+```
+
+Then run `pod install`.
+
+  </Tab>
+  <Tab title="Android">
+
+Add the modules you need to your app module's build file, next to the SDK. Each module brings its vendor SDK and its own dependencies.
+
+```kotlin
+repositories {
+    maven { url = uri("https://yunopayments.jfrog.io/artifactory/snapshots-libs-release") }
+}
+
+dependencies {
+    implementation("com.yuno.payments:android-sdk:3.0.0-alpha2")
+    // Add only the modules your account uses
+    implementation("com.yuno.payments:yuno-sdk-antifraud-clearsale:1.0.0")
+    implementation("com.yuno.payments:yuno-sdk-antifraud-koin:1.0.0")
+    implementation("com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1")
+}
+```
+
+<Note>
+The Netcetera module also needs Netcetera's Maven repository declared in your project, because its 3DS SDK is not on Maven Central. See [Netcetera 3DS on Android](/docs/sdks/external-native-modules/netcetera-3ds-android#step-1-declare-the-netcetera-maven-repository).
+</Note>
+
+  </Tab>
+</Tabs>
+
+## Activate
+
+<Tabs>
+  <Tab title="iOS">
+
+Modules installed through Swift Package Manager are dynamic frameworks and register themselves when the app launches. Nothing to add beyond the product in your target.
+
+CocoaPods ships each module as a static framework, which cannot register itself. Call the module's `register()` once, before `SdkPayments.initialize`, for example in `application(_:didFinishLaunchingWithOptions:)`:
+
+```swift
+import SdkPayments
+import YunoAntifraudClearsale
+import YunoAntifraudMagnes
+import SdkPaymentsNetcetera
+
+YunoAntifraudClearsale.register()
+YunoAntifraudMagnes.register()
+SdkPaymentsNetcetera.register()
+
+SdkPayments.initialize(apiKey: "your-public-api-key")
+```
+
+Register only the modules you installed; the example registers all three for reference.
+
+  </Tab>
+  <Tab title="Android">
+
+Every module registers itself when your app process starts, through [Jetpack App Startup](https://developer.android.com/topic/libraries/app-startup). Keep your usual initialization:
+
+```kotlin
+import com.yuno.payments.sdk.api.SdkPayments
+
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        SdkPayments.initialize(this, apiKey = "your-public-api-key")
+    }
+}
+```
+
+To confirm a module loaded, filter Logcat by its tag right after the app starts: `adb logcat -s ClearSaleAntifraud`, `adb logcat -s KoinAntifraud`.
+
+<Accordion title="If your app disables App Startup">
+
+Some apps remove the App Startup content provider from their manifest to control startup work themselves. In that case run the initializers yourself, before any transaction:
+
+```kotlin
+import androidx.startup.AppInitializer
+import com.yuno.antifraud.clearsale.ClearSaleAntifraudInitializer
+import com.yuno.antifraud.koin.KoinAntifraudInitializer
+import com.yuno.threedsecure.netcetera.Netcetera3DSInitializer
+
+val initializer = AppInitializer.getInstance(applicationContext)
+initializer.initializeComponent(ClearSaleAntifraudInitializer::class.java)
+initializer.initializeComponent(KoinAntifraudInitializer::class.java)
+initializer.initializeComponent(Netcetera3DSInitializer::class.java)
+```
+
+</Accordion>
+
+  </Tab>
+</Tabs>
+
+<Tip>
+Once a module is registered the SDK uses it automatically. You do not change any payment, enrollment or 3DS code.
+</Tip>
+
+## What each module needs from your app
+
+### Antifraud modules
+
+- The fingerprint travels as the payment's `customer.device_fingerprint`. Nothing changes in the data you send.
+- Collection runs when the shopper confirms the payment and is bounded by the `timeout` configured for the provider in your Yuno account (5 seconds by default). Keep it short: the shopper waits for it.
+- None of them requests location. On Android, do not add `play-services-location` version 21 or higher next to the ClearSale module: those versions are incompatible with the bundled ClearSale SDK.
+
+### Netcetera 3DS
+
+- Runs the 3D Secure challenge inside your app, for payments and enrollment, instead of the WebView challenge. If you customize the SDK styles, they propagate to the challenge screen.
+- The challenge is still presented full-screen by the SDK: it does not come through `showView`.
+- Sandbox only: the Netcetera SDK needs a Visa test root certificate (`acq-root-certeq-prev-environment.crt`) in your app bundle. Ask your Yuno TAM for it, it is not distributed publicly. On iOS, add it to your app target and check it appears under **Build Phases > Copy Bundle Resources**. Production builds do not use it.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="The module is installed but nothing changes">
+    Check, in this order: the provider is enabled for your Yuno account (ask your TAM); the module registered at startup (iOS with CocoaPods: `register()` runs before `SdkPayments.initialize`; Android: the module's line shows in Logcat); and, on Android, that your app is not removing the App Startup provider from the manifest.
+  </Accordion>
+  <Accordion title="pod install: required a higher minimum deployment target">
+    The `platform` line in your Podfile is below the module's minimum. Use `platform :ios, '14.0'`.
+  </Accordion>
+  <Accordion title="pod install: could not find compatible versions for pod SdkPayments">
+    A module pod depends on the same SDK line you install. If your Podfile pins an older `SdkPayments`, align it with the version from Get Started.
+  </Accordion>
+  <Accordion title="Swift Package Manager: no such module when importing an antifraud product">
+    Modules register themselves, so you do not need to import them from Swift. Remove the import line and the project builds.
+  </Accordion>
+  <Accordion title="Android: NoClassDefFoundError mentioning LocationServices on every collection">
+    Expected with the ClearSale module: the location library is absent on purpose. The error is caught inside the SDK and the collection still completes.
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+- [Get Started](/docs/yuno-sdk/get-started). Install and initialize the SDK.
+- [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). Return to your app after an external step.
+- [Netcetera 3DS on Android](/docs/sdks/external-native-modules/netcetera-3ds-android). Maven repository and permissions.
