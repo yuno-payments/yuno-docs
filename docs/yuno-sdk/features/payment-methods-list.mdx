@@ -156,6 +156,31 @@ The controller you pass to `getPaymentMethodsViews`. Only `onPaymentSelected` is
 The **Edit / remove** control that lets a shopper delete a saved method — and the only thing that makes `onUnenroll` fire — is rendered only when **`edit_payment_method_list`** is enabled in **Checkout Builder → Styling** in your [Yuno Dashboard](https://dashboard.y.uno/). It is **off by default** on iOS and Android, so until you turn it on the saved methods show no remove affordance and `onUnenroll` is never invoked.
 </Note>
 
+## Web: change the payment method after `start()`
+
+On Web, `start()` without `data` mounts the form of the selected method inside your `elementSelector`. If the user then picks another method, call `start()` again on the same transaction with the new `PaymentMethodSelected`. The SDK removes the first form and mounts the new one. You do not need a new transaction.
+
+```javascript
+await transaction.start({ paymentMethod: { type: 'CARD' } })
+
+// The user picks another method. Wait for the first start() to resolve before you call it again.
+await transaction.start({ paymentMethod: { type: 'PSE' } })
+```
+
+`onStatus` is not invoked for the form that is replaced. It never started a payment.
+
+| When you call `start()` again | What happens |
+|---|---|
+| With another payment method, or another saved card | The SDK replaces the form on the page with the new one. |
+| With the same method, while its form is on the page | It throws. To submit that form from your own button, call [`transaction.submit()`](/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button). |
+| With the same method, after `unmount()` | The SDK mounts the form again. |
+| After a `start()` that failed to mount the form | The SDK mounts the form. |
+| After a declined payment that the user can retry | The SDK mounts the new form, and the payment uses the current checkout session. |
+| Before the previous `start()` resolved, or while a payment is in progress | It throws. Wait for `start()` to resolve, or for the status of the payment, and call it again. |
+| With `data`, or after a `start()` that passed `data` | It throws. A `start()` with `data` creates the payment by itself, so it runs once per transaction. Create a new transaction. |
+
+On an enrollment transaction, `start()` takes no payment method, so there is no form to change. You can call it again after `unmount()`, or after a `start()` that failed to mount the form, until the enrollment reaches `ENROLLED`.
+
 ## Notes
 
 - `getPaymentMethodsViews` is synchronous.
