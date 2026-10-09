@@ -169,10 +169,11 @@ struct CheckoutView: View {
 
 | Before `YunoPaymentFullDelegate` (inherited) | After `SdkPayments.TransactionController` | Notes |
 |---|---|---|
-| `yunoPaymentResult(_:)` | `onStatus(status:)` | `status` and `substatus` are passed through from the backend. See [`Status`](/docs/yuno-sdk/reference/status). |
+| `yunoPaymentResult(_:)` | `onStatus(status:)` | `status` and `substatus` are passed through from the backend. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
 | `yunoCreatePayment(with:)` / `yunoCreatePayment(with:information:)` | Override `createPayment(token:)` | Optional in both. Override it if your backend creates the payment: create it inside the handler and return. The handler receives the full One-Time Token as a dictionary, so one method replaces both legacy variants. Without an override the SDK creates the payment itself. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment). |
 | `onLoading(isLoading:)` | `showLoading(isLoading:)` | Optional in both. In Full the SDK never invoked `onLoading`: it always showed its own loader. In the unified API the SDK still shows its loader unless you override `showLoading`; once overridden, the SDK hides its own loader and reports the state to you. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
 | `onInstallmentSelected(_:)` | `onInstallmentSelected(_:)` | Optional in both. Same trigger and payload fields; the payload is now the `SdkPayments.InstallmentSelected` struct instead of `YunoInstallmentSelected`. Fires when the shopper selects or changes an installment in the SDK's card form, including the SDK's default auto-selection, and with `nil` when the selection no longer applies. See [`onInstallmentSelected`](/docs/yuno-sdk/controllers/on-installment-selected). |
+| `onShippingAddressChanged(_:shippingInfo:)` (from `YunoShippingDelegate`) | `onShippingAddressChanged(_:shippingInfo:)` via `ShippingAddressHandling` | Optional in both. Same async signature and the same role: real-time shipping updates on the Apple Pay sheet. Conform the same controller object to `SdkPayments.ShippingAddressHandling`, which inherits from `TransactionController`; the SDK picks it up from the `controller` you pass in the config. The types drop the `Yuno` prefix (`ShippingInfo`, `ShippingUpdate`), and the completion-based variant from `YunoPaymentDelegate` is gone. See [`onShippingAddressChanged`](/docs/yuno-sdk/controllers/on-shipping-address-changed). |
 
 ### Payment-list events (`SdkPayments.PaymentListController`)
 
@@ -188,7 +189,7 @@ struct CheckoutView: View {
 |---|---|---|
 | `Yuno.getPaymentMethodViewAsync(delegate:) async -> some View` | `transaction.getPaymentMethodsViews(types:controller:) -> [SdkPayments.PaymentMethodType: AnyView]` | Returns a dictionary keyed by type. Pass `[.PAYMENT_METHOD_LIST]` for the equivalent of Full. You can also request `.APPLE_PAY()` in the same call to get the wallet button. |
 | `Yuno.startPayment(showPaymentStatus:)` | `transaction.start(paymentSelected:)` | The SDK no longer remembers the selection internally. Pass it explicitly from your model. The `showPaymentStatus` argument moved to `SdkPayments.TransactionConfig.showStatusScreen`. |
-| `Yuno.continuePayment()` | *(removed)* | Returning from `createPayment` continues the flow: the SDK polls the status, runs 3DS if needed and calls `onStatus`. Set [`autoContinuePayment`](/docs/yuno-sdk/reference/transaction-config#autocontinuepayment) to `false` only if you need the SDK to stop right after the payment is created. |
+| `Yuno.continuePayment()` | *(removed)* | Returning from `createPayment` continues the flow: the SDK polls the status, runs 3DS if needed and calls `onStatus`. Set [`autoContinuePayment`](/docs/yuno-sdk/reference/objects-you-pass#autocontinuepayment) to `false` only if you need the SDK to stop right after the payment is created. |
 | `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Same role: forward the URL your app receives when it returns from an external redirect so the SDK resumes the transaction. See [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). |
 
 ## Behavior changes
@@ -211,5 +212,5 @@ struct CheckoutView: View {
 
 - [Get Started](/docs/yuno-sdk/get-started). Full unified-API walkthrough.
 - [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). The new `getPaymentMethodsViews` API.
-- [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config). Complete field reference.
+- [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Complete field reference.
 - [Migration / Lite](/docs/yuno-sdk/migration/ios/payment/lite). The simpler case (single pre-selected method).

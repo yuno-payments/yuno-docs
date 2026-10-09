@@ -1,0 +1,90 @@
+---
+hidden: true
+title: "onShippingAddressChanged"
+sidebarTitle: "Shipping address (onShippingAddressChanged)"
+description: "Invoked when the shopper selects or changes the shipping address in a wallet payment sheet."
+---
+
+`onShippingAddressChanged` is invoked every time the shopper selects or changes the shipping address in the wallet's payment sheet, including the wallet's default address when the sheet opens. The SDK delivers the redacted address and applies what you return live on the sheet: new totals, shipping options, or an error that blocks the payment until the shopper picks another address. Overriding it is optional. Without it, the wallet flow behaves exactly as without callbacks.
+
+## Supported wallets
+
+| Platform | Wallet | `paymentMethodType` |
+|---|---|---|
+| iOS | Apple Pay | `APPLE_PAY` |
+| Android | Google Pay | `GOOGLE_PAY` |
+
+Payment flows only. The callback is not raised for cards or any other payment method.
+
+## What you receive
+
+| Field | Type | Description |
+|---|---|---|
+| `paymentMethodType` | String | The wallet that raised the callback, as listed in [Supported wallets](#supported-wallets). |
+| `shippingInfo.shippingAddress.city` | String? | City of the selected address. |
+| `shippingInfo.shippingAddress.state` | String? | State or region. |
+| `shippingInfo.shippingAddress.postalCode` | String? | Postal code. |
+| `shippingInfo.shippingAddress.countryCode` | String? | Country code. |
+
+Wallets redact the address until the payment is authorized, so any of the address fields may be absent.
+
+## What you return
+
+A `ShippingUpdate`, or `null` (`nil` on iOS) to keep what the sheet already displays. Every field of the update is optional: leave one out to keep its current value.
+
+| Field | Type | Description |
+|---|---|---|
+| `errors` | [ShippingError]? | Reasons the selection cannot be fulfilled, each with a `code` and a `message`. Returning one keeps the sheet open and blocks the payment until the shopper picks another address. |
+| `summaryItems` | [SummaryItem]? | The sheet breakdown: `id`, `label` and `amount` per line. The last line is displayed as the grand total and its label as the payee line. Labels reach the sheet verbatim. |
+| `shippingMethods` | [ShippingMethod]? | The shipping options: `id`, `label`, optional `detail`, `amount`, optional `deliveryEstimate` and the `summaryItems` that apply when the option is selected. Sending them preselects the first one. The SDK answers option switches from each option's own breakdown without calling you again, so an option without a breakdown cannot reprice the sheet. |
+
+Amounts are `ShippingAmount` values: `value` in the major unit of `currency` (`12.34` for USD 12.34). `currency` must match the checkout session currency; a mismatch invalidates the whole update. `deliveryEstimate` is a `from` and `to` pair of `YYYY-MM-DD` dates, rendered next to the option on iOS 15 and later.
+
+## Timing
+
+On iOS the SDK sets no deadline of its own, so the only time limit is the wallet's: the sheet stays open while you answer. If you never answer, the wallet's own deadline applies, the sheet is dismissed and the transaction ends as cancelled.
+
+## Signature
+
+<Tabs>
+  <Tab title="iOS">
+
+Conform the object you pass as `controller` to `ShippingAddressHandling`, a protocol that inherits from `TransactionController`. The SDK checks whether the controller adopts it; a controller that does not adopt it receives no shipping callbacks.
+
+```swift
+final class Checkout: ShippingAddressHandling {
+
+    func onStatus(status: TransactionStatus) { /* ... */ }
+
+    func onShippingAddressChanged(
+        _ paymentMethodType: String,
+        shippingInfo: ShippingInfo
+    ) async -> ShippingUpdate? {
+        let quote = await backend.quoteShipping(to: shippingInfo.shippingAddress)
+        return ShippingUpdate(
+            summaryItems: quote.summaryItems,
+            shippingMethods: quote.shippingMethods
+        )
+    }
+}
+```
+
+  </Tab>
+  <Tab title="Android">
+
+Android wires it as a field on the payment constructor of [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config), typed `(suspend (String, ShippingInfo) -> ShippingUpdate?)?` and `null` by default. The enrollment constructor does not take it.
+
+```kotlin
+onShippingAddressChanged = { paymentMethodType, shippingInfo ->
+    backend.quoteShipping(shippingInfo.shippingAddress)
+}
+```
+
+  </Tab>
+</Tabs>
+
+## Related
+
+- [Listen to events](/docs/yuno-sdk/controllers/listen-to-events). The other informational controllers.
+- [`onStatus`](/docs/yuno-sdk/controllers/on-status). The final outcome of the transaction.
+- [Controllers overview](/docs/yuno-sdk/controllers/overview). How controllers are wired per platform.
