@@ -1,12 +1,16 @@
 ---
 title: "Remote Yuno MCP Server"
-description: "Provides a hosted MCP endpoint with API key auth, IP binding, rate limits, and session TTLs"
+description: "Provides a hosted, stateless MCP endpoint with API key auth"
 ---
 
-The Remote Yuno MCP Server implements the Model Context Protocol (MCP) to provide secure, remote access to Yuno services. It acts as a hardened proxy so AI agents and automation clients can call Yuno APIs over MCP with enterprise-grade security and session controls.
+The Remote Yuno MCP Server implements the Model Context Protocol (MCP) to provide secure, remote access to Yuno services. It acts as a hosted proxy so AI agents and automation clients can call Yuno APIs over MCP without running a local process.
 
 <Note>
   Looking for the one-click Claude/ChatGPT connector instead of building your own MCP client? See [Use Yuno with Claude and ChatGPT](/docs/ai-capabilities/use-yuno-with-claude-and-chatgpt).
+</Note>
+
+<Note>
+  Just need an agent to search and read Yuno's documentation, with no API credentials and no ability to act on your account? See the read-only [Documentation MCP](/setup-mcp) instead.
 </Note>
 
 ## Key capabilities
@@ -14,24 +18,22 @@ The Remote Yuno MCP Server implements the Model Context Protocol (MCP) to provid
 ### Security
 
 * API key auth: Requires `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, and `YUNO_ACCOUNT_CODE`
-* IP validation: Sessions are bound to client IPs
-* Rate limiting: 15 requests per minute per session
-* Session timeouts: 30 minutes idle; 6 hours absolute
+* Stateless: The server keeps no session, so every request carries its own credentials
 
 ### Protocols
 
-* Streamable HTTP transport for bidirectional communication
+* Streamable HTTP transport in stateless mode: send requests with `POST /mcp`. `GET` and `DELETE` return `405 Method Not Allowed`
 * JSON-RPC 2.0 for standardized request/response
-
-### Session management
-
-* Automatic creation, refresh, and cleanup
-* Scheduled cleanup every 5 minutes
-* Redis backend for persistent session and rate-limit storage
 
 ## When to use the remote server
 
-Use the Remote MCP Server when you want centralized security, observability, and policy enforcement (IP binding, rate limits, TTLs). It's also useful when teams and tools should connect without distributing raw API credentials locally. For rapid prototyping on a developer machine, the [local MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) (CLI-launched) may be sufficient.
+Use the Remote MCP Server when you want a hosted endpoint with centralized observability instead of running an MCP process on each developer's machine. Clients still authenticate with the same `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, and `YUNO_ACCOUNT_CODE` as the local MCP, passed as the `public-api-key`, `private-secret-key`, and `account-code` request headers rather than environment variables. For rapid prototyping on a developer machine, the [local MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) (CLI-launched) may be sufficient.
+
+## Tool arguments
+
+Tool arguments are snake_case. The server rejects an unknown key, including a camelCase spelling, instead of ignoring it. Sending `idempotencyKey` fails with an error that names the accepted field, `idempotency_key`.
+
+`paymentAuthorize` places a hold or refuses the call. Card and wallet methods, including Google Pay and Apple Pay, are authorized with capture disabled. A payment method the server cannot hold is refused with `UNSUPPORTED_AUTHORIZATION`, and nothing is sent upstream as a charge.
 
 ## Connecting from MCP-compatible clients
 
@@ -45,7 +47,7 @@ Replace the placeholder header values below with your `YUNO_PUBLIC_API_KEY`, `YU
 {
   "mcpServers": {
     "Yuno": {
-      "transport": "http",
+      "type": "http",
       "url": "https://mcp.prod.y.uno/mcp",
       "headers": {
         "public-api-key": "<YUNO_PUBLIC_API_KEY>",
@@ -55,6 +57,15 @@ Replace the placeholder header values below with your `YUNO_PUBLIC_API_KEY`, `YU
     }
   }
 }
+```
+
+To add the server from Claude Code, run:
+
+```bash
+claude mcp add --transport http yuno https://mcp.prod.y.uno/mcp \
+  --header "public-api-key: <YUNO_PUBLIC_API_KEY>" \
+  --header "private-secret-key: <YUNO_PRIVATE_SECRET_KEY>" \
+  --header "account-code: <YUNO_ACCOUNT_CODE>"
 ```
 
 <Note>
