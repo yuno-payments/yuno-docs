@@ -2,7 +2,10 @@
 hidden: true
 title: "Where do I start?"
 description: "Decide which parameters and controllers to use based on what you want to build."
+mode: "wide"
 ---
+
+import { ConfigBuilder } from "/snippets/ConfigBuilder.jsx";
 
 The Yuno SDKs expose a single `Transaction` class. What changes between 
 integrations is **which parameters you pass** and **which controllers you 
@@ -11,7 +14,123 @@ override**. Each decision is independent. Combine them freely.
 This page walks through the decisions you'll make and points you to the 
 relevant documentation for each.
 
+Flip the switch in each step and the code on the right assembles itself for your platform. Every block the code uses is also written under its step, so you can compose by hand: start from the base, then add the block of each step where you chose the non-default answer. A configuration block replaces the `TransactionConfig`, a payment-method block replaces the `PaymentMethodSelected`, a flag line goes inside `TransactionConfig`, and a controller block goes inside your controller class, or inside the transaction options on Web.
+
+<div className="ysdk-qs">
+
+<div className="ysdk-qs-main">
+
+## Base
+
+The SDK does everything: it shows the form, creates the payment, handles 3DS and reports the result to `onStatus`. Create the checkout session with `workflow: "SDK_SEAMLESS"` for this base.
+
+<Accordion title="Base code">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="base" data-platform="ios" data-mode="base">
+
+```swift
+import SdkPayments
+
+final class Checkout: SdkPayments.TransactionController {
+
+    func start() {
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: "CARD"
+        )
+
+        let config = SdkPayments.TransactionConfig(
+            checkoutSession: "session-from-backend",
+            countryCode: "US",
+            language: "en",
+            controller: self
+        )
+
+        SdkPayments.Transaction(config: config)
+            .start(paymentSelected: paymentSelected)
+    }
+
+    func onStatus(status: SdkPayments.TransactionStatus) {
+        print("Final status: \(status.status)")
+    }
+}
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="base" data-platform="android" data-mode="base">
+
+```kotlin
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
+
+class CheckoutActivity : ComponentActivity(), TransactionController {
+
+    private fun startCheckout() {
+        val paymentSelected = PaymentMethodSelected(
+            paymentMethodType = "CARD"
+        )
+
+        val config = TransactionConfig(
+            checkoutSession = "session-from-backend",
+            countryCode = "US",
+            language = "en",
+            controller = this
+        )
+
+        Transaction(config)
+            .start(paymentSelected = paymentSelected)
+    }
+
+    override fun onStatus(status: TransactionStatus) {
+        println("Final status: ${status.status}")
+    }
+}
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="base" data-platform="web" data-mode="base">
+
+```typescript
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'US',
+    language: 'en',
+    elementSelector: '#payment-form',
+    onStatus: (result) => {
+        console.log('Final status:', result.status)
+    },
+})
+
+const paymentMethod = { type: 'CARD' }
+
+await transaction.start({ paymentMethod })
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+<div data-decision="enrollment">
+
 ## 1. Are you processing a payment or saving a payment method?
+
+<div data-toggle="enrollment"></div>
 
 This decision affects which session type you create on your backend and 
 pass to the SDK.
@@ -37,7 +156,71 @@ time.
 See [Sessions](/docs/basic-concepts/sessions) and 
 [Enrollment](/docs/yuno-sdk/features/enrollment).
 
+<Accordion title="Use this configuration to enroll instead of charging">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="enrollment" data-platform="ios" data-mode="config">
+
+```swift
+        let config = SdkPayments.TransactionConfig(
+            customerSession: "session-from-backend",
+            countryCode: "US",
+            language: "en",
+            controller: self
+        )
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="enrollment" data-platform="android" data-mode="config">
+
+```kotlin
+        val config = TransactionConfig(
+            customerSession = "session-from-backend",
+            countryCode = "US",
+            language = "en",
+            controller = this
+        )
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="enrollment" data-platform="web" data-mode="config">
+
+```typescript
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'US',
+    language: 'en',
+    elementSelector: '#enrollment-form',
+    onStatus: (result) => {
+        console.log('Final status:', result.status)
+    },
+})
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="create-payment">
+
 ## 2. Who creates the payment?
+
+<div data-toggle="create-payment"></div>
 
 This decision affects whether you override `createPayment`.
 
@@ -77,7 +260,62 @@ This decision affects whether you override `createPayment`.
 
 See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
 
+<Accordion title="Add this block to your controller when you create the payment">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="create-payment" data-platform="ios" data-mode="controller">
+
+```swift
+    func createPayment(token: [String: Any]) async throws {
+        // Create the payment from your backend with POST /v1/payments, then return.
+        try await myBackend.createPayment(token: token)
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="create-payment" data-platform="android" data-mode="controller">
+
+```kotlin
+    override suspend fun createPayment(token: Map<String, Any>) {
+        // Create the payment from your backend with POST /v1/payments, then return.
+        myBackend.createPayment(token)
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="create-payment" data-platform="web" data-mode="controller">
+
+```typescript
+    createPayment: async (token) => {
+        // Create the payment from your backend with POST /v1/payments, then resolve.
+        await myBackend.createPayment(token.token)
+    },
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="transaction-data">
+
 ## 3. Who collects the payment data?
+
+<div data-toggle="transaction-data"></div>
 
 This decision affects whether you pass `transactionData` in 
 `PaymentMethodSelected`.
@@ -93,7 +331,86 @@ This decision affects whether you pass `transactionData` in
 See [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) 
 and [`TransactionData`](/docs/yuno-sdk/reference/objects-you-pass#transaction-data).
 
+<Accordion title="Use this `PaymentMethodSelected` when you collected the data yourself">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="transaction-data" data-platform="ios" data-mode="selected">
+
+```swift
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: "CARD",
+            transactionData: SdkPayments.TransactionData(
+                card: SdkPayments.CardTransactionData(
+                    number: cardNumber,
+                    securityCode: cvv,
+                    expirationMonth: expMonth,
+                    expirationYear: expYear,
+                    holderName: holder
+                )
+            )
+        )
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="transaction-data" data-platform="android" data-mode="selected">
+
+```kotlin
+        val paymentSelected = PaymentMethodSelected(
+            paymentMethodType = "CARD",
+            transactionData = TransactionData(
+                card = CardData(
+                    number = number,
+                    securityCode = cvv,
+                    expirationMonth = expMonth,
+                    expirationYear = expYear,
+                    holderName = holder
+                )
+            )
+        )
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="transaction-data" data-platform="web" data-mode="selected">
+
+```typescript
+const paymentMethod = {
+    type: 'CARD',
+    data: {
+        card: {
+            holderName: 'John Doe',
+            number: '4111111111111111',
+            securityCode: '123',
+            expirationMonth: 12,
+            expirationYear: 28,
+        },
+    },
+}
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="show-view">
+
 ## 4. Who controls the form's UI? (iOS, Android)
+
+<div data-toggle="show-view"></div>
 
 This decision affects whether you override `showView`.
 
@@ -107,7 +424,46 @@ This controller is available on iOS and Android only.
 
 See [`showView`](/docs/yuno-sdk/controllers/show-view).
 
+<Accordion title="Add this block to your controller when you embed the form">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="show-view" data-platform="ios" data-mode="controller">
+
+```swift
+    func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep) {
+        // Place `view` in your own layout. Call process.onSubmit() from your own button.
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="show-view" data-platform="android" data-mode="controller">
+
+```kotlin
+    override fun showView(view: Fragment, process: TransactionProcess, step: TransactionViewStep) {
+        // Place the fragment in your own layout. Call process.onSubmit() from your own button.
+    }
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="show-loading">
+
 ## 5. Who shows the loader?
+
+<div data-toggle="show-loading"></div>
 
 This decision affects whether you override `showLoading`.
 
@@ -118,7 +474,57 @@ This decision affects whether you override `showLoading`.
 
 See [`showLoading`](/docs/yuno-sdk/controllers/show-loading).
 
+<Accordion title="Add this block to your controller when you show your own loader">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="show-loading" data-platform="ios" data-mode="controller">
+
+```swift
+    func showLoading(isLoading: Bool) {
+        // Show or hide your own loader.
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="show-loading" data-platform="android" data-mode="controller">
+
+```kotlin
+    override fun showLoading(isLoading: Boolean) {
+        // Show or hide your own loader.
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="show-loading" data-platform="web" data-mode="controller">
+
+```typescript
+    showLoading: (isLoading) => mySpinner.toggle(isLoading),
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="status-screen">
+
 ## 6. Should the SDK show a result screen after the transaction?
+
+<div data-toggle="status-screen"></div>
 
 This decision is controlled by a flag in `TransactionConfig`, not by 
 overriding a controller.
@@ -135,6 +541,48 @@ react accordingly.
 
 See [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config) 
 and [`onStatus`](/docs/yuno-sdk/controllers/on-status).
+
+<Accordion title="Add this line to `TransactionConfig` to show the SDK's result screen">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="status-screen" data-platform="ios" data-mode="config-insert">
+
+```swift
+            showStatusScreen: true,
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="status-screen" data-platform="android" data-mode="config-insert">
+
+```kotlin
+            showStatusScreen = true,
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="status-screen" data-platform="web" data-mode="config-insert">
+
+```typescript
+    showStatusScreen: true,
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
 
 ## Always implement `onStatus`
 
@@ -153,14 +601,14 @@ See [`onStatus`](/docs/yuno-sdk/controllers/on-status) and
 
 ## Quick reference
 
-| Decision | Default | To change it |
-|---|---|---|
-| Session type |  | Pass `checkoutSession` or `customerSession` |
-| Who creates the payment | SDK | Override `createPayment` |
-| Who collects the data | SDK shows forms | Pass `transactionData` |
-| Who renders the form UI (iOS, Android) | SDK presents full-screen | Override `showView` |
-| Who shows the loader | SDK shows full-screen loader | Override `showLoading` |
-| Show SDK's result screen? | No | Set `showStatusScreen: true` in `TransactionConfig` |
+| Decision | Default | To change it | Read |
+|---|---|---|---|
+| Session type |  | Pass `checkoutSession` or `customerSession` | [Enrollment](/docs/yuno-sdk/features/enrollment) |
+| Who creates the payment | SDK | Override `createPayment` | [`createPayment`](/docs/yuno-sdk/controllers/create-payment) |
+| Who collects the data | SDK shows forms | Pass `transactionData` | [`TransactionData`](/docs/yuno-sdk/reference/objects-you-pass#transaction-data) |
+| Who renders the form UI (iOS, Android) | SDK presents full-screen | Override `showView` | [`showView`](/docs/yuno-sdk/controllers/show-view) |
+| Who shows the loader | SDK shows full-screen loader | Override `showLoading` | [`showLoading`](/docs/yuno-sdk/controllers/show-loading) |
+| Show SDK's result screen? | No | Set `showStatusScreen: true` in `TransactionConfig` | [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config) |
 
 ## Next steps
 
@@ -170,3 +618,9 @@ See [`onStatus`](/docs/yuno-sdk/controllers/on-status) and
   `TransactionConfig`, `PaymentMethodSelected`, and `TransactionData`.
 - [Controllers](/docs/yuno-sdk/controllers/overview). Full reference for each controller 
   and what changes when you override it.
+
+</div>
+
+<ConfigBuilder />
+
+</div>
