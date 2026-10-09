@@ -135,7 +135,7 @@ This object represents the payment created after generating the checkout session
     </ParamField>
 
     <ParamField body="value" type="number">
-      The payment amount (multiple of 0.0001).
+      The payment amount (multiple of 0.0001). With a Yuno promotion it is the amount you sent, before the discount: Yuno charges `value` minus `discount_amount`.
 
       Example: 111111
     </ParamField>
@@ -167,15 +167,37 @@ This object represents the payment created after generating the checkout session
     </ParamField>
 
     <ParamField body="refunded" type="number">
-      The refund amount (multiple of 0.0001).
+      The refund amount (multiple of 0.0001). With a Yuno promotion it is counted on the amount charged, so a full refund equals `value` minus `discount_amount`.
 
       Example: 111111
     </ParamField>
 
     <ParamField body="captured" type="number">
-      The captured amount (multiple of 0.0001).
+      The captured amount (multiple of 0.0001). With a Yuno promotion it is counted on the amount charged.
 
       Example: 111111
+    </ParamField>
+
+  </Expandable>
+</ParamField>
+
+<ParamField body="discount_amount" type="object">
+  optional
+
+  The total discount of the Yuno promotion applied to the payment: the sum of the `YUNO_PROMOTION` lines of `additional_data.order.discounts`. Absent when no promotion applied. The amount charged is `amount.value` minus this value, and it is on `transactions.amount`. See [Promotions](/docs/payment-features/promotions).
+
+  <Expandable title="properties">
+
+    <ParamField body="currency" type="enum">
+      The currency of the discount, the same as `amount.currency` (MAX 3; MIN 3; <a href="/reference/country-reference">ISO 4217</a> ).
+
+      Example: USD
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      The discount.
+
+      Example: 25
     </ParamField>
 
   </Expandable>
@@ -362,7 +384,7 @@ This object represents the payment created after generating the checkout session
               <Expandable title="properties">
 
                 <ParamField body="holder_name" type="string">
-                  Card holder's full name as it appears on the card (MAX 26; MIN 3) only available for PCI
+                  Card holder's full name as it appears on the card (MAX 26; MIN 2) only available for PCI
                                         certified merchants.
 
                   Example: Fannie Weissnat
@@ -545,7 +567,7 @@ This object represents the payment created after generating the checkout session
                     </ParamField>
 
                     <ParamField body="holder_name" type="string">
-                      Cardholder’s full name as it appears on the Token (MAX 26; MIN 3).
+                      Cardholder’s full name as it appears on the Token (MAX 26; MIN 2).
 
                       Example: John Doe
                     </ParamField>
@@ -996,7 +1018,7 @@ This object represents the payment created after generating the checkout session
                 </ParamField>
 
                 <ParamField body="holder_name" type="string">
-                  Card holder's full name as it appears on the card (MAX 26; MIN 3) only available for PCI
+                  Card holder's full name as it appears on the card (MAX 26; MIN 2) only available for PCI
                                         certified merchants.
 
                   Example: JOHN DOE
@@ -1317,7 +1339,7 @@ This object represents the payment created after generating the checkout session
                 </ParamField>
 
                 <ParamField body="holder_name" type="string">
-                  Card holder's full name as it appears on the card (MAX 26; MIN 3) only available for PCI
+                  Card holder's full name as it appears on the card (MAX 26; MIN 2) only available for PCI
                                         certified merchants.
 
                   Example: John Doe
@@ -2320,26 +2342,44 @@ This object represents the payment created after generating the checkout session
         </ParamField>
 
         <ParamField body="discounts" type="array of objects">
-          Specifies the order's discounts array of objects.
+          Specifies the order's discounts array of objects (up to 10). When the payment carries a Yuno promotion, the `YUNO_PROMOTION` line comes first and Yuno fills it. See [Promotions](/docs/payment-features/promotions).
 
           <Expandable title="properties">
 
+            <ParamField body="type" type="enum">
+              The type of the discount line. Possible values, written exactly like this in capitals: `MERCHANT` (a discount you computed; the default) and `YUNO_PROMOTION` (a promotion quote). Any other spelling returns `400`. On a response it is present when the payment carries a Yuno promotion.
+
+              Example: MERCHANT
+            </ParamField>
+
+            <ParamField body="quote_id" type="string">
+              The promotion quote id (MAX 1000, no whitespace). Required on `YUNO_PROMOTION` lines and not allowed on `MERCHANT` lines.
+            </ParamField>
+
             <ParamField body="id" type="string">
-              ID of the discount (MAX 255; MIN 3).
+              ID of the discount (MAX 255; MIN 3). Required on `MERCHANT` lines and not allowed on `YUNO_PROMOTION` lines, where Yuno fills it with the promotion id.
 
               Example: 10OFF
             </ParamField>
 
             <ParamField body="name" type="string">
-              The name of the discount (MAX 255; MIN 3).
+              The name of the discount (MAX 255; MIN 3). Required on `MERCHANT` lines and not allowed on `YUNO_PROMOTION` lines, where Yuno fills it with the promotion name when it has it.
 
               Example: Offer
             </ParamField>
 
             <ParamField body="unit_amount" type="float">
-              The amount of the discount (multiple of 0.0001).
+              The amount of the discount (multiple of 0.0001), in the payment currency. Required on `MERCHANT` lines and not allowed on `YUNO_PROMOTION` lines, where Yuno fills it with the promotion discount.
 
               Example: 100
+            </ParamField>
+
+            <ParamField body="discount_indicator" type="enum">
+              Whether a discount was applied to the line. Possible values: `Y` and `N`.
+            </ParamField>
+
+            <ParamField body="discount_rate" type="number">
+              The discount rate applied to the line (multiple of 0.0001).
             </ParamField>
 
           </Expandable>
@@ -3036,7 +3076,7 @@ This object represents the payment created after generating the checkout session
 </ParamField>
 
 <ParamField body="transactions" type="object">
-  Specifies the transaction details associated with a payment.
+  Specifies the transaction details associated with a payment. Retrieve Payment returns them as an array, one entry per transaction.
 
   <Expandable title="properties">
 
@@ -3064,8 +3104,8 @@ This object represents the payment created after generating the checkout session
       Example: CARD
     </ParamField>
 
-    <ParamField body="amount" type="string">
-      The amount of the transaction.
+    <ParamField body="amount" type="number">
+      The amount of the transaction. For a payment with a Yuno promotion it is the amount charged: `amount.value` minus `discount_amount`.
 
       Example: 100
     </ParamField>
@@ -3235,7 +3275,7 @@ This object represents the payment created after generating the checkout session
                   <Expandable title="properties">
 
                     <ParamField body="holder_name" type="string">
-                      Card holder's full name as it appears on the card (MAX 26; MIN 3) only available for PCI
+                      Card holder's full name as it appears on the card (MAX 26; MIN 2) only available for PCI
                                                 certified merchants.
 
                       Example: Fannie Weissnat
@@ -3420,7 +3460,7 @@ This object represents the payment created after generating the checkout session
                         </ParamField>
 
                         <ParamField body="holder_name" type="string">
-                          Cardholder’s full name as it appears on the Token (MAX 26; MIN 3).
+                          Cardholder’s full name as it appears on the Token (MAX 26; MIN 2).
 
                           Example: John Doe
                         </ParamField>
@@ -3684,7 +3724,7 @@ This object represents the payment created after generating the checkout session
                     </ParamField>
 
                     <ParamField body="holder_name" type="string">
-                      Card holder's full name as it appears on the card (MAX 26; MIN 3) only available for PCI
+                      Card holder's full name as it appears on the card (MAX 26; MIN 2) only available for PCI
                                                 certified merchants.
 
                       Example: JOHN DOE
@@ -4106,7 +4146,7 @@ This object represents the payment created after generating the checkout session
                     </ParamField>
 
                     <ParamField body="holder_name" type="string">
-                      Card holder's full name as it appears on the card (MAX 26; MIN 3) only available for PCI
+                      Card holder's full name as it appears on the card (MAX 26; MIN 2) only available for PCI
                                                 certified merchants.
 
                       Example: John Doe
@@ -4351,7 +4391,7 @@ This object represents the payment created after generating the checkout session
                   <Expandable title="properties">
 
                     <ParamField body="holder_name" type="string">
-                      Card holder's full name as it appears on the card (MAX 26; MIN 3) only available for PCI
+                      Card holder's full name as it appears on the card (MAX 26; MIN 2) only available for PCI
                                                 certified merchants.
 
                       Example: Fannie Weissnat
@@ -4567,7 +4607,7 @@ This object represents the payment created after generating the checkout session
                     </ParamField>
 
                     <ParamField body="holder_name" type="string">
-                      Card holder's full name as it appears on the card (MAX 26; MIN 3) only available for PCI
+                      Card holder's full name as it appears on the card (MAX 26; MIN 2) only available for PCI
                                                 certified merchants.
 
                       Example: JOHN DOE
@@ -4933,7 +4973,7 @@ This object represents the payment created after generating the checkout session
                     </ParamField>
 
                     <ParamField body="holder_name" type="string">
-                      Card holder's full name as it appears on the card (MAX 26; MIN 3) only available for PCI
+                      Card holder's full name as it appears on the card (MAX 26; MIN 2) only available for PCI
                                                 certified merchants.
 
                       Example: John Doe

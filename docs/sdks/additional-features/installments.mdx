@@ -22,6 +22,73 @@ The callback is optional on all platforms: if you don't register it, the SDK beh
 <Tabs>
 <Tab title="Web">
 
+### Supply your own installment options with `onGetInstallments`
+
+Available from Web SDK **1.6.7**. Pass `onGetInstallments` inside the `card` options; the SDK calls it once it knows the card's BIN and renders whatever you return in the installments selector. The callback has a 10-second timeout; if it times out, throws an error, or returns an empty array, `undefined`, or nothing, the SDK falls back to the installment plans configured in Yuno.
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  elementSelector: '#payment-form',
+  countryCode: 'BR',
+  card: {
+    onGetInstallments: async ({ bin, brand, cardType, amount, currency }) => {
+      const plans = await fetch(`/api/installments?bin=${bin}&amount=${amount}`).then((r) => r.json())
+      return plans.map((plan) => ({
+        installment: plan.count,
+        label: plan.label,
+        amount: { currency, value: plan.value, total_value: plan.total },
+      }))
+    },
+  },
+  // ...
+})
+```
+
+The callback receives a single object argument and may be async:
+
+```typescript
+type OnGetInstallments = (args: {
+  bin: string
+  brand: string
+  cardType: string
+  issuerCode?: string
+  issuerName?: string
+  amount?: string
+  currency?: string
+}) => MerchantInstallmentOption[] | void | Promise<MerchantInstallmentOption[] | void>
+
+type MerchantInstallmentOption = {
+  installment: number
+  label: string
+  amount?: {
+    currency: string
+    value: string
+    total_value: string
+  }
+  additionalData?: Record<string, unknown>
+}
+```
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `bin` | `string` | The card's BIN (first digits), resolved by Yuno. The callback is not called until the BIN is known. |
+| `brand` | `string` | Card brand, e.g. `VISA`, `MASTERCARD`. |
+| `cardType` | `string` | `CREDIT` or `DEBIT`. |
+| `issuerCode`, `issuerName` | `string` | Issuing bank, when Yuno can resolve it. |
+| `amount`, `currency` | `string` | The checkout session amount as a string and its currency. |
+
+| Return field | Type | Description |
+| --- | --- | --- |
+| `installment` | `number` | Number of installments, e.g. `3`. Used as the option key, so keep it unique. |
+| `label` | `string` | The exact text rendered in the selector, in the shopper's language. |
+| `amount` | `object` | Optional `currency`, `value` (per installment) and `total_value`, as strings. Passed through to `onInstallmentSelected`. |
+| `additionalData` | `object` | Optional. Accepted by the type but currently omitted from `onInstallmentSelected` (reserved for future use). |
+
+The SDK calls `onGetInstallments` again whenever the BIN or the amount changes, and ignores a stale response if a newer call has started. Options you return are reported to `onInstallmentSelected` with `isMerchantInstallment: true`.
+
+### React to the shopper's choice with `onInstallmentSelected`
+
 Pass the callback inside the `card` options of `startCheckout`:
 
 ```javascript

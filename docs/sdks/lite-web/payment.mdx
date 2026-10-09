@@ -100,7 +100,7 @@ await yuno.startCheckout({
     texts: {},
   },
   texts: {},
-  async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
+  async createPayment(oneTimeToken, tokenWithInformation) {
     // Read ACH bank name if needed: const bankName = tokenWithInformation.bank_transfer?.bank_name;
     await createPayment({ 
       oneTimeToken, 
@@ -112,11 +112,11 @@ await yuno.startCheckout({
   onPaymentMethodSelected(data) {
     console.log("Payment method selected:", data);
   },
-  yunoPaymentResult(data) {
+  paymentResult(data) {
     console.log("Payment result:", data);
     await yuno.hideLoader();
   },
-  yunoError(error, data) {
+  error(error, data) {
     console.error("An error occurred:", error);
     await yuno.hideLoader();
   },
@@ -145,16 +145,16 @@ Configure the lite checkout with the following options:
 |                             | ▪️ `type: element` - If you select `element`, you must inform the `elementSelector` to specify where the form should be rendered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `card`                      | Defines the configuration for the card form. It contains settings like custom styles and the save card option.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `texts`                     | Allows you to set custom button texts for card and non-card payment forms.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `yunoCreatePayment(oneTimeToken, tokenWithInformation)` | Callback function for creating a payment (aliased as `createPayment`). Receives `oneTimeToken` and `tokenWithInformation` (matching the [SDK checkout token schema](/reference/checkout-sessions/create-one-time-use-token-sdk-checkout), e.g. `tokenWithInformation.bank_transfer?.bank_name` for ACH). Send the one-time token to your backend to create the payment via the API; then call `await yuno.continuePayment()` to resume the flow. Also call `continuePayment` for card payments that come back `DECLINED` or `ERROR` to run payment retry; otherwise call `unmountSdk` to clean up. See [Payment retry](/docs/sdks/resources/references/web#payment-retry). |
+| `createPayment(oneTimeToken, tokenWithInformation)` | Callback function for creating a payment. Receives `oneTimeToken` and `tokenWithInformation` (matching the [SDK checkout token schema](/reference/checkout-sessions/create-one-time-use-token-sdk-checkout), e.g. `tokenWithInformation.bank_transfer?.bank_name` for ACH). Send the one-time token to your backend to create the payment via the API; then call `await yuno.continuePayment()` to resume the flow. Also call `continuePayment` for card payments that come back `DECLINED` or `ERROR` to run payment retry; otherwise call `unmountSdk` to clean up. See [Payment retry](/docs/sdks/resources/references/web#payment-retry). |
 | `onPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `yunoPaymentResult`         | Callback called after the payment is completed. It receives the [payment status](/reference/payments/status-and-response-codes/payment) (for example, `SUCCEEDED`, `DECLINED`, `PENDING`, `ERROR`) and an optional `subStatus` qualifying it. See [Shopper-cancelled steps](/docs/sdks/resources/references/web#shopper-cancelled-steps).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `yunoError`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `paymentResult`         | Callback called after the payment is completed. It receives the [payment status](/reference/payments/status-and-response-codes/payment) (for example, `SUCCEEDED`, `DECLINED`, `PENDING`, `ERROR`) and an optional `subStatus` qualifying it. See [Shopper-cancelled steps](/docs/sdks/resources/references/web#shopper-cancelled-steps).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `error`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `onChange`                        | Reports whether the payment form is complete. Receives `{ form: { isValid } }`. Use with `showPayButton: false` to control your own pay button. Available since v1.10.11. |
 
 <Note>
 **Promotions**
 
-When [Promotions](/docs/payment-features/promotions) is enabled for your organization, Lite checkout asks for a promotion quote as the shopper types the card, and `yunoCreatePayment` receives it in `tokenWithInformation.quote`. Wallets aren't a supported target for this release: `mountExternalButtons` doesn't ask for a quote. See [Promotions](/docs/sdks/resources/references/web#promotions).
+When [Promotions](/docs/payment-features/promotions) is enabled for your organization, Lite checkout asks for a promotion quote as the shopper types the card, and `createPayment` receives it in `tokenWithInformation.quote`. Wallets aren't a supported target for this release: `mountExternalButtons` doesn't ask for a quote. See [Promotions](/docs/sdks/resources/references/web#promotions).
 </Note>
 
 <Note>
@@ -274,7 +274,7 @@ await yuno.startCheckout({
 
 ## Enrolling payment methods in lite flow
 
-You can enroll payment methods (store cards for future use) directly during the lite payment flow by setting `payment_method.vault_on_success = true` in the [checkout session creation](/reference/checkout-sessions/the-checkout-session-object).
+You can enroll payment methods (store cards for future use) directly during the lite payment flow by setting `payment_method.vault_on_success = true` on the [Create Payment](/reference/payments/create-payment) request your backend sends from `createPayment` — nested under `payment_method`, as shown below. In the Lite flow your server creates the payment, so this is where the flag belongs; setting it on the checkout session is the Seamless pattern, where the SDK creates the payment.
 
 When `vault_on_success` is set to `true`:
 
