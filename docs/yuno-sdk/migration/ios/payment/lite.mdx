@@ -85,7 +85,8 @@ final class Checkout: SdkPayments.TransactionController {
             language: "en",
             appearance: customAppearance,    // optional
             controller: self,
-            showStatusScreen: true    // see "Behavior changes" below
+            showStatusScreen: true,
+            saveCardEnabled: true
         )
 
         SdkPayments.Transaction(config: config)
@@ -102,14 +103,19 @@ final class Checkout: SdkPayments.TransactionController {
 |---|---|---|
 | `Yuno.initialize(apiKey:config:)` | `SdkPayments.initialize(apiKey:)` | `YunoConfig` is removed. See per-field rows below. |
 | `YunoConfig.appearance` | `SdkPayments.TransactionConfig.appearance` | Moves from app-wide to per-transaction. |
-| `YunoConfig.saveCardEnabled` | *(removed)* | Now controlled server-side via the settings service. The client no longer passes this flag. |
+| `YunoConfig.saveCardEnabled` | `SdkPayments.TransactionConfig.saveCardEnabled` | Per-transaction now. Defaults to `false`. When `true`, the card form shows the save-card checkbox (payments only), unchecked until the user ticks it. |
 | `YunoConfig.keepLoader` | *(removed)* | The SDK keeps its loader by default. New: in the unified API you can override [`showLoading`](/docs/yuno-sdk/controllers/show-loading) to render your own. This controller was not invoked in Lite. |
 | `YunoPaymentDelegate.checkoutSession` | `SdkPayments.TransactionConfig.checkoutSession` | Now part of the config object, not the delegate. |
 | `YunoPaymentDelegate.countryCode` | `SdkPayments.TransactionConfig.countryCode` | Same as above. |
 | `YunoPaymentDelegate.language` | `SdkPayments.TransactionConfig.language` | Same as above. |
 | `YunoPaymentDelegate.viewController` | `SdkPayments.TransactionConfig.viewController` | Still iOS-only. Optional in SwiftUI; required if you need a specific UIKit presenter. |
 | `YunoPaymentDelegate.yunoPaymentResult(_:)` | `SdkPayments.TransactionController.onStatus(status:)` | `status` and `substatus` are passed through from the backend; the SDK only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/status). |
+| `YunoPaymentDelegate.yunoCreatePayment(with:)` / `yunoCreatePayment(with:information:)` | Override `SdkPayments.TransactionController.createPayment(token:)` | Optional in both. Override it if your backend creates the payment: create it inside the handler and return. The handler receives the full One-Time Token as a dictionary, so one method replaces both legacy variants. Without an override the SDK creates the payment itself. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment). |
+| `YunoLoaderDelegate.onLoading(isLoading:)` | `SdkPayments.TransactionController.showLoading(isLoading:)` | Optional in both. In Lite the SDK never invoked `onLoading`: it always showed its own loader. In the unified API the SDK still shows its loader unless you override `showLoading`; once overridden, the SDK hides its own loader and reports the state to you. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+| `YunoPaymentDelegate.onInstallmentSelected(_:)` | `SdkPayments.TransactionController.onInstallmentSelected(_:)` | Optional in both. Same trigger and payload fields; the payload is now the `SdkPayments.InstallmentSelected` struct instead of `YunoInstallmentSelected`. Fires when the shopper selects or changes an installment in the SDK's card form, including the SDK's default auto-selection, and with `nil` when the selection no longer applies. See [`onInstallmentSelected`](/docs/yuno-sdk/controllers/on-installment-selected). |
+| `Yuno.continuePayment()` | *(removed)* | Returning from `createPayment` continues the flow: the SDK polls the status, runs 3DS if needed and calls `onStatus`. Set [`autoContinuePayment`](/docs/yuno-sdk/reference/transaction-config#autocontinuepayment) to `false` only if you need the SDK to stop right after the payment is created. |
 | `Yuno.startPaymentLite(with:paymentSelected:showPaymentStatus:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Builder-style. The `showPaymentStatus` argument moved into `SdkPayments.TransactionConfig.showStatusScreen`. |
+| `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Same role: forward the URL your app receives when it returns from an external redirect so the SDK resumes the transaction. See [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). |
 
 ## Behavior changes
 
@@ -117,19 +123,13 @@ final class Checkout: SdkPayments.TransactionController {
 **`showStatusScreen` default flipped.** In Lite, `showPaymentStatus` defaulted to `true`. The SDK presented its built-in result screen. In the unified API, `showStatusScreen` defaults to **`false`**. If your integration relied on the SDK showing the result screen, set `showStatusScreen: true` in `SdkPayments.TransactionConfig` explicitly.
 </Warning>
 
+<Warning>
+**Match the session `workflow` to who creates the payment.** If your backend creates the payment (you implemented `yunoCreatePayment`), override `createPayment` and keep creating sessions with the default workflow (`SDK_CHECKOUT`). If you let the SDK create the payment (no override), create sessions with `workflow: "SDK_SEAMLESS"`. A default-workflow session with no override ends in `INTERNAL_ERROR` because the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
 - **`onStatus` is always invoked.** In Lite it was the only way to know the outcome; that hasn't changed. But now it fires regardless of whether the SDK shows its own result screen, so you can drive your own UI on top.
+- **Returning from `createPayment` is the new `continuePayment()`.** Once your handler returns, the SDK continues on its own. If it throws, the flow stops and `onStatus` is not invoked, so surface the error to the user yourself.
 - **Controller retention.** The `controller` field on `SdkPayments.TransactionConfig` follows the same rule the old delegate did: the SDK does not retain it strongly. Keep the instance you pass as `controller` alive for the duration of the transaction.
-
-## Checklist
-
-- [ ] Replace `Yuno.initialize(apiKey:config:)` with `SdkPayments.initialize(apiKey:)`.
-- [ ] Move `appearance` into `SdkPayments.TransactionConfig`. Drop `saveCardEnabled` and `keepLoader`.
-- [ ] Replace conformance to `YunoPaymentDelegate` with conformance to `SdkPayments.TransactionController`.
-- [ ] Move `checkoutSession`, `countryCode`, `language`, `viewController` from delegate properties into `SdkPayments.TransactionConfig`.
-- [ ] Rename `yunoPaymentResult(_:)` to `onStatus(status:)` and switch the enum cases.
-- [ ] Replace the `Yuno.startPaymentLite(...)` call with `SdkPayments.Transaction(config:).start(paymentSelected:)`.
-- [ ] Set `showStatusScreen: true` if you relied on the SDK showing the result screen.
-- [ ] Re-run your sandbox test suite.
 
 ## Related
 
