@@ -12,7 +12,7 @@ The API lets you break down a payment's total into individual components, such a
 * [Discounts](#discounts)
 * [Customer validations](#customer-validations)
 
-These fields are informational: each component is already included in the payment's total `amount.value` and isn't added on top of it.
+These fields are informational: each component is already included in the payment's total `amount.value` and isn't added on top of it. The one exception is a `YUNO_PROMOTION` discount: you send the original `amount` and Yuno charges `amount.value` minus that discount (see [Discounts](#discounts)).
 
 ## Fee amount
 
@@ -245,7 +245,9 @@ curl --request POST \
 
 A dedicated array of objects (`additional_data.order.discounts`) allows you to specify the discounts that are included in the transaction.
 
-Each line has a `type`. `MERCHANT` (the default) is a discount you computed, with `id`, `name` and `unit_amount`. `YUNO_PROMOTION` is a [promotion quote](/docs/payment-features/promotions) Yuno computed, with `quote_id` only; it rejects `id`, `name` and `unit_amount`, a `MERCHANT` line rejects `quote_id`, and any mix returns `400`. A line with `quote_id` and no `type` is read as `YUNO_PROMOTION`. One quote per payment. On the response and on every `payment.*` webhook Yuno fills the `YUNO_PROMOTION` line (`quote_id`, `id` = the promotion id, `name`, `unit_amount` in the order currency) and adds a top-level `discount_amount`, the sum of those lines. Your `MERCHANT` lines are passed through unchanged. `amount` is never rewritten; the net amount charged is on the transaction.
+Each line has a `type`. `MERCHANT` (the default) is a discount you computed: `id`, `name` and `unit_amount` are required, and `id` and `name` have 3 to 255 characters. `YUNO_PROMOTION` is a [promotion quote](/docs/payment-features/promotions) Yuno computed, with `quote_id` only; it rejects `id`, `name` and `unit_amount`, a `MERCHANT` line rejects `quote_id`, and any mix returns `400 INVALID_PARAMETERS`. A line with `quote_id` and no `type` is read as `YUNO_PROMOTION`. Write the `type` exactly as shown, in capitals: any other spelling returns `400`. One quote per payment, and at most 10 discount lines in all. The `YUNO_PROMOTION` line is accepted on Create Payment only: multi-method payments, payment links, checkout sessions and capture reject it with `400`, and a payment that carries a `subscription` or an `external_subscription` rejects it with `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED`.
+
+On the response and on every `payment.*` webhook Yuno fills the `YUNO_PROMOTION` line (`quote_id`, `id` = the promotion id, `unit_amount` in the payment currency and, when Yuno has it, `name`) and adds a `discount_amount`, the sum of those lines. Your `MERCHANT` lines keep their `id`, `name` and `unit_amount`; when the payment carries a Yuno promotion, the Create Payment answer, Retrieve Payment and the webhooks list the Yuno line first and mark yours with `type: MERCHANT`. `amount` is never rewritten; the net amount charged is on the transaction (`transactions.amount`).
 
 In the following example you can see a request that clarifies that a 5 USD discount amount is part of a 50 USD final transaction. Merchant-computed discounts are informational: the amount is already included in `amount` and is not added again.
 
