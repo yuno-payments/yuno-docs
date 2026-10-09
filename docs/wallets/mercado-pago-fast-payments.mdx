@@ -3,12 +3,14 @@ title: "Mercado Pago Fast Payments"
 description: "Let shoppers pay with the cards and account balance saved in their Mercado Pago account, straight from the Yuno Web SDK checkout, without leaving your page."
 ---
 
-Mercado Pago Fast Payments (Supertoken) shows a shopper the payment methods they already saved in their Mercado Pago account — cards and account balance — inside your Yuno checkout. The shopper picks one, confirms with Mercado Pago, and pays without re-typing card details or leaving your page.
+Mercado Pago Fast Payments shows a shopper the payment methods they already saved in their Mercado Pago account — cards and account balance — inside your Yuno checkout. The shopper picks one, confirms with Mercado Pago, and pays without re-typing card details or leaving your page.
 
 Yuno renders the experience inside the Web SDK **Full checkout** and **Lite checkout**. You create the checkout session and the payment as you do today; the SDK handles the Mercado Pago part.
 
 <Note>
-Fast Payments is available exclusively under the new Yuno SDK and requires the **Web SDK v1.11** (`https://sdk-web.y.uno/v1.11/main.js`). It is not supported on legacy SDK integrations or SDK versions v1.10 and earlier. Yuno's recommended path is that merchants migrate to the new Yuno SDK instead of keeping on legacy versions.
+Mercado Pago Fast Payments is available in **Yuno SDK 2.0.0** and the legacy **Web SDK v1.11** (`https://sdk-web.y.uno/v1.11/main.js`). It is not supported on Web SDK v1.10 or earlier.
+
+v1 will be deprecated by the end of the year. Yuno's recommended path is that merchants migrate to the new Yuno SDK instead of keeping on legacy versions. Contact your account manager for more details and next steps to upgrade.
 </Note>
 
 ## Availability
@@ -18,7 +20,7 @@ Fast Payments is available on:
 * **Full checkout** (`mountCheckout`)
 * **Lite checkout** (`mountCheckoutLite`) with `paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN'`, supporting both `element` and `modal` render modes (Mercado Pago recommends `element`).
 
-It is not available on the Seamless checkout, on the condensed payment-method list, or on the mobile SDKs.
+It is not available on the Seamless checkout, on the condensed payment-method list, in Moon Active checkout, or on the mobile SDKs.
 
 ## Requirements
 
@@ -27,13 +29,19 @@ Before starting, ensure all prerequisites are met:
 * A Yuno account with Dashboard access and a Web SDK integration on the new Yuno SDK using [Full checkout](/docs/sdks/full-checkout/web-payments) or [Lite checkout](/docs/sdks/lite-web/payment).
 * **Fast Payments enabled on your Mercado Pago application:** Mercado Pago enables Fast Payments per application. If not enabled, the section displays *"Mercado Pago is not available right now"*.
 * **Mercado Pago connection fully authorized:** In the Yuno Dashboard, complete **Connect with Mercado Pago** until you are redirected back to the Dashboard. Providing the public key alone is not sufficient; payments require the seller access token generated during authorization.
-* **Public key configured per country:** Add the Mercado Pago **public key** of your Mercado Pago account to the connection. One public key belongs to one Mercado Pago site (for example Argentina, Brazil, or Mexico); if you sell across multiple countries, add the public key for each site tagged with its country (using `GLOBAL` as a fallback). {/* TODO screenshot: Mercado Pago connection in the Dashboard with the PUBLIC_KEY parameter per country */}
+* **Public key configured per country:** Add the Mercado Pago **public key** of your Mercado Pago account to the connection. One public key belongs to one Mercado Pago site (for example Argentina, Brazil, or Mexico); if you sell across multiple countries, add the public key for each site tagged with its country (using `GLOBAL` as a fallback). 
+
+<Frame caption="Configuring the Mercado Pago Fast Payments connection in the Yuno Dashboard">
+  <img src="/images/reference/mercado-pago-fast-payments/mercado-pago-fast-payments-dashboard-connection.png" alt="Mercado Pago connection setup in Yuno Dashboard" />
+</Frame>
 * **Notification webhook configured in Mercado Pago:** Set the Notification URL in your Mercado Pago application to `https://prod.y.uno/mercadopago-webhook/v1/orders/events` and subscribe to the **Order (Mercado Pago)** event.
 * The `MERCADO_PAGO_SUPERTOKEN` payment method enabled for your checkout in your routing rules.
 
 ## How it works for the shopper
 
-Mercado Pago always appears as **one section** at the top of the payment method list, headed by the Mercado Pago logo. It is never a selectable row on its own: the shopper selects one of the methods inside the section. The section adapts to what Yuno knows about the shopper:
+### Full checkout
+
+In Full checkout, Mercado Pago always appears as **one section** at the top of the payment method list, headed by the Mercado Pago logo. It is never a selectable row on its own: the shopper selects one of the methods inside the section. The section adapts to what Yuno knows about the shopper:
 
 | Situation | What the shopper sees |
 | --- | --- |
@@ -42,11 +50,21 @@ Mercado Pago always appears as **one section** at the top of the payment method 
 | Mercado Pago answered | Their saved cards and account balance as rows, each with its brand and last digits. Mercado Pago may ask for the card's security code before paying with a saved card, in a field Mercado Pago renders |
 | Mercado Pago could not be reached or returned no methods | *"Mercado Pago is not available right now. Please choose another payment method."* |
 
+<Frame caption="Mercado Pago Fast Payments displaying the shopper's saved payment methods">
+  <img src="/images/reference/mercado-pago-fast-payments/mercado-pago-fast-payments-saved-methods.png" alt="Mercado Pago section showing saved payment methods" />
+</Frame>
+
 In every state the section keeps a privacy notice — *"Learn how we protect your privacy."* — that links to Mercado Pago's privacy page for the shopper's country (for example `https://www.mercadopago.com.ar/privacidad` for Argentina). Your other payment methods follow, under an **Other payment methods** heading.
 
 <Tip>
 Send the shopper's e-mail in `customer_payer.email` when you [create the checkout session](/reference/checkout-sessions/create-checkout-session). The section then loads the saved methods immediately instead of asking the shopper for the e-mail.
 </Tip>
+
+### Lite checkout
+
+In Lite checkout, the SDK renders the Mercado Pago component into the container configured for `paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN'`. Shoppers select and authenticate with their saved Mercado Pago methods directly inside that mounted component (or modal).
+
+Just like in Full checkout, the component displays the privacy notice linking to Mercado Pago's privacy policy for the shopper's country.
 
 ## Integration
 
@@ -77,6 +95,8 @@ await yuno.startCheckout({
 await yuno.mountCheckoutLite({
   paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN',
 });
+
+await yuno.startPayment();
 ```
 
 ### One-time token and payment creation
