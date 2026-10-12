@@ -6,7 +6,7 @@ description: "Migrate Web Headless integrations (yuno.apiClientPayment) to the u
 
 Headless was a pure-tokenization client: the merchant collected card data in their own UI, generated a token, and made their own backend call to create the payment.
 
-In the unified API the same scenario maps to **headless** mode: pass the pre-collected data inside `data` within the [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) object, override [`createPayment`](/docs/yuno-sdk/controllers/create-payment) to POST to your backend, and let the SDK orchestrate tokenization, 3DS, and status polling automatically. If you don't want the SDK to continue the flow after creating the payment, set `autoContinuePayment` to `false` on the [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config) object.
+In the unified API the same scenario is a headless `start()`. Pass the pre-collected data inside `data` on the `paymentMethod` you give to `start()`, override [`createPayment`](/docs/yuno-sdk/controllers/create-payment) to POST to your backend (manual mode), and let the SDK orchestrate tokenization, 3DS, and status polling automatically. If you don't want the SDK to continue the flow after creating the payment, set `autoContinuePayment` to `false` on the [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config) object.
 
 ## Before you start
 
@@ -30,17 +30,25 @@ A default-workflow session with no `createPayment` override ends in `INTERNAL_ER
 const yuno = await window.Yuno.initialize('your-public-api-key')
 
 const apiClientPayment = await yuno.apiClientPayment({
-    checkoutSession: 'session-from-backend',
-    countryCode: 'CO',
+    checkout_session: 'session-from-backend',
+    country_code: 'CO',
 })
 
 // Merchant collects card data in their own UI, then:
 const oneTimeToken = await apiClientPayment.generateToken({
-    cardHolderName: 'John Doe',
-    cardNumber: '4111111111111111',
-    cvv: '123',
-    expirationMonth: 12,
-    expirationYear: 28,
+    payment_method: {
+        type: 'CARD',
+        card: {
+            detail: {
+                holder_name: 'John Doe',
+                number: '4111111111111111',
+                security_code: '123',
+                expiration_month: 12,
+                expiration_year: 28,
+            },
+        },
+        third_party_data: null,
+    },
 })
 
 // Merchant POSTs to their backend
@@ -88,8 +96,8 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | Headless | Unified | Change | What to do |
 |---|---|---|---|
 | `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
-| `checkoutSession`, `countryCode` arguments of `apiClientPayment` | The same fields on the transaction config | Moved | Set them once in the config. |
-| `cardHolderName`, `cardNumber`, `cvv`, `expirationMonth`, `expirationYear` (argument of `generateToken`) | `holderName`, `number`, `securityCode`, `expirationMonth`, `expirationYear` under `paymentMethod.data.card` | Moved | Card data goes inline on `start()`, nested under `data.card`, in the unified `TransactionData` shape. That shape supports more fields to cover not only cards but also alternative payment methods (APMs) such as bank transfers, tickets, wallets, and more. See the full shape in [`TransactionData`](/docs/yuno-sdk/reference/objects-you-pass#transaction-data). |
+| `checkout_session`, `country_code` arguments of `apiClientPayment` | `checkoutSession`, `countryCode` on the transaction config | Moved | Set them once in the config. |
+| `holder_name`, `number`, `security_code`, `expiration_month`, `expiration_year` under `payment_method.card.detail` (argument of `generateToken`) | `holderName`, `number`, `securityCode`, `expirationMonth`, `expirationYear` under `paymentMethod.data.card` | Moved | Card data goes inline on `start()`, nested under `data.card`, in the unified `TransactionData` shape. That shape supports more fields to cover not only cards but also alternative payment methods (APMs) such as bank transfers, tickets, wallets, and more. See the full shape in [`TransactionData`](/docs/yuno-sdk/reference/objects-you-pass#transaction-data). |
 | *(none)* | `paymentMethod.vaultedToken` | New | For vaulted cards, pass `vaultedToken` on `paymentMethod` and only `securityCode` under `data.card`: `transaction.start({ paymentMethod: { type: 'CARD', vaultedToken: 'tok_saved_abc', data: { card: { securityCode: '123' } } } })`. |
 
 ### Callbacks
@@ -103,7 +111,7 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 
 | Headless | Unified | Change | What to do |
 |---|---|---|---|
-| `yuno.apiClientPayment({ checkoutSession, countryCode })` | `sdkPayments.transaction({ checkoutSession, countryCode, createPayment })` | Renamed | The factory consolidates the API-client and Transaction surfaces: no separate `apiClientPayment` surface, one `sdkPayments.transaction(config)`. |
+| `yuno.apiClientPayment({ checkout_session, country_code })` | `sdkPayments.transaction({ checkoutSession, countryCode, createPayment })` | Renamed | The factory consolidates the API-client and Transaction surfaces: no separate `apiClientPayment` surface, one `sdkPayments.transaction(config)`. |
 | `apiClientPayment.generateToken(cardData)` | `transaction.start({ paymentMethod: { type: 'CARD', data: { card } } })` | Renamed | You no longer tokenize yourself: build the `paymentMethod` with your pre-collected card data (see Initialization and config), then `start`. The SDK tokenizes and calls `createPayment` with the token. |
 | `apiClientPayment.getThreeDSecureChallenge(...)` (rare) | *(removed)* | Removed | Delete the call. Headless used to require bespoke 3DS handling per integration; the SDK orchestrates 3DS internally once `createPayment` resolves. |
 | `yuno.continuePayment()` after backend POST | *(removed)* | Removed | Delete the call: the Promise contract drives progression. Resolve `createPayment` and the SDK continues. |

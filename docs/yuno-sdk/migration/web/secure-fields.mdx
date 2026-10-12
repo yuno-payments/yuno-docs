@@ -84,7 +84,7 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 |---|---|---|---|
 | `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
 | `checkoutSession` / `customerSession` argument of `yuno.secureFields()` | The same field on the transaction config | Moved | Payment vs enrollment stays implicit in which session you pass. Every `yuno.secureFields()` argument except `installmentEnable` moves to the transaction config: the fields inherit the transaction's context instead of duplicating it. |
-| `countryCode`, `language`, `deviceFingerprints` arguments of `yuno.secureFields()` | The same fields on the transaction config | Moved | |
+| `countryCode`, `language`, `deviceFingerprints` arguments of `yuno.secureFields()` | The same fields on the transaction config | Moved | `deviceFingerprints` moves for payment transactions only. An enrollment config (`customerSession`) does not accept it. |
 | `installmentEnable` argument of `yuno.secureFields()` | `transaction.secureFields({ installmentEnable })` | Moved | The one knob the transaction can't derive. |
 | `enableV2`, `enableMultiplesCard` arguments of `yuno.secureFields()` | *(removed)* | Removed | Dead in v1: declared, never read. |
 
@@ -93,7 +93,7 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | Secure Fields | Unified | Change | What to do |
 |---|---|---|---|
 | Your own backend POST after `generateTokenWithInformation` | `createPayment(token)` on the transaction config | Moved | Optional. If you own the payment POST, use manual mode (`createPayment` + `start()`): you keep the backend call, the SDK keeps 3DS and the result. Omit it to let the SDK create the payment for you (managed). See [`createPayment`](/docs/yuno-sdk/controllers/create-payment) and [`OneTimeToken`](/docs/yuno-sdk/reference/objects-you-receive#one-time-token). |
-| `continuePayment({ paymentResult })` for the outcome | `onStatus(result)` on the transaction config | Moved | In v1 you only got a status by remembering `continuePayment({ paymentResult })`, an easy miss. In the unified API `onStatus` is part of the transaction config. It also receives the `DECLINED` result, so you know to re-enable your Pay button (see `start()` under Entry points). See [`onStatus`](/docs/yuno-sdk/controllers/on-status). |
+| `continuePayment({ paymentResult })` for the outcome | `onStatus(result)` on the transaction config | Moved | In v1 you only got a status by remembering `continuePayment({ paymentResult })`, an easy miss. In the unified API `onStatus` is part of the transaction config. In manual mode (you pass `createPayment`) it also receives a retryable `DECLINED` or `ERROR` result, so you know to re-enable your Pay button while the fields stay mounted (see `start()` under Entry points). In managed mode the SDK retries in place and `onStatus` fires only for the final outcome. See [`onStatus`](/docs/yuno-sdk/controllers/on-status). |
 
 ### Views
 
@@ -109,7 +109,7 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | `secureFields.generateTokenWithInformation(...)` + backend POST + `yuno.continuePayment()` | `transaction.start({ paymentMethod: { type: 'CARD', data: { card: { holderName } } } })` | Renamed | Tokenize, create, and 3DS in one call. `holderName` and other non-PCI details travel on `paymentMethod.data` instead of `generateTokenWithInformation` args. Declined payments are retryable in place: as in v1, the SDK rotates the checkout session and paints field errors after a decline. New: `start()` is **repeatable**, the next call tokenizes against the rotated session. In v1 this loop required re-running your token → POST → `continuePayment` sequence by hand. |
 | `generateToken*` / `generateVaultedToken*` | *(removed)* | Removed | Raw tokenization is no longer public: all tokenization runs inside `start()`. |
 | `yuno.continuePayment()` | *(removed)* | Removed | Delete the call. In v1, forgetting it silently skipped 3DS and the result; `start()` runs the full chain automatically. A payment created outside `start()` could never run 3DS or report a status. |
-| Session updates on the `secureFields` instance | `transaction.updateCheckoutSession()` | Moved | Session updates go through the transaction instead of the instance. |
+| `yuno.updateCheckoutSession(checkoutSession)` | `transaction.updateCheckoutSession(checkoutSession)` | Moved | Same call, now on the transaction that owns the fields. Payment transactions only. |
 
 ## Related
 

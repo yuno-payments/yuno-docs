@@ -6,7 +6,7 @@ description: "Migrate Web Seamless integrations (yuno.startSeamlessCheckout + yu
 
 Seamless mode was the **SDK-managed variant**: the SDK created the payment internally, the merchant only chose when/where to render the form and triggered the start via `yuno.startPayment()`. Unlike non-Seamless mode, Seamless did **not** expose `yunoCreatePayment`: payment creation was always managed by the SDK.
 
-In the unified API the same flow is a normal `Transaction` **without** `createPayment` wired (presence of `createPayment` flips to manual mode; its absence stays managed). The merchant triggers payment by calling `transaction.start({ paymentMethod })` directly, typically from inside `onPaymentSelected` after the user picks a method.
+In the unified API the same flow is a normal `Transaction` **without** `createPayment` wired (presence of `createPayment` flips to manual mode; its absence stays managed). Your Pay button calls `transaction.start({ paymentMethod })` with the method the user picked in the list.
 
 ## Before you start
 
@@ -54,18 +54,27 @@ const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
     language: 'en',
-    elementSelector: '#root', // form container for the selected method (form flows only)
+    elementSelector: '#payment-form', // form container for the selected method (form flows only)
     // managed mode: no createPayment wired
     onStatus: (result) => console.log('done:', result.status),
 })
 
+let selectedPaymentMethod: PaymentMethodSelected | null = null
+
 const views = transaction.getPaymentMethodsViews({
     types: ['paymentMethodList'],
-    onPaymentSelected: (paymentMethod) =>
-        transaction.start({ paymentMethod }),
+    onPaymentSelected: (paymentMethod) => {
+        selectedPaymentMethod = paymentMethod
+    },
 })
 
 views.paymentMethodList?.mount({ elementSelector: '#root' })
+
+// Your Pay button. With forms unfolded in the list, start() submits the form the shopper filled.
+// With folded forms, start() mounts the form into #payment-form and the shopper pays from it.
+document.getElementById('pay').addEventListener('click', () => {
+    if (selectedPaymentMethod) transaction.start({ paymentMethod: selectedPaymentMethod })
+})
 ```
 
 </CodeGroup>
@@ -99,9 +108,9 @@ const transaction = sdkPayments.transaction({
     onStatus: (result) => console.log('done:', result.status),
 })
 
+// Tapping a wallet button pays. No start() call needed
 const views = transaction.getPaymentMethodsViews({
     types: ['applePay', 'googlePay', 'paypal'],
-    onPaymentSelected: (paymentMethod) => transaction.start({ paymentMethod }),
 })
 
 views.applePay?.mount({ elementSelector: '#apple-pay' })
@@ -121,14 +130,14 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 |---|---|---|---|
 | `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
 | `checkoutSession`, `countryCode`, `language` on the `startSeamlessCheckout` config | The same fields on the transaction config | Moved | Same values, single factory. |
-| `elementSelector` on the `startSeamlessCheckout` config | `elementSelector` on the transaction config | Moved | Optional: when the chosen method renders a form, it renders into this element (form flows only). The list and wallet views keep their own `elementSelector` on `.mount()` (see Views). |
+| `elementSelector` on the `startSeamlessCheckout` config | `elementSelector` on the transaction config | Moved | Required when `start({ paymentMethod })` renders a form. The form renders inside this element, and the SDK throws without it. Headless flows ignore it. The list and wallet views keep their own `elementSelector` on `.mount()` (see Views). |
 
 ### Callbacks
 
 | Seamless | Unified | Change | What to do |
 |---|---|---|---|
-| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renamed | Still the single outcome callback, now a field on the transaction config. `PaymentResult` wrapper with `.status` and `.substatus`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
-| *(none)* | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | New | Wire it in `getPaymentMethodsViews` and call `transaction.start({ paymentMethod })` from it, with the method the user picked (see Entry points). |
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renamed | Still the single outcome callback, now a field on the transaction config. It receives one `TransactionStatus` object (`status`, `substatus`, `message`). See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| *(none)* | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | New | Optional. With the list, store the method it delivers and pass it to `transaction.start({ paymentMethod })` from your Pay button (see Entry points). Wallet buttons do not need it. The tap is the confirmation, and the SDK starts the payment itself and reports through `onStatus`. |
 | *(none: payment creation was always managed)* | `createPayment` | New | Don't wire it. Its presence flips to manual mode (non-Seamless behavior); its absence keeps the SDK in managed mode, the same model Seamless had. |
 
 ### Views
@@ -136,15 +145,15 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | Seamless | Unified | Change | What to do |
 |---|---|---|---|
 | `yuno.mountSeamlessCheckout()` | `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`, then `views.paymentMethodList?.mount({ elementSelector })` | Renamed | Get a view handle, then call `.mount(...)` with the selector. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). |
-| `yuno.mountSeamlessExternalButtons([{ elementSelector, paymentMethodType }])` | `getPaymentMethodsViews({ types: ['applePay', 'googlePay', 'paypal'], onPaymentSelected })`, then `views.applePay?.mount({ elementSelector, ...config })`, etc. | Renamed | One `.mount()` per wallet button. Per-view styling (button color, type, etc.) lives on each `.mount()` call. |
-| `yuno.unmountSeamlessExternalButton(type)` / `yuno.unmountSeamlessExternalButtons()` | *(removed)* | Removed | Per-button unmount removed: use `transaction.cancel()` or let the transaction complete. |
+| `yuno.mountSeamlessExternalButtons([{ elementSelector, paymentMethodType }])` | `getPaymentMethodsViews({ types: ['applePay', 'googlePay', 'paypal', 'paypalBraintree', 'revolutPay', 'samsungPay'] })`, then `views.applePay?.mount({ elementSelector, ...config })`, etc. | Renamed | One `.mount()` per wallet button. Map each v1 `paymentMethodType` to its view key: `APPLE_PAY` to `applePay`, `GOOGLE_PAY` to `googlePay`, `PAYPAL` to `paypal`, `PAYPAL_BRAINTREE` to `paypalBraintree`, `REVOLUT_PAY` to `revolutPay`, `SAMSUNG_PAY` to `samsungPay`. Per-view styling (button color, type, etc.) lives on each `.mount()` call. |
+| `yuno.unmountSeamlessExternalButton(type)` / `yuno.unmountSeamlessExternalButtons()` | *(removed)* | Removed | Per-button unmount removed. `transaction.unmount()` removes the form the transaction mounted and reports `USER_CANCEL` through `onStatus` when no result was delivered yet. The wallet buttons stay on the page until you remove their containers. |
 
 ### Entry points
 
 | Seamless | Unified | Change | What to do |
 |---|---|---|---|
 | `yuno.startSeamlessCheckout(config)` | `sdkPayments.transaction(config)` | Renamed | The `Seamless` factory is gone: use the regular factory, without `createPayment` (see Callbacks). |
-| `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` | Renamed | The merchant-triggered start now takes the method the user picked: call it from `onPaymentSelected`. When the chosen method renders a form, it uses the optional `elementSelector` set on the transaction config. |
+| `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` with the list, `transaction.submit()` with a form that `start()` mounted | Renamed | With the list, your Pay button calls `start({ paymentMethod })` with the method the user picked. It submits the form the list opened inline. With a pre-selected method, `start({ paymentMethod })` mounts the form into the config's `elementSelector` and your Pay button calls `submit()` (set `showPayButton: false`). Wallet buttons pay on tap and need neither. |
 
 ## Related
 

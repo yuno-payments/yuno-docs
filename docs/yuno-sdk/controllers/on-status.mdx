@@ -7,9 +7,15 @@ description: "Receives the final status of the transaction."
 
 `onStatus` is invoked when the transaction reaches its final state. It is the only way to know how the transaction ended.
 
+On Web, these deliveries are not final. The form stays mounted after them, so the shopper can try again:
+
+- `INTERNAL_ERROR` with `message.code` `FORM_INVALID`. You submitted a form that is not valid, with [`transaction.submit()`](/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button) or with `transaction.start({ paymentMethod })` on the payment methods list.
+- `DECLINED` or `ERROR` for a card payment the SDK can retry, when you override `createPayment`. The SDK moves the form to a new checkout session, shows the field errors and keeps the form. Enable your pay button again. The next `submit()` or `start()` pays on the new session, which `token.checkout_session` carries into `createPayment`. Without `createPayment`, a form mounted by `start()` has no in-place retry: the decline is final and reaches `onStatus`. On the payment methods list and with secure fields the SDK retries in place and does not call `onStatus` for the declined attempt.
+- `INTERNAL_ERROR` with `message.code` `COLLECT_FAILED`, when you override `createPayment` and a Mercado Pago wallet fails before it produces a token. The wallet button stays mounted.
+
 ## Behavior
 
-This controller has no default behavior. If you don't implement it, you won't receive the final status. When implemented, the SDK delivers the final status to your handler after tokenization, payment creation (or merchant-side payment creation via `createPayment`), 3DS, and status resolution have completed.
+This controller has no default behavior. If you don't implement it, you won't receive the final status. On Web, `transaction()` also prints a console warning when the config has no `onStatus` function. When implemented, the SDK delivers the final status to your handler after tokenization, payment creation (or merchant-side payment creation via `createPayment`), 3DS, and status resolution have completed.
 
 ## Signature
 
@@ -25,7 +31,7 @@ sdkPayments.transaction({
 })
 ```
 
-`result` carries `status` and `substatus` (backend values passed through) plus `message` on error outcomes. It is the same payload shape on payment and enrollment flows. There is no separate result type per flow.
+`result` carries `status`, `substatus` and `message`. `status` and `substatus` are the backend values, with `substatus` as `null` when the backend sent none. On a `DECLINED`, `REJECTED`, `EXPIRED`, `CANCELED` or `ERROR` payment, `message` is `{ source: 'backend', code: <response_code> }` when the backend sent a response code, and `null` otherwise. Every other backend status, on payment and enrollment flows, carries `message: null`. A status value this SDK version does not know is not passed through. It arrives as `INTERNAL_ERROR` with `message.code` `UNSUPPORTED_STATUS` and `message.reason` set to `unsupported status: <value>`. It is the same payload shape on payment and enrollment flows. There is no separate result type per flow.
 
   </Tab>
 
@@ -49,6 +55,18 @@ fun onStatus(status: TransactionStatus)
 </Tabs>
 
 See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status) for the shape of the payload, the `message` field, and the SDK-emitted values (`INTERNAL_ERROR`, `USER_CANCEL`).
+
+On Web, an `INTERNAL_ERROR` with `message.source` `'sdk'` can carry values such as these in `message.code`:
+
+- `FORM_INVALID`. The submitted form is not valid. Not final, see above.
+- `COLLECT_FAILED`. A wallet failed before it produced a token. `message.reason` names the cause.
+- `UNSUPPORTED_STATUS`. The backend returned a status this SDK version does not know. `message.reason` is `unsupported status: <value>`.
+- `ELEMENT_NOT_FOUND`. The element passed to `paymentMethodList.mount()` is not in the document, or the form's container was removed while the form was loading. A config `elementSelector` that matches nothing makes `start()` reject with `elementSelector "<selector>" was not found in the document.` instead.
+- `UNEXPECTED_ERROR`. A failure the SDK does not classify, including an SDK chunk that failed to download. `message.reason` carries the error message.
+
+With `message.source` `'backend'`, `message.code` is the backend error code, or the HTTP status when the response body has none. Branch on `message.code` for the cases you handle and treat the rest as a generic failure.
+
+On Web, `USER_CANCEL` also arrives when you call `transaction.unmount()` while a form is mounted and the transaction has not delivered a status yet, unless a payment is in flight. Unmount after `onStatus` has fired, or treat that delivery as the shopper leaving the payment.
 
 ## Confirm on your server
 

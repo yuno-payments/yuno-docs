@@ -42,13 +42,10 @@ payment-specific configuration comes later.
 Load the SDK from the CDN. It exposes a global `SdkPayments` and dispatches a `sdk-payments-ready` event on `window` once it's ready to use.
 
 ````html
-<script
-  src="https://sdk-web.y.uno/v2.0.0-alpha.2/main.js"
-  integrity="sha384-<paste-hash-here>"
-  crossorigin="anonymous"></script>
+<script src="https://sdk-web.y.uno/v2.0.0/main.js"></script>
 ````
 
-Get the `integrity` hash from [`versions-sri.json`](https://sdk-web.y.uno/versions-sri.json): copy the `integrity` of the entry under `history` whose `version` matches the version in your script `src` (here `2.0.0-alpha.2`). Do **not** use `latest.integrity` — `latest` tracks the stable 1.x release, so its hash never matches the alpha bundle and the browser will block the script with an SRI error. `crossorigin="anonymous"` lets the browser validate the hash for the cross-origin script. See [Subresource Integrity](/docs/sdks/resources/references/web#subresource-integrity-sri) for details.
+Each release has its own full-version path. To move to a newer release, change the version in the `src`.
 
 Then initialize the SDK. The bundle sets `window.SdkPayments` synchronously and fires `sdk-payments-ready` on `window` **once**, right as it loads. If your code runs after the script has already loaded, that event has passed — so check for the global first and fall back to the event only while the script is still loading:
 
@@ -175,7 +172,7 @@ Create the session with `workflow: "SDK_SEAMLESS"`, a field on the session-creat
 
 ### Put the methods on screen
 
-The shopper's choice reaches the SDK as a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected): only `paymentMethodType` (`type` on Web) is required; `vaultedToken` and `transactionData` are optional. Two ways to get it:
+The shopper's choice reaches the SDK as a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected): only `paymentMethodType` (`type` on Web) is required; `vaultedToken` and `transactionData` (`data` on Web) are optional. Two ways to get it:
 
 - **Use the SDK's pre-built methods list.** Call `getPaymentMethodsViews` to render a list of methods. When the user picks one, your `onPaymentSelected` controller receives a `PaymentMethodSelected` you can pass to `start()`. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list).
 - **Build your own list.** Fetch the available payment methods from Yuno's API and construct `PaymentMethodSelected` yourself based on the user's choice. See [`GET /v1/checkout/sessions/{checkout_session}/payment-methods`](https://docs.y.uno/reference/checkout-sessions/retrieve-payment-methods-for-checkout#retrieve-payment-methods-for-checkout).
@@ -216,6 +213,8 @@ const paymentMethod = { type: 'CARD' }
 
 await transaction.start({ paymentMethod })
 ````
+
+On Web, `start()` without `data` mounts the method's form into `elementSelector` and resolves once the form is on the page. The form has its own Pay button. The shopper taps it, and the result arrives later in `onStatus`. To use your own button, pass `showPayButton: false` in the config and call `transaction.submit()` from it. To pay with details you collected yourself, pass `data` on `paymentMethod`, and the SDK runs the payment with no form.
 
   </Tab>
 
@@ -301,16 +300,13 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 | `countryCode` | Yes | ISO-3166 alpha-2 country code (e.g. `US`, `CO`). |
 | `language` | No | ISO-639 code (e.g. `en`, `es`). Falls back to the device or browser language. |
 | `controller` | Yes (mobile only) | Object implementing `TransactionController`. Not present on Web, where events are wired inline on the config. |
+| `elementSelector` | Yes (Web, form payments) | CSS selector or `HTMLElement` the form renders into. Optional for enrollment, where the SDK appends its own container. Ignored when you pass `data`. |
 
 For the full list of fields, see [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config).
 
-<Note>
-On Web, `transaction()` also takes `elementSelector`: the DOM element the form renders into.
-</Note>
-
 ## Know it went through
 
-The SDK presents the form, tokenizes the input, creates the payment, handles 3DS if required, and emits the final status to `onStatus`. Use it to show the shopper the receipt.
+The SDK presents the form, tokenizes the input, creates the payment, handles 3DS if required, and emits the final status to `onStatus`. Use it to show the shopper the receipt. On Web the SDK shows its own result screen by default. To draw the receipt yourself, pass `showStatusScreen: false` in the transaction config.
 
 <Note>
 `onStatus` drives your UI. For fulfillment (shipping goods, granting access), confirm the outcome server-side via webhooks or the payments API; see [Confirm on your server](/docs/yuno-sdk/controllers/on-status#confirm-on-your-server).
@@ -358,7 +354,7 @@ Use these in sandbox to exercise different scenarios. Enter the full tuple exact
 | 4507 9900 0000 0028 | 11/28 | 123 | John Doe | DECLINED_BY_BANK |
 | 4507 9900 0000 0010 | 11/28 | 123 | John Doe | INSUFFICIENT_FUNDS |
 
-For the full list of cards and scenarios (Mastercard, Amex, more decline codes), see [Card detail](/docs/direct-integration-use-cases/yuno-testing-gateway#2-2-2-card-detail). For 3DS flows, use the [3DS test cards](/docs/direct-integration-use-cases/yuno-testing-gateway#2-2-3-3ds-test-cards).
+For the full list of cards and scenarios (Mastercard, Amex, more decline codes), see [Card detail](/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway). For 3DS flows, use the [3DS test cards](/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway).
 
 ## Next steps
 

@@ -13,7 +13,7 @@ This feature applies to payment flows only. It is not available for enrollment.
 
 The SDK renders the full list of payment methods enabled in your dashboard: logos, names, and the shopper's saved methods included. And if you prefer fewer taps, you can choose to show each method's form expanded right inside the list, so shoppers enter their details without leaving it, for a faster checkout. You enable the expanded layout from the **Checkout Builder** in your [Yuno Dashboard](https://dashboard.y.uno/), no code needed.
 
-{/* TODO(verify): confirm on which platforms the expanded-forms layout is available. */}
+{/* Web verified against sdk-web 2.0.0: the SDK reads payment_method_list.unfolded_display from the Checkout Builder settings. TODO(verify): confirm the expanded-forms layout on iOS and Android. */}
 
 <Columns cols={2}>
   <div className="media-showcase">
@@ -57,7 +57,9 @@ if (selectedPaymentMethod) {
 }
 ```
 
-Each view in the returned object exposes a `.mount({ elementSelector, ...config })` method. Per-view styling (Apple Pay button type, Google Pay color, etc.) lives on `.mount()`.
+Each view in the returned object exposes a `.mount({ elementSelector, ...config })` method. Per-view styling (Apple Pay button type, Google Pay color, etc.) lives on `.mount()`. Options you pass to a wallet's `mount()` override the same keys in the transaction config's `externalButtons`. `paymentMethodList.mount()` also takes `scrollContainerSelector`, `visibleTriggerOffsetPx`, and `bottomOffsetPx` for a list inside a scrolling container. They override the same keys in the transaction config's `paymentListConfig`.
+
+What `start()` does after a selection depends on the Checkout Builder. With forms unfolded inside the list, `start({ paymentMethod })` submits the form the shopper already filled in, so it is your Pay action. With folded forms, `start()` mounts the selected method's form into the `elementSelector` of your transaction config and resolves. The shopper then pays from that form's button. If you set `showPayButton: false`, call `transaction.submit()` from your own button instead. Pass `elementSelector` on the transaction config so the folded form has somewhere to render.
 
   </Tab>
 
@@ -114,9 +116,14 @@ selectedPayment?.let { transaction.start(paymentSelected = it) }
 | `APPLE_PAY` | iOS, Web | The native Apple Pay button, wired to start the payment flow. On iOS this is an enum case with associated values — write it as `.APPLE_PAY()`, or pass `type:` / `style:` to customize the button. |
 | `GOOGLE_PAY` | Android, Web | The native Google Pay button, wired to start the payment flow. |
 | `PAYPAL` | Web | The native PayPal button, wired to start the payment flow. |
+| `PAYPAL_BRAINTREE` | Web | The PayPal button for accounts that process PayPal through Braintree. |
+| `SAMSUNG_PAY` | Web | The Samsung Pay button, wired to start the payment flow. |
+| `REVOLUT_PAY` | Web | The Revolut Pay button, wired to start the payment flow. |
 | `PAYMENT_METHOD_LIST` | iOS, Android, Web | Full list of payment methods enabled in your Yuno dashboard. |
 
-If a requested type does not apply to the current platform or configuration, the corresponding entry in the returned map is `null`.
+On Web, pass the values as camelCase strings in `types`: `'applePay'`, `'googlePay'`, `'paypal'`, `'paypalBraintree'`, `'samsungPay'`, `'revolutPay'`, and `'paymentMethodList'`.
+
+On iOS and Android, a type that does not apply to the platform or configuration comes back as `null`. On Web every requested type is returned and the check happens in `mount()`. When the wallet is not enabled for the checkout session, the SDK logs `There are not valid payment methods`, reports the failure through `onStatus`, and the promise that `mount()` returns rejects. `mount()` is typed `void`, so `await` it to catch that rejection, and mount only the wallets enabled for the session.
 
 <Note>
 On Android, `PaymentMethodType` is a sealed interface rather than a set of string constants: `GOOGLE_PAY` corresponds to `PaymentMethodType.GooglePay(...)`, which also carries the button customization (`cta`, `theme`, `cornerRadius`), and `PAYMENT_METHOD_LIST` corresponds to `PaymentMethodType.PaymentMethodList`. `APPLE_PAY` does not exist on Android.
@@ -126,7 +133,7 @@ On iOS, `APPLE_PAY` is an enum case with associated values, both optional: `.APP
 
 ### Express buttons
 
-`APPLE_PAY`, `GOOGLE_PAY`, and `PAYPAL` return the native express buttons, ready to use. You style them through the standard view modifiers of each platform (size, padding, corner radius, etc.). The SDK only adds a loader on top while the payment flow is initializing.
+`APPLE_PAY`, `GOOGLE_PAY`, and `PAYPAL` return the native express buttons, ready to use. You style them through the standard view modifiers of each platform (size, padding, corner radius, etc.). The SDK only adds a loader on top while the payment flow is initializing. On Web, `PAYPAL_BRAINTREE`, `SAMSUNG_PAY`, and `REVOLUT_PAY` are express buttons too, and you style all of them through the options of `mount()`.
 
 <div className="media-showcase-light">
   <img src="/images/yuno-sdk/payment-methods-list/apple-pay.png" alt="Apple Pay button" />
@@ -136,15 +143,17 @@ On iOS, `APPLE_PAY` is an enum case with associated values, both optional: `.APP
 
 <Note>
 You do not need to call `Transaction.start()` for express buttons. Tapping the button is the user's confirmation, so the SDK starts the transaction internally and reports the result through `onStatus`.
+
+This also holds inside the list on Web. When the shopper selects an express wallet row, its button renders inside the row and is the pay control. `start()` for that selection returns without doing anything, so hide your own Pay button while `onPaymentSelected` reports an express type (`APPLE_PAY`, `GOOGLE_PAY`, `PAYPAL`, `PAYPAL_BRAINTREE`, `SAMSUNG_PAY`, or `REVOLUT_PAY`).
 </Note>
 
 ## PaymentListController
 
-The controller you pass to `getPaymentMethodsViews`. Only `onPaymentSelected` is required.
+The controller you pass to `getPaymentMethodsViews`. On iOS and Android only `onPaymentSelected` is required. On Web `onPaymentSelected` is optional, but without it the list cannot tell you what the shopper picked, so pass it whenever you request `'paymentMethodList'`.
 
 | Method | Required | Platforms | Behavior |
 |---|---|---|---|
-| `onPaymentSelected(paymentSelected)` | Yes | iOS, Android, Web | Invoked when the user picks a payment method. Pass the `PaymentMethodSelected` to `Transaction.start()`. |
+| `onPaymentSelected(paymentSelected)` | Yes (Web: optional) | iOS, Android, Web | Invoked when the user picks a payment method. Pass the `PaymentMethodSelected` to `Transaction.start()`. |
 | `onHeightChange(newHeight)` | No\* | iOS, Android | Invoked when the rendered view's height changes, so you can apply it to your layout. |
 | `onUnenroll(success)` | No | iOS, Android | Invoked after the SDK has attempted to remove a saved payment method initiated from the list. Receives a boolean indicating whether the unenroll succeeded. |
 
@@ -152,8 +161,10 @@ The controller you pass to `getPaymentMethodsViews`. Only `onPaymentSelected` is
 **\* `onHeightChange` is optional to _implement_, but you must apply the reported height when your layout constrains the list.**
 </Note>
 
+On Web, `onPaymentSelected` can fire before any tap. When the list preselects the shopper's preferred method on mount, the callback runs with `selectionSource: 'auto'`. A tap runs it with `selectionSource: 'user'`. It also fires when the shopper taps an express button you mounted. The Web `PaymentMethodSelected` is `{ type, name?, vaultedToken?, selectionSource? }`. Keep the latest value and pass it to `start()` only from your own Pay control.
+
 <Note>
-The **Edit / remove** control that lets a shopper delete a saved method — and the only thing that makes `onUnenroll` fire — is rendered only when **`edit_payment_method_list`** is enabled in **Checkout Builder → Styling** in your [Yuno Dashboard](https://dashboard.y.uno/). It is **off by default** on iOS and Android, so until you turn it on the saved methods show no remove affordance and `onUnenroll` is never invoked.
+The **Edit / remove** control that lets a shopper delete a saved method — and the only thing that makes `onUnenroll` fire — is rendered only when **`edit_payment_method_list`** is enabled in **Checkout Builder → Styling** in your [Yuno Dashboard](https://dashboard.y.uno/). It is **off by default** on iOS and Android, so until you turn it on the saved methods show no remove affordance and `onUnenroll` is never invoked. The same setting controls the remove control on Web. Web has no `onUnenroll` callback. After a removal the SDK refetches the session's payment methods and the list re-renders.
 </Note>
 
 ## Notes
@@ -161,6 +172,7 @@ The **Edit / remove** control that lets a shopper delete a saved method — and 
 - `getPaymentMethodsViews` is synchronous.
 - You can request any combination of types available on your platform in a single call.
 - The `PaymentMethodSelected` delivered by `onPaymentSelected` is what you pass to `Transaction.start()`. See [Get Started](/docs/yuno-sdk/get-started).
+- On Web, once a payment on the session reaches a final status, the SDK removes the list and marks the checkout session as finished. `start()`, `submit()`, and `mount()` on that session then throw. To pay again, create a new checkout session and a new `Transaction`, or call `transaction.updateCheckoutSession()` with the new session, then mount the list again.
 
 ## Related
 

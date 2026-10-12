@@ -47,6 +47,8 @@ await yuno.startCheckout({
         console.log('Error', error)
     },
 })
+
+await yuno.mountCheckout()
 ```
 
 ```typescript After. Unified Transaction
@@ -56,7 +58,7 @@ const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
     language: 'en',
-    elementSelector: '#root',
+    elementSelector: '#payment-form', // form container for the selected method
     paymentListConfig: {
         scrollContainerSelector: '#scroll-container',
         bottomOffsetPx: 0,
@@ -66,14 +68,22 @@ const transaction = sdkPayments.transaction({
     },
 })
 
+let selectedPaymentMethod: PaymentMethodSelected | null = null
+
 const views = transaction.getPaymentMethodsViews({
     types: ['paymentMethodList'],
     onPaymentSelected: (paymentMethod) => {
-        transaction.start({ paymentMethod })
+        selectedPaymentMethod = paymentMethod
     },
 })
 
 views.paymentMethodList?.mount({ elementSelector: '#root' })
+
+// Your Pay button. With forms unfolded in the list, start() submits the form the shopper filled.
+// With folded forms, start() mounts the form into #payment-form and the shopper pays from it.
+document.getElementById('pay').addEventListener('click', () => {
+    if (selectedPaymentMethod) transaction.start({ paymentMethod: selectedPaymentMethod })
+})
 ```
 
 </CodeGroup>
@@ -89,8 +99,8 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
 | `checkoutSession`, `countryCode`, `language` on the `startCheckout` config | The same fields on the transaction config | Moved | Same fields, single factory: `sdkPayments.transaction({ checkoutSession, countryCode, language, … })`. |
 | `paymentListConfig` | `paymentListConfig` on the transaction config | Moved | Same shape, same fields. |
-| `renderMode: { type, elementSelector }` | `elementSelector` on the transaction config | Moved | Modal mode no longer exists. Set `elementSelector` on the transaction config to render a selected method's form. It's optional and used only by form-based flows; the payment-method list itself renders where you pass `elementSelector` to `views.paymentMethodList.mount({ elementSelector })` (see Views). |
-| `yuno.mountStatusPayment(...)` | *(removed)* | Removed | The SDK's built-in result screen is controlled by `showStatusScreen` on the transaction config; it defaults to `false`. |
+| `renderMode: { type, elementSelector }` | `elementSelector` on the transaction config | Moved | Modal mode no longer exists. Set `elementSelector` on the transaction config to render a selected method's form. It is required when `start({ paymentMethod })` renders a form and ignored by headless flows. The payment-method list itself renders where you pass `elementSelector` to `views.paymentMethodList.mount({ elementSelector })` (see Views). |
+| `yuno.mountStatusPayment(...)` | `sdkPayments.transactionStatus({ checkoutSession, elementSelector })` | Renamed | See [Payment status](/docs/yuno-sdk/migration/web/status). Inside a transaction, the result screen is controlled by `showStatusScreen`, which defaults to `true`. Set `showStatusScreen: false` to render the result yourself from `onStatus`. |
 
 ### Callbacks
 
@@ -100,20 +110,19 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | `yunoCreatePayment(ott, info)` | `createPayment(token)` | Renamed | Optional. Promise-based, single argument. Create the payment and resolve: resolving is what used to be `continuePayment()`. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment). |
 | `yunoError(message, data?)` | *(removed)* | Removed | Errors flow through `onStatus`, or a rejected `start()` Promise. |
 | `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Renamed | Optional. Boolean signal only. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
-| `onRendered()` / `onCreateOneTimeToken()` | *(removed)* | Removed | Drop these. |
-| `yunoPaymentMethodSelected({ type, name })` (notification at session level) | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | Renamed | Required. The legacy callback was advisory; the new one is the driver: wire it inside `getPaymentMethodsViews` and call `transaction.start({ paymentMethod })` from it. It receives a typed [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) you pass to `start()`. |
+| `yunoPaymentMethodSelected({ type, name })` (notification at session level) | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | Renamed | Optional in the type, but without it the list cannot start a payment. The legacy callback was a notification. In the unified API, store the [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) it receives and pass it to `transaction.start({ paymentMethod })` from your Pay button. When the list opened that method's form inline, `start()` submits it. For an express wallet row the wallet button pays and `start()` does nothing. |
 
 ### Views
 
 | Full | Unified | Change | What to do |
 |---|---|---|---|
-| `yuno.startCheckout({ elementSelector: '#root' })` (auto-mounts the payment list) | `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`, then `views.paymentMethodList?.mount({ elementSelector: '#root' })` | Moved | Explicit list mounting: `startCheckout` auto-mounted the list at `elementSelector`. The unified API hands you a view handle, and you call `.mount(...)` with the selector plus any per-view config. This makes the intent ("render the drawer here") visible at the call site. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). |
+| `yuno.startCheckout({ elementSelector: '#root' })` + `yuno.mountCheckout()` | `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`, then `views.paymentMethodList?.mount({ elementSelector: '#root' })` | Renamed | `mountCheckout()` rendered the list at the `elementSelector` from `startCheckout`. The unified API hands you a view handle, and you call `.mount(...)` with the selector plus any per-view config. This makes the intent ("render the drawer here") visible at the call site. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). |
 
 ### Entry points
 
 | Full | Unified | Change | What to do |
 |---|---|---|---|
-| `yuno.startCheckout(config)` | `sdkPayments.transaction(config)` | Renamed | Single factory: build the transaction with the config (fields and callbacks above), then mount the list (see Views) and `start` from `onPaymentSelected`. |
+| `yuno.startCheckout(config)` | `sdkPayments.transaction(config)` | Renamed | Single factory: build the transaction with the config (fields and callbacks above), then mount the list (see Views) and `start` from your Pay button with the selected method (see Callbacks). |
 | `yuno.continuePayment()` | *(removed)* | Removed | Delete the call: the SDK orchestrates 3DS and status polling internally once `createPayment` resolves. |
 
 ## Related

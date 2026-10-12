@@ -9,7 +9,7 @@ Enrollment had two sub-modes that paralleled the payment modes: a UI-driven flow
 ## Before you start
 
 - Load the unified SDK bundle instead of the legacy one and initialize it as the side-by-side shows: `window.Yuno.initialize(...)` becomes `SdkPayments.initialize(...)`. Your public API key and the customer sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
-- There is no payment to create: `createPayment` is not invoked during enrollment, so overriding it has no effect.
+- There is no payment to create. An enrollment config does not accept `createPayment`, `showPayButton` or the other payment-only fields. Remove them.
 
 ## Side-by-side
 
@@ -22,10 +22,9 @@ const yuno = await window.Yuno.initialize('your-public-api-key')
 
 await yuno.mountEnrollmentLite({
     customerSession: 'session-from-backend',
-    elementSelector: '#root',
     countryCode: 'CO',
     language: 'en',
-    showStatusScreen: true,
+    showPaymentStatus: true,
     yunoEnrollmentStatus: ({ status, vaultedToken }) => {
         if (status === 'CREATED' && vaultedToken) {
             // Store against customer
@@ -65,18 +64,26 @@ await transaction.start()
 const yuno = await window.Yuno.initialize('your-public-api-key')
 
 const apiClientEnroll = await yuno.apiClientEnroll({
-    customerSession: 'session-from-backend',
+    customer_session: 'session-from-backend',
+    country_code: 'CO',
 })
 
-const vaultedToken = await apiClientEnroll.generateVaultedToken({
-    cardHolderName: 'John Doe',
-    cardNumber: '4111111111111111',
-    cvv: '123',
-    expirationMonth: 12,
-    expirationYear: 28,
+const enrollment = await apiClientEnroll.continueEnrollment({
+    payment_method: {
+        type: 'CARD',
+        card: {
+            detail: {
+                holder_name: 'John Doe',
+                number: '4111111111111111',
+                security_code: '123',
+                expiration_month: 12,
+                expiration_year: 28,
+            },
+        },
+    },
 })
 
-console.log('vault token:', vaultedToken)
+console.log('vault token:', enrollment.vaulted_token)
 ```
 
 ```typescript After. Unified Transaction (enrollment headless)
@@ -97,12 +104,13 @@ await transaction.start({
     paymentMethod: {
         type: 'CARD',
         data: {
-            type: 'CARD',
-            holderName: 'John Doe',
-            number: '4111111111111111',
-            securityCode: '123',
-            expirationMonth: 12,
-            expirationYear: 28,
+            card: {
+                holderName: 'John Doe',
+                number: '4111111111111111',
+                securityCode: '123',
+                expirationMonth: 12,
+                expirationYear: 28,
+            },
         },
     },
 })
@@ -119,25 +127,25 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | Enrollment | Unified | Change | What to do |
 |---|---|---|---|
 | `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
-| `customerSession` on `mountEnrollmentLite` / argument of `apiClientEnroll` | `customerSession` on the transaction config | Moved | Single factory: which session you pass decides the flow, `checkoutSession` for a payment, `customerSession` for an enrollment. `createPayment`, `showPayButton`, and the other payment-only config fields aren't part of the enrollment config, as there's no `/v1/payments` equivalent for enrollment. |
+| `customerSession` on `mountEnrollmentLite` / `customer_session` argument of `apiClientEnroll` | `customerSession` on the transaction config | Moved | Single factory: which session you pass decides the flow, `checkoutSession` for a payment, `customerSession` for an enrollment. `createPayment`, `showPayButton`, and the other payment-only config fields aren't part of the enrollment config, as there's no `/v1/payments` equivalent for enrollment. |
 | `countryCode`, `language` on `mountEnrollmentLite` | The same fields on the transaction config | Moved | |
-| `elementSelector: '#root'` (auto-mount) on `mountEnrollmentLite` | `elementSelector` on the transaction config | Moved | Optional, not required: the enrollment form renders inside that element. Used only by form-based flows (headless enrollment ignores it). Modal mode no longer exists. |
+| *(none: the SDK appended its own container to `body`)* | `elementSelector` on the transaction config | New | Optional: the enrollment form renders inside that element. Without it the SDK appends its own container to `body`, as before. Headless enrollment ignores it. |
 | `showPaymentStatus: true` | `showStatusScreen: true` | Renamed | Same field on `TransactionConfig`. Defaults to `true` for enrollment. |
-| `cardHolderName`, `cardNumber`, `cvv`, `expirationMonth`, `expirationYear` (argument of `generateVaultedToken`) | `holderName`, `number`, `securityCode`, `expirationMonth`, `expirationYear` under `paymentMethod.data` | Moved | Pre-collected card data goes inline on `start()` (see Entry points). |
+| `holder_name`, `number`, `security_code`, `expiration_month`, `expiration_year` under `payment_method.card.detail` (argument of `continueEnrollment`) | `holderName`, `number`, `securityCode`, `expirationMonth`, `expirationYear` under `paymentMethod.data.card` | Moved | Pre-collected card data goes inline on `start()` (see Entry points). |
 
 ### Callbacks
 
 | Enrollment | Unified | Change | What to do |
 |---|---|---|---|
-| `yunoEnrollmentStatus({ status, vaultedToken })` | `onStatus(result)` | Renamed | `result` carries `status` (literal union), `substatus`, and `message`, the same shape as payment flows. `result.status` uses the same 12-value literal union as the `Enrollment.Status` enum: `CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`, `PENDING`. When `status === 'CREATED'`, the enrollment succeeded. **`vaultedToken` is no longer delivered to the client**: retrieve it from your backend's list-customer-payment-methods endpoint and store it against your customer. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `yunoEnrollmentStatus({ status, vaultedToken })` | `onStatus(result)` | Renamed | `result` carries `status`, `substatus`, and `message`, the same shape as payment flows. `result.status` carries the enrollment status as the API reports it (`CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`, `PENDING`) plus two SDK values: `INTERNAL_ERROR` (details in `result.message`) and `USER_CANCEL` (you unmounted before a result). When `status === 'CREATED'`, the enrollment succeeded. **`vaultedToken` is no longer delivered to the client**: retrieve it from your backend's list-customer-payment-methods endpoint and store it against your customer. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
 | `yunoError(message, data?)` | *(removed)* | Removed | Errors flow through `onStatus` (a `TransactionStatus` with `message` set), or a rejected `start()` Promise. |
 
 ### Entry points
 
 | Enrollment | Unified | Change | What to do |
 |---|---|---|---|
-| `yuno.mountEnrollmentLite({ customerSession, … })` | `sdkPayments.transaction({ customerSession, elementSelector, … }).start()` | Renamed | `start()` with no argument is the UI enrollment: with `elementSelector` on the config, the SDK presents the enrollment form inside that element for the customer to pick a method and fill in card data. |
-| `yuno.apiClientEnroll({ customerSession })` + `.generateVaultedToken(cardData)` | `sdkPayments.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data: CardData } })` | Renamed | `start({ paymentMethod: { type, data } })` is the headless enrollment: same shape as headless payment, but with `customerSession`; the config's `elementSelector` is ignored. The call no longer returns the vaulted token (see Callbacks). |
+| `yuno.mountEnrollmentLite({ customerSession, … })` | `sdkPayments.transaction({ customerSession, elementSelector, … }).start()` | Renamed | `start()` with no argument is the UI enrollment: with `elementSelector` on the config, the SDK renders the form for the method the customer session was created for inside that element. |
+| `yuno.apiClientEnroll({ customer_session, country_code })` + `.continueEnrollment({ payment_method })` | `sdkPayments.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data: { card } } })` | Renamed | `start({ paymentMethod: { type, data } })` is the headless enrollment: same shape as headless payment, but with `customerSession`; the config's `elementSelector` is ignored. The call no longer returns the vaulted token (see Callbacks). |
 
 ## Related
 
