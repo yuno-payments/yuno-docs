@@ -158,6 +158,38 @@ Refund a payment made with `external_invoice` through the Yuno API or dashboard,
 * **The invoice is paid.** Yuno reports the refund on the payment's record and adds a **credit note** for the refunded amount to the invoice, so your Stripe books stay consistent. Partial refunds are supported, each with its own credit note, and the refunds of a payment never add up to more than the payment.
 * **The invoice is still open (paid in part).** Yuno reports the refund on the payment's record and adds **no credit note**. In Stripe, the invoice keeps counting that payment as paid, and any credit note you add there also reduces what the customer still owes, so how to settle the rest of the invoice is your decision in Stripe.
 
+## Pay a Stripe invoice with a payment link
+
+`POST /v1/payment-links` accepts an optional `external_invoice` object. `id` is required and must be 3 to 255 characters after trimming spaces. `customer_id` is optional and must be 3 to 255 characters. The link response echoes the object back.
+
+* `external_invoice` can't be combined with the `subscription` block, or with a non-empty `taxes` list. Either one returns `400`.
+* The account must be enabled for external invoices. Otherwise the API returns `403 PRODUCT_NOT_ENABLED`, the same as for payments.
+* If you send an `X-ACCOUNT-CODE` header, it must match `account_id`.
+* `external_invoice` can't be changed with `PATCH`. A `PATCH` that carries it returns `400`.
+
+When the customer pays the link, Yuno first checks the Stripe invoice. The invoice must be open, and the link amount must equal the invoice's remaining amount, in the same currency. When you sent `customer_id`, it must also be the invoice's customer. If the check fails, nothing is charged, the link is cancelled, and the payment request returns `400` with one of these codes:
+
+| Status and code | When |
+| --- | --- |
+| `400 EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING` | The amount is above the amount remaining on the invoice. |
+| `400 EXTERNAL_INVOICE_AMOUNT_NOT_EQUAL` | The amount is not equal to the amount remaining on the invoice. |
+| `400 EXTERNAL_INVOICE_NOT_OPEN` | The invoice is not open, so it can't be paid. |
+| `400 EXTERNAL_INVOICE_CURRENCY_MISMATCH` | The payment currency is not the invoice currency. |
+| `400 EXTERNAL_INVOICE_CUSTOMER_MISMATCH` | The `customer_id` you sent is not the invoice's customer. |
+| `400 EXTERNAL_INVOICE_NOT_FOUND` | Stripe has no such invoice. |
+| `400 EXTERNAL_INVOICE_REJECTED` | Any other refusal by the invoice check. |
+
+When the payment succeeds, Yuno records it on the Stripe invoice and attaches it, so the invoice is paid. If an earlier renewal attempt of that invoice already has a payment record in Stripe, the payment is added to that same record, so no second record is created. If the invoice belongs to a subscription and the customer paid with a new card that is saved on success, that card becomes the subscription's default for the next renewals.
+
+While a link payment for an invoice is in progress, Yuno holds Stripe's retry for that invoice for up to 24 hours, so the customer isn't charged twice.
+
+## Your payment metadata on the Stripe payment record
+
+For top-up payments, when this is enabled for your organization, the `metadata` you send on the payment is copied onto the Stripe payment record: on the first report and on every later attempt. `metadata` is a list of `{key, value}` objects. An object instead of a list returns `400`.
+
+* Yuno's own keys `yuno_payment_id`, `external_invoice_id` and `merchant_order_id` are always present. They win if you send a key with the same name.
+* Stripe's limits apply: at most 50 keys in total, so 47 of yours. Keys can be up to 40 characters, and values up to 500 characters. A longer key, or a key that contains `[` or `]`, is skipped. A longer value is cut to 500 characters. Keys beyond the 47th are skipped. The payment is never refused because of this.
+
 ## Not supported
 
 * Combining `external_invoice` with `external_subscription` or `subscription` in one payment.
