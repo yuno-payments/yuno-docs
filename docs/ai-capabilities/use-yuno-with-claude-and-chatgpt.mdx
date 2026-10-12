@@ -1,12 +1,12 @@
 ---
-title: "Use Yuno with Claude and ChatGPT"
-description: "Connect your Yuno analytics data to Claude or ChatGPT and ask questions in plain language, backed by live SQL against your Yuno analytics warehouse."
+title: "Use Yuno with AI assistants"
+description: "Connect Yuno to the AI assistant you already use — Claude, ChatGPT, or Grok (coming soon) — to analyze your payments data, search the Yuno API docs, and operate payments on your Yuno accounts in plain language."
 ---
 
-Connect your Yuno analytics data to the AI assistant you already use. Ask questions about your payments data in plain language, like approval rates, decline reasons, or volumes by country or payment method, and get answers backed by live SQL queries against your Yuno analytics warehouse.
+Connect your Yuno account to the AI assistant you already use. Analyze your payments data, search the Yuno API documentation, and operate payments on the Yuno accounts you have access to — all in plain language. You sign in with your Yuno user, so the assistant only sees and acts on what your user and organization are allowed to.
 
 <Note>
-  These connectors are analytics-only. They query your Yuno analytics warehouse and cannot create payments, issue refunds, or change your payment configuration. If you're a developer looking to build payment flows into your own agent, see [Building AI Integrations with Yuno's LLMs and MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) and the [Remote Yuno MCP Server](/docs/ai-capabilities/remote-yuno-mcp-server) instead.
+  Analytics is read-only: SQL statements that modify data or schema are always rejected. Payment tools can create and modify data — depending on your Claude or ChatGPT settings, the assistant may ask for your approval before running them. On production, cancellations, refunds, and deletions return a preview first and only run after the assistant confirms within 5 minutes. If you're a developer looking to build payment flows into your own agent, see [Building AI Integrations with Yuno's LLMs and MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) and the [Remote Yuno MCP Server](/docs/ai-capabilities/remote-yuno-mcp-server) instead.
 </Note>
 
 ## Setup
@@ -20,13 +20,13 @@ Connect your Yuno analytics data to the AI assistant you already use. Ask questi
         Open the [Yuno connector listing](https://claude.ai/directory/connectors/yuno) in the Claude directory.
       </Step>
       <Step title="Connect and authorize">
-        Click **Connect** and sign in with your Yuno credentials to authorize access to your account's analytics data.
+        Click **Connect** and sign in with your Yuno credentials to authorize access to your account.
       </Step>
       <Step title="Enable Yuno in your chat">
         In any chat, open the search & tools menu and make sure **Yuno** is toggled on.
       </Step>
       <Step title="Ask your first question">
-        Try: *"Describe the tables available in my Yuno analytics warehouse."*
+        Try: *"Which Yuno accounts can I use?"*
       </Step>
     </Steps>
 
@@ -45,24 +45,85 @@ Connect your Yuno analytics data to the AI assistant you already use. Ask questi
         Click **Add** (or **Connect**) and sign in with your Yuno credentials to link your account.
       </Step>
       <Step title="Invoke the app">
-        In a new chat, invoke the app by name: type `@Yuno`, or just ask a payments-data question and ChatGPT will call the Yuno tools when relevant.
+        In a new chat, invoke the app by name: type `@Yuno`, or just ask a payments question and ChatGPT will call the Yuno tools when relevant.
       </Step>
       <Step title="Ask your first question">
-        Try: *"Using Yuno, what were my top decline reasons last week?"*
+        Try: *"Using Yuno, which accounts can I use?"*
       </Step>
     </Steps>
   </Tab>
+  <Tab title="Grok">
+    <Note>
+      **Coming soon.** The Yuno connector for Grok is in progress and not yet approved. Setup steps and a listing link will be added here once it's live.
+    </Note>
+  </Tab>
 </Tabs>
+
+## Accounts
+
+Payment actions run on one of your Yuno accounts. By default, the connector uses your principal account — the one set as default for your Yuno user in the dashboard, or the first account you have access to otherwise.
+
+* Ask **"Which Yuno accounts can I use?"** to list the accounts available to you and see which one is the default.
+* Tell the assistant which account to use for a given request (for example, "use account `<account>`") to switch away from the default.
+* Accounts you don't have access to are rejected — the connector can only use accounts your Yuno user is entitled to.
 
 ## What you can do
 
-Both connectors expose the same tools against your Yuno analytics warehouse. The assistant chooses the right tool automatically, so you never have to call them by name, but knowing what's available helps you know what to ask.
+The connector exposes tools across four capability groups: analytics, Yuno API documentation, accounts, and payments. The assistant chooses the right tool automatically, so you never have to call them by name, but knowing what's available helps you know what to ask.
+
+### Analytics (read-only SQL)
 
 | Tool | Type | Description |
 | --- | --- | --- |
-| `read_query` | Read | Runs read-only SQL (`SELECT`, `WITH`, `SHOW`, `DESCRIBE`) against your analytics data. This powers most questions: metrics, breakdowns, trends, exports. |
+| `read_query` | Read | Runs read-only SQL (`SELECT`, `WITH`, `SHOW`, `DESCRIBE`, `EXPLAIN`) against your analytics data. This powers most questions: metrics, breakdowns, trends, exports. |
 | `table_overview` | Read | Describes a table's columns and types and shows a few sample rows, so the assistant learns your data's shape before querying it. |
 | `analyze_query` | Read | Returns the execution plan of a query without running it, so expensive queries can be sanity-checked first. |
+
+### Yuno API documentation
+
+| Tool | Type | Description |
+| --- | --- | --- |
+| `docs__search_yuno_api_documentation` | Read | Searches the public Yuno API documentation. |
+| `docs__query_docs_filesystem_yuno_api_documentation` | Read | Reads documentation pages. |
+| `docs__submit_feedback` | Write | Reports an incorrect or outdated docs page to the docs team. |
+
+### Accounts
+
+| Tool | Type | Description |
+| --- | --- | --- |
+| `yuno_list_accounts` | Read | Lists the Yuno accounts you can use and marks the default one. |
+
+### Payments
+
+Payment tools are prefixed `pay__` and grouped by resource below. The assistant can fetch any payment tool's full parameters itself through `pay__describeTool`, so this page groups tools by resource instead of listing every parameter.
+
+| Resource | Tools | Type |
+| --- | --- | --- |
+| Helper | `pay__describeTool` | Read — returns a payment tool's full parameters |
+| Payments | `pay__paymentRetrieve`, `pay__paymentRetrieveByMerchantOrderId` | Read |
+| | `pay__paymentCreate`, `pay__paymentAuthorize` | Write |
+| | `pay__paymentCaptureAuthorization`, `pay__paymentCancel`, `pay__paymentRefund`, `pay__paymentCancelOrRefund`, `pay__paymentCancelOrRefundWithTransaction` | Destructive |
+| Customers | `pay__customerRetrieve`, `pay__customerRetrieveByExternalId` | Read |
+| | `pay__customerCreate`, `pay__customerUpdate` | Write |
+| Payment methods | `pay__paymentMethodRetrieve`, `pay__paymentMethodRetrieveEnrolled` | Read |
+| | `pay__paymentMethodEnroll` | Write |
+| | `pay__paymentMethodUnenroll` | Destructive |
+| Checkout | `pay__checkoutSessionRetrievePaymentMethods` | Read |
+| | `pay__checkoutSessionCreate`, `pay__checkoutSessionCreateOtt` | Write |
+| Subscriptions | `pay__subscriptionRetrieve` | Read |
+| | `pay__subscriptionCreate`, `pay__subscriptionResume`, `pay__subscriptionUpdate` | Write |
+| | `pay__subscriptionPause`, `pay__subscriptionCancel` | Destructive |
+| Payment links | `pay__paymentLinkRetrieve` | Read |
+| | `pay__paymentLinkCreate` | Write |
+| | `pay__paymentLinkCancel` | Destructive |
+| Recipients | `pay__recipientRetrieve` | Read |
+| | `pay__recipientCreate`, `pay__recipientUpdate` | Write |
+| | `pay__recipientDelete` | Destructive |
+| Installment plans | `pay__installmentPlanRetrieve`, `pay__installmentPlanRetrieveAll` | Read |
+| | `pay__installmentPlanCreate`, `pay__installmentPlanUpdate` | Write |
+| | `pay__installmentPlanDelete` | Destructive |
+
+**Read** = no changes. **Write** = creates or updates data. **Destructive** = cancels, refunds, or deletes; requires confirmation on production.
 
 ## Ask in plain language
 
@@ -72,12 +133,17 @@ Both connectors expose the same tools against your Yuno analytics warehouse. The
 * "Compare conversion between credit card and PIX in Brazil this quarter."
 * "Describe the transactions table and show me a few sample rows."
 * "Build me a weekly summary: volume, approval rate, refund rate, and average ticket."
+* "How do I create a payment with 3DS?"
+* "Which Yuno accounts can I use?"
+* "Refund payment `<payment_id>`."
+* "Create a payment link for 50 USD."
 
-## Read-only, scoped to your account
+## Scoped to your account
 
-* **Scoped to your account**: The connector authenticates with your Yuno credentials and can only see the analytics data your account is entitled to.
-* **Read-only by design**: The connectors only run read queries. Statements that modify data or schema are always rejected, so the assistant cannot change anything in your warehouse.
+* **Scoped to your account**: The connector authenticates with your Yuno credentials and can only see and act on the accounts your user is entitled to.
+* **Analytics is read-only**: SQL statements that modify data or schema are always rejected, so the assistant cannot change anything in your analytics warehouse. Payment tools can create and modify data — see the note above for how that's kept safe on production.
 * **Query limits**: Very large result sets are truncated rather than streamed in full, and sessions are rate-limited to keep the warehouse healthy. For bulk exports, use the Yuno dashboard or API.
+* **Partial outages**: If one capability — analytics, documentation, or payments — is temporarily unavailable, only its tools disappear; the rest keep working.
 
 ## Troubleshooting
 
@@ -97,14 +163,22 @@ Ask the assistant to qualify tables with their database name (for example `analy
 
 That's expected for large outputs. Ask the assistant to aggregate (totals, top-N, grouped summaries) instead of listing raw rows, or narrow the date range.
 
+**The assistant used the wrong account**
+
+Ask "Which Yuno accounts can I use?" and tell it which one to use for the request.
+
+**"Confirmation expired"**
+
+Production confirmations last 5 minutes. Ask the assistant to repeat the action to get a fresh confirmation.
+
 ## FAQ
 
 <AccordionGroup>
-  <Accordion title="Do the Claude and ChatGPT connectors do the same thing?">
-    Yes. Both expose the same Yuno analytics tools. Pick the assistant your team already uses, or connect both; access and permissions are identical because they're governed by your Yuno credential, not by the assistant.
+  <Accordion title="Do the Claude, ChatGPT, and Grok connectors do the same thing?">
+    Yes. All three expose the same Yuno tools — analytics, documentation, and payments. Pick the assistant your team already uses, or connect more than one; access and permissions are identical because they're governed by your Yuno credential, not by the assistant. (Grok is coming soon.)
   </Accordion>
   <Accordion title="Can the connector move money or change my payment configuration?">
-    No. These connectors are analytics-only: they query your data warehouse. They do not create payments, issue refunds, or touch your payment routing. For programmatic payment operations, see [Building AI Integrations with Yuno's LLMs and MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) and the [Remote Yuno MCP Server](/docs/ai-capabilities/remote-yuno-mcp-server).
+    It can run payment operations — create, capture, cancel, and refund payments, and manage customers, subscriptions, payment links, recipients, and installment plans — on the Yuno accounts you have access to. It cannot change your Yuno dashboard or routing configuration. Destructive actions on production require an explicit confirmation step. For programmatic payment operations from your own agent, see [Building AI Integrations with Yuno's LLMs and MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) and the [Remote Yuno MCP Server](/docs/ai-capabilities/remote-yuno-mcp-server).
   </Accordion>
   <Accordion title="Is my data used to train AI models?">
     Your data is transferred to the assistant only within your own conversation, subject to Anthropic's or OpenAI's data policies for your plan. Consult your workspace's AI data-handling policy; enterprise plans of both providers exclude business data from training by default.
