@@ -16,15 +16,18 @@ The status object reports how the transaction ended. The SDK delivers it through
 
 The payload carries three pieces:
 
-- `status`: passed through exactly as the backend returns it.
-- `substatus`: passed through exactly as the backend returns it.
+- `status`: passed through exactly as the backend returns it. On Web the SDK relays only the statuses it knows (payments: `CREATED`, `SUCCEEDED`, `PENDING`, `DECLINED`, `REJECTED`, `CANCELED`, `ERROR`, `EXPIRED`, `REFUNDED`, `VERIFIED`, `READY_TO_PAY`; enrollments: `ENROLLED`, `ENROLL_IN_PROCESS`, `UNENROLLED`, `UNENROLL_IN_PROCESS`, `READY_TO_ENROLL`, `CREATED`, `PENDING`, `DECLINED`, `REJECTED`, `CANCELED`, `ERROR`, `EXPIRED`). Any other value arrives as `INTERNAL_ERROR` with `message.code` `UNSUPPORTED_STATUS` and `message.reason` set to `unsupported status: <value>`.
+- `substatus`: passed through exactly as the backend returns it. On Web an empty or missing substatus arrives as `null`.
 - `message`: extra context. Its shape depends on the source:
 
 | Source | `message` shape |
 |---|---|
-| Backend returned an `ERROR` / failed response | `{ "source": "backend", "code": <backend error code>, "reason": <backend reason>, "raw": <raw backend payload> }` |
+| Backend returned an `ERROR` / failed response | `{ "source": "backend", "code": <backend error code>, "reason": <backend reason>, "raw": <raw backend payload> }`. On Web this shape applies when the backend rejects an SDK call (status `INTERNAL_ERROR`), and `code` is the HTTP status when the body has no `code`. |
+| Web: the payment ended `DECLINED`, `REJECTED`, `EXPIRED`, `CANCELED` or `ERROR` | `{ "source": "backend", "code": <transaction response_code> }`, or `null` when the backend sent no response code. Enrollment outcomes on Web always carry `null`. |
 | SDK failed (failed to render, internal SDK error, network, unexpected exception) | `{ "source": "sdk", "code": <sdk code>, "reason": <human-readable reason>, "context": <render step / module / call site> }` |
 | User cancellation | `null` (not an error) |
+
+On Web every other payment status, and every enrollment status, carries `message: null`.
 
 ## Statuses emitted by the SDK itself
 
@@ -34,6 +37,16 @@ Two statuses are not relayed from the backend, the SDK emits them locally:
 - `USER_CANCEL`: raised when the user closes a form or view without completing the flow.
 
 On Web, `INTERNAL_ERROR` with `message.code` `FORM_INVALID` is not final. The SDK raises it when you submit a form that is not valid, with [`transaction.submit()`](/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button) or with `transaction.start({ paymentMethod })` on the payment methods list. The form stays mounted and the user can correct it.
+
+On Web the `message.code` values for `source: "sdk"` include:
+
+- `UNSUPPORTED_STATUS`. The backend returned a status the SDK does not know. `message.reason` is `unsupported status: <value>`.
+- `FORM_INVALID`. The submitted form is not valid. Not final.
+- `ELEMENT_NOT_FOUND`. The element passed to `paymentMethodList.mount()` is not in the DOM, or the form's container was removed while the form was loading. A config `elementSelector` that matches nothing makes `start()` reject with `elementSelector "<selector>" was not found in the document.` instead.
+- `COLLECT_FAILED`. In manual mode (you pass `createPayment`), the Mercado Pago wallet failed to collect the payment data. `message.reason` starts with `MERCADO_PAGO_`.
+- `UNEXPECTED_ERROR`. A failure the SDK does not classify. `message.reason` carries the error message.
+
+On Web a cancel during a 3DS challenge, for example closing the challenge or pressing the browser back button, arrives as `status: "PENDING"` with `substatus: "USER_CANCEL"` and `message: null`, because the payment already exists on the backend. Calling `transaction.unmount()` on a started transaction that has not delivered a status also emits `USER_CANCEL`, unless a payment is in flight.
 
 ### Backend failure or SDK failure? Read `message.source`
 
@@ -67,6 +80,8 @@ An SDK-side failure (network, rendering, unexpected exception) arrives as:
 }
 ```
 
+On Web, `reason` is the backend's `messages[]`, `message` or `description`. For `INVALID_CHECKOUT_SESSION` the SDK appends a hint that a headless transaction needs a session created with workflow `SDK_SEAMLESS`.
+
 When `message.source` is `"backend"`, Yuno's API rejected a call: `code` and `raw` carry the backend's own error, so start debugging there (session validity, workflow, credentials). When it's `"sdk"`, the failure originated inside the SDK and `context` names the module or call site that produced it.
 
 ## Backend status values
@@ -82,7 +97,7 @@ The set of possible `status` and `substatus` values is defined by the backend. S
 
 `OneTimeToken` is what the SDK delivers to your `createPayment` handler when you've taken over payment creation. You POST it to `/v1/payments` from your backend.
 
-On iOS and Android the token is delivered as a dictionary/map (`[String: Any]` / `Map<String, Any>`) with exactly the fields the backend returns; there is no SDK-side reshaping. On Web it is a **typed object** with the same fields (`token`, `vaulted_token`, `vault_on_success`, `type`, `card_data`, `customer`); the value passed to `createPayment` additionally carries `recognitionToken` and `checkout_session`. The container type per platform is shown in [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+On iOS and Android the token is delivered as a dictionary/map (`[String: Any]` / `Map<String, Any>`) with exactly the fields the backend returns; there is no SDK-side reshaping. On Web it is a **typed object** with the same fields (`token`, `vaulted_token`, `vault_on_success`, `type`, `card_data`, `customer`, `bank_transfer`), where `vaulted_token` is `null` when no vault token exists; the value passed to `createPayment` additionally carries `recognitionToken` and `checkout_session`. The container type per platform is shown in [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
 
 For the structure and meaning of each field, see [One-time use token](https://docs.y.uno/docs/basic-concepts/tokens#one-time-use-token).
 

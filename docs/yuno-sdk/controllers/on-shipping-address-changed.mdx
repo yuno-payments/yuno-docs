@@ -11,6 +11,7 @@ description: "Invoked when the shopper selects or changes the shipping address i
 
 | Platform | Wallet | `paymentMethodType` |
 |---|---|---|
+| Web | Apple Pay, Google Pay | `APPLE_PAY`, `GOOGLE_PAY` |
 | iOS | Apple Pay | `APPLE_PAY` |
 | Android | Google Pay | `GOOGLE_PAY` |
 
@@ -47,6 +48,25 @@ On iOS the SDK sets no deadline of its own, so the only time limit is the wallet
 ## Signature
 
 <Tabs>
+  <Tab title="Web">
+
+Web wires it inside `externalButtons` on the transaction config. The SDK calls it from every Apple Pay and Google Pay button it renders, including the ones you mount with [`getPaymentMethodsViews()`](/docs/yuno-sdk/features/payment-methods-list). Return the update, or `null` to keep what the sheet shows. A handler that throws also keeps the current values.
+
+```typescript
+const transaction = sdkPayments.transaction({
+  checkoutSession,
+  countryCode: 'CO',
+  onStatus: (result) => console.log(result.status),
+  externalButtons: {
+    onShippingAddressChanged: async ({ paymentMethodType, shippingInfo }) => {
+      const quote = await backend.quoteShipping(shippingInfo.shippingAddress)
+      return { summaryItems: quote.summaryItems, shippingMethods: quote.shippingMethods }
+    },
+  },
+})
+```
+
+  </Tab>
   <Tab title="iOS">
 
 Conform the object you pass as `controller` to `ShippingAddressHandling`, a protocol that inherits from `TransactionController`. The SDK checks whether the controller adopts it; a controller that does not adopt it receives no shipping callbacks.

@@ -27,12 +27,30 @@ On web, `TransactionConfig` is a plain object passed directly to `sdkPayments.tr
 | [`customerSession`](#customersession) | String | One of two |  |
 | [`countryCode`](#countrycode) | String | Yes |  |
 | [`language`](#language) | String? | No | Browser language |
-| [`showStatusScreen`](#showstatusscreen) | Bool | No | `false` |
+| [`onStatus`](/docs/yuno-sdk/controllers/on-status) | (status) => void | No |  |
+| [`showLoading`](/docs/yuno-sdk/controllers/show-loading) | (isLoading) => void | No |  |
+| [`createPayment`](/docs/yuno-sdk/controllers/create-payment) | (token) => void \| Promise | No |  |
+| [`onChange`](#onchange-web-only) | (state) => void | No |  |
+| [`showStatusScreen`](#showstatusscreen) | Bool | No | `true` |
 | [`autoContinuePayment`](#autocontinuepayment) | Bool | No | `true` |
-| [`elementSelector`](#elementselector-web-only) | String? | No |  |
+| [`elementSelector`](#elementselector-web-only) | String \| HTMLElement | Yes for form payments |  |
 | [`showPayButton`](#showpaybutton-web-only) | Bool | No | `true` |
+| [`card`](#card-web-only) | Object | No |  |
+| [`texts`](#texts-web-only) | Object | No |  |
+| [`externalButtons`](#externalbuttons-web-only) | Object | No |  |
 
-On Web there is no `controller` field: wire events (`onStatus`, `showLoading`, `createPayment`) directly as fields on the config. See [`controller`](#controller-ios-android).
+On Web there is no `controller` field: wire events (`onStatus`, `showLoading`, `createPayment`) directly as fields on the config. See [`controller`](#controller-ios-android). Without `onStatus` the SDK logs a console warning and never delivers the result. `createPayment` must be a function when present. The constructor throws otherwise.
+
+Payment-only fields on Web. An enrollment config does not take them, and neither does it take `createPayment`, `showPayButton` or `autoContinuePayment`.
+
+| Field | Type | Description |
+|---|---|---|
+| `deviceFingerprints` | Array | Fraud provider sessions, `{ provider_id, session_id }` each, that the SDK attaches to the one-time token. |
+| `showOnlyThesePaymentMethods` | String[] | Payment method types the payment methods list shows. The list hides every other type. |
+| `paymentListConfig` | Object | Scroll options of the payment methods list: `scrollContainerSelector`, `visibleTriggerOffsetPx` and `bottomOffsetPx`. `paymentMethodList.mount()` accepts the same options. |
+| `savePaymentMethodEnabled` | Bool | Shows the save checkbox on non-card methods that support saving, when the session has a customer. |
+| `inputDesignType` | String | Label style of the SDK inputs: `'float-label'` (default), `'float-label-static'` or `'label-placeholder'`. |
+| `c2p` | Object | Click to Pay options: `recognitionToken`, `onRecognitionTokenCreated` and `onRecognitionTokenDeleted`. |
 
 </Tab>
 <Tab title="iOS">
@@ -110,7 +128,7 @@ See [Sessions](/docs/basic-concepts/sessions) for more.
 
 ISO country code for the payment (for example, `US`, `CO`).
 
-Accepts any string. The SDK does not validate the value. See [Country coverage](/docs/sdks/resources/country-coverage) for the list of supported countries.
+On iOS and Android the SDK does not validate the value. On Web a payment `start()` that mounts a form or runs headless checks the value against the SDK's country list. A value outside that list makes `start()` reject with `countryCode=<value> is not valid`. An enrollment `start()` checks only that the value is a non-empty string. See [Country coverage](/docs/sdks/resources/country-coverage) for the list of supported countries.
 
 ## `language`
 
@@ -132,14 +150,16 @@ See [Controllers](/docs/yuno-sdk/controllers/overview).
 
 Flag that controls whether the SDK presents its built-in result screen after the transaction finishes.
 
-- `false` (default). The SDK does not show a result screen. You receive the final status through `onStatus` and render your own UI.
-- `true`. The SDK presents its result screen.
+- `false` (default on iOS and Android). The SDK does not show a result screen. You receive the final status through `onStatus` and render your own UI.
+- `true` (default on Web). The SDK presents its result screen.
 
 `onStatus` is always invoked, regardless of this flag.
 
 ## `autoContinuePayment`
 
 Controls whether the SDK automatically continues the payment flow after creating it. When `true` (default), the SDK handles 3DS and status polling internally. Set to `false` if you want to control the post-creation flow manually.
+
+On Web the flag applies only when you pass `createPayment`. Without a handler the SDK creates and continues the payment itself. PayPal ignores `false` and always continues, because its popup completes inside the SDK's continue step.
 
 With `false`, the SDK stops once the payment is created: it does not poll status, does not run 3DS, and `onStatus` is not invoked for the transaction.
 
@@ -152,15 +172,33 @@ Flag that controls whether the card form offers the save-card checkbox on paymen
 
 Payment flows only. The enrollment initializer does not take it.
 
+On Web the flag lives inside the `card` object. See [`card`](#card-web-only).
+
 ## `elementSelector` (Web only)
 
-CSS selector for the DOM node the SDK renders the payment or enrollment form into. Optional and used only by form-based flows: headless flows ignore it, and wallet/list views take their own `elementSelector` on `.mount()`. When omitted, form-based flows fall back to the SDK's default container.
+CSS selector, or the `HTMLElement` itself, for the node the SDK renders a form into. Required when `start({ paymentMethod })` mounts a payment form. Without it `start()` rejects with `elementSelector=undefined is not valid`. Optional for the enrollment form, which otherwise renders into a container the SDK appends to `<body>`. Headless flows and secure fields ignore it. Wallet and list views take their own `elementSelector` on `.mount()`.
 
 ## `showPayButton` (Web only)
 
 Whether the form the SDK mounts shows the SDK's own Pay button. Set it to `false` to use your own button: mount the form with `transaction.start({ paymentMethod })` and call [`transaction.submit()`](/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button) when the user confirms.
 
 Payment flows only. Enrollment forms always show the SDK button.
+
+## `onChange` (Web only)
+
+Callback the SDK calls with `{ form: { isValid } }` each time the validity of the mounted form changes. `isValid` is `true` when every required field, secure fields included, is valid.
+
+## `card` (Web only)
+
+Options for the card form: `styles`, `type`, `saveCardEnabled`, `vaultOnSuccess`, `texts`, `documentEnable`, `isCreditCardProcessingOnly` and `fonts`, plus the callbacks `onChange`, `onGetInstallments` and `onInstallmentSelected`. See [Styling](/docs/yuno-sdk/features/styling) and [`onInstallmentSelected`](/docs/yuno-sdk/controllers/on-installment-selected).
+
+## `texts` (Web only)
+
+Button label overrides: `customerForm.submitButton` and `paymentOtp.sendOtpButton`.
+
+## `externalButtons` (Web only)
+
+Button options per wallet (`googlePay`, `applePay`, `samsungPay`, `paypal`, `paypalBraintree`, `revolutPay`) and the [`onShippingAddressChanged`](/docs/yuno-sdk/controllers/on-shipping-address-changed) callback. Each wallet view's `.mount()` accepts the same button options.
 
 ## `appearance` (iOS, Android)
 
@@ -188,9 +226,9 @@ The config rejects both `checkoutSession` and `customerSession` being set, or ne
 | Android | Compile-time. `TransactionConfig` has two constructors (`TransactionConfig(checkoutSession = …)` and `TransactionConfig(customerSession = …)`), so a config with both or neither session cannot be constructed. |
 | Web | Runtime. Throws a Yuno SDK error |
 
-On Web, the constructor also throws if `countryCode` is missing.
+On Web, the constructor also throws if `countryCode` is missing or if `createPayment` is set to anything other than a function. If `onStatus` is missing the constructor does not throw. It logs a console warning and the transaction result is never delivered.
 
-Beyond those checks, the SDK does not validate the *values* of `countryCode`, `language`, or other fields. Invalid values may surface later as backend errors or unexpected behavior.
+Beyond those checks, the SDK does not validate the *values* of `countryCode`, `language`, or other fields. Invalid values may surface later as backend errors or unexpected behavior. On Web, `start()` checks `countryCode` and `elementSelector` later. See [`countryCode`](#countrycode) and [`elementSelector`](#elementselector-web-only).
 
 </Tab>
 <Tab title="PaymentMethodSelected" id="payment-method-selected">
@@ -206,7 +244,9 @@ Beyond those checks, the SDK does not validate the *values* of `countryCode`, `l
 |---|---|---|
 | [`type`](#paymentmethodtype) | String | Yes |
 | [`vaultedToken`](#vaultedtoken) | String? | No |
-| [`data`](#transactiondata) | TransactionData | No |
+| [`data`](#transactiondata) | TransactionData | No (`start()` only) |
+
+The object the payment methods list hands to `onPaymentSelected` carries `type`, `vaultedToken`, an optional display `name` and `selectionSource` (`'auto'` when the SDK preselected the method, `'user'` when the shopper picked it). It never carries `data`. You can pass it to `start()` as it is.
 
 </Tab>
 <Tab title="iOS">
@@ -229,7 +269,9 @@ Beyond those checks, the SDK does not validate the *values* of `countryCode`, `l
 </Tab>
 </Tabs>
 
-Only `paymentMethodType` / `type` is required. The SDK does not validate this object.
+Only `paymentMethodType` / `type` is required. On iOS and Android the SDK does not validate this object.
+
+On Web `start()` validates it. For a payment, `type` must be a non-empty string. For a headless enrollment that passes `data`, `type` is required too. With secure fields mounted, `data.card` must not contain `number`, `securityCode`, `expirationMonth` or `expirationYear`. In manual mode, a form `start()` rejects express wallet types such as `GOOGLE_PAY` and `APPLE_PAY`, because their buttons mount through `getPaymentMethodsViews()`. Beyond that the SDK does not check the values.
 
 ---
 
@@ -248,6 +290,8 @@ Use this when the customer is paying with a saved method instead of entering dat
 ## `transactionData`
 
 Pre-collected payment data. When provided, the SDK skips its built-in forms and tokenizes directly.
+
+On Web two cases keep the form. With secure fields mounted, `data` only supplements the card the iframes collect (`card.holderName`, `card.type`, `installment`, `customer` and `vaultOnSuccess`). When the payment methods list has an inline form mounted for the selected method, `start()` with `data` throws. Call `start({ paymentMethod })` without `data` to submit that form.
 
 See [TransactionData](/docs/yuno-sdk/reference/objects-you-pass#transaction-data) for the shape of this object.
 
@@ -331,6 +375,10 @@ The full shape of `TransactionData` is the following. This JSON is illustrative,
 ```
 
 `type` and `vaultedToken` are not part of `TransactionData`; they live on [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected).
+
+On Web, `TransactionData` also accepts `bankTransfer.accountType`, `bankTransfer.accountHolderType` and a top-level `additionalData` object. Each key of `additionalData` names the object its extra fields belong to, for example `card`. The SDK folds each entry into that object before sending, so there is no `additional_data` key on the wire. `card.type` is `CREDIT` or `DEBIT`, and `card.brand` is optional.
+
+With secure fields mounted, the SDK reads only `card.holderName`, `card.type`, `vaultOnSuccess`, `installment` and `customer` from `data`. The other objects apply to headless `start()` only.
 
 <Warning>
 `card.expirationYear` is the **two-digit** year: `28` means 2028. The SDK passes `TransactionData` through verbatim: it does not normalize a four-digit year, so `2028` reaches the backend as-is and is not a valid value.

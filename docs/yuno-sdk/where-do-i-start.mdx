@@ -148,7 +148,9 @@ pass to the SDK.
   - **Other payment methods.** Make sure the enrollable variant of 
     the method is added in your connections. When it is, the SDK 
     handles payment and enrollment together based on the checkout 
-    session alone.
+    session alone. On Web, also pass `savePaymentMethodEnabled: true` 
+    in `TransactionConfig` and create the checkout session with a 
+    `customer_id`. The SDK then adds a save option to the form.
 
 You cannot pass `checkoutSession` and `customerSession` at the same 
 time.
@@ -323,7 +325,7 @@ This decision affects whether you pass `transactionData` in
 - **Default. The SDK shows forms.** The SDK presents the appropriate 
   form (card form, APM data form, etc.) and collects input from the 
   user.
-- **You provide the data.** Pass `transactionData` in 
+- **You provide the data.** Pass `transactionData` (`data` on Web) in 
   `PaymentMethodSelected` with the values already collected (for 
   example, card details captured by your own UI). The SDK skips the 
   forms and tokenizes directly.
@@ -421,6 +423,8 @@ This decision affects whether you override `showView`.
   layout and call `process.onSubmit()` to control submission.
 
 This controller is available on iOS and Android only.
+
+On Web the SDK renders the form inside the element you pass as `elementSelector`, so the form already sits in your layout. To use your own submit button, set `showPayButton: false` in `TransactionConfig` and call `transaction.submit()` from your button after `start()` has resolved. If the form is incomplete, `submit()` reports `INTERNAL_ERROR` with code `FORM_INVALID` through `onStatus` and keeps the form mounted. `submit()` is not available for enrollment transactions.
 
 See [`showView`](/docs/yuno-sdk/controllers/show-view).
 
@@ -535,6 +539,9 @@ overriding a controller.
   in `TransactionConfig` and the SDK will present its built-in 
   success/failure screen after the transaction finishes.
 
+On Web the default is reversed. The SDK shows its result screen unless 
+you set `showStatusScreen: false` in `TransactionConfig`.
+
 `onStatus` is always called when the transaction finishes, regardless 
 of this flag. It's the controller you use to know the final result and 
 react accordingly.
@@ -596,6 +603,11 @@ or update your own UI.
 finished all its work (tokenization, payment creation, 3DS, status 
 polling).
 
+On Web, `onStatus` can report more than once on one transaction. A 
+submit with an incomplete form reports `INTERNAL_ERROR` with code 
+`FORM_INVALID` and keeps the form mounted. A declined card can be 
+retried in place, and the retry reports its own status.
+
 See [`onStatus`](/docs/yuno-sdk/controllers/on-status) and 
 [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status).
 
@@ -608,7 +620,7 @@ See [`onStatus`](/docs/yuno-sdk/controllers/on-status) and
 | Who collects the data | SDK shows forms | Pass `transactionData` | [`TransactionData`](/docs/yuno-sdk/reference/objects-you-pass#transaction-data) |
 | Who renders the form UI (iOS, Android) | SDK presents full-screen | Override `showView` | [`showView`](/docs/yuno-sdk/controllers/show-view) |
 | Who shows the loader | SDK shows full-screen loader | Override `showLoading` | [`showLoading`](/docs/yuno-sdk/controllers/show-loading) |
-| Show SDK's result screen? | No | Set `showStatusScreen: true` in `TransactionConfig` | [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config) |
+| Show SDK's result screen? | No (Web: Yes) | Set `showStatusScreen: true` in `TransactionConfig` (Web: `showStatusScreen: false` to hide it) | [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config) |
 
 ## Next steps
 

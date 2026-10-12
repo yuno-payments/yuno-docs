@@ -67,32 +67,36 @@ Either way the SDK handles 3DS and reports through `onStatus`.
 
 ## Declined payments and retry
 
-When a card payment is **DECLINED** or fails with **ERROR**, the SDK prepares the retry for you:
+When a card payment is **DECLINED** or fails with **ERROR** and the response is retryable, the SDK prepares the retry for you:
 
 1. The checkout session is cloned server-side and rotated into the mounted fields automatically.
 2. Field-level errors (invalid card number, invalid CVV, insufficient funds) are painted inside the matching iframes.
-3. `onStatus` receives the `DECLINED` / `ERROR` result.
+3. In manual mode (`createPayment` on the config), `onStatus` receives the `DECLINED` / `ERROR` result so your page can re-enable its Pay button. In managed mode the SDK does not call `onStatus` for that attempt. The shopper sees the field errors and can submit again.
+
+A decline that is not retryable reaches `onStatus` in both modes and closes the checkout session.
 
 The fields stay mounted with what the user typed. To retry, just call `start()` again: it is **repeatable** while secure fields are mounted, and the new attempt tokenizes against the rotated session. You do no session bookkeeping.
+
+Once the payment is final (approved, or declined without a retry), the checkout session is closed and `start()` throws. To take another payment, create a new checkout session on your backend and call `transaction.updateCheckoutSession(newSession)`. The mounted fields pick it up and `start()` works again.
+
+Re-enable your Pay button when the `start()` promise settles. That works in both modes:
 
 ```typescript
 const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
-    onStatus: (result) => {
-        if (result.status === 'DECLINED' || result.status === 'ERROR') {
-            payButton.disabled = false
-            return
-        }
-        showResult(result)
-    },
+    onStatus: (result) => showResult(result),
 })
 
-payButton.addEventListener('click', () => {
+payButton.addEventListener('click', async () => {
     payButton.disabled = true
-    transaction.start({
-        paymentMethod: { type: 'CARD', data: { card: { holderName: nameInput.value } } },
-    })
+    try {
+        await transaction.start({
+            paymentMethod: { type: 'CARD', data: { card: { holderName: nameInput.value } } },
+        })
+    } finally {
+        payButton.disabled = false
+    }
 })
 ```
 
@@ -132,6 +136,8 @@ Enable installments when creating the fields:
 const secureFields = await transaction.secureFields({ installmentEnable: true })
 ```
 
+Pass the option on the first `secureFields()` call. The transaction keeps one secure-fields instance. Later calls return it, and a call with a different `installmentEnable` throws. To change the option, call `transaction.unmount()` and create the fields again.
+
 Available plans arrive on the `pan` field's `onChange` as the user types: `data.installments`, `data.fullInstallmentsInfo`, and `data.isInstallmentLoading`. Render your own selector from that data and pass the chosen plan on `start()`:
 
 ```typescript
@@ -166,9 +172,15 @@ Pass `options` to `create` to label, style, and observe a field.
 |---|---|---|
 | `label` | string | Accessible label. |
 | `placeholder` | string | Placeholder text. |
+| `styles` | string | CSS injected inside the field's iframe, where your page CSS cannot reach. |
+| `designType` | string | Label layout: `float-label`, `float-label-static`, or `label-placeholder`. |
 | `showError` | boolean | Render validation errors under the field. |
+| `errorMessage` | string | Message shown when the value is invalid. |
+| `requiredErrorMessage` | string | Message shown when the field is required and empty. |
 | `validationType` | string | When to validate (e.g. `on_blur_full`). |
-| `onChange` | function | `({ error, data, isDirty })`. For `pan`, `data` carries brand, IIN, and installments. |
+| `inputMode` | string | Virtual keyboard hint for the input, as in the `inputmode` attribute. |
+| `onRenderedSecureField` | function | Fires once the field's iframe has rendered. |
+| `onChange` | function | `({ error, errorMessage, data, isDirty, isFieldComplete })`. For `pan`, `data` carries brand, IIN, and installments. |
 | `onBlur` / `onFocus` | function | Focus lifecycle (e.g. to flip a card preview). |
 
 ## Field methods

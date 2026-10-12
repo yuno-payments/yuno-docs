@@ -7,10 +7,10 @@ description: "Save a customer's payment method for future use, without charging.
 
 Enrollment lets you tokenize and save a customer's payment method without processing a charge. Use it to register a card or other method that the customer can use in future payments.
 
-The same `Transaction` class handles enrollment. Only the session type changes.
+The same `Transaction` class handles enrollment. Only the session type changes. On Web the enrollment transaction exposes `start()`, `secureFields()`, and `unmount()`. The payment-only methods (`getPaymentMethodsViews`, `submit`, `updateCheckoutSession`) and the payment-only config fields are not available.
 
 <Note>
-The session type is what selects the mode: passing `checkoutSession` runs a **payment**, while passing `customerSession` runs an **enrollment**. Exactly one of the two must be provided. Supplying both, or neither, fails at construction time with the validation error `Exactly one of checkoutSession or customerSession must be provided`. See [Where do I start?](/docs/yuno-sdk/where-do-i-start) for the full decision guide.
+The session type is what selects the mode: passing `checkoutSession` runs a **payment**, while passing `customerSession` runs an **enrollment**. Exactly one of the two must be provided. Supplying both, or neither, fails at construction time with a validation error. On iOS and Android it reads `Exactly one of checkoutSession or customerSession must be provided`. On Web it reads `Provide either checkoutSession or customerSession, not both.` or `A checkoutSession or customerSession is required.` See [Where do I start?](/docs/yuno-sdk/where-do-i-start) for the full decision guide.
 </Note>
 
 ## Before you start
@@ -23,7 +23,7 @@ Your backend must create the resources required for enrollment:
 
 ## Implementation
 
-Pass the `customerSession` (instead of `checkoutSession`) in `TransactionConfig` and call `start(paymentSelected:)` with the method the customer chose, the same way you do for a payment. The SDK delivers the final status to `onStatus` once enrollment is complete.
+Pass the `customerSession` (instead of `checkoutSession`) in `TransactionConfig` and call `start()`. On iOS and Android pass the method the customer chose in `paymentSelected`, the same way you do for a payment. On Web, `start()` renders the SDK form for the method your backend enrolled on the customer session, and `paymentMethod` is needed only for a headless enrollment (see Skip the form). The SDK delivers the final status to `onStatus` once enrollment is complete.
 
 Rendering and selecting the payment method to enroll is your responsibility. The SDK does not present a list of enrollable methods. To fetch the available methods, call [`GET /v1/customers/sessions/{customer_session}/payment-methods`](https://docs.y.uno/reference/payment-methods-checkout/retrieve-payment-methods-to-enroll-checkout).
 
@@ -41,12 +41,12 @@ const transaction = sdkPayments.transaction({
     },
 })
 
-await transaction.start({
-    paymentMethod: { type: 'CARD' },
-    // For headless enrollment, pass `data` on paymentMethod. The config's
-    // elementSelector is ignored. See "Skip the form" below.
-})
+await transaction.start()
+// For headless enrollment, call start({ paymentMethod: { type: 'CARD', data } })
+// instead. The config's elementSelector is ignored. See "Skip the form" below.
 ```
+
+`elementSelector` is optional on Web. Without it the SDK appends its own container to the end of `<body>` and renders the form there.
 
   </Tab>
 
@@ -106,7 +106,7 @@ If you collect the customer's data in your own UI, pass it via `transactionData`
 ## Notes
 
 - A 3DS challenge can occur during enrollment.
-- `createPayment`, if overridden, is not invoked with payment data. There is no payment to create.
+- `createPayment` does not apply because there is no payment to create. On Web the enrollment config does not accept it (TypeScript rejects the property). On iOS and Android it is not invoked.
 - When enrollment succeeds, `onStatus` delivers the final status, with the same payload shape as payment flows (`status`, `substatus`, `message`). The vaulted token is not surfaced to the client: retrieve it from your backend's list-customer-payment-methods endpoint after the success status arrives, and store it against your customer to use in future payments.
 
 ## Related
