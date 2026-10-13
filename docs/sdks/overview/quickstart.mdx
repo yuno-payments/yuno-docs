@@ -69,9 +69,11 @@ Choose your platform and follow the steps to start processing your first payment
             checkout_session: session.checkout_session
         })
         }).then(r => r.json());
-        
-        // Required for async payment methods (3DS, PIX, etc.)
-        await yuno.continuePayment();
+
+        // Only call continuePayment for async payment methods (3DS, PIX, etc.)
+        if (payment.sdk_action_required || payment.checkout?.sdk_action_required) {
+            await yuno.continuePayment();
+        }
     }
     });
 
@@ -150,7 +152,7 @@ Choose your platform and follow the steps to start processing your first payment
         func yunoCreatePayment(with token: String) {
             // Call your backend: POST /v1/payments
             createPaymentOnBackend(token: token) { result in
-                // After payment creation, continue for async methods
+                // Required only when the Create payment response has sdk_action_required: true
                 Yuno.continuePayment()
             }
         }
@@ -253,6 +255,7 @@ Choose your platform and follow the steps to start processing your first payment
     import androidx.lifecycle.lifecycleScope
     import com.yuno.presentation.core.components.PaymentMethodListViewComponent
     import com.yuno.sdk.payments.continuePayment
+    import com.yuno.sdk.payments.hideLoader
     import com.yuno.sdk.payments.startCheckout
     import com.yuno.sdk.payments.startPayment
     import kotlinx.coroutines.launch
@@ -309,12 +312,17 @@ Choose your platform and follow the steps to start processing your first payment
                                 callbackOTT = { token ->
                                     token?.let { ott ->
                                         lifecycleScope.launch {
-                                            // Call your backend: POST /v1/payments
-                                            // with { payment_method: { token: ott }, checkout_session: ... }
-                                            createPayment(ott, checkoutSession!!)
-                                        
-                                            // Required for async payment methods
-                                            continuePayment()
+                                            try {
+                                                // Call your backend: POST /v1/payments
+                                                // with { payment_method: { token: ott }, checkout_session: ... }
+                                                createPayment(ott, checkoutSession!!)
+
+                                                // Required only when the Create payment response has sdk_action_required: true
+                                                continuePayment()
+                                            } catch (e: Exception) {
+                                                // Payment creation failed: dismiss the loader kept visible by keepLoader
+                                                hideLoader()
+                                            }
                                         }
                                     }
                                 }
