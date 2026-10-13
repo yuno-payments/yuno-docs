@@ -184,10 +184,25 @@ While a link payment for an invoice is in progress, Yuno holds Stripe's retry fo
 
 ## Your payment metadata on the Stripe payment record
 
-For top-up payments, when this is enabled for your organization, the `metadata` you send on the payment is copied onto the Stripe payment record: on the first report and on every later attempt. `metadata` is a list of `{key, value}` objects. An object instead of a list returns `400`.
+When this is enabled for your organization, the `metadata` you send on a payment is copied onto the Stripe payment record. It covers:
 
-* Yuno's own keys `yuno_payment_id`, `external_invoice_id` and `merchant_order_id` are always present. They win if you send a key with the same name.
-* Stripe's limits apply: at most 50 keys in total, so 47 of yours. Keys can be up to 40 characters, and values up to 500 characters. A longer key, or a key that contains `[` or `]`, is skipped. A longer value is cut to 500 characters. Keys beyond the 47th are skipped. The payment is never refused because of this.
+* the first payment of a subscription, and every renewal, retry and closure of that subscription;
+* refunds and credit notes;
+* top-up payments.
+
+A renewal carries the metadata of the subscription's first payment.
+
+`metadata` is a list of `{key, value}` objects. An object instead of a list returns `400`. The metadata is sent on the first report of a payment and on every later attempt, so the record always carries the full set.
+
+Stripe's limits apply, and each payment record takes at most 47 entries from you:
+
+* keys up to 40 characters, and values up to 500 characters, counted in characters (Unicode code points);
+* a value longer than 500 characters is cut to 500 characters;
+* a key longer than 40 characters, a key that contains `[` or `]`, and a duplicate key are skipped.
+
+On top-up records, Yuno's own keys `yuno_payment_id`, `external_invoice_id` and `merchant_order_id` are always present and take precedence over merchant entries with the same name.
+
+The payment is never refused because of this.
 
 ## Not supported
 
