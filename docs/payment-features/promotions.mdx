@@ -4,7 +4,7 @@ description: "Define a discount once and let Yuno apply it to the payments that 
 noindex: true
 ---
 
-A promotion is a discount you define once, for example "10% off with credit cards in October". Yuno checks each payment against your promotions, shows the discounted price at checkout, and charges exactly that price.
+A promotion is a discount you define once, for example "10% off with credit cards in October". Yuno checks a payment against your promotions when you ask for a quote, and charges exactly the quoted price when the payment carries that quote. In the checkout page of a payment link, Yuno does all of it for you and shows the discounted price.
 
 <Warning>
 **Promotions is enabled per organization**
@@ -18,65 +18,46 @@ Until it's enabled, no promotion applies to your payments: [Create Promotion Quo
 
 A promotion reaches a payment in three steps. The **quote** is the link between them: it's the price the customer saw, and the payment charges that price.
 
-1. **Create the promotion.** Use the Yuno Dashboard or [Create Promotion](/reference/promotions/create-promotion). You set the discount, the dates, and the conditions a payment must meet (card BIN or BIN range, card type, payment method, country, currency, minimum or maximum amount).
-2. **Get a quote.** Before the payment, Yuno prices it: which promotion applies, the original amount, the discount, and the charge. The answer carries `quote_id` and `promotions` (one entry today, with `id`, `name`, `description`, `discount` and `discount_amount`). With the Yuno checkout this happens by itself. With a direct API integration, you call [Create Promotion Quote](/reference/promotions/create-promotion-quote).
-3. **Create the payment with the quote.** Send the original `amount` and `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": "qte_…" }]` on [Create Payment](/reference/payments/create-payment). Yuno charges the quoted total and returns the breakdown.
+1. **Create the promotion.** Use the Yuno Dashboard. You set the discount, the dates, and the conditions a payment must meet (card BIN or BIN range, card type, payment method, country, currency, minimum or maximum amount).
+2. **Get a quote.** Before the payment, Yuno prices it: which promotion applies, the original amount, the discount, and the charge. The answer carries `quote_id`, `promotions` (one entry today, with `id`, `name`, `description`, `discount` and `discount_amount`), `original_amount`, `discount_amount`, `charge_amount` and `expires_at`. In the checkout page of a payment link this happens by itself. With the Web SDK, the SDK asks and hands the quote to your page. With a direct API integration, you call [Create Promotion Quote](/reference/promotions/create-promotion-quote).
+3. **Create the payment with the quote.** Send the original `amount` and `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": "qte_…" }]` on [Create Payment](/reference/payments/create-payment). Yuno charges the quoted total and returns the breakdown. The checkout page of a payment link adds the line by itself; with the Web SDK or the API, your server adds it.
+
+| Integration | Asks for the quote | Shows the price | Sends the `YUNO_PROMOTION` line |
+| --- | --- | --- | --- |
+| Payment link (checkout page hosted by Yuno) | The checkout | The checkout | The checkout |
+| Web SDK (Full and Lite checkout) | The SDK | Your page, from `onPromotionQuoteUpdated` | Your server, from `tokenWithInformation.quote` |
+| Direct API | Your server | Your app | Your server |
+| Seamless | Not supported | Not supported | Not supported |
 
 <Note>
 **A promotion applies only when the payment carries a quote id on a discount line**
 
-Yuno never discounts a payment by itself. A payment without a `quote_id` on `additional_data.order.discounts` is charged in full, exactly as today, even when a promotion would have matched it.
+Yuno never discounts a payment by itself. A payment without a `quote_id` on `additional_data.order.discounts` is charged in full, exactly as today, even when a promotion would have matched it. A quote id sent anywhere else is ignored, and the payment is charged in full.
 </Note>
 
 ## Enable promotions for your organization
 
 1. Ask your Technical Account Manager or Key Account Manager to enable Promotions for your organization. Start with sandbox.
-2. Once it's on, create your promotions from the Dashboard or the API. Each promotion belongs to one `account_id`. If you run the same campaign on several accounts, create it once per account.
+2. Once it's on, give the team members who work with promotions the **Manage promotions** permission (to create and disable them) and the **View promotions** permission (to see them), then create your promotions from the Dashboard. Each promotion belongs to one `account_id`, the account you have selected when you create it. If you run the same campaign on several accounts, create it once per account.
 3. Test a payment in sandbox with a card that meets the conditions, then ask for production.
 
-Yuno can also turn Promotions off for an organization. When it's off, quotes answer `204` and the checkout shows the regular price, so the customer never sees a discount that the payment doesn't honour.
+Yuno can also turn Promotions off for an organization. When it's off, quotes answer `204` and the checkout shows the regular price, so the customer never sees a discount that the payment doesn't honour. Promotions can also be temporarily disabled by Yuno for every organization. While it is disabled, quotes answer `204` too, and a payment that still carries a quote is rejected with `422 PROMOTION_ENGINE_UNAVAILABLE`: create the payment again without the promotion.
 
 ## Create a promotion
 
-```json Create Promotion
-curl --request POST \
-     --url https://api-sandbox.y.uno/v1/promotions \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
-     --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
-     --data '
-{
-    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "name": "10% off with credit cards - Mother'\''s Day",
-    "schedule": { "starts_at": "2026-10-01T03:00:00Z", "ends_at": "2026-11-01T02:59:59Z" },
-    "redemption": { "mode": "AUTOMATIC" },
-    "discount": { "type": "PERCENTAGE", "value": 10 },
-    "conditions": {
-        "bins": { "values": ["457896", "40263412"], "ranges": [{ "start": "45780000", "end": "45789999" }] },
-        "payment_methods": { "values": ["CARD"] },
-        "card_types": { "values": ["CREDIT"] },
-        "countries": { "values": ["AR"] },
-        "amounts": { "values": [{ "currency": "USD", "min": 100.00, "max": null }] }
-    }
-}'
-```
+Create promotions in the Yuno Dashboard. You set the name, an optional description (the checkout shows both), the schedule, the discount and the conditions. [The Promotion Object](/reference/promotions/the-promotion-object) describes every field and its limits.
 
 Things to know before you create one:
 
-* **Promotions can't be edited.** The only change is to [disable](/reference/promotions/disable-promotion) one, and that's final. To change a discount, disable the promotion and create a new one. This keeps every past payment explainable.
+* **Promotions can't be edited.** The only change is to disable one, and that's final. To change a discount, disable the promotion and create a new one. This keeps every past payment explainable.
 * **There's no delete.** A disabled or expired promotion stays in your list.
 * **The status follows the dates.** `SCHEDULED` before `starts_at`, `ACTIVE` inside the window, `EXPIRED` after `ends_at`, and `DISABLED` once you disable it. Dates are UTC.
 * **All conditions must hold.** AND across condition keys, OR inside each key's `values` list. Omit a key for no condition on that dimension.
-* **Fixed discounts have a currency.** A `FIXED` discount uses `discount.amounts` (one entry per currency, above zero). When you also set `conditions.amounts`, the two must list the same currencies or create returns `400`.
-
-See [The Promotion Object](/reference/promotions/the-promotion-object) for every field.
+* **Fixed discounts have a currency.** A `FIXED` discount lists one amount per currency (each above zero). When you also set an amount condition, the two must list the same currencies, or Yuno rejects the promotion.
 
 ## Promotion codes
 
-<Note>Promotion codes are not available yet. Today every promotion is `AUTOMATIC`; codes are coming in a later release.</Note>
-
-A promotion can require a code instead of applying automatically. Set `redemption.mode` to `CODE` with a `redemption.code` (3 to 32 characters) when you [create it](/reference/promotions/create-promotion); the code is unique per account among the promotions that can still apply, and becomes reusable once the earlier one is disabled or its schedule ends. The customer types the code at checkout, or your server sends it as `code` on the quote. A wrong code answers `404`, and a code that can't apply right now answers `422`, so the customer can try again. Automatic promotions still apply without a code.
+Promotion codes aren't available yet. The Dashboard creates promotions that apply automatically, and no promotion can require a code today. The `code` field of [Create Promotion Quote](/reference/promotions/create-promotion-quote) is reserved for them: leave it out.
 
 ## When more than one promotion matches
 
@@ -89,35 +70,49 @@ When two or more promotions match the same payment, Yuno picks **the one that sa
 | Promotion A: 10% off | USD 25 | |
 | Promotion B: USD 30 off | USD 30 | **Applies** |
 
-A fixed discount is capped at the payment amount; a charge of zero is valid. A promotion whose discount is zero doesn't apply.
+A fixed discount is capped at the payment amount, but a promotion never makes a charge of zero: a quote whose charge would be zero answers `204` (nothing applies), and a payment whose quote would charge zero is rejected with `422 PROMOTION_QUOTE_INVALID`. A percentage discount is rounded half up to the currency's smallest unit, and a promotion whose discount is zero doesn't apply.
 
 ## What the customer sees at checkout
 
-With the Yuno checkout you don't build anything. When the customer enters a payment method that qualifies, the checkout:
+In the checkout page of a payment link you don't build anything. As soon as the checkout has identified the card from the first digits the customer types, it asks Yuno for the quote. When a promotion applies, the checkout:
 
-1. Asks Yuno for the quote, right after the payment method is recognized.
-2. Announces the offer, for example "Your card has a 10% discount available".
-3. **Updates the order summary**: the original price, the discount, and the new total. The pay button shows the new total.
+1. Shows the promotion's name above the price rows.
+2. **Updates the order summary**: the original price, the discount, and the new total. The pay button keeps saying "Pay": the new total is in the summary.
 
-If the customer changes to a payment method that doesn't qualify, the summary goes back to the regular price. When no promotion applies, the checkout looks exactly as it does today.
+If the customer changes the card, or changes to a payment method that doesn't qualify, the summary goes back to the regular price. When no promotion applies, the checkout looks exactly as it does today. If Yuno rejects the payment because of the quote (a `PROMOTION_*` error, see [below](#the-customer-pays-the-quoted-price-or-the-payment-is-rejected)), the checkout shows "The price changed. Review it and pay again.", mounts again, and the customer enters the card again; promotions stay off for the rest of that checkout, so the order summary shows the regular price and the customer pays it.
 
 | Order summary | USD |
 | --- | --- |
 | Original price | 250.00 |
-| Discount (10% off) | − 25.00 |
-| **Total to pay** | **225.00** |
+| Discount | − 25.00 |
+| **Total Due** | **225.00** |
+
+Only payment links get this. With the Web SDK the checkout doesn't change the price: your page does, as described next.
+
+## Web SDK integration
+
+With the Web SDK (Full and Lite checkout), the SDK asks Yuno for the quote with your public key as soon as it has identified the card from the first digits the customer types, and for each of the customer's saved cards. When a promotion applies, it shows a label next to the card ("10% off"), but it doesn't change the price: you show the price and send the quote on the payment. Promotions aren't applied in Seamless. Wallets aren't included yet (see [below](#whats-not-included-yet)), so external buttons never get a quote today.
+
+1. **Show the price.** Pass `onPromotionQuoteUpdated` to `startCheckout`. It receives the promotion that applies to the payment method the customer has selected, and `null` when there is none: no promotion applies, the customer changed the card or the payment method, or the quote expired. The SDK then asks again and a new promotion follows if one applies, so `null` can arrive right before it. Show its `computed.total` (what the customer pays), `computed.discount` and `name`, and go back to the regular price on `null`. The [Web SDK reference](/docs/sdks/resources/references/web#promotions) lists every field.
+2. **Send the quote on the payment.** When the customer pays, your `yunoCreatePayment` callback receives `tokenWithInformation`. When a quote is live for that card, `tokenWithInformation.quote` holds the discount line, `{ "type": "YUNO_PROMOTION", "quote_id": "…" }`. From your server, create the payment with the original `amount` and `additional_data.order.discounts: [tokenWithInformation.quote]`, as shown [below](#create-the-payment-with-the-quote). Without the line the payment is charged in full.
+
+A quote never blocks the checkout: a `204`, an error or a timeout leaves the regular price and the SDK shows no label. The [Web SDK reference](/docs/sdks/resources/references/web) lists the callbacks.
 
 ## Direct API integration
 
-Without the Yuno checkout, you ask for the quote yourself, from your server, and send it on the payment:
+Without the checkout page of a payment link or the Web SDK, you ask for the quote yourself and send it on the payment. Call [Create Promotion Quote](/reference/promotions/create-promotion-quote) from your server with your secret key (`amount` in the body), or from the browser with your public key (`checkout_session` instead of `amount`; Yuno takes the account from the checkout session, so `account_id` is optional there, and a value you send must match the session's account; `country` is still validated against the session). In a Web SDK integration the SDK already does the second for you.
 
-1. **Get the quote.** Call [Create Promotion Quote](/reference/promotions/create-promotion-quote) with the payment context: account, amount, country and payment method. For a card, identify it in one of two ways inside `payment_method`: `bin` (the first 6 to 8 digits) with `card_type`, or `token` or `vaulted_token`, and Yuno resolves the card. Never both: a `bin` together with a token is rejected with `400 INVALID_PARAMETERS`, and so is a `bin` with more than 8 digits, fewer than 6, or anything but digits. Without a BIN, a promotion with a `bins` or `card_types` condition doesn't apply. A wallet payment (Apple Pay, Google Pay) has no BIN; a promotion for a wallet has no `bins` condition.
-2. **Show the price.** On `200`, show `charge_amount` to your customer. On `204`, create the payment as usual, with no `quote_id` on a discount line.
+1. **Get the quote.** Send the payment context: account, country, and `payment_method`. For a card, send inside `payment_method` either its `bin` (the first 6 to 8 digits of the card) with `card_type`, or a token (`token` or `vaulted_token`) from which Yuno resolves the card. Never both: a `bin` together with a token, a `bin` together with a vaulted token, or a `token` together with a `vaulted_token` is rejected with `400 INVALID_PARAMETERS`, and so is a `bin` with fewer than 6 digits, more than 8 (never send the full card number), or anything but digits. A promotion with a `bins` condition needs the BIN, and one with a `card_types` condition needs the `card_type` (not the BIN); without them it doesn't apply. A 6-digit BIN only matches conditions that cover its whole 6-digit block, so send 8 digits when a promotion lists 8-digit prefixes or narrow ranges. Wallets (Apple Pay, Google Pay) aren't a supported target for this release (see [below](#whats-not-included-yet)): don't build on a wallet quote yet.
+2. **Show the price.** On `200`, show `charge_amount` to your customer. On `204`, create the payment as usual, with no `quote_id` on a discount line. A `204` also means Yuno couldn't price the payment in time, Promotions is temporarily disabled by Yuno, or the promotion would make the charge zero. If the request itself fails (`408`, `5xx` or no answer), create the payment at the full price too: a payment never depends on a quote.
 3. **Create the payment with the quote.** Send the original `amount` and `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": "<quote_id>" }]`, as shown below.
 
 ### Create the payment with the quote
 
-Send the **original** amount and a discount line with `type: YUNO_PROMOTION` and the `quote_id` (opaque, up to 500 characters) on [Create Payment](/reference/payments/create-payment). Yuno rejects a payment that sends the discounted amount instead of the original. Each line has a `type`: `MERCHANT` (the default) for a discount you computed, with `id`, `name` and `unit_amount`; `YUNO_PROMOTION` for a quote, with `quote_id` only. A `YUNO_PROMOTION` line rejects `id`, `name` and `unit_amount`; a `MERCHANT` line rejects `quote_id`; any mix returns `400`. A line with `quote_id` and no `type` is read as `YUNO_PROMOTION`. One quote per payment.
+Send the **original** amount and a discount line with `type: YUNO_PROMOTION` and the `quote_id` on [Create Payment](/reference/payments/create-payment). Yuno rejects a payment that sends the discounted amount instead of the original. Each line has a `type`: `MERCHANT` (the default) for a discount you computed, with `id`, `name` and `unit_amount`; `YUNO_PROMOTION` for a quote, with `quote_id` only. Write the `type` exactly as shown, in capitals: any other spelling, such as `yuno_promotion`, returns `400`. A `YUNO_PROMOTION` line rejects `id`, `name` and `unit_amount`; a `MERCHANT` line rejects `quote_id`; any mix returns `400`. A line with `quote_id` and no `type` is read as `YUNO_PROMOTION`. One quote per payment, and at most 10 discount lines in all.
+
+The `quote_id` is opaque and long: about 300 to 730 characters, so store it whole, up to 1000 characters, and never parse or shorten it. Yuno rejects a `quote_id` over 1000 characters, or with spaces or control characters, with `422 PROMOTION_QUOTE_INVALID`. The `YUNO_PROMOTION` line is accepted on Create Payment (`POST /v1/payments`) only.
+
+This is the part of the request that matters here; the rest is the [Create Payment](/reference/payments/create-payment) body you already send.
 
 ```json Request
 {
@@ -126,7 +121,7 @@ Send the **original** amount and a discount line with `type: YUNO_PROMOTION` and
     "amount": { "currency": "USD", "value": 250.00 },
     "additional_data": {
         "order": {
-            "discounts": [{ "type": "YUNO_PROMOTION", "quote_id": "qte_0d91f7ac3b2e" }]
+            "discounts": [{ "type": "YUNO_PROMOTION", "quote_id": "qte_eyJ2IjoxLCJrIjoi…" }]
         }
     }
 }
@@ -140,7 +135,7 @@ Send the original `amount` and the `quote_id` on a discount line. Yuno computes 
 
 ### What the payment carries
 
-`amount` on the response and on every `payment.*` webhook is the amount you sent, never rewritten. The net amount charged is on the transaction (`transactions[].amount`). The total Yuno discount is a new top-level `discount_amount`, the sum of the `YUNO_PROMOTION` lines. Yuno fills your `YUNO_PROMOTION` discount line (`quote_id`, `id` = the promotion id, `name`, `unit_amount` = the discount in the order currency). Your own `MERCHANT` lines stay as you sent them. The provider receives the filled discount line.
+`amount` on the response and on every `payment.*` webhook is the amount you sent, never rewritten. The net amount charged is on the transaction (`transactions.amount`, a number in the payment currency). The total Yuno discount is a new `discount_amount`, the sum of the `YUNO_PROMOTION` lines. Yuno fills your `YUNO_PROMOTION` discount line (`quote_id`, `id` = the promotion id, `unit_amount` = the discount in the payment currency and, when Yuno has it, `name`). Your own `MERCHANT` lines keep their `id`, `name` and `unit_amount`. Yuno asks the provider to charge the net amount; the discount line reaches a provider, without its `quote_id`, only where its connector maps order discounts.
 
 ```json Response
 {
@@ -153,61 +148,84 @@ Send the original `amount` and the `quote_id` on a discount line. Yuno computes 
             "discounts": [
                 {
                     "type": "YUNO_PROMOTION",
-                    "quote_id": "qte_…",
+                    "quote_id": "qte_eyJ2IjoxLCJrIjoi…",
                     "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
                     "name": "10% off with credit cards - Mother's Day",
-                    "unit_amount": 25.00
+                    "unit_amount": 25.00,
+                    "discount_indicator": null,
+                    "discount_rate": null
                 },
                 {
                     "type": "MERCHANT",
                     "id": "LOYALTY-5",
                     "name": "Loyalty 5%",
-                    "unit_amount": 12.50
+                    "unit_amount": 12.50,
+                    "discount_indicator": null,
+                    "discount_rate": null
                 }
             ]
         }
     },
-    "transactions": [
-        { "type": "PURCHASE", "amount": { "currency": "USD", "value": 225.00 } }
-    ]
+    "transactions": {
+        "type": "PURCHASE",
+        "amount": 225.00
+    }
 }
 ```
 
 | Field | Meaning |
 | --- | --- |
 | `amount` | The amount you sent. Never rewritten. |
-| `discount_amount` | Total Yuno discount on this payment (sum of the `YUNO_PROMOTION` lines). Top level. |
-| `additional_data.order.discounts[]` with `type: YUNO_PROMOTION` | Your quote line, filled by Yuno after the verify: `quote_id`, `id` (the promotion id), `name`, `unit_amount` (the discount in the order currency). |
-| `additional_data.order.discounts[]` with `type: MERCHANT` | Your own discounts, passed through unchanged. |
-| `transactions[].amount` | The net amount charged: `amount` minus `discount_amount`. |
+| `discount_amount` | Total Yuno discount on this payment (sum of the `YUNO_PROMOTION` lines), as `currency` and `value`. Top level on the Create Payment and Refund answers; inside `payment` in webhooks, on Retrieve Payment and on the capture and cancel answers. Absent when no promotion applied. |
+| `additional_data.order.discounts[]` with `type: YUNO_PROMOTION` | Your quote line, filled by Yuno after the verify: `quote_id`, `id` (the promotion id), `unit_amount` (the discount in the payment currency) and `name` when Yuno has it. |
+| `additional_data.order.discounts[]` with `type: MERCHANT` | Your own discounts, with the `id`, `name` and `unit_amount` you sent. On a promoted payment they come after the Yuno line and carry `type: MERCHANT`, on the Create Payment answer, Retrieve Payment and webhooks alike. |
+| `transactions.amount` | The net amount charged: `amount` minus `discount_amount`. Create Payment and webhooks carry one `transactions` object; Retrieve Payment returns `transactions[]`. |
 
 * `amount − discount_amount` = the transaction amount.
-* Refunds and captures operate on the transaction amount (the net). No new rule.
+* `discount_amount` and the Yuno discount line describe the promotion attached when the payment was created, whatever the outcome: Retrieve Payment and the webhooks of a declined, canceled or refunded payment still show them (the cancel and refund answers carry only `discount_amount`), and refunds never shrink them. Use `status`, `sub_status` and the transaction to know whether the net was charged.
 * A payment without a promotion is byte-for-byte today's response.
 * Every `payment.*` webhook carries the same `discount_amount` and the same filled discount line.
 
+### Refunds, captures and cancellations
+
+Operations work on the net amount the customer paid, while `amount.value` stays the original. In the example above, `amount` is 250.00 and the net is 225.00:
+
+* **Refund.** Leave `amount` empty to refund what the customer paid and hasn't been refunded yet (225.00). A refund above that is rejected with `400 INVALID_PARAMETERS`. The payment reaches `REFUNDED` when the net is refunded, so `amount.refunded` then equals 225.00, not `amount.value`; before that its `sub_status` is `PARTIALLY_REFUNDED`.
+* **Capture.** Leave `amount` empty to capture what was authorized (the net). `amount.captured` becomes 225.00 and the `sub_status` `CAPTURED`; a smaller amount leaves it `PARTIALLY_CAPTURED`.
+* **Cancel.** Voids the authorization for the net; the payment keeps its `discount_amount`.
+* **Everything that reads the amount uses the net**: routing rules, fraud, 3D Secure and receipts. A split payment can't allocate more than the net (`400`). Installments aren't a supported combination for this release (see [below](#whats-not-included-yet)).
+
 ### The customer pays the quoted price, or the payment is rejected
 
-A quote is valid for **30 minutes** after it is issued (`expires_at`), on every path. Inside that time the payment charges the quoted price, even if the promotion's end date passed after the quote was issued.
+A quote is valid for **30 minutes** after it is issued (`expires_at`), on every path. Inside that time the payment charges the quoted price, even if the promotion's end date passed after the quote was issued. A payment that was already created completes at the quoted price, even if `expires_at` passes meanwhile.
 
-If Yuno can't honour the quote, it **rejects the payment** and never charges the full price silently. Re-quote and show the new price, or confirm the full price with the customer. A retry after a decline may reuse the quote while it is valid.
+If Yuno can't honour the quote, it **rejects the payment**: no payment is created, and it never charges the full price silently. Re-quote and show the new price, or confirm the full price with the customer. A quote isn't consumed, so a retry after a decline may reuse it while it is valid, and one quote can back several payments. The retry is a new request: send a new `X-Idempotency-Key`. A rejection that comes from verifying the quote uses up its key, and reusing it returns `400 IDEMPOTENCY_DUPLICATED`. Each rejection on Create Payment uses the standard error body (`code` and `messages[]`), with no `reason` field. Branch on `code`: `messages[]` is informational text whose wording can differ for the same code and can change, so never parse it.
 
 | HTTP | Code | When | What to do |
 | --- | --- | --- | --- |
-| `422` | `PROMOTION_QUOTE_INVALID` | The quote id is malformed or its signature does not verify. | Get a new quote. |
+| `422` | `PROMOTION_QUOTE_INVALID` | The quote id is malformed (over 1000 characters, or with spaces or control characters), it isn't one Yuno issued (its signature does not verify), Yuno can't apply it as a single promotion, or the promotion would make the charge zero. | Get a new quote. |
 | `422` | `PROMOTION_QUOTE_EXPIRED` | The quote is past `expires_at`. | Get a new quote. |
 | `422` | `PROMOTION_ACCOUNT_MISMATCH` | The payment is on another account than the quote's. | Use the quote on the account it was made for. |
 | `422` | `PROMOTION_AMOUNT_MISMATCH` | The amount or currency differs from the quote. | Send the quoted original amount. |
-| `422` | `PROMOTION_CONTEXT_MISMATCH` | Country, payment method, card type, card or session differ from the quote. | Get a new quote for the real context. |
-| `422` | `PROMOTION_ENGINE_UNAVAILABLE` | Yuno could not verify the quote after one retry. Nothing was charged. | Retry the same payment once, then get a new quote. |
-| `400` | (validation) | A discount line mixes `MERCHANT` and `YUNO_PROMOTION` fields, or the payment carries two quote lines. | Fix the line. |
+| `422` | `PROMOTION_CONTEXT_MISMATCH` | The country, payment method, card type or card BIN (first 6 to 8 digits) differ from the quote, for the fields the promotion's conditions use, or the checkout session differs from the one the quote was made with. It is also returned for a PayPal payment with an alternative amount in another currency, and for a payment that carries a currency conversion: a promotion is priced in the payment's own currency. | Get a new quote for the real context. To use a promotion, send the payment in its own currency, without a conversion. |
+| `422` | `PROMOTION_ENGINE_UNAVAILABLE` | Yuno couldn't verify the quote in time (after one retry), or Promotions is temporarily disabled by Yuno. Nothing was charged. | The same action covers both: show the regular price and create the payment again without the promotion (no `YUNO_PROMOTION` line, a new `X-Idempotency-Key`). Don't guess a price. A new quote request answers `204` while this lasts. |
+| `422` | `PROMOTION_SUBSCRIPTION_UNSUPPORTED` | The payment carries a `subscription` or an `external_subscription`. Promotions apply to one-time payments. | Send the payment without the quote line. |
+| `400` | `INVALID_PARAMETERS` | A discount line breaks the rules: it mixes `MERCHANT` and `YUNO_PROMOTION` fields, has a `type` other than exactly `MERCHANT` or `YUNO_PROMOTION`, or a blank `quote_id`, the payment carries two quote lines or more than 10 lines, or the line is on a route that doesn't take it (multi-method payments, payment links, checkout sessions, capture). | Fix the line; `messages[]` names the field. |
+| `400` | `IDEMPOTENCY_DUPLICATED` | You reused the `X-Idempotency-Key` of a payment that was rejected while its quote was verified. | Use a new key. |
 
-The verify compares only the fields that take part in the promotion's conditions, plus the account, the amount, the expiry, and the checkout session when both sides have it. A changed amount, another account or another card never pays with the quote.
+The verify compares the account, the amount, the expiry, and the checkout session when both sides have it, plus the payment details that take part in the promotion's conditions: country, payment method, card type and card BIN (a BIN the payment doesn't carry isn't compared). A changed amount or another account never pays with the quote, and neither does a card with another BIN or card type when the promotion has a card condition. A promotion with no card condition accepts any card.
 
 ## What's not included yet
 
-* **Subscriptions and recurring payments.** Promotions apply to one-time payments.
+* **Subscriptions and recurring payments.** Promotions apply to one-time payments; a payment that carries a `subscription` or an `external_subscription` is rejected with `PROMOTION_SUBSCRIPTION_UNSUPPORTED`, and the checkout page of a subscription payment link shows no promotion and charges the regular price.
+* **Other payment routes.** The quote line is accepted on Create Payment only, not on multi-method payments, payment links or checkout sessions created through the API, or capture. A payment link opened in its checkout page is discounted when the customer pays.
+* **Currency conversion.** A promotion is priced in the payment's own currency and Yuno doesn't convert a promoted payment. A payment with a Yuno promotion and a currency conversion is rejected with `422 PROMOTION_CONTEXT_MISMATCH`: set your price in each currency and send the payment without the conversion.
+* **Seamless.** The SDK creates the payment itself, so no promotion is asked or applied.
+* **Payment methods.** This release is for cards only. PSE, bank transfers, cash and voucher methods, and other alternative payment methods aren't a supported target: don't configure a promotion's conditions for one, and don't ask for a quote on a payment that uses one.
+* **Wallets.** Apple Pay and Google Pay aren't a supported target for this release. Don't configure a promotion for a wallet payment method, and don't build on the Web SDK's external buttons asking for a quote. Yuno doesn't block this today: a card promotion still applies to a wallet payment that reaches Yuno typed as a card, so it's quoted and discounted like any other card payment.
+* **Installments.** Paying a promoted amount in installments isn't supported for this release, and Yuno doesn't block it today either: a promoted payment sent with installments gets the discount, but the installment plan shown to the customer is computed on the original, non-discounted amount.
 * **Combining promotions.** One promotion per payment.
-* **Usage limits and caps.** A promotion has no redemption limit.
+* **Usage limits and caps.** A promotion has no redemption limit, and a quote isn't consumed either.
 * **Editing a promotion.** Disable and create a new one.
+* **Promotion codes.** Every promotion applies automatically; the quote's `code` field is reserved for codes.
 * **Coupons.**

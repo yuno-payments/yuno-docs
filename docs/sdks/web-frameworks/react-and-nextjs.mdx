@@ -125,7 +125,7 @@ If the script fails to load, the cached promise is cleared so the next mount tri
 
 Mount inside `useEffect`, keep the callbacks in a ref so a re-render does not remount the form, and call `unmountSdk` in the cleanup. `elementSelector` is the element the checkout mounts into and is required. Use `renderMode.type: 'element'` so the payment method and action forms also render inside elements you own.
 
-The Seamless SDK creates the payment itself from the checkout session, so there is no `yunoCreatePayment` callback and no Create Payment call from your server. It also runs the [payment retry](/docs/sdks/resources/references/web#payment-retry) for declined cards on its own. You get the outcome in `yunoPaymentResult`, and your server gets it from the `payment.purchase` webhook.
+The Seamless SDK creates the payment itself from the checkout session, so there is no `createPayment` callback and no Create Payment call from your server. It also runs the [payment retry](/docs/sdks/resources/references/web#payment-retry) for declined cards on its own. You get the outcome in `paymentResult`, and your server gets it from the `payment.purchase` webhook.
 
 ```javascript
 import { useEffect, useRef } from 'react';
@@ -153,10 +153,10 @@ export function YunoCheckout({ checkoutSession, countryCode, onResult }) {
             actionForm: '#yuno-action-form',
           },
         },
-        yunoPaymentResult(status, subStatus) {
+        paymentResult(status, subStatus) {
           onResultRef.current?.(status, subStatus);
         },
-        yunoError(message, data) {
+        error(message, data) {
           console.error('Yuno error', message, data);
         },
       });
@@ -200,7 +200,7 @@ Three details matter here:
 
 Lite SDK renders one payment method per call. The React pattern is the same, with `startCheckout` and `mountCheckoutLite` instead of the Seamless methods. Express buttons mount separately with `mountExternalButtons`.
 
-Unlike Seamless, Lite hands you a one-time token in `yunoCreatePayment` and your server creates the payment. Your `/api/payments` route calls [Create Payment](/reference/payments/create-payment) with `payment_method.token` and `checkout.session`, and the callback then follows the [payment retry rules](/docs/sdks/resources/references/web#payment-retry): `continuePayment` for a declined card or when `sdk_action_required` is `true`, `unmountSdk` otherwise.
+Unlike Seamless, Lite hands you a one-time token in `createPayment` and your server creates the payment. Your `/api/payments` route calls [Create Payment](/reference/payments/create-payment) with `payment_method.token` and `checkout.session`, and the callback then follows the [payment retry rules](/docs/sdks/resources/references/web#payment-retry): `continuePayment` for a declined card or when `sdk_action_required` is `true`, `unmountSdk` otherwise.
 
 ```javascript
 useEffect(() => {
@@ -213,7 +213,7 @@ useEffect(() => {
       countryCode,
       language: 'en',
       elementSelector: '#yuno-card',
-      async yunoCreatePayment(oneTimeToken) {
+      async createPayment(oneTimeToken) {
         const payment = await fetch('/api/payments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -231,10 +231,10 @@ useEffect(() => {
           await yuno.unmountSdk();
         }
       },
-      yunoPaymentResult(status, subStatus) {
+      paymentResult(status, subStatus) {
         onResultRef.current?.(status, subStatus);
       },
-      yunoError(message, data) {
+      error(message, data) {
         console.error('Yuno error', message, data);
       },
     });
@@ -324,7 +324,7 @@ export function CardForm({ checkoutSession, countryCode }) {
         checkoutSession,
         countryCode,
         language: 'en',
-        yunoPaymentResult(data) {
+        paymentResult(data) {
           console.log(data);
         },
       });
