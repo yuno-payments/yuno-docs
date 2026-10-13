@@ -1,0 +1,100 @@
+---
+title: "Create FX Quote"
+openapi: "/openapi/fx-rates/create-fx-quote.json POST /fx-rates/quote"
+description: "Convert a USD price into the customer's currency with your FX markup applied, and charge exactly that amount on the payment."
+---
+
+Merchants who price in USD and charge in local currency need one local price they can show and then charge without drift. This endpoint takes **Yuno's official daily FX rate**, applies **your organization's markup** to it, and returns the local amount together with an `fx_quote_id`. Send that `fx_quote_id` on the payment and Yuno charges exactly the quoted local amount.
+
+<Note>
+**Enabled per organization**
+
+This API requires activation for your organization. Contact your Key Account Manager (KAM) to enable it.
+</Note>
+
+## Two ways to call it
+
+* **Secret key, from your server.** Send `account_id`, and no `checkout_session`. `account_id` must be the account you authenticate with.
+* **Public key, from the checkout.** Send `checkout_session` instead of `account_id`.
+
+Sending the identifier of the other credential, or an `account_id` that does not match the authenticated account, returns `400 INVALID_PARAMETERS`. With a public key the checkout session must be unpaid and less than two hours old: an expired or already paid session returns `400 INVALID_PARAMETERS`, and an unknown one `400 CHECKOUT_SESSION_NOT_EXISTS`. `amount.currency` is always `USD` in this version.
+
+```json Secret key (server)
+{
+    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+    "amount": { "currency": "USD", "value": 20.00 },
+    "target_currency": "COP"
+}
+```
+
+```json Public key (checkout)
+{
+    "checkout_session": "3f0c2b1e-7d5a-4b1c-9e2f-8a6d4c1b0e77",
+    "amount": { "currency": "USD", "value": 20.00 },
+    "target_currency": "COP"
+}
+```
+
+## Reading the response
+
+```json
+{
+  "fx_quote_id": "fxq_01JB7Q2M8XK3",
+  "amount": { "currency": "USD", "value": 20.00 },
+  "local_amount": { "currency": "COP", "value": 67459.74 },
+  "reference_rate": 3306.85,
+  "markup_percentage": 2.00,
+  "rate": 3372.987,
+  "fx_date": "2026-10-11",
+  "expires_at": "2026-10-12T15:45:00Z"
+}
+```
+
+| Field | Meaning |
+| ----- | ------- |
+| `reference_rate` | Units of `target_currency` per 1 unit of `amount.currency`, the same rate [Get FX Rates](/reference/fx-rates/get-fx-rates) serves. |
+| `fx_date` | The day the reference rate was published for: the latest published day. |
+| `markup_percentage` | Your organization's markup over the reference rate. |
+| `rate` | `reference_rate` with your markup applied: `3306.85 × 1.02 = 3372.987`. Not rounded. |
+| `local_amount` | `amount.value × rate`, rounded to the decimals of `target_currency`: `20.00 × 3372.987 = 67459.74`. Zero-decimal currencies round to whole units. No psychological rounding is applied. |
+| `expires_at` | After this instant the quote cannot open a new payment. 30 minutes after it was issued by default. |
+
+<Warning>
+**Parse `rate` and `reference_rate` with a decimal type.**
+
+`rate` is not rounded, so it can carry more decimals than a double holds exactly. Use your language's decimal or big-number type, not a float, as with [Get FX Rates](/reference/fx-rates/get-fx-rates).
+</Warning>
+
+## Use the quote on the payment
+
+Create the payment with the quote's `local_amount` as `amount`, plus `fx_quote_id` and `source: YUNO_FX_QUOTE`. See [Create Payment](/reference/payments/create-payment).
+
+```json
+"amount": {
+    "currency": "COP",
+    "value": 67459.74,
+    "source": "YUNO_FX_QUOTE",
+    "fx_quote_id": "fxq_01JB7Q2M8XK3"
+}
+```
+
+* **`source`** is `YUNO_FX_QUOTE` or `MERCHANT`, and defaults to `MERCHANT`, the behavior of a payment that does not use a quote.
+* **`fx_quote_id`** is required when `source` is `YUNO_FX_QUOTE`, and rejected with `400 INVALID_PARAMETERS` otherwise.
+* **The amount must be the quoted one.** `amount.currency` and `amount.value` must equal the quote's `local_amount`, the quote must belong to your organization, and it must not have expired. Otherwise Yuno rejects the payment with `400 INVALID_PARAMETERS`. Get a new quote and retry.
+* **No other conversion on top.** `amount.fx_quote_id` cannot be combined with `amount.currency_conversion` or `amount.merchant_currency_conversion`: Yuno rejects the payment with `400 INVALID_PARAMETERS`. A `YUNO_PROMOTION` discount is allowed and applies on top of the quoted amount.
+* **The rate stays with the payment.** A payment that was already created keeps the rate of its quote: the renewals of a subscription keep the rate fixed at signup.
+
+## Errors
+
+Errors return a `code` and a `messages` array.
+
+| HTTP | `code` | When |
+| ---- | ------ | ---- |
+| 400 | `INVALID_PARAMETERS` | Malformed body; `account_id` sent with a public key; `checkout_session` sent with a secret key; `account_id` does not match the authenticated account; unknown `target_currency`; the checkout session has expired (older than two hours) or has already been used. |
+| 400 | `CHECKOUT_SESSION_NOT_EXISTS` | The `checkout_session` does not exist. |
+| 401 | `NOT_AUTHENTICATED` / `INVALID_CREDENTIALS` | Missing or invalid `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` headers. |
+| 403 | `PRODUCT_NOT_ENABLED` | "The FX Quote API is enabled per organization. Contact your Key Account Manager (KAM) to activate it." |
+| 404 | `FX_QUOTE_NOT_AVAILABLE` | No published rate for `target_currency` on the latest available day. |
+| 413 | | The body is larger than 16 KiB. |
+| 502 | `BAD_GATEWAY` | The rate source failed. Retry. |
+| 504 | `GATEWAY_TIMEOUT` | The rate source timed out. Retry. |
