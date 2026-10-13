@@ -1,0 +1,96 @@
+name: SDK samples compile
+
+# Compiles the SDK code samples listed in scripts/ci/sdk-samples/snippets.json
+# (today: the Web, iOS and Android blocks of docs/sdks/overview/quickstart.mdx)
+# so a docs PR cannot merge a snippet that does not build against the SDK
+# version the page pins.
+#
+# No secrets needed: npm (@yuno-payments/sdk-web), the Yuno jfrog Maven repo
+# (snapshots-libs-release) and the yuno-sdk-ios GitHub releases are all
+# anonymous-read.
+#
+# Add a page: append a block to snippets.json (plus stubs under
+# scripts/ci/sdk-samples/harness/<target>/ if it calls merchant helpers).
+# Run locally:
+#   node scripts/ci/sdk-samples/extract.cjs
+#   scripts/ci/sdk-samples/run-web.sh      # needs Node
+#   scripts/ci/sdk-samples/run-android.sh  # needs JDK 17, Gradle, ANDROID_HOME
+#   scripts/ci/sdk-samples/run-ios.sh      # needs macOS + Xcode 26.2+
+
+on:
+  pull_request:
+    paths:
+      - "docs/sdks/**"
+      - "scripts/ci/sdk-samples/**"
+      - ".github/workflows/sdk-samples.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/sdks/**"
+      - "scripts/ci/sdk-samples/**"
+      - ".github/workflows/sdk-samples.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sdk-samples-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web (tsc --strict)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "20"
+      - name: Extract Web samples
+        id: extract
+        run: node scripts/ci/sdk-samples/extract.cjs --target web
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.npm
+          key: sdk-samples-npm-${{ steps.extract.outputs.web_sdk_version }}-ts5.7.3
+      - name: Type-check
+        run: scripts/ci/sdk-samples/run-web.sh
+
+  android:
+    name: Android (compileDebugKotlin)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          gradle-version: "8.11.1"
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+      - name: Extract Android samples
+        run: node scripts/ci/sdk-samples/extract.cjs --target android
+      - name: Compile
+        run: scripts/ci/sdk-samples/run-android.sh
+
+  ios:
+    name: iOS (swiftc -typecheck, Swift 5 + 6)
+    # YunoSDK 2.27.0 ships a swiftinterface built with Swift 6.2.3, so the
+    # runner needs Xcode 26.2 or later (macos-26 defaults to Xcode 26.6).
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Extract iOS samples
+        id: extract
+        run: node scripts/ci/sdk-samples/extract.cjs --target ios
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/yuno-sdk-ios/${{ steps.extract.outputs.ios_sdk_version }}
+          key: yuno-sdk-ios-${{ steps.extract.outputs.ios_sdk_version }}
+      - name: Type-check
+        run: scripts/ci/sdk-samples/run-ios.sh
