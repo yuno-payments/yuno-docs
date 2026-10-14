@@ -119,6 +119,9 @@
       "name": "Subscriptions"
     },
     {
+      "name": "Taxes"
+    },
+    {
       "name": "Three D Secure Setups"
     },
     {
@@ -8032,6 +8035,52 @@
                     "type": "string",
                     "description": "The unique identifier (UUID) of the Custom Checkout to use for this session. Optional. When omitted, the session uses the account's default checkout."
                   },
+                  "external_subscription": {
+                    "type": "object",
+                    "description": "Links the session to a subscription in an external billing platform (Stripe Billing). Send `id` to pay a subscription that already exists, or `customer_id` and `items` to let Yuno create it after the payment is approved, with the taxes of a [tax quote](/reference/taxes/create-tax-quote). `id` and `items` cannot be sent together. The object is returned in the session response and is read by [Create Tax Quote](/reference/taxes/create-tax-quote) with the public key. Cannot be sent together with a `subscription`. Enabled per account.",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "description": "The billing platform. Only `STRIPE_BILLING` is supported, which is the default.",
+                        "enum": [
+                          "STRIPE_BILLING"
+                        ]
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "The subscription's identifier in the billing platform (for example `sub_...`). Send it when the subscription already exists; not allowed with `items`. (MIN 3; MAX 255)"
+                      },
+                      "customer_id": {
+                        "type": "string",
+                        "description": "The customer's identifier in the billing platform (for example `cus_...`). Required when `id` is absent. (MIN 3; MAX 255)"
+                      },
+                      "items": {
+                        "type": "array",
+                        "description": "The lines of the subscription that Yuno creates after the payment. Required when `id` is absent, not allowed with `id`. At least one item.",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "price"
+                          ],
+                          "properties": {
+                            "price": {
+                              "type": "string",
+                              "description": "The price identifier in the billing platform (for example `price_...`)."
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "description": "Defaults to 1.",
+                              "minimum": 1
+                            }
+                          }
+                        }
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Optional three-letter ISO 4217 code of the subscription to create."
+                      }
+                    }
+                  },
                   "wallet_card_acceptance": {
                     "type": "object",
                     "description": "Optional. Limits which cards the customer can select in the Apple Pay payment sheet. Cards that do not match are shown greyed out. Every field is optional; a field that is not sent keeps the default behaviour. Values must be uppercase, and an empty list is rejected with 400 INVALID_PARAMETERS. It can only be set when the session is created.",
@@ -8134,6 +8183,30 @@
                     "payment_description": "Test Cards",
                     "customer_id": "{{customer_id}}"
                   }
+                },
+                "Checkout Session (external subscription created after the payment)": {
+                  "value": {
+                    "account_id": "{{account_id}}",
+                    "merchant_order_id": "1717681151",
+                    "payment_description": "Pro plan, monthly",
+                    "country": "US",
+                    "customer_id": "{{customer_id}}",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 12
+                    },
+                    "external_subscription": {
+                      "provider": "STRIPE_BILLING",
+                      "customer_id": "cus_QwErTy123456",
+                      "items": [
+                        {
+                          "price": "price_1AbCdEfGhIjKlMnO",
+                          "quantity": 1
+                        }
+                      ]
+                    }
+                  },
+                  "summary": "Checkout Session (external subscription created after the payment)"
                 },
                 "Checkout Session (alternative currency omitted)": {
                   "value": {
@@ -31208,6 +31281,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           }
                         }
                       }
@@ -31873,6 +31955,15 @@
                           "metadata": {
                             "type": "array"
                           },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                          },
                           "fraud_screening": {},
                           "payment_link_code": {
                             "type": "string",
@@ -32514,6 +32605,15 @@
                           "metadata": {
                             "type": "array"
                           },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                          },
                           "fraud_screening": {},
                           "payment_link_code": {
                             "type": "string",
@@ -33133,6 +33233,15 @@
                           "fraud_screening": {},
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           },
                           "payment_link_code": {
                             "type": "string",
@@ -33819,6 +33928,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           },
                           "fraud_screening": {},
                           "payment_link_code": {
@@ -34569,6 +34687,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           },
                           "fraud_screening": {},
                           "payment_link_code": {
@@ -35390,6 +35517,15 @@
                           "metadata": {
                             "type": "array"
                           },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                          },
                           "fraud_screening": {},
                           "payment_link_code": {
                             "type": "string",
@@ -36076,6 +36212,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           },
                           "fraud_screening": {},
                           "payment_link_code": {
@@ -36766,6 +36911,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           },
                           "fraud_screening": {},
                           "payment_link_code": {
@@ -37468,6 +37622,15 @@
                           "metadata": {
                             "type": "array"
                           },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                          },
                           "fraud_screening": {},
                           "payment_link_code": {
                             "type": "string",
@@ -38169,6 +38332,15 @@
                           "metadata": {
                             "type": "array"
                           },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                          },
                           "fraud_screening": {},
                           "payment_link_code": {
                             "type": "string",
@@ -38813,6 +38985,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           }
                         }
                       }
@@ -39202,6 +39383,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           },
                           "fraud_screening": {}
                         }
@@ -39679,6 +39869,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           }
                         }
                       }
@@ -40152,6 +40351,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           }
                         }
                       }
@@ -40595,6 +40803,15 @@
                           },
                           "metadata": {
                             "type": "array"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                          },
+                          "plan_assigned_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                           }
                         }
                       }
@@ -40939,7 +41156,12 @@
                                     "VAT_LAW_17934",
                                     "VAT_LAW_19210",
                                     "VAT_EXEMPTION",
-                                    "ISV"
+                                    "ISV",
+                                    "SALES_TAX",
+                                    "GST",
+                                    "HST",
+                                    "PST",
+                                    "QST"
                                   ]
                                 },
                                 "tax_base": {
@@ -40956,6 +41178,20 @@
                                   "type": "number",
                                   "description": "The percentage of the tax.",
                                   "format": "float"
+                                },
+                                "source": {
+                                  "type": "string",
+                                  "description": "`YUNO_TAX_QUOTE` when the line comes from a [tax quote](/reference/taxes/create-tax-quote), `MERCHANT` (default) when you computed it. `YUNO_TAX_QUOTE` requires `tax_quote_id`; `MERCHANT` rejects it. Not forwarded to the provider.",
+                                  "enum": [
+                                    "YUNO_TAX_QUOTE",
+                                    "MERCHANT"
+                                  ],
+                                  "default": "MERCHANT"
+                                },
+                                "tax_quote_id": {
+                                  "type": "string",
+                                  "description": "The `tax_quote_id` returned by [Create Tax Quote](/reference/taxes/create-tax-quote). Required with `source: YUNO_TAX_QUOTE`, not allowed otherwise. The payment `amount.value` must be the quote's `total`. (MAX 255)",
+                                  "maxLength": 255
                                 }
                               },
                               "required": [
@@ -43723,36 +43959,41 @@
                   },
                   "external_subscription": {
                     "type": "object",
-                    "description": "Links this payment to a subscription managed in an external billing platform. When present on an approved payment with a vaulted card, Yuno takes over the subscription's recurring charges. Cannot be sent together with the `subscription` object (returns `INVALID_REQUEST`). The object is returned in the payment response, in Retrieve Payment and in payment webhooks.",
-                    "required": [
-                      "id"
-                    ],
+                    "description": "Links this payment to a subscription managed in an external billing platform (Stripe Billing). When present on an approved payment with a vaulted card, Yuno takes over the subscription's recurring charges. Send `id` for a subscription that already exists, or only `customer_id` on a payment with `checkout.session` whose session carries `external_subscription.items`: Yuno then creates the subscription after the payment, with the taxes of a [tax quote](/reference/taxes/create-tax-quote). Cannot be sent together with the `subscription` object (returns `INVALID_REQUEST`). The object is returned in the payment response, in Retrieve Payment and in payment webhooks.",
                     "properties": {
                       "id": {
                         "type": "string",
-                        "description": "The subscription's identifier in the external billing platform (for example `sub_...` for Stripe Billing). Required when the object is present. (MIN 3; MAX 255)"
+                        "description": "The subscription's identifier in the external billing platform (for example `sub_...` for Stripe Billing). Required when the payment does not carry `checkout.session`. (MIN 3; MAX 255)"
                       },
                       "customer_id": {
                         "type": "string",
-                        "description": "The customer's identifier in the external billing platform that owns the subscription (for example `cus_...`). Recommended; resolved from the subscription when omitted."
+                        "description": "The customer's identifier in the external billing platform that owns the subscription (for example `cus_...`). Required when `id` is absent; recommended otherwise, and resolved from the subscription when omitted. (MIN 3; MAX 255)"
+                      },
+                      "provider": {
+                        "type": "string",
+                        "description": "The billing platform. Only `STRIPE_BILLING` is supported, which is the default.",
+                        "enum": [
+                          "STRIPE_BILLING"
+                        ]
                       }
                     }
                   },
                   "subscription": {
                     "type": "object",
-                    "description": "Specifies the subscription object.",
+                    "description": "Specifies the subscription object. Send exactly one of three shapes: inline terms (`frequency`, `availability` and `amount`) to create a subscription, `plan_id` to create one from a plan, or `id` to charge an existing subscription. See [Start a subscription with the first payment](/docs/payment-features/subscriptions/start-with-payment).",
                     "properties": {
+                      "plan_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Identifier (UUID v4) of an active plan in your account. The subscription takes its price, cadence and trial from the plan, and the payment `amount` must equal the plan's price for the payment `country`. Retries are not set in this call: the subscription uses the plan's retry configuration. Cannot be sent with `id`, `amount`, `frequency.type`, `frequency.value`, `billing_date`, `trial`, `trial_period` or `phases` (`400 INVALID_REQUEST`). See [Create a subscription from a plan](/docs/payment-features/subscriptions/start-with-payment#create-a-subscription-from-a-plan)."
+                      },
                       "frequency": {
                         "type": "object",
-                        "description": "Specifies the frequency object (used when creating a payment along with the subscription).",
-                        "required": [
-                          "type",
-                          "execution"
-                        ],
+                        "description": "Specifies the frequency object. Required to create a subscription with inline terms. With `plan_id`, send only `execution` (defaults to `YUNO`); the plan owns `type` and `value`.",
                         "properties": {
                           "type": {
                             "type": "string",
-                            "description": "Frequency of the subscription payment. Pix Automático accepts one period of `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `YEAR`, always with `value` 1.",
+                            "description": "Frequency of the subscription payment. Required with inline terms; cannot be sent with `plan_id`. Pix Automático accepts one period of `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` or `YEAR`, always with `value` 1.",
                             "enum": [
                               "WEEK",
                               "MONTH",
@@ -43767,7 +44008,7 @@
                           },
                           "execution": {
                             "type": "string",
-                            "description": "Indicates if the payment is made by Yuno or the merchant.",
+                            "description": "Indicates if the payment is made by Yuno or the merchant. Required with inline terms; defaults to `YUNO` with `plan_id`.",
                             "enum": [
                               "YUNO",
                               "MERCHANT"
@@ -43777,7 +44018,7 @@
                       },
                       "availability": {
                         "type": "object",
-                        "description": "Specifies the availability object (used when creating a payment along with the subscription).",
+                        "description": "Specifies the availability object. Required to create a subscription with inline terms; optional with `plan_id`.",
                         "properties": {
                           "start_at": {
                             "type": "string",
@@ -43793,7 +44034,7 @@
                       },
                       "amount": {
                         "type": "object",
-                        "description": "Specifies the amount object (used when creating a payment along with the subscription).",
+                        "description": "Specifies the amount object. Required to create a subscription with inline terms. Cannot be sent with `plan_id`.",
                         "required": [
                           "value",
                           "currency",
@@ -43826,13 +44067,13 @@
                           "total": {
                             "type": "integer",
                             "minimum": 1,
-                            "description": "Total number of cycles to bill before the subscription completes. Validated after the charge — a value lower than 1 leaves the payment charged and the subscription not created."
+                            "description": "Total number of cycles to bill before the subscription completes. With inline terms it is validated after the charge — a value lower than 1 leaves the payment charged and the subscription not created. With `plan_id`, a value lower than 1 is rejected up front with `400 INVALID_REQUEST`."
                           }
                         }
                       },
                       "id": {
                         "type": "string",
-                        "description": "Identifier of an existing subscription to charge (omit when creating a new one)."
+                        "description": "Identifier of an existing subscription to charge. Omit it when creating a new one, and never send it with `plan_id`."
                       },
                       "billing_date": {
                         "type": "object",
@@ -43848,6 +44089,54 @@
                             "maximum": 31,
                             "description": "Day of the month when the subscription payment is made"
                           }
+                        }
+                      },
+                      "metadata": {
+                        "type": "array",
+                        "description": "Metadata stored on the subscription. Read only with `plan_id`; ignored with inline terms. Same format as on Create Subscription.",
+                        "items": {
+                          "properties": {
+                            "key": {
+                              "type": "string",
+                              "description": "The metadata key (MAX 48)."
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "The metadata key value (MAX 512)."
+                            }
+                          },
+                          "type": "object"
+                        }
+                      }
+                    },
+                    "if": {
+                      "not": {
+                        "anyOf": [
+                          {
+                            "required": [
+                              "plan_id"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "id"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "then": {
+                      "required": [
+                        "frequency",
+                        "availability",
+                        "amount"
+                      ],
+                      "properties": {
+                        "frequency": {
+                          "required": [
+                            "type",
+                            "execution"
+                          ]
                         }
                       }
                     }
@@ -45750,6 +46039,29 @@
                     }
                   }
                 },
+                "Pix Automático - Create Payment from a plan": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "merchant_order_id": "order-90220",
+                    "description": "Streaming BR — monthly",
+                    "country": "BR",
+                    "workflow": "DIRECT",
+                    "amount": {
+                      "currency": "BRL",
+                      "value": 49.9
+                    },
+                    "customer_payer": {
+                      "id": "a3b3a0f4-1f1e-4a19-9a2a-6f0f2d6bbd11"
+                    },
+                    "payment_method": {
+                      "type": "PIX_AUTOMATIC",
+                      "vault_on_success": true
+                    },
+                    "subscription": {
+                      "plan_id": "14898a9d-5a75-433d-ba17-f2ea5b33620c"
+                    }
+                  }
+                },
                 "Create payment with split": {
                   "value": {
                     "description": "SUCCEDED",
@@ -45860,6 +46172,50 @@
                       }
                     },
                     "workflow": "DIRECT"
+                  }
+                },
+                "Card - With a Yuno tax quote": {
+                  "value": {
+                    "description": "Pro plan, monthly",
+                    "account_id": "<account_id>",
+                    "merchant_order_id": "0000024",
+                    "country": "US",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 13.07
+                    },
+                    "customer_payer": {
+                      "id": "<customer_id>",
+                      "merchant_customer_id": "1690161049",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "johndoe@example.com"
+                    },
+                    "workflow": "SDK_CHECKOUT",
+                    "checkout": {
+                      "session": "<checkout_session>"
+                    },
+                    "payment_method": {
+                      "type": "CARD",
+                      "token": "<one_time_token>"
+                    },
+                    "external_subscription": {
+                      "customer_id": "cus_QwErTy123456"
+                    },
+                    "additional_data": {
+                      "order": {
+                        "taxes": [
+                          {
+                            "type": "SALES_TAX",
+                            "tax_base": 12,
+                            "value": 1.07,
+                            "percentage": 8.875,
+                            "source": "YUNO_TAX_QUOTE",
+                            "tax_quote_id": "txq_40ff4ed90cdb4401ab634b859ef1c74d"
+                          }
+                        ]
+                      }
+                    }
                   }
                 },
                 "Card - With a Yuno promotion": {
@@ -53795,6 +54151,15 @@
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -54821,6 +55186,15 @@
                           ],
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -56078,6 +56452,15 @@
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -57182,6 +57565,15 @@
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -58267,6 +58659,15 @@
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -59284,6 +59685,15 @@
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -60300,6 +60710,15 @@
                           ],
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -61350,6 +61769,15 @@
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -62363,6 +62791,15 @@
                           ],
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -63384,6 +63821,15 @@
                           ],
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -64418,6 +64864,15 @@
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -65000,6 +65455,15 @@
                           ],
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -66096,6 +66560,15 @@
                           ],
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -67692,6 +68165,15 @@
                           ],
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                         },
                         "routing_rules": {
                           "type": "object",
@@ -70386,6 +70868,15 @@
                           "format": "uuid",
                           "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
                         },
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                        },
+                        "plan_assigned_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -70433,6 +70924,22 @@
                       "code": "REQUEST_IN_PROCESS",
                       "messages": [
                         "Request with the same idempotency is already in process. Try again in a few seconds."
+                      ]
+                    }
+                  },
+                  "Tax quote line without id": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'additional_data.order.taxes[0].tax_quote_id' is required."
+                      ]
+                    }
+                  },
+                  "External subscription without checkout session": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid Request. external_subscription.id is required when the payment does not carry checkout.session."
                       ]
                     }
                   },
@@ -74757,6 +75264,15 @@
                             "metadata": {
                               "type": "array"
                             },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                            },
                             "account_code": {
                               "type": "string",
                               "example": "493e9374-510a-4201-9e09-de669d75f256"
@@ -75500,6 +76016,15 @@
                             },
                             "metadata": {
                               "type": "array"
+                            },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                             },
                             "fraud_screening": {},
                             "payment_link_code": {
@@ -76491,6 +77016,15 @@
                             "metadata": {
                               "type": "array"
                             },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                            },
                             "fraud_screening": {},
                             "payment_link_code": {
                               "type": "string",
@@ -77175,6 +77709,15 @@
                             "fraud_screening": {},
                             "metadata": {
                               "type": "array"
+                            },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                             },
                             "payment_link_code": {
                               "type": "string",
@@ -77937,6 +78480,15 @@
                             },
                             "metadata": {
                               "type": "array"
+                            },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                             },
                             "fraud_screening": {},
                             "payment_link_code": {
@@ -78775,6 +79327,15 @@
                             "metadata": {
                               "type": "array"
                             },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                            },
                             "fraud_screening": {},
                             "payment_link_code": {
                               "type": "string",
@@ -79549,6 +80110,15 @@
                             "metadata": {
                               "type": "array"
                             },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                            },
                             "fraud_screening": {},
                             "payment_link_code": {
                               "type": "string",
@@ -80322,6 +80892,15 @@
                             },
                             "metadata": {
                               "type": "array"
+                            },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                             },
                             "fraud_screening": {},
                             "payment_link_code": {
@@ -81099,6 +81678,15 @@
                             },
                             "metadata": {
                               "type": "array"
+                            },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                             },
                             "fraud_screening": {},
                             "payment_link_code": {
@@ -81888,6 +82476,15 @@
                             "metadata": {
                               "type": "array"
                             },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                            },
                             "fraud_screening": {},
                             "payment_link_code": {
                               "type": "string",
@@ -82676,6 +83273,15 @@
                             "metadata": {
                               "type": "array"
                             },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                            },
                             "fraud_screening": {},
                             "payment_link_code": {
                               "type": "string",
@@ -83387,6 +83993,15 @@
                             "metadata": {
                               "type": "array"
                             },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                            },
                             "account_code": {
                               "type": "string",
                               "example": "493e9374-510a-4201-9e09-de669d75f256"
@@ -83901,6 +84516,15 @@
                             "metadata": {
                               "type": "array"
                             },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
+                            },
                             "fraud_screening": {},
                             "account_code": {
                               "type": "string",
@@ -84405,6 +85029,15 @@
                             },
                             "metadata": {
                               "type": "array"
+                            },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                             },
                             "account_code": {
                               "type": "string",
@@ -84915,6 +85548,15 @@
                             },
                             "metadata": {
                               "type": "array"
+                            },
+                            "plan_id": {
+                              "type": "string",
+                              "description": "The subscription's plan when this payment was created. Present only on payments created with `subscription.plan_id` and on their renewals; absent otherwise."
+                            },
+                            "plan_assigned_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the plan was assigned to the subscription (UTC, ISO 8601). Present only on payments that carry `plan_id`."
                             },
                             "account_code": {
                               "type": "string",
@@ -99803,6 +100445,553 @@
         ]
       }
     },
+    "/payments/{payment_id}/transactions/{transaction_id}/split-marketplace": {
+      "put": {
+        "summary": "Update the split of a paid transaction",
+        "description": "Replaces the whole `split_marketplace` of a succeeded purchase transaction at the provider and in Yuno. The legs sent become the split; legs that are not sent are removed. The payment and the transaction keep their status; no new transaction is created.\n\nThe update is accepted only while the provider still allows it: before settlement, and while the payment has no refund (including one waiting to be retried), chargeback or transfer reversal. While an update is in progress or under review, refunds of the payment are refused with `400` `OPERATION_IN_PROCESS`. Availability depends on the provider; contact Yuno to enable it for your connection.",
+        "operationId": "update-split-marketplace",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "payment_id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The unique identifier of the payment (MAX 64; MIN 36)."
+          },
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The unique identifier of the purchase transaction whose split is replaced (MAX 64; MIN 36)."
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Required. Unique identifier of this update (MAX 64). A request that times out is not a failure: repeat it with the same key and you get the outcome of the first attempt. The same key with a different body is refused with `SPLIT_UPDATE_IDEMPOTENCY_CONFLICT`. A repeat sent while the first attempt is still running is answered `400` `OPERATION_IN_PROCESS` and changes nothing: wait a few seconds and repeat it again with the same key."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "split_marketplace"
+                ],
+                "properties": {
+                  "split_marketplace": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": "The new split: every leg the transaction must have after the update.",
+                    "items": {
+                      "properties": {
+                        "recipient_id": {
+                          "type": "string",
+                          "description": "The unique identifier of the recipient in the Yuno system. Every leg must name its recipient with the [`recipient_id`](/reference/create-recipient-1) (Yuno-generated) or the `provider_recipient_id` (external provider's ID), never both."
+                        },
+                        "provider_recipient_id": {
+                          "type": "string",
+                          "description": "The recipient ID provided by the external payment provider. Every leg must name its recipient with the `provider_recipient_id` or the [`recipient_id`](/reference/create-recipient-1) (Yuno-generated), never both."
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description for the split. (MAX 255; MIN 3)."
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "The type of split. `recipient_id` is mandatory for `PURCHASE` and `MARKETPLACE`.",
+                          "enum": [
+                            "PURCHASE",
+                            "PAYMENTFEE",
+                            "VAT",
+                            "COMMISSION",
+                            "MARKETPLACE",
+                            "SHIPPING"
+                          ]
+                        },
+                        "merchant_reference": {
+                          "type": "string",
+                          "description": "Optional unique identifier for the split transaction (MAX 255; MIN 3)."
+                        },
+                        "recipient_type": {
+                          "type": "string",
+                          "description": "The type of recipient for the provider.",
+                          "enum": [
+                            "MEAL",
+                            "FOOD",
+                            "MULTI_BENEFITS",
+                            "FLEET"
+                          ],
+                          "example": "MEAL"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "The amount of the leg. Required on an update: the amount of the original transaction is not part of this request, so nothing is calculated from a `split_configuration`.",
+                          "required": [
+                            "value",
+                            "currency"
+                          ],
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "description": "The split amount (multiple of 0.0001).",
+                              "format": "float"
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency of the payment (MAX 3; MIN 3; ISO 4217). Optional; when omitted the payment currency is used. Another currency is refused."
+                            }
+                          }
+                        },
+                        "liability": {
+                          "type": "object",
+                          "description": "Optional information regarding the recipient's liability for fees and chargebacks.",
+                          "properties": {
+                            "processing_fee": {
+                              "type": "string",
+                              "description": "Indicates who will be charged the transaction fee.",
+                              "enum": [
+                                "MERCHANT",
+                                "RECIPIENT",
+                                "SHARED"
+                              ]
+                            },
+                            "chargebacks": {
+                              "type": "boolean",
+                              "description": "The recipient is responsible in case of a chargeback."
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "amount"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the update (MAX 255; MIN 3)."
+                  },
+                  "metadata": {
+                    "type": "array",
+                    "description": "Custom key-value pairs stored with the update.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Replace the split with one recipient": {
+                  "value": {
+                    "split_marketplace": [
+                      {
+                        "provider_recipient_id": "4c036fbdd2a44786815c331e9c011367",
+                        "type": "MARKETPLACE",
+                        "amount": {
+                          "value": 6,
+                          "currency": "BRL"
+                        }
+                      }
+                    ],
+                    "description": "Same-day split replacement",
+                    "metadata": [
+                      {
+                        "key": "reason",
+                        "value": "same-day redistribution"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The split was replaced. The answer is the payment, in the same shape as [Retrieve payment by ID](/reference/retrieve-payment-by-id); read the new split on `transactions.split_marketplace`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The payment object. See [The payment object](/reference/the-payment-object)."
+                },
+                "examples": {
+                  "Split replaced": {
+                    "value": {
+                      "id": "d49f0691-55de-4045-a668-c17f338cd1a3",
+                      "idempotency_key": "496E09AE-D453-491C-9179-9FC1EDEDAD02",
+                      "origin": "YUNO",
+                      "account_code": "4be68036-738e-4841-8eb5-7a5927591a1b",
+                      "account_id": "4be68036-738e-4841-8eb5-7a5927591a1b",
+                      "description": "pay-test purchase",
+                      "country": "BR",
+                      "status": "SUCCEEDED",
+                      "sub_status": "APPROVED",
+                      "merchant_order_id": "pt-1789681395403",
+                      "created_at": "2026-09-17T21:43:16.119879Z",
+                      "updated_at": "2026-09-17T21:43:18.860706Z",
+                      "amount": {
+                        "captured": 0,
+                        "currency": "BRL",
+                        "currency_conversion": null,
+                        "refunded": 0,
+                        "value": 10
+                      },
+                      "checkout": {
+                        "session": "",
+                        "sdk_action_required": false
+                      },
+                      "customer_payer": null,
+                      "additional_data": {
+                        "airline": null,
+                        "transportations": null,
+                        "lodgings": null,
+                        "order": null,
+                        "seller_details": null,
+                        "device": null,
+                        "payer_risk_data": null
+                      },
+                      "taxes": null,
+                      "transactions": [
+                        {
+                          "id": "77b11fef-5c38-4ecf-9607-015594ee0bc4",
+                          "type": "PURCHASE",
+                          "status": "SUCCEEDED",
+                          "category": "CARD",
+                          "amount": 10,
+                          "provider_id": "ZOOP",
+                          "payment_method": {
+                            "vaulted_token": "",
+                            "type": "CARD",
+                            "vault_on_success": false,
+                            "vault_on_decline": false,
+                            "token": "",
+                            "parent_payment_method_type": null,
+                            "otp": {
+                              "length": 0,
+                              "retries": {}
+                            },
+                            "detail": {
+                              "card": {
+                                "verify": false,
+                                "capture": true,
+                                "installments": 1,
+                                "installments_plan_id": null,
+                                "first_installment_deferral": 0,
+                                "installments_type": "",
+                                "installment_amount": null,
+                                "installments_total_amount": null,
+                                "soft_descriptor": "",
+                                "authorization_code": "133937",
+                                "retrieval_reference_number": "20180510122911535",
+                                "voucher": null,
+                                "card_data": {
+                                  "holder_name": "YUNO TESTER",
+                                  "iin": "42424242",
+                                  "lfd": "4242",
+                                  "number_length": 16,
+                                  "security_code_length": 3,
+                                  "brand": "VISA",
+                                  "scheme": "VISA",
+                                  "issuer_name": "STRIPE PAYMENTS UK",
+                                  "issuer_code": null,
+                                  "country_code": "GB",
+                                  "category": "CLASSIC",
+                                  "type": "CREDIT",
+                                  "three_d_secure": {
+                                    "version": null,
+                                    "electronic_commerce_indicator": null,
+                                    "cryptogram": null,
+                                    "transaction_id": null,
+                                    "directory_server_transaction_id": null,
+                                    "pares_status": null,
+                                    "acs_id": null
+                                  },
+                                  "fingerprint": "4a4c0ff4-6e9e-455d-a104-3e771579a536",
+                                  "expiration_month": 3,
+                                  "expiration_year": 30
+                                },
+                                "stored_credentials": null,
+                                "verification_services": {
+                                  "address_line_1_check": "UNCHECKED",
+                                  "zip_code_check": "UNCHECKED",
+                                  "card_holder_name_check": "UNCHECKED",
+                                  "card_security_code_check": "UNCHECKED"
+                                }
+                              }
+                            }
+                          },
+                          "response_code": "SUCCEEDED",
+                          "response_message": "Transaction successful",
+                          "reason": null,
+                          "description": "pay-test purchase",
+                          "merchant_reference": "pt-1789681395403",
+                          "provider_data": {
+                            "id": "ZOOP",
+                            "transaction_id": "af8fd4e75b614591a03b2125b53907a4",
+                            "account_id": "",
+                            "status": "succeeded",
+                            "sub_status": "",
+                            "status_detail": "",
+                            "response_message": null,
+                            "response_code": "00",
+                            "raw_request": "\"{\\\"payment_type\\\":\\\"credit\\\",\\\"source\\\":{\\\"card\\\":{\\\"card_number\\\":\\\"a198286a-f433-4603-842b-e7dfc2ec0801\\\",\\\"security_code\\\":\\\"e2056811-39fc-444a-a355-41aa514c277f\\\",\\\"holder_name\\\":\\\"YUNO TESTER\\\",\\\"expiration_month\\\":\\\"3\\\",\\\"expiration_year\\\":\\\"2030\\\"},\\\"usage\\\":\\\"single_use\\\",\\\"amount\\\":1000,\\\"currency\\\":\\\"BRL\\\",\\\"type\\\":\\\"card\\\"},\\\"on_behalf_of\\\":\\\"4a8418ddc83f4b4fbd6f442902a4e3b3\\\",\\\"capture\\\":true,\\\"description\\\":\\\"pay-test purchase\\\",\\\"reference_id\\\":\\\"77b11fef-5c38-4ecf-9607-015594ee0bc4\\\",\\\"split_rules\\\":[{\\\"recipient\\\":\\\"3258673725454c5cafaec0210674eb8d\\\",\\\"liable\\\":false,\\\"charge_processing_fee\\\":false,\\\"amount\\\":600}]}\"",
+                            "raw_request_details": {
+                              "headers": {
+                                "Authorization": [
+                                  "[REDACTED]"
+                                ],
+                                "X-Account-Integration-Code": [
+                                  "[REDACTED]"
+                                ],
+                                "X-Dynamic-Mtls": [
+                                  "[REDACTED]"
+                                ],
+                                "x-api-key": [
+                                  "[REDACTED]"
+                                ]
+                              },
+                              "method": "POST",
+                              "url": "/v1/marketplaces/7fcca632f35f4efa8143238d28a89cd9/transactions"
+                            },
+                            "raw_response_details": {
+                              "http_status_code": 201
+                            },
+                            "third_party_transaction_id": "",
+                            "third_party_account_id": "",
+                            "iso8583_response_code": null,
+                            "iso8583_response_message": null,
+                            "retrieval_reference_number": null,
+                            "merchant_advice_code": null,
+                            "merchant_advice_code_message": null,
+                            "reason_code": null,
+                            "reason_description": null
+                          },
+                          "connection_data": {
+                            "id": "99d88722-2c77-4281-ad92-f74df11bc8b9",
+                            "name": "zoop"
+                          },
+                          "created_at": "2026-09-17T21:43:16.232391Z",
+                          "updated_at": "2026-09-17T21:43:18.778608Z",
+                          "split_marketplace": [
+                            {
+                              "recipient_id": null,
+                              "recipient_type": null,
+                              "provider_recipient_id": "4c036fbdd2a44786815c331e9c011367",
+                              "type": "MARKETPLACE",
+                              "merchant_reference": null,
+                              "amount": {
+                                "value": 6,
+                                "currency": "BRL"
+                              },
+                              "liability": null,
+                              "description": null
+                            }
+                          ],
+                          "merchant_advice_code": null,
+                          "merchant_advice_code_message": null
+                        }
+                      ],
+                      "split_marketplace": [],
+                      "workflow": "DIRECT",
+                      "fraud_screening": null,
+                      "metadata": [],
+                      "shipping": null,
+                      "payment_link_code": "",
+                      "routing_rules": {
+                        "smart_routing": false,
+                        "monitors": false,
+                        "condition": {
+                          "id": 279053,
+                          "name": null,
+                          "description": null
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is invalid, the payment or transaction is not found for your account, or another operation of the payment is still running (`OPERATION_IN_PROCESS`, retry in a few seconds with the same key).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Legs above the transaction amount": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "Invalid parameters: list - [The split_marketplace amounts add up to more than the transaction amount.]"
+                      ]
+                    }
+                  },
+                  "Missing idempotency key": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The header 'x-idempotency-key' is required."
+                      ]
+                    }
+                  },
+                  "Transaction not found": {
+                    "value": {
+                      "code": "TRANSACTION_NOT_FOUND",
+                      "messages": [
+                        "Transaction of a payment not found."
+                      ]
+                    }
+                  },
+                  "Payment not found": {
+                    "value": {
+                      "code": "PAYMENT_NOT_FOUND",
+                      "messages": [
+                        "Payment not found."
+                      ]
+                    }
+                  },
+                  "Operation in process": {
+                    "value": {
+                      "code": "OPERATION_IN_PROCESS",
+                      "messages": [
+                        "Operation over the same payment is already in process. Try again in a few seconds."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A `recipient_id` of the request is unknown, or not onboarded with the provider of the transaction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Recipient not found": {
+                    "value": {
+                      "code": "RECIPIENT_NOT_FOUND",
+                      "messages": [
+                        "Recipient not found or not ready for the provider of the transaction: Recipient IDs not found: '11111111-2222-4333-8444-555555555555'"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The update is not possible for this transaction, or it conflicts with another update.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Not allowed": {
+                    "value": {
+                      "code": "SPLIT_UPDATE_NOT_ALLOWED",
+                      "messages": [
+                        "The split of this transaction cannot be updated: the payment has a refund"
+                      ]
+                    }
+                  },
+                  "Window closed": {
+                    "value": {
+                      "code": "SPLIT_UPDATE_WINDOW_CLOSED",
+                      "messages": [
+                        "The provider no longer accepts split changes for this transaction. The split was not changed."
+                      ]
+                    }
+                  },
+                  "Limit reached": {
+                    "value": {
+                      "code": "SPLIT_UPDATE_LIMIT_REACHED",
+                      "messages": [
+                        "The provider limit of split changes for this transaction was reached. The split was not changed."
+                      ]
+                    }
+                  },
+                  "Update in progress": {
+                    "value": {
+                      "code": "SPLIT_UPDATE_IN_PROGRESS",
+                      "messages": [
+                        "Another split update of this transaction is in progress. Try again in a few seconds."
+                      ]
+                    }
+                  },
+                  "Idempotency conflict": {
+                    "value": {
+                      "code": "SPLIT_UPDATE_IDEMPOTENCY_CONFLICT",
+                      "messages": [
+                        "The idempotency key was already used with a different split update request."
+                      ]
+                    }
+                  },
+                  "Under review": {
+                    "value": {
+                      "code": "SPLIT_UPDATE_NOT_ALLOWED",
+                      "messages": [
+                        "The split of this transaction cannot be updated: a previous split update of this transaction is under review"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The provider did not confirm the outcome. The split is under review by Yuno; do not retry with a new key. A retry with the same key returns this same answer until the review is complete.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Provider error": {
+                    "value": {
+                      "code": "PROVIDER_ERROR",
+                      "messages": [
+                        "The split update failed at the provider: the split could not be confirmed and is under review"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Recipients For Marketplace"
+        ]
+      }
+    },
     "/payments/{payment_id}/transactions/{transaction_id}/split-marketplace/transfer-reversal": {
       "post": {
         "description": "",
@@ -103080,7 +104269,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "description": "The `account_id` a destination was registered with. Pass it to see only the destinations scoped to that account, org-wide destinations (`account_id: null`) are not included in that response. Omitting the header does the opposite: only org-wide destinations are returned, and account-scoped ones are not included."
+            "description": "The `account_id` a destination was registered with. Pass it to see the destinations scoped to that account, plus your org-wide destinations (`account_id: null`). Omitting the header returns only the org-wide destinations; account-scoped ones are not included."
           }
         ],
         "responses": {
@@ -103103,7 +104292,6 @@
                   "destinations": [
                     {
                       "id": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4",
-                      "account_id": null,
                       "hostname": "api.example-processor.com",
                       "status": "ENABLED",
                       "purpose": "Direct acquiring — Processor X",
@@ -104312,6 +105500,159 @@
       }
     },
     "/recipients": {
+      "get": {
+        "summary": "Get Recipient by Merchant ID",
+        "operationId": "get-recipient-by-merchant-id",
+        "responses": {
+          "200": {
+            "description": "Success Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientResponse_4"
+                },
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "merchant_recipient_id": "AAAA01",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "legal_name": "Arcos dorados S.A.",
+                      "email": "john.doe@email.com",
+                      "country": "CO",
+                      "document": {
+                        "document_number": "1093333333",
+                        "document_type": "CC"
+                      },
+                      "phone": {
+                        "country_code": "57",
+                        "number": "3132450765"
+                      },
+                      "address": {
+                        "address_line_1": "Calle 34 # 56 - 78",
+                        "address_line_2": "Apartamento 502, Torre I",
+                        "city": "Bogota",
+                        "country": "CO",
+                        "state": "Cundinamarca",
+                        "zip_code": "111111"
+                      },
+                      "withdrawal_methods": [
+                        {
+                          "bank": {
+                            "code": "246",
+                            "branch": "XXXX",
+                            "account": "1093333333",
+                            "account_type": "SAVINGS"
+                          }
+                        }
+                      ],
+                      "onboardings": [
+                        {
+                          "type": "PREVIOUSLY_ONBOARDED",
+                          "workflow": "HOSTED_BY_PROVIDER",
+                          "callback_url": "https://www.google.com",
+                          "provider": {
+                            "id": "PAGARME"
+                          }
+                        }
+                      ],
+                      "split_configuration": {
+                        "calculation_type": "PERCENTAGE",
+                        "percentage": 10.5,
+                        "rounding_mode": "STANDARD",
+                        "currency": "USD"
+                      },
+                      "created_at": "2024-01-15T10:30:00Z",
+                      "updated_at": "2024-01-15T10:30:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing merchant_recipient_id or no matching recipient (RECIPIENT_NOT_FOUND).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Recipient Not Found": {
+                    "value": {
+                      "code": "RECIPIENT_NOT_FOUND",
+                      "messages": [
+                        "Recipient not found."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Unauthorized": {
+                    "summary": "Unauthorized",
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Retrieves a single recipient by merchant_recipient_id within your organization. No account_id is required. Returns a top-level recipient object, or 400 RECIPIENT_NOT_FOUND when no recipient matches. For a paginated collection, use GET /recipients/list.",
+        "parameters": [
+          {
+            "name": "merchant_recipient_id",
+            "in": "query",
+            "required": true,
+            "description": "The recipient identifier assigned by the merchant.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "tags": [
+          "Recipients For Marketplace"
+        ]
+      },
       "post": {
         "summary": "Create Recipient",
         "operationId": "create-recipient",
@@ -104940,159 +106281,6 @@
             }
           }
         },
-        "tags": [
-          "Recipients For Marketplace"
-        ]
-      },
-      "get": {
-        "summary": "Get Recipient by Merchant ID",
-        "operationId": "get-recipient-by-merchant-id",
-        "responses": {
-          "200": {
-            "description": "Success Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecipientResponse_4"
-                },
-                "examples": {
-                  "Success Response": {
-                    "value": {
-                      "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
-                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
-                      "merchant_recipient_id": "AAAA01",
-                      "national_entity": "INDIVIDUAL",
-                      "first_name": "John",
-                      "last_name": "Doe",
-                      "legal_name": "Arcos dorados S.A.",
-                      "email": "john.doe@email.com",
-                      "country": "CO",
-                      "document": {
-                        "document_number": "1093333333",
-                        "document_type": "CC"
-                      },
-                      "phone": {
-                        "country_code": "57",
-                        "number": "3132450765"
-                      },
-                      "address": {
-                        "address_line_1": "Calle 34 # 56 - 78",
-                        "address_line_2": "Apartamento 502, Torre I",
-                        "city": "Bogota",
-                        "country": "CO",
-                        "state": "Cundinamarca",
-                        "zip_code": "111111"
-                      },
-                      "withdrawal_methods": [
-                        {
-                          "bank": {
-                            "code": "246",
-                            "branch": "XXXX",
-                            "account": "1093333333",
-                            "account_type": "SAVINGS"
-                          }
-                        }
-                      ],
-                      "onboardings": [
-                        {
-                          "type": "PREVIOUSLY_ONBOARDED",
-                          "workflow": "HOSTED_BY_PROVIDER",
-                          "callback_url": "https://www.google.com",
-                          "provider": {
-                            "id": "PAGARME"
-                          }
-                        }
-                      ],
-                      "split_configuration": {
-                        "calculation_type": "PERCENTAGE",
-                        "percentage": 10.5,
-                        "rounding_mode": "STANDARD",
-                        "currency": "USD"
-                      },
-                      "created_at": "2024-01-15T10:30:00Z",
-                      "updated_at": "2024-01-15T10:30:00Z"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Missing merchant_recipient_id or no matching recipient (RECIPIENT_NOT_FOUND).",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "Recipient Not Found": {
-                    "value": {
-                      "code": "RECIPIENT_NOT_FOUND",
-                      "messages": [
-                        "Recipient not found."
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "Unauthorized": {
-                    "summary": "Unauthorized",
-                    "value": {
-                      "code": "INVALID_CREDENTIALS",
-                      "messages": [
-                        "Invalid credentials"
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "Forbidden": {
-                    "summary": "Forbidden",
-                    "value": {
-                      "code": "AUTHORIZATION_REQUIRED",
-                      "messages": [
-                        "The merchant has no authorization to use this API."
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "description": "Retrieves a single recipient by merchant_recipient_id within your organization. No account_id is required. Returns a top-level recipient object, or 400 RECIPIENT_NOT_FOUND when no recipient matches. For a paginated collection, use GET /recipients/list.",
-        "parameters": [
-          {
-            "name": "merchant_recipient_id",
-            "in": "query",
-            "required": true,
-            "description": "The recipient identifier assigned by the merchant.",
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        ],
         "tags": [
           "Recipients For Marketplace"
         ]
@@ -111113,14 +112301,15 @@
                 "properties": {
                   "type": {
                     "type": "string",
-                    "description": "The type of the report to run (MAX 255; MIN 3).",
+                    "description": "The type of the report to run (MAX 255; MIN 3). SETTLEMENT_PAYOUTS is available for merchants on Yuno's new reconciliation engine.",
                     "enum": [
                       "PAYOUTS",
                       "PAYMENTS",
                       "TRANSACTIONS",
-                      "SETTLEMENT_FEES",
+                      "SETTLEMENTS_FEES",
                       "RECONCILIATION_OVERVIEW",
-                      "COMMUNICATIONS"
+                      "COMMUNICATIONS",
+                      "SETTLEMENT_PAYOUTS"
                     ]
                   },
                   "user_code": {
@@ -111143,11 +112332,15 @@
                   },
                   "account_id": {
                     "type": "string",
-                    "description": "Account identifier(s). Omit to include all accounts. For multiple accounts, send a comma-separated list. <br> Example: `19d28762-c714-4fb0-9ef6-4e1953ed334b, 91d82267-c714-4fb0-9ef6-4e1953ed334b`."
+                    "description": "Account identifier(s). Omit to include all accounts. For multiple accounts, send a comma-separated list. For the Settlement Payouts report, this is matched against the provider account name and, for merchants on Yuno's new reconciliation engine, also against the Yuno account through the settlement batch. Providers whose payouts arrive through a separate endpoint (for example Pagar.me) return no rows when filtered this way. <br> Example: `19d28762-c714-4fb0-9ef6-4e1953ed334b, 91d82267-c714-4fb0-9ef6-4e1953ed334b`"
                   },
                   "acquirer": {
                     "type": "string",
-                    "description": "Filters the Settlements report by acquirer. Accepts a single value (case-insensitive; conventionally uppercase). <br> Example: `BAC_CREDOMATIC`"
+                    "description": "Filters the Settlements report by acquirer. Accepts a single value (case-insensitive; conventionally uppercase). For the Settlement Payouts report, this filter accepts a comma-separated list of values, in uppercase. <br> Example: `BAC_CREDOMATIC`"
+                  },
+                  "provider_id": {
+                    "type": "string",
+                    "description": "For the Settlement Payouts report, filters the rows by provider. Comma-separated list, values in uppercase. <br> Example: `ADYEN,CIELO`"
                   },
                   "payment_status": {
                     "type": "string",
@@ -111163,7 +112356,7 @@
                   },
                   "currency": {
                     "type": "string",
-                    "description": "The currency used to make the payment (MAX 3; MIN 3; [ISO 4217](/reference/country-reference)). Don't send this parameter to request the creation of a report for all currencies. Otherwise, indicate all currencies you want to include. <br> Example: `ARS,BRL,COP`"
+                    "description": "The currency used to make the payment (MAX 3; MIN 3; [ISO 4217](/reference/country-reference)). Don't send this parameter to request the creation of a report for all currencies. Otherwise, indicate all currencies you want to include. For the Settlement Payouts report, filters by settlement currency (comma-separated list). <br> Example: `ARS,BRL,COP`"
                   },
                   "country": {
                     "type": "string",
@@ -111189,7 +112382,7 @@
                   },
                   "columns": {
                     "type": "string",
-                    "description": "Columns to include (only for Payment or Transaction reports). See available fields in [Report Fields](/reference/reports-fields). <br> Example: `account_code,amount_value,card_category`"
+                    "description": "Columns to include (only for Payment, Transaction, or Settlement Payouts reports). See available fields in [Report Fields](/reference/reports-fields). For the Settlement Payouts report, this parameter replaces the default column selection instead of extending it: to add an optional column you must also list every default column you want to keep. <br> Example: `account_code,amount_value,card_category`"
                   },
                   "metadata_fields": {
                     "type": "string",
@@ -120832,6 +122025,622 @@
         "deprecated": false,
         "tags": [
           "Subscriptions"
+        ]
+      }
+    },
+    "/taxes/quote": {
+      "post": {
+        "summary": "Create tax quote",
+        "description": "Calculates the taxes of an external subscription (Stripe Billing) for the address where it is consumed, before the first payment. The quote returns the subtotal, the tax lines and the `total` to charge. Pay the `total` on Create Payment with the `tax_quote_id` in `additional_data.order.taxes`, and Yuno creates the subscription in the billing platform after the payment is approved, with the same tax treatment. This API is enabled per organization: contact your Key Account Manager (KAM) to activate it.",
+        "operationId": "createTaxQuote",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "oneOf": [
+                  {
+                    "required": [
+                      "account_id",
+                      "external_subscription",
+                      "address"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "checkout_session",
+                      "address"
+                    ]
+                  }
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "The account that will create the payment (UUID). Required with the secret key, where it must equal the authenticated account. Optional with the public key, where it must match the checkout session."
+                  },
+                  "checkout_session": {
+                    "type": "string",
+                    "description": "Checkout session id (UUID). Public key only: the subscription lines come from the `external_subscription` of the session. Not allowed with the secret key. The session must be less than 2 hours old and not paid yet."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Optional two-letter [ISO 3166-1](/reference/country-reference) code. With the public key it must match the checkout session.",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "example": "US"
+                  },
+                  "address": {
+                    "type": "object",
+                    "description": "Where the subscription is consumed. Required with both credentials. The billing platform resolves the tax jurisdiction from it, so send at least `country` and `postal_code` where postal codes exist.",
+                    "required": [
+                      "country"
+                    ],
+                    "properties": {
+                      "country": {
+                        "type": "string",
+                        "description": "Two-letter [ISO 3166-1](/reference/country-reference) code.",
+                        "minLength": 2,
+                        "maxLength": 2,
+                        "example": "US"
+                      },
+                      "postal_code": {
+                        "type": "string",
+                        "example": "10001"
+                      },
+                      "state": {
+                        "type": "string",
+                        "example": "NY"
+                      },
+                      "city": {
+                        "type": "string",
+                        "example": "New York"
+                      },
+                      "line1": {
+                        "type": "string",
+                        "example": "350 5th Ave"
+                      }
+                    }
+                  },
+                  "external_subscription": {
+                    "type": "object",
+                    "description": "The subscription to quote. Secret key only: with the public key the lines come from the checkout session. A quote made from the server prices the subscription but is not linked to a checkout session, so it does not drive the subscription creation after the payment in this version: quote from the checkout with the public key for that.",
+                    "required": [
+                      "customer_id",
+                      "items"
+                    ],
+                    "properties": {
+                      "customer_id": {
+                        "type": "string",
+                        "description": "The customer's identifier in the billing platform (for example `cus_...` for Stripe Billing).",
+                        "example": "cus_QwErTy123456"
+                      },
+                      "items": {
+                        "type": "array",
+                        "description": "The subscription lines. At least one item.",
+                        "minItems": 1,
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "price"
+                          ],
+                          "properties": {
+                            "price": {
+                              "type": "string",
+                              "description": "The price identifier in the billing platform (for example `price_...`).",
+                              "example": "price_1AbCdEfGhIjKlMnO"
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "description": "Defaults to 1.",
+                              "minimum": 1,
+                              "example": 1
+                            }
+                          }
+                        }
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Optional three-letter [ISO 4217](/reference/country-reference) code of the subscription.",
+                        "minLength": 3,
+                        "maxLength": 3,
+                        "example": "USD"
+                      }
+                    }
+                  },
+                  "tax_information": {
+                    "type": "object",
+                    "description": "Optional tax ID of the buyer. The billing platform uses it to decide the B2B treatment (for example reverse charge inside the EU) and Yuno saves it on the billing platform customer when it creates the subscription. `type` and `id` go together.",
+                    "properties": {
+                      "business": {
+                        "type": "boolean",
+                        "description": "Whether the buyer is a business. Informational.",
+                        "example": true
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Tax ID type, lowercase, from the billing platform's list: `eu_vat`, `gb_vat`, `us_ein`, `mx_rfc`, `co_nit`, `br_cnpj`, `ar_cuit`, `cl_tin`, `in_gst`... Required when `id` is sent.",
+                        "example": "eu_vat"
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "The tax ID number. Required when `type` is sent. (MAX 64)",
+                        "maxLength": 64,
+                        "example": "DE123456789"
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Public key (checkout)": {
+                  "value": {
+                    "checkout_session": "3f0c2b1e-7d4a-4c6b-9e2f-1a5b8c3d9e0f",
+                    "address": {
+                      "country": "US",
+                      "postal_code": "10001"
+                    }
+                  }
+                },
+                "Public key with the buyer's tax ID": {
+                  "value": {
+                    "checkout_session": "3f0c2b1e-7d4a-4c6b-9e2f-1a5b8c3d9e0f",
+                    "address": {
+                      "country": "DE",
+                      "postal_code": "10115",
+                      "city": "Berlin"
+                    },
+                    "tax_information": {
+                      "business": true,
+                      "type": "eu_vat",
+                      "id": "DE123456789"
+                    }
+                  }
+                },
+                "Secret key (server)": {
+                  "value": {
+                    "account_id": "493e9374-7b8e-4a3c-9f1d-2c5e6a7b8c9d",
+                    "country": "US",
+                    "address": {
+                      "country": "US",
+                      "postal_code": "10001",
+                      "state": "NY"
+                    },
+                    "external_subscription": {
+                      "customer_id": "cus_QwErTy123456",
+                      "items": [
+                        {
+                          "price": "price_1AbCdEfGhIjKlMnO",
+                          "quantity": 1
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK — the quote.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "tax_quote_id",
+                    "status",
+                    "currency",
+                    "subtotal",
+                    "tax",
+                    "total",
+                    "lines"
+                  ],
+                  "properties": {
+                    "tax_quote_id": {
+                      "type": "string",
+                      "description": "The quote identifier (`txq_...`). Send it on the payment in `additional_data.order.taxes` with `source: YUNO_TAX_QUOTE`. The payment itself does not validate the quote: after the payment is approved, Yuno creates the subscription only if the latest quote of the checkout session is less than 30 minutes old, has not been used by another payment and its `total` equals the charged amount. Otherwise the payment stays approved, no subscription is created and Yuno is alerted.",
+                      "example": "txq_40ff4ed90cdb4401ab634b859ef1c74d"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "`TAX_APPLIED` when at least one tax line applies, `NO_TAX` when the billing platform calculated and found no tax (see `no_tax_reason`), `NOT_CALCULATED` when it could not calculate.",
+                      "enum": [
+                        "TAX_APPLIED",
+                        "NO_TAX",
+                        "NOT_CALCULATED"
+                      ]
+                    },
+                    "no_tax_reason": {
+                      "type": "string",
+                      "description": "Only with `status: NO_TAX`. `REVERSE_CHARGE` when the buyer's tax ID moves the liability to the buyer, `NOT_COLLECTING` when the merchant is not registered in the jurisdiction, `EXEMPT`, `ZERO_RATED`, `NOT_SUBJECT_TO_TAX` or `OTHER`.",
+                      "enum": [
+                        "REVERSE_CHARGE",
+                        "NOT_COLLECTING",
+                        "EXEMPT",
+                        "ZERO_RATED",
+                        "NOT_SUBJECT_TO_TAX",
+                        "OTHER"
+                      ]
+                    },
+                    "currency": {
+                      "type": "string",
+                      "description": "Three-letter [ISO 4217](/reference/country-reference) code of the subscription.",
+                      "example": "USD"
+                    },
+                    "subtotal": {
+                      "type": "number",
+                      "description": "The subscription price before taxes, in major units.",
+                      "example": 12
+                    },
+                    "tax": {
+                      "type": "number",
+                      "description": "The sum of the tax lines.",
+                      "example": 1.07
+                    },
+                    "total": {
+                      "type": "number",
+                      "description": "`subtotal` + `tax`. This is the `amount.value` to send on the payment.",
+                      "example": 13.07
+                    },
+                    "lines": {
+                      "type": "array",
+                      "description": "One line per tax applied. Empty when no tax applies.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "description": "The billing platform's tax type, upper-cased: `SALES_TAX`, `VAT`, `GST`, `HST`, `PST`, `QST`, `RST`, `JCT`, `IGST`, `LEASE_TAX`... When you copy the line into `additional_data.order.taxes` on the payment, use one of the types the payment accepts (`VAT`, `SALES_TAX`, `GST`, `HST`, `PST`, `QST`...), since the payment validates its own enum.",
+                            "example": "SALES_TAX"
+                          },
+                          "jurisdiction": {
+                            "type": "string",
+                            "description": "The jurisdiction that levies the tax, as named by the billing platform.",
+                            "example": "NY"
+                          },
+                          "percentage": {
+                            "type": "number",
+                            "example": 8.875
+                          },
+                          "taxable_amount": {
+                            "type": "number",
+                            "example": 12
+                          },
+                          "value": {
+                            "type": "number",
+                            "example": 1.07
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "New York sales tax": {
+                    "value": {
+                      "tax_quote_id": "txq_40ff4ed90cdb4401ab634b859ef1c74d",
+                      "status": "TAX_APPLIED",
+                      "currency": "USD",
+                      "subtotal": 12,
+                      "tax": 1.07,
+                      "total": 13.07,
+                      "lines": [
+                        {
+                          "type": "SALES_TAX",
+                          "jurisdiction": "NY",
+                          "percentage": 8.875,
+                          "taxable_amount": 12,
+                          "value": 1.07
+                        }
+                      ]
+                    }
+                  },
+                  "No tax collected in the jurisdiction": {
+                    "value": {
+                      "tax_quote_id": "txq_da66aa0778644b559ecd03aaea70cc9c",
+                      "status": "NO_TAX",
+                      "no_tax_reason": "NOT_COLLECTING",
+                      "currency": "USD",
+                      "subtotal": 12,
+                      "tax": 0,
+                      "total": 12,
+                      "lines": []
+                    }
+                  },
+                  "Reverse charge with an EU VAT number": {
+                    "value": {
+                      "tax_quote_id": "txq_9c1f2e3d4b5a6978a0b1c2d3e4f5a6b7",
+                      "status": "NO_TAX",
+                      "no_tax_reason": "REVERSE_CHARGE",
+                      "currency": "EUR",
+                      "subtotal": 12,
+                      "tax": 0,
+                      "total": 12,
+                      "lines": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content — tax quotes are not enabled for your organization. Contact your Key Account Manager (KAM) to activate them."
+          },
+          "400": {
+            "description": "Bad request — `INVALID_REQUEST` (malformed body, missing `address`, a field that belongs to the other credential, `tax_information` incomplete), `TAX_QUOTE_NOT_APPLICABLE` (the checkout session has no `external_subscription`, or it carries an `id` so the subscription already exists, or it has no `items` or no `customer_id`), `TAX_QUOTE_INVALID_REQUEST` (the billing platform rejected the request: unknown `price_...` or `cus_...`, wrong currency), `INVALID_PARAMETERS` (the checkout session has expired or has already been used) or `CHECKOUT_SESSION_NOT_EXISTS`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "checkout_session with a secret key": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'checkout_session' is not allowed when using the secret key."
+                      ]
+                    }
+                  },
+                  "external_subscription with a public key": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'external_subscription' is not allowed when using the public API key: the checkout session carries it."
+                      ]
+                    }
+                  },
+                  "account_id does not match": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'account_id' does not match the authenticated account."
+                      ]
+                    }
+                  },
+                  "tax_information.type is not a tax ID type": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'tax_information.type' must be a tax ID type such as eu_vat or gb_vat."
+                      ]
+                    }
+                  },
+                  "Unknown price or customer in the billing platform": {
+                    "value": {
+                      "code": "TAX_QUOTE_INVALID_REQUEST",
+                      "messages": [
+                        "Stripe: resource_missing, param: items[0][price]"
+                      ]
+                    }
+                  },
+                  "address is missing": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'address' is required."
+                      ]
+                    }
+                  },
+                  "The session already has a subscription": {
+                    "value": {
+                      "code": "TAX_QUOTE_NOT_APPLICABLE",
+                      "messages": [
+                        "external_subscription.id is set: pay it without a tax quote"
+                      ]
+                    }
+                  },
+                  "The session has expired": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The checkout session has expired."
+                      ]
+                    }
+                  },
+                  "The session was already paid": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The checkout session has already been used."
+                      ]
+                    }
+                  },
+                  "The session does not exist": {
+                    "value": {
+                      "code": "CHECKOUT_SESSION_NOT_EXISTS",
+                      "messages": [
+                        "session with code 907886bf-d887-4d9c-aaf9-ee5a7b7cc8eb not found"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — `INVALID_CREDENTIALS`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid_credentials": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid Credentials"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — `MERCHANT_NOT_FOUND`: the account is not onboarded on the billing platform connection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "merchant_not_found": {
+                    "value": {
+                      "code": "MERCHANT_NOT_FOUND",
+                      "messages": [
+                        "account_id '493e9374-7b8e-4a3c-9f1d-2c5e6a7b8c9d' is not onboarded"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is larger than 16 KiB."
+          },
+          "422": {
+            "description": "Unprocessable — `TAX_LOCATION_INVALID`: the billing platform cannot resolve a tax jurisdiction from `address`. Send a valid `postal_code` and `state` for the country.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "tax_location_invalid": {
+                    "value": {
+                      "code": "TAX_LOCATION_INVALID",
+                      "messages": [
+                        "Stripe: requires_location_inputs"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad gateway — `BAD_GATEWAY`: the billing platform answered with an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "bad_gateway": {
+                    "value": {
+                      "code": "BAD_GATEWAY",
+                      "messages": [
+                        "Bad Gateway"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout — `GATEWAY_TIMEOUT`: the billing platform did not answer in time. Retry the quote.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "gateway_timeout": {
+                    "value": {
+                      "code": "GATEWAY_TIMEOUT",
+                      "messages": [
+                        "Gateway Timeout"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Taxes"
+        ],
+        "security": [
+          {
+            "PublicApiKey": [],
+            "PrivateSecretKey": []
+          },
+          {
+            "PublicApiKey": []
+          }
         ]
       }
     },

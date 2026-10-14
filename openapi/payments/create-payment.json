@@ -272,7 +272,12 @@
                                     "VAT_LAW_17934",
                                     "VAT_LAW_19210",
                                     "VAT_EXEMPTION",
-                                    "ISV"
+                                    "ISV",
+                                    "SALES_TAX",
+                                    "GST",
+                                    "HST",
+                                    "PST",
+                                    "QST"
                                   ]
                                 },
                                 "tax_base": {
@@ -289,6 +294,20 @@
                                   "type": "number",
                                   "description": "The percentage of the tax.",
                                   "format": "float"
+                                },
+                                "source": {
+                                  "type": "string",
+                                  "description": "`YUNO_TAX_QUOTE` when the line comes from a [tax quote](/reference/taxes/create-tax-quote), `MERCHANT` (default) when you computed it. `YUNO_TAX_QUOTE` requires `tax_quote_id`; `MERCHANT` rejects it. Not forwarded to the provider.",
+                                  "enum": [
+                                    "YUNO_TAX_QUOTE",
+                                    "MERCHANT"
+                                  ],
+                                  "default": "MERCHANT"
+                                },
+                                "tax_quote_id": {
+                                  "type": "string",
+                                  "description": "The `tax_quote_id` returned by [Create Tax Quote](/reference/taxes/create-tax-quote). Required with `source: YUNO_TAX_QUOTE`, not allowed otherwise. The payment `amount.value` must be the quote's `total`. (MAX 255)",
+                                  "maxLength": 255
                                 }
                               },
                               "required": [
@@ -3056,18 +3075,22 @@
                   },
                   "external_subscription": {
                     "type": "object",
-                    "description": "Links this payment to a subscription managed in an external billing platform. When present on an approved payment with a vaulted card, Yuno takes over the subscription's recurring charges. Cannot be sent together with the `subscription` object (returns `INVALID_REQUEST`). The object is returned in the payment response, in Retrieve Payment and in payment webhooks.",
-                    "required": [
-                      "id"
-                    ],
+                    "description": "Links this payment to a subscription managed in an external billing platform (Stripe Billing). When present on an approved payment with a vaulted card, Yuno takes over the subscription's recurring charges. Send `id` for a subscription that already exists, or only `customer_id` on a payment with `checkout.session` whose session carries `external_subscription.items`: Yuno then creates the subscription after the payment, with the taxes of a [tax quote](/reference/taxes/create-tax-quote). Cannot be sent together with the `subscription` object (returns `INVALID_REQUEST`). The object is returned in the payment response, in Retrieve Payment and in payment webhooks.",
                     "properties": {
                       "id": {
                         "type": "string",
-                        "description": "The subscription's identifier in the external billing platform (for example `sub_...` for Stripe Billing). Required when the object is present. (MIN 3; MAX 255)"
+                        "description": "The subscription's identifier in the external billing platform (for example `sub_...` for Stripe Billing). Required when the payment does not carry `checkout.session`. (MIN 3; MAX 255)"
                       },
                       "customer_id": {
                         "type": "string",
-                        "description": "The customer's identifier in the external billing platform that owns the subscription (for example `cus_...`). Recommended; resolved from the subscription when omitted."
+                        "description": "The customer's identifier in the external billing platform that owns the subscription (for example `cus_...`). Required when `id` is absent; recommended otherwise, and resolved from the subscription when omitted. (MIN 3; MAX 255)"
+                      },
+                      "provider": {
+                        "type": "string",
+                        "description": "The billing platform. Only `STRIPE_BILLING` is supported, which is the default.",
+                        "enum": [
+                          "STRIPE_BILLING"
+                        ]
                       }
                     }
                   },
@@ -5257,6 +5280,50 @@
                       }
                     },
                     "workflow": "DIRECT"
+                  }
+                },
+                "Card - With a Yuno tax quote": {
+                  "value": {
+                    "description": "Pro plan, monthly",
+                    "account_id": "<account_id>",
+                    "merchant_order_id": "0000024",
+                    "country": "US",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 13.07
+                    },
+                    "customer_payer": {
+                      "id": "<customer_id>",
+                      "merchant_customer_id": "1690161049",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "johndoe@example.com"
+                    },
+                    "workflow": "SDK_CHECKOUT",
+                    "checkout": {
+                      "session": "<checkout_session>"
+                    },
+                    "payment_method": {
+                      "type": "CARD",
+                      "token": "<one_time_token>"
+                    },
+                    "external_subscription": {
+                      "customer_id": "cus_QwErTy123456"
+                    },
+                    "additional_data": {
+                      "order": {
+                        "taxes": [
+                          {
+                            "type": "SALES_TAX",
+                            "tax_base": 12.0,
+                            "value": 1.07,
+                            "percentage": 8.875,
+                            "source": "YUNO_TAX_QUOTE",
+                            "tax_quote_id": "txq_40ff4ed90cdb4401ab634b859ef1c74d"
+                          }
+                        ]
+                      }
+                    }
                   }
                 },
                 "Card - With a Yuno promotion": {
@@ -29935,6 +30002,22 @@
                       "code": "REQUEST_IN_PROCESS",
                       "messages": [
                         "Request with the same idempotency is already in process. Try again in a few seconds."
+                      ]
+                    }
+                  },
+                  "Tax quote line without id": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'additional_data.order.taxes[0].tax_quote_id' is required."
+                      ]
+                    }
+                  },
+                  "External subscription without checkout session": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid Request. external_subscription.id is required when the payment does not carry checkout.session."
                       ]
                     }
                   },
