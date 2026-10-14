@@ -8,9 +8,9 @@ Mercado Pago Fast Payments shows a shopper the payment methods they already save
 Yuno renders the experience inside the Web SDK **Full checkout** and **Lite checkout**. You create the checkout session and the payment as you do today; the SDK handles the Mercado Pago part.
 
 <Note>
-Mercado Pago Fast Payments is available in **Yuno SDK 2.0.0** and the **Web SDK v1.11** line (`https://sdk-web.y.uno/v1.11/main.js`). On v1.11 it first shipped in **1.11.6**, and the experience described on this page is the one from **1.11.21** onwards. It is not supported on Web SDK v1.10 or earlier.
+Mercado Pago Fast Payments is supported in **Yuno SDK 2.0.0** (recommended) and **Web SDK v1.11.21** or later (`https://sdk-web.y.uno/v1.11/main.js`).
 
-v1 will be deprecated by the end of the year. Yuno's recommended path is that merchants migrate to the new Yuno SDK instead of keeping on legacy versions. Contact your account manager for more details and next steps to upgrade.
+Legacy Web SDK v1 will be deprecated by the end of the year. Yuno's recommended path is for merchants to migrate to the new Yuno SDK instead of remaining on legacy SDKs. Contact your account manager for more details and next steps to upgrade.
 </Note>
 
 ## Availability
@@ -20,22 +20,48 @@ Fast Payments is available on:
 * **Full checkout** (`mountCheckout`)
 * **Lite checkout** (`mountCheckoutLite`) with `paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN'`, supporting both `element` and `modal` render modes (Mercado Pago recommends `element`).
 
-It is not available on the Seamless checkout, on the condensed payment-method list, in Moon Active checkout, or on the mobile SDKs.
+It is not available on Seamless checkout, on the condensed payment-method list, in Moon Active checkout, or on native mobile SDKs.
 
-## Requirements
+### Compatibility and Platform Support
 
-Before starting, ensure all prerequisites are met:
+Fast Payments operates inside web contexts and requires shopper authentication with Mercado Pago.
 
-* A Yuno account with Dashboard access and a Web SDK integration using [Full checkout](/docs/sdks/full-checkout/web-payments) or [Lite checkout](/docs/sdks/lite-web/payment).
-* **Fast Payments enabled on your Mercado Pago application:** Mercado Pago enables Fast Payments per application. If it is not enabled, or the shopper is not eligible (for example they have no Mercado Pago account), Fast Payments is not offered. What the shopper sees then depends on your integration, described in [How it works for the shopper](#how-it-works-for-the-shopper).
-* **Mercado Pago connection fully authorized:** In the Yuno Dashboard, complete **Connect with Mercado Pago** until you are redirected back to the Dashboard. Providing the public key alone is not sufficient; payments require the seller access token generated during authorization.
-* **Public key configured per country:** Add the Mercado Pago **public key** of your Mercado Pago account to the connection. One public key belongs to one Mercado Pago site (for example Argentina, Brazil, or Mexico); if you sell across multiple countries, add the public key for each site tagged with its country (using `GLOBAL` as a fallback). 
+| Platform / Environment | Support Level | Notes |
+| --- | --- | --- |
+| **Desktop Web** | Supported | Modern evergreen browsers (Chrome, Safari, Firefox, Edge). |
+| **Mobile Web** | Supported | iOS Safari, Android Chrome, and mobile browsers. |
+| **WebView** | Supported | iOS WKWebView and Android WebView running Web SDK. |
+| **Native Mobile App** | Not Supported | Native iOS and Android SDKs do not currently support Fast Payments. |
+
+<Note>
+Visibility on supported environments depends on **shopper eligibility**. If a shopper does not have a valid Mercado Pago account, or if Mercado Pago cannot authenticate the session, the Fast Payments option will not be displayed or will fall back to alternative payment methods.
+</Note>
+
+## Functional Limitations
+
+Before planning your integration, review the functional boundaries where Fast Payments should not be used:
+
+* **Recurrence and Merchant-Initiated Transactions (MIT):** Fast Payments requires interactive shopper authentication. It cannot be used for recurring subscription billing, tokenized card vaulting for future off-session charges, or MIT flows.
+* **Coupons and Mercado Pago Promotions:** In-app Mercado Pago discounts or merchant coupon codes managed inside Mercado Pago cannot be applied through Fast Payments.
+* **Partial Capture or Differing Amounts:** Authorizing an amount and capturing a different or partial amount later is not supported. The captured amount must equal the authorized checkout amount.
+* **Sub-acquirer Fields:** Custom sub-acquirer parameters or intermediary processing flags are not passed to Mercado Pago.
+* **Split Payments:** 1:1 split payments are not supported. 1:N split payment scenarios are currently under validation and not available for general release.
+
+## Onboarding and Prerequisites
+
+Activating Mercado Pago Fast Payments requires coordinated setup across the merchant, Yuno, and Mercado Pago:
+
+| Step | Task | Responsible Party | Channel / Tool | Details / SLA |
+| --- | --- | --- | --- | --- |
+| 1 | **Enable Fast Payments** | Mercado Pago / Merchant | Mercado Pago Developers | Request Fast Payments activation on your Mercado Pago application through your Mercado Pago account manager. |
+| 2 | **Authorize Connection** | Merchant | Yuno Dashboard | In **Settings > Connections**, run **Connect with Mercado Pago** to generate seller access tokens. |
+| 3 | **Configure Public Keys** | Merchant | Yuno Dashboard | Add site-specific Public Keys (e.g., `MLA` for Argentina, `MLB` for Brazil, or `GLOBAL`). |
+| 4 | **Configure Webhook** | Merchant | Mercado Pago Developers | Set Notification URL to `https://prod.y.uno/mercadopago-webhook/v1/orders/events` for the **Order (Mercado Pago)** event. |
+| 5 | **Enable Routing Rules** | Yuno / Merchant | Yuno Dashboard | Enable the `MERCADO_PAGO_SUPERTOKEN` payment method in your checkout routing workflow. |
 
 <Frame caption="Configuring the Mercado Pago Fast Payments connection in the Yuno Dashboard">
   <img src="/images/reference/mercado-pago-fast-payments/mercado-pago-fast-payments-dashboard-connection.png" alt="Mercado Pago connection setup in Yuno Dashboard" />
 </Frame>
-* **Notification webhook configured in Mercado Pago:** Set the Notification URL in your Mercado Pago application to `https://prod.y.uno/mercadopago-webhook/v1/orders/events` and subscribe to the **Order (Mercado Pago)** event.
-* The `MERCADO_PAGO_SUPERTOKEN` payment method enabled for your checkout in your routing rules.
 
 ## How it works for the shopper
 
@@ -74,28 +100,61 @@ Because your own page owns the payment method list in Lite checkout, Yuno cannot
 
 ## Integration
 
-### Full checkout
+### Workflow Mapping
 
-Follow the [Web SDK Full checkout guide](/docs/sdks/full-checkout/web-payments); the section appears automatically as soon as the connection and payment method are configured.
+When creating the checkout session via `POST /v1/checkout/sessions`, supply the correct `workflow` for your integration type:
 
-### Lite checkout
+| Checkout Experience | `workflow` Value | Supported | Notes |
+| --- | --- | --- | --- |
+| **Full Checkout** | `CHECKOUT` | Yes | Renders the complete payment method list with Fast Payments at the top. |
+| **Lite Checkout (Modal)** | `SDK_CHECKOUT` | Yes | Opens Mercado Pago authentication inside a modal overlay. |
+| **Lite Checkout (Element)** | `SDK_CHECKOUT` | Yes | Recommended by Mercado Pago. Mounts directly into designated DOM containers. |
+| **Seamless Checkout** | `SDK_SEAMLESS` | No | Direct API / custom form integration is not supported with Fast Payments. |
 
-Set the render mode in `startCheckout`, then mount the component with `paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN'`:
+### Integration Examples
+
+<Tabs>
+<Tab title="Yuno SDK 2.0 (Recommended)">
 
 ```javascript
+import { Yuno } from '@yuno/sdk';
+
+const yuno = await Yuno.initialize({
+  apiKey: 'YOUR_PUBLIC_API_KEY',
+});
+
+// Full checkout
+await yuno.mountCheckout({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  elementSelector: '#checkout-container',
+  countryCode: 'AR',
+  async onPay(data) {
+    // Submit data.token to your server to execute the payment
+  },
+});
+```
+
+</Tab>
+<Tab title="Web SDK v1.11 (Legacy)">
+
+```javascript
+// Web SDK v1.11.21+
+const yuno = Yuno.initialize('YOUR_PUBLIC_API_KEY');
+
 await yuno.startCheckout({
-  checkoutSession,
+  checkoutSession: 'CHECKOUT_SESSION_ID',
   elementSelector: '#root',
   countryCode: 'AR',
-  // Mercado Pago recommends element render mode
   renderMode: {
-    type: 'element', // or 'modal'
+    type: 'element',
     elementSelector: {
       apmForm: '#apm-form',
       actionForm: '#action-form',
     },
   },
-  // ...your callbacks
+  async onTokenReceived(token) {
+    // Submit token to your server to execute the payment
+  },
 });
 
 await yuno.mountCheckoutLite({
@@ -104,6 +163,9 @@ await yuno.mountCheckoutLite({
 
 await yuno.startPayment();
 ```
+
+</Tab>
+</Tabs>
 
 ### One-time token and payment creation
 
@@ -129,10 +191,36 @@ When the shopper confirms, the SDK's one-time token carries the Mercado Pago det
 
 Create the payment with the one-time token exactly as you do for any other method ([Step 7 of the Full checkout guide](/docs/sdks/full-checkout/web-payments#step-7-create-the-payment)). The payment is processed through your Mercado Pago connection.
 
+## Idempotency, Retries, and Diagnostics
+
+* **Idempotency:** Always include an `X-Idempotency-Key` header when creating payments via `POST /v1/payments`. If a network interruption occurs during payment confirmation, retrying with the same idempotency key prevents duplicate charges.
+* **Recovering Checkout State:** If a client-side disconnection or network timeout happens after token issuance, invoke `yuno.continuePayment()` with the existing session ID rather than instantiating a new checkout flow.
+* **Support Diagnostics:** When escalating payment or integration issues to Yuno or Mercado Pago support, always capture and provide these identifiers:
+  * `checkout_session`: The unique session identifier created via `POST /v1/checkout/sessions`.
+  * `payment_id`: The transaction identifier returned by Yuno in the payment response.
+  * `trace_id` / `request_id`: The HTTP response tracking header (`X-Trace-Id`) from API requests.
+
 ## Countries
 
-Fast Payments is available in Argentina, Brazil, Mexico and Chile. It follows your Mercado Pago connection: the SDK uses the public key tagged with the checkout's country, falls back to a key tagged `GLOBAL`, and if neither is present uses the first public key on the connection.
+Fast Payments is available in Argentina, Brazil, Mexico, and Chile. It follows your Mercado Pago connection: the SDK uses the public key tagged with the checkout's country, falls back to a key tagged `GLOBAL`, and if neither is present uses the first public key on the connection.
 
-## Testing
+## Testing and Production Release
 
-Use a Mercado Pago **test user** of the same site as your test public key, signed in to the Mercado Pago app, and pass its e-mail in `customer_payer.email`. Mercado Pago lists the test user's saved methods in the section; the payment is created in your Yuno sandbox as usual.
+### Testing Checklist
+
+Before going live, validate your integration against Mercado Pago sandbox environments:
+
+1. **Test User Creation:** Create test buyer and seller accounts in the Mercado Pago Developers portal for the target country site.
+2. **Payment Methods Setup:** Ensure the test buyer user has saved payment methods in their Mercado Pago account (credit card and account balance).
+3. **Session E-mail:** In `POST /v1/checkout/sessions`, pass the test buyer's registered email in `customer_payer.email`.
+4. **Authentication Flow:** Verify that saved cards load in the checkout section. Test security code prompts and simulated challenge steps.
+5. **Routing Rules:** Ensure routing rules direct `MERCADO_PAGO_SUPERTOKEN` transactions to the Mercado Pago test connection.
+
+### Production Release Checklist
+
+When promoting from sandbox to production:
+
+1. **Production OAuth Authorization:** In the Yuno Dashboard, click **Connect with Mercado Pago** under your production account to generate active seller tokens.
+2. **Production Public Keys:** Ensure production public keys are assigned for each active country site.
+3. **Webhook Verification:** Verify that the production Notification URL is configured and receiving events in Mercado Pago Developers.
+4. **Checkout Validation:** Verify that non-eligible shoppers or shoppers without saved instruments fall back gracefully to standard payment methods.
