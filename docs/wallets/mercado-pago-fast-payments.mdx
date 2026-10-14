@@ -5,7 +5,7 @@ description: "Let shoppers pay with the cards and account balance saved in their
 
 Mercado Pago Fast Payments shows a shopper the payment methods they already saved in their Mercado Pago account — cards and account balance — inside your Yuno checkout. The shopper picks one, confirms with Mercado Pago, and pays without re-typing card details or leaving your page.
 
-Yuno renders the experience inside the Web SDK **Full checkout** and **Lite checkout**. You create the checkout session and the payment as you do today; the SDK handles the Mercado Pago part.
+Yuno renders the experience inside the Yuno SDK 2.0 payment methods list and the Web SDK v1.11 **Full checkout** and **Lite checkout**. You create the checkout session and the payment as you do today; the SDK handles the Mercado Pago part.
 
 <Note>
 Mercado Pago Fast Payments is supported in **Yuno SDK 2.0.0** (recommended) and **Web SDK v1.11.21** or later (`https://sdk-web.y.uno/v1.11/main.js`).
@@ -17,10 +17,11 @@ Legacy Web SDK v1 will be deprecated by the end of the year. Yuno's recommended 
 
 Fast Payments is available on:
 
-* **Full checkout** (`mountCheckout`)
-* **Lite checkout** (`mountCheckoutLite`) with `paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN'`, supporting both `element` and `modal` render modes (Mercado Pago recommends `element`).
+* **Yuno SDK 2.0 payment methods list** (`getPaymentMethodsViews`), with the checkout session created with `workflow: 'SDK_SEAMLESS'`
+* **Web SDK v1.11 Full checkout** (`mountCheckout`)
+* **Web SDK v1.11 Lite checkout** (`mountCheckoutLite`) with `paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN'`, supporting both `element` and `modal` render modes (Mercado Pago recommends `element`).
 
-It is not available on Seamless checkout, on the condensed payment-method list, in Moon Active checkout, or on native mobile SDKs.
+It is not available on the Web SDK v1 Seamless checkout, on the condensed payment-method list, in Moon Active checkout, or on native mobile SDKs.
 
 ### Compatibility and platform support
 
@@ -100,35 +101,57 @@ Because your own page owns the payment method list in Lite checkout, Yuno cannot
 
 ### Workflow mapping
 
-When creating the checkout session via `POST /v1/checkout/sessions`, supply the correct `workflow` for your integration type:
+Set `workflow` on the checkout session (`POST /v1/checkout/sessions`) to match the SDK you integrate:
 
-| Checkout Experience | `workflow` Value | Supported | Notes |
+| SDK and experience | `workflow` value | Fast Payments | Notes |
 | --- | --- | --- | --- |
-| **Full checkout** | `CHECKOUT` | Yes | Renders the complete payment method list with Fast Payments at the top. |
-| **Lite checkout (modal)** | `SDK_CHECKOUT` | Yes | Opens Mercado Pago authentication inside a modal overlay. |
-| **Lite checkout (element)** | `SDK_CHECKOUT` | Yes | Recommended by Mercado Pago. Mounts directly into designated DOM containers. |
-| **Seamless checkout** | `SDK_SEAMLESS` | No | Direct API / custom form integration is not supported with Fast Payments. |
+| **Yuno SDK 2.0** (payment methods list) | `SDK_SEAMLESS` | Yes | Required by Yuno SDK 2.0: it lets the SDK create the payment. Without it the transaction ends in `INTERNAL_ERROR`. |
+| **Web SDK v1.11 Full checkout** | `SDK_CHECKOUT` | Yes | The Mercado Pago section renders at the top of the payment method list. |
+| **Web SDK v1.11 Lite checkout** (`element` or `modal`) | `SDK_CHECKOUT` | Yes | Mercado Pago recommends `element`. |
+| **Web SDK v1.11 Seamless checkout** | `SDK_SEAMLESS` | No | Fast Payments is not available on the v1 Seamless checkout. |
 
 ### Integration examples
 
 <Tabs>
 <Tab title="Yuno SDK 2.0 (Recommended)">
 
-```javascript
-import { Yuno } from '@yuno/sdk';
+Load the SDK from the CDN and initialize it once.
 
-const yuno = await Yuno.initialize({
-  apiKey: 'YOUR_PUBLIC_API_KEY',
+```html
+<script src="https://sdk-web.y.uno/v2.0.0/main.js"></script>
+```
+
+The Mercado Pago section renders at the top of the SDK's payment methods list:
+
+```javascript
+const sdkPayments = await SdkPayments.initialize('YOUR_PUBLIC_API_KEY');
+
+// Checkout session created by your backend with workflow: 'SDK_SEAMLESS'
+const transaction = sdkPayments.transaction({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  countryCode: 'AR',
+  elementSelector: '#payment-form',
+  onStatus: (result) => {
+    console.log('Final status:', result.status);
+  },
 });
 
-// Full checkout
-await yuno.mountCheckout({
-  checkoutSession: 'CHECKOUT_SESSION_ID',
-  elementSelector: '#checkout-container',
-  countryCode: 'AR',
-  async onPay(data) {
-    // Submit data.token to your server to execute the payment
+let selectedPaymentMethod = null;
+
+const views = transaction.getPaymentMethodsViews({
+  types: ['paymentMethodList'],
+  onPaymentSelected: (paymentMethod) => {
+    selectedPaymentMethod = paymentMethod;
   },
+});
+
+await views.paymentMethodList?.mount({ elementSelector: '#payment-list' });
+
+// When the shopper confirms, from your Pay button
+payButton.addEventListener('click', async () => {
+  if (selectedPaymentMethod) {
+    await transaction.start({ paymentMethod: selectedPaymentMethod });
+  }
 });
 ```
 
@@ -137,7 +160,7 @@ await yuno.mountCheckout({
 
 ```javascript
 // Web SDK v1.11.21+
-const yuno = Yuno.initialize('YOUR_PUBLIC_API_KEY');
+const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
 
 await yuno.startCheckout({
   checkoutSession: 'CHECKOUT_SESSION_ID',
