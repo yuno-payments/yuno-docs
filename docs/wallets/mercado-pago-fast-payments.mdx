@@ -193,8 +193,8 @@ Create the payment with the one-time token exactly as you do for any other metho
 
 ## Idempotency, Retries, and Diagnostics
 
-* **Idempotency:** Always include an `X-Idempotency-Key` header when creating payments via `POST /v1/payments`. If a network interruption occurs during payment confirmation, retrying with the same idempotency key prevents duplicate charges.
-* **Recovering Checkout State:** If a client-side disconnection or network timeout happens after token issuance, invoke `yuno.continuePayment()` with the existing session ID rather than instantiating a new checkout flow.
+* **Idempotency and Server Timeouts:** Always include an `X-Idempotency-Key` header when creating payments via `POST /v1/payments`. If a network timeout occurs during this request, your server should first retry the request using the exact same `X-Idempotency-Key` or reconcile the payment status via `GET /v1/payments/{payment_id}`.
+* **Recovering Checkout State (`continuePayment`):** Call `yuno.continuePayment()` on the client side only after the payment is created, when the payment response indicates an action is needed (such as `sdk_action_required`) or when a card returns `DECLINED` or `ERROR` and the shopper should select another method or retry. Do not use `continuePayment()` as a replacement for server-side timeout retries or status reconciliation.
 * **Support Diagnostics:** When escalating payment or integration issues to Yuno or Mercado Pago support, always capture and provide these identifiers:
   * `checkout_session`: The unique session identifier created via `POST /v1/checkout/sessions`.
   * `payment_id`: The transaction identifier returned by Yuno in the payment response.
