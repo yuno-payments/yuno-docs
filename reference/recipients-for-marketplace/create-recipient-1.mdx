@@ -5,3 +5,17 @@ description: "Create a recipient to receive funds from split payments in a marke
 ---
 
 Creates  a new recipient for split payment scenarios. This endpoint allows merchants to define recipients that can receive portions of payments in marketplace or split payment models.
+
+## Rate limits and retries
+
+Organizations with an onboarding admission policy share its capacity across their accounts and across recipient creation and onboarding creation. Requests that exceed this capacity return `429` with code `TOO_MANY_REQUESTS` and a `Retry-After` header containing the number of seconds to wait. Requests admitted below the limit follow the existing creation flow.
+
+An admission refusal occurs before this attempt creates a recipient or onboarding, uploads documents, or contacts the provider. Wait at least the `Retry-After` interval before retrying the same request, and add a small random delay so parallel workers do not all retry together. Limit retry attempts and reduce concurrency if refusals continue.
+
+If the admission check is temporarily unavailable, it returns `503` with code `INTERNAL_ERROR` and `Retry-After` before starting creation. This is separate from exceeding the rate limit.
+
+<Warning>
+These retry instructions apply to explicit admission refusals. A timeout, connection loss, or other server error can leave the result unknown. Check the recipient and onboarding state before resubmitting; creation is not guaranteed to be idempotent for every failure.
+</Warning>
+
+Accepted onboardings continue to report their results through the existing GET endpoints and `onboarding.*` webhooks. Reading results and continuing an existing onboarding do not consume this creation allowance.
