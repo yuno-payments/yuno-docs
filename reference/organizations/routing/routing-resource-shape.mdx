@@ -34,6 +34,27 @@ A routing tells Yuno, for one `payment_method` on one account, which connection 
           { "index": 2, "provider_id": "ADYEN",  "connection_id": "b2c4d5e6-…" }
         ]
       }
+    },
+    {
+      "sort_number": 2,
+      "name": "Brazil — split between three providers",
+      "conditions": [
+        { "condition_type": "COUNTRY", "conditional": "EQUAL", "values": ["BR"] }
+      ],
+      "route": {
+        "start_split": [
+          { "index": 1, "percentage": 45 },
+          { "index": 2, "percentage": 45 },
+          { "index": 3, "percentage": 10 }
+        ],
+        "steps": [
+          { "index": 1, "provider_id": "ADYEN",  "connection_id": "b2c4d5e6-…",
+            "output": [{ "status": "DECLINED",
+                         "next_split": [{ "index": 2, "percentage": 70 }, { "index": 3, "percentage": 30 }] }] },
+          { "index": 2, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…" },
+          { "index": 3, "provider_id": "DLOCAL", "connection_id": "c3d5e6f7-…" }
+        ]
+      }
     }
   ],
   "created_at": "2026-05-12T12:00:00Z",
@@ -54,6 +75,17 @@ A routing tells Yuno, for one `payment_method` on one account, which connection 
 | `default_route` | object | The route used when no `condition_sets[]` matches. **Required.** |
 | `condition_sets[]` | object[] | Optional. Ordered by `sort_number` — first matching set wins. Each has one `route`. |
 | `created_at`, `updated_at` | ISO-8601 timestamps | Server-managed. |
+
+</div>
+
+**`route` object**
+
+<div className="code-nowrap-table dense-table">
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `steps[]` | object[] | yes | The provider attempts, see below. |
+| `start_split[]` | object[] | no | Splits the entry of the route across several steps by percentage. Omit to start every payment on `index: 1`. See [Percentage splits](#percentage-splits). |
 
 </div>
 
@@ -81,7 +113,8 @@ Each step is one provider attempt. `index` values are contiguous starting at 1.
 | `status` | enum | yes | What outcome this entry reacts to. See enum below. |
 | `decline_types[]` | string[] | only with <span className="whitespace-nowrap">`status = DECLINE_GROUP`</span> | Subset of Yuno's normalized decline taxonomy. |
 | `error_rate_threshold` | object | only with <span className="whitespace-nowrap">`status = ERROR_RATE`</span> | `{ threshold_percent: int, window_seconds: int }`. |
-| `next` | int \| null | yes | Index of the step to jump to, or `null` to terminate. |
+| `next` | int \| null | no | Index of the step to jump to, or `null` to terminate. Mutually exclusive with `next_split`. |
+| `next_split[]` | object[] | no | Splits the jump across several steps by percentage instead of a single `next`. See [Percentage splits](#percentage-splits). |
 
 </div>
 
@@ -102,7 +135,34 @@ Each step is one provider attempt. `index` values are contiguous starting at 1.
 
 **Evaluation rules**
 
-1. The route enters at `index: 1`.
+1. The route enters at `index: 1`, unless `start_split` is set — then Yuno draws one entry step per payment according to the percentages.
 2. The provider call runs.
 3. Yuno walks `output[]` top-to-bottom; the first entry whose `status` (plus optional `decline_types` / `error_rate_threshold` predicate) matches the outcome wins.
-4. If the matched entry's `next` is an integer, jump to that step. If `null` or no entry matches, the route terminates with the actual provider outcome.
+4. If the matched entry has `next`, jump to that step. If it has `next_split`, Yuno draws one of its steps per payment according to the percentages and jumps there. If neither is set or no entry matches, the route terminates with the actual provider outcome.
+
+### Percentage splits
+
+Both `start_split` and `output[].next_split` are lists of `{ "index", "percentage" }` entries:
+
+<div className="code-nowrap-table dense-table">
+
+| Field | Type | Notes |
+|---|---|---|
+| `index` | int | The `steps[].index` to send traffic to. Must exist in the same route and, for `next_split`, be greater than the step that owns the output (routes only move forward). |
+| `percentage` | int | Integer between `0` and `100`. The entries of one split must sum to exactly `100`. |
+
+</div>
+
+How a split is resolved: the split is evaluated **once per payment**, before the step runs. For a `next_split` of `[{ "index": 2, "percentage": 70 }, { "index": 3, "percentage": 30 }]`, roughly 70% of the payments that hit that output continue on step 2 and 30% on step 3; each individual payment follows exactly one branch. Over many payments the traffic converges to the configured percentages.
+
+Rules:
+
+- `start_split` needs at least one entry. A single entry with `percentage: 100` is the explicit way to send all traffic to one step; omitting `start_split` means 100% on `index: 1`.
+- `next_split` needs at least two entries. For a single destination use `next`. An output cannot carry both `next` and `next_split`.
+- Every step must be reachable from the entry, through `start_split`, `next` or `next_split`.
+- A `percentage` of `0` is allowed, so you can keep a step in the configuration while it receives no traffic.
+- Percentages are integers. Decimals are rejected.
+
+<Note>
+When a routing already has a split entry and you update it, send `start_split` again. An update that omits `start_split` on a condition set whose entry is split is rejected with `ROUTING_VALIDATION_FAILED`, instead of silently sending all traffic to step 1. Retrieve a Routing always returns the current `start_split` and `next_split`, so a read-modify-write flow keeps them.
+</Note>
