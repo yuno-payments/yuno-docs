@@ -1,0 +1,92 @@
+---
+title: "Suspend Account"
+openapi: "/openapi/organizations/suspend-account.json POST /organizations/accounts/{account_id}/suspend"
+description: "Suspends a single merchant account of your organization"
+---
+
+Suspends one account of your organization. No request body is needed.
+
+- **Hidden from listings**: a suspended account no longer appears in [List Accounts](/reference/organizations/list-accounts) or [List Accounts of Group](/reference/organizations/list-accounts-of-group). [Reactivate Account](/reference/organizations/reactivate-account) brings it back.
+- **Per account**: only the account you name changes. Suspending an account never suspends its account group or the other accounts in that group.
+- **Idempotent**: suspending an account that is already suspended returns it unchanged, so a retry is safe.
+
+<Warning>
+Your organization must keep at least one active account. A request that would suspend the last one is rejected with `400 LAST_ACTIVE_ACCOUNT` and changes nothing.
+</Warning>
+
+To suspend several accounts in one call, use [Suspend Accounts in Bulk](/reference/organizations/bulk-suspend-accounts).
+
+### Path Parameters
+
+<ParamField path="account_id" type="string" required>
+  Account UUID. It must belong to your organization.
+</ParamField>
+
+### Response
+
+The account, with `status` set to `SUSPENDED`.
+
+<ResponseField name="id" type="string">
+  Account id.
+</ResponseField>
+<ResponseField name="name" type="string">
+  Account name.
+</ResponseField>
+<ResponseField name="account_group_id" type="string | null">
+  Account group the account belongs to, or `null` when it belongs to none.
+</ResponseField>
+<ResponseField name="status" type="string">
+  `ACTIVE` or `SUSPENDED`. Read-only: it changes only through the suspend and reactivate endpoints.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  Creation time, ISO 8601.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  Last update time, ISO 8601.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST 'https://api-sandbox.y.uno/v1/organizations/accounts/6f1c2b9e-3a4d-4e5f-8a7b-9c0d1e2f3a4b/suspend' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK
+{
+  "id": "6f1c2b9e-3a4d-4e5f-8a7b-9c0d1e2f3a4b",
+  "name": "Account 1",
+  "account_group_id": "3c2b1a09-8f7e-4d6c-9b5a-4f3e2d1c0b9a",
+  "status": "SUSPENDED",
+  "created_at": "2026-10-01T10:00:00Z",
+  "updated_at": "2026-10-15T10:00:00Z"
+}
+```
+
+```json 400 Bad Request — last active account
+{
+  "code": "LAST_ACTIVE_ACCOUNT",
+  "messages": ["Cannot disable accounts. At least one account must remain active in the organization."]
+}
+```
+
+```json 404 Not Found
+{
+  "code": "ACCOUNT_NOT_FOUND",
+  "messages": ["Account not found: 6f1c2b9e-3a4d-4e5f-8a7b-9c0d1e2f3a4b"]
+}
+```
+</CodeGroup>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | — | `account_id` is not a valid UUID. |
+| `400` | `LAST_ACTIVE_ACCOUNT` | Suspending this account would leave your organization with no active account. |
+| `401` | — | Missing or invalid API keys. |
+| `404` | `ACCOUNT_NOT_FOUND` | The account does not exist in your organization. |
+
+</div>
