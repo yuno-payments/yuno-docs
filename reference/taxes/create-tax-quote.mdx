@@ -1,0 +1,146 @@
+---
+title: "Create Tax Quote"
+openapi: "/openapi/taxes/create-tax-quote.json POST /taxes/quote"
+description: "Calculate the taxes of a Stripe Billing subscription for the buyer's address before the first payment, charge the quoted total, and let Yuno create the subscription after the payment."
+---
+
+Merchants who bill through Stripe Billing need the tax-inclusive price before the customer pays: sales tax in the US, VAT in the EU, GST in Canada or India. Send the subscription lines and the address where it is consumed, and Yuno returns the tax lines and the `total` to charge. Pay that `total` with the `tax_quote_id`, and Yuno creates the subscription in Stripe Billing after the payment is approved, with the same tax treatment.
+
+<Note>
+**Enabled per organization**
+
+This API requires activation for your organization. Contact your Key Account Manager (KAM) to enable it. While it is not enabled, the endpoint answers `204 No Content`.
+</Note>
+
+## Two ways to call it
+
+- **From the checkout, with the public key.** Send the `checkout_session` and the `address`. The subscription lines come from the `external_subscription` you sent on [Create Checkout Session](/reference/checkout-sessions/create-checkout-session), so the browser never carries them. The session must be less than 2 hours old and not paid yet. This is the quote that drives the subscription creation after the payment.
+- **From your server, with the secret key.** Send `account_id`, the `address` and the `external_subscription` to quote (`customer_id` and `items`). Use it to price the subscription before opening the checkout. In this version a server-side quote is pricing only: it is not linked to a checkout session, so Yuno does not use it when it creates the subscription after the payment. Quote again from the checkout with the public key.
+
+`address` is required with both credentials. Sending a field that belongs to the other credential returns `400 INVALID_REQUEST`.
+
+```json Secret key (server)
+{
+  "account_id": "493e9374-7b8e-4a3c-9f1d-2c5e6a7b8c9d",
+  "address": { "country": "US", "postal_code": "10001", "state": "NY" },
+  "external_subscription": {
+    "customer_id": "cus_QwErTy123456",
+    "items": [{ "price": "price_1AbCdEfGhIjKlMnO", "quantity": 1 }]
+  }
+}
+```
+
+```json Public key (checkout)
+{
+  "checkout_session": "3f0c2b1e-7d4a-4c6b-9e2f-1a5b8c3d9e0f",
+  "address": { "country": "US", "postal_code": "10001" }
+}
+```
+
+## The buyer's tax ID
+
+For business buyers, send `tax_information` with the tax ID `type` and `id` (`eu_vat`, `gb_vat`, `us_ein`, `mx_rfc`, `co_nit`, `br_cnpj`...). Stripe Tax uses it to decide the B2B treatment: an EU VAT number on a cross-border sale inside the EU moves the liability to the buyer and the quote comes back with `status: NO_TAX` and `no_tax_reason: REVERSE_CHARGE`. Yuno saves the tax ID on the Stripe customer when it creates the subscription, so the invoices show it.
+
+```json Public key with the buyer's tax ID
+{
+  "checkout_session": "3f0c2b1e-7d4a-4c6b-9e2f-1a5b8c3d9e0f",
+  "address": { "country": "DE", "postal_code": "10115", "city": "Berlin" },
+  "tax_information": { "business": true, "type": "eu_vat", "id": "DE123456789" }
+}
+```
+
+Stripe Tax does not validate the number. `type` and `id` go together, and `id` is at most 64 characters.
+
+## Reading the response
+
+```json
+{
+  "tax_quote_id": "txq_40ff4ed90cdb4401ab634b859ef1c74d",
+  "status": "TAX_APPLIED",
+  "currency": "USD",
+  "subtotal": 12.00,
+  "tax": 1.07,
+  "total": 13.07,
+  "lines": [
+    { "type": "SALES_TAX", "jurisdiction": "NY", "percentage": 8.875, "taxable_amount": 12.00, "value": 1.07 }
+  ]
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `tax_quote_id` | The quote to send on the payment. Yuno uses it after the payment is approved (see below). |
+| `status` | `TAX_APPLIED` when at least one line applies. `NO_TAX` when Stripe Tax calculated and found nothing to collect: read `no_tax_reason`. `NOT_CALCULATED` when it could not calculate. |
+| `no_tax_reason` | Only with `NO_TAX`. `REVERSE_CHARGE` (the buyer's tax ID moves the liability), `NOT_COLLECTING` (you are not registered in that jurisdiction), `EXEMPT`, `ZERO_RATED`, `NOT_SUBJECT_TO_TAX` or `OTHER`. |
+| `subtotal`, `tax`, `total` | Major units. `total` is `subtotal` + `tax`, and it is the `amount.value` of the payment. |
+| `lines[]` | One per tax: `type` (the billing platform's tax type upper-cased: `SALES_TAX`, `VAT`, `GST`, `HST`, `PST`, `QST`, `RST`, `JCT`, `IGST`...), `jurisdiction`, `percentage`, `taxable_amount`, `value`. Empty when no tax applies. |
+
+<Warning>
+`NOT_COLLECTING` means Stripe Tax found no registration of yours in the buyer's jurisdiction. The quote is still valid and the payment goes through at the subtotal, so check your tax registrations in Stripe if you expected tax there.
+</Warning>
+
+## Use the quote on the payment
+
+Create the payment on the same checkout session, with the quoted `total` as the amount and the quote in `additional_data.order.taxes`:
+
+```json
+{
+  "amount": { "currency": "USD", "value": 13.07 },
+  "checkout": { "session": "3f0c2b1e-7d4a-4c6b-9e2f-1a5b8c3d9e0f" },
+  "external_subscription": { "customer_id": "cus_QwErTy123456" },
+  "additional_data": {
+    "order": {
+      "taxes": [
+        {
+          "type": "SALES_TAX",
+          "tax_base": 12.00,
+          "value": 1.07,
+          "percentage": 8.875,
+          "source": "YUNO_TAX_QUOTE",
+          "tax_quote_id": "txq_40ff4ed90cdb4401ab634b859ef1c74d"
+        }
+      ]
+    }
+  }
+}
+```
+
+- **`amount.value` is the quote's `total`.** You charge the tax; Yuno does not add it on top of the amount.
+- **`source: YUNO_TAX_QUOTE` with `tax_quote_id`** marks the line as quoted. `MERCHANT` (the default) is for taxes you computed yourself and rejects `tax_quote_id`. Both fields stay in Yuno and are not forwarded to the provider.
+- **`type` must be one the payment accepts** (`VAT`, `SALES_TAX`, `GST`, `HST`, `PST`, `QST`...). The quote's `lines[].type` is the billing platform's type and can be one the payment does not list (`RST`, `JCT`, `IGST`...); map it before sending or the payment returns `400`.
+- **`external_subscription.customer_id` without `id`** tells Yuno to create the subscription after the payment. The items come from the checkout session, so the payment needs `checkout.session`. With an `external_subscription.id` the subscription already exists and the quote does not apply.
+- **The card must be vaulted** (`vault_on_success: true` on the token, with `customer_payer.id`), because Yuno charges the renewals.
+
+## What happens after the payment
+
+The payment does not validate the quote: Create Payment accepts the line as long as it is well formed. The checks run after the payment is approved, when Yuno creates the subscription in Stripe Billing for `customer_id` with the items of the session, using the latest public-key quote of that session:
+
+- the quote must be less than 30 minutes old,
+- it must not have been used by another payment,
+- the charged `amount.value` must equal its `total`,
+- the first Stripe invoice must match the quoted `total`.
+
+When they pass, Yuno updates the customer's address, saves the buyer's tax ID if you sent one, and activates the subscription. The payment response, [Retrieve Payment](/reference/payments/retrieve-payment-by-id) and the payment webhooks return the `external_subscription` with the created `id`.
+
+<Warning>
+If a check fails (expired or reused quote, an amount that is not the quoted `total`, an invoice that differs from the quote), the payment stays approved, no subscription is created and Yuno is alerted to review it with you. Quote again whenever the address, the items or the tax ID change before paying, and pay within 30 minutes of the quote.
+</Warning>
+
+## Errors
+
+Errors return a `code` and a `messages` array.
+
+| HTTP | `code` | When |
+|---|---|---|
+| 204 | — | Tax quotes are not enabled for your organization. |
+| 400 | `INVALID_REQUEST` | Malformed body, missing `address`, a field of the other credential (`checkout_session` with the secret key, `external_subscription` or `account_id` mismatch with the public key), or `tax_information` with `type` and `id` not together. |
+| 400 | `TAX_QUOTE_NOT_APPLICABLE` | The checkout session has no `external_subscription`, or it carries an `id` (the subscription exists already, pay it without a quote), or it has no `items` or no `customer_id`. |
+| 400 | `TAX_QUOTE_INVALID_REQUEST` | Stripe rejected the request: an unknown `price_...` or `cus_...`, or a currency that does not match the price. The message carries Stripe's error code and parameter. |
+| 400 | `INVALID_PARAMETERS` | The checkout session has expired (2 hours) or has already been used. |
+| 400 | `CHECKOUT_SESSION_NOT_EXISTS` | The checkout session does not exist. |
+| 401 | `INVALID_CREDENTIALS` | Wrong or missing API keys. |
+| 404 | `MERCHANT_NOT_FOUND` | The account is not onboarded on the Stripe Billing connection. |
+| 413 | — | The body is larger than 16 KiB. |
+| 422 | `TAX_LOCATION_INVALID` | Stripe Tax cannot resolve a jurisdiction from `address`: send a valid `postal_code` and `state` for the country. |
+| 502 | `BAD_GATEWAY` | Stripe answered with an error. |
+| 504 | `GATEWAY_TIMEOUT` | Stripe did not answer in time. Retry the quote. |

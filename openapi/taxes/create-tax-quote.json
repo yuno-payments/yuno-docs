@@ -1,0 +1,652 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Yuno Tax Quote API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    },
+    {
+      "sec0": []
+    }
+  ],
+  "paths": {
+    "/taxes/quote": {
+      "post": {
+        "summary": "Create tax quote",
+        "description": "Calculates the taxes of an external subscription (Stripe Billing) for the address where it is consumed, before the first payment. The quote returns the subtotal, the tax lines and the `total` to charge. Pay the `total` on Create Payment with the `tax_quote_id` in `additional_data.order.taxes`, and Yuno creates the subscription in the billing platform after the payment is approved, with the same tax treatment. This API is enabled per organization: contact your Key Account Manager (KAM) to activate it.",
+        "operationId": "createTaxQuote",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "oneOf": [
+                  {
+                    "required": [
+                      "account_id",
+                      "external_subscription",
+                      "address"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "checkout_session",
+                      "address"
+                    ]
+                  }
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "The account that will create the payment (UUID). Required with the secret key, where it must equal the authenticated account. Optional with the public key, where it must match the checkout session."
+                  },
+                  "checkout_session": {
+                    "type": "string",
+                    "description": "Checkout session id (UUID). Public key only: the subscription lines come from the `external_subscription` of the session. Not allowed with the secret key. The session must be less than 2 hours old and not paid yet."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Optional two-letter [ISO 3166-1](/reference/country-reference) code. With the public key it must match the checkout session.",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "example": "US"
+                  },
+                  "address": {
+                    "type": "object",
+                    "description": "Where the subscription is consumed. Required with both credentials. The billing platform resolves the tax jurisdiction from it, so send at least `country` and `postal_code` where postal codes exist.",
+                    "required": [
+                      "country"
+                    ],
+                    "properties": {
+                      "country": {
+                        "type": "string",
+                        "description": "Two-letter [ISO 3166-1](/reference/country-reference) code.",
+                        "minLength": 2,
+                        "maxLength": 2,
+                        "example": "US"
+                      },
+                      "postal_code": {
+                        "type": "string",
+                        "example": "10001"
+                      },
+                      "state": {
+                        "type": "string",
+                        "example": "NY"
+                      },
+                      "city": {
+                        "type": "string",
+                        "example": "New York"
+                      },
+                      "line1": {
+                        "type": "string",
+                        "example": "350 5th Ave"
+                      }
+                    }
+                  },
+                  "external_subscription": {
+                    "type": "object",
+                    "description": "The subscription to quote. Secret key only: with the public key the lines come from the checkout session. A quote made from the server prices the subscription but is not linked to a checkout session, so it does not drive the subscription creation after the payment in this version: quote from the checkout with the public key for that.",
+                    "required": [
+                      "customer_id",
+                      "items"
+                    ],
+                    "properties": {
+                      "customer_id": {
+                        "type": "string",
+                        "description": "The customer's identifier in the billing platform (for example `cus_...` for Stripe Billing).",
+                        "example": "cus_QwErTy123456"
+                      },
+                      "items": {
+                        "type": "array",
+                        "description": "The subscription lines. At least one item.",
+                        "minItems": 1,
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "price"
+                          ],
+                          "properties": {
+                            "price": {
+                              "type": "string",
+                              "description": "The price identifier in the billing platform (for example `price_...`).",
+                              "example": "price_1AbCdEfGhIjKlMnO"
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "description": "Defaults to 1.",
+                              "minimum": 1,
+                              "example": 1
+                            }
+                          }
+                        }
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Optional three-letter [ISO 4217](/reference/country-reference) code of the subscription.",
+                        "minLength": 3,
+                        "maxLength": 3,
+                        "example": "USD"
+                      }
+                    }
+                  },
+                  "tax_information": {
+                    "type": "object",
+                    "description": "Optional tax ID of the buyer. The billing platform uses it to decide the B2B treatment (for example reverse charge inside the EU) and Yuno saves it on the billing platform customer when it creates the subscription. `type` and `id` go together.",
+                    "properties": {
+                      "business": {
+                        "type": "boolean",
+                        "description": "Whether the buyer is a business. Informational.",
+                        "example": true
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Tax ID type, lowercase, from the billing platform's list: `eu_vat`, `gb_vat`, `us_ein`, `mx_rfc`, `co_nit`, `br_cnpj`, `ar_cuit`, `cl_tin`, `in_gst`... Required when `id` is sent.",
+                        "example": "eu_vat"
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "The tax ID number. Required when `type` is sent. (MAX 64)",
+                        "maxLength": 64,
+                        "example": "DE123456789"
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Public key (checkout)": {
+                  "value": {
+                    "checkout_session": "3f0c2b1e-7d4a-4c6b-9e2f-1a5b8c3d9e0f",
+                    "address": {
+                      "country": "US",
+                      "postal_code": "10001"
+                    }
+                  }
+                },
+                "Public key with the buyer's tax ID": {
+                  "value": {
+                    "checkout_session": "3f0c2b1e-7d4a-4c6b-9e2f-1a5b8c3d9e0f",
+                    "address": {
+                      "country": "DE",
+                      "postal_code": "10115",
+                      "city": "Berlin"
+                    },
+                    "tax_information": {
+                      "business": true,
+                      "type": "eu_vat",
+                      "id": "DE123456789"
+                    }
+                  }
+                },
+                "Secret key (server)": {
+                  "value": {
+                    "account_id": "493e9374-7b8e-4a3c-9f1d-2c5e6a7b8c9d",
+                    "country": "US",
+                    "address": {
+                      "country": "US",
+                      "postal_code": "10001",
+                      "state": "NY"
+                    },
+                    "external_subscription": {
+                      "customer_id": "cus_QwErTy123456",
+                      "items": [
+                        {
+                          "price": "price_1AbCdEfGhIjKlMnO",
+                          "quantity": 1
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK — the quote.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "tax_quote_id",
+                    "status",
+                    "currency",
+                    "subtotal",
+                    "tax",
+                    "total",
+                    "lines"
+                  ],
+                  "properties": {
+                    "tax_quote_id": {
+                      "type": "string",
+                      "description": "The quote identifier (`txq_...`). Send it on the payment in `additional_data.order.taxes` with `source: YUNO_TAX_QUOTE`. The payment itself does not validate the quote: after the payment is approved, Yuno creates the subscription only if the latest quote of the checkout session is less than 30 minutes old, has not been used by another payment and its `total` equals the charged amount. Otherwise the payment stays approved, no subscription is created and Yuno is alerted.",
+                      "example": "txq_40ff4ed90cdb4401ab634b859ef1c74d"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "`TAX_APPLIED` when at least one tax line applies, `NO_TAX` when the billing platform calculated and found no tax (see `no_tax_reason`), `NOT_CALCULATED` when it could not calculate.",
+                      "enum": [
+                        "TAX_APPLIED",
+                        "NO_TAX",
+                        "NOT_CALCULATED"
+                      ]
+                    },
+                    "no_tax_reason": {
+                      "type": "string",
+                      "description": "Only with `status: NO_TAX`. `REVERSE_CHARGE` when the buyer's tax ID moves the liability to the buyer, `NOT_COLLECTING` when the merchant is not registered in the jurisdiction, `EXEMPT`, `ZERO_RATED`, `NOT_SUBJECT_TO_TAX` or `OTHER`.",
+                      "enum": [
+                        "REVERSE_CHARGE",
+                        "NOT_COLLECTING",
+                        "EXEMPT",
+                        "ZERO_RATED",
+                        "NOT_SUBJECT_TO_TAX",
+                        "OTHER"
+                      ]
+                    },
+                    "currency": {
+                      "type": "string",
+                      "description": "Three-letter [ISO 4217](/reference/country-reference) code of the subscription.",
+                      "example": "USD"
+                    },
+                    "subtotal": {
+                      "type": "number",
+                      "description": "The subscription price before taxes, in major units.",
+                      "example": 12.0
+                    },
+                    "tax": {
+                      "type": "number",
+                      "description": "The sum of the tax lines.",
+                      "example": 1.07
+                    },
+                    "total": {
+                      "type": "number",
+                      "description": "`subtotal` + `tax`. This is the `amount.value` to send on the payment.",
+                      "example": 13.07
+                    },
+                    "lines": {
+                      "type": "array",
+                      "description": "One line per tax applied. Empty when no tax applies.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "description": "The billing platform's tax type, upper-cased: `SALES_TAX`, `VAT`, `GST`, `HST`, `PST`, `QST`, `RST`, `JCT`, `IGST`, `LEASE_TAX`... When you copy the line into `additional_data.order.taxes` on the payment, use one of the types the payment accepts (`VAT`, `SALES_TAX`, `GST`, `HST`, `PST`, `QST`...), since the payment validates its own enum.",
+                            "example": "SALES_TAX"
+                          },
+                          "jurisdiction": {
+                            "type": "string",
+                            "description": "The jurisdiction that levies the tax, as named by the billing platform.",
+                            "example": "NY"
+                          },
+                          "percentage": {
+                            "type": "number",
+                            "example": 8.875
+                          },
+                          "taxable_amount": {
+                            "type": "number",
+                            "example": 12.0
+                          },
+                          "value": {
+                            "type": "number",
+                            "example": 1.07
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "New York sales tax": {
+                    "value": {
+                      "tax_quote_id": "txq_40ff4ed90cdb4401ab634b859ef1c74d",
+                      "status": "TAX_APPLIED",
+                      "currency": "USD",
+                      "subtotal": 12.0,
+                      "tax": 1.07,
+                      "total": 13.07,
+                      "lines": [
+                        {
+                          "type": "SALES_TAX",
+                          "jurisdiction": "NY",
+                          "percentage": 8.875,
+                          "taxable_amount": 12.0,
+                          "value": 1.07
+                        }
+                      ]
+                    }
+                  },
+                  "No tax collected in the jurisdiction": {
+                    "value": {
+                      "tax_quote_id": "txq_da66aa0778644b559ecd03aaea70cc9c",
+                      "status": "NO_TAX",
+                      "no_tax_reason": "NOT_COLLECTING",
+                      "currency": "USD",
+                      "subtotal": 12.0,
+                      "tax": 0.0,
+                      "total": 12.0,
+                      "lines": []
+                    }
+                  },
+                  "Reverse charge with an EU VAT number": {
+                    "value": {
+                      "tax_quote_id": "txq_9c1f2e3d4b5a6978a0b1c2d3e4f5a6b7",
+                      "status": "NO_TAX",
+                      "no_tax_reason": "REVERSE_CHARGE",
+                      "currency": "EUR",
+                      "subtotal": 12.0,
+                      "tax": 0.0,
+                      "total": 12.0,
+                      "lines": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content — tax quotes are not enabled for your organization. Contact your Key Account Manager (KAM) to activate them."
+          },
+          "400": {
+            "description": "Bad request — `INVALID_REQUEST` (malformed body, missing `address`, a field that belongs to the other credential, `tax_information` incomplete), `TAX_QUOTE_NOT_APPLICABLE` (the checkout session has no `external_subscription`, or it carries an `id` so the subscription already exists, or it has no `items` or no `customer_id`), `TAX_QUOTE_INVALID_REQUEST` (the billing platform rejected the request: unknown `price_...` or `cus_...`, wrong currency), `INVALID_PARAMETERS` (the checkout session has expired or has already been used) or `CHECKOUT_SESSION_NOT_EXISTS`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "checkout_session with a secret key": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'checkout_session' is not allowed when using the secret key."
+                      ]
+                    }
+                  },
+                  "external_subscription with a public key": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'external_subscription' is not allowed when using the public API key: the checkout session carries it."
+                      ]
+                    }
+                  },
+                  "account_id does not match": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'account_id' does not match the authenticated account."
+                      ]
+                    }
+                  },
+                  "tax_information.type is not a tax ID type": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'tax_information.type' must be a tax ID type such as eu_vat or gb_vat."
+                      ]
+                    }
+                  },
+                  "Unknown price or customer in the billing platform": {
+                    "value": {
+                      "code": "TAX_QUOTE_INVALID_REQUEST",
+                      "messages": [
+                        "Stripe: resource_missing, param: items[0][price]"
+                      ]
+                    }
+                  },
+                  "address is missing": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'address' is required."
+                      ]
+                    }
+                  },
+                  "The session already has a subscription": {
+                    "value": {
+                      "code": "TAX_QUOTE_NOT_APPLICABLE",
+                      "messages": [
+                        "external_subscription.id is set: pay it without a tax quote"
+                      ]
+                    }
+                  },
+                  "The session has expired": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The checkout session has expired."
+                      ]
+                    }
+                  },
+                  "The session was already paid": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The checkout session has already been used."
+                      ]
+                    }
+                  },
+                  "The session does not exist": {
+                    "value": {
+                      "code": "CHECKOUT_SESSION_NOT_EXISTS",
+                      "messages": [
+                        "session with code 907886bf-d887-4d9c-aaf9-ee5a7b7cc8eb not found"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — `INVALID_CREDENTIALS`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid_credentials": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid Credentials"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — `MERCHANT_NOT_FOUND`: the account is not onboarded on the billing platform connection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "merchant_not_found": {
+                    "value": {
+                      "code": "MERCHANT_NOT_FOUND",
+                      "messages": [
+                        "account_id '493e9374-7b8e-4a3c-9f1d-2c5e6a7b8c9d' is not onboarded"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is larger than 16 KiB."
+          },
+          "422": {
+            "description": "Unprocessable — `TAX_LOCATION_INVALID`: the billing platform cannot resolve a tax jurisdiction from `address`. Send a valid `postal_code` and `state` for the country.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "tax_location_invalid": {
+                    "value": {
+                      "code": "TAX_LOCATION_INVALID",
+                      "messages": [
+                        "Stripe: requires_location_inputs"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad gateway — `BAD_GATEWAY`: the billing platform answered with an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "bad_gateway": {
+                    "value": {
+                      "code": "BAD_GATEWAY",
+                      "messages": [
+                        "Bad Gateway"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout — `GATEWAY_TIMEOUT`: the billing platform did not answer in time. Retry the quote.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "gateway_timeout": {
+                    "value": {
+                      "code": "GATEWAY_TIMEOUT",
+                      "messages": [
+                        "Gateway Timeout"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
