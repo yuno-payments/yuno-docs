@@ -186,10 +186,10 @@ For an invoice that belongs to a subscription, Yuno holds Stripe's next automati
 
 ## Your payment metadata on the Stripe payment record
 
-When this is enabled for your organization, the `metadata` you send on a payment is copied onto the Stripe payment record. It is enabled per organization, for all its accounts. Ask your Technical Account Manager or Key Account Manager. It covers:
+Yuno can copy the `metadata` you send on a payment onto the Stripe payment record. This is enabled per organization, for all its accounts: ask your Technical Account Manager or Key Account Manager. It covers:
 
 * the first payment of a subscription, and every renewal, retry and closure of that subscription, including a renewal whose result arrives late;
-* the refund of a payment and its credit note, which carry the `metadata` of the refunded payment. Yuno creates renewals with no `metadata` of their own, so the refund of a renewal carries none;
+* the refund of a payment and its credit note, which carry the `metadata` of the refunded payment (a renewal payment has no `metadata` of its own, so the refund of a renewal carries none);
 * top-up payments.
 
 A renewal carries the `metadata` of the payment that started the subscription. Subscriptions that started before this was enabled for your organization, and subscriptions that start with a free trial (no first payment), carry no `metadata` on their renewals.
@@ -210,7 +210,7 @@ Copying the metadata to Stripe never makes a payment or its Stripe record fail: 
 
 ## Not supported
 
-* Combining `external_invoice` with `external_subscription` or `subscription` in one payment.
-* `external_invoice` on `POST /v2/payments` (multi-method payments). That route ignores it without an error: the payment is charged but not linked to the invoice, and Stripe is not updated. Use `POST /v1/payments`.
-* A Yuno promotion quote on a payment with `external_invoice`. It is refused with `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED`.
-* Payments that are only authorized, or partially captured. They are not reported to the invoice; capture the full amount.
+* **`external_invoice` together with `external_subscription` or `subscription`.** Each of these objects tells Yuno where to report the payment: `external_invoice` to one Stripe invoice, `external_subscription` to a Stripe Billing subscription, and `subscription` to a Yuno subscription. A payment can be reported to only one place, so Yuno refuses the combination with `400 INVALID_REQUEST`. To pay an invoice of a Stripe subscription, send only `external_invoice`: Stripe already links the invoice to its subscription.
+* **`external_invoice` on `POST /v2/payments` (multi-method payments).** Only `POST /v1/payments` reads `external_invoice`. The multi-method route has no such field and ignores it without an error: the payment is charged, but it is not linked to the invoice and Stripe is not updated. Use `POST /v1/payments`.
+* **A Yuno promotion quote on a payment with `external_invoice`.** Promotions don't apply to the payment of a Stripe invoice. The amount of that payment is set by the invoice in Stripe, so Yuno refuses the quote with `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED` instead of charging a discounted amount that the invoice doesn't expect. To give a discount, apply it to the invoice in Stripe before you collect the payment.
+* **Payments that are only authorized, or partially captured.** Yuno reports a payment to the invoice only once it is captured in full, because only then is its amount final. An authorization can still be released or captured for less, so reporting it could mark the invoice paid with money that is never collected. Capture the full amount.
