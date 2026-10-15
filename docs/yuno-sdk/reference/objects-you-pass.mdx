@@ -68,6 +68,8 @@ Payment-only fields on Web. An enrollment config does not take them, and neither
 | [`appearance`](#appearance-ios-android) | Appearance? | No | `null` |
 | [`viewController`](#viewcontroller-ios-only) | UIViewController? | No | `null` |
 
+`autoContinuePayment` and `saveCardEnabled` are payment-only: the enrollment initializer, `init(customerSession:...)`, does not take them.
+
 Shipping callbacks are not a config field on iOS: conform the `controller` object to `ShippingAddressHandling`. See [`onShippingAddressChanged`](/docs/yuno-sdk/controllers/on-shipping-address-changed).
 
 </Tab>
@@ -151,7 +153,7 @@ See [Controllers](/docs/yuno-sdk/controllers/overview).
 Flag that controls whether the SDK presents its built-in result screen after the transaction finishes.
 
 - `false` (default on iOS and Android). The SDK does not show a result screen. You receive the final status through `onStatus` and render your own UI.
-- `true` (default on Web). The SDK presents its result screen.
+- `true` (default on Web). The SDK presents its result screen. On iOS the screen is not shown for `USER_CANCEL`.
 
 `onStatus` is always invoked, regardless of this flag.
 
@@ -160,6 +162,8 @@ Flag that controls whether the SDK presents its built-in result screen after the
 Controls whether the SDK automatically continues the payment flow after creating it. When `true` (default), the SDK handles 3DS and status polling internally. Set to `false` if you want to control the post-creation flow manually.
 
 On Web the flag applies only when you pass `createPayment`. Without a handler the SDK creates and continues the payment itself. PayPal ignores `false` and always continues, because its popup completes inside the SDK's continue step.
+
+On iOS the flag applies whether or not you override `createPayment`. With `false` and the default handler, the SDK creates the payment, closes its own views and stops.
 
 With `false`, the SDK stops once the payment is created: it does not poll status, does not run 3DS, and `onStatus` is not invoked for the transaction.
 
@@ -202,7 +206,7 @@ Button options per wallet (`googlePay`, `applePay`, `samsungPay`, `paypal`, `pay
 
 ## `appearance` (iOS, Android)
 
-Visual customization object for the SDK's built-in views (colors, fonts, corner radius, etc.). Not available on Web.
+Visual customization object for the SDK's built-in views: font family and colors. Not available on Web.
 
 See [Styling](/docs/yuno-sdk/features/styling) for the full set of options.
 
@@ -211,6 +215,8 @@ See [Styling](/docs/yuno-sdk/features/styling) for the full set of options.
 Optional reference to the `UIViewController` that the SDK should use to present its UI.
 
 Optional when your app is fully built with SwiftUI. Required if you want the SDK to present from a specific UIKit view controller.
+
+When you pass `nil`, the SDK presents from the root view controller of the key window. If there is no window yet, for example when `start` runs before the scene is active, the transaction ends with `INTERNAL_ERROR`, `message.code` `NO_PRESENTATION_ANCHOR` and `message.context` `Transaction.start`. Pass `viewController`, or start after the window exists.
 
 This field exists only on iOS.
 
@@ -256,6 +262,10 @@ The object the payment methods list hands to `onPaymentSelected` carries `type`,
 | [`paymentMethodType`](#paymentmethodtype) | String | Yes |
 | [`vaultedToken`](#vaultedtoken) | String? | No |
 | [`transactionData`](#transactiondata) | TransactionData | No |
+
+The object the payment methods list hands to `onPaymentSelected` also carries `selectionSource` (`.auto` when the SDK preselected the method, `.user` when the shopper picked it). It is read-only: an object you build yourself has it as `nil`.
+
+`Transaction.start` ignores a second call while a transaction is in flight, so a double tap does not start two transactions.
 
 </Tab>
 <Tab title="Android">
@@ -376,7 +386,9 @@ The full shape of `TransactionData` is the following. This JSON is illustrative,
 
 `type` and `vaultedToken` are not part of `TransactionData`; they live on [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected).
 
-On Web, `TransactionData` also accepts `bankTransfer.accountType`, `bankTransfer.accountHolderType` and a top-level `additionalData` object. Each key of `additionalData` names the object its extra fields belong to, for example `card`. The SDK folds each entry into that object before sending, so there is no `additional_data` key on the wire. `card.type` is `CREDIT` or `DEBIT`, and `card.brand` is optional.
+On Web and iOS, `bankTransfer` also takes `accountType` and `accountHolderType`. On Web, `TransactionData` also accepts a top-level `additionalData` object. Each key of `additionalData` names the object its extra fields belong to, for example `card`. The SDK folds each entry into that object before sending, so there is no `additional_data` key on the wire. `card.type` is `CREDIT` or `DEBIT`, and `card.brand` is optional.
+
+On iOS the shape differs in four places. There is no `otp`. `bankTransfer` names the account fields `accountNumber` and `routingId`. `wallet` carries the fields of a wallet checkout you ran yourself, not `cardData`. And `customer` sends only part of what it accepts. See [iOS types](#ios-types).
 
 With secure fields mounted, the SDK reads only `card.holderName`, `card.type`, `vaultOnSuccess`, `installment` and `customer` from `data`. The other objects apply to headless `start()` only.
 
@@ -394,10 +406,28 @@ With secure fields mounted, the SDK reads only `card.holderName`, `card.type`, `
 | `installment` | Installment plan and value. |
 | `threeDSecure` | 3DS setup identifier when 3DS is configured separately. |
 | `bankTransfer` | Bank transfer details (beneficiary, account, routing). |
-| `wallet` | Wallet-specific card data (e.g., card type). |
+| `wallet` | Wallet data. On Web, wallet-specific card data (e.g., card type). On iOS, the result of a wallet checkout you ran outside the SDK. |
 | `ticket` | Ticket-based payment data (e.g., benefit type for food/meal vouchers). |
-| `otp` | One-time password, when the payment method requires it. |
+| `otp` | One-time password, when the payment method requires it. Not available on iOS. |
 | `customer` | Customer information (name, email, document, phone, billing and shipping addresses). |
+
+## iOS types
+
+On iOS you build `SdkPayments.TransactionData` from these structs. Every argument of `TransactionData` has a default, so pass only the parts you have. Arguments are listed in declaration order.
+
+| Field | Type | Initializer |
+|---|---|---|
+| `issuerId` | `String?` |  |
+| `vaultOnSuccess` | `Bool`, default `false` |  |
+| `card` | `CardTransactionData` | `(number:securityCode:expirationMonth:expirationYear:holderName:brand:type:)`. `number`, `securityCode` and `holderName` are `String`; `expirationMonth` and `expirationYear` are `Int`; `brand` is `String?`; `type` is `CardTransactionData.CardType?`, `.credit` or `.debit`. |
+| `installment` | `InstallmentTransactionData` | `(id: String, value: Int)` |
+| `threeDSecure` | `ThreeDSecureTransactionData` | `(setupId: String)` |
+| `bankTransfer` | `BankTransferTransactionData` | `(beneficiaryName:accountNumber:routingId:accountType:accountHolderType:)`, all `String?`. |
+| `wallet` | `WalletTransactionData` | `(accountIntegrationCode:integrationType:checkoutResponse:thirdPartyToken:flowID:merchantTransactionID:)`, all `String?`. |
+| `ticket` | `TicketTransactionData` | `(benefitType: String?)` |
+| `customer` | `Customer` | Every argument is optional. `gender` is a `Customer.Gender` (`.male`, `.female`, `.noBinary`). `document` is a `Customer.Document(documentNumber:documentType:)`, `phone` a `Customer.Phone(countryCode:number:)`, and `billingAddress` and `shippingAddress` a `Customer.Address(addressLine1:addressLine2:city:country:state:zipCode:neighborhood:)`, where every argument but `neighborhood` is a required `String`. |
+
+The token carries these `customer` fields: `firstName`, `lastName`, `email`, `gender`, `document`, `phone`, `billingAddress` and `shippingAddress`. The initializer also accepts `id`, `merchantCustomerId`, `dateOfBirth`, `nationality`, `country` and `neighborhood`, but the SDK does not send them.
 
 </Tab>
 </Tabs>

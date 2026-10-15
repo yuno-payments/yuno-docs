@@ -101,6 +101,12 @@ export const ConfigBuilder = () => {
     if (i < 0) return ls;
     return ls.slice(0, i).concat([{ t: '', src: block[0].src }], block, ls.slice(i));
   };
+  const appendArgAfter = (ls, matcher, block) => {
+    const i = ls.findIndex((l) => matcher(l.t));
+    if (i < 0) return ls;
+    const anchor = { t: ls[i].t.replace(/\s*$/, '') + ',', src: ls[i].src };
+    return ls.slice(0, i).concat([anchor], block, ls.slice(i + 1));
+  };
   const isActive = (id) => !!on[id] && !!fragments[id + ':' + platform] && !(id === 'create-payment' && on.enrollment) && !(id === 'show-view' && platform === 'web');
   const compose = () => {
     const a = ANCHORS[platform];
@@ -108,7 +114,7 @@ export const ConfigBuilder = () => {
     let ls = tag('base', fragments['base:' + platform]);
     if (isActive('enrollment')) ls = replaceBlock(ls, a.configStart, a.blockEnd, frag('enrollment'), false);
     if (isActive('transaction-data')) ls = replaceBlock(ls, a.selected, a.blockEnd, frag('transaction-data'), platform === 'web');
-    if (isActive('status-screen')) ls = insertBefore(ls, a.config, frag('status-screen'));
+    if (isActive('status-screen')) ls = platform === 'ios' ? appendArgAfter(ls, a.config, frag('status-screen')) : insertBefore(ls, a.config, frag('status-screen'));
     ['create-payment', 'show-view', 'show-loading'].forEach((id) => {
       if (!isActive(id)) return;
       ls = platform === 'web' ? insertBefore(ls, a.config, frag(id)) : insertBeforeLastBrace(ls, frag(id));
