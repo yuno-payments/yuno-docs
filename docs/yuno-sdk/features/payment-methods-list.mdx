@@ -84,6 +84,8 @@ if let selectedPayment {
 }
 ```
 
+The views are SwiftUI `AnyView`s. For a UIKit layout, call `getPaymentMethodsViewsUIKit(types:controller:)` instead: same arguments, and it returns `[PaymentMethodType: UIView]`, ready to add as subviews.
+
   </Tab>
 
   <Tab title="Android">
@@ -123,7 +125,7 @@ selectedPayment?.let { transaction.start(activity = this, paymentSelected = it) 
 
 On Web, pass the values as camelCase strings in `types`: `'applePay'`, `'googlePay'`, `'paypal'`, `'paypalBraintree'`, `'samsungPay'`, `'revolutPay'`, and `'paymentMethodList'`.
 
-On iOS and Android, a type that does not apply to the platform or configuration comes back as `null`. On Web every requested type is returned and the check happens in `mount()`. When the wallet is not enabled for the checkout session, the SDK logs `There are not valid payment methods`, reports the failure through `onStatus`, and the promise that `mount()` returns rejects. `mount()` is typed `void`, so `await` it to catch that rejection, and mount only the wallets enabled for the session.
+On Android, a type that does not apply to the platform or configuration comes back as `null`. On iOS every requested type comes back with a view. On Web every requested type is returned and the check happens in `mount()`. When the wallet is not enabled for the checkout session, the SDK logs `There are not valid payment methods`, reports the failure through `onStatus`, and the promise that `mount()` returns rejects. `mount()` is typed `void`, so `await` it to catch that rejection, and mount only the wallets enabled for the session.
 
 <Note>
 On Android, `PaymentMethodType` is a sealed interface rather than a set of string constants: `GOOGLE_PAY` corresponds to `PaymentMethodType.GooglePay(...)`, which also carries the button customization (`cta`, `theme`, `cornerRadius`), and `PAYMENT_METHOD_LIST` corresponds to `PaymentMethodType.PaymentMethodList`. `APPLE_PAY` does not exist on Android.
@@ -161,10 +163,10 @@ The controller you pass to `getPaymentMethodsViews`. On iOS and Android only `on
 **\* `onHeightChange` is optional to _implement_, but you must apply the reported height when your layout constrains the list.**
 </Note>
 
-On Web, `onPaymentSelected` can fire before any tap. When the list preselects the shopper's preferred method on mount, the callback runs with `selectionSource: 'auto'`. A tap runs it with `selectionSource: 'user'`. It also fires when the shopper taps an express button you mounted. The Web `PaymentMethodSelected` is `{ type, name?, vaultedToken?, selectionSource? }`. Keep the latest value and pass it to `start()` only from your own Pay control.
+On Web and iOS, `onPaymentSelected` can fire before any tap. When the list preselects the shopper's preferred method on mount, the callback runs with `selectionSource: 'auto'` (`.auto` on iOS). A tap runs it with `selectionSource: 'user'` (`.user` on iOS). On Web it also fires when the shopper taps an express button you mounted. The Web `PaymentMethodSelected` is `{ type, name?, vaultedToken?, selectionSource? }`. Keep the latest value and pass it to `start()` only from your own Pay control.
 
 <Note>
-If the list cannot be loaded because the payment methods service fails, the SDK reports it through your `TransactionController.onStatus` with status `INTERNAL_ERROR` and a `StatusMessage` (`source` `backend` with the HTTP status in `code` and the error body in `raw`, or `source` `sdk` with `context` `paymentMethodList.getPaymentMethods` for network failures). The list stays empty: show your own error state or request the views again to retry.
+If the list cannot be loaded because the payment methods service fails, the SDK reports it through your `TransactionController.onStatus` with status `INTERNAL_ERROR` and a `message`: `source` `backend` with the backend error code in `code` (the HTTP status when the body has none) and the error body in `raw`, or `source` `sdk` for network failures, with `context` `MethodsViewImplementation.getPaymentMethods` on iOS and `paymentMethodList.getPaymentMethods` on Web. The list stays empty: show your own error state or request the views again to retry.
 </Note>
 
 <Note>

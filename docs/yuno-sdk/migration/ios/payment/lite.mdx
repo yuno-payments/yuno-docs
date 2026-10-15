@@ -14,7 +14,7 @@ Lite mode pre-selected the payment method on the merchant side, then handed off 
 | Who creates the payment | In Lite you had | In the unified API | Session `workflow` |
 |---|---|---|---|
 | Your backend | `yunoCreatePayment` implemented | Override `createPayment` | Default (`SDK_CHECKOUT`) |
-| The SDK | No `yunoCreatePayment` | No override | `SDK_SEAMLESS` |
+| The SDK | No equivalent: only Seamless let the SDK create the payment | No override | `SDK_SEAMLESS` |
 
 <Warning>
 A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
@@ -115,8 +115,9 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | Lite | Unified | Change | What to do |
 |---|---|---|---|
 | `import YunoSDK` | `import SdkPayments` | Renamed | |
-| `Yuno.initialize(apiKey:config:)` | `SdkPayments.initialize(apiKey:)` | Renamed | `YunoConfig` is gone: its fields move to `SdkPayments.TransactionConfig` (next rows). |
+| `Yuno.initialize(apiKey:config:)` | `SdkPayments.initialize(apiKey:)` | Renamed | `YunoConfig` is gone: its fields move to `SdkPayments.TransactionConfig` (next rows). The `callback:` parameter is gone too; use the `async` overload if you need to wait. |
 | `YunoConfig.appearance` | `SdkPayments.TransactionConfig.appearance` | Moved | Pass it per transaction instead of once at startup. |
+| `Yuno.Appearance` | `SdkPayments.Appearance` | Renamed | Same initializer; drop the `Yuno.` prefix. |
 | `YunoConfig.saveCardEnabled` | `SdkPayments.TransactionConfig.saveCardEnabled` | Moved | Defaults to `false`. With `true`, the card form shows the save-card checkbox (payments only), unchecked. |
 | `YunoConfig.keepLoader` | *(removed)* | Removed | The SDK keeps its loader. Override `showLoading` only if you want your own (see Controller). |
 | `YunoPaymentDelegate.checkoutSession`, `.countryCode`, `.language`, `.viewController` | The same fields on `SdkPayments.TransactionConfig` | Moved | Delegate properties become config fields. `viewController` stays iOS-only and optional in SwiftUI. |
@@ -132,6 +133,7 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 |---|---|---|---|
 | `YunoPaymentDelegate` | `SdkPayments.TransactionController` | Renamed | Conform the same class and pass it as `TransactionConfig.controller`. As before, the SDK does not retain it: keep it alive for the whole transaction. |
 | `yunoPaymentResult(_:)` | `onStatus(status:)` | Renamed | Still the single outcome callback, once per transaction, also when the SDK shows its result screen. `status` and `substatus` come from the backend; the SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `Yuno.Result.message` | `SdkPayments.TransactionStatus.message` | Renamed | Same role. `source` is now an enum (`.sdk` / `.backend`) and `code` is non-optional. |
 | `yunoCreatePayment(with:)` / `(with:information:)` | `createPayment(token:)` | Renamed | Optional. One handler replaces both variants; `token` is the full One-Time Token as a dictionary. Create the payment and return: returning is what used to be `continuePayment()`. If the handler throws, the flow stops and `onStatus` is not called, so show the error yourself. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment). |
 | `YunoLoaderDelegate.onLoading(isLoading:)` | `showLoading(isLoading:)` | Renamed | Optional. Lite never invoked it. If you override it now, the SDK hides its own loader and reports the state to you. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
 | `onInstallmentSelected(_:)` with `YunoInstallmentSelected` | `onInstallmentSelected(_:)` with `SdkPayments.InstallmentSelected` | Renamed | Optional. Same trigger and fields; only the payload type changes. See [`onInstallmentSelected`](/docs/yuno-sdk/controllers/on-installment-selected). |
@@ -144,6 +146,7 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | `Yuno.startPaymentLite(with:paymentSelected:showPaymentStatus:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Renamed | Build the config, then `start`. You still pick the method and pass it. |
 | `Yuno.continuePayment()` | *(removed)* | Removed | Delete the call: returning from `createPayment` resumes the flow. Set [`autoContinuePayment`](/docs/yuno-sdk/reference/objects-you-pass#autocontinuepayment) to `false` only if you need the SDK to stop right after the payment is created. |
 | `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Renamed | Same role: forward the URL your app receives after an external redirect. See [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). |
+| `Yuno.hideLoader()` | *(removed)* | Removed | Delete the call: the SDK dismisses its own loader. With a `showLoading` override you receive `isLoading: false` instead. |
 
 ## Related
 

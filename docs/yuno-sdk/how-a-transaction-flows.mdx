@@ -38,7 +38,7 @@ sequenceDiagram
 2. Your app initializes the SDK once, builds a `TransactionConfig` with the session and your controller, and calls `start` with the method the shopper picked.
 3. The SDK renders the method's form, or skips it when you pass `transactionData`, and tokenizes the details into a one-time token.
 4. The SDK creates the payment with that token, runs 3DS or any other action the method needs, and polls the status until it is final.
-5. `onStatus` receives the final status once. If `showStatusScreen` is `true`, the SDK also shows its result screen.
+5. `onStatus` receives the final status. On iOS, asynchronous methods report `PENDING` first; see [`onStatus`](/docs/yuno-sdk/controllers/on-status). If `showStatusScreen` is `true`, the SDK also shows its result screen.
 6. Yuno sends the payment webhook to your backend. Confirm the outcome there before fulfilling the order.
 
 ## When your backend creates the payment
@@ -72,7 +72,7 @@ sequenceDiagram
   Yuno-->>Backend: Payment webhook
 ```
 
-The difference is steps 9 to 13: the SDK delivers the one-time token to `createPayment`, your backend creates the payment, and returning from the handler is what resumes the flow. If the handler throws, the flow stops and `onStatus` is not called. Set `autoContinuePayment` to `false` only if you need the SDK to stop right after your `createPayment` handler returns. It applies only when you override `createPayment`. On Web the SDK then runs no 3DS, polls no status, and reports nothing to `onStatus` for that attempt, and PayPal ignores the flag and always continues.
+The difference is steps 9 to 13: the SDK delivers the one-time token to `createPayment`, your backend creates the payment, and returning from the handler is what resumes the flow. If the handler throws, the flow stops and `onStatus` is not called. Set `autoContinuePayment` to `false` only if you need the SDK to stop right after the payment is created. On Web it applies only when you override `createPayment`; on iOS it applies to the SDK's own payment creation too. The SDK then runs no 3DS, polls no status, and reports nothing to `onStatus` for that attempt. On Web, PayPal ignores the flag and always continues. See [`autoContinuePayment`](/docs/yuno-sdk/reference/objects-you-pass#autocontinuepayment).
 
 <Warning>
 The session `workflow` must match who creates the payment. A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
