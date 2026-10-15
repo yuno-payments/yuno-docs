@@ -7,6 +7,8 @@ description: "Receives the final status of the transaction."
 
 `onStatus` is invoked when the transaction reaches its final state. It is the only way to know how the transaction ended.
 
+On iOS, `onStatus` can run more than once for one transaction. Asynchronous methods (PIX, boleto, OXXO, bank transfers and similar) report `status` `PENDING` as soon as the payment exists and the shopper has the payment instructions, with the backend `substatus` when there is one. The final status arrives in a later call, once Yuno confirms the payment. If the shopper closes the instructions screen, the SDK reports `PENDING` with `substatus` `CLOSED_BY_USER`. Treat `PENDING` as not final: keep your screen in a waiting state and confirm the outcome on your server.
+
 On Web, these deliveries are not final. The form stays mounted after them, so the shopper can try again:
 
 - `INTERNAL_ERROR` with `message.code` `FORM_INVALID`. You submitted a form that is not valid, with [`transaction.submit()`](/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button) or with `transaction.start({ paymentMethod })` on the payment methods list.
@@ -41,7 +43,7 @@ sdkPayments.transaction({
 func onStatus(status: SdkPayments.TransactionStatus)
 ```
 
-`SdkPayments.TransactionStatus` carries `status` and `substatus` (raw backend values, passed through verbatim) and an optional `message` populated on error outcomes.
+`SdkPayments.TransactionStatus` carries `status` and `substatus` (the backend values, passed through verbatim for the statuses this SDK version knows) and an optional `message` populated on error outcomes. A status the SDK does not know arrives as `INTERNAL_ERROR` with `message.code` `UNSUPPORTED_STATUS`, as on Web. The `message.code` values the SDK itself emits are listed in [Status](/docs/yuno-sdk/reference/objects-you-receive#status).
 
   </Tab>
 
