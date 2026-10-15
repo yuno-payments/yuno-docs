@@ -153,26 +153,23 @@ The uploaded files must meet the following criteria:
 
 ### Example request to submit evidence
 
-```json
-POST https://api-sandbox.y.uno/v1/payments/:payment_id/transactions/:transaction_id/dispute
-
-Headers:
-  X-Idempotency-Key: <unique-key>
-  X-Public-Api-Key: <api-key>
-  X-Private-Secret-Key: <secret-key>
-
-Body:
-{
-  "account_id":"<Your Yuno account_id>",
-  "evidence": [
-    {
-      "file_name": "signed_receipt.pdf",
-      "content_type": "application/pdf",
-      "content_category": "RECEIPT",
-      "content": "JVBERi0xLjMKJcTl8uXrp/Og0MT..."
-    }
-  ]
-}
+```bash
+curl -X POST https://api-sandbox.y.uno/v1/payments/:payment_id/transactions/:transaction_id/dispute \
+  -H 'Content-Type: application/json' \
+  -H 'X-Idempotency-Key: <unique-key>' \
+  -H 'public-api-key: <your-public-api-key>' \
+  -H 'private-secret-key: <your-private-secret-key>' \
+  -d '{
+    "account_id": "<your-account-id>",
+    "evidence": [
+      {
+        "file_name": "signed_receipt.pdf",
+        "content_type": "application/pdf",
+        "content_category": "RECEIPT",
+        "content": "JVBERi0xLjMKJcTl8uXrp/Og0MT..."
+      }
+    ]
+  }'
 ```
 
 The endpoint returns a standard payment response structure containing the updated payment information, including the chargeback/dispute status.
@@ -190,3 +187,24 @@ If you need to add additional evidence to an existing dispute, you can use the [
 </Info>
 
 Please refer to the [Disputes API](/reference/disputes) and [Update Dispute API](/reference/update-dispute) reference sections for more information.
+
+## Sandbox testing notes
+
+<Note>
+**Sandbox observations (2026-10-02)**
+
+The following behaviors were observed in sandbox testing. They reflect current sandbox behavior, not a guarantee of production behavior or future changes.
+
+**Checkout.com (evidence_required scenario)**
+- `POST` dispute evidence returned `201` and the payment moved to `IN_DISPUTE` / `PENDING_REVIEW`.
+- `PATCH` to update evidence returned `400 OPERATION_NOT_SUPPORTED`.
+
+**Yuno Testing Gateway**
+- Simulating a chargeback works (use description `SUCCEEDED+CHARGEBACK action_required`).
+- `POST` dispute evidence returned `400 OPERATION_NOT_SUPPORTED`. Evidence submission is not supported on the Testing Gateway.
+
+**Stripe**
+- A test dispute can exist at Stripe and still not appear as a Yuno `CHARGEBACK`. Webhook delivery and dispute sync timing vary by provider.
+
+For chargeback simulation setup, see [Yuno Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway#simulate-a-chargeback).
+</Note>
