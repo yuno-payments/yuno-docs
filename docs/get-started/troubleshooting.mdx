@@ -1,0 +1,47 @@
+---
+title: "Troubleshoot your integration"
+description: "Diagnose common Yuno integration problems with focused checks for authentication, checkout configuration, required actions, webhooks, and retries."
+---
+
+Start with the failing operation, its environment, the HTTP response, and the Yuno payment or session ID. Avoid sending another payment request until you understand whether the original request created a payment.
+
+## Find your symptom
+
+| Symptom | Check first | Next step |
+| --- | --- | --- |
+| Authentication fails | Public and private keys are present and belong to the same environment. | Check [authentication](/reference/getting-started/authentication) and [credentials](/docs/using-yuno/settings/developers-credentials). |
+| No payment methods appear | A connection exists, a route is published, and the method is enabled in checkout for the transaction context. | Repeat [account setup](/docs/how-yuno-works/step-1-set-up-your-account). |
+| Checkout session request returns 404 | The path is `/v1/checkout/sessions`, with two segments and plural `sessions`. | Compare with [Create Checkout Session](/reference/checkout-sessions/create-checkout-session). |
+| Session works but payment fails | Customer, account, order, amount, currency, session, and token belong to the same flow. | Compare with [Create Payment](/reference/payments/create-payment). |
+| SDK waits or checkout does not finish | A required action or SDK callback is incomplete. | Check `sdk_action_required` and your platform's continuation flow. |
+| Redirect says success but order is pending | Your server has not confirmed the final payment state. | Inspect [webhooks](/docs/webhooks/index) and [retrieve the payment](/reference/payments/retrieve-payment-by-id-v2). |
+| Metadata-based route does not match | Routing metadata is missing on the checkout session. | Send metadata when [creating the session](/reference/checkout-sessions/create-checkout-session). |
+| Webhook signature does not match | The body was parsed or re-serialized before verification, or the wrong secret is in use. | Use the raw bytes and the [configured HMAC secret](/docs/webhooks/verify-webhook-signatures-hmac). |
+| Webhook processing happens twice | The endpoint assumes each event arrives once. | Deduplicate deliveries and make order updates idempotent. |
+| Amount is too large | A minor-unit amount was sent as a major-unit value. | `value: 25` is USD 25.00. Validate against the stored order. |
+
+## Handle an uncertain request outcome
+
+If a request times out, loses its connection, or returns an unclear server error, **reuse the original `X-Idempotency-Key`**. Do not create a new payment attempt just because your client did not receive a response.
+
+- **Original payment returned:** handle that payment's current state.
+- **`REQUEST_IN_PROCESS`:** retry with the same key after a short delay.
+- **`IDEMPOTENCY_DUPLICATED`:** the key cannot be reused and no payment was created for it; correct the request before starting a new attempt.
+
+Follow the full [idempotency contract](/reference/getting-started/authentication#idempotency). For status and provider errors, use the [response-code reference](/reference/getting-started/response-codes).
+
+## Check the right environment
+
+Sandbox and production have different keys and configuration. Confirm the API host, Dashboard mode, account ID, and provider connection before comparing records. Review [environments](/docs/using-yuno/environments).
+
+## Ask for help with useful evidence
+
+Send [support@y.uno](mailto:support@y.uno) a concise description with:
+
+- Environment and approximate time, including timezone.
+- Endpoint and HTTP method, response status, and error code.
+- Payment or checkout session ID and your order reference, where appropriate.
+- SDK platform and version, expected behavior, and what happened instead.
+- Reproduction steps and sanitized request or response fields.
+
+**Remove private keys, credentials, raw card details, and unnecessary personal data.** Check [service status](https://status.y.uno) for current incidents and [SDK changelogs](/changelog/index) for relevant release notes.

@@ -1,0 +1,65 @@
+---
+title: "Go-live checklist"
+description: "Prepare a Yuno integration for production with checks for account activation, credentials, webhooks, payment outcomes, retries, and operations."
+---
+
+A successful sandbox payment is your starting point. Complete these checks with your engineering and operations teams before sending real transactions.
+
+## Account and payment configuration
+
+- [ ] Confirm Live Mode activation with Yuno. A new account's Test Mode access does not imply production activation.
+- [ ] Obtain production credentials and store the private secret key only in your server's secret manager.
+- [ ] Use the correct [production region and base URL](/docs/using-yuno/environments) for your account.
+- [ ] Confirm the live provider connections, countries, currencies, and payment methods you will launch.
+- [ ] Publish and review live routing and checkout settings. Do not assume sandbox configuration is live configuration.
+- [ ] Review [PCI compliance](/docs/security-and-compliance/pci-compliance) for your implementation and confirm applicable requirements with your team.
+
+## Payment correctness
+
+- [ ] Calculate amounts on the server using the order record. Use decimal major units consistently.
+- [ ] Keep account, order, customer, amount, and currency consistent between sessions and payments.
+- [ ] Complete SDK-required actions, including 3DS or redirect-based flows.
+- [ ] Confirm payment status on your backend before order fulfillment. Treat pending or unknown outcomes as unresolved.
+- [ ] Test authorization and capture separately when using a two-step flow.
+- [ ] Test refunds and cancellations with the provider and method combinations you will support.
+
+## Webhooks and retries
+
+- [ ] Configure your production HTTPS webhook endpoint for the required events.
+- [ ] Verify `x-hmac-signature` against the raw request body using the configured webhook secret.
+- [ ] Handle missing or malformed signatures safely. HMAC authentication alone does not prevent replay; deduplicate events.
+- [ ] Persist accepted events and process them reliably. Make order updates idempotent and handle delayed or repeated deliveries.
+- [ ] Preserve a payment attempt's `X-Idempotency-Key` across timeouts, connection errors, or ambiguous server errors.
+- [ ] Follow the documented handling for `REQUEST_IN_PROCESS` and `IDEMPOTENCY_DUPLICATED`.
+- [ ] Use payment retrieval for recovery or reconciliation when a webhook or request outcome is unclear.
+
+See [webhooks](/docs/webhooks/index), [signature verification](/docs/webhooks/verify-webhook-signatures-hmac), and [idempotency behavior](/reference/getting-started/authentication#idempotency).
+
+## Test beyond the happy path
+
+| Scenario | What your application must demonstrate |
+| --- | --- |
+| Approved payment | The backend confirms the expected outcome and fulfills once. |
+| Decline | The order remains unpaid and the customer can take an appropriate next step. |
+| Authentication or redirect | The customer completes the required action and the server confirms the resulting status. |
+| Pending asynchronous payment | The order waits for authoritative confirmation. |
+| Timeout after sending a request | Retrying with the same key does not create a duplicate payment attempt. |
+| Duplicate or delayed webhook | The event does not cause repeated fulfillment or overwrite a newer state incorrectly. |
+| Browser closes before completion | Backend processing and reconciliation still determine the outcome. |
+| Refund or cancellation | The provider result and internal order or ledger record remain consistent. |
+
+Use [Yuno Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway) and the relevant provider's testing instructions. Sandbox behavior does not establish every live provider's behavior.
+
+## Operations and launch
+
+- [ ] Log payment IDs, order IDs, status changes, and diagnostic correlation data without logging secrets or raw card details.
+- [ ] Set up monitoring for API failures, payment outcomes, and webhook processing failures.
+- [ ] Define who owns an incident and how to contact [Yuno support](mailto:support@y.uno).
+- [ ] Document a rollback or traffic-stop procedure and a reconciliation process for unresolved orders.
+- [ ] Complete your team's approved live verification plan after activation.
+- [ ] Record the launch owner, verification evidence, and the decision to enable traffic.
+
+<CardGroup cols={2}>
+  <Card title="Troubleshooting" icon="wrench" href="/docs/get-started/troubleshooting">Find the right next check when an integration behaves unexpectedly.</Card>
+  <Card title="Service status" icon="signal" href="https://status.y.uno">Check Yuno's current service information.</Card>
+</CardGroup>
