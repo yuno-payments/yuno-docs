@@ -38,7 +38,7 @@ For the full list of parameters and callbacks, see the [Web SDK Common Reference
 | `language`             | Language code for the UI (for example, `en`). Optional.                                |
 | `showLoading`          | Show loading spinner. Optional.                                                |
 | `onLoading`            | Callback: loading state updates. Optional.                                     |
-| `elementSelector`      | CSS selector where the enrollment form mounts. Optional.                       |
+| `elementSelector`      | CSS selector where the enrollment form mounts. Optional. Pass it inside `renderMode: { type: "element", elementSelector }`; at top level the SDK ignores it. |
 | `card`                 | Card form options. Optional.                                                   |
 | `enrollmentStatus` | Callback: enrollment ended; receives `vaultedToken` and `status`.              |
 | `issuersFormEnable`    | Show issuer (bank) list. Optional.                                             |
@@ -46,7 +46,7 @@ For the full list of parameters and callbacks, see the [Web SDK Common Reference
 
 ## full-checkout Enrollment (Web)
 
-Use full-checkout for a seamless integration with pre-built UI. Implement enrollment as follows.
+This flow uses `mountEnrollmentLite`, the enrollment method in the current Web SDK, which renders a pre-built enrollment form. Implement enrollment as follows.
 
 ### Step 1: Include the library in your project
 
@@ -72,9 +72,11 @@ const customerSession = await fetch(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+      "public-api-key": PUBLIC_API_KEY,
+      "private-secret-key": PRIVATE_SECRET_KEY,
     },
     body: JSON.stringify({
+      account_id: ACCOUNT_ID,
       customer_id: "your-customer-id",
       country: "US",
     }),
@@ -83,21 +85,25 @@ const customerSession = await fetch(
 
 // 2. Create enrollment payment method
 const enrollment = await fetch(
-  `https://api-sandbox.y.uno/v1/customers/sessions/${customerSession.id}/payment-methods`,
+  `https://api-sandbox.y.uno/v1/customers/sessions/${customerSession.customer_session}/payment-methods`,
   {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+      "public-api-key": PUBLIC_API_KEY,
+      "private-secret-key": PRIVATE_SECRET_KEY,
+      "X-Idempotency-Key": crypto.randomUUID(),
     },
     body: JSON.stringify({
-      type: "CARD",
+      account_id: ACCOUNT_ID,
+      payment_method_type: "CARD",
+      country: "US",
     }),
   }
 ).then((res) => res.json());
 
-// Return customerSession to your client
-return customerSession;
+// Return the customer session ID to your client
+return customerSession.customer_session;
 ```
 
 #### Client-side example
@@ -109,7 +115,7 @@ After receiving the `customerSession` from your server, initialize the Yuno SDK 
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 
 // Mount the enrollment form
-await yuno.mountEnrollment({
+await yuno.mountEnrollmentLite({
   customerSession, // Received from your server
   countryCode: "US",
   language: "en",
@@ -124,16 +130,16 @@ To verify cards (zero-value authorization) before enrollment, add the `verify` s
 
 ### Step 4: Mount the enrollment
 
-Use `await yuno.mountEnrollment()` with the parameters below.
+Use `await yuno.mountEnrollmentLite()` with the parameters below.
 
 | Parameter                         | Description                                                                                                                                                                                                                                       |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `customerSession`                 | Refers to the current enrollment's [customer session](/reference/customer-sessions-enrollment/create-customer-session). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`.                                                                                                              |
 | `countryCode`                     | Country for the payment process. Use an `ENUM` value; see [Country Coverage](/docs/sdks/resources/country-coverage).                                                                                                                                                   |
-| `language`                        | Language for payment forms. Use any code listed in [Supported languages](/docs/sdks/resources/languages-supported). Example: `en-US`. Defaults to browser language when available.                                                                                     |
+| `language`                        | Language for payment forms. Use any code listed in [Supported languages](/docs/sdks/resources/languages-supported). Example: `en`. Defaults to browser language when available.                                                                                     |
 | `showLoading`                     | Controls visibility of the Yuno loading/spinner page during the payment process.                                                                                                                                                                  |
 | `onLoading`                       | Required to receive notifications about server calls or loading events.                                                                                                                                                                           |
-| `elementSelector`                 | HTML element where the Yuno SDK is mounted.                                                                                                                                                                                                       |
+| `elementSelector`                 | HTML element where the Yuno SDK is mounted. Pass it inside `renderMode: { type: "element", elementSelector }`; at top level the SDK ignores it.                                                                                                                                                                                                       |
 | `card`                            | Define specific settings for the credit card form.                                                                                                                                                                                                |
 | `enrollmentStatus`            | Callback after enrollment ends; receives `vaultedToken` and `status`. Status options: `CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`. |
 | `issuersFormEnable`               | Enable the issuer's form (bank list).                                                                                                                                                                                                             |
@@ -143,7 +149,7 @@ Use `await yuno.mountEnrollment()` with the parameters below.
 The next code block presents an example of the Enrollment parameter configuration and mounting.
 
 ```javascript
-await yuno.mountEnrollment({
+await yuno.mountEnrollmentLite({
   customerSession: 'e15648b0-fcd5-4799-a14c-cc463ae8a133',
   /**
    * The complete list of country codes is available on /docs/sdks/resources/country-coverage
@@ -153,7 +159,7 @@ await yuno.mountEnrollment({
   - Language for payment forms (see Supported languages)
   - Defaults to browser language when available
   */
-  language: 'en-US',
+  language: 'en',
   /**
    * Hide or show the Yuno loading/spinner page
    * Default is true
@@ -167,7 +173,7 @@ await yuno.mountEnrollment({
    */
   onLoading: (args) => {
     console.log(args);
-  }
+  },
   /**
    *  API card
    *  @optional

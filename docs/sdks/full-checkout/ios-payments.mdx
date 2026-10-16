@@ -30,7 +30,7 @@ The first step is including the library in your project. You can add the Yuno iO
 Add to your Podfile:
 
 ```ruby
-pod 'YunoSDK', '~> 2.11.1'
+pod 'YunoSDK', '~> 2.27.0'
 ```
 
 Then run:
@@ -45,7 +45,7 @@ Add the package dependency:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.11.1"))
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.27.0"))
 ]
 ```
 
@@ -85,7 +85,7 @@ import YunoSDK
 Yuno.initialize(
     apiKey: "PUBLIC_API_KEY",
     config: YunoConfig(),
-    callback: { (value: Bool) in }
+    callback: { print("Yuno SDK initialized") }
 )
 ```
 
@@ -151,7 +151,7 @@ protocol YunoPaymentDelegate: AnyObject {
     func yunoPaymentResult(_ result: Yuno.Result)
 }
 
-class ViewController: UIViewController, YunoPaymentDelegate {
+class ViewController: UIViewController, @preconcurrency YunoPaymentDelegate {
     var checkoutSession: String { "438413b7-4921-41e4-b8f3-28a5a0141638" }
     var countryCode: String { "BR" }
     var language: String? { "en" }
@@ -226,7 +226,7 @@ protocol YunoPaymentFullDelegate: YunoPaymentDelegate {
     func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)
 }
 
-class ViewController: UIViewController, YunoPaymentFullDelegate {
+class ViewController: UIViewController, @preconcurrency YunoPaymentFullDelegate {
     // ... YunoPaymentDelegate implementation ...
 
     func yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected) {
@@ -248,17 +248,17 @@ class ViewController: UIViewController, YunoPaymentFullDelegate {
 Then call `getPaymentMethodViewAsync()` to retrieve the payment methods view:
 
 ```swift
-let paymentMethodsView = await Yuno.getPaymentMethodViewAsync(delegate: self)
+let paymentMethodsView: UIView = await Yuno.getPaymentMethodViewAsync(delegate: self)
 
 // Add the view to your UI
 // For UIKit:
 view.addSubview(paymentMethodsView)
 
 // For SwiftUI:
-// Use the returned view in your SwiftUI body
+// Annotate the result as `some View` instead of `UIView`
 ```
 
-The SDK automatically returns the correct view type:
+The SDK returns the view type that matches the type annotation:
 
 * **UIKit**: Returns a `UIView`
 * **SwiftUI**: Returns a `some View`
@@ -370,7 +370,7 @@ The SDK returns the payment result through the `yunoPaymentResult(_:)` delegate 
 
 ```swift
 func yunoPaymentResult(_ result: Yuno.Result) {
-    switch result {
+    switch result.status {
     case .succeeded:
         print("Payment succeeded")
         // Navigate to success screen
@@ -389,6 +389,8 @@ func yunoPaymentResult(_ result: Yuno.Result) {
     case .internalError:
         print("Internal error occurred")
         // Show error message
+    @unknown default:
+        break
     }
 }
 ```
