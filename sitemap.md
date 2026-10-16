@@ -107,6 +107,7 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [Statement descriptor on recurring payments](https://docs.y.uno/docs/payment-features/subscriptions/soft-descriptor.md)
 - [Pix Automático](https://docs.y.uno/docs/payment-features/subscriptions/pix-automatico.md)
 - [Process Stripe Billing subscriptions with Yuno](https://docs.y.uno/docs/payment-features/subscriptions/stripe-billing.md)
+- [Pay a Stripe invoice (top-ups)](https://docs.y.uno/docs/payment-features/subscriptions/stripe-billing-top-ups.md)
 - [Stored Credentials](https://docs.y.uno/docs/payment-features/stored-credentials.md)
 - [Card verification results (AVS & CVV)](https://docs.y.uno/docs/payment-features/card-verification-results.md)
 - [Transaction Retries](https://docs.y.uno/docs/payment-features/transaction-retries.md)
