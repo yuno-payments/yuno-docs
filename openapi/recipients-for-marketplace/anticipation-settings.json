@@ -1,0 +1,1036 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Recipient Anticipation Settings (Preview)",
+    "version": "1.0.0",
+    "description": "Disabled by default; requires provider-connection enablement. This draft does not announce provider availability."
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
+    }
+  ],
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "schemas": {
+      "AnticipationCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether anticipation is enabled. False is an explicit value."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FULL",
+              "1025",
+              "DAILY",
+              "1025_PERCENTAGE"
+            ],
+            "description": "Requested model. Availability depends on the enabled provider connection policy."
+          },
+          "delay": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365,
+            "description": "Delay in days, from 1 through 365. Zero is rejected, including when enabled is false. FULL forbids this field; DAILY requires it for a complete configuration. 1025 defaults to 15 when omitted in a complete configuration."
+          },
+          "volume_percentage": {
+            "type": "integer",
+            "enum": [
+              100
+            ],
+            "description": "Required only for 1025_PERCENTAGE. Other models forbid this field."
+          }
+        },
+        "description": "Null, duplicate and unknown fields are rejected. FULL forbids delay and volume_percentage, including when disabled. Model-specific requirements also apply.",
+        "required": [
+          "enabled",
+          "type"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "const": "FULL"
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "delay"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "volume_percentage"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "enum": [
+                    "1025",
+                    "DAILY"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "volume_percentage"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "DAILY"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "delay"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "1025_PERCENTAGE"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "volume_percentage"
+              ]
+            }
+          }
+        ],
+        "examples": [
+          {
+            "enabled": true,
+            "type": "FULL"
+          },
+          {
+            "enabled": true,
+            "type": "1025",
+            "delay": 1
+          },
+          {
+            "enabled": true,
+            "type": "1025_PERCENTAGE",
+            "delay": 30,
+            "volume_percentage": 100
+          }
+        ]
+      },
+      "AnticipationPatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether anticipation is enabled. False is an explicit value."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FULL",
+              "1025",
+              "DAILY",
+              "1025_PERCENTAGE"
+            ],
+            "description": "Requested model. Availability depends on the enabled provider connection policy."
+          },
+          "delay": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365,
+            "description": "Delay in days, from 1 through 365. Zero is rejected, including when enabled is false. FULL forbids this field; DAILY requires it for a complete configuration. 1025 defaults to 15 when omitted in a complete configuration. A type change drops inherited delay, even when switching to the 1025_PERCENTAGE alias."
+          },
+          "volume_percentage": {
+            "type": "integer",
+            "enum": [
+              100
+            ],
+            "description": "Required only for 1025_PERCENTAGE. Other models forbid this field."
+          }
+        },
+        "description": "Null, duplicate and unknown fields are rejected. FULL forbids delay and volume_percentage, including when disabled. Model-specific requirements also apply. Omitted fields merge only into confirmed settings. Without a confirmed base, send a complete configuration, including enabled and type. Any change to the type string drops inherited delay and volume_percentage, including 1025 to 1025_PERCENTAGE. Supply delay again to preserve it; 1025 and its alias otherwise default to 15.",
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "const": "FULL"
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "delay"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "volume_percentage"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "enum": [
+                    "1025",
+                    "DAILY"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "volume_percentage"
+                ]
+              }
+            }
+          }
+        ],
+        "examples": [
+          {
+            "enabled": false
+          },
+          {
+            "type": "1025",
+            "delay": 1
+          },
+          {
+            "enabled": true,
+            "type": "FULL"
+          }
+        ]
+      },
+      "AnticipationProjection": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether anticipation is enabled. False is an explicit value."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FULL",
+              "1025",
+              "DAILY"
+            ],
+            "description": "Confirmed canonical model, when available. The 100-percent alias is reported as 1025."
+          },
+          "delay": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 365,
+            "description": "Confirmed delay in days, when available. Zero is explicit."
+          },
+          "recipient_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "onboarding_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "confirmed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "provider_id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "application_status": {
+            "type": "string",
+            "enum": [
+              "WAITING_FOR_ELIGIBILITY",
+              "NOT_APPLIED",
+              "UNKNOWN",
+              "APPLIED",
+              "REJECTED"
+            ]
+          },
+          "operation_status": {
+            "type": "string",
+            "enum": [
+              "PREFLIGHT",
+              "DISPATCHING",
+              "UNKNOWN",
+              "QUARANTINED",
+              "APPLIED",
+              "REJECTED"
+            ]
+          },
+          "observed_state": {
+            "type": "string",
+            "enum": [
+              "CONFIGURED",
+              "UNASSOCIATED",
+              "UNAVAILABLE"
+            ]
+          },
+          "requested_settings": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether anticipation is enabled. False is an explicit value."
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "FULL",
+                  "1025",
+                  "DAILY",
+                  "1025_PERCENTAGE"
+                ],
+                "description": "Requested model. Availability depends on the enabled provider connection policy."
+              },
+              "delay": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 365,
+                "description": "Delay in days. Zero is explicit. FULL forbids this field; DAILY requires it for a complete configuration. 1025 defaults to 15 when omitted in a complete configuration."
+              },
+              "volume_percentage": {
+                "type": "integer",
+                "enum": [
+                  100
+                ],
+                "description": "Required only for 1025_PERCENTAGE. Other models forbid this field."
+              }
+            },
+            "description": "Requested intent; it does not prove application."
+          },
+          "historical_settings": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether anticipation is enabled. False is an explicit value."
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "FULL",
+                  "1025",
+                  "DAILY"
+                ],
+                "description": "Previous confirmed canonical model; the 100-percent alias is reported as 1025."
+              },
+              "delay": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 365,
+                "description": "Previous confirmed delay in days; not the current configuration."
+              }
+            },
+            "description": "Previous confirmation; it does not describe the current configuration."
+          }
+        },
+        "required": [
+          "recipient_id",
+          "onboarding_id",
+          "provider_id",
+          "application_status",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "description": "Top-level enabled/type/delay describe confirmed settings only when available. A disabled Pagar.me confirmation may contain enabled=false with no model fields. Read application_status and operation_status separately."
+      },
+      "AnticipationError": {
+        "type": "object",
+        "required": [
+          "code",
+          "messages"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Read the code, not only the HTTP status, to choose a retry action. ANTICIPATION_PROVIDER_REJECTED is recorded and final for this key, even with 502 or 503. The three upstream/edge failure codes leave the write outcome uncertain; retain the same key.",
+            "examples": [
+              "INVALID_PARAMETERS",
+              "RECIPIENT_NOT_FOUND",
+              "ANTICIPATION_SETTINGS_NOT_FOUND",
+              "ANTICIPATION_SETTINGS_ALREADY_EXIST",
+              "ANTICIPATION_UNSUPPORTED",
+              "ANTICIPATION_TARGET_INELIGIBLE",
+              "ANTICIPATION_TARGET_SHARED",
+              "ANTICIPATION_TARGET_CHANGED",
+              "ANTICIPATION_IDEMPOTENCY_CONFLICT",
+              "ANTICIPATION_OPERATION_IN_PROGRESS",
+              "ANTICIPATION_OPERATION_QUARANTINED",
+              "ANTICIPATION_PROVIDER_REJECTED",
+              "ANTICIPATION_SERVICE_UNAVAILABLE",
+              "ANTICIPATION_INVALID_RESPONSE",
+              "ANTICIPATION_UPSTREAM_AUTH_ERROR"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provider_http_status": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 599,
+            "description": "Optional safe provider status; never a raw provider response."
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/recipients/{recipient_id}/anticipation-settings": {
+      "post": {
+        "summary": "Create Anticipation Settings",
+        "operationId": "post-recipient-anticipation-settings",
+        "description": "Preview: requires explicit enablement for the provider connection. See the anticipation settings guide before use. Once admitted, the resource remains after rejection. A new attempt uses PATCH, a new key, and a complete configuration when no confirmed base exists.",
+        "parameters": [
+          {
+            "name": "recipient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Recipient owned by the authenticated account."
+          },
+          {
+            "name": "onboarding_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Exactly one onboarding selector. Repeated parameters are rejected."
+          },
+          {
+            "name": "X-Account-Code",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Authorized account containing the selected recipient."
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "Nonblank key for this logical write. Repeat the same method, target and body with the same key after an uncertain response."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Settings applied or verified to match the requested configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationProjection"
+                },
+                "example": {
+                  "recipient_id": "00000000-0000-4000-8000-000000000001",
+                  "onboarding_id": "00000000-0000-4000-8000-000000000002",
+                  "provider_id": "PAGARME",
+                  "revision": 1,
+                  "created_at": "2026-10-14T00:00:00Z",
+                  "updated_at": "2026-10-14T00:00:01Z",
+                  "application_status": "APPLIED",
+                  "operation_status": "APPLIED",
+                  "enabled": true,
+                  "type": "FULL",
+                  "requested_settings": {
+                    "enabled": true,
+                    "type": "FULL"
+                  }
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Application or execution remains uncertain. Read the settings with GET for the current state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationProjection"
+                },
+                "example": {
+                  "recipient_id": "00000000-0000-4000-8000-000000000001",
+                  "onboarding_id": "00000000-0000-4000-8000-000000000002",
+                  "provider_id": "PAGARME",
+                  "revision": 1,
+                  "created_at": "2026-10-14T00:00:00Z",
+                  "updated_at": "2026-10-14T00:00:01Z",
+                  "application_status": "UNKNOWN",
+                  "operation_status": "UNKNOWN",
+                  "requested_settings": {
+                    "enabled": true,
+                    "type": "FULL"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid selector, account header, write key or settings (INVALID_PARAMETERS), or recorded invalid-configuration rejection (ANTICIPATION_PROVIDER_REJECTED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Merchant authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient/onboarding is not accessible, or settings do not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Read the error code: unsupported capability/model; existing resource (POST); idempotency conflict; changed/shared/ineligible target; or unresolved/quarantined operation. A new key never bypasses a hold.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Recorded no-effect rejection, including typed provider rejection or a local timeout before mutation dispatch. Same-key replies are frozen.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Unusable upstream response or internal authentication failure; write outcome is uncertain. Retain the same key for a retry. Read the error code. ANTICIPATION_PROVIDER_REJECTED instead means a recorded no-effect rejection (for example unavailable preflight readback), final for this key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ANTICIPATION_PROVIDER_REJECTED is a recorded no-effect rejection, final for this key. ANTICIPATION_SERVICE_UNAVAILABLE leaves the outcome uncertain; retry with the same key or GET. HTTP status alone does not determine retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                },
+                "examples": {
+                  "recorded_rejection": {
+                    "summary": "Final for this key; resolve the cause, then PATCH with a new key",
+                    "value": {
+                      "code": "ANTICIPATION_PROVIDER_REJECTED",
+                      "messages": [
+                        "The anticipation operation was not applied."
+                      ],
+                      "provider_http_status": 503
+                    }
+                  },
+                  "uncertain_result": {
+                    "summary": "Keep the same key for retries; read GET for current state",
+                    "value": {
+                      "code": "ANTICIPATION_SERVICE_UNAVAILABLE",
+                      "messages": [
+                        "Unable to complete the anticipation settings request; retry with the same idempotency key or read the settings status."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnticipationCreate"
+              },
+              "examples": {
+                "full_configuration": {
+                  "value": {
+                    "enabled": true,
+                    "type": "FULL"
+                  }
+                },
+                "minimum_delay": {
+                  "value": {
+                    "enabled": true,
+                    "type": "1025",
+                    "delay": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get Anticipation Settings",
+        "operationId": "get-recipient-anticipation-settings",
+        "description": "Preview: requires explicit enablement for the provider connection. See the anticipation settings guide before use.",
+        "parameters": [
+          {
+            "name": "recipient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Recipient owned by the authenticated account."
+          },
+          {
+            "name": "onboarding_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Exactly one onboarding selector. Repeated parameters are rejected."
+          },
+          {
+            "name": "X-Account-Code",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Authorized account containing the selected recipient."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current local projection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationProjection"
+                },
+                "example": {
+                  "recipient_id": "00000000-0000-4000-8000-000000000001",
+                  "onboarding_id": "00000000-0000-4000-8000-000000000002",
+                  "provider_id": "PAGARME",
+                  "revision": 1,
+                  "created_at": "2026-10-14T00:00:00Z",
+                  "updated_at": "2026-10-14T00:00:01Z",
+                  "application_status": "APPLIED",
+                  "operation_status": "APPLIED",
+                  "enabled": true,
+                  "type": "FULL",
+                  "requested_settings": {
+                    "enabled": true,
+                    "type": "FULL"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid recipient/onboarding selector or account header.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Merchant authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient/onboarding is not accessible, or settings do not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Unusable upstream response or internal authentication failure; write outcome is uncertain. Retain the same key for a retry. Read the error code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unable to reach the settings service.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Anticipation Settings",
+        "operationId": "patch-recipient-anticipation-settings",
+        "description": "Preview: requires explicit enablement for the provider connection. See the anticipation settings guide before use. Once admitted, the resource remains after rejection. A new attempt uses PATCH, a new key, and a complete configuration when no confirmed base exists.",
+        "parameters": [
+          {
+            "name": "recipient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Recipient owned by the authenticated account."
+          },
+          {
+            "name": "onboarding_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Exactly one onboarding selector. Repeated parameters are rejected."
+          },
+          {
+            "name": "X-Account-Code",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Authorized account containing the selected recipient."
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "Nonblank key for this logical write. Repeat the same method, target and body with the same key after an uncertain response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated settings applied or verified to match.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationProjection"
+                },
+                "example": {
+                  "recipient_id": "00000000-0000-4000-8000-000000000001",
+                  "onboarding_id": "00000000-0000-4000-8000-000000000002",
+                  "provider_id": "PAGARME",
+                  "revision": 1,
+                  "created_at": "2026-10-14T00:00:00Z",
+                  "updated_at": "2026-10-14T00:00:01Z",
+                  "application_status": "APPLIED",
+                  "operation_status": "APPLIED",
+                  "enabled": true,
+                  "type": "FULL",
+                  "requested_settings": {
+                    "enabled": true,
+                    "type": "FULL"
+                  }
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Application or execution remains uncertain. Read the settings with GET for the current state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationProjection"
+                },
+                "example": {
+                  "recipient_id": "00000000-0000-4000-8000-000000000001",
+                  "onboarding_id": "00000000-0000-4000-8000-000000000002",
+                  "provider_id": "PAGARME",
+                  "revision": 1,
+                  "created_at": "2026-10-14T00:00:00Z",
+                  "updated_at": "2026-10-14T00:00:01Z",
+                  "application_status": "UNKNOWN",
+                  "operation_status": "UNKNOWN",
+                  "requested_settings": {
+                    "enabled": true,
+                    "type": "FULL"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid selector, account header, write key or settings (INVALID_PARAMETERS), or recorded invalid-configuration rejection (ANTICIPATION_PROVIDER_REJECTED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Merchant authentication failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient/onboarding is not accessible, or settings do not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Read the error code: unsupported capability/model; existing resource (POST); idempotency conflict; changed/shared/ineligible target; or unresolved/quarantined operation. A new key never bypasses a hold.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Recorded no-effect rejection, including typed provider rejection or a local timeout before mutation dispatch. Same-key replies are frozen.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Unusable upstream response or internal authentication failure; write outcome is uncertain. Retain the same key for a retry. Read the error code. ANTICIPATION_PROVIDER_REJECTED instead means a recorded no-effect rejection (for example unavailable preflight readback), final for this key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "ANTICIPATION_PROVIDER_REJECTED is a recorded no-effect rejection, final for this key. ANTICIPATION_SERVICE_UNAVAILABLE leaves the outcome uncertain; retry with the same key or GET. HTTP status alone does not determine retry behavior.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnticipationError"
+                },
+                "examples": {
+                  "recorded_rejection": {
+                    "summary": "Final for this key; resolve the cause, then PATCH with a new key",
+                    "value": {
+                      "code": "ANTICIPATION_PROVIDER_REJECTED",
+                      "messages": [
+                        "The anticipation operation was not applied."
+                      ],
+                      "provider_http_status": 503
+                    }
+                  },
+                  "uncertain_result": {
+                    "summary": "Keep the same key for retries; read GET for current state",
+                    "value": {
+                      "code": "ANTICIPATION_SERVICE_UNAVAILABLE",
+                      "messages": [
+                        "Unable to complete the anticipation settings request; retry with the same idempotency key or read the settings status."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnticipationPatch"
+              },
+              "examples": {
+                "full_configuration": {
+                  "value": {
+                    "enabled": true,
+                    "type": "FULL"
+                  }
+                },
+                "minimum_delay": {
+                  "value": {
+                    "enabled": true,
+                    "type": "1025",
+                    "delay": 1
+                  }
+                },
+                "disable": {
+                  "value": {
+                    "enabled": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
