@@ -122,7 +122,7 @@ class CheckoutActivity :
     }
 
     override fun onStatus(status: TransactionStatus) {
-        // status.status: "SUCCEEDED" / "REJECT" / "FAIL" / "PROCESSING" / "INTERNAL_ERROR" / "USER_CANCEL"
+        // status.status: "SUCCEEDED" / "DECLINED" / "REJECTED" / "ERROR" / "PENDING" / "INTERNAL_ERROR" / "USER_CANCEL"
     }
 }
 ```
@@ -156,7 +156,7 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | Full | Unified | Change | What to do |
 |---|---|---|---|
 | Lambdas passed to `startCheckout` (`callbackOTT`, `callbackPaymentState`, `callBackTokenWithInformation`) | `TransactionController` + `PaymentListController` | Renamed | Three separate lambdas collapse into the `TransactionController` interface; you implement only the methods you need. The list events go to `PaymentListController`, which you can implement on the same class, as in the example above. Pass it as `TransactionConfig.controller` and as the `controller` of `getPaymentMethodsViews`. The SDK does not retain it: keep it alive for the whole transaction. |
-| `callbackPaymentState: (state, subState) -> Unit` | `onStatus(status: TransactionStatus)` | Renamed | Still the single outcome callback, once per transaction, also when the SDK shows its result screen. The raw `(state, subState)` pair becomes a `TransactionStatus` object: `status` and `substatus` come from the backend, with the same values as before except `CANCELED_BY_USER`, renamed `USER_CANCEL`. The SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `callbackPaymentState: (state, subState) -> Unit` | `onStatus(status: TransactionStatus)` | Renamed | Still the single outcome callback, once per transaction, also when the SDK shows its result screen. The raw `(state, subState)` pair becomes a `TransactionStatus` object: `status` and `substatus` come from the backend, as the backend returns them. The legacy `REJECT`, `FAIL` and `PROCESSING` strings are no longer emitted: handle `DECLINED`, `REJECTED`, `ERROR` and `PENDING` instead. `CANCELED_BY_USER` is now `USER_CANCEL`. The SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
 | `callbackOTT` / `callBackTokenWithInformation` | `createPayment(token: Map<String, Any>)` | Renamed | Optional. In Full these fired in the headless variant only. If you used them, override it: one handler replaces both lambdas and `token` is the full One-Time Token as a map. Create the payment and return; the SDK then polls the status, runs 3DS if needed and calls `onStatus`. If the handler throws, the flow stops and `onStatus` is not called, so show the error yourself. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment) and [Headless migration](/docs/yuno-sdk/migration/android/payment/headless). |
 | *(selection kept inside the SDK)* | `onPaymentSelected(paymentSelected)` on `PaymentListController` | New | Required. Store the `PaymentMethodSelected` it gives you and do not start the transaction there: `start` needs it from your own Pay button (see Entry points). |
 

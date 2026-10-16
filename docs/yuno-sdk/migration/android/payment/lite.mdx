@@ -94,11 +94,12 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
     override fun onStatus(status: TransactionStatus) {
         when (status.status) {
             "SUCCEEDED"      -> println("Success")
-            "REJECT"         -> println("Rejected")
-            "FAIL"           -> println("Failed")
-            "PROCESSING"     -> println("Processing")
+            "DECLINED"       -> println("Declined")
+            "REJECTED"       -> println("Rejected")
+            "ERROR"          -> println("Error")
+            "PENDING"        -> println("Pending")
             "INTERNAL_ERROR" -> println("Internal error")
-            "USER_CANCEL" -> println("User cancelled")
+            "USER_CANCEL"    -> println("User cancelled")
         }
     }
 
@@ -149,7 +150,7 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | Lite | Unified | Change | What to do |
 |---|---|---|---|
 | Lambdas passed to `startCheckout` (`callbackPaymentState`, `callbackOTT`) | `TransactionController` | Renamed | Lambdas become an interface: implement `TransactionController` on whichever class you keep around for the duration of the transaction (your `Activity`, `ViewModel`, or a dedicated state holder) and pass it as `TransactionConfig.controller`. The SDK does not retain it: keep it alive for the whole transaction. |
-| `callbackPaymentState: (state, subState) -> Unit` | `onStatus(status: TransactionStatus)` | Renamed | Still the single outcome callback, once per transaction on the terminal status, also when the SDK shows its result screen, so you can drive your own UI on top. The raw `(state, subState)` string pair becomes a `TransactionStatus` object: `status` and `substatus` come from the backend, with the same values as before except `CANCELED_BY_USER`, renamed `USER_CANCEL` for cross-platform parity (the only value-level change); `subState` maps 1-to-1 to `substatus`. The SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `callbackPaymentState: (state, subState) -> Unit` | `onStatus(status: TransactionStatus)` | Renamed | Still the single outcome callback, once per transaction on the terminal status, also when the SDK shows its result screen, so you can drive your own UI on top. The raw `(state, subState)` string pair becomes a `TransactionStatus` object: `status` and `substatus` come from the backend, as the backend returns them. The legacy `REJECT`, `FAIL` and `PROCESSING` strings are no longer emitted: handle `DECLINED`, `REJECTED`, `ERROR` and `PENDING` instead. `CANCELED_BY_USER` is now `USER_CANCEL`; `subState` maps 1-to-1 to `substatus`. The SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
 | `callbackOTT: (String?) -> Unit` | `createPayment(token: Map<String, Any>)` | Renamed | Optional. In Lite this lambda only fired in the headless variant; for the SDK-managed Lite flow you do not need it. If your backend creates the payment, override it: `token` is the full One-Time Token as a map, not just the token string. Create the payment and return; the SDK then polls the status, runs 3DS if needed and calls `onStatus`. If the handler throws, the flow stops and `onStatus` is not called, so show the error yourself. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment) and [Headless migration](/docs/yuno-sdk/migration/android/payment/headless). |
 | *(none)* | `showLoading(isLoading: Boolean)` | New | Optional. Lite had no loader callback: the SDK always showed its own loader. It still does unless you override `showLoading`; once overridden, the SDK hides its own loader and reports the state to you. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
 

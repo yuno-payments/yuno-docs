@@ -115,7 +115,7 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 
     // 3. Final status arrives through onStatus
     override fun onStatus(status: TransactionStatus) {
-        // status.status: "SUCCEEDED" / "REJECT" / ...
+        // status.status: "SUCCEEDED" / "REJECTED" / ...
     }
 
     fun onPayButton() {
@@ -145,7 +145,7 @@ Grouped in the order you edit the code. **Renamed**: same role, new name. **Move
 | Render | Unified | Change | What to do |
 |---|---|---|---|
 | `YunoPaymentRenderListener` | `TransactionController` | Renamed | Implement the same class and pass it as `TransactionConfig.controller` (it was the `controller` argument of `startPaymentRender`). The SDK does not retain it: keep it alive for the whole transaction. |
-| `returnStatus(resultCode, paymentStatus, paymentSubStatus)` | `onStatus(status: TransactionStatus)` | Renamed | Still the single outcome callback, once per transaction, also when the SDK shows its result screen. `resultCode` (the `PAYMENT_RESULT_*` ints) is dropped: branch on `status.status` instead. The status string is now wrapped in a `TransactionStatus` object whose `status` and `substatus` come from the backend, with the same values as before except `CANCELED_BY_USER`, renamed `USER_CANCEL`; the SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `returnStatus(resultCode, paymentStatus, paymentSubStatus)` | `onStatus(status: TransactionStatus)` | Renamed | Still the single outcome callback, once per transaction, also when the SDK shows its result screen. `resultCode` (the `PAYMENT_RESULT_*` ints) is dropped: branch on `status.status` instead. The status string is now wrapped in a `TransactionStatus` object whose `status` and `substatus` come from the backend, as the backend returns them. The legacy `REJECT`, `FAIL` and `PROCESSING` strings are no longer emitted: handle `DECLINED`, `REJECTED`, `ERROR` and `PENDING` instead. `CANCELED_BY_USER` is now `USER_CANCEL`; the SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
 | `returnOneTimeToken(oneTimeToken, additionalData)` | `createPayment(token: Map<String, Any>)` | Renamed | Optional. It only fired in the headless-render variant, so it is only relevant for the non-seamless headless path. If you used it, override `createPayment`: `token` is the full One-Time Token as a map. Create the payment and return. If the handler throws, the flow stops and `onStatus` is not called, so show the error yourself. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment) and [Headless migration](/docs/yuno-sdk/migration/android/payment/headless). |
 | `loadingListener(isLoading)` | `showLoading(isLoading)` | Renamed | Same semantics. Render is the legacy mode where the loader callback was actually invoked, so existing Render integrations almost certainly need to migrate this. Once overridden, the SDK hides its own loader and reports the state to you. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
 
