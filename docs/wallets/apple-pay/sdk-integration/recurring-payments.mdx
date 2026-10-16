@@ -1,0 +1,184 @@
+---
+title: "Recurring payments"
+description: "Set up Apple Pay subscriptions with the Yuno SDK: a customer-initiated transaction that vaults the token, then merchant-initiated charges."
+---
+
+Recurring payments use both Customer‑Initiated (CIT) and Merchant‑Initiated (MIT) transactions. The overall flow is:
+
+1. Create a checkout session with the `recurring_payment` object.
+2. Perform a CIT to authorize and vault the customer's payment method.
+3. Then use the returned `vaulted_token` for subsequent MIT charges.
+
+## Create checkout session for recurring payments
+
+Before creating the transaction, you need to create the checkout session with the `recurring_payment` object populated in your checkout session request:
+
+**Free trial:** When offering a free trial period, set the root `amount.value` to `0` and include the `trial_billing` object as shown in the example below. The actual recurring charge is defined in `regular_billing`, which informs the customer of the amount they will be billed once the trial ends.
+
+```json
+{
+  "account_id": "123444",
+  "merchant_order_id": "12333",
+  "country": "US",
+  "callback_url": "https://your-callback-url.com",
+  "customer_id": "12333",
+  "amount": {
+    "currency": "EUR",
+    "value": 2000
+  },
+  "checkout_session": {
+    "payment_description": "Basic Plan — 3-day free trial",
+    "workflow": "SDK_CHECKOUT"
+  },
+  "recurring_payment": {
+    "description": "Basic Plan",
+    "management_url": "https://yourURL.com/subscriptions",
+    "billing_agreement": "After your 3-day free trial ends, you will be charged EUR 11.99/month until you cancel. Cancel anytime via account settings or by contacting support@test.com.",
+    "regular_billing": {
+      "label": "Monthly Plan",
+      "amount": 11.99,
+      "interval_unit": "month",
+      "interval_count": 1
+    },
+    "trial_billing": {
+      "label": "3-Day Free Trial",
+      "amount": 0,
+      "interval_unit": "day",
+      "interval_count": 3
+    },
+    "availability": {
+      "start_at": "2026-09-13T20:00:00Z",
+      "finish_at": "2026-09-30T16:10:00Z"
+    }
+  }
+}
+```
+
+## Customer Initiated Transaction (CIT)
+
+The CIT is the initial transaction where the customer authorizes recurring payments, such as when they subscribe to a monthly service. This transaction requires customer interaction and generates a token for future MIT transactions.
+
+The following example shows a complete CIT request:
+
+```json
+{
+  "account_id": "62fa3145-1408-4044-a599-caa0c2159782",
+  "amount": {
+    "currency": "USD",
+    "value": 2000
+  },
+  "checkout": {
+    "session": "0793c7a5-79c6-40d6-aa5f-13e4e9bdf169"
+  },
+  "payment_method": {
+    "vault_on_success": true,
+    "type": "APPLE_PAY",
+    "token": "684f1f66-5322-4c84-a0b63d",
+    "detail": {
+      "wallet": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "FIRST"
+        },
+        "verify": true
+      }
+    }
+  },
+  "customer_payer": {
+    "id": "070a34cb-4649-4a4e-b231-065a53060379",
+    "nationality": "CO",
+    "browser_info": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15",
+      "accept_header": "application/json",
+      "accept_content": "*/*",
+      "accept_browser": "*/*",
+      "color_depth": "5",
+      "screen_height": "8",
+      "screen_width": "8",
+      "javascript_enabled": true,
+      "java_enabled": false,
+      "browser_time_difference": "300",
+      "language": "en",
+      "platform": "WEB"
+    }
+  },
+  "merchant_order_id": "merchant-order-123",
+  "country": "US",
+  "description": "Apple Pay recurring setup",
+  "workflow": "SDK_CHECKOUT"
+}
+```
+
+The key parameters for a CIT are:
+
+- **`vault_on_success: true`**: This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
+- **`customer_payer.id`**: Required together with `vault_on_success`. It must reference an existing customer (create it first with [Create Customer](/reference/customers/create-customer)). Without it the payment still succeeds but nothing is vaulted: the response carries an empty `vaulted_token` and no error
+- **`detail.wallet.stored_credentials.usage: "FIRST"`**: Indicates this is the initial transaction in a recurring series
+- **`verify`**: When `true`, enables a card verification flow through the wallet (for example, a zero-dollar authorization) instead of a regular payment charge.
+
+<Note>
+  Set `verify: true` for free trial flows where `amount` is `0`. Omit the field for standard paid CITs.
+</Note>
+
+<Warning>
+  Do not place `stored_credentials` under `detail.card` on the CIT. It is not validated for a wallet payment, and the two-step Apple Pay flow does not carry it into the saved payment method, which leaves the record without stored-credential flags and without a `network_transaction_id`.
+</Warning>
+
+<Note>
+  The `vaulted_token` is returned only in the CIT payment response. Wallet-vaulted instruments are intentionally not included in [Retrieve Enrolled Payment Methods](/reference/retrieve-enrolled-payment-methods-api), so don't rely on the customer's payment-methods list to rediscover the token — store it (with any display metadata you need) when the CIT succeeds. A stored token can still be resolved individually with [Retrieve Enrolled Payment Method by ID](/reference/retrieve-enrolled-payment-method-by-id-api). See [Stored Credentials](/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
+</Note>
+
+## Merchant Initiated Transaction (MIT)
+
+MIT transactions are processed automatically for subsequent billing cycles using the token generated during the CIT.
+
+The following example shows a complete MIT request:
+
+```json
+{
+  "account_id": "account-id",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  },
+  "payment_method": {
+    "vaulted_token": "98c16e23-ebdd-4d0f-85bd-e0ba7d2fedf6",
+    "detail": {
+      "card": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED"
+        }
+      }
+    },
+    "type": "CARD"
+  },
+  "customer_payer": {
+    "id": "customer-id"
+  },
+  "merchant_order_id": "recurring-order-456",
+  "country": "US",
+  "description": "Apple Pay recurring payment",
+  "workflow": "DIRECT"
+}
+```
+
+The key parameters for an MIT are:
+
+- **`vaulted_token`**: The token returned in the CIT response; used to charge the customer in subsequent billing cycles without requiring re-authorization
+- **`type: "CARD"`**: The vaulted instrument is a card record. `"APPLE_PAY"` is also accepted together with a `vaulted_token`
+- **`detail.card.stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
+- **`workflow: "DIRECT"`**: A server-to-server charge; no checkout session and no `payment_token` are needed
+
+Monitor payment status through [webhooks](/docs/webhooks) to handle edge cases and provide customer notifications.
+
+## Subscription management URL
+
+For SDK recurring payments, you must provide a subscription management URL where customers can manage and cancel their subscription. Include it in your customer communications.
+
+## Related documentation
+
+- [Setup and one-time payments](/docs/wallets/apple-pay/apple-pay-sdk-integration)
+- [Stored credentials](/docs/payment-features/stored-credentials)
+- [Subscription management](/docs/subscriptions)
+- [Webhooks](/docs/webhooks)

@@ -35,6 +35,8 @@ Check these points against your use case before you integrate:
 | Disputes | None | Handles them in Yuno | Receives them from the provider |
 | Dunning emails and card-update flow | None | Owns | Vaults the new card and updates Stripe |
 
+To collect the payment of one specific Stripe invoice instead, such as a balance top-up, see [Pay a Stripe invoice (top-ups)](/docs/payment-features/subscriptions/stripe-billing-top-ups).
+
 ## How it works
 
 Stripe's [third-party payment processing](https://docs.stripe.com/billing/subscriptions/third-party-payment-processing) mode lets an external processor execute the charges for Billing subscriptions. Yuno is that processor.
@@ -250,9 +252,11 @@ Two things in the Stripe dashboard look wrong and are not:
 * **A canceled payment on every invoice.** Stripe creates its own PaymentIntent for each `charge_automatically` invoice and cancels it once Yuno reports the payment. Each invoice carries a `Canceled` entry next to the Yuno one. Stripe documents this as expected behavior. It changes neither the invoice nor the subscription status.
 * **One payment entry per invoice, not one per attempt.** Yuno reports each retry against the existing payment record. A recovered invoice shows one payment with the history of its attempts, not one failed entry plus one succeeded entry.
 
+If it is enabled for your organization, the `metadata` you send is also copied onto the Stripe payment records. See [Your payment metadata on the Stripe payment record](/docs/payment-features/subscriptions/stripe-billing-top-ups#your-payment-metadata-on-the-stripe-payment-record).
+
 ## Refunds
 
-Refund through the Yuno API or dashboard as with any payment. Yuno reports the refund to Stripe and creates the matching **credit note**, so your Stripe records stay consistent. Full and partial refunds are supported.
+Refund through the Yuno API or dashboard as with any payment. Yuno reports the refund to Stripe and creates the matching **credit note**, so your Stripe records stay consistent. Full and partial refunds are supported. For payments made with `external_invoice` (top-ups), see [Refunds](/docs/payment-features/subscriptions/stripe-billing-top-ups#refunds).
 
 ## Disputes
 
@@ -312,6 +316,27 @@ Stripe counts the volume Yuno processes toward your total Stripe Billing volume 
 | Renewals stop and no error appears anywhere | The invoice has `auto_advance: false`, so Stripe never sends `invoice.payment_attempt_required` | Set `auto_advance` back to `true` |
 | Renewals appear in Stripe but not in Yuno | The customer switched to a Stripe-supported payment method in the customer portal | Turn off payment method updates in the portal and collect a new card through Yuno |
 | A `Canceled` payment sits next to each reported payment | Stripe cancels its own PaymentIntent once Yuno reports the payment | Expected behavior, no action needed |
+
+## PayPal
+
+You can collect subscription payments with PayPal through the Stripe billing integration. The first payment saves the customer's PayPal account, and each renewal charges that saved account.
+
+PayPal is enabled per organization: your Technical Account Manager turns it on after the steps below.
+
+### Before you start
+
+Complete these steps with your Technical Account Manager (TAM):
+
+1. **Share your PayPal account details.** For both sandbox and live: your PayPal Merchant ID (the payer ID shown in your PayPal dashboard), the business vertical PayPal assigned to your account, and whether PayPal flags your account as high risk. Your TAM sets them on your PayPal connection in Yuno. PayPal subscription payments can't be processed without them.
+2. **Enable Vault on PayPal.** In the PayPal apps connected to Yuno, sandbox and live, enable Vault (save payment methods). Renewals charge the saved PayPal account, so Vault is required.
+3. **Create a "PayPal" custom payment method in Stripe.** In the Stripe Dashboard, go to **Settings → Payment methods → Custom payment methods** and create one named **PayPal**. If you want card payments to show as **Card**, create a "Card" one as well. Do this in both live mode and test mode, and send the IDs (they start with `cpmt_`) to your TAM.
+
+Yuno registers these IDs and runs a test on your sandbox before PayPal is enabled in live.
+
+### What to expect
+
+- Subscription payments and renewals made with PayPal appear in Stripe under the **PayPal** payment method name. Top-up payments appear as **Yuno**.
+- PayPal can't verify an account with a 0.00 payment, as cards do. When a subscription starts with a trial, send a payment of 1.00 in the subscription's currency, with the subscription's `external_subscription` object. Yuno refunds it automatically and doesn't report it to Stripe as a payment. This is enabled per organization; until it is, the 1.00 is not refunded automatically.
 
 ## Not supported in this mode
 

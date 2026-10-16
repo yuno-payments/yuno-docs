@@ -1,0 +1,350 @@
+---
+title: "Express checkout"
+description: "Show an order breakdown, offer shipping methods, and react to shipping address changes on the Apple Pay sheet using the iOS or Web SDK."
+---
+
+Available from Yuno iOS SDK 2.24.0 and Yuno Web SDK 1.10.8.
+
+Order breakdown, shipping address updates, and a shipping method selector turn the Apple Pay sheet into an express checkout:
+
+- **Order breakdown**: show subtotal, shipping, taxes, and discounts instead of a single total.
+- **Shipping address updates**: recalculate the order when the customer picks or changes their shipping address, without leaving the sheet.
+- **Shipping method selector**: let the customer choose Standard, Express, or Same-day on the sheet, with instant price updates.
+
+Each capability is opt-in. If you don't use them, your Apple Pay integration works exactly as before.
+
+## Requirements
+
+| Requirement | Value |
+|---|---|
+| Yuno iOS SDK | 2.24.0 or newer |
+| Yuno Web SDK | 1.10.8 or newer |
+| Apple Pay | [Set up](/docs/wallets/apple-pay/apple-pay-sdk-integration) in your app and enabled on your Yuno account |
+| Shipping address on the sheet | Requested automatically as soon as the session has `shipping_methods` or your app registers the handler, on both platforms. You don't need to enable it in the Checkout Builder. |
+
+## How it works
+
+1. Your backend adds `summary_items` and/or `shipping_methods` when it creates the checkout session.
+2. Your app registers `onShippingAddressChanged`: on iOS on the delegate it already passes to the payment flow, on the Web in `externalButtons` when it starts the checkout.
+3. On the Apple Pay sheet, switching shipping method updates the price instantly without calling your app. Picking or changing the shipping address calls your handler, so you can return new totals, new methods, or an error.
+4. After the customer authorizes, the one-time token includes a `shipping` object with the selected method and the full address.
+
+Two rules apply everywhere:
+
+- Every `summary_items` list must end with the grand total. Its `amount` is the total shown on the sheet, and its `label` is shown next to it as the payee line (we recommend your store name).
+- All amounts must use the session currency. A different currency makes the SDK ignore that breakdown or response.
+
+## Step 1: Show an order breakdown (backend only)
+
+Add `summary_items` when you [create the checkout session](/reference/create-checkout-session):
+
+```json
+{
+  "amount": { "currency": "USD", "value": 108.00 },
+  "customer_id": "customer-uuid",
+  "merchant_order_id": "order-123",
+  "country": "US",
+  "summary_items": [
+    { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+    { "id": "tax", "label": "Tax", "amount": { "currency": "USD", "value": 8.00 } },
+    { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 108.00 } }
+  ]
+}
+```
+
+The sheet now shows the breakdown with the total labeled "ACME Inc.". No app code is needed.
+
+- The last entry is displayed as the grand total and its label as the payee line.
+- Discounts can be negative, for example `-5.00`.
+- When you also send `shipping_methods` (Step 2), the sheet opens with the first method's breakdown and this list is ignored.
+- Without `summary_items` and without `shipping_methods`, the sheet shows a single line with the session amount.
+
+## Step 2: Offer shipping methods on the sheet
+
+Add `shipping_methods` to the checkout session. Each method has its own `summary_items`, so the sheet can update the price as soon as the customer switches method:
+
+```json
+"shipping_methods": [
+  {
+    "id": "standard",
+    "label": "Standard shipping",
+    "detail": "Arrives in 3-5 business days",
+    "amount": { "currency": "USD", "value": 5.00 },
+    "delivery_estimate": { "from": "2026-10-12", "to": "2026-10-14" },
+    "summary_items": [
+      { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+      { "id": "shipping", "label": "Shipping", "amount": { "currency": "USD", "value": 5.00 } },
+      { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 105.00 } }
+    ]
+  },
+  {
+    "id": "express",
+    "label": "Express shipping",
+    "detail": "Arrives in 1-2 business days",
+    "amount": { "currency": "USD", "value": 12.00 },
+    "summary_items": [
+      { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+      { "id": "shipping", "label": "Shipping", "amount": { "currency": "USD", "value": 12.00 } },
+      { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 112.00 } }
+    ]
+  }
+]
+```
+
+- The first method is preselected and its breakdown is the one the sheet opens with.
+- `label` is the option name and `detail` its description. Apple Pay shows the price next to the option.
+- Switching methods never calls your app or your backend. The total comes from that method's `summary_items`. A method without a breakdown keeps the totals already on the sheet.
+- `delivery_estimate` is a `from` and `to` pair of `YYYY-MM-DD` dates. It is rendered as a date range next to the option on iOS 15 and later, and on the Web on browsers that support Apple Pay JS version 12 (Safari 15 and later). A reversed or malformed range is not shown.
+- The sheet accepts up to 100 methods, 100 summary items, and 100 items per method. Above that, the iOS SDK opens the sheet without shipping methods, and the Web SDK does not open the sheet and reports an error.
+
+## Step 3: React to shipping address changes
+
+Register `onShippingAddressChanged` when you start the flow. Your handler receives the redacted address and answers with new totals, new methods, an error, or nothing to keep the sheet as it is.
+
+<Tabs>
+<Tab title="iOS">
+
+Conform the delegate you already pass to the payment flow to `YunoShippingDelegate` and implement `onShippingAddressChanged`. It works with every flow that takes a `YunoPaymentDelegate`: `startCheckout`, `startPaymentLite`, and the payment methods list of Full mode.
+
+```swift
+import YunoSDK
+
+final class CheckoutDelegate: YunoShippingDelegate {
+
+    // ... your YunoPaymentDelegate implementation (checkoutSession, countryCode, yunoPaymentResult, ...)
+
+    func onShippingAddressChanged(
+        _ paymentMethodType: String,
+        shippingInfo: YunoShippingInfo
+    ) async -> YunoShippingUpdate? {
+        // paymentMethodType is "APPLE_PAY"
+        await myShippingService.quote(shippingInfo.shippingAddress) // a YunoShippingUpdate, or nil to keep the current values
+    }
+}
+```
+
+If you don't use `async`, or you integrate from Objective-C, implement the completion-based variant that `YunoPaymentDelegate` declares as optional instead:
+
+```swift
+func onShippingAddressChanged(
+    paymentMethodType: String,
+    shippingInfo: YunoShippingInfo,
+    completion: @escaping (YunoShippingUpdate?) -> Void
+) {
+    myShippingService.quote(shippingInfo.shippingAddress) { quote in
+        completion(quote)
+    }
+}
+```
+
+Implement one of the two. When both exist, the SDK calls the `async` one.
+
+</Tab>
+<Tab title="Web">
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session,
+  countryCode: 'US',
+  yunoCreatePayment: (oneTimeToken) => { /* create the payment on your server */ },
+  externalButtons: {
+    onShippingAddressChanged: async ({ paymentMethodType, shippingInfo }) => {
+      // paymentMethodType is "APPLE_PAY"
+      return await myShippingService.quote(shippingInfo.shippingAddress) // a ShippingUpdate, or null to keep the current values
+    },
+  },
+})
+```
+
+The same `externalButtons.onShippingAddressChanged` option exists in `startSeamlessCheckout`. The handler is shared with Google Pay on the Web: when the customer pays with Google Pay it is called with `paymentMethodType: "GOOGLE_PAY"`, so branch on that value if you quote differently per wallet.
+
+</Tab>
+</Tabs>
+
+### What you receive: ShippingInfo
+
+Before authorization, Apple Pay shares only part of the address, which is enough to quote shipping and taxes:
+
+| Field | Type | Example |
+|---|---|---|
+| `shippingAddress.city` | `String?` | `"Cupertino"` |
+| `shippingAddress.state` | `String?` | `"CA"` |
+| `shippingAddress.postalCode` | `String?` | `"95014"` (may be shortened in some countries) |
+| `shippingAddress.countryCode` | `String?` | `"US"` |
+
+Every field can be missing: `nil` on iOS, absent on the Web. The full address arrives in the one-time token (Step 4).
+
+### What you return: ShippingUpdate
+
+Return any combination of these, or `nil` (`null` on the Web) to keep the sheet as it is.
+
+<Tabs>
+<Tab title="iOS">
+
+```swift
+// A) New totals for this address
+YunoShippingUpdate(
+    summaryItems: [
+        YunoSummaryItem(id: "subtotal", label: "Subtotal", amount: YunoShippingAmount(currency: "USD", value: 100.00)),
+        YunoSummaryItem(id: "tax", label: "Tax", amount: YunoShippingAmount(currency: "USD", value: 10.00)),
+        YunoSummaryItem(id: "total", label: "ACME Inc.", amount: YunoShippingAmount(currency: "USD", value: 110.00)) // must be last
+    ]
+)
+```
+
+```swift
+// B) New shipping methods for this address
+YunoShippingUpdate(
+    shippingMethods: [
+        YunoShippingMethod(
+            id: "same-day", label: "Same-day delivery", detail: "Today before 9pm",
+            amount: YunoShippingAmount(currency: "USD", value: 15.00),
+            deliveryEstimate: YunoShippingDeliveryEstimate(from: "2026-10-10", to: "2026-10-10"),
+            summaryItems: [
+                YunoSummaryItem(id: "subtotal", label: "Subtotal", amount: YunoShippingAmount(currency: "USD", value: 100.00)),
+                YunoSummaryItem(id: "shipping", label: "Shipping", amount: YunoShippingAmount(currency: "USD", value: 15.00)),
+                YunoSummaryItem(id: "total", label: "ACME Inc.", amount: YunoShippingAmount(currency: "USD", value: 115.00))
+            ]
+        )
+    ]
+)
+```
+
+```swift
+// C) An address you can't serve
+YunoShippingUpdate(
+    errors: [
+        YunoShippingError(code: "CITY_NOT_SUPPORTED", message: "We don't ship to this city yet") // shown to the customer
+    ]
+)
+```
+
+</Tab>
+<Tab title="Web">
+
+```javascript
+// A) New totals for this address
+return {
+  summaryItems: [
+    { id: 'subtotal', label: 'Subtotal', amount: { currency: 'USD', value: 100.00 } },
+    { id: 'tax', label: 'Tax', amount: { currency: 'USD', value: 10.00 } },
+    { id: 'total', label: 'ACME Inc.', amount: { currency: 'USD', value: 110.00 } }, // must be last
+  ],
+}
+```
+
+```javascript
+// B) New shipping methods for this address
+return {
+  shippingMethods: [
+    {
+      id: 'same-day', label: 'Same-day delivery', detail: 'Today before 9pm',
+      amount: { currency: 'USD', value: 15.00 },
+      deliveryEstimate: { from: '2026-10-10', to: '2026-10-10' },
+      summaryItems: [
+        { id: 'subtotal', label: 'Subtotal', amount: { currency: 'USD', value: 100.00 } },
+        { id: 'shipping', label: 'Shipping', amount: { currency: 'USD', value: 15.00 } },
+        { id: 'total', label: 'ACME Inc.', amount: { currency: 'USD', value: 115.00 } },
+      ],
+    },
+  ],
+}
+```
+
+```javascript
+// C) An address you can't serve
+return {
+  errors: [
+    { code: 'CITY_NOT_SUPPORTED', message: "We don't ship to this city yet" }, // shown to the customer
+  ],
+}
+```
+
+</Tab>
+</Tabs>
+
+### Rules
+
+| Situation | What happens |
+|---|---|
+| You return `nil` (or nothing on the Web) | The current values stay. |
+| You answer late | The SDK sets no deadline of its own: the sheet stays open while you answer. If Apple's own time limit passes first, Apple dismisses the sheet and the SDK reports `CANCELED_BY_USER`. Answer as fast as you can. |
+| A currency differs from the session, or an amount is not a number | The whole response is ignored. |
+| You send `summaryItems` | The list must end with the grand total, which becomes the sheet total. It applies to the method currently selected; switching to another method restores that method's own breakdown. |
+| You send `shippingMethods` | They replace the options and the first one is preselected. Include `summaryItems` in each method, otherwise the total doesn't change when the customer switches. |
+| You send `errors` | Apple Pay shows the message on the sheet and blocks the payment until the customer picks another address. `CITY_NOT_SUPPORTED`, `STATE_NOT_SUPPORTED`, `COUNTRY_NOT_SUPPORTED` and `POSTAL_CODE_INVALID` point at that address field; on the Web, `ADDRESS_NOT_SUPPORTED` marks the whole address as unserviceable. Any other code is shown as a generic "can't ship to this address" error. |
+| More than 100 entries | The whole response is ignored. |
+| Your handler throws (or rejects on the Web) | The current values stay. |
+| The sheet opens | Apple Pay calls your handler right away with the customer's default address. Make your handler safe to call more than once, and don't depend on that first call. If you return methods on that call, they replace the session's methods; return `nil` to keep them. |
+| The customer changes the address again while you are still answering | The previous call is cancelled and only the answer to the latest address is applied. |
+
+<Note>
+  Unlike Google Pay, an error on the Apple Pay sheet does block the payment: the customer has to pick another address before paying. Still validate the address on your server when you create the payment.
+</Note>
+
+## Step 4: Read the result in the one-time token
+
+After the customer authorizes, the one-time token you receive in `yunoCreatePayment` includes a `shipping` object with the selected method and the full address:
+
+```json
+"shipping": {
+  "method": {
+    "id": "express",
+    "label": "Express shipping",
+    "amount": { "currency": "USD", "value": 12.00 }
+  },
+  "address": {
+    "address_line_1": "1 Apple Park Way",
+    "address_line_2": "",
+    "city": "Cupertino",
+    "state": "CA",
+    "zip_code": "95014",
+    "country": "US"
+  }
+}
+```
+
+- `method` is the one selected on the sheet, or the first one if the customer didn't change it.
+- `summary_items` are not sent back.
+- The object is included whenever the sheet collected a shipping method or an address, with or without a handler. Payments without either don't include `shipping`.
+
+Use this object on your server to charge the final amount, validate the address, and ship the order.
+
+## What happens in each case
+
+| Handler implemented | `summary_items` in session | `shipping_methods` in session | Apple Pay sheet |
+|---|---|---|---|
+| No | No | No | Same as before (single total) |
+| No | Yes | No | Breakdown, no address updates |
+| No | Any | Yes | Selector with instant method switches. The sheet asks for the address, but your app is not called |
+| Yes | No | No | Address updates; totals change with your answers. No selector unless you return methods |
+| Yes | Yes | No | Breakdown first; your answers can update it |
+| Yes | Any | Yes | Full experience: selector, instant method switches, and address updates |
+
+## Good to know
+
+- On iOS, Apple Pay is not supported in the iOS Simulator. Test on a physical device. On the Web, test in Safari on a device with Apple Pay set up.
+- Apple Pay redacts the address until the payment is authorized, so your handler never sees street lines.
+- The selected method stays selected when the customer changes the address, unless you return new methods.
+- **Privacy:** the SDK never logs addresses, emails, or payment data.
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| The selector doesn't appear | The session has no valid `shipping_methods`, a currency differs from the session, or the session exceeds 100 methods, summary items, or items per method (on the Web the sheet does not open at all in that case). |
+| The breakdown doesn't appear | `summary_items` is invalid (no total, empty label, mixed currencies). |
+| The sheet doesn't ask for a shipping address | The session has no `shipping_methods` and your app doesn't implement the handler. Add either, or enable the shipping address as a required field in the Checkout Builder. |
+| My handler is never called | On iOS, your delegate doesn't conform to `YunoShippingDelegate` and doesn't implement the completion-based variant either. On the Web, `externalButtons.onShippingAddressChanged` was not passed to `startCheckout` or `startSeamlessCheckout`. |
+| My methods replaced the session's when the sheet opened | Apple Pay calls your handler when the sheet opens, and your answer is applied. Return `nil` on that call to keep the session's methods. |
+| Switching methods doesn't change the total | The methods have no `summaryItems`. Send a breakdown for each method. |
+| The sheet keeps the old totals after my answer | A currency differs from the session, the response has more than 100 entries, or the customer changed the address again before you answered. |
+| Delivery dates don't show | The device runs iOS 14 or earlier, the browser doesn't support Apple Pay JS version 12, or `from` is later than `to`. |
+| The sheet closed on its own and I got `CANCELED_BY_USER` | Your handler took longer than Apple's time limit. Answer faster, or return `nil` and quote on your server when you create the payment. |
+
+## Related documentation
+
+- [Setup and one-time payments](/docs/wallets/apple-pay/apple-pay-sdk-integration)
+- [Google Pay express checkout on Android](/docs/wallets/google-pay/google-pay-express-checkout-android)
+- [Fast Checkout Shipping](/docs/payment-features/fast-checkout-shipping). The same session fields and `shipping` node on wallets that pick the address inside the widget.
+- [iOS SDK changelog](/changelog/ios) and [Web SDK changelog](/changelog/web#v1-10-8)
