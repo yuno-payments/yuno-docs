@@ -16,8 +16,21 @@ Note that this request requires an `X-Idempotency-Key`. Check the [Authenticatio
 We recommend listening to [Webhooks](/docs/configure-webhooks) to stay up to date with the state of the enrolled payment methods of your customers.
 </Note>
 
-If a customer enrolls the same card multiple times, Yuno creates a new enrollment each time and returns a distinct `vaulted_token`. Use the card `fingerprint` in the enrollment response to detect duplicates on your side (the fingerprint may be `null` for some providers). See [Card Fingerprint](/docs/fingerprint).
+### PCI DSS Scope & Integration Paths
+
+When enrolling a card via this endpoint, there are two distinct paths depending on your PCI compliance level:
+
+* **Enrolling with a one-time token (`token`):**
+  If your checkout captures card details using Yuno SDKs (Web, iOS, Android, Flutter, React Native) or Secure Fields, pass the generated one-time token (OTT) in the `token` field with `workflow: "DIRECT"`. Card data never hits your servers, significantly reducing your PCI DSS compliance scope.
+  * The `token` is single-use. Reusing an already consumed token returns `400 INVALID_TOKEN`.
+  * If the token contains a card security code (CVV), it remains valid only for the duration configured in `security_code_expires_in`.
+  * You can include the `verify` object alongside `token` to validate and vault the card immediately.
+
+* **Enrolling with raw card details (`card_data`):**
+  Merchants sending plaintext card data (`number`, `expiration_month`, `expiration_year`, `security_code`) directly in `card_data` must be fully PCI DSS certified.
 
 <Warning>
-**Only available for PCI certified merchants.**
+Sending raw card details in `card_data` is **only available for PCI certified merchants**. For non-PCI merchants, collect card data via Yuno SDKs and pass the resulting token in the `token` field instead.
 </Warning>
+
+If a customer enrolls the same card multiple times, Yuno creates a new enrollment each time and returns a distinct `vaulted_token`. Use the card `fingerprint` in the enrollment response to detect duplicates on your side (the fingerprint may be `null` for some providers). See [Card Fingerprint](/docs/fingerprint).
