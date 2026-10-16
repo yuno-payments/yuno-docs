@@ -1,0 +1,145 @@
+---
+title: "Render enrollment"
+description: "Migrate Android Render enrollment (Activity.startEnrollmentRender) to the unified Transaction API."
+---
+
+Render enrollment lets you embed the SDK's enrollment form inside your own layout. You got a `YunoEnrollmentFragmentController` and a `YunoEnrollmentRenderListener.showView(fragment, needSubmit)` callback. The `needSubmit` flag told you whether the form required a submit button at all.
+
+In the unified API the same pattern is expressed by overriding [`showView`](/docs/yuno-sdk/controllers/show-view): the SDK delivers the fragment together with a `TransactionProcess` you call `onSubmit()` on. As with Lite enrollment, you pass a `PaymentMethodSelected` carrying the method type: `start(paymentSelected)` never accepts null.
+
+## Before you start
+
+- Replace the `com.yuno.sdk.*` imports with their `com.yuno.payments.sdk.api.*` counterparts (the side-by-side lists them). Your public API key and the customer sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- There is no payment to create: `createPayment` is not invoked during enrollment, so overriding it has no effect.
+
+## Side-by-side
+
+<CodeGroup>
+
+```kotlin Before. Render enrollment
+import androidx.fragment.app.Fragment
+import com.yuno.sdk.enrollment.render.startEnrollmentRender
+import com.yuno.sdk.enrollment.render.YunoEnrollmentFragmentController
+import com.yuno.sdk.enrollment.render.YunoEnrollmentRenderListener
+
+class EnrollmentActivity : ComponentActivity(), YunoEnrollmentRenderListener {
+
+    private var controller: YunoEnrollmentFragmentController? = null
+    private var needSubmit: Boolean = false
+
+    fun enroll() {
+        controller = startEnrollmentRender(
+            customerSession = "session-from-backend",
+            countryCode = "CO",
+            submitButton = false,
+            coroutineScope = lifecycleScope,
+            controller = this,
+        )
+    }
+
+    override fun showView(fragment: Fragment, needSubmit: Boolean) {
+        this.needSubmit = needSubmit
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.yuno_form_container, fragment)
+            .commit()
+    }
+
+    override fun loadingListener(isLoading: Boolean) { /* show your own loader */ }
+
+    override fun returnStatus(resultCode: Int, paymentStatus: String) {
+        // resultCode + paymentStatus
+    }
+
+    fun onEnrollButton() {
+        controller?.submitForm()
+    }
+}
+```
+
+```kotlin After. showView override
+import androidx.fragment.app.Fragment
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.TransactionProcess
+import com.yuno.payments.sdk.api.models.TransactionViewStep
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
+
+class EnrollmentActivity : ComponentActivity(), TransactionController {
+
+    private var process: TransactionProcess? = null
+
+    fun enroll() {
+        val config = TransactionConfig(
+            customerSession = "session-from-backend",
+            countryCode = "CO",
+            controller = this,
+        )
+
+        Transaction(config = config)
+            .start(activity = this, paymentSelected = PaymentMethodSelected(paymentMethodType = "CARD"))
+    }
+
+    override fun showView(view: Fragment, process: TransactionProcess, step: TransactionViewStep) {
+        this.process = process
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.yuno_form_container, view)
+            .commit()
+    }
+
+    override fun showLoading(isLoading: Boolean) { /* show your own loader */ }
+
+    override fun onStatus(status: TransactionStatus) { /* ... */ }
+
+    fun onEnrollButton() {
+        process?.onSubmit()
+    }
+}
+```
+
+</CodeGroup>
+
+## What changes
+
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
+
+### Initialization and config
+
+| Render | Unified | Change | What to do |
+|---|---|---|---|
+| `import com.yuno.sdk.*` | `import com.yuno.payments.sdk.api.*` | Renamed | |
+| `Yuno.initialize(context, apiKey)` | `SdkPayments.initialize(context, apiKey)` | Renamed | |
+| `customerSession`, `countryCode` arguments of `startEnrollmentRender` | The same fields on `TransactionConfig` | Moved | The call's arguments become config fields. |
+| `submitButton` argument of `startEnrollmentRender` | *(removed)* | Removed | Delete it: you render your own submit button (see the `needSubmit` row under Views). |
+| `coroutineScope` argument of `startEnrollmentRender` | *(removed)* | Removed | Delete it: the SDK manages its own scope. |
+| *(none)* | `PaymentMethodSelected` | New | Build it with the `paymentMethodType` to enroll and pass it to `start`: `start(paymentSelected)` never accepts null. |
+
+### Controller
+
+| Render | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoEnrollmentRenderListener` | `TransactionController` | Renamed | Implement the same class and pass it as `TransactionConfig.controller` (it was the `controller` argument of `startEnrollmentRender`). The SDK does not retain it: keep it alive for the whole transaction. |
+| `returnStatus(resultCode, paymentStatus)` | `onStatus(status: TransactionStatus)` | Renamed | Still the single outcome callback, once per transaction. `resultCode` is gone: branch on `status.status`. `status` and `substatus` come from the backend; the SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `YunoEnrollmentRenderListener.showView(fragment, needSubmit)` | `showView(view, process, step)` | Renamed | Same role: the SDK still delivers the fragment to your handler when ready, now together with the `TransactionProcess` you submit on and the `step` the view belongs to (see Views). See [`showView`](/docs/yuno-sdk/controllers/show-view). |
+| `loadingListener(isLoading)` | `showLoading(isLoading)` | Renamed | Optional. Fires only when overridden: the SDK then hides its own loader and reports the state to you. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+
+### Views
+
+| Render | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoEnrollmentFragmentController.submitForm()` | `process.onSubmit()` | Renamed | Same role. Call it from your own button on the `TransactionProcess` you receive in `showView`. |
+| `needSubmit` argument of `showView` | *(removed)* | Removed | No equivalent in the unified API: you render your own submit button. If you need to hide it for forms that don't require submission, drive that from your own state (for example, by inspecting the `step` delivered to `showView`). |
+
+### Entry points
+
+| Render | Unified | Change | What to do |
+|---|---|---|---|
+| `startEnrollmentRender(…, controller)` returning `YunoEnrollmentFragmentController` | `Transaction(config).start(activity, paymentSelected)` + override `showView` | Renamed | Build the config and the `PaymentMethodSelected`, then `start`: single entry point. Nothing is returned: the fragment arrives through `showView` when ready. |
+
+## Related
+
+- [Enrollment feature](/docs/yuno-sdk/features/enrollment). Unified-API enrollment walkthrough.
+- [Lite enrollment](/docs/yuno-sdk/migration/android/enrollment/lite). SDK-driven, no view embedding.
+- [Headless enrollment](/docs/yuno-sdk/migration/android/enrollment/headless). Collect data in your own UI.
+- [`showView`](/docs/yuno-sdk/controllers/show-view). The controller you override here.

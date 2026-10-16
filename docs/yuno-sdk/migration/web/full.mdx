@@ -1,0 +1,131 @@
+---
+title: "Full mode"
+description: "Migrate Web Full integrations (yuno.startCheckout with the embedded payment-method list) to the unified Transaction API."
+---
+
+Full mode rendered the SDK's payment-method drawer inside your layout. The user picked a method, the SDK rendered the corresponding form, tokenized, processed the payment, and reported the result. In the unified API the same flow uses a single `Transaction` plus `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`. The returned `views.paymentMethodList` exposes a `.mount({ elementSelector })` method.
+
+## Before you start
+
+- Load the unified SDK bundle instead of the legacy one and initialize it as the side-by-side shows: `window.Yuno.initialize(...)` becomes `SdkPayments.initialize(...)`. Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Full you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | `yunoCreatePayment` implemented | Override `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | No `yunoCreatePayment` | No override | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Side-by-side
+
+<CodeGroup>
+
+```typescript Before. Full mode
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+await yuno.startCheckout({
+    checkoutSession: 'session-from-backend',
+    elementSelector: '#root',
+    countryCode: 'CO',
+    language: 'en',
+    renderMode: { type: 'modal' },
+    paymentListConfig: {
+        scrollContainerSelector: '#scroll-container',
+        bottomOffsetPx: 0,
+    },
+    yunoPaymentMethodSelected: ({ type, name }) => {
+        console.log('selected:', type, name)
+    },
+    yunoPaymentResult: (status, subStatus) => {
+        console.log('Final status:', status, subStatus)
+    },
+    yunoError: (error) => {
+        console.log('Error', error)
+    },
+})
+
+await yuno.mountCheckout()
+```
+
+```typescript After. Unified Transaction
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    elementSelector: '#payment-form', // form container for the selected method
+    paymentListConfig: {
+        scrollContainerSelector: '#scroll-container',
+        bottomOffsetPx: 0,
+    },
+    onStatus: (result) => {
+        console.log('Final status:', result.status, result.substatus)
+    },
+})
+
+let selectedPaymentMethod: PaymentMethodSelected | null = null
+
+const views = transaction.getPaymentMethodsViews({
+    types: ['paymentMethodList'],
+    onPaymentSelected: (paymentMethod) => {
+        selectedPaymentMethod = paymentMethod
+    },
+})
+
+views.paymentMethodList?.mount({ elementSelector: '#root' })
+
+// Your Pay button. With forms unfolded in the list, start() submits the form the shopper filled.
+// With folded forms, start() mounts the form into #payment-form and the shopper pays from it.
+document.getElementById('pay').addEventListener('click', () => {
+    if (selectedPaymentMethod) transaction.start({ paymentMethod: selectedPaymentMethod })
+})
+```
+
+</CodeGroup>
+
+## What changes
+
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. The last column is the only thing you have to do beyond the rename.
+
+### Initialization and config
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
+| `checkoutSession`, `countryCode`, `language` on the `startCheckout` config | The same fields on the transaction config | Moved | Same fields, single factory: `sdkPayments.transaction({ checkoutSession, countryCode, language, … })`. |
+| `paymentListConfig` | `paymentListConfig` on the transaction config | Moved | Same shape, same fields. |
+| `renderMode: { type, elementSelector }` | `elementSelector` on the transaction config | Moved | Modal mode no longer exists. Set `elementSelector` on the transaction config to render a selected method's form. It is required when `start({ paymentMethod })` renders a form and ignored by headless flows. The payment-method list itself renders where you pass `elementSelector` to `views.paymentMethodList.mount({ elementSelector })` (see Views). |
+| `yuno.mountStatusPayment(...)` | `sdkPayments.transactionStatus({ checkoutSession, elementSelector })` | Renamed | See [Payment status](/docs/yuno-sdk/migration/web/status). Inside a transaction, the result screen is controlled by `showStatusScreen`, which defaults to `true`. Set `showStatusScreen: false` to render the result yourself from `onStatus`. |
+
+### Callbacks
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renamed | Still the single outcome callback, now a field on the transaction config. It receives one `TransactionStatus` object with `.status`, `.substatus` and `.message`. Naming convention across the new callbacks: overrides have no `on` prefix (`createPayment`, `showLoading`), observers do (`onStatus`, `onPaymentSelected`). See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `yunoCreatePayment(ott, info)` | `createPayment(token)` | Renamed | Optional. Promise-based, single argument. Create the payment and resolve: resolving is what used to be `continuePayment()`. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment). |
+| `yunoError(message, data?)` | *(removed)* | Removed | Errors flow through `onStatus`, or a rejected `start()` Promise. |
+| `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Renamed | Optional. Boolean signal only. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+| `yunoPaymentMethodSelected({ type, name })` (notification at session level) | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | Renamed | Optional in the type, but without it the list cannot start a payment. The legacy callback was a notification. In the unified API, store the [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) it receives and pass it to `transaction.start({ paymentMethod })` from your Pay button. When the list opened that method's form inline, `start()` submits it. For an express wallet row the wallet button pays and `start()` does nothing. |
+
+### Views
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.startCheckout({ elementSelector: '#root' })` + `yuno.mountCheckout()` | `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`, then `views.paymentMethodList?.mount({ elementSelector: '#root' })` | Renamed | `mountCheckout()` rendered the list at the `elementSelector` from `startCheckout`. The unified API hands you a view handle, and you call `.mount(...)` with the selector plus any per-view config. This makes the intent ("render the drawer here") visible at the call site. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). |
+
+### Entry points
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.startCheckout(config)` | `sdkPayments.transaction(config)` | Renamed | Single factory: build the transaction with the config (fields and callbacks above), then mount the list (see Views) and `start` from your Pay button with the selected method (see Callbacks). |
+| `yuno.continuePayment()` | *(removed)* | Removed | Delete the call: the SDK orchestrates 3DS and status polling internally once `createPayment` resolves. |
+
+## Related
+
+- [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). Full reference for `getPaymentMethodsViews` per platform.
+- [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Complete field reference.
+- [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected). The object you pass to `start()`.
