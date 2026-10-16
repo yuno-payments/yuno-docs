@@ -1,0 +1,130 @@
+---
+title: "Promotion Error Codes"
+description: "Every answer of the promotions endpoints and of a payment that carries a promotion code, with the code, the reason and the message of each."
+noindex: true
+---
+
+<Warning>
+**Promotions is enabled per organization**
+
+Until Yuno enables Promotions for your organization, the promotions endpoints answer `404 PROMOTION_NOT_FOUND`, and a payment that carries a code is refused with `422 PROMOTION_NOT_APPLICABLE` and the reason `PROMOTIONS_NOT_ENABLED`. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Warning>
+
+Every error has the standard body: a `code` and `messages[]`. Only a `422 PROMOTION_NOT_APPLICABLE` adds a `reason`. Branch on `code` and `reason`: `messages[]` is informational text, so never parse it.
+
+```json
+{
+  "code": "PROMOTION_NOT_APPLICABLE",
+  "messages": ["The promotion reached its limit of uses."],
+  "reason": "USAGE_LIMIT_REACHED"
+}
+```
+
+For general HTTP status semantics see [HTTP Response Codes](/reference/getting-started/response-codes).
+
+## The promotions endpoints
+
+These answers belong to [Create Promotion](/reference/promotions/create-promotion), [Retrieve Promotion](/reference/promotions/retrieve-promotion), [List Promotions](/reference/promotions/list-promotions) and [Disable Promotion](/reference/promotions/disable-promotion).
+
+| HTTP | `code` | Returned by | When |
+| --- | --- | --- | --- |
+| `400` | `INVALID_PARAMETERS` | All | There is no `X-Account-Code` header (`x-account-code header is required.`). |
+| `400` | `INVALID_PARAMETERS` | Create | There is no `X-Idempotency-Key`, it is blank, or it has more than 64 characters (`The header 'X-Idempotency-Key' is required and must not exceed 64 characters.`). |
+| `400` | `INVALID_PARAMETERS` | Create | The body is empty (`The request body is required.`), is not valid JSON (`Invalid json.`), is not a JSON object (`The request body must be a JSON object.`) or holds more than one JSON object (`The request body must hold one JSON object only.`). |
+| `400` | `INVALID_PARAMETERS` | Create | The body carries `account_id` (`The field 'account_id' is not accepted in the body: the promotion belongs to the account of the x-account-code header.`). |
+| `400` | `INVALID_PARAMETERS` | Create | The body repeats `redemption`, or a member of it, with names compared without regard to case. |
+| `400` | `INVALID_PARAMETERS` | Create | `redemption.mode` is not `CODE` (`The field 'redemption.mode' must be CODE: merchants create promotions that customers redeem with a code.`). |
+| `400` | `INVALID_PARAMETERS` | Retrieve, Disable | The promotion id is not a UUID v4 (`The path parameter in url 'promotion_id' must be a valid uuid v4.`). |
+| `400` | `INVALID_PARAMETERS` | Disable | `status` is missing or is not `DISABLED`. |
+| `400` | `INVALID_REQUEST` | Create, List, Disable | A rule of the promotion or of the request failed. `messages[]` has one `path: RULE` message for each failed path. See [the messages](#the-path-rule-messages). Disable also returns `INVALID_REQUEST` for a body field other than `status` (`The field 'name' is not allowed`). |
+| `400` | `BAD_REQUEST` | Create | Yuno could not read the body (`The request body could not be read.`). |
+| `400` | `BAD_REQUEST` | Disable | The body is not valid JSON (`Invalid json.`), or a field has the wrong type (`The field 'status' wrong data type.`). |
+| `404` | `PROMOTION_NOT_FOUND` | Retrieve, Disable | No promotion of the account holds the id (`The promotion does not exist on the account.`). A promotion of another account answers the same. |
+| `404` | `PROMOTION_NOT_FOUND` | All | Promotions is not enabled for your organization. The body has the `code` and no `messages`. |
+| `409` | `CODE_ALREADY_EXISTS` | Create | Another promotion of the account that is not disabled holds the code in an overlapping schedule (`Another promotion of the account holds this code in an overlapping schedule.`). |
+| `413` | `REQUEST_ENTITY_TOO_LARGE` | Create | The body is larger than 256 KiB (`The request body must not exceed 256 KiB.`). |
+| `500` | `INTERNAL_ERROR` | All | The promotions service failed (`Internal error`). |
+| `503` | `PROMOTION_ENGINE_UNAVAILABLE` | All | The promotions service is not configured or not available (`The promotions service is unavailable.`). |
+| `503` | `STORE_UNAVAILABLE` | All | The promotions service could not read or write its store (`The store is unavailable.`). |
+| `504` | `PROMOTION_ENGINE_TIMEOUT` | All | The promotions service did not answer in time (`The promotions service did not answer in time.`). |
+
+### The `path: RULE` messages
+
+Each message names a field and the rule it broke, for example `limits.total: RANGE`. A list item carries its index, for example `discount.amounts[0].currency: UNKNOWN_CURRENCY`. A path has one message: its first failure.
+
+| Message | Meaning |
+| --- | --- |
+| `name: REQUIRED`, `name: LENGTH` | The name is blank, or has more than 255 characters. |
+| `description: LENGTH` | The description has more than 1000 characters. |
+| `schedule.starts_at: REQUIRED` | The promotion has no start. |
+| `schedule.starts_at: FORMAT`, `schedule.ends_at: FORMAT` | The value is not an RFC 3339 timestamp. |
+| `schedule.ends_at: NOT_AFTER_START` | The end is at or before the start. |
+| `redemption.mode: REQUIRED` | The body has no `redemption.mode`. |
+| `redemption.code: REQUIRED` | The body has no `redemption.code`. |
+| `redemption.code: CODE_CHARACTERS` | The code has a character outside `A-Z`, `0-9`, `_` and `-` (after Yuno converts it to upper case). Yuno checks the characters before the length. |
+| `redemption.code: CODE_LENGTH` | The code has fewer than 3 or more than 32 characters. |
+| `discount.type: REQUIRED`, `discount.type: UNKNOWN` | The discount has no type, or a type other than `PERCENTAGE` or `FIXED`. |
+| `discount.value: RANGE`, `discount.value: DECIMALS` | The percentage is zero or above 100, or has more than two decimals. |
+| `discount.value: FORBIDDEN` | A `FIXED` discount carries `value`. |
+| `discount.amounts: FORBIDDEN` | A `PERCENTAGE` discount carries `amounts`. |
+| `discount.amounts: REQUIRED`, `discount.amounts: EMPTY`, `discount.amounts: TOO_MANY` | A `FIXED` discount has no `amounts`, an empty list, or more than 50 entries. |
+| `discount.amounts[0].currency: UNKNOWN_CURRENCY`, `discount.amounts[0].currency: DUPLICATE` | The currency is not an ISO 4217 code Yuno knows, or an earlier entry has it. |
+| `discount.amounts[0].value: RANGE`, `discount.amounts[0].value: DECIMALS`, `discount.amounts[0].value: EXPONENT_MISMATCH` | The amount is below one minor unit, is not a whole number of minor units of the currency, or its exponent differs from the currency's. |
+| `conditions.bins: FORBIDDEN`, `conditions.payment_methods: FORBIDDEN`, `conditions.card_types: FORBIDDEN` | A code promotion carries a condition on the card BIN, the payment method or the card type. A code applies to the whole payment, whatever the payment method. |
+| `conditions.countries.values: EMPTY`, `conditions.amounts.values: EMPTY` | The condition is present with an empty list. Omit a condition for no condition on it. |
+| `conditions.amounts.values: FIXED_CURRENCY` | A `FIXED` discount and the `amounts` condition list different currencies. |
+| `limits.total: RANGE` | `limits.total` is below 1 or above 2147483647. |
+| `<field>: UNKNOWN` | The body carries a field the request does not have, for example `status`. |
+| `body: REQUIRED`, `body: MALFORMED`, `body: TYPE`, `body: TOO_LARGE` | The body is empty, is not valid JSON, is not a JSON object, or is larger than 256 KiB. |
+| `status: UNKNOWN`, `limit: RANGE`, `limit: FORMAT`, `cursor: FORMAT` | The List filters: an unknown status, a limit outside 1 to 100, a limit that is not a whole number of up to 3 digits, or a cursor Yuno did not issue. |
+
+## A payment that carries a code
+
+These answers belong to [Create Payment](/reference/payments/create-payment). In every one, no payment is created. No answer repeats your code.
+
+| HTTP | `code` | `reason` | When |
+| --- | --- | --- | --- |
+| `400` | `INVALID_PARAMETERS` | | The discount line breaks the rules in [Send the code on the payment](/docs/payment-features/promotion-codes#send-the-code-on-the-payment). |
+| `400` | `INVALID_PARAMETERS` | | The payment has no `X-Idempotency-Key` and no `X-Dry-Run: true` (`The header 'x-idempotency-key' is required to apply a promotion code.`). |
+| `400` | `INVALID_PARAMETERS` | | The payment service rejected the quote request as invalid. The messages are its own, with the code replaced by `***`. When it gives none, the message is `The promotion code request was rejected as invalid, so the payment was not created.` |
+| `404` | `PROMOTION_NOT_FOUND` | | No promotion of the account holds the code, or the promotion holding it has not started. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `EXPIRED` | The promotion ended. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `DISABLED` | You disabled the promotion. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `USAGE_LIMIT_REACHED` | The code has no use left. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `IDEMPOTENCY_KEY_REUSED` | The payment key already counted a use of another code. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `CONDITIONS_NOT_MET` | The country or the amount does not meet the conditions of the promotion. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `CURRENCY_MISMATCH` | The promotion lists no amount rule for the currency of the payment, or it is a fixed discount with no amount in that currency. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_DISCOUNT` | The promotion gives no discount on this amount. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `PROMOTIONS_NOT_ENABLED` | Promotions is not enabled for your organization. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | The promotions service did not answer in time or answered with an error, Promotions is temporarily disabled by Yuno, or the quote would make the charge zero. |
+| `422` | `PROMOTION_SUBSCRIPTION_UNSUPPORTED` | | The payment carries a `subscription`, an `external_subscription` or an `external_invoice`. |
+| `422` | `PROMOTION_CONTEXT_MISMATCH` | | The `amount` of the payment carries a `currency_conversion` or a `merchant_currency_conversion`. |
+
+The text of each `reason`:
+
+| `reason` | Message |
+| --- | --- |
+| `EXPIRED` | `The promotion expired.` |
+| `DISABLED` | `The promotion is disabled.` |
+| `USAGE_LIMIT_REACHED` | `The promotion reached its limit of uses.` |
+| `IDEMPOTENCY_KEY_REUSED` | `The idempotency key was used for another promotion code.` |
+| `CONDITIONS_NOT_MET` | `The payment does not meet the conditions of the promotion.` |
+| `CURRENCY_MISMATCH` | `The promotion does not apply to the currency of the payment.` |
+| `ZERO_DISCOUNT` | `The promotion gives no discount on this amount.` |
+| `PROMOTIONS_NOT_ENABLED` | `Promotion codes are not enabled for this organization, so the payment was not created.` |
+| `ENGINE_UNAVAILABLE` | `The promotion code could not be checked, so the payment was not created. Try again.` |
+
+The `PROMOTION_SUBSCRIPTION_UNSUPPORTED` message is `YUNO_PROMOTION discount lines are not supported on subscriptions.` for a payment that carries a `subscription`, and `Subscription payments cannot carry a promotion quote.` for an `external_subscription` or an `external_invoice`. The `PROMOTION_CONTEXT_MISMATCH` message is `The payment context does not match the promotion quote.` Those two bodies have no `reason`.
+
+When the code becomes a quote, the payment goes on as a payment with a quote, and the rejections in [The customer pays the quoted price, or the payment is rejected](/docs/payment-features/promotions#the-customer-pays-the-quoted-price-or-the-payment-is-rejected) apply to it.
+
+## A quote request that carries a code
+
+[Create Promotion Quote](/reference/promotions/create-promotion-quote) answers a request with a `code` in these ways. The `reason` and the message of each are the ones in the tables above.
+
+| HTTP | `code` | `reason` | When |
+| --- | --- | --- | --- |
+| `404` | `PROMOTION_NOT_FOUND` | | No promotion of the account holds the code, the promotion holding it has not started, or the code has a character outside `A-Z`, `0-9`, `_` and `-` or a length outside 3 to 32. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `EXPIRED`, `DISABLED`, `USAGE_LIMIT_REACHED`, `CONDITIONS_NOT_MET`, `CURRENCY_MISMATCH` or `ZERO_DISCOUNT` | The code does not apply to the payment. |
+
+A quote request sends no idempotency key, so it never answers `IDEMPOTENCY_KEY_REUSED`.

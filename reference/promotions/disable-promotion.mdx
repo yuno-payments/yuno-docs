@@ -1,0 +1,29 @@
+---
+title: "Disable Promotion"
+openapi: "/openapi/promotions/disable-promotion.json PATCH /promotions/{promotion_id}"
+description: "Disables a promotion. The change is final: a disabled promotion is never enabled again."
+noindex: true
+---
+
+<Warning>
+**Promotions is enabled per organization**
+
+This endpoint works only after Yuno enables Promotions for your organization. Until then it answers `404 PROMOTION_NOT_FOUND`. Ask your Technical Account Manager or Key Account Manager. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Warning>
+
+<Note>
+**Disabling is the only change a promotion accepts**
+
+Send `{ "status": "DISABLED" }`, with `DISABLED` in capitals. A body with any other field answers `400 INVALID_REQUEST`, and a `status` that is missing or is not `DISABLED` answers `400 INVALID_PARAMETERS`. To change a discount, a date, a condition or the code, disable the promotion and [create a new one](/reference/promotions/create-promotion).
+</Note>
+
+The promotion must belong to the account in the `X-Account-Code` header. A promotion of another account, and an id that no promotion holds, answer `404 PROMOTION_NOT_FOUND`.
+
+Disabling is idempotent. A second call answers the promotion with the same `disabled_at` as the first.
+
+## What disabling does
+
+* **A code stops applying to new payments.** A payment that carries the code afterwards is refused with `422 PROMOTION_NOT_APPLICABLE` and the reason `DISABLED`. No payment is created.
+* **A retry of an earlier payment is still priced.** A payment that repeats the `X-Idempotency-Key` and the code of an earlier use is priced from that use, even after you disable the promotion.
+* **The code becomes free.** A disabled promotion no longer holds its code, so you can create a new promotion with the same code.
+* **The uses stay.** `limits.used` keeps the count, and a use is never given back.

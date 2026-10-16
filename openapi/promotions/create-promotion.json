@@ -1,0 +1,950 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "promotions",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/promotions": {
+      "post": {
+        "summary": "Create Promotion",
+        "description": "Creates a code promotion on the account of the `X-Account-Code` header. A customer redeems it when your server sends its code on a payment. Promotions must be enabled for your organization by Yuno before you can use this endpoint. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).",
+        "operationId": "create-promotion",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required. A promotion belongs to one account, and this header names it. Omitting it returns `400 INVALID_PARAMETERS` (\"x-account-code header is required.\")."
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "Required. Any text of 1 to 64 characters. The same key on the same account returns the first promotion with `201`, and Yuno does not compare the body."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "schedule",
+                  "redemption",
+                  "discount"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "description": "The promotion name (1 to 255 characters)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000,
+                    "description": "Optional. Up to 1000 characters."
+                  },
+                  "schedule": {
+                    "type": "object",
+                    "required": [
+                      "starts_at"
+                    ],
+                    "description": "The window in which the promotion runs. UTC.",
+                    "properties": {
+                      "starts_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "When the promotion starts (ISO 8601). Any instant: a start in the past makes the promotion active at once."
+                      },
+                      "ends_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "date-time",
+                        "description": "When the promotion ends (ISO 8601). Must be after `starts_at`. Omit it or send `null` for no end date."
+                      }
+                    }
+                  },
+                  "redemption": {
+                    "type": "object",
+                    "required": [
+                      "mode",
+                      "code"
+                    ],
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "CODE"
+                        ],
+                        "description": "Always `CODE`. Any other mode returns `400 INVALID_PARAMETERS`."
+                      },
+                      "code": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 32,
+                        "description": "The code: 3 to 32 characters, `A-Z`, `0-9`, `_` and `-`, in any case. Yuno stores it in upper case and matches the code of a payment without regard to case. Unique per account among the promotions that are not disabled and whose schedule overlaps this one: otherwise `409 CODE_ALREADY_EXISTS`."
+                      }
+                    }
+                  },
+                  "discount": {
+                    "type": "object",
+                    "required": [
+                      "type"
+                    ],
+                    "description": "What the customer saves. For `FIXED`, when the promotion also has an `amounts` condition, `discount.amounts` and `conditions.amounts.values` must list the same currencies, or the request returns `400`.",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "PERCENTAGE",
+                          "FIXED"
+                        ]
+                      },
+                      "value": {
+                        "type": "number",
+                        "minimum": 0.01,
+                        "maximum": 100,
+                        "description": "`PERCENTAGE` only, with up to two decimals (for example `10.5`)."
+                      },
+                      "amounts": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "ISO 4217 currency code."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "An amount in major units, with exactly the decimals of the currency."
+                            }
+                          }
+                        },
+                        "description": "`FIXED` only: one `{ currency, value }` for each currency, at most 50, each above zero. A fixed promotion applies only to payments in the currencies it lists, and the discount is capped at the payment amount."
+                      }
+                    }
+                  },
+                  "conditions": {
+                    "type": "object",
+                    "description": "The conditions a payment must meet. **AND** across keys, **OR** inside each key's `values` list. A code applies to the whole payment, whatever the payment method, so only `countries` and `amounts` are accepted. A `bins`, `payment_methods` or `card_types` condition returns `400 INVALID_REQUEST` with the messages `conditions.bins: FORBIDDEN`, `conditions.payment_methods: FORBIDDEN` or `conditions.card_types: FORBIDDEN`.",
+                    "properties": {
+                      "countries": {
+                        "type": "object",
+                        "required": [
+                          "values"
+                        ],
+                        "properties": {
+                          "values": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Payment countries ([ISO 3166-1](/reference/country-reference)). An empty list is rejected."
+                          }
+                        }
+                      },
+                      "amounts": {
+                        "type": "object",
+                        "required": [
+                          "values"
+                        ],
+                        "properties": {
+                          "values": {
+                            "type": "array",
+                            "description": "Amount bounds per currency. A payment in a currency with no entry gets the reason `CURRENCY_MISMATCH`.",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "currency"
+                              ],
+                              "properties": {
+                                "currency": {
+                                  "type": "string"
+                                },
+                                "min": {
+                                  "type": "number",
+                                  "description": "Inclusive. Omit it for no lower bound."
+                                },
+                                "max": {
+                                  "type": "number",
+                                  "description": "Inclusive. Omit it for no upper bound."
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "limits": {
+                    "type": "object",
+                    "description": "Optional. Without it the code has no cap.",
+                    "properties": {
+                      "total": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2147483647,
+                        "description": "The most uses the code accepts. Yuno counts a use when a payment takes the code, by the payment `X-Idempotency-Key`. A declined payment keeps its use."
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Percentage code with a cap": {
+                  "value": {
+                    "name": "Summer 10",
+                    "schedule": {
+                      "starts_at": "2026-11-01T00:00:00Z",
+                      "ends_at": "2026-12-01T00:00:00Z"
+                    },
+                    "redemption": {
+                      "mode": "CODE",
+                      "code": "SUMMER10"
+                    },
+                    "discount": {
+                      "type": "PERCENTAGE",
+                      "value": 10
+                    },
+                    "conditions": {
+                      "countries": {
+                        "values": [
+                          "US"
+                        ]
+                      },
+                      "amounts": {
+                        "values": [
+                          {
+                            "currency": "USD",
+                            "min": 50.0,
+                            "max": 5000.0
+                          }
+                        ]
+                      }
+                    },
+                    "limits": {
+                      "total": 100
+                    }
+                  }
+                },
+                "Fixed code with no cap": {
+                  "value": {
+                    "name": "Ten dollars off",
+                    "schedule": {
+                      "starts_at": "2026-11-01T00:00:00Z"
+                    },
+                    "redemption": {
+                      "mode": "CODE",
+                      "code": "TEN-OFF"
+                    },
+                    "discount": {
+                      "type": "FIXED",
+                      "amounts": [
+                        {
+                          "currency": "USD",
+                          "value": 10.0
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201. The promotion. The same answer returns when the account repeats the `X-Idempotency-Key`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "A code promotion": {
+                    "value": {
+                      "id": "00000000-0000-4000-8000-0000000000b1",
+                      "account_id": "00000000-0000-4000-8000-0000000000a1",
+                      "name": "Summer 10",
+                      "description": null,
+                      "schedule": {
+                        "starts_at": "2026-11-01T00:00:00Z",
+                        "ends_at": "2026-12-01T00:00:00Z"
+                      },
+                      "redemption": {
+                        "mode": "CODE",
+                        "code": "SUMMER10"
+                      },
+                      "discount": {
+                        "type": "PERCENTAGE",
+                        "value": 10,
+                        "amounts": null
+                      },
+                      "conditions": {
+                        "bins": null,
+                        "payment_methods": null,
+                        "card_types": null,
+                        "countries": {
+                          "values": [
+                            "US"
+                          ]
+                        },
+                        "amounts": {
+                          "values": [
+                            {
+                              "currency": "USD",
+                              "min": 50.0,
+                              "max": 5000.0
+                            }
+                          ]
+                        }
+                      },
+                      "limits": {
+                        "total": 100,
+                        "used": 0
+                      },
+                      "status": "SCHEDULED",
+                      "created_at": "2026-10-16T15:04:05Z",
+                      "disabled_at": null
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "description": "A promotion. Every member is present, with `null` for an absent value.",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "The id of the promotion (UUID). Assigned by Yuno."
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "The account the promotion belongs to."
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "schedule": {
+                      "type": "object",
+                      "properties": {
+                        "starts_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "ends_at": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "date-time",
+                          "description": "`null` means no end date."
+                        }
+                      }
+                    },
+                    "redemption": {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "AUTOMATIC",
+                            "CODE"
+                          ],
+                          "description": "Promotions you create with this API are `CODE`. The account can also hold `AUTOMATIC` promotions, and the list returns them too."
+                        },
+                        "code": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The code, in upper case. `null` for an `AUTOMATIC` promotion."
+                        }
+                      }
+                    },
+                    "discount": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "PERCENTAGE",
+                            "FIXED"
+                          ]
+                        },
+                        "value": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "description": "`PERCENTAGE` only. `null` for a fixed discount."
+                        },
+                        "amounts": {
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "currency": {
+                                "type": "string",
+                                "description": "ISO 4217 currency code."
+                              },
+                              "value": {
+                                "type": "number",
+                                "description": "An amount in major units, with exactly the decimals of the currency."
+                              }
+                            }
+                          },
+                          "description": "`FIXED` only. `null` for a percentage discount."
+                        }
+                      }
+                    },
+                    "conditions": {
+                      "type": "object",
+                      "description": "One key for each dimension, `null` when the promotion has no condition on it. A code promotion created with this API holds `countries` and `amounts` only.",
+                      "properties": {
+                        "bins": {
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "payment_methods": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "description": "Payment method types.",
+                          "properties": {
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "card_types": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "description": "Card types.",
+                          "properties": {
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "countries": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "description": "Payment countries (ISO 3166-1).",
+                          "properties": {
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "amounts": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "values": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "currency": {
+                                    "type": "string"
+                                  },
+                                  "min": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "max": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "limits": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "The cap of the code and the uses counted so far. `null` when the promotion has no cap.",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "description": "The most uses the code accepts."
+                        },
+                        "used": {
+                          "type": "integer",
+                          "description": "The uses counted so far. It grows by one for each new payment `X-Idempotency-Key` and never decreases."
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "SCHEDULED",
+                        "ACTIVE",
+                        "EXPIRED",
+                        "DISABLED"
+                      ],
+                      "description": "Computed from `schedule` and from the disable at the moment you read the promotion."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "disabled_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "description": "`null` while the promotion is not disabled."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400. Two kinds of body: `INVALID_PARAMETERS` for what public-api checks before it asks the promotions service, and `INVALID_REQUEST` for the promotions service's own checks, with one `path: RULE` message for each failed path.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "No X-Account-Code": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "x-account-code header is required."
+                      ]
+                    },
+                    "summary": "No X-Account-Code header"
+                  },
+                  "No X-Idempotency-Key": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The header 'X-Idempotency-Key' is required and must not exceed 64 characters."
+                      ]
+                    },
+                    "summary": "No X-Idempotency-Key header"
+                  },
+                  "account_id in the body": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'account_id' is not accepted in the body: the promotion belongs to the account of the x-account-code header."
+                      ]
+                    },
+                    "summary": "account_id in the body"
+                  },
+                  "Mode is not CODE": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'redemption.mode' must be CODE: merchants create promotions that customers redeem with a code."
+                      ]
+                    },
+                    "summary": "redemption.mode is not CODE"
+                  },
+                  "Payment method condition": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "conditions.payment_methods: FORBIDDEN"
+                      ]
+                    },
+                    "summary": "A payment method condition on a code"
+                  },
+                  "Code too short": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "redemption.code: CODE_LENGTH"
+                      ]
+                    },
+                    "summary": "Code with fewer than 3 characters"
+                  },
+                  "Code with a bad character": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "redemption.code: CODE_CHARACTERS"
+                      ]
+                    },
+                    "summary": "Code with a character outside A-Z, 0-9, _ and -"
+                  },
+                  "limits.total out of range": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "limits.total: RANGE"
+                      ]
+                    },
+                    "summary": "limits.total below 1 or above 2147483647"
+                  },
+                  "ends_at not after starts_at": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "schedule.ends_at: NOT_AFTER_START"
+                      ]
+                    },
+                    "summary": "schedule.ends_at not after schedule.starts_at"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_PARAMETERS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401. The credentials are missing or invalid.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid Credentials"
+                      ]
+                    }
+                  },
+                  "Not authenticated": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_CREDENTIALS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404. Promotions is not enabled for your organization. The body has a `code` and no `messages`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Promotions not enabled": {
+                    "value": {
+                      "code": "PROMOTION_NOT_FOUND"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_NOT_FOUND"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409. Another promotion of the account that is not disabled holds this code in an overlapping schedule.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Code already exists": {
+                    "value": {
+                      "code": "CODE_ALREADY_EXISTS",
+                      "messages": [
+                        "Another promotion of the account holds this code in an overlapping schedule."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "CODE_ALREADY_EXISTS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413. The body is larger than 256 KiB.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Request too large": {
+                    "value": {
+                      "code": "REQUEST_ENTITY_TOO_LARGE",
+                      "messages": [
+                        "The request body must not exceed 256 KiB."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "REQUEST_ENTITY_TOO_LARGE"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500. The promotions service failed. Retry later.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Internal error": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "messages": [
+                        "Internal error"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INTERNAL_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503. The promotions service is not configured or not available.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Service unavailable": {
+                    "value": {
+                      "code": "PROMOTION_ENGINE_UNAVAILABLE",
+                      "messages": [
+                        "The promotions service is unavailable."
+                      ]
+                    }
+                  },
+                  "Store unavailable": {
+                    "value": {
+                      "code": "STORE_UNAVAILABLE",
+                      "messages": [
+                        "The store is unavailable."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_ENGINE_UNAVAILABLE"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "504. The promotions service did not answer in time.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Gateway timeout": {
+                    "value": {
+                      "code": "PROMOTION_ENGINE_TIMEOUT",
+                      "messages": [
+                        "The promotions service did not answer in time."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_ENGINE_TIMEOUT"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

@@ -12,7 +12,7 @@ Promotions works only after Yuno enables it for your organization: the Promotion
 
 ## Attributes
 
-A promotion is a discount with a date window and a set of conditions. You create, view and disable promotions in the Yuno Dashboard, and this page describes their attributes. A promotion can't be edited after you create it: the only change is to disable it.
+A promotion is a discount with a date window and a set of conditions. You create, view and disable promotions in the Yuno Dashboard. You can also create, retrieve, list and disable code promotions with the API: [Create Promotion](/reference/promotions/create-promotion), [Retrieve Promotion](/reference/promotions/retrieve-promotion), [List Promotions](/reference/promotions/list-promotions) and [Disable Promotion](/reference/promotions/disable-promotion). This page describes the attributes. A promotion can't be edited after you create it: the only change is to disable it.
 
 <ParamField body="id" type="string">
   The unique identifier of the promotion (UUID). Assigned by Yuno.
@@ -59,11 +59,15 @@ A promotion is a discount with a date window and a set of conditions. You create
 
   <Expandable title="properties">
     <ParamField body="mode" type="enum">
-      Always `AUTOMATIC` today: the promotion applies by itself to every payment that meets the conditions, and the customer types nothing. Promotion codes aren't available yet: the Dashboard creates `AUTOMATIC` promotions only.
+      Possible values:
+      - `AUTOMATIC` = The promotion applies by itself to every payment that meets the conditions, and the customer types nothing.
+      - `CODE` = The promotion applies only when the payment carries its code in `code`. The API creates `CODE` promotions only. See [Promotion codes](/docs/payment-features/promotion-codes).
     </ParamField>
 
     <ParamField body="code" type="string">
-      Reserved for promotion codes. Always `null` today.
+      The code of a `CODE` promotion: 3 to 32 characters, `A-Z`, `0-9`, `_` and `-`. Yuno stores it in upper case and matches the code of a payment without regard to case. A code is unique per account among the promotions that are not disabled and whose schedule overlaps. `null` for an `AUTOMATIC` promotion.
+
+      Example: SUMMER10
     </ParamField>
   </Expandable>
 </ParamField>
@@ -93,7 +97,7 @@ A promotion is a discount with a date window and a set of conditions. You create
 </ParamField>
 
 <ParamField body="conditions" type="object">
-  The conditions a payment must meet. **AND** across keys, **OR** inside each key's `values` list. Omit a key or send `null` for no condition on that dimension; an empty `values` list is rejected. An empty `conditions` object (`{}`) applies to every payment of the account.
+  The conditions a payment must meet. **AND** across keys, **OR** inside each key's `values` list. Omit a key or send `null` for no condition on that dimension; an empty `values` list is rejected. An empty `conditions` object (`{}`) applies to every payment of the account. A `CODE` promotion applies to the whole payment, whatever the payment method, so the API accepts `countries` and `amounts` only: a `bins`, `payment_methods` or `card_types` condition on a code is rejected with `400 INVALID_REQUEST` and the message `conditions.bins: FORBIDDEN`, `conditions.payment_methods: FORBIDDEN` or `conditions.card_types: FORBIDDEN`.
 
   <Expandable title="properties">
     <ParamField body="bins" type="object">
@@ -144,8 +148,26 @@ A promotion is a discount with a date window and a set of conditions. You create
   </Expandable>
 </ParamField>
 
+<ParamField body="limits" type="object">
+  The cap on the uses of a code. `null` when the promotion has no cap, and always `null` for an `AUTOMATIC` promotion: only a `CODE` promotion can hold a cap.
+
+  <Expandable title="properties">
+    <ParamField body="total" type="integer">
+      The most uses the code accepts: a whole number from 1 to 2147483647. You set it when you create the promotion.
+
+      Example: 100
+    </ParamField>
+
+    <ParamField body="used" type="integer">
+      The uses counted so far. A use is counted when a payment takes the code, by the `X-Idempotency-Key` of the payment: the same key again counts nothing, and a declined payment keeps its use. The count only grows. When `used` equals `total`, the next payment with the code is refused with the reason `USAGE_LIMIT_REACHED`.
+
+      Example: 3
+    </ParamField>
+  </Expandable>
+</ParamField>
+
 <ParamField body="status" type="enum">
-  Computed from `schedule` at the moment you read the promotion.
+  Computed from `schedule` and from the disable at the moment you read the promotion.
 
   Possible values:
   - `SCHEDULED` = `starts_at` is in the future.
@@ -168,9 +190,11 @@ A promotion holds up to 500 BIN prefixes, 100 BIN ranges, 20 payment method type
 
 ## How a promotion is chosen
 
-One payment gets one promotion. When two or more match, Yuno applies the one with the **biggest saving** for the customer, then the oldest, then the smallest `id`. A fixed discount is capped at the payment amount, but a promotion never makes a charge of zero: a quote whose charge would be zero answers `204`. A promotion whose discount is zero doesn't apply.
+One payment gets one promotion. When two or more match, Yuno applies the one with the **biggest saving** for the customer, then the oldest, then the smallest `id`. When a payment carries a code, the promotion of the code competes in the same selection, and it has no advantage. See [Promotion codes](/docs/payment-features/promotion-codes#when-a-code-and-an-automatic-promotion-both-apply). A fixed discount is capped at the payment amount, but a promotion never makes a charge of zero: a quote whose charge would be zero answers `204`. A promotion whose discount is zero doesn't apply.
 
-## Example
+## Examples
+
+An `AUTOMATIC` promotion:
 
 ```json
 {
@@ -191,8 +215,34 @@ One payment gets one promotion. When two or more match, Yuno applies the one wit
     "countries": { "values": ["AR"] },
     "amounts": { "values": [{ "currency": "USD", "min": 100.00, "max": 5000.00 }] }
   },
+  "limits": null,
   "status": "SCHEDULED",
   "created_at": "2026-09-14T12:04:18Z",
+  "disabled_at": null
+}
+```
+
+A `CODE` promotion with a cap:
+
+```json
+{
+  "id": "00000000-0000-4000-8000-0000000000b1",
+  "account_id": "00000000-0000-4000-8000-0000000000a1",
+  "name": "Summer 10",
+  "description": null,
+  "schedule": { "starts_at": "2026-11-01T00:00:00Z", "ends_at": "2026-12-01T00:00:00Z" },
+  "redemption": { "mode": "CODE", "code": "SUMMER10" },
+  "discount": { "type": "PERCENTAGE", "value": 10, "amounts": null },
+  "conditions": {
+    "bins": null,
+    "payment_methods": null,
+    "card_types": null,
+    "countries": { "values": ["US"] },
+    "amounts": { "values": [{ "currency": "USD", "min": 50.00, "max": 5000.00 }] }
+  },
+  "limits": { "total": 100, "used": 3 },
+  "status": "ACTIVE",
+  "created_at": "2026-10-16T15:04:05Z",
   "disabled_at": null
 }
 ```
