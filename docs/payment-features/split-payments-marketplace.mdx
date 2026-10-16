@@ -548,6 +548,28 @@ In this section, we explore how the `split_marketplace` object is used to divide
 }
 ```
 
+### Recipient fallback for CARD and PIX
+
+<Note>
+  This behavior is pending release. Confirm availability with Yuno before relying on it in your environment.
+</Note>
+
+For CARD and PIX payments created through `POST /v1/payments`, including continuation of those payments, an attempt that is `DECLINED` with `RECIPIENT_NOT_FOUND` can continue through an eligible connection. Every split entry must reference a Yuno `recipient_id`, including `PAYMENTFEE`, `VAT` and `COMMISSION` entries, where it is otherwise optional.
+
+A fallback connection is eligible only when **every recipient in the split** has exactly one matching onboarding on that connection, with status `SUCCEEDED` and a nonempty provider recipient ID. An onboarding on another connection to the same provider does not qualify. If you specify `recipient_type`, the onboarding must match that type; otherwise, the matching onboarding must be unambiguous.
+
+Your configured route takes precedence:
+
+- A configured next step is followed before another initial provider is considered. Once recipient fallback starts, a payment step that cannot resolve all recipients on its connection is declined locally; its configured route can continue to the next step.
+- A matching decline-group or merchant-advice-code stop remains a stop.
+- For routes with configured allocation percentages, when an initial provider's route would otherwise end, Yuno can select an eligible, untried provider among the connections in the route's first step, within the same condition set. If the route starts with a fraud or 3DS step, Yuno does not look for another provider through this fallback. It does not search nested routes or branches reached only through errors. Paused connections, connections flagged by a routing monitor, and connections allocated zero percent are excluded.
+
+Fallback preserves the order, Yuno recipient IDs and allocations of the split. Yuno resolves the provider recipient IDs for the selected connection. For example, a BRL 100 payment split BRL 60/40 remains BRL 60/40 when it moves to another eligible provider.
+
+A local `RECIPIENT_NOT_FOUND` transaction records a rejected attempt without a request to that provider. If there is no eligible alternative and no configured continuation, the payment ends without another provider charge. A PIX payment already accepted and awaiting payment does not trigger this fallback.
+
+This behavior does not apply to splits containing entries without a Yuno `recipient_id`, including entries using only `provider_recipient_id`, or to verification, capture, refund, cancellation, or enrollment. It does not transfer an accepted payment to another provider. A provider token that changes the selected connection also prevents fallback through that selection.
+
 ### Update the split of a paid transaction
 
 When an order changes after payment (for example, a different seller delivers it), you can replace the split of the paid transaction with [Update the split of a paid transaction](/reference/recipients-for-marketplace/update-split-marketplace) instead of refunding and charging again. The legs you send replace the whole previous split.
