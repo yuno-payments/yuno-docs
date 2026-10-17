@@ -6,6 +6,9 @@ metadata:
   robots: index
 description: "Implement Yuno's full payment flow on Web, iOS, and Android with pre-built checkout UI"
 ---
+import LegacySdkNotice from '/snippets/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
 
 Welcome to the Yuno SDKs quickstart guide. This guide shows you how to easily implement Yuno's full payment flow, its most straightforward solution with pre-built UI and automatic payment method display.
 
@@ -24,15 +27,17 @@ Choose your platform and follow the steps to start processing your first payment
     Or include via CDN:
 
     ```html
-    <script src="https://sdk-web.y.uno/v1.10/main.js"></script>
+    <script src="https://sdk-web.y.uno/v1.11/main.js"></script>
     ```
 
     ### 2. Initialize and process payment
 
     ```javascript
-    import { Yuno } from '@yuno-payments/sdk-web';
+    import { loadScript } from '@yuno-payments/sdk-web';
 
-    // Initialize SDK
+    // Load the SDK script, then initialize it with your public API key
+    // (with the CDN script tag, skip the import and use window.Yuno in place of loadScript())
+    const Yuno = await loadScript();
     const yuno = await Yuno.initialize('your-public-api-key');
 
     // Create checkout session on your backend
@@ -53,6 +58,7 @@ Choose your platform and follow the steps to start processing your first payment
     checkoutSession: session.checkout_session,
     elementSelector: '#payment-form',
     countryCode: 'US',
+    language: 'en',
     async createPayment(oneTimeToken) {
         // Your backend calls: POST https://api-sandbox.y.uno/v1/payments
         // with header: X-Idempotency-Key
@@ -74,19 +80,18 @@ Choose your platform and follow the steps to start processing your first payment
 
     // Mount payment form
     await yuno.mountCheckout();
+
+    // Start the payment when the shopper clicks your pay button
+    document.getElementById('pay-button')?.addEventListener('click', async () => {
+        await yuno.startPayment();
+    });
     ```
 
-    ### 3. Add HTML container and trigger payment
+    ### 3. Add HTML container and pay button
 
     ```html
     <div id="payment-form"></div>
     <button id="pay-button">Pay Now</button>
-
-    <script>
-    document.getElementById('pay-button').addEventListener('click', async () => {
-        await yuno.startPayment();
-    });
-    </script>
     ```
 
     See [Test cards](#test-cards) below.
@@ -101,19 +106,20 @@ Choose your platform and follow the steps to start processing your first payment
 
     **CocoaPods**:
     ```ruby
-    pod 'YunoSDK', '~> 2.11.1'
+    pod 'YunoSDK', '~> 2.27.0'
     ```
 
     **Swift Package Manager**:
     ```swift
     dependencies: [
-        .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.11.1")
+        .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.27.0")
     ]
     ```
 
     ### 2. Initialize and implement delegate
 
     ```swift
+    import UIKit
     import YunoSDK
 
     // Initialize in AppDelegate or App struct
@@ -122,27 +128,27 @@ Choose your platform and follow the steps to start processing your first payment
         config: YunoConfig()
     )
 
-    // In your view controller - implement YunoPaymentDelegate
-    class PaymentViewController: UIViewController, YunoPaymentDelegate {
-        
+    // In your view controller - implement YunoPaymentFullDelegate
+    class PaymentViewController: UIViewController, @preconcurrency YunoPaymentFullDelegate {
+    
         // Required delegate properties
         var checkoutSession: String { "session-from-backend" }
         var countryCode: String { "US" }
         var language: String? { "en" }
         var viewController: UIViewController? { self }
-        
+    
         override func viewDidLoad() {
             super.viewDidLoad()
-            displayPaymentMethods()
+            Task { await displayPaymentMethods() }
         }
-        
+    
         func displayPaymentMethods() async {
             // Get payment methods view
-            let paymentView = await Yuno.getPaymentMethodViewAsync(delegate: self)
+            let paymentView: UIView = await Yuno.getPaymentMethodViewAsync(delegate: self)
             view.addSubview(paymentView)
             // Add constraints...
         }
-        
+    
         // Required: Create payment with one-time token
         func yunoCreatePayment(with token: String) {
             // Call your backend: POST /v1/payments
@@ -151,10 +157,10 @@ Choose your platform and follow the steps to start processing your first payment
                 Yuno.continuePayment()
             }
         }
-        
+    
         // Required: Handle payment result
         func yunoPaymentResult(_ result: Yuno.Result) {
-            switch result {
+            switch result.status {
             case .succeeded:
                 print("Payment succeeded!")
             case .fail:
@@ -165,11 +171,22 @@ Choose your platform and follow the steps to start processing your first payment
                 break
             }
         }
-    }
-
-    // Start payment when user taps pay button
-    @IBAction func payButtonTapped(_ sender: UIButton) {
-        Yuno.startPayment(showPaymentStatus: true)
+    
+        // Required by YunoPaymentFullDelegate
+        func yunoDidSelect(paymentMethod: PaymentMethodSelected) {
+            // Enable your pay button
+        }
+    
+        func yunoDidUnenrollSuccessfully(_ success: Bool) {}
+    
+        func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) {
+            // Update your payment view height constraint
+        }
+    
+        // Start payment when user taps pay button
+        @IBAction func payButtonTapped(_ sender: UIButton) {
+            Yuno.startPayment(showPaymentStatus: true)
+        }
     }
     ```
 
@@ -184,13 +201,13 @@ Choose your platform and follow the steps to start processing your first payment
     ### 1. Install
 
     **build.gradle**:
-    ```kotlin
+    ```groovy
     repositories {
         maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
     }
 
     dependencies {
-        implementation 'com.yuno.payments:android-sdk:2.9.0'
+        implementation 'com.yuno.payments:android-sdk:2.26.0'
     }
     ```
 
@@ -198,12 +215,16 @@ Choose your platform and follow the steps to start processing your first payment
 
     **Initialize in Application**:
     ```kotlin
+    import android.app.Application
+    import com.yuno.sdk.Yuno
+    import com.yuno.sdk.YunoConfig
+
     class MyApplication : Application() {
         override fun onCreate() {
             super.onCreate()
             Yuno.initialize(
                 this,
-                publicApiKey = "your-public-api-key",
+                apiKey = "your-public-api-key",
                 config = YunoConfig(
                     keepLoader = true,
                 )
@@ -218,20 +239,39 @@ Choose your platform and follow the steps to start processing your first payment
 
     **In Activity/Fragment**:
     ```kotlin
-    import com.yuno.payments.Yuno
+    import android.os.Bundle
+    import androidx.activity.ComponentActivity
+    import androidx.activity.compose.setContent
+    import androidx.compose.foundation.layout.Column
+    import androidx.compose.foundation.layout.fillMaxSize
+    import androidx.compose.foundation.rememberScrollState
+    import androidx.compose.foundation.verticalScroll
+    import androidx.compose.material3.Button
+    import androidx.compose.material3.Text
+    import androidx.compose.runtime.getValue
+    import androidx.compose.runtime.mutableStateOf
+    import androidx.compose.runtime.remember
+    import androidx.compose.runtime.setValue
+    import androidx.compose.ui.Modifier
+    import androidx.lifecycle.lifecycleScope
+    import com.yuno.presentation.core.components.PaymentMethodListViewComponent
+    import com.yuno.sdk.payments.continuePayment
+    import com.yuno.sdk.payments.startCheckout
+    import com.yuno.sdk.payments.startPayment
+    import kotlinx.coroutines.launch
 
     class PaymentActivity : ComponentActivity() {
         private var checkoutSession: String? = null
-        
+    
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-            
+        
             // Create checkout session on your backend first
             // Your backend calls: POST https://api-sandbox.y.uno/v1/checkout/sessions
             lifecycleScope.launch {
                 val session = createCheckoutSession() // Your backend call
                 checkoutSession = session.id
-                
+            
                 // Start checkout with session
                 startCheckout(
                     checkoutSession = session.id,
@@ -247,10 +287,10 @@ Choose your platform and follow the steps to start processing your first payment
                     }
                 )
             }
-            
+        
             setContent {
                 var paymentMethodSelected by remember { mutableStateOf(false) }
-                
+            
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -259,24 +299,26 @@ Choose your platform and follow the steps to start processing your first payment
                     // Display payment methods
                     PaymentMethodListViewComponent(
                         activity = this@PaymentActivity,
-                        onPaymentSelected = { isSelected ->
+                        onPaymentSelected = { isSelected, _ ->
                             paymentMethodSelected = isSelected
                         }
                     )
-                    
+                
                     // Pay button
                     Button(
                         onClick = {
                             startPayment(
-                                showStatusYuno = true,
+                                showPaymentStatus = true,
                                 callbackOTT = { token ->
                                     token?.let { ott ->
-                                        // Call your backend: POST /v1/payments
-                                        // with { payment_method: { token: ott }, checkout_session: ... }
-                                        createPayment(ott, checkoutSession!!)
+                                        lifecycleScope.launch {
+                                            // Call your backend: POST /v1/payments
+                                            // with { payment_method: { token: ott }, checkout_session: ... }
+                                            createPayment(ott, checkoutSession!!)
                                         
-                                        // Required for async payment methods
-                                        continuePayment()
+                                            // Required for async payment methods
+                                            continuePayment()
+                                        }
                                     }
                                 }
                             )

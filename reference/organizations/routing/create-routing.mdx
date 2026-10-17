@@ -23,6 +23,9 @@ Creates a routing for one `(account_id, payment_method)` pair. Each routing refe
 <ParamField body="default_route" type="object" required>
   The route used when no `condition_sets[]` matches.
   <Expandable title="properties">
+    <ParamField body="start_split" type="object[]">
+      Optional. Splits the entry of the route across several steps by percentage, as `[{ "index": 1, "percentage": 45 }, { "index": 2, "percentage": 55 }]`. Percentages are integers that must sum to `100`. Omit to start every payment on step 1. See [Percentage splits](/reference/organizations/routing/routing-resource-shape#percentage-splits).
+    </ParamField>
     <ParamField body="steps" type="object[]" required>
       Each step is one provider attempt. `index` values are contiguous starting at 1.
       <Expandable title="item">
@@ -45,7 +48,10 @@ Creates a routing for one `(account_id, payment_method)` pair. Each routing refe
               Required when `status` is `DECLINE_GROUP`. Specifies which decline subtypes trigger this rule (e.g., `INSUFFICIENT_FUNDS`, `DECLINED_BY_BANK`).
             </ParamField>
             <ParamField body="next" type="integer">
-              The `index` of the next step to execute. Omit if no fallback is needed.
+              The `index` of the next step to execute. Omit if no fallback is needed. Optional next to `next_split`; if both are sent it must be the first `next_split` entry.
+            </ParamField>
+            <ParamField body="next_split" type="object[]">
+              Splits the fallback across several steps by percentage, as `[{ "index": 2, "percentage": 70 }, { "index": 3, "percentage": 30 }]`. At least two entries, integer percentages that sum to `100`. `next` is not required with it.
             </ParamField>
           </Expandable>
         </ParamField>
@@ -67,7 +73,7 @@ Creates a routing for one `(account_id, payment_method)` pair. Each routing refe
         List of [Conditions](/reference/organizations/routing/routing-conditions) that must match.
     </ParamField>
     <ParamField body="route" type="object" required>
-        The steps to execute if this set matches.
+        The steps to execute if this set matches. Same shape as `default_route`, including `start_split` and `output[].next_split`.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -147,6 +153,32 @@ curl -X POST 'https://api.y.uno/v1/routing' \
             { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-..." }
           ]
         }
+      },
+      {
+        "sort_number": 2,
+        "name": "Mexico — 45/45/10 between Adyen, Stripe and dLocal",
+        "conditions": [
+          { "condition_type": "COUNTRY", "conditional": "EQUAL", "values": ["MX"] }
+        ],
+        "route": {
+          "start_split": [
+            { "index": 1, "percentage": 45 },
+            { "index": 2, "percentage": 45 },
+            { "index": 3, "percentage": 10 }
+          ],
+          "steps": [
+            {
+              "index": 1,
+              "provider_id": "ADYEN",
+              "connection_id": "b2c4d5e6-...",
+              "output": [
+                { "status": "DECLINED", "next_split": [ { "index": 2, "percentage": 70 }, { "index": 3, "percentage": 30 } ] }
+              ]
+            },
+            { "index": 2, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-..." },
+            { "index": 3, "provider_id": "DLOCAL", "connection_id": "c3d5e6f7-..." }
+          ]
+        }
       }
     ]
   }'
@@ -208,6 +240,7 @@ curl -X POST 'https://api.y.uno/v1/routing' \
 
 | HTTP | `code` |
 | --- | --- |
+| `400` | `INVALID_ROUTE_CONFIGURATION`<br />Route rule violation: non-contiguous step indexes, a `next` or split branch to a missing step, a split that does not sum to 100 or leaves a step unreachable, a step the API cannot express. |
 | `400` | `ROUTING_VALIDATION_FAILED`<br />Schema or rule violation. `messages` names the offending field/path. |
 | `400` | `ROUTING_PROVIDER_NOT_AVAILABLE`<br />A step references a `(provider_id, connection_id)` not active for the account on this `payment_method`. |
 | `409` | `ROUTING_ALREADY_EXISTS`<br />A routing already exists for this `(account, payment_method)`. Use `PATCH` to update it. |

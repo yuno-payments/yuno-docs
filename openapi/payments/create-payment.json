@@ -32,6 +32,38 @@
         "name": "private-secret-key",
         "x-default": "<Your private-secret-key>"
       }
+    },
+    "schemas": {
+      "ExternalSubscription": {
+        "type": "object",
+        "description": "The subscription in an external billing platform that this payment belongs to, as it was sent when the payment was created. The key is in the response only when the payment carried `external_subscription`.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The subscription's identifier in the external billing platform (for example `sub_...` for Stripe Billing)."
+          },
+          "customer_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "The customer's identifier in the external billing platform that owns the subscription (for example `cus_...`)."
+          }
+        }
+      },
+      "ExternalInvoice": {
+        "type": "object",
+        "description": "The invoice in an external billing platform that this payment pays (a top-up), as it was sent when the payment was created. The key is in the response only when the payment carried `external_invoice`. See [Pay a Stripe invoice (top-ups)](/docs/payment-features/subscriptions/stripe-billing-top-ups).",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The invoice's identifier in the external billing platform (for example `in_...` for Stripe Billing)."
+          },
+          "customer_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "The customer's identifier in the external billing platform that owns the invoice (for example `cus_...`). Null when the payment was created without it."
+          }
+        }
+      }
     }
   },
   "security": [
@@ -2573,6 +2605,10 @@
                                     "type": "string",
                                     "description": "Unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle. (MAX 255; MIN 3). [Stored credentials](/docs/stored-credentials)"
                                   },
+                                  "transaction_link_id": {
+                                    "type": "string",
+                                    "description": "Mastercard transaction link ID (TLID) returned in `stored_credentials.transaction_link_id` of the initial payment. Send it on merchant-initiated payments (`usage: USED`) together with `network_transaction_id` when you keep the card in your own vault; when you charge a `vaulted_token`, Yuno reuses the stored value. (MAX 255; MIN 3). [Stored credentials](/docs/stored-credentials)"
+                                  },
                                   "additional_data": {
                                     "type": "object",
                                     "description": "This structure is used to send additional information about recurrence. It's optional, and few providers require it (e.g. Mercado Pago). Contact your TAM to confirm if it's needed for your integration.",
@@ -2738,6 +2774,10 @@
                                   "network_transaction_id": {
                                     "type": "string",
                                     "description": "Unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle. (MAX 255; MIN 3). [Stored credentials](/docs/stored-credentials)"
+                                  },
+                                  "transaction_link_id": {
+                                    "type": "string",
+                                    "description": "Mastercard transaction link ID (TLID) returned in `stored_credentials.transaction_link_id` of the initial payment. Send it on merchant-initiated payments (`usage: USED`) together with `network_transaction_id` when you keep the card in your own vault; when you charge a `vaulted_token`, Yuno reuses the stored value. (MAX 255; MIN 3). [Stored credentials](/docs/stored-credentials)"
                                   },
                                   "additional_data": {
                                     "type": "object",
@@ -3068,6 +3108,23 @@
                       "customer_id": {
                         "type": "string",
                         "description": "The customer's identifier in the external billing platform that owns the subscription (for example `cus_...`). Recommended; resolved from the subscription when omitted."
+                      }
+                    }
+                  },
+                  "external_invoice": {
+                    "type": "object",
+                    "description": "Links this payment to an invoice of an external billing platform, so that a payment you collect with Yuno pays that invoice (for example a balance top-up). Yuno checks the invoice before it charges. When the payment is approved, Yuno reports it to the invoice; when it is declined, Yuno records a failed attempt and the invoice stays open. A smaller amount than the amount remaining is accepted on one-off invoices; invoices of subscriptions that Stripe charges automatically need the exact amount. Cannot be sent together with `external_subscription` or `subscription` (returns `INVALID_REQUEST`). The object is returned in the payment response, in Retrieve Payment and in payment webhooks. See [Pay a Stripe invoice (top-ups)](/docs/payment-features/subscriptions/stripe-billing-top-ups) for the amount rules and the error codes.",
+                    "required": [
+                      "id"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The invoice's identifier in the external billing platform (for example `in_...` for Stripe Billing). Required when the object is present. (MIN 3; MAX 255)"
+                      },
+                      "customer_id": {
+                        "type": "string",
+                        "description": "The customer's identifier in the external billing platform that owns the invoice (for example `cus_...`). Optional. When you send it, it must be the invoice's customer. (MIN 3; MAX 255 when present)"
                       }
                     }
                   },
@@ -5257,6 +5314,33 @@
                       }
                     },
                     "workflow": "DIRECT"
+                  }
+                },
+                "Card - With external invoice (top-up)": {
+                  "summary": "Pay a specific Stripe invoice with a card (top-up)",
+                  "value": {
+                    "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
+                    "merchant_order_id": "topup-0001",
+                    "description": "Balance top-up",
+                    "country": "US",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 50
+                    },
+                    "checkout": {
+                      "session": "{{checkout_session}}"
+                    },
+                    "customer_payer": {
+                      "id": "1a71c7b7-80c2-4ba5-b601-4d34d48c0e18"
+                    },
+                    "payment_method": {
+                      "type": "CARD",
+                      "token": "<one_time_token_from_sdk>"
+                    },
+                    "external_invoice": {
+                      "id": "in_1QwZzz",
+                      "customer_id": "cus_RplXYZ"
+                    }
                   }
                 },
                 "Card - With a Yuno promotion": {
@@ -13230,6 +13314,12 @@
                           "type": "boolean",
                           "example": false,
                           "default": true
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -14249,6 +14339,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -15512,6 +15608,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -16623,6 +16725,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -17715,6 +17823,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -18739,6 +18853,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -19763,6 +19883,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -20819,6 +20945,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -21840,6 +21972,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -22868,6 +23006,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -23908,6 +24052,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -24498,6 +24648,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -25601,6 +25757,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -26250,6 +26412,12 @@
                         "payment_link_code": {
                           "type": "string",
                           "example": ""
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -27204,6 +27372,12 @@
                               }
                             }
                           }
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     },
@@ -29909,6 +30083,12 @@
                           "type": "boolean",
                           "example": false,
                           "default": true
+                        },
+                        "external_subscription": {
+                          "$ref": "#/components/schemas/ExternalSubscription"
+                        },
+                        "external_invoice": {
+                          "$ref": "#/components/schemas/ExternalInvoice"
                         }
                       }
                     }
@@ -29935,6 +30115,62 @@
                       "code": "REQUEST_IN_PROCESS",
                       "messages": [
                         "Request with the same idempotency is already in process. Try again in a few seconds."
+                      ]
+                    }
+                  },
+                  "External invoice - amount above remaining": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING",
+                      "messages": [
+                        "Invalid Request. The amount can not be greater than the amount remaining on the invoice (12.00 USD)."
+                      ]
+                    }
+                  },
+                  "External invoice - invoice not open": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_NOT_OPEN",
+                      "messages": [
+                        "Invalid Request. The invoice is not open and can not be paid."
+                      ]
+                    }
+                  },
+                  "External invoice - customer mismatch": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_CUSTOMER_MISMATCH",
+                      "messages": [
+                        "Invalid Request. The customer of the external_invoice does not match the customer of the invoice."
+                      ]
+                    }
+                  },
+                  "External invoice - currency mismatch": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_CURRENCY_MISMATCH",
+                      "messages": [
+                        "Invalid Request. The payment currency does not match the invoice currency."
+                      ]
+                    }
+                  },
+                  "External invoice - invoice not found": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_NOT_FOUND",
+                      "messages": [
+                        "Invalid Request. The invoice does not exist."
+                      ]
+                    }
+                  },
+                  "External invoice - payment rejected": {
+                    "value": {
+                      "code": "EXTERNAL_INVOICE_REJECTED",
+                      "messages": [
+                        "Invalid Request. The invoice can not be paid with this payment."
+                      ]
+                    }
+                  },
+                  "External invoice - sent with external_subscription": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid Request. external_invoice and external_subscription can not be sent together. Please send only one of them."
                       ]
                     }
                   },

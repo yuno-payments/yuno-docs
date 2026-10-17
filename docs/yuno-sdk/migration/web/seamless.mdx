@@ -1,0 +1,161 @@
+---
+title: "Seamless mode"
+description: "Migrate Web Seamless integrations (yuno.startSeamlessCheckout + yuno.mountSeamlessCheckout / mountSeamlessExternalButtons) to the unified Transaction API."
+---
+
+Seamless mode was the **SDK-managed variant**: the SDK created the payment internally, the merchant only chose when/where to render the form and triggered the start via `yuno.startPayment()`. Unlike non-Seamless mode, Seamless did **not** expose `yunoCreatePayment`: payment creation was always managed by the SDK.
+
+In the unified API the same flow is a normal `Transaction` **without** `createPayment` wired (presence of `createPayment` flips to manual mode; its absence stays managed). Your Pay button calls `transaction.start({ paymentMethod })` with the method the user picked in the list.
+
+## Before you start
+
+- Load the unified SDK bundle instead of the legacy one and initialize it as the side-by-side shows: `window.Yuno.initialize(...)` becomes `SdkPayments.initialize(...)`. Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Seamless you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | No equivalent: Seamless never let you create it | Override `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | Always | No override | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Side-by-side
+
+### Seamless Full
+
+<CodeGroup>
+
+```typescript Before. Seamless Full
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+await yuno.startSeamlessCheckout({
+    checkoutSession: 'session-from-backend',
+    elementSelector: '#root',
+    countryCode: 'CO',
+    language: 'en',
+    yunoPaymentResult: (status) => console.log('done:', status),
+})
+
+await yuno.mountSeamlessCheckout()
+
+// Merchant's pay button triggers. SDK does everything else
+document.getElementById('pay').addEventListener('click', () => {
+    yuno.startPayment()
+})
+```
+
+```typescript After. Unified Transaction (managed)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    elementSelector: '#payment-form', // form container for the selected method (form flows only)
+    // managed mode: no createPayment wired
+    onStatus: (result) => console.log('done:', result.status),
+})
+
+let selectedPaymentMethod: PaymentMethodSelected | null = null
+
+const views = transaction.getPaymentMethodsViews({
+    types: ['paymentMethodList'],
+    onPaymentSelected: (paymentMethod) => {
+        selectedPaymentMethod = paymentMethod
+    },
+})
+
+views.paymentMethodList?.mount({ elementSelector: '#root' })
+
+// Your Pay button. With forms unfolded in the list, start() submits the form the shopper filled.
+// With folded forms, start() mounts the form into #payment-form and the shopper pays from it.
+document.getElementById('pay').addEventListener('click', () => {
+    if (selectedPaymentMethod) transaction.start({ paymentMethod: selectedPaymentMethod })
+})
+```
+
+</CodeGroup>
+
+### Seamless External Buttons
+
+<CodeGroup>
+
+```typescript Before. Seamless External Buttons
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+await yuno.startSeamlessCheckout({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    yunoPaymentResult: (status) => console.log('done:', status),
+})
+
+yuno.mountSeamlessExternalButtons([
+    { elementSelector: '#apple-pay', paymentMethodType: 'APPLE_PAY' },
+    { elementSelector: '#google-pay', paymentMethodType: 'GOOGLE_PAY' },
+    { elementSelector: '#paypal', paymentMethodType: 'PAYPAL' },
+])
+```
+
+```typescript After. Unified Transaction (managed, wallet buttons)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    onStatus: (result) => console.log('done:', result.status),
+})
+
+// Tapping a wallet button pays. No start() call needed
+const views = transaction.getPaymentMethodsViews({
+    types: ['applePay', 'googlePay', 'paypal'],
+})
+
+views.applePay?.mount({ elementSelector: '#apple-pay' })
+views.googlePay?.mount({ elementSelector: '#google-pay' })
+views.paypal?.mount({ elementSelector: '#paypal' })
+```
+
+</CodeGroup>
+
+## What changes
+
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
+
+### Initialization and config
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
+| `checkoutSession`, `countryCode`, `language` on the `startSeamlessCheckout` config | The same fields on the transaction config | Moved | Same values, single factory. |
+| `elementSelector` on the `startSeamlessCheckout` config | `elementSelector` on the transaction config | Moved | Required when `start({ paymentMethod })` renders a form. The form renders inside this element, and the SDK throws without it. Headless flows ignore it. The list and wallet views keep their own `elementSelector` on `.mount()` (see Views). |
+
+### Callbacks
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renamed | Still the single outcome callback, now a field on the transaction config. It receives one `TransactionStatus` object (`status`, `substatus`, `message`). See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| *(none)* | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | New | Optional. With the list, store the method it delivers and pass it to `transaction.start({ paymentMethod })` from your Pay button (see Entry points). Wallet buttons do not need it. The tap is the confirmation, and the SDK starts the payment itself and reports through `onStatus`. |
+| *(none: payment creation was always managed)* | `createPayment` | New | Don't wire it. Its presence flips to manual mode (non-Seamless behavior); its absence keeps the SDK in managed mode, the same model Seamless had. |
+
+### Views
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.mountSeamlessCheckout()` | `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`, then `views.paymentMethodList?.mount({ elementSelector })` | Renamed | Get a view handle, then call `.mount(...)` with the selector. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). |
+| `yuno.mountSeamlessExternalButtons([{ elementSelector, paymentMethodType }])` | `getPaymentMethodsViews({ types: ['applePay', 'googlePay', 'paypal', 'paypalBraintree', 'revolutPay', 'samsungPay'] })`, then `views.applePay?.mount({ elementSelector, ...config })`, etc. | Renamed | One `.mount()` per wallet button. Map each v1 `paymentMethodType` to its view key: `APPLE_PAY` to `applePay`, `GOOGLE_PAY` to `googlePay`, `PAYPAL` to `paypal`, `PAYPAL_BRAINTREE` to `paypalBraintree`, `REVOLUT_PAY` to `revolutPay`, `SAMSUNG_PAY` to `samsungPay`. Per-view styling (button color, type, etc.) lives on each `.mount()` call. |
+| `yuno.unmountSeamlessExternalButton(type)` / `yuno.unmountSeamlessExternalButtons()` | *(removed)* | Removed | Per-button unmount removed. `transaction.unmount()` removes the form the transaction mounted and reports `USER_CANCEL` through `onStatus` when no result was delivered yet. The wallet buttons stay on the page until you remove their containers. |
+
+### Entry points
+
+| Seamless | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.startSeamlessCheckout(config)` | `sdkPayments.transaction(config)` | Renamed | The `Seamless` factory is gone: use the regular factory, without `createPayment` (see Callbacks). |
+| `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` with the list, `transaction.submit()` with a form that `start()` mounted | Renamed | With the list, your Pay button calls `start({ paymentMethod })` with the method the user picked. It submits the form the list opened inline. With a pre-selected method, `start({ paymentMethod })` mounts the form into the config's `elementSelector` and your Pay button calls `submit()` (set `showPayButton: false`). Wallet buttons pay on tap and need neither. |
+
+## Related
+
+- [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). `getPaymentMethodsViews` reference.
+- [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Complete field reference.
+- [Lite mode](/docs/yuno-sdk/migration/web/lite). For non-Seamless integrations using `yunoCreatePayment` (manual mode).

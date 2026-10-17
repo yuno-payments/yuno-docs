@@ -1,0 +1,110 @@
+---
+title: "Lite enrollment"
+description: "Migrate iOS Lite enrollment (Yuno.enrollPayment) to the unified Transaction API."
+---
+
+`Yuno.enrollPayment` ran the enrollment flow end-to-end: the SDK read the method to enroll from the customer session, rendered the form and the result screen. The unified equivalent is the default behavior of `Transaction.start(paymentSelected:)`. No controller overrides beyond `onStatus`.
+
+## Before you start
+
+- Replace `import YunoSDK` with `import SdkPayments`. Your public API key and the customer sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- There is no payment to create: `createPayment` is not invoked during enrollment, so overriding it has no effect.
+
+## Side-by-side
+
+<CodeGroup>
+
+```swift Before. Lite enrollment
+import YunoSDK
+
+Yuno.initialize(apiKey: "your-public-api-key")
+
+final class EnrollmentModel: YunoEnrollmentDelegate {
+    var customerSession: String = "session-from-backend"
+    var countryCode: String = "CO"
+    var language: String? = "en"
+    var viewController: UIViewController?
+
+    func yunoEnrollmentResult(_ result: Yuno.Result) {
+        // result.status: .succeeded / .reject / .fail / etc.
+    }
+
+    func enroll() {
+        Yuno.enrollPayment(with: self, showPaymentStatus: true)
+    }
+}
+```
+
+```swift After. Unified Transaction
+import SdkPayments
+
+SdkPayments.initialize(apiKey: "your-public-api-key")
+
+final class EnrollmentModel: SdkPayments.TransactionController {
+
+    func onStatus(status: SdkPayments.TransactionStatus) {
+        // status.status comes from the backend. See /reference/status.
+    }
+
+    func enroll() {
+        let config = SdkPayments.TransactionConfig(
+            customerSession: "session-from-backend",
+            countryCode: "CO",
+            language: "en",
+            controller: self,
+            showStatusScreen: true
+        )
+
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: "CARD"
+        )
+
+        SdkPayments.Transaction(config: config)
+            .start(paymentSelected: paymentSelected)
+    }
+}
+```
+
+</CodeGroup>
+
+## What changes
+
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
+
+### Initialization and config
+
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `import YunoSDK` | `import SdkPayments` | Renamed | |
+| `Yuno.initialize(apiKey:)` | `SdkPayments.initialize(apiKey:)` | Renamed | The `callback:` parameter is gone; use the `async` overload if you need to wait. |
+| `Yuno.Appearance` passed in `YunoConfig.appearance` | `SdkPayments.Appearance` in `SdkPayments.TransactionConfig.appearance` | Renamed | Same initializer; drop the `Yuno.` prefix and pass it per transaction instead of once at startup. |
+| `YunoEnrollmentDelegate.customerSession` | `SdkPayments.TransactionConfig.customerSession` | Moved | Delegate property becomes a config field. Mutually exclusive with `checkoutSession`. |
+| `YunoEnrollmentDelegate.countryCode`, `.language`, `.viewController` | The same fields on `SdkPayments.TransactionConfig` | Moved | Delegate properties become config fields. `viewController` stays iOS-only and optional in SwiftUI. |
+| `showPaymentStatus:` argument of `enrollPayment` | `SdkPayments.TransactionConfig.showStatusScreen` | Moved | See the note below. |
+| *(none)* | `SdkPayments.PaymentMethodSelected` | New | `start` requires it. Pass the `paymentMethodType` the customer session was created with: as before, the session determines the method actually enrolled. |
+
+<Note>
+**The SDK result screen is off by default now.** Set `showStatusScreen: true` to keep it.
+</Note>
+
+### Controller
+
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoEnrollmentDelegate` | `SdkPayments.TransactionController` | Renamed | Conform the same class and pass it as `TransactionConfig.controller`. As before, the SDK does not retain it: keep it alive for the whole transaction. |
+| `yunoEnrollmentResult(_:)` | `onStatus(status:)` | Renamed | Still the single outcome callback, once per transaction, also when the SDK shows its result screen. `status` and `substatus` come from the backend; the SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `onLoading(isLoading:)` | `showLoading(isLoading:)` | Renamed | Optional in both. Lite enrollment never invoked it: the SDK always showed its own loader. It still does unless you override `showLoading`; once overridden, the SDK hides its own loader and reports the state to you. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+
+### Entry points
+
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `Yuno.enrollPayment(with:showPaymentStatus:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Renamed | Build the config and the `PaymentMethodSelected`, then `start`. The SDK still does not render a list of enrollable methods. |
+| `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Renamed | Same role: forward the URL your app receives after an external redirect. See [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). |
+
+## Related
+
+- [Enrollment feature](/docs/yuno-sdk/features/enrollment). Unified-API enrollment walkthrough.
+- [Render enrollment](/docs/yuno-sdk/migration/ios/enrollment/render). Embed the form yourself.
+- [Headless enrollment](/docs/yuno-sdk/migration/ios/enrollment/headless). Collect data in your own UI.
+- [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Complete field reference (including `customerSession`).
