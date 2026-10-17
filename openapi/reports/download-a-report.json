@@ -6,10 +6,16 @@
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno/v2"
+      "url": "https://api-sandbox.y.uno/v2",
+      "description": "Sandbox"
     },
     {
-      "url": "https://api.eu.y.uno/v2"
+      "url": "https://api.y.uno/v2",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v2",
+      "description": "Production (EMEA)"
     }
   ],
   "components": {
@@ -38,18 +44,9 @@
     "/reports/{report_id}/download": {
       "get": {
         "summary": "Download a Report",
-        "description": "",
+        "description": "Returns a time-limited link to the file of a report whose status is `SUCCEEDED`. This endpoint is served under `/v2`; the other Reports endpoints stay under `/v1`.",
         "operationId": "download-a-report",
         "parameters": [
-          {
-            "name": "X-Organization-Code",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Organization code associated to the request."
-          },
           {
             "name": "report_id",
             "in": "path",
@@ -69,8 +66,8 @@
                   "Result": {
                     "value": {
                       "type": "TRANSACTIONS",
-                      "download_link": "https://s3.amazonaws.com/.../report.csv",
-                      "status": "AVAILABLE"
+                      "download_link": "https://<bucket>.s3.amazonaws.com/reports/<report_id>.zip?X-Amz-Expires=604800&X-Amz-Signature=...",
+                      "status": "DOWNLOADED"
                     }
                   }
                 },
@@ -79,15 +76,18 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "example": "TRANSACTIONS"
+                      "example": "TRANSACTIONS",
+                      "description": "The report type requested on creation."
                     },
                     "download_link": {
                       "type": "string",
-                      "example": "https://s3.amazonaws.com/.../report.csv"
+                      "example": "https://<bucket>.s3.amazonaws.com/reports/<report_id>.zip?X-Amz-Expires=604800&X-Amz-Signature=...",
+                      "description": "Pre-signed link to the report file. Download the file from this link; it is valid for 7 days after the report is generated. Most report types are delivered as a .zip containing a .csv; settlement reports as a .csv."
                     },
                     "status": {
                       "type": "string",
-                      "example": "AVAILABLE"
+                      "example": "DOWNLOADED",
+                      "description": "Report status after this call. The first successful download moves a `SUCCEEDED` report to `DOWNLOADED`."
                     }
                   }
                 }
@@ -99,6 +99,14 @@
             "content": {
               "application/json": {
                 "examples": {
+                  "Report not ready": {
+                    "value": {
+                      "code": "REPORT_STATUS_ERROR",
+                      "messages": [
+                        "report is not ready yet, status is IN_PROCESS"
+                      ]
+                    }
+                  },
                   "Bad Request": {
                     "value": {
                       "code": "INVALID_REQUEST",
