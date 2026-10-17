@@ -151,6 +151,7 @@ A payment with the header `X-Dry-Run: true` is quoted with the code, and the quo
 * **Only the promotion that applies counts a use.** When an automatic promotion gives the customer a bigger discount than the code, that promotion applies and the code counts no use. See [When a code and an automatic promotion both apply](#when-a-code-and-an-automatic-promotion-both-apply).
 * **A quote request counts no use.** [Create Promotion Quote](/reference/promotions/create-promotion-quote) sends no key, so a quote made with a `code` counts nothing. A payment with a code counts the use.
 * **A quote request never answers `ZERO_CHARGE`.** `ZERO_CHARGE` needs a key. A quote request for a code that leaves a charge of zero gets `204`, as for any promotion that would make the charge zero. A payment with a code and a key gets `ZERO_CHARGE`.
+* **`ZERO_CHARGE` belongs to a code that wins.** When an automatic promotion wins the selection and its quote would charge zero, the payment is not refused with `ZERO_CHARGE`: Yuno refuses it with `422 PROMOTION_NOT_APPLICABLE` and the reason `ENGINE_UNAVAILABLE`. No payment is created.
 
 ## When a code and an automatic promotion both apply
 
@@ -199,7 +200,7 @@ When a code does not become a quote, no payment is created and the answer says w
 | `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_DISCOUNT` | The promotion gives no discount on this amount. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_CHARGE` | The code applies and the payment would be charged zero or less. Yuno counts no use. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `PROMOTIONS_NOT_ENABLED` | Promotions is not enabled for your organization. |
-| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | Promotions is temporarily disabled by Yuno, or the promotions service did not answer in time or answered with an error. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | Promotions is temporarily disabled by Yuno, the promotions service did not answer in time or answered with an error, or the winning promotion would leave a charge of zero in a dry run or when an automatic promotion wins. |
 
 ```json Code that reached its limit (422)
 {
