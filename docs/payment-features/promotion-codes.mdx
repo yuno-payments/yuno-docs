@@ -137,18 +137,20 @@ Other facts about the line:
 
 ### Dry run
 
-A payment with the header `X-Dry-Run: true` is quoted with the code, and the quote counts no use. Only the value `true`, in any case, makes a dry run. A dry run does not need an `X-Idempotency-Key` for the code. A code with no use left is still refused in a dry run, with `USAGE_LIMIT_REACHED`.
+A payment with the header `X-Dry-Run: true` is quoted with the code, and the quote counts no use. Only the value `true`, in any case, makes a dry run. A dry run does not need an `X-Idempotency-Key` for the code. A code with no use left is still refused in a dry run, with `USAGE_LIMIT_REACHED`. A dry run sends no key, so it is not refused with `ZERO_CHARGE`: a code that leaves a charge of zero is refused in a dry run with `ENGINE_UNAVAILABLE`.
 
 ## Uses and limits
 
 * **A use is counted when Yuno accepts the code for a payment.** The count happens at the payment attempt, before the payment reaches a provider, and it is keyed by the `X-Idempotency-Key` of the payment.
 * **The same key again counts no second use.** A retry of a payment with the same key and the same code is priced from the first use. This holds even if the promotion was disabled, ended or reached its limit after the first attempt.
 * **A key belongs to one code.** The same key with another code is refused with `422 PROMOTION_NOT_APPLICABLE` and the reason `IDEMPOTENCY_KEY_REUSED`.
+* **A code that leaves a charge of zero counts no use.** When the code is the promotion that applies and the payment would be charged zero or less (a 100% discount, or a fixed discount at or above the amount), Yuno refuses the payment with `422 PROMOTION_NOT_APPLICABLE` and the reason `ZERO_CHARGE` before it counts a use. This holds for a code with a limit and for one without. A code at its limit that also leaves a charge of zero answers `ZERO_CHARGE`, not `USAGE_LIMIT_REACHED`.
 * **A declined payment keeps its use.** Yuno gives no use back. The count only grows. A new attempt after a decline needs a new `X-Idempotency-Key`, and it counts a new use.
 * **The limit stops the next use.** When `limits.used` equals `limits.total`, a payment with the code is refused with `422 PROMOTION_NOT_APPLICABLE` and the reason `USAGE_LIMIT_REACHED`. No payment is created.
 * **`limits.used` counts the uses of a code that has a limit.** A code with no limit shows `limits: null`.
 * **Only the promotion that applies counts a use.** When an automatic promotion gives the customer a bigger discount than the code, that promotion applies and the code counts no use. See [When a code and an automatic promotion both apply](#when-a-code-and-an-automatic-promotion-both-apply).
 * **A quote request counts no use.** [Create Promotion Quote](/reference/promotions/create-promotion-quote) sends no key, so a quote made with a `code` counts nothing. A payment with a code counts the use.
+* **A quote request never answers `ZERO_CHARGE`.** `ZERO_CHARGE` needs a key. A quote request for a code that leaves a charge of zero gets `204`, as for any promotion that would make the charge zero. A payment with a code and a key gets `ZERO_CHARGE`.
 
 ## When a code and an automatic promotion both apply
 
@@ -195,8 +197,9 @@ When a code does not become a quote, no payment is created and the answer says w
 | `422` | `PROMOTION_NOT_APPLICABLE` | `CONDITIONS_NOT_MET` | The country or the amount does not meet the conditions of the promotion. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `CURRENCY_MISMATCH` | The promotion lists no amount rule for the currency of the payment, or it is a fixed discount with no amount in that currency. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_DISCOUNT` | The promotion gives no discount on this amount. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_CHARGE` | The code applies and the payment would be charged zero or less. Yuno counts no use. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `PROMOTIONS_NOT_ENABLED` | Promotions is not enabled for your organization. |
-| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | The promotions service did not answer in time or answered with an error, Promotions is temporarily disabled by Yuno, or the quote would make the charge zero. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | Promotions is temporarily disabled by Yuno, or the promotions service did not answer in time or answered with an error. |
 
 ```json Code that reached its limit (422)
 {
@@ -210,6 +213,14 @@ When a code does not become a quote, no payment is created and the answer says w
 {
     "code": "PROMOTION_NOT_FOUND",
     "messages": ["The promotion does not exist on the account."]
+}
+```
+
+```json Code that leaves a charge of zero (422)
+{
+    "code": "PROMOTION_NOT_APPLICABLE",
+    "messages": ["The promotion leaves a charge of zero on this amount."],
+    "reason": "ZERO_CHARGE"
 }
 ```
 
