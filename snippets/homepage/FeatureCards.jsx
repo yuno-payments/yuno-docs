@@ -100,7 +100,7 @@ export const FeatureCards = () => {
                <CardCta href="/docs/sdks/overview/choose-integration">Choose your integration</CardCta>
               <ul className="list-none p-0 m-0">
                  <FeatureItem
-                  href="/docs/sdks/overview/quickstart"
+                  href="/docs/yuno-sdk/introduction"
                   title="SDKs"
                   desc=" - Ready-made SDKs for Web, Android, and iOS platforms."
                 />
