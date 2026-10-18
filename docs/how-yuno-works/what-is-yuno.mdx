@@ -1,7 +1,7 @@
 ---
 title: "What is Yuno?"
 sidebarTitle: "Introduction"
-description: "Yuno is a payment orchestration platform: one API and one SDK connect you to payment providers, banks, fraud tools, and local payment methods. Your first request, how it works, the core objects, integration options, and the product index."
+description: "Yuno is the AI operating system for payments: one API and one SDK connect you to payment providers, banks, fraud tools, and local payment methods, with AI agents on top. Your first payment, how it works, the core objects, integration options, and the product index."
 mode: "wide"
 ---
 
@@ -16,7 +16,7 @@ mode: "wide"
     </div>
     <h1 className="yd-h1">What is Yuno?</h1>
     <p className="yd-lead">
-      Yuno is a payment orchestration platform. You integrate one API and one SDK. Yuno connects you to payment providers, acquirers, banks, fraud tools, and local payment methods, and routes each payment.
+      Yuno is the AI operating system for payments. You integrate one API and one SDK to reach payment providers, acquirers, banks, fraud tools, and local payment methods. Yuno routes each payment, and its AI agents recover declined payments, analyze your payment data, and support your integration.
     </p>
     <div className="yd-cta-row">
       <a className="yd-btn yd-btn-primary" href="/docs/how-yuno-works/step-2-your-first-payment">Make your first payment</a>
@@ -24,33 +24,115 @@ mode: "wide"
     </div>
   </div>
   <div className="yd-hero-code">
-    <div className="yd-code-label">Your first request: create a checkout session in sandbox</div>
+    <div className="yd-code-label">Your first payment: one call in sandbox</div>
 
-```bash
+<CodeGroup>
+
+```bash cURL
 curl --request POST \
-  https://api-sandbox.y.uno/v1/checkout/sessions \
-  --header 'public-api-key: <your-public-api-key>' \
-  --header 'private-secret-key: <your-private-secret-key>' \
+  https://api-sandbox.y.uno/v1/payments \
+  --header "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  --header "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \
+  --header "X-Idempotency-Key: $(uuidgen)" \
   --header 'content-type: application/json' \
   --data '{
-    "account_id": "<your-account-id>",
+    "account_id": "'"$YUNO_ACCOUNT_ID"'",
     "merchant_order_id": "order-0001",
-    "payment_description": "First test payment",
+    "description": "First test payment",
     "country": "US",
-    "amount": { "currency": "USD", "value": 25 }
+    "amount": { "currency": "USD", "value": 25 },
+    "workflow": "DIRECT",
+    "payment_method": {
+      "type": "CARD",
+      "detail": { "card": { "card_data": {
+        "number": "4111111111111111",
+        "expiration_month": 12,
+        "expiration_year": 2030,
+        "security_code": "123",
+        "holder_name": "JOHN DOE"
+      } } }
+    }
   }'
 ```
 
-    <div className="yd-code-label">Response <code>200</code>, abridged</div>
+```javascript Node.js
+const res = await fetch("https://api-sandbox.y.uno/v1/payments", {
+  method: "POST",
+  headers: {
+    "public-api-key": process.env.YUNO_PUBLIC_API_KEY,
+    "private-secret-key": process.env.YUNO_PRIVATE_SECRET_KEY,
+    "X-Idempotency-Key": crypto.randomUUID(),
+    "content-type": "application/json",
+  },
+  body: JSON.stringify({
+    account_id: process.env.YUNO_ACCOUNT_ID,
+    merchant_order_id: "order-0001",
+    description: "First test payment",
+    country: "US",
+    amount: { currency: "USD", value: 25 },
+    workflow: "DIRECT",
+    payment_method: {
+      type: "CARD",
+      detail: { card: { card_data: {
+        number: "4111111111111111",
+        expiration_month: 12,
+        expiration_year: 2030,
+        security_code: "123",
+        holder_name: "JOHN DOE",
+      } } },
+    },
+  }),
+});
+const payment = await res.json();
+console.log(payment.status); // SUCCEEDED
+```
+
+```python Python
+import os, uuid, requests
+
+res = requests.post(
+    "https://api-sandbox.y.uno/v1/payments",
+    headers={
+        "public-api-key": os.environ["YUNO_PUBLIC_API_KEY"],
+        "private-secret-key": os.environ["YUNO_PRIVATE_SECRET_KEY"],
+        "X-Idempotency-Key": str(uuid.uuid4()),
+    },
+    json={
+        "account_id": os.environ["YUNO_ACCOUNT_ID"],
+        "merchant_order_id": "order-0001",
+        "description": "First test payment",
+        "country": "US",
+        "amount": {"currency": "USD", "value": 25},
+        "workflow": "DIRECT",
+        "payment_method": {
+            "type": "CARD",
+            "detail": {"card": {"card_data": {
+                "number": "4111111111111111",
+                "expiration_month": 12,
+                "expiration_year": 2030,
+                "security_code": "123",
+                "holder_name": "JOHN DOE",
+            }}},
+        },
+    },
+)
+print(res.json()["status"])  # SUCCEEDED
+```
+
+</CodeGroup>
+
+    <div className="yd-code-label">Response <code>201</code>, abridged</div>
 
 ```json
 {
-  "checkout_session": "af54ecc9-426f-494c-a21b-42e7d6e6c6dc",
-  "country": "US",
+  "id": "7413f716-3223-41a6-868d-c9b27ba730bd",
+  "status": "SUCCEEDED",
+  "sub_status": "APPROVED",
   "amount": { "currency": "USD", "value": 25 }
 }
 ```
 
+    <p className="yd-code-note">Sandbox only. Needs a card connection and a route (<a href="/docs/how-yuno-works/step-1-set-up-your-account">Set up your account</a>). In production, collect cards with the SDK so card data stays out of your PCI scope.</p>
   </div>
 </section>
 
@@ -65,7 +147,7 @@ curl --request POST \
   <div className="yd-eyebrow-sm">01 / How it works</div>
   <h2 className="yd-h2">Your app talks to Yuno. Yuno talks to everyone else.</h2>
   <p className="yd-sub">You add providers and change routing in the Dashboard. Your code does not change.</p>
-  <div className="yd-arch" role="img" aria-label="Your app calls Yuno through the SDK, the API, payment links, the MCP server, or in-person terminals. Yuno routes, secures, and reconciles each payment, and connects to payment providers, acquirers, banks, local payment methods, and fraud and 3DS tools.">
+  <div className="yd-arch" role="img" aria-label="Your app calls Yuno through the SDK, the API, payment links, the MCP server, or in-person terminals. Yuno runs AI agents, routes, secures, and reconciles each payment, and connects to payment providers, acquirers, banks, local payment methods, and fraud and 3DS tools.">
     <div className="yd-arch-layer">
       <span className="yd-arch-label">Your app</span>
       <div className="yd-arch-chips"><span>Yuno SDK</span><span>Direct API</span><span>Payment links</span><span>MCP</span><span>In-person (POS)</span></div>
@@ -73,7 +155,7 @@ curl --request POST \
     <div className="yd-arch-wire" aria-hidden="true"><code>API calls in, webhooks out</code></div>
     <div className="yd-arch-layer yd-arch-hot">
       <span className="yd-arch-label">Yuno</span>
-      <div className="yd-arch-chips"><span>Routing</span><span>Fraud and 3DS</span><span>Vault</span><span>Reconciliation</span><span>Payouts</span></div>
+      <div className="yd-arch-chips"><span>AI agents</span><span>Routing</span><span>Fraud and 3DS</span><span>Vault</span><span>Reconciliation</span><span>Payouts</span></div>
     </div>
     <div className="yd-arch-wire" aria-hidden="true"><code>Connections</code></div>
     <div className="yd-arch-layer">
@@ -157,7 +239,17 @@ curl --request POST \
   <div className="yd-eyebrow-sm">04 / Product index</div>
   <h2 className="yd-h2">Everything else Yuno does.</h2>
   <p className="yd-sub">One line each. Each link opens the guide or the API reference.</p>
-  <div className="yd-index">
+  <div className="yd-index not-prose">
+    <div className="yd-index-group">
+      <div className="yd-index-head">AI</div>
+      <ul>
+        <li><a href="/docs/ai-capabilities/nova"><b>NOVA</b><span>Recovers declined payments by WhatsApp or voice call</span></a></li>
+        <li><a href="/docs/ai-capabilities/payment-concierge"><b>Payment Concierge</b><span>An AI analyst for your payment data</span></a></li>
+        <li><a href="/docs/ai-capabilities/maia-ai-technical-account-manager"><b>Maia</b><span>AI technical account manager for your setup</span></a></li>
+        <li><a href="/docs/ai-capabilities/agent-toolkit"><b>Agent Toolkit</b><span>Build AI payment experiences in your framework</span></a></li>
+        <li><a href="/docs/ai-capabilities/remote-yuno-mcp-server"><b>Remote MCP server</b><span>The Yuno API as tools for AI agents</span></a></li>
+      </ul>
+    </div>
     <div className="yd-index-group">
       <div className="yd-index-head">Accept</div>
       <ul>
