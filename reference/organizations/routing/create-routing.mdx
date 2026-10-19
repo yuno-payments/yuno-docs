@@ -4,7 +4,7 @@ description: "Creates a routing for one (account_id, payment_method) pair. Alway
 openapi: "/openapi/organizations/routing/create-routing.json POST /routing"
 ---
 
-Creates a routing for one `(account_id, payment_method)` pair. Each routing references **connections** by their `connection_id`. Make sure your connections are created and `ACTIVE` for the requested `payment_method` *before* you call routing.
+Creates a routing for one `(account_id, payment_method)` pair. Each routing references **connections** by their `connection_id`. Make sure your connections are created and `ACTIVE` for the requested `payment_method` *before* you call routing. Outputs that reference a decline, Merchant Advice Code or succeeded group by `group_id` need that group to exist on the account too — see [Outcome groups](/reference/organizations/routing/routing-resource-shape#outcome-groups).
 
 ### Body
 
@@ -27,25 +27,37 @@ Creates a routing for one `(account_id, payment_method)` pair. Each routing refe
       Optional. Splits the entry of the route across several steps by percentage, as `[{ "index": 1, "percentage": 45 }, { "index": 2, "percentage": 55 }]`. Percentages are integers that must sum to `100`. Omit to start every payment on step 1. See [Percentage splits](/reference/organizations/routing/routing-resource-shape#percentage-splits).
     </ParamField>
     <ParamField body="steps" type="object[]" required>
-      Each step is one provider attempt. `index` values are contiguous starting at 1.
+      Each step is either one provider attempt or an [action step](/reference/organizations/routing/routing-resource-shape#action-steps). `index` values are contiguous starting at 1.
       <Expandable title="item">
         <ParamField body="index" type="integer" required>
             Step ordinal.
         </ParamField>
-        <ParamField body="provider_id" type="string" required>
-            Must match the provider of the connection.
+        <ParamField body="provider_id" type="string">
+            Required on provider steps; omit on an action step. Must match the provider of the connection.
         </ParamField>
-        <ParamField body="connection_id" type="UUID" required>
-            Must be `ACTIVE` and support the `payment_method`.
+        <ParamField body="connection_id" type="UUID">
+            Required on provider steps; omit on an action step. Must be `ACTIVE` and support the `payment_method`.
+        </ParamField>
+        <ParamField body="action" type="enum">
+            Makes the step an action step: `CANCEL` rejects the payment, `CAPTURE` captures the authorization, `HOLD_FOR_REVIEW` leaves it pending manual review. `CAPTURE` and `HOLD_FOR_REVIEW` must be reached only from `APPROVED` outputs. An action step has no `provider_id`, `connection_id` or `output`.
+        </ParamField>
+        <ParamField body="action_delay" type="string">
+            Only with `action = CAPTURE`. ISO-8601 duration between the approval and the capture, greater than zero and at most `P7D` (e.g. `PT5M`, `PT3H`, `P2D`). Omit to capture as soon as the approval is processed.
         </ParamField>
         <ParamField body="output" type="object[]">
-          Defines how to handle each possible outcome of this step.
+          Defines how to handle each possible outcome of this step. Not allowed on an action step.
           <Expandable title="item">
             <ParamField body="status" type="string" required>
-              The outcome status that triggers this rule (e.g., `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `TIMEOUT`, `INTERNAL_ERROR`).
+              The outcome status that triggers this rule: `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `MAC_CODE_GROUP`, `SUCCEEDED_GROUP` or `INTERNAL_ERROR`.
+            </ParamField>
+            <ParamField body="group_id" type="integer">
+              Id of a group of the account, from [List Decline Groups](/reference/organizations/routing/list-decline-groups) or [List Succeeded Groups](/reference/organizations/routing/list-succeeded-groups). Required when `status` is `MAC_CODE_GROUP` or `SUCCEEDED_GROUP`; optional on `DECLINE_GROUP`; not allowed otherwise. The group must be of the kind the status expects.
             </ParamField>
             <ParamField body="decline_types" type="string[]">
-              Required when `status` is `DECLINE_GROUP`. Specifies which decline subtypes trigger this rule (e.g., `INSUFFICIENT_FUNDS`, `DECLINED_BY_BANK`).
+              Decline sub-statuses (e.g., `INSUFFICIENT_FUNDS`, `DECLINED_BY_BANK`). On `DECLINE_GROUP`, required unless `group_id` is sent; with `group_id`, it must equal the group's members. Not allowed on `SUCCEEDED_GROUP`.
+            </ParamField>
+            <ParamField body="retry" type="boolean">
+              `true` attempts the same provider once more when this outcome happens, before following `next`. Only on `DECLINED`, `INTERNAL_ERROR` and `DECLINE_GROUP`. Defaults to `false`.
             </ParamField>
             <ParamField body="next" type="integer">
               The `index` of the next step to execute. Omit if no fallback is needed. Optional next to `next_split`; if both are sent it must be the first `next_split` entry.
@@ -70,10 +82,10 @@ Creates a routing for one `(account_id, payment_method)` pair. Each routing refe
         Label for the set.
     </ParamField>
     <ParamField body="conditions" type="object[]" required>
-        List of [Conditions](/reference/organizations/routing/routing-conditions) that must match.
+        List of [Conditions](/reference/organizations/routing/routing-conditions) that must match. Besides `condition_type`, `conditional`, `values`, `key` and `currency`, a `TIME_PERIOD` condition carries its schedule fields and a `VOLUME_PAYMENTS_LIMIT` condition its `limit_by`, `payments_count` and period fields.
     </ParamField>
     <ParamField body="route" type="object" required>
-        The steps to execute if this set matches. Same shape as `default_route`, including `start_split` and `output[].next_split`.
+        The steps to execute if this set matches. Same shape as `default_route`, including `start_split`, `output[].next_split` and action steps; a route made of a single `CANCEL` step rejects the matching payments.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -93,7 +105,7 @@ Creates a routing for one `(account_id, payment_method)` pair. Each routing refe
   Label for the routing.
 </ResponseField>
 <ResponseField name="default_route" type="object">
-  The default routing logic.
+  The default routing logic, in the shape described in [Retrieve a Routing](/reference/organizations/routing/retrieve-routing).
 </ResponseField>
 <ResponseField name="condition_sets" type="object[]">
   Optional conditional logic.
@@ -123,12 +135,9 @@ curl -X POST 'https://api.y.uno/v1/routing' \
           "provider_id": "STRIPE",
           "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
           "output": [
-            {
-              "status": "DECLINE_GROUP",
-              "decline_types": ["DECLINED_BY_BANK", "DO_NOT_HONOR"],
-              "next": 2
-            },
-            { "status": "TIMEOUT",        "next": 2 },
+            { "status": "DECLINE_GROUP",  "group_id": 1044, "next": 2, "retry": true },
+            { "status": "MAC_CODE_GROUP", "group_id": 4542 },
+            { "status": "DECLINED",       "next": 2 },
             { "status": "INTERNAL_ERROR", "next": 2 }
           ]
         },
@@ -142,7 +151,19 @@ curl -X POST 'https://api.y.uno/v1/routing' \
     "condition_sets": [
       {
         "sort_number": 1,
-        "name": "Brazil — BRL 300 to 600 via Adyen",
+        "name": "Reject foreign-issued cards",
+        "conditions": [
+          { "condition_type": "CARD_ISSUER_COUNTRY", "conditional": "NOT_ONE_OF", "values": ["BR"] }
+        ],
+        "route": {
+          "steps": [
+            { "index": 1, "action": "CANCEL" }
+          ]
+        }
+      },
+      {
+        "sort_number": 2,
+        "name": "Brazil — BRL 300 to 600 via Adyen, capture after 5 minutes",
         "description": "BR card transactions between BRL 300 and 600 go to Adyen directly",
         "conditions": [
           { "condition_type": "COUNTRY", "conditional": "EQUAL",   "values": ["BR"] },
@@ -150,12 +171,17 @@ curl -X POST 'https://api.y.uno/v1/routing' \
         ],
         "route": {
           "steps": [
-            { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-..." }
+            { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-...",
+              "output": [
+                { "status": "APPROVED",        "next": 2 },
+                { "status": "SUCCEEDED_GROUP", "group_id": 430 }
+              ] },
+            { "index": 2, "action": "CAPTURE", "action_delay": "PT5M" }
           ]
         }
       },
       {
-        "sort_number": 2,
+        "sort_number": 3,
         "name": "Mexico — 45/45/10 between Adyen, Stripe and dLocal",
         "conditions": [
           { "condition_type": "COUNTRY", "conditional": "EQUAL", "values": ["MX"] }
@@ -187,7 +213,7 @@ curl -X POST 'https://api.y.uno/v1/routing' \
 ```json 201 Created
 {
   "id": "r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f",
-  "account_id": "acc-uuid",
+  "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
   "payment_method": "CARD",
   "name": "Card routing — Stripe primary, Adyen fallback",
   "default_route": {
@@ -197,39 +223,69 @@ curl -X POST 'https://api.y.uno/v1/routing' \
         "provider_id": "STRIPE",
         "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
         "output": [
-          { "status": "DECLINE_GROUP", "next": 2 },
-          { "status": "TIMEOUT",        "next": 2 }
+          { "status": "DECLINE_GROUP",  "group_id": 1044, "group_name": "Soft declines",
+            "decline_types": ["DECLINED_BY_BANK", "RESTRICTED_BY_BANK"], "next": 2, "retry": true },
+          { "status": "MAC_CODE_GROUP", "group_id": 4542, "group_name": "Do not retry",
+            "decline_types": ["NO_RETRY_POLICY", "NO_RETRY_SECURITY"], "retry": false },
+          { "status": "DECLINED",       "next": 2, "retry": false },
+          { "status": "INTERNAL_ERROR", "next": 2, "retry": false }
         ]
       },
-      { "index": 2, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-..." }
+      { "index": 2, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-...", "output": [] }
     ]
   },
   "condition_sets": [
     {
       "sort_number": 1,
-      "name": "Brazil — BRL 300 to 600 via Adyen",
+      "name": "Reject foreign-issued cards",
       "conditions": [
-        { "condition_type": "COUNTRY", "conditional": "EQUAL", "values": ["BR"] }
+        { "condition_type": "CARD_ISSUER_COUNTRY", "conditional": "NOT_ONE_OF", "values": ["BR"] }
       ],
-      "route": { "steps": ["..."] }
-    }
+      "route": { "steps": [ { "index": 1, "action": "CANCEL", "output": [] } ] }
+    },
+    {
+      "sort_number": 2,
+      "name": "Brazil — BRL 300 to 600 via Adyen, capture after 5 minutes",
+      "conditions": [
+        { "condition_type": "COUNTRY", "conditional": "EQUAL",   "values": ["BR"] },
+        { "condition_type": "AMOUNT",  "conditional": "BETWEEN", "values": ["300.00", "600.00"], "currency": "BRL" }
+      ],
+      "route": {
+        "steps": [
+          { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-...",
+            "output": [
+              { "status": "APPROVED",        "next": 2, "retry": false },
+              { "status": "SUCCEEDED_GROUP", "group_id": 430, "group_name": "Pending review", "retry": false }
+            ] },
+          { "index": 2, "action": "CAPTURE", "action_delay": "PT5M", "output": [] }
+        ]
+      }
+    },
+    { "sort_number": 3, "name": "Mexico — 45/45/10 between Adyen, Stripe and dLocal", "conditions": ["..."], "route": { "steps": ["..."] } }
   ],
   "created_at": "2026-05-12T14:30:00Z",
   "updated_at": "2026-05-12T14:30:00Z"
 }
 ```
 
-```json 400 — Non-contiguous Index
+```json 400 — Invalid Route Configuration
 {
-  "code": "ROUTING_VALIDATION_FAILED",
-  "messages": ["default_route.steps[].index must be contiguous starting at 1"]
+  "code": "INVALID_ROUTE_CONFIGURATION",
+  "messages": ["step index=2 with action=CAPTURE must be reached only from an APPROVED output of a provider step"]
+}
+```
+
+```json 400 — Unknown group
+{
+  "code": "INVALID_ROUTE_CONFIGURATION",
+  "messages": ["output.group_id=99 not found for account"]
 }
 ```
 
 ```json 409 — Already Exists
 {
   "code": "ROUTING_ALREADY_EXISTS",
-  "messages": ["A routing already exists for account 'acc-uuid' and payment_method 'CARD'"]
+  "messages": ["A routing for payment_method 'CARD' already exists for this account."]
 }
 ```
 </CodeGroup>
@@ -240,9 +296,10 @@ curl -X POST 'https://api.y.uno/v1/routing' \
 
 | HTTP | `code` |
 | --- | --- |
-| `400` | `INVALID_ROUTE_CONFIGURATION`<br />Route rule violation: non-contiguous step indexes, a `next` or split branch to a missing step, a split that does not sum to 100 or leaves a step unreachable, a step the API cannot express. |
-| `400` | `ROUTING_VALIDATION_FAILED`<br />Schema or rule violation. `messages` names the offending field/path. |
-| `400` | `ROUTING_PROVIDER_NOT_AVAILABLE`<br />A step references a `(provider_id, connection_id)` not active for the account on this `payment_method`. |
+| `400` | `INVALID_PARAMETERS`<br />A field is missing or has an invalid value: a step with neither `provider_id` nor `action`, a `status` or `action` outside their enums, an `action_delay` on a step that is not `CAPTURE`, a malformed `group_id`. `messages` names the offending field. |
+| `400` | `INVALID_ROUTE_CONFIGURATION`<br />Route rule violation: non-contiguous step indexes, a `next` or split branch to a missing step, a split that does not sum to 100 or leaves a step unreachable, a `CAPTURE` or `HOLD_FOR_REVIEW` step not reached only from `APPROVED`, an `action_delay` of zero or above 7 days, `retry` on a status that does not support it, a `group_id` that is unknown, of another account or of the wrong kind, `decline_types` that do not match the group, a condition that breaks a rule of its `condition_type`, or a `connection_id` not found for the account and provider. `messages` explains which rule. |
+| `400` | `INVALID_VOLUME_LIMIT_CURRENCY`, `INVALID_VOLUME_LIMIT_PERIOD`, `UNSUPPORTED_VOLUME_LIMIT_TIMEZONE`<br />A `VOLUME_PAYMENTS_LIMIT` condition with an invalid currency, period or timezone. See [Volume and count limits](/reference/organizations/routing/routing-conditions#volume-and-count-limits-volume_payments_limit). |
+| `400` | `INVALID_PROVIDER_ID`<br />`provider_id` has an invalid format. |
 | `409` | `ROUTING_ALREADY_EXISTS`<br />A routing already exists for this `(account, payment_method)`. Use `PATCH` to update it. |
 | `401` | `NOT_AUTHENTICATED`<br />Missing `public-api-key` or `private-secret-key` header. |
 | `401` | `INVALID_CREDENTIALS`<br />Wrong key pair, or a Dashboard **Customized API key** was used. Use an account key or organization key instead. |

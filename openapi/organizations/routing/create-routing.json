@@ -1,19 +1,13 @@
 {
   "openapi": "3.1.0",
-  "info": { "title": "Routing API - Create", "version": "1.0.0" },
+  "info": {
+    "title": "Routing API - Create",
+    "version": "1.0.0"
+  },
   "servers": [
-    {
-      "url": "https://api-sandbox.y.uno/v1",
-      "description": "Sandbox"
-    },
-    {
-      "url": "https://api.y.uno/v1",
-      "description": "Production (US)"
-    },
-    {
-      "url": "https://api.eu.y.uno/v1",
-      "description": "Production (EMEA)"
-    }
+    { "url": "https://api-sandbox.y.uno/v1", "description": "Sandbox" },
+    { "url": "https://api.y.uno/v1", "description": "Production (US)" },
+    { "url": "https://api.eu.y.uno/v1", "description": "Production (EMEA)" }
   ],
   "components": {
     "securitySchemes": {
@@ -21,7 +15,9 @@
       "sec1": { "type": "apiKey", "in": "header", "name": "PRIVATE-SECRET-KEY", "x-default": "<Your PRIVATE-SECRET-KEY>" }
     }
   },
-  "security": [ { "sec0": [], "sec1": [] } ],
+  "security": [
+    { "sec0": [], "sec1": [] }
+  ],
   "paths": {
     "/routing": {
       "post": {
@@ -29,7 +25,12 @@
         "operationId": "create-routing",
         "description": "Creates a routing for one (account_id, payment_method) pair.",
         "parameters": [
-          { "name": "X-Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string", "format": "uuid" } }
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
         ],
         "requestBody": {
           "required": true,
@@ -62,19 +63,27 @@
                         "type": "array",
                         "items": {
                           "type": "object",
-                          "required": ["index", "provider_id", "connection_id"],
+                          "required": ["index"],
                           "properties": {
                             "index": { "type": "integer", "example": 1 },
-                            "provider_id": { "type": "string", "example": "STRIPE" },
-                            "connection_id": { "type": "string", "format": "uuid", "example": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e" },
+                            "provider_id": { "type": "string", "example": "STRIPE", "description": "Required on provider steps; absent on action steps. Must match the provider of the connection." },
+                            "connection_id": { "type": "string", "format": "uuid", "example": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e", "description": "Required on provider steps; absent on action steps. Must be ACTIVE and support the payment_method." },
+                            "action": { "type": "string", "enum": ["CANCEL", "CAPTURE", "HOLD_FOR_REVIEW"], "description": "Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual review. CAPTURE and HOLD_FOR_REVIEW must be reached only from APPROVED outputs. An action step has no provider_id, connection_id or output." },
+                            "action_delay": { "type": "string", "example": "PT5M", "description": "Only with action = CAPTURE. ISO-8601 duration between the approval and the capture, greater than zero and at most P7D. Omit to capture as soon as the approval is processed." },
                             "output": {
                               "type": "array",
                               "items": {
                                 "type": "object",
                                 "required": ["status"],
                                 "properties": {
-                                  "status": { "type": "string", "example": "DECLINED" },
-                                  "decline_types": { "type": "array", "items": { "type": "string" } },
+                                  "status": { "type": "string", "example": "DECLINED", "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP or INTERNAL_ERROR." },
+                                  "decline_types": {
+                                    "type": "array",
+                                    "items": { "type": "string" },
+                                    "description": "Decline sub-statuses. On DECLINE_GROUP, required unless group_id is sent; with group_id it must equal the group's members. Not allowed on SUCCEEDED_GROUP."
+                                  },
+                                  "group_id": { "type": "integer", "example": 1044, "description": "Id of a decline, Merchant Advice Code or succeeded group of the account (see List Decline Groups and List Succeeded Groups). Required on MAC_CODE_GROUP and SUCCEEDED_GROUP, optional on DECLINE_GROUP, not allowed otherwise. Must be of the kind the status expects." },
+                                  "retry": { "type": "boolean", "example": false, "description": "true attempts the same provider once more when this outcome happens, before following next. Only on DECLINED, INTERNAL_ERROR and DECLINE_GROUP. On update, an omitted retry keeps the stored value." },
                                   "next": { "type": "integer", "example": 2 },
                                   "next_split": {
                                     "type": "array",
@@ -89,10 +98,58 @@
                                     }
                                   }
                                 }
-                              }
+                              },
+                              "description": "Per-outcome handlers of a provider step. Not allowed on an action step."
                             }
-                          }
+                          },
+                          "description": "A provider attempt (provider_id + connection_id) or an action step (action). index values are contiguous starting at 1."
                         }
+                      }
+                    }
+                  },
+                  "condition_sets": {
+                    "type": "array",
+                    "description": "Optional. Ordered by sort_number, first matching set wins.",
+                    "items": {
+                      "type": "object",
+                      "required": ["sort_number", "name", "conditions", "route"],
+                      "properties": {
+                        "sort_number": { "type": "integer", "example": 1 },
+                        "name": { "type": "string", "example": "US & Canada — high value" },
+                        "description": { "type": "string" },
+                        "conditions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": ["condition_type", "conditional", "values"],
+                            "properties": {
+                              "condition_type": { "type": "string", "example": "COUNTRY", "description": "See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT." },
+                              "conditional": { "type": "string", "example": "ONE_OF" },
+                              "values": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "example": ["US", "CA"],
+                                "description": "Empty only on an AMOUNT condition with currency, which then matches any amount in that currency."
+                              },
+                              "key": { "type": "string", "description": "METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name." },
+                              "currency": { "type": "string", "example": "USD", "description": "ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME." },
+                              "time_period_repeat_amount": { "type": "integer", "example": 1, "description": "TIME_PERIOD and VOLUME_PAYMENTS_LIMIT: every how many units of time_period_repeat_frequency (schedule), or the length of a DAILY window in days, 1 to 90 (limit)." },
+                              "time_period_repeat_frequency": { "type": "string", "enum": ["DAILY", "WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"], "description": "TIME_PERIOD: recurrence unit. VOLUME_PAYMENTS_LIMIT: period of the limit, DAILY, MONTHLY or QUARTERLY." },
+                              "time_period_repetition_days": {
+                                "type": "array",
+                                "items": { "type": "string", "enum": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] },
+                                "description": "TIME_PERIOD only. Days of the week the schedule applies to; needs a frequency."
+                              },
+                              "time_period_start_time": { "type": "string", "example": "09:00:00", "description": "TIME_PERIOD only. Start of the daily time window (HH:mm:ss), together with time_period_end_time." },
+                              "time_period_end_time": { "type": "string", "example": "18:00:00", "description": "TIME_PERIOD only. End of the daily time window (HH:mm:ss), inclusive." },
+                              "timezone": { "type": "string", "example": "-03:00", "description": "UTC offset. TIME_PERIOD: offset the schedule is read in (defaults to the offset of values[0]). VOLUME_PAYMENTS_LIMIT: whole-hour offset where periods start (defaults to +00:00)." },
+                              "limit_by": { "type": "string", "enum": ["PAYMENTS", "VOLUME"], "description": "VOLUME_PAYMENTS_LIMIT only. Count payments (default) or sum amounts in currency." },
+                              "payments_count": { "type": "string", "enum": ["ALL", "SUCCEEDED"], "description": "VOLUME_PAYMENTS_LIMIT only. Which payments count toward the limit. Default ALL." }
+                            }
+                          },
+                          "description": "Conditions combined with logical AND. See Routing Conditions."
+                        },
+                        "route": { "type": "object", "description": "Same shape as default_route, including start_split, output[].next_split and action steps." }
                       }
                     }
                   }
@@ -113,7 +170,7 @@
                     "account_id": { "type": "string", "example": "acc-uuid" },
                     "payment_method": { "type": "string", "example": "CARD" },
                     "name": { "type": "string", "example": "Card routing" },
-                    "default_route": { 
+                    "default_route": {
                       "type": "object",
                       "properties": {
                         "start_split": {
@@ -134,16 +191,25 @@
                             "type": "object",
                             "properties": {
                               "index": { "type": "integer", "example": 1 },
-                              "provider_id": { "type": "string", "example": "STRIPE" },
-                              "connection_id": { "type": "string", "example": "f1a3c4d5-..." },
+                              "provider_id": { "type": "string", "example": "STRIPE", "description": "Required on provider steps; absent on action steps. Must match the provider of the connection." },
+                              "connection_id": { "type": "string", "example": "f1a3c4d5-...", "description": "Required on provider steps; absent on action steps. Must be ACTIVE and support the payment_method." },
+                              "action": { "type": "string", "enum": ["CANCEL", "CAPTURE", "HOLD_FOR_REVIEW"], "description": "Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual review. CAPTURE and HOLD_FOR_REVIEW must be reached only from APPROVED outputs. An action step has no provider_id, connection_id or output." },
+                              "action_delay": { "type": "string", "example": "PT5M", "description": "Only with action = CAPTURE. ISO-8601 duration between the approval and the capture, greater than zero and at most P7D. Omit to capture as soon as the approval is processed." },
                               "output": {
                                 "type": "array",
                                 "items": {
                                   "type": "object",
                                   "required": ["status"],
                                   "properties": {
-                                    "status": { "type": "string", "example": "DECLINED" },
-                                    "decline_types": { "type": "array", "items": { "type": "string" } },
+                                    "status": { "type": "string", "example": "DECLINED", "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP or INTERNAL_ERROR." },
+                                    "decline_types": {
+                                      "type": "array",
+                                      "items": { "type": "string" },
+                                      "description": "Members of the group on DECLINE_GROUP (decline sub-statuses) and MAC_CODE_GROUP (Merchant Advice Codes) outputs."
+                                    },
+                                    "group_id": { "type": "integer", "example": 1044, "description": "Id of the group behind a DECLINE_GROUP, MAC_CODE_GROUP or SUCCEEDED_GROUP output." },
+                                    "group_name": { "type": "string", "example": "Soft declines", "description": "Name of the group behind group_id. Ignored on write." },
+                                    "retry": { "type": "boolean", "example": false, "description": "Whether this output retries the same provider once before following next. Always returned." },
                                     "next": { "type": "integer", "example": 2 },
                                     "next_split": {
                                       "type": "array",
@@ -158,7 +224,8 @@
                                       }
                                     }
                                   }
-                                }
+                                },
+                                "description": "Per-outcome handlers. Returned as an empty array on action steps."
                               }
                             }
                           }
@@ -172,14 +239,49 @@
                         "properties": {
                           "sort_number": { "type": "integer", "example": 1 },
                           "name": { "type": "string", "example": "High Value US" },
-                          "conditions": { "type": "array", "items": { "type": "object" } },
-                          "route": { "type": "object" }
+                          "description": { "type": "string" },
+                          "conditions": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "condition_type": { "type": "string", "example": "COUNTRY", "description": "See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT." },
+                                "conditional": { "type": "string", "example": "ONE_OF" },
+                                "values": {
+                                  "type": "array",
+                                  "items": { "type": "string" },
+                                  "example": ["US", "CA"],
+                                  "description": "Empty only on an AMOUNT condition with currency, which then matches any amount in that currency."
+                                },
+                                "key": { "type": "string", "description": "METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name." },
+                                "currency": { "type": "string", "example": "USD", "description": "ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME." },
+                                "time_period_repeat_amount": { "type": "integer", "example": 1, "description": "TIME_PERIOD and VOLUME_PAYMENTS_LIMIT: every how many units of time_period_repeat_frequency (schedule), or the length of a DAILY window in days, 1 to 90 (limit)." },
+                                "time_period_repeat_frequency": { "type": "string", "enum": ["DAILY", "WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"], "description": "TIME_PERIOD: recurrence unit. VOLUME_PAYMENTS_LIMIT: period of the limit, DAILY, MONTHLY or QUARTERLY." },
+                                "time_period_repetition_days": {
+                                  "type": "array",
+                                  "items": { "type": "string", "enum": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] },
+                                  "description": "TIME_PERIOD only. Days of the week the schedule applies to; needs a frequency."
+                                },
+                                "time_period_start_time": { "type": "string", "example": "09:00:00", "description": "TIME_PERIOD only. Start of the daily time window (HH:mm:ss), together with time_period_end_time." },
+                                "time_period_end_time": { "type": "string", "example": "18:00:00", "description": "TIME_PERIOD only. End of the daily time window (HH:mm:ss), inclusive." },
+                                "timezone": { "type": "string", "example": "-03:00", "description": "UTC offset. TIME_PERIOD: offset the schedule is read in (defaults to the offset of values[0]). VOLUME_PAYMENTS_LIMIT: whole-hour offset where periods start (defaults to +00:00)." },
+                                "limit_by": { "type": "string", "enum": ["PAYMENTS", "VOLUME"], "description": "VOLUME_PAYMENTS_LIMIT only. Count payments (default) or sum amounts in currency." },
+                                "payments_count": { "type": "string", "enum": ["ALL", "SUCCEEDED"], "description": "VOLUME_PAYMENTS_LIMIT only. Which payments count toward the limit. Default ALL." }
+                              }
+                            },
+                            "description": "Conditions combined with logical AND. See Routing Conditions."
+                          },
+                          "route": { "type": "object", "description": "Same shape as default_route, including start_split, output[].next_split and action steps." }
                         }
                       }
                     },
                     "created_at": { "type": "string", "format": "date-time", "example": "2026-05-12T14:30:00Z" },
                     "updated_at": { "type": "string", "format": "date-time", "example": "2026-05-12T14:30:00Z" },
-                    "warnings": { "type": "array", "items": { "type": "string" }, "example": ["MONITOR_REDISTRIBUTION_DEFERRED"] }
+                    "warnings": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["MONITOR_REDISTRIBUTION_DEFERRED"]
+                    }
                   }
                 }
               }
@@ -192,8 +294,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": { "type": "string", "example": "ROUTING_VALIDATION_FAILED" },
-                    "messages": { "type": "array", "items": { "type": "string" }, "example": ["Steps must be contiguous"] }
+                    "code": { "type": "string", "example": "INVALID_ROUTE_CONFIGURATION" },
+                    "messages": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["step index=2 with action=CAPTURE must be reached only from an APPROVED output of a provider step"]
+                    }
                   }
                 }
               }
@@ -207,7 +313,11 @@
                   "type": "object",
                   "properties": {
                     "code": { "type": "string", "example": "NOT_AUTHENTICATED" },
-                    "messages": { "type": "array", "items": { "type": "string" }, "example": ["Not authenticated"] }
+                    "messages": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["Not authenticated"]
+                    }
                   }
                 }
               }
@@ -221,7 +331,11 @@
                   "type": "object",
                   "properties": {
                     "code": { "type": "string", "example": "ROUTING_ALREADY_EXISTS" },
-                    "messages": { "type": "array", "items": { "type": "string" }, "example": ["A routing already exists for this payment method"] }
+                    "messages": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["A routing already exists for this payment method"]
+                    }
                   }
                 }
               }

@@ -12,8 +12,18 @@ A condition matches against an attribute of the incoming payment.
   "values":         ["..."],
 
   // Required only on specific condition_types — see "Special cases" below
-  "key":      "<string>",   // METADATA only
-  "currency": "<ISO 4217>"  // AMOUNT only
+  "key":      "<string>",   // METADATA and ADDITIONAL_FIELD only
+  "currency": "<ISO 4217>", // AMOUNT, and VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME
+
+  // TIME_PERIOD and VOLUME_PAYMENTS_LIMIT only — see "Schedules" and "Volume and count limits" below
+  "time_period_repeat_amount":    1,
+  "time_period_repeat_frequency": "WEEKLY",
+  "time_period_repetition_days":  ["MONDAY", "FRIDAY"],
+  "time_period_start_time":       "09:00:00",
+  "time_period_end_time":         "18:00:00",
+  "timezone":                     "-03:00",
+  "limit_by":                     "VOLUME",
+  "payments_count":               "ALL"
 }
 ```
 
@@ -25,15 +35,18 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 |---|---|---|---|---|
 | `COUNTRY` | Transaction country — the top-level `country` field you submit in `POST /v1/payments` (never the card) | ISO 3166-1 alpha-2 (e.g. `"US"`, `"BR"`) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
 | `CARD_ISSUER_COUNTRY` | Card-issuing bank's country, resolved by Yuno's BIN lookup at processing time | ISO 3166-1 alpha-2 | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
-| `AMOUNT` | Transaction amount. Sent as `AMOUNT` with a sibling `currency` field; Yuno stores it internally as `CURRENCY_AND_AMOUNT` | Decimal as **string** (e.g. `"100.00"`); requires sibling `currency` | `EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN` | no |
+| `AMOUNT` | Transaction amount. Sent as `AMOUNT` with a sibling `currency` field; Yuno stores it internally as `CURRENCY_AND_AMOUNT`. With `currency` and an **empty** `values` it matches any amount in that currency (see [Special cases](#special-cases)) | Decimal as **string** (e.g. `"100.00"`); requires sibling `currency` | `EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`; only `EQUAL` when `values` is empty | no |
 | `CARD_TYPE` | Card funding source | `CREDIT`, `DEBIT`, `PREPAID` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `CARD_BRAND` | Card scheme | One of the values in [Card brands](#card-brands) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `CARD_BIN` | First 6–8 digits of the PAN | 6–8 digit numeric string | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `BETWEEN` (see [Special cases](#special-cases)) | yes |
 | `TRANSACTION_TYPE` | Payment intent type | `PURCHASE`, `AUTHORIZATION`, `RECURRING`, `MIT`, `CIT` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
 | `METADATA` | `payment.metadata[<key>]` | Any string the merchant sets; requires sibling `key` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `IS`, `IS_NOT`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `CONTAINS` | no |
+| `ADDITIONAL_FIELD` | A field of the payment request named by `key` — customer, address, order, airline or card data. See [Additional fields](#additional-fields) | Any string; requires sibling `key` from the supported list | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `CONTAINS` | no |
+| `TIME_PERIOD` | The moment the payment is created, against a schedule. See [Schedules](#schedules-time_period) | One or two ISO-8601 date-times **with offset**: the start and, optionally, the end | `EQUAL` | no |
+| `VOLUME_PAYMENTS_LIMIT` | The account's accumulated volume or payment count in the current period, including this payment. See [Volume and count limits](#volume-and-count-limits-volume_payments_limit) | Exactly one positive number as **string**: the limit | `LESS_OR_EQUAL_THAN` | no |
 
 <Warning>
-`CURRENCY` and `INSTALLMENTS` are **not** valid standalone `condition_type` values. Sending either one rejects the whole routing with `400 INVALID_ROUTE_CONFIGURATION`. To filter by currency, use `AMOUNT` with the sibling `currency` field.
+`CURRENCY` and `INSTALLMENTS` are **not** valid standalone `condition_type` values. Sending either one rejects the whole routing with `400 INVALID_ROUTE_CONFIGURATION`. To filter by currency, use `AMOUNT` with the sibling `currency` field — with an amount comparison, or with an empty `values` list to match the currency alone.
 </Warning>
 
 #### `conditional` operators
@@ -46,7 +59,7 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 | `NOT_ONE_OF` | ≥ 1 | `attribute ∉ values` | no |
 | `GREATER_THAN` | exactly 1 | numeric `attribute > values[0]` | yes |
 | `LESS_THAN` | exactly 1 | numeric `attribute < values[0]` | no |
-| `LESS_OR_EQUAL_THAN` | exactly 1 | comparison depends on the `condition_type` — see below | yes |
+| `LESS_OR_EQUAL_THAN` | exactly 1 | `VOLUME_PAYMENTS_LIMIT` only — the period total including this payment is `<= values[0]` | yes |
 | `BETWEEN` | exactly 2 | inclusive on both ends | yes |
 | `CONTAINS` | exactly 1 | `attribute` contains `values[0]` as a substring | yes |
 
@@ -55,19 +68,19 @@ There is no `NOT_BETWEEN` operator. It is not a member of the `conditional` enum
 rejects the whole routing at deserialization — use `BETWEEN` on the complementary ranges instead.
 </Warning>
 
-`LESS_OR_EQUAL_THAN` does not apply to any `condition_type` in the table above — it is used only by
-`VOLUME_PAYMENTS_LIMIT`, which carries its own threshold semantics rather than the generic numeric
-comparison, so do not read a plain `<=` into it. That condition type is not documented on this page
-yet, so treat the table above as the common set, not the complete one.
+`LESS_OR_EQUAL_THAN` is the operator of `VOLUME_PAYMENTS_LIMIT` and is not meant for the other
+types in the table: the limit condition carries its own threshold semantics (the account total over a
+period, see below) rather than a generic comparison of one attribute.
 
-`CONTAINS` is a substring test for `METADATA`, which is the type this page documents for it. Other
-condition types may implement it differently — `ADDITIONAL_FIELD`, for one, compares `values[0]` for
-equality rather than containment — so do not carry the substring semantics across types.
+`CONTAINS` is a substring test for `METADATA`. For `ADDITIONAL_FIELD` it compares for equality against
+the values the field resolves to: on a multi-valued field, such as `order_fee_item_sku_code`, it matches
+when **any** item equals `values[0]`, which is how you test "the order contains this SKU".
 
 The **Rejected at save time** column is the value count only. A `yes` means
 `POST`/`PUT` returns `400` when the count does not match, naming the condition type and operator.
 A `no` means the count is not checked at save time, and what a wrong count does at evaluation
-depends on the operator — do not rely on it being harmless.
+depends on the operator — do not rely on it being harmless. `TIME_PERIOD` (one or two values) and
+`VOLUME_PAYMENTS_LIMIT` (exactly one) are always checked, whatever the operator.
 
 Where enforcement applies it is **exact**, not a minimum: a surplus value is rejected just as a
 missing one is. `BETWEEN` with `["0", "60", "EUR"]` is a `400`, not a silently truncated range.
@@ -124,14 +137,121 @@ Existing rules holding any of these are **not** rejected on a later save — the
 are — but they will never match a payment, so correct them.
 </Warning>
 
+#### Schedules: `TIME_PERIOD`
+
+`TIME_PERIOD` matches when the payment is created inside a schedule. `values[0]` is when the schedule starts, the optional `values[1]` is when it ends, and the recurrence fields narrow it down:
+
+```json
+{
+  "condition_type": "TIME_PERIOD",
+  "conditional": "EQUAL",
+  "values": ["2026-10-01T00:00:00-03:00"],
+  "time_period_repeat_amount": 1,
+  "time_period_repeat_frequency": "WEEKLY",
+  "time_period_repetition_days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+  "time_period_start_time": "09:00:00",
+  "time_period_end_time": "18:00:00",
+  "timezone": "-03:00"
+}
+```
+
+This set matches payments created on weekdays between 09:00 and 18:00 (UTC−3), from October 1st, 2026 onwards.
+
+<div className="code-nowrap-table dense-table">
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `values` | string[] | yes | One or two ISO-8601 date-times **with offset** (`2026-10-01T00:00:00-03:00`, `2026-12-31T23:59:59Z`): the start and, optionally, the end. A payment before the start or after the end never matches. |
+| `timezone` | string | no | UTC offset such as `-03:00` or `+00:00`, used to read the payment time and the time window. Defaults to the offset of `values[0]`. Named zones (`America/Bogota`) are rejected. |
+| `time_period_repeat_frequency` | enum | with `time_period_repeat_amount` | `DAILY`, `WEEKLY`, `MONTHLY`, `QUARTERLY`, `YEARLY`. The recurrence unit. |
+| `time_period_repeat_amount` | int | with `time_period_repeat_frequency` | Every how many units, from the start date: `2` with `WEEKLY` matches every other week. Must be greater than zero. |
+| `time_period_repetition_days` | enum[] | no | Days of the week (`MONDAY` … `SUNDAY`). Only with a frequency. |
+| `time_period_start_time`, `time_period_end_time` | `HH:mm:ss` | together | Time window inside each matching day, inclusive on both ends, read in `timezone`. Only with a frequency. |
+
+</div>
+
+Without recurrence fields the condition is a plain date range: it matches every payment between the start and the end. With a frequency, a payment matches when the whole units elapsed since the start are a multiple of `time_period_repeat_amount`, its weekday is in `time_period_repetition_days` (when set) and its time is inside the window (when set). `YEARLY` additionally requires the same month and day as the start.
+
+Rules checked at save time, each a `400 INVALID_ROUTE_CONFIGURATION` naming the field: a value that is not an ISO-8601 date-time with offset, three or more values, a frequency without an amount or the reverse, a zero amount, one end of the time window without the other, repetition days or a time window without a frequency, a `timezone` that is not an offset, and `limit_by` or `payments_count` on a schedule.
+
+#### Volume and count limits: `VOLUME_PAYMENTS_LIMIT`
+
+`VOLUME_PAYMENTS_LIMIT` matches while the account stays **under a limit** over a period, counting the payment being routed. Use it to send the first N payments, or the first X of volume, of a day or a month through one route and the rest elsewhere:
+
+```json
+{
+  "condition_type": "VOLUME_PAYMENTS_LIMIT",
+  "conditional": "LESS_OR_EQUAL_THAN",
+  "values": ["50000"],
+  "currency": "USD",
+  "limit_by": "VOLUME",
+  "payments_count": "ALL",
+  "time_period_repeat_amount": 1,
+  "time_period_repeat_frequency": "MONTHLY",
+  "timezone": "-03:00"
+}
+```
+
+This set matches while the account's payments of the current calendar month, in USD and including the current one, add up to 50,000 or less.
+
+<div className="code-nowrap-table dense-table">
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `values` | string[] | yes | Exactly one positive number: the limit, in `currency` units for `VOLUME` or in payments for `PAYMENTS`. |
+| `conditional` | enum | yes | `LESS_OR_EQUAL_THAN`: the period total **including the current payment** must be less than or equal to the limit. |
+| `limit_by` | enum | no | `PAYMENTS` (count payments, default) or `VOLUME` (sum amounts). |
+| `payments_count` | enum | no | Which payments count: `ALL` (default) or `SUCCEEDED` only. |
+| `currency` | ISO 4217 | with `limit_by = VOLUME` | Only payments in this currency are summed, and a payment in another currency adds zero. Required and validated for `VOLUME`. |
+| `time_period_repeat_frequency` | enum | no | `DAILY` (default), `MONTHLY` or `QUARTERLY`. |
+| `time_period_repeat_amount` | int | no | With `DAILY`, the length of the window in days, `1` to `90`; the window covers that many days ending today, from the start of the first day. Must be `1` with `MONTHLY` and `QUARTERLY`, which cover the current calendar month or quarter. Defaults to `1`. |
+| `timezone` | string | no | Whole-hour UTC offset (`-03:00`, `+00:00`) that defines where days, months and quarters start. Defaults to `+00:00`. |
+
+</div>
+
+Rules checked at save time: exactly one numeric value greater than zero; no `time_period_repetition_days`, `time_period_start_time` or `time_period_end_time`; a valid currency when `limit_by` is `VOLUME` (`400 INVALID_VOLUME_LIMIT_CURRENCY`); a supported period (`400 INVALID_VOLUME_LIMIT_PERIOD`); a whole-hour `timezone` (`400 UNSUPPORTED_VOLUME_LIMIT_TIMEZONE`).
+
+<Note>
+Place the limit set before the route that should take the overflow. Once the limit is reached the set stops matching, so the following sets and the `default_route` receive the remaining payments of the period.
+</Note>
+
+#### Additional fields: `ADDITIONAL_FIELD`
+
+`ADDITIONAL_FIELD` matches a field of the payment request that has no condition type of its own. `key` names the field and is validated at save time; an unknown key is rejected with `400 INVALID_ROUTE_CONFIGURATION`.
+
+```json
+{ "condition_type": "ADDITIONAL_FIELD", "key": "installments", "conditional": "ONE_OF", "values": ["3", "6", "12"] }
+```
+
+<div className="code-nowrap-table dense-table">
+
+| Area | `key` values |
+|---|---|
+| Installments | `installments`, `installments_source` |
+| Customer | `customer_first_name`, `customer_last_name`, `email`, `gender`, `customer_date_of_birth`, `customer_nationality`, `customer_document_type`, `customer_document_number`, `phone_number`, `phone_country_code` |
+| Billing address | `billing_address_line_1`, `billing_address_line_2`, `billing_address_country`, `billing_address_state`, `billing_address_city`, `billing_address_zip_code` |
+| Shipping address | `shipping_address_line_1`, `shipping_address_line_2`, `shipping_address_country`, `shipping_address_state`, `shipping_address_city`, `shipping_address_zip_code` |
+| Order | `order_shipping_amount`, `order_fee_amount`, and per item `order_fee_item_id`, `order_fee_item_name`, `order_fee_item_quantity`, `order_fee_item_unit_amount`, `order_fee_item_category`, `order_fee_item_brand`, `order_fee_item_sku_code`, `order_fee_item_manufacture_part_number` |
+| Airline | `airline_pnr`, and per leg `airline_departure_airport`, `airline_departure_datetime`, `airline_departure_airport_timezone`, `airline_arrival_airport`, `airline_carrier_code`, `airline_flight_number`, `airline_fare_basis_code`, `airline_fare_class_code`, `airline_base_fare`, `airline_base_fare_currency`, `airline_stopover_code` |
+| Airline passengers | `passenger_first_name`, `passenger_last_name`, `passenger_middle_name`, `passenger_type`, `passenger_date_of_birth`, `passenger_nationality`, `passenger_loyalty_number`, `passenger_loyalty_tier`, `passenger_document_number`, `passenger_document_type`, `passenger_country` |
+| Airline ticket | `airline_ticket_number`, `airline_ticket_restricted`, `airline_ticket_total_fee_amount`, `airline_ticker_total_tax_amount`, `airline_ticket_total_fare_amount`, `airline_ticket_e_ticket` |
+| Card | `card_scheme`, `card_issuer_name`, `card_type`, `card_category`, `card_points_mode` |
+
+</div>
+
+All values are compared as strings; `email` is compared case-insensitively. On a multi-valued field (order items, airline legs, passengers) every item must satisfy the operator, except `CONTAINS`, which matches when any item equals `values[0]`. A field absent from the payment never matches.
+
 #### Special cases
 
 - **`AMOUNT` requires `currency`.** Comparisons are FX-naive; only payments whose currency matches the rule's `currency` are evaluated.
+- **`AMOUNT` with an empty `values` list is a currency-only condition**: `{ "condition_type": "AMOUNT", "conditional": "EQUAL", "values": [], "currency": "BRL" }` matches every payment in BRL, whatever the amount. Only `EQUAL` is accepted in that form; another operator is rejected with `400 INVALID_ROUTE_CONFIGURATION`. Responses return it in this same shape.
 - **`METADATA` requires `key`.** Compares `payment.metadata[key]`. If the key is absent on the payment (or the payment has no `metadata`), the condition does **not** match, whatever the operator. This includes the negative operators: a payment without the key does **not** match `NOT_EQUAL` or `NOT_ONE_OF` either. See the note below for how to route payments that don't carry the key.
+- **`ADDITIONAL_FIELD` requires `key`** from the [supported list](#additional-fields); `METADATA` keys are free-form, `ADDITIONAL_FIELD` keys are not.
 - **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
 - **`COUNTRY` vs `CARD_ISSUER_COUNTRY`.** The two are sourced independently: `COUNTRY` matches the transaction country your backend submits in the payment request, while `CARD_ISSUER_COUNTRY` matches the issuer country Yuno's own BIN lookup derives from the card number. The same payment can be `COUNTRY = US` and `CARD_ISSUER_COUNTRY = GB` at once. The BIN lookup runs before a provider is selected, is identical in sandbox and production, and reflects real-world BIN-registry data — never the processor's view of the card.
 - **Not to be confused with Communications Campaigns.** That product has its own rule engine, where `AMOUNT_AND_CURRENCY` with `BETWEEN` takes three values `["min", "max", "currency"]`. Routing's `AMOUNT` takes **two** values plus a sibling `currency`, and a third value is rejected.
 - **`CARD_BIN` with `BETWEEN`** expresses an issuer range and is validated more strictly than the generic two-value rule: exactly two values, both the same length, that length either 6 or 8, all digits, and the first less than or equal to the second. Anything else is `400 INVALID_ROUTE_CONFIGURATION` — so `["411111", "41111111"]` (mismatched lengths) and `["500000", "400000"]` (descending) are both rejected. Unlike every other condition type, a stored `CARD_BIN BETWEEN` is **not** grandfathered: a version holding a malformed one is rejected on every subsequent save until it is corrected.
+- **Schedule and limit fields belong to `TIME_PERIOD` and `VOLUME_PAYMENTS_LIMIT` only.** Any of them on another `condition_type` is rejected with `400 INVALID_ROUTE_CONFIGURATION`.
 - **Numeric values are submitted as strings** to match the `values: string[]` schema. Yuno parses them based on the `condition_type`.
 
 <Note>

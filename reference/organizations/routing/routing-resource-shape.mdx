@@ -3,7 +3,7 @@ title: "Routing Resource Shape"
 description: "Each routing is a single atomic resource on the public API: one HTTP call creates or replaces the full configuration."
 ---
 
-A routing tells Yuno, for one `payment_method` on one account, which connection to use — and lets you branch by buyer attributes (country, currency, amount, card brand, custom metadata, …).
+A routing tells Yuno, for one `payment_method` on one account, which connection to use — and lets you branch by buyer attributes (country, currency, amount, card brand, custom metadata, schedules, volume limits, …), react to each provider outcome (approval, decline, decline group, Merchant Advice Code, error) and end the route with an action (cancel, capture, hold for review).
 
 ### Resource shape
 
@@ -30,8 +30,16 @@ A routing tells Yuno, for one `payment_method` on one account, which connection 
       "route": {
         "steps": [
           { "index": 1, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…",
-            "output": [{ "status": "DECLINED", "next": 2 }] },
-          { "index": 2, "provider_id": "ADYEN",  "connection_id": "b2c4d5e6-…" }
+            "output": [
+              { "status": "APPROVED",      "next": 3 },
+              { "status": "DECLINE_GROUP", "group_id": 1044, "next": 2, "retry": true },
+              { "status": "DECLINED",      "next": 2 }
+            ] },
+          { "index": 2, "provider_id": "ADYEN",  "connection_id": "b2c4d5e6-…",
+            "output": [
+              { "status": "APPROVED", "next": 3 }
+            ] },
+          { "index": 3, "action": "CAPTURE", "action_delay": "PT5M" }
         ]
       }
     },
@@ -69,7 +77,7 @@ A routing tells Yuno, for one `payment_method` on one account, which connection 
 | Field | Type | Notes |
 |---|---|---|
 | `id` | UUID | Server-assigned. The same value is referenced as `routing_id` in URL paths. |
-| `account_id` | string | Inferred from your API key. Not supplied in request bodies. |
+| `account_id` | string | The account the routing belongs to. **Required** in the `POST` and `PATCH` bodies; on `PATCH` it must be the routing's own account. |
 | `payment_method` | enum | E.g., `CARD`, `PIX`, `WALLET`. Immutable per routing — to route a different method, create a new routing. |
 | `name` | string | Free-form label. |
 | `default_route` | object | The route used when no `condition_sets[]` matches. **Required.** |
@@ -84,23 +92,25 @@ A routing tells Yuno, for one `payment_method` on one account, which connection 
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `steps[]` | object[] | yes | The provider attempts, see below. |
+| `steps[]` | object[] | yes | The provider attempts and action steps, see below. |
 | `start_split[]` | object[] | no | Splits the entry of the route across several steps by percentage. Omit to start every payment on `index: 1`. See [Percentage splits](#percentage-splits). |
 
 </div>
 
 **`route.steps[]`**
 
-Each step is one provider attempt. `index` values are contiguous starting at 1.
+Each step is either one **provider attempt** (`provider_id` + `connection_id`) or an **action step** (`action`). `index` values are contiguous starting at 1, counting both kinds.
 
 <div className="code-nowrap-table dense-table">
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `index` | int | yes | Step ordinal within the route. Cycles are forbidden — `output[].next` must point to a higher index. |
-| `provider_id` | string | yes | Must match the `provider_id` of the referenced connection. |
-| `connection_id` | UUID | yes | Must be `ACTIVE`, in the same account, and support the routing's `payment_method`. |
-| `output[]` | object[] | no | Per-outcome handlers. **Omit for terminal steps with no chaining or per-decline customization** — the route will just run the step and terminate with whatever the provider returned. |
+| `provider_id` | string | provider steps | Must match the `provider_id` of the referenced connection. Omit on an action step. |
+| `connection_id` | UUID | provider steps | Must be `ACTIVE`, in the same account, and support the routing's `payment_method`. Omit on an action step. |
+| `action` | enum | action steps | `CANCEL`, `CAPTURE` or `HOLD_FOR_REVIEW`. See [Action steps](#action-steps). Omit on provider steps. |
+| `action_delay` | string | no | ISO-8601 duration, only with `action = CAPTURE`. How long after the approval Yuno captures. See [Action steps](#action-steps). |
+| `output[]` | object[] | no | Per-outcome handlers of a provider step. **Omit for terminal steps with no chaining or per-decline customization** — the route will just run the step and terminate with whatever the provider returned. Not allowed on an action step; responses return it as an empty array there. |
 
 </div>
 
@@ -111,8 +121,10 @@ Each step is one provider attempt. `index` values are contiguous starting at 1.
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `status` | enum | yes | What outcome this entry reacts to. See enum below. |
-| `decline_types[]` | string[] | only with <span className="whitespace-nowrap">`status = DECLINE_GROUP`</span> | Subset of Yuno's normalized decline taxonomy. |
-| `error_rate_threshold` | object | only with <span className="whitespace-nowrap">`status = ERROR_RATE`</span> | `{ threshold_percent: int, window_seconds: int }`. |
+| `decline_types[]` | string[] | see [Outcome groups](#outcome-groups) | Decline sub-statuses the entry reacts to. On `DECLINE_GROUP` it is required unless `group_id` is sent. Responses return it on `DECLINE_GROUP` and `MAC_CODE_GROUP` entries. |
+| `group_id` | int | see [Outcome groups](#outcome-groups) | Id of a decline group, Merchant Advice Code group or succeeded group of the account. Required on `MAC_CODE_GROUP` and `SUCCEEDED_GROUP`; optional on `DECLINE_GROUP`. Not allowed on other statuses. |
+| `group_name` | string | response only | Name of the group behind `group_id`, as shown in the dashboard. Ignored on write. |
+| `retry` | boolean | no | `true` runs the same provider once more before this entry's destination applies. Only on `DECLINED`, `INTERNAL_ERROR` and `DECLINE_GROUP`. Responses always return it. See [Retry](#retry). |
 | `next` | int \| null | no | Index of the step to jump to, or `null` to terminate. When `next_split` is set, Yuno returns `next` as its first entry and accepts it only with that value. |
 | `next_split[]` | object[] | no | Splits the jump across several steps by percentage instead of a single `next`. See [Percentage splits](#percentage-splits). |
 
@@ -124,21 +136,83 @@ Each step is one provider attempt. `index` values are contiguous starting at 1.
 
 | Value | Triggers when | Companion field |
 |---|---|---|
-| `APPROVED` | The provider returned success. Implicit by default; list explicitly only for post-approval routing. | — |
+| `APPROVED` | The provider returned success. Implicit by default; list explicitly only for post-approval routing, such as a [`CAPTURE` or `HOLD_FOR_REVIEW` step](#action-steps). | — |
 | `DECLINED` | Any decline (catch-all). Place last in the array. | — |
-| `DECLINE_GROUP` | Decline whose normalized code is in `decline_types[]`. | `decline_types[]` |
-| `ERROR_RATE` | The step's rolling error rate exceeds `error_rate_threshold`. | `error_rate_threshold` |
-| `TIMEOUT` | The provider didn't respond within Yuno's per-step timeout. | — |
-| `INTERNAL_ERROR` | The provider returned a 5xx or connection error before reaching the issuer. | — |
+| `DECLINE_GROUP` | Decline whose normalized sub-status is in the group. | `group_id` and/or `decline_types[]` |
+| `MAC_CODE_GROUP` | Decline whose normalized [Merchant Advice Code](/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac) is in the group. | `group_id` |
+| `SUCCEEDED_GROUP` | Success whose sub-status is in the group — today that is `PENDING_IN_REVIEW`, an authorization the provider holds for manual review. | `group_id` |
+| `INTERNAL_ERROR` | The provider returned an error (5xx, connection failure, timeout) before reaching the issuer. | — |
 
 </div>
 
+<Warning>
+`TIMEOUT` and `ERROR_RATE` appeared in earlier versions of this page. They are not members of the `status` enum: sending either one rejects the whole routing with `400`, and `messages` lists the allowed values. A provider timeout is handled by `INTERNAL_ERROR`.
+</Warning>
+
 **Evaluation rules**
 
-1. The route enters at `index: 1`, unless `start_split` is set — then Yuno draws one entry step per payment according to the percentages.
+1. The route enters at `index: 1`, unless `start_split` is set — then Yuno draws one entry step per payment according to the percentages. If the entry step is a `CANCEL` step, the payment is rejected and the route ends.
 2. The provider call runs.
-3. Yuno walks `output[]` top-to-bottom; the first entry whose `status` (plus optional `decline_types` / `error_rate_threshold` predicate) matches the outcome wins.
+3. Yuno walks `output[]` top-to-bottom; the first entry whose `status` (plus the group predicate on `DECLINE_GROUP`, `MAC_CODE_GROUP` and `SUCCEEDED_GROUP`) matches the outcome wins. An entry with `retry: true` runs the same provider once more first; the outcome of that second attempt decides.
 4. If the matched entry has `next`, jump to that step. If it has `next_split`, Yuno draws one of its steps per payment according to the percentages and jumps there. If neither is set or no entry matches, the route terminates with the actual provider outcome.
+5. A jump to an action step performs the action (`CANCEL`, `CAPTURE`, `HOLD_FOR_REVIEW`) and ends the route.
+
+### Outcome groups
+
+A group is a named set of outcomes you keep on the account, so several routes can react to the same list without repeating it. The dashboard shows them under the routing settings; the API reads them with [List Decline Groups](/reference/organizations/routing/list-decline-groups) and [List Succeeded Groups](/reference/organizations/routing/list-succeeded-groups) and references them by `group_id`.
+
+<div className="code-nowrap-table dense-table">
+
+| `status` | Group kind | Members | How to reference it |
+|---|---|---|---|
+| `DECLINE_GROUP` | Decline group | Decline sub-statuses, such as `DECLINED_BY_BANK` or `INSUFFICIENT_FUNDS`. Full list under [Declined status](/reference/payments/status-and-response-codes/transaction#declined-status). | `group_id` of an existing group, or `decline_types[]` alone to let Yuno create one. |
+| `MAC_CODE_GROUP` | Merchant Advice Code group | Normalized MAC values, such as `NO_RETRY_POLICY` or `RETRY_AFTER_24_H`. Full list under [Merchant Advice Codes](/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac). | `group_id` of an existing group. |
+| `SUCCEEDED_GROUP` | Succeeded group | Success sub-statuses. Today the only member is `PENDING_IN_REVIEW`. | `group_id` of an existing group. |
+
+</div>
+
+Rules:
+
+- `group_id` must be a group of the routing's account **and** of the kind the `status` expects. An unknown id, an id of another account, or a Merchant Advice Code group sent as `DECLINE_GROUP` is rejected with `400 INVALID_ROUTE_CONFIGURATION`; `messages` names the `group_id` and the kind it actually is.
+- `DECLINE_GROUP` with `decline_types[]` and no `group_id` keeps working as before: Yuno creates a decline group named `auto_…` with those sub-statuses on every save. Prefer `group_id` when the group already exists, so the account does not accumulate automatic groups.
+- `DECLINE_GROUP` with both `group_id` and `decline_types[]` is accepted only when the list equals the group's members as a set (order does not matter). This is what lets you send a retrieved routing back unchanged, since responses return both. A different list is rejected: edit the group in the dashboard instead.
+- `MAC_CODE_GROUP` and `SUCCEEDED_GROUP` require `group_id`; `SUCCEEDED_GROUP` does not accept `decline_types[]`. Create those groups in the dashboard first.
+- The same `group_id` cannot appear twice in the `output[]` of one step.
+- Responses return `group_id` and `group_name` on every group entry, and `decline_types[]` on `DECLINE_GROUP` and `MAC_CODE_GROUP` entries, in the same sub-status vocabulary the listing endpoints use.
+
+### Retry
+
+`retry: true` on a `DECLINED`, `INTERNAL_ERROR` or `DECLINE_GROUP` entry tells Yuno to attempt the **same provider once more** when that outcome happens, before following the entry's `next` / `next_split`. The second attempt uses the step's other outputs as usual: if it is approved, the `APPROVED` path applies; if it fails again, the original destination of the entry applies. There is at most one retry per entry per payment.
+
+- `retry` on `APPROVED`, `MAC_CODE_GROUP` or `SUCCEEDED_GROUP` is rejected with `400 INVALID_ROUTE_CONFIGURATION`.
+- Responses always return `retry` on every entry (`false` when not set), so you can see which branches retry.
+- On [Update a Routing](/reference/organizations/routing/update-routing), an entry sent **without** `retry` keeps the value already stored for that position; send `retry: false` explicitly to turn a retry off.
+
+### Action steps
+
+An action step ends the route with an action instead of calling a provider. It has `index` and `action`, no `provider_id`, `connection_id` or `output`, and it counts in the contiguous `index` sequence.
+
+```json
+{ "index": 3, "action": "CAPTURE", "action_delay": "PT5M" }
+```
+
+<div className="code-nowrap-table dense-table">
+
+| `action` | What happens at payment time | Where it can sit |
+|---|---|---|
+| `CANCEL` | The payment is rejected without calling any (further) provider. The transaction ends `REJECTED` with response code `YUNO_ROUTING_REJECTED`. | As the only step of a route (reject every payment that lands on it), or as the destination of any `output[]` entry. |
+| `CAPTURE` | Captures the authorization after `action_delay`. Applies to payments created as authorizations (`capture: false`); a payment that was already captured is left as it is. | Only as the destination of `APPROVED` entries of provider steps. Not as the route entry, not from any other status. |
+| `HOLD_FOR_REVIEW` | Leaves the authorization pending manual review in the dashboard; Yuno does not capture it automatically. | Only as the destination of `APPROVED` entries of provider steps. |
+
+</div>
+
+`action_delay` rules:
+
+- Only with `action = CAPTURE`; on any other step it is rejected.
+- ISO-8601 duration (`PT5M`, `PT3H`, `P2D`), greater than zero and at most **7 days** (`P7D`).
+- A delay shorter than one minute runs as one minute. Omit it to capture as soon as the approval is processed (about one minute).
+
+A `CAPTURE` or `HOLD_FOR_REVIEW` step reached from a `DECLINED`, `INTERNAL_ERROR` or group entry, placed as the route entry, or included in a `start_split`, is rejected with `400 INVALID_ROUTE_CONFIGURATION` (`step index=N with action=CAPTURE must be reached only from an APPROVED output of a provider step`). `CANCEL` has no such restriction.
 
 ### Percentage splits
 
@@ -167,3 +241,11 @@ Rules:
 <Note>
 Update a Routing replaces the full configuration, splits included. A condition set sent without `start_split` goes back to a single entry on step 1, and an output sent without `next_split` keeps only the `next` it declares, so omitting a split is how you remove it. Retrieve a Routing always returns the current `start_split` and `next_split`, so a read-modify-write flow keeps them unless you drop them on purpose.
 </Note>
+
+### What the API does not show
+
+Some things the dashboard can configure have no representation here yet: smart routing steps, antifraud, 3DS and authentication steps, the `REFUND`, `REVERT`, `DECLINE` and `END` actions, the `PENDING` outcome of fraud providers, and a `CAPTURE` or `HOLD_FOR_REVIEW` step that hangs from an outcome other than `APPROVED`.
+
+- [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) leaves those steps and branches out of the response.
+- [Update a Routing](/reference/organizations/routing/update-routing) does **not** delete them: what the response cannot show is kept exactly as stored, grafted onto the step it hung from, so a retrieve → update round trip keeps the routing as it was. The one exception is a `PENDING` branch that continues to another provider; that branch is not kept.
+- To change any of those parts, use the dashboard.
