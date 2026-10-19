@@ -41,7 +41,7 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 | `CARD_BIN` | First 6–8 digits of the PAN | 6–8 digit numeric string | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `BETWEEN` (see [Special cases](#special-cases)) | yes |
 | `TRANSACTION_TYPE` | Payment intent type | `PURCHASE`, `AUTHORIZATION`, `RECURRING`, `MIT`, `CIT` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
 | `METADATA` | `payment.metadata[<key>]` | Any string the merchant sets; requires sibling `key` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `IS`, `IS_NOT`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `CONTAINS` | no |
-| `ADDITIONAL_FIELD` | A field of the payment request named by `key` — customer, address, order, airline or card data. See [Additional fields](#additional-fields) | Any string; requires sibling `key` from the supported list | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `CONTAINS` | no |
+| `ADDITIONAL_FIELD` | A field of the payment request named by `key` — customer, address, order, airline or card data. See [Additional fields](#additional-fields-additional_field) | Any string; requires sibling `key` from the supported list | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `CONTAINS` | no |
 | `TIME_PERIOD` | The moment the payment is created, against a schedule. See [Schedules](#schedules-time_period) | One or two ISO-8601 date-times **with offset**: the start and, optionally, the end | `EQUAL` | no |
 | `VOLUME_PAYMENTS_LIMIT` | The account's accumulated volume or payment count in the current period, including this payment. See [Volume and count limits](#volume-and-count-limits-volume_payments_limit) | Exactly one positive number as **string**: the limit | `LESS_OR_EQUAL_THAN` | no |
 
@@ -172,7 +172,7 @@ This set matches payments created on weekdays between 09:00 and 18:00 (UTC−3),
 
 Without recurrence fields the condition is a plain date range: it matches every payment between the start and the end. With a frequency, a payment matches when the whole units elapsed since the start are a multiple of `time_period_repeat_amount`, its weekday is in `time_period_repetition_days` (when set) and its time is inside the window (when set). `YEARLY` additionally requires the same month and day as the start.
 
-Rules checked at save time, each a `400 INVALID_ROUTE_CONFIGURATION` naming the field: a value that is not an ISO-8601 date-time with offset, three or more values, a frequency without an amount or the reverse, a zero amount, one end of the time window without the other, repetition days or a time window without a frequency, a `timezone` that is not an offset, and `limit_by` or `payments_count` on a schedule.
+Rules checked at save time, each a `400` naming the field: a value that is not an ISO-8601 date-time with offset, three or more values, a frequency without an amount or the reverse, a zero amount, a start time after the end time, a start date after the end date, one end of the time window without the other, repetition days or a time window without a frequency, a `timezone` that is not an offset, and `limit_by` or `payments_count` on a schedule. A value outside an enum or a zero amount is caught at the API edge as `INVALID_PARAMETERS`; the rest is `INVALID_ROUTE_CONFIGURATION`.
 
 #### Volume and count limits: `VOLUME_PAYMENTS_LIMIT`
 
@@ -239,14 +239,14 @@ Place the limit set before the route that should take the overflow. Once the lim
 
 </div>
 
-All values are compared as strings; `email` is compared case-insensitively. On a multi-valued field (order items, airline legs, passengers) every item must satisfy the operator, except `CONTAINS`, which matches when any item equals `values[0]`. A field absent from the payment never matches.
+All values are compared as strings; `email` is compared case-insensitively. On a multi-valued field (order items, airline legs, passengers) every item must satisfy the operator, except `CONTAINS`, which matches when any item equals `values[0]`. A field absent from the payment never matches, with one exception: the numeric keys (`installments`, the amounts and quantities) resolve to the string `"null"` when absent, so a `NOT_EQUAL` or `NOT_ONE_OF` on them matches payments that do not carry the field.
 
 #### Special cases
 
 - **`AMOUNT` requires `currency`.** Comparisons are FX-naive; only payments whose currency matches the rule's `currency` are evaluated.
 - **`AMOUNT` with an empty `values` list is a currency-only condition**: `{ "condition_type": "AMOUNT", "conditional": "EQUAL", "values": [], "currency": "BRL" }` matches every payment in BRL, whatever the amount. Only `EQUAL` is accepted in that form; another operator is rejected with `400 INVALID_ROUTE_CONFIGURATION`. Responses return it in this same shape.
 - **`METADATA` requires `key`.** Compares `payment.metadata[key]`. If the key is absent on the payment (or the payment has no `metadata`), the condition does **not** match, whatever the operator. This includes the negative operators: a payment without the key does **not** match `NOT_EQUAL` or `NOT_ONE_OF` either. See the note below for how to route payments that don't carry the key.
-- **`ADDITIONAL_FIELD` requires `key`** from the [supported list](#additional-fields); `METADATA` keys are free-form, `ADDITIONAL_FIELD` keys are not.
+- **`ADDITIONAL_FIELD` requires `key`** from the [supported list](#additional-fields-additional_field); `METADATA` keys are free-form, `ADDITIONAL_FIELD` keys are not.
 - **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
 - **`COUNTRY` vs `CARD_ISSUER_COUNTRY`.** The two are sourced independently: `COUNTRY` matches the transaction country your backend submits in the payment request, while `CARD_ISSUER_COUNTRY` matches the issuer country Yuno's own BIN lookup derives from the card number. The same payment can be `COUNTRY = US` and `CARD_ISSUER_COUNTRY = GB` at once. The BIN lookup runs before a provider is selected, is identical in sandbox and production, and reflects real-world BIN-registry data — never the processor's view of the card.
 - **Not to be confused with Communications Campaigns.** That product has its own rule engine, where `AMOUNT_AND_CURRENCY` with `BETWEEN` takes three values `["min", "max", "currency"]`. Routing's `AMOUNT` takes **two** values plus a sibling `currency`, and a third value is rejected.

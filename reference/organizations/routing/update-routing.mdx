@@ -13,6 +13,7 @@ This applies to percentage splits too: a condition set sent without `start_split
 Two things are kept rather than replaced:
 
 - An output sent **without** `retry` keeps the `retry` value already stored for that position. Send `retry: false` to turn a retry off.
+- A stored `CAPTURE` or `HOLD_FOR_REVIEW` step is kept when the request leaves it out and the output it hung from is sent without `next`; a `CAPTURE` sent without `action_delay` keeps the stored delay. Point that output at another step to remove the action, or send the step with its new `action_delay` to change it.
 - Steps and branches the API does not return — smart routing, antifraud and authentication steps, the `REFUND`, `REVERT`, `DECLINE` and `END` actions — stay exactly as stored, so sending back what [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) gave you keeps the routing as it was. Change those parts in the dashboard. See [What the API does not show](/reference/organizations/routing/routing-resource-shape#what-the-api-does-not-show).
 
 ### Path Parameters
@@ -54,10 +55,10 @@ Two things are kept rather than replaced:
             Required on provider steps; omit on an action step. Must be `ACTIVE` and support the `payment_method`.
         </ParamField>
         <ParamField body="action" type="enum">
-            Makes the step an action step: `CANCEL` rejects the payment, `CAPTURE` captures the authorization, `HOLD_FOR_REVIEW` leaves it pending manual review. `CAPTURE` and `HOLD_FOR_REVIEW` must be reached only from `APPROVED` outputs. An action step has no `provider_id`, `connection_id` or `output`.
+            Makes the step an action step: `CANCEL` rejects the payment, `CAPTURE` captures the authorization, `HOLD_FOR_REVIEW` leaves it pending manual review. `CAPTURE` is reached only from `APPROVED` or `SUCCEEDED_GROUP` outputs, `HOLD_FOR_REVIEW` only from `SUCCEEDED_GROUP`, and `CANCEL` never from those two. An action step has no `provider_id`, `connection_id` or `output`.
         </ParamField>
         <ParamField body="action_delay" type="string">
-            Only with `action = CAPTURE`. ISO-8601 duration between the approval and the capture, greater than zero and at most `P7D` (e.g. `PT5M`, `PT3H`, `P2D`). Omit to capture as soon as the approval is processed.
+            Only with `action = CAPTURE`. ISO-8601 duration between the approval and the capture, greater than zero and at most `P7D` (e.g. `PT5M`, `PT3H`, `P2D`). When omitted, the stored delay is kept; a new step without it captures as soon as the approval is processed.
         </ParamField>
         <ParamField body="output" type="object[]">
           Defines how to handle each possible outcome of this step. Not allowed on an action step.

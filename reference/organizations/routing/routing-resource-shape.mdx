@@ -184,7 +184,7 @@ Rules:
 
 `retry: true` on a `DECLINED`, `INTERNAL_ERROR` or `DECLINE_GROUP` entry tells Yuno to attempt the **same provider once more** when that outcome happens, before following the entry's `next` / `next_split`. The second attempt uses the step's other outputs as usual: if it is approved, the `APPROVED` path applies; if it fails again, the original destination of the entry applies. There is at most one retry per entry per payment.
 
-- `retry` on `APPROVED`, `MAC_CODE_GROUP` or `SUCCEEDED_GROUP` is rejected with `400 INVALID_ROUTE_CONFIGURATION`.
+- `retry: true` on `APPROVED`, `MAC_CODE_GROUP` or `SUCCEEDED_GROUP` is rejected with `400 INVALID_ROUTE_CONFIGURATION`; `retry: false` is accepted anywhere, which is what lets you send a retrieved routing back unchanged.
 - Responses always return `retry` on every entry (`false` when not set), so you can see which branches retry.
 - On [Update a Routing](/reference/organizations/routing/update-routing), an entry sent **without** `retry` keeps the value already stored for that position; send `retry: false` explicitly to turn a retry off.
 
@@ -200,19 +200,21 @@ An action step ends the route with an action instead of calling a provider. It h
 
 | `action` | What happens at payment time | Where it can sit |
 |---|---|---|
-| `CANCEL` | The payment is rejected without calling any (further) provider. The transaction ends `REJECTED` with response code `YUNO_ROUTING_REJECTED`. | As the only step of a route (reject every payment that lands on it), or as the destination of any `output[]` entry. |
-| `CAPTURE` | Captures the authorization after `action_delay`. Applies to payments created as authorizations (`capture: false`); a payment that was already captured is left as it is. | Only as the destination of `APPROVED` entries of provider steps. Not as the route entry, not from any other status. |
-| `HOLD_FOR_REVIEW` | Leaves the authorization pending manual review in the dashboard; Yuno does not capture it automatically. | Only as the destination of `APPROVED` entries of provider steps. |
+| `CANCEL` | The payment is rejected without calling any (further) provider. The payment ends `REJECTED` with a `YUNO_ROUTING` transaction and response code `YUNO_ROUTING_REJECTED`. | As the only step of a route (reject every payment that lands on it), or as the destination of a `DECLINED`, `INTERNAL_ERROR`, `DECLINE_GROUP` or `MAC_CODE_GROUP` entry. Never after `APPROVED` or `SUCCEEDED_GROUP`: the provider already approved, so rejecting the payment in Yuno would leave the two out of sync. |
+| `CAPTURE` | Captures the authorization after `action_delay`. Applies to payments created as authorizations (`capture: false`); a payment that was already captured is left as it is. | Only as the destination of `APPROVED` or `SUCCEEDED_GROUP` entries of provider steps. Not as the route entry, not from any other status. |
+| `HOLD_FOR_REVIEW` | Leaves an authorization the provider holds for review (`PENDING_IN_REVIEW`) pending manual review in the dashboard; Yuno does not capture it automatically. | Only as the destination of `SUCCEEDED_GROUP` entries of provider steps, the same place the dashboard offers it. |
 
 </div>
 
 `action_delay` rules:
 
 - Only with `action = CAPTURE`; on any other step it is rejected.
-- ISO-8601 duration (`PT5M`, `PT3H`, `P2D`), greater than zero and at most **7 days** (`P7D`).
+- ISO-8601 duration (`PT5M`, `PT3H`, `P2D`, `P1W`), greater than zero and at most **7 days** (`P7D`).
 - A delay shorter than one minute runs as one minute. Omit it to capture as soon as the approval is processed (about one minute).
 
-A `CAPTURE` or `HOLD_FOR_REVIEW` step reached from a `DECLINED`, `INTERNAL_ERROR` or group entry, placed as the route entry, or included in a `start_split`, is rejected with `400 INVALID_ROUTE_CONFIGURATION` (`step index=N with action=CAPTURE must be reached only from an APPROVED output of a provider step`). `CANCEL` has no such restriction.
+A step that breaks these placement rules is rejected with `400 INVALID_ROUTE_CONFIGURATION`; `messages` names the step and the rule (`step index=N with action=CAPTURE must be reached only from an APPROVED or SUCCEEDED_GROUP output of a provider step`, `... action=HOLD_FOR_REVIEW must be reached only from a SUCCEEDED_GROUP output of a provider step`, `... action=CANCEL must not be reached from an APPROVED or SUCCEEDED_GROUP output`). A `CAPTURE` or `HOLD_FOR_REVIEW` step placed as the route entry or inside a `start_split` is rejected too.
+
+On [Update a Routing](/reference/organizations/routing/update-routing), a stored `CAPTURE` or `HOLD_FOR_REVIEW` step is kept when the request leaves it out and the output it hung from is sent without `next`, and a `CAPTURE` step sent without `action_delay` keeps the stored delay, the same "stored wins" rule as `retry`. To change the capture, send the step with its new `action_delay`; to remove it, point that output at another step.
 
 ### Percentage splits
 
@@ -244,8 +246,8 @@ Update a Routing replaces the full configuration, splits included. A condition s
 
 ### What the API does not show
 
-Some things the dashboard can configure have no representation here yet: smart routing steps, antifraud, 3DS and authentication steps, the `REFUND`, `REVERT`, `DECLINE` and `END` actions, the `PENDING` outcome of fraud providers, and a `CAPTURE` or `HOLD_FOR_REVIEW` step that hangs from an outcome other than `APPROVED`.
+Some things the dashboard can configure have no representation here yet: smart routing steps, antifraud, 3DS and authentication steps, the `REFUND`, `REVERT`, `DECLINE` and `END` actions, the `PENDING` outcome of fraud providers, and an action step placed where the [placement rules](#action-steps) do not allow it.
 
 - [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) leaves those steps and branches out of the response.
-- [Update a Routing](/reference/organizations/routing/update-routing) does **not** delete them: what the response cannot show is kept exactly as stored, grafted onto the step it hung from, so a retrieve → update round trip keeps the routing as it was. The one exception is a `PENDING` branch that continues to another provider; that branch is not kept.
+- [Update a Routing](/reference/organizations/routing/update-routing) does **not** delete them: what the response cannot show is kept exactly as stored, grafted onto the step it hung from, so a retrieve → update round trip keeps the routing as it was. A `PENDING` branch that continues to a step the request keeps (the same provider, or a `CANCEL` step) is re-attached to it. A stored layout the merge cannot re-attach safely (the route enters on a hidden step, an output splits traffic between a hidden and a visible step, a hidden step continues to a visible provider, or a `PENDING` branch continues to a step the request removed) is rejected with `400 INVALID_ROUTE_CONFIGURATION` and a message that ends with "Edit this routing in the dashboard". Hidden parts are re-attached to the provider step with the same `provider_id` and `connection_id`; if you replace that connection, they are dropped with it.
 - To change any of those parts, use the dashboard.
