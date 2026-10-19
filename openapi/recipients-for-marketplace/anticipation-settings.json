@@ -476,15 +476,88 @@
             "description": "Optional safe provider status; never a raw provider response."
           }
         }
+      },
+      "AnticipationNotConfigured": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recipient_id",
+          "onboarding_id",
+          "enabled"
+        ],
+        "properties": {
+          "recipient_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "onboarding_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether anticipation is enabled. False is an explicit value.",
+            "const": false
+          }
+        },
+        "description": "Exactly these three fields when the owned recipient/onboarding exists and no settings resource is stored. No settings resource is created by GET."
+      },
+      "AnticipationGet": {
+        "description": "Yuno stored state; GET does not query the provider. No row returns exactly three fields. Existing resources retain revision and operational metadata; when enabled is false, top-level type, delay and volume_percentage are omitted. Uncertain resources retain their diagnostics without manufacturing enabled=false.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AnticipationNotConfigured"
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AnticipationProjection"
+              },
+              {
+                "if": {
+                  "required": [
+                    "enabled"
+                  ],
+                  "properties": {
+                    "enabled": {
+                      "const": false
+                    }
+                  }
+                },
+                "then": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "type"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "delay"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "volume_percentage"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
       }
     }
   },
   "paths": {
-    "/recipients/{recipient_id}/anticipation-settings": {
+    "/recipients/{recipient_id}/onboardings/{onboarding_id}/anticipation-settings": {
       "post": {
         "summary": "Create Anticipation Settings",
         "operationId": "post-recipient-anticipation-settings",
-        "description": "Preview: requires explicit enablement for the provider connection. See the anticipation settings guide before use. Once admitted, the resource remains after rejection. A new attempt uses PATCH, a new key, and a complete configuration when no confirmed base exists.",
+        "description": "Preview: requires explicit enablement for the provider connection. See the anticipation settings guide before use. Once admitted, the resource remains after rejection. A new attempt uses PATCH, a new key, and a complete configuration when no confirmed base exists. Both IDs come from the nested path. Use POST for a new write when GET returns no revision; a disabled stored resource still requires PATCH.",
         "parameters": [
           {
             "name": "recipient_id",
@@ -498,13 +571,13 @@
           },
           {
             "name": "onboarding_id",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "format": "uuid"
             },
-            "description": "Exactly one onboarding selector. Repeated parameters are rejected."
+            "description": "Onboarding belonging to the recipient in the path. A query parameter cannot override this selection."
           },
           {
             "name": "X-Account-Code",
@@ -700,7 +773,7 @@
       "get": {
         "summary": "Get Anticipation Settings",
         "operationId": "get-recipient-anticipation-settings",
-        "description": "Preview: requires explicit enablement for the provider connection. See the anticipation settings guide before use.",
+        "description": "Read Yuno stored state without querying the provider. Available even when write admission is disabled. An owned recipient/onboarding with no settings returns enabled=false and no metadata; write eligibility is not required for this read. Missing or inaccessible targets return RECIPIENT_NOT_FOUND. For a new write, revision present means use PATCH; absent means use POST. Retry earlier writes with their original method and key.",
         "parameters": [
           {
             "name": "recipient_id",
@@ -714,13 +787,13 @@
           },
           {
             "name": "onboarding_id",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "format": "uuid"
             },
-            "description": "Exactly one onboarding selector. Repeated parameters are rejected."
+            "description": "Onboarding belonging to the recipient in the path. A query parameter cannot override this selection."
           },
           {
             "name": "X-Account-Code",
@@ -735,26 +808,70 @@
         ],
         "responses": {
           "200": {
-            "description": "Current local projection.",
+            "description": "Stored resource, or exactly recipient_id, onboarding_id and enabled=false when no resource exists.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AnticipationProjection"
+                  "$ref": "#/components/schemas/AnticipationGet"
                 },
-                "example": {
-                  "recipient_id": "00000000-0000-4000-8000-000000000001",
-                  "onboarding_id": "00000000-0000-4000-8000-000000000002",
-                  "provider_id": "PAGARME",
-                  "revision": 1,
-                  "created_at": "2026-10-14T00:00:00Z",
-                  "updated_at": "2026-10-14T00:00:01Z",
-                  "application_status": "APPLIED",
-                  "operation_status": "APPLIED",
-                  "enabled": true,
-                  "type": "FULL",
-                  "requested_settings": {
-                    "enabled": true,
-                    "type": "FULL"
+                "examples": {
+                  "never_configured": {
+                    "value": {
+                      "recipient_id": "00000000-0000-4000-8000-000000000001",
+                      "onboarding_id": "00000000-0000-4000-8000-000000000002",
+                      "enabled": false
+                    }
+                  },
+                  "stored_disabled": {
+                    "value": {
+                      "recipient_id": "00000000-0000-4000-8000-000000000001",
+                      "onboarding_id": "00000000-0000-4000-8000-000000000002",
+                      "provider_id": "PAGARME",
+                      "revision": 1,
+                      "created_at": "2026-10-14T00:00:00Z",
+                      "updated_at": "2026-10-14T00:00:01Z",
+                      "application_status": "APPLIED",
+                      "operation_status": "APPLIED",
+                      "enabled": false,
+                      "requested_settings": {
+                        "enabled": false,
+                        "type": "FULL"
+                      }
+                    }
+                  },
+                  "stored_enabled": {
+                    "value": {
+                      "recipient_id": "00000000-0000-4000-8000-000000000001",
+                      "onboarding_id": "00000000-0000-4000-8000-000000000002",
+                      "provider_id": "PAGARME",
+                      "revision": 1,
+                      "created_at": "2026-10-14T00:00:00Z",
+                      "updated_at": "2026-10-14T00:00:01Z",
+                      "application_status": "APPLIED",
+                      "operation_status": "APPLIED",
+                      "enabled": true,
+                      "type": "FULL",
+                      "requested_settings": {
+                        "enabled": true,
+                        "type": "FULL"
+                      }
+                    }
+                  },
+                  "uncertain": {
+                    "value": {
+                      "recipient_id": "00000000-0000-4000-8000-000000000001",
+                      "onboarding_id": "00000000-0000-4000-8000-000000000002",
+                      "provider_id": "PAGARME",
+                      "revision": 1,
+                      "created_at": "2026-10-14T00:00:00Z",
+                      "updated_at": "2026-10-14T00:00:01Z",
+                      "application_status": "UNKNOWN",
+                      "operation_status": "QUARANTINED",
+                      "requested_settings": {
+                        "enabled": true,
+                        "type": "FULL"
+                      }
+                    }
                   }
                 }
               }
@@ -781,7 +898,7 @@
             }
           },
           "404": {
-            "description": "Recipient/onboarding is not accessible, or settings do not exist.",
+            "description": "RECIPIENT_NOT_FOUND: recipient or onboarding is missing, deleted, mismatched or inaccessible. No stored settings alone is a 200 response.",
             "content": {
               "application/json": {
                 "schema": {
@@ -791,7 +908,7 @@
             }
           },
           "502": {
-            "description": "Unusable upstream response or internal authentication failure; write outcome is uncertain. Retain the same key for a retry. Read the error code.",
+            "description": "Unusable settings-service response or internal authentication failure. A read failure is not a disabled-state response.",
             "content": {
               "application/json": {
                 "schema": {
@@ -815,7 +932,7 @@
       "patch": {
         "summary": "Update Anticipation Settings",
         "operationId": "patch-recipient-anticipation-settings",
-        "description": "Preview: requires explicit enablement for the provider connection. See the anticipation settings guide before use. Once admitted, the resource remains after rejection. A new attempt uses PATCH, a new key, and a complete configuration when no confirmed base exists.",
+        "description": "Preview: requires explicit enablement for the provider connection. See the anticipation settings guide before use. Once admitted, the resource remains after rejection. A new attempt uses PATCH, a new key, and a complete configuration when no confirmed base exists. Both IDs come from the nested path. A missing resource remains 404 ANTICIPATION_SETTINGS_NOT_FOUND; PATCH is not an upsert.",
         "parameters": [
           {
             "name": "recipient_id",
@@ -829,13 +946,13 @@
           },
           {
             "name": "onboarding_id",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "format": "uuid"
             },
-            "description": "Exactly one onboarding selector. Repeated parameters are rejected."
+            "description": "Onboarding belonging to the recipient in the path. A query parameter cannot override this selection."
           },
           {
             "name": "X-Account-Code",
