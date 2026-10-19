@@ -87931,20 +87931,30 @@ paths:
                                 type: string
                                 example: f1a3c4d5-...
                                 description: >-
-                                  Required on provider steps; absent on action steps. Must be ACTIVE and support the
-                                  payment_method.
+                                  Required on provider steps; absent on action and smart routing steps. Must be ACTIVE
+                                  and support the payment_method.
+                              provider_type:
+                                type: string
+                                enum:
+                                  - PAYMENT
+                                  - FRAUD
+                                  - THREE_D_SECURE
+                                  - AUTHENTICATION
+                                description: The kind the provider resolves to. Response only.
                               action:
                                 type: string
                                 enum:
                                   - CANCEL
                                   - CAPTURE
                                   - HOLD_FOR_REVIEW
+                                  - REVERT
                                 description: >-
                                   Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
                                   captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending
-                                  manual review. CAPTURE is reached only from APPROVED or SUCCEEDED_GROUP outputs,
-                                  HOLD_FOR_REVIEW only from SUCCEEDED_GROUP, and CANCEL never from those two. An action
-                                  step has no provider_id, connection_id or output.
+                                  manual review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                                  HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart
+                                  routing step, REVERT the outputs of a fraud step that runs after the payment, CANCEL
+                                  never an approval. An action step has no provider_id, connection_id or output.
                               action_delay:
                                 type: string
                                 example: PT5M
@@ -87963,8 +87973,8 @@ paths:
                                       type: string
                                       example: DECLINED
                                       description: >-
-                                        APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP or
-                                        INTERNAL_ERROR.
+                                        APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING
+                                        (fraud, 3DS and authentication steps only) or INTERNAL_ERROR.
                                     decline_types:
                                       type: array
                                       items:
@@ -88009,6 +88019,59 @@ paths:
                                             type: integer
                                             example: 70
                                 description: Per-outcome handlers. Returned as an empty array on action steps.
+                              fraud:
+                                type: object
+                                description: Configuration of a fraud provider step, returned on FRAUD steps.
+                                properties:
+                                  rules:
+                                    type: string
+                                    example: rule-a,rule-b
+                                  blocklists:
+                                    type: string
+                                  allowlists:
+                                    type: string
+                                  reviewlists:
+                                    type: string
+                                  preset:
+                                    type: string
+                                  report_only:
+                                    type: boolean
+                                    description: >-
+                                      Score without acting on the result. Only on a fraud step reached from declined
+                                      outputs of a payment step.
+                              smart_routing:
+                                type: object
+                                description: Returned on smart routing steps.
+                                properties:
+                                  type:
+                                    type: string
+                                    enum:
+                                      - COSTS
+                                      - LATENCY
+                                    example: LATENCY
+                                  providers:
+                                    type: array
+                                    minItems: 2
+                                    maxItems: 4
+                                    items:
+                                      type: object
+                                      required:
+                                        - provider_id
+                                        - connection_id
+                                      properties:
+                                        provider_id:
+                                          type: string
+                                          example: ADYEN
+                                        connection_id:
+                                          type: string
+                                          format: uuid
+                                        network_token_on:
+                                          type: boolean
+                                  no_retry_decline_types:
+                                    type: array
+                                    items:
+                                      type: string
+                                    description: Decline sub-statuses after which the next provider of the set is not tried.
                     condition_sets:
                       type: array
                       items:
@@ -88231,27 +88294,29 @@ paths:
                             type: string
                             example: STRIPE
                             description: >-
-                              Required on provider steps; absent on action steps. Must match the provider of the
-                              connection.
+                              Required on provider steps (SMART_ROUTING on a smart routing step); absent on action
+                              steps. Must match the provider of the connection.
                           connection_id:
                             type: string
                             format: uuid
                             example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
                             description: >-
-                              Required on provider steps; absent on action steps. Must be ACTIVE and support the
-                              payment_method.
+                              Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                              support the payment_method.
                           action:
                             type: string
                             enum:
                               - CANCEL
                               - CAPTURE
                               - HOLD_FOR_REVIEW
+                              - REVERT
                             description: >-
                               Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
                               captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
-                              review. CAPTURE is reached only from APPROVED or SUCCEEDED_GROUP outputs, HOLD_FOR_REVIEW
-                              only from SUCCEEDED_GROUP, and CANCEL never from those two. An action step has no
-                              provider_id, connection_id or output.
+                              review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                              HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart routing
+                              step, REVERT the outputs of a fraud step that runs after the payment, CANCEL never an
+                              approval. An action step has no provider_id, connection_id or output.
                           action_delay:
                             type: string
                             example: PT5M
@@ -88269,8 +88334,8 @@ paths:
                                   type: string
                                   example: DECLINED
                                   description: >-
-                                    APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP or
-                                    INTERNAL_ERROR.
+                                    APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (fraud,
+                                    3DS and authentication steps only) or INTERNAL_ERROR.
                                 decline_types:
                                   type: array
                                   items:
@@ -88315,6 +88380,66 @@ paths:
                                         type: integer
                                         example: 70
                             description: Per-outcome handlers of a provider step. Not allowed on an action step.
+                          fraud:
+                            type: object
+                            description: >-
+                              Configuration of a fraud provider step. Only on FRAUD providers; omitted on update keeps
+                              the stored configuration.
+                            properties:
+                              rules:
+                                type: string
+                                example: rule-a,rule-b
+                              blocklists:
+                                type: string
+                              allowlists:
+                                type: string
+                              reviewlists:
+                                type: string
+                              preset:
+                                type: string
+                              report_only:
+                                type: boolean
+                                description: >-
+                                  Score without acting on the result. Only on a fraud step reached from declined outputs
+                                  of a payment step.
+                          smart_routing:
+                            type: object
+                            description: >-
+                              Makes the step a smart routing step (provider_id SMART_ROUTING, no connection_id). Card
+                              routings only, one per route.
+                            required:
+                              - type
+                              - providers
+                            properties:
+                              type:
+                                type: string
+                                enum:
+                                  - COSTS
+                                  - LATENCY
+                                example: LATENCY
+                              providers:
+                                type: array
+                                minItems: 2
+                                maxItems: 4
+                                items:
+                                  type: object
+                                  required:
+                                    - provider_id
+                                    - connection_id
+                                  properties:
+                                    provider_id:
+                                      type: string
+                                      example: ADYEN
+                                    connection_id:
+                                      type: string
+                                      format: uuid
+                                    network_token_on:
+                                      type: boolean
+                              no_retry_decline_types:
+                                type: array
+                                items:
+                                  type: string
+                                description: Decline sub-statuses after which the next provider of the set is not tried.
                         description: >-
                           A provider attempt (provider_id + connection_id) or an action step (action). index values are
                           contiguous starting at 1.
@@ -88495,20 +88620,30 @@ paths:
                               type: string
                               example: f1a3c4d5-...
                               description: >-
-                                Required on provider steps; absent on action steps. Must be ACTIVE and support the
-                                payment_method.
+                                Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                                support the payment_method.
+                            provider_type:
+                              type: string
+                              enum:
+                                - PAYMENT
+                                - FRAUD
+                                - THREE_D_SECURE
+                                - AUTHENTICATION
+                              description: The kind the provider resolves to. Response only.
                             action:
                               type: string
                               enum:
                                 - CANCEL
                                 - CAPTURE
                                 - HOLD_FOR_REVIEW
+                                - REVERT
                               description: >-
                                 Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
                                 captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
-                                review. CAPTURE is reached only from APPROVED or SUCCEEDED_GROUP outputs,
-                                HOLD_FOR_REVIEW only from SUCCEEDED_GROUP, and CANCEL never from those two. An action
-                                step has no provider_id, connection_id or output.
+                                review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                                HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart
+                                routing step, REVERT the outputs of a fraud step that runs after the payment, CANCEL
+                                never an approval. An action step has no provider_id, connection_id or output.
                             action_delay:
                               type: string
                               example: PT5M
@@ -88526,8 +88661,8 @@ paths:
                                     type: string
                                     example: DECLINED
                                     description: >-
-                                      APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP or
-                                      INTERNAL_ERROR.
+                                      APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING
+                                      (fraud, 3DS and authentication steps only) or INTERNAL_ERROR.
                                   decline_types:
                                     type: array
                                     items:
@@ -88571,6 +88706,59 @@ paths:
                                           type: integer
                                           example: 70
                               description: Per-outcome handlers. Returned as an empty array on action steps.
+                            fraud:
+                              type: object
+                              description: Configuration of a fraud provider step, returned on FRAUD steps.
+                              properties:
+                                rules:
+                                  type: string
+                                  example: rule-a,rule-b
+                                blocklists:
+                                  type: string
+                                allowlists:
+                                  type: string
+                                reviewlists:
+                                  type: string
+                                preset:
+                                  type: string
+                                report_only:
+                                  type: boolean
+                                  description: >-
+                                    Score without acting on the result. Only on a fraud step reached from declined
+                                    outputs of a payment step.
+                            smart_routing:
+                              type: object
+                              description: Returned on smart routing steps.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - COSTS
+                                    - LATENCY
+                                  example: LATENCY
+                                providers:
+                                  type: array
+                                  minItems: 2
+                                  maxItems: 4
+                                  items:
+                                    type: object
+                                    required:
+                                      - provider_id
+                                      - connection_id
+                                    properties:
+                                      provider_id:
+                                        type: string
+                                        example: ADYEN
+                                      connection_id:
+                                        type: string
+                                        format: uuid
+                                      network_token_on:
+                                        type: boolean
+                                no_retry_decline_types:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: Decline sub-statuses after which the next provider of the set is not tried.
                   condition_sets:
                     type: array
                     items:
@@ -89266,20 +89454,30 @@ paths:
                               type: string
                               example: f1a3c4d5-...
                               description: >-
-                                Required on provider steps; absent on action steps. Must be ACTIVE and support the
-                                payment_method.
+                                Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                                support the payment_method.
+                            provider_type:
+                              type: string
+                              enum:
+                                - PAYMENT
+                                - FRAUD
+                                - THREE_D_SECURE
+                                - AUTHENTICATION
+                              description: The kind the provider resolves to. Response only.
                             action:
                               type: string
                               enum:
                                 - CANCEL
                                 - CAPTURE
                                 - HOLD_FOR_REVIEW
+                                - REVERT
                               description: >-
                                 Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
                                 captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
-                                review. CAPTURE is reached only from APPROVED or SUCCEEDED_GROUP outputs,
-                                HOLD_FOR_REVIEW only from SUCCEEDED_GROUP, and CANCEL never from those two. An action
-                                step has no provider_id, connection_id or output.
+                                review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                                HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart
+                                routing step, REVERT the outputs of a fraud step that runs after the payment, CANCEL
+                                never an approval. An action step has no provider_id, connection_id or output.
                             action_delay:
                               type: string
                               example: PT5M
@@ -89297,8 +89495,8 @@ paths:
                                     type: string
                                     example: DECLINED
                                     description: >-
-                                      APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP or
-                                      INTERNAL_ERROR.
+                                      APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING
+                                      (fraud, 3DS and authentication steps only) or INTERNAL_ERROR.
                                   decline_types:
                                     type: array
                                     items:
@@ -89341,6 +89539,59 @@ paths:
                                           type: integer
                                           example: 70
                               description: Per-outcome handlers. Returned as an empty array on action steps.
+                            fraud:
+                              type: object
+                              description: Configuration of a fraud provider step, returned on FRAUD steps.
+                              properties:
+                                rules:
+                                  type: string
+                                  example: rule-a,rule-b
+                                blocklists:
+                                  type: string
+                                allowlists:
+                                  type: string
+                                reviewlists:
+                                  type: string
+                                preset:
+                                  type: string
+                                report_only:
+                                  type: boolean
+                                  description: >-
+                                    Score without acting on the result. Only on a fraud step reached from declined
+                                    outputs of a payment step.
+                            smart_routing:
+                              type: object
+                              description: Returned on smart routing steps.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - COSTS
+                                    - LATENCY
+                                  example: LATENCY
+                                providers:
+                                  type: array
+                                  minItems: 2
+                                  maxItems: 4
+                                  items:
+                                    type: object
+                                    required:
+                                      - provider_id
+                                      - connection_id
+                                    properties:
+                                      provider_id:
+                                        type: string
+                                        example: ADYEN
+                                      connection_id:
+                                        type: string
+                                        format: uuid
+                                      network_token_on:
+                                        type: boolean
+                                no_retry_decline_types:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: Decline sub-statuses after which the next provider of the set is not tried.
                   condition_sets:
                     type: array
                     items:
@@ -89569,27 +89820,29 @@ paths:
                             type: string
                             example: STRIPE
                             description: >-
-                              Required on provider steps; absent on action steps. Must match the provider of the
-                              connection.
+                              Required on provider steps (SMART_ROUTING on a smart routing step); absent on action
+                              steps. Must match the provider of the connection.
                           connection_id:
                             type: string
                             format: uuid
                             example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
                             description: >-
-                              Required on provider steps; absent on action steps. Must be ACTIVE and support the
-                              payment_method.
+                              Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                              support the payment_method.
                           action:
                             type: string
                             enum:
                               - CANCEL
                               - CAPTURE
                               - HOLD_FOR_REVIEW
+                              - REVERT
                             description: >-
                               Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
                               captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
-                              review. CAPTURE is reached only from APPROVED or SUCCEEDED_GROUP outputs, HOLD_FOR_REVIEW
-                              only from SUCCEEDED_GROUP, and CANCEL never from those two. An action step has no
-                              provider_id, connection_id or output.
+                              review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                              HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart routing
+                              step, REVERT the outputs of a fraud step that runs after the payment, CANCEL never an
+                              approval. An action step has no provider_id, connection_id or output.
                           action_delay:
                             type: string
                             example: PT5M
@@ -89607,8 +89860,8 @@ paths:
                                   type: string
                                   example: DECLINED
                                   description: >-
-                                    APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP or
-                                    INTERNAL_ERROR.
+                                    APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (fraud,
+                                    3DS and authentication steps only) or INTERNAL_ERROR.
                                 decline_types:
                                   type: array
                                   items:
@@ -89653,6 +89906,66 @@ paths:
                                         type: integer
                                         example: 70
                             description: Per-outcome handlers of a provider step. Not allowed on an action step.
+                          fraud:
+                            type: object
+                            description: >-
+                              Configuration of a fraud provider step. Only on FRAUD providers; omitted on update keeps
+                              the stored configuration.
+                            properties:
+                              rules:
+                                type: string
+                                example: rule-a,rule-b
+                              blocklists:
+                                type: string
+                              allowlists:
+                                type: string
+                              reviewlists:
+                                type: string
+                              preset:
+                                type: string
+                              report_only:
+                                type: boolean
+                                description: >-
+                                  Score without acting on the result. Only on a fraud step reached from declined outputs
+                                  of a payment step.
+                          smart_routing:
+                            type: object
+                            description: >-
+                              Makes the step a smart routing step (provider_id SMART_ROUTING, no connection_id). Card
+                              routings only, one per route.
+                            required:
+                              - type
+                              - providers
+                            properties:
+                              type:
+                                type: string
+                                enum:
+                                  - COSTS
+                                  - LATENCY
+                                example: LATENCY
+                              providers:
+                                type: array
+                                minItems: 2
+                                maxItems: 4
+                                items:
+                                  type: object
+                                  required:
+                                    - provider_id
+                                    - connection_id
+                                  properties:
+                                    provider_id:
+                                      type: string
+                                      example: ADYEN
+                                    connection_id:
+                                      type: string
+                                      format: uuid
+                                    network_token_on:
+                                      type: boolean
+                              no_retry_decline_types:
+                                type: array
+                                items:
+                                  type: string
+                                description: Decline sub-statuses after which the next provider of the set is not tried.
                         description: >-
                           A provider attempt (provider_id + connection_id) or an action step (action). index values are
                           contiguous starting at 1.
@@ -89833,20 +90146,30 @@ paths:
                               type: string
                               example: f1a3c4d5-...
                               description: >-
-                                Required on provider steps; absent on action steps. Must be ACTIVE and support the
-                                payment_method.
+                                Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                                support the payment_method.
+                            provider_type:
+                              type: string
+                              enum:
+                                - PAYMENT
+                                - FRAUD
+                                - THREE_D_SECURE
+                                - AUTHENTICATION
+                              description: The kind the provider resolves to. Response only.
                             action:
                               type: string
                               enum:
                                 - CANCEL
                                 - CAPTURE
                                 - HOLD_FOR_REVIEW
+                                - REVERT
                               description: >-
                                 Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
                                 captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
-                                review. CAPTURE is reached only from APPROVED or SUCCEEDED_GROUP outputs,
-                                HOLD_FOR_REVIEW only from SUCCEEDED_GROUP, and CANCEL never from those two. An action
-                                step has no provider_id, connection_id or output.
+                                review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                                HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart
+                                routing step, REVERT the outputs of a fraud step that runs after the payment, CANCEL
+                                never an approval. An action step has no provider_id, connection_id or output.
                             action_delay:
                               type: string
                               example: PT5M
@@ -89864,8 +90187,8 @@ paths:
                                     type: string
                                     example: DECLINED
                                     description: >-
-                                      APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP or
-                                      INTERNAL_ERROR.
+                                      APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING
+                                      (fraud, 3DS and authentication steps only) or INTERNAL_ERROR.
                                   decline_types:
                                     type: array
                                     items:
@@ -89908,6 +90231,59 @@ paths:
                                           type: integer
                                           example: 70
                               description: Per-outcome handlers. Returned as an empty array on action steps.
+                            fraud:
+                              type: object
+                              description: Configuration of a fraud provider step, returned on FRAUD steps.
+                              properties:
+                                rules:
+                                  type: string
+                                  example: rule-a,rule-b
+                                blocklists:
+                                  type: string
+                                allowlists:
+                                  type: string
+                                reviewlists:
+                                  type: string
+                                preset:
+                                  type: string
+                                report_only:
+                                  type: boolean
+                                  description: >-
+                                    Score without acting on the result. Only on a fraud step reached from declined
+                                    outputs of a payment step.
+                            smart_routing:
+                              type: object
+                              description: Returned on smart routing steps.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - COSTS
+                                    - LATENCY
+                                  example: LATENCY
+                                providers:
+                                  type: array
+                                  minItems: 2
+                                  maxItems: 4
+                                  items:
+                                    type: object
+                                    required:
+                                      - provider_id
+                                      - connection_id
+                                    properties:
+                                      provider_id:
+                                        type: string
+                                        example: ADYEN
+                                      connection_id:
+                                        type: string
+                                        format: uuid
+                                      network_token_on:
+                                        type: boolean
+                                no_retry_decline_types:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: Decline sub-statuses after which the next provider of the set is not tried.
                   condition_sets:
                     type: array
                     items:
