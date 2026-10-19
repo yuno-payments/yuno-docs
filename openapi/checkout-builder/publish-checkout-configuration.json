@@ -74,6 +74,31 @@
           "content": {
             "application/json": {
               "examples": {
+                "Prefilled customer fields": {
+                  "value": {
+                    "config": {
+                      "payment_methods": [
+                        {
+                          "payment_method_type": "PIX",
+                          "order_to_show": 0,
+                          "is_active": true,
+                          "required_fields_to_override": {
+                            "is_active": true,
+                            "fields": [
+                              { "field_name": "first_name", "is_active": true },
+                              { "field_name": "email", "is_active": true, "display": "READ_ONLY" },
+                              { "field_name": "document", "is_active": true, "display": "EDITABLE" },
+                              { "field_name": "phone", "is_active": true, "display": "HIDDEN" }
+                            ],
+                            "enrollment_fields": [
+                              { "field_name": "email", "is_active": true, "display": "READ_ONLY" }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
                 "Configuration and styling": {
                   "value": {
                     "name": "Main Checkout",
@@ -194,21 +219,23 @@
                                       "field_name": { "type": "string", "description": "The form field to override, e.g. `phone`, `security_code`.", "example": "phone" },
                                       "is_active": { "type": "boolean", "description": "Whether the field is shown/required on the form. This is the on/off switch for the field — set `false` to hide it.", "example": false },
                                       "current_value": { "type": "string", "enum": ["ALWAYS", "FIRST_TIME", "NONE"], "description": "A fixed value to apply instead of letting the payer enter one. Only meaningful for `security_code`. `NONE` returns 400 on the non-enrolled CARD flow. Unrelated to `is_active`.", "example": "ALWAYS" },
-                                      "conditions_to_override": { "type": "array", "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.", "items": { "type": "object" } }
+                                      "conditions_to_override": { "type": "array", "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.", "items": { "type": "object" } },
+                                      "display": { "type": "string", "enum": ["HIDDEN", "READ_ONLY", "EDITABLE"], "default": "HIDDEN", "description": "Optional. How an active customer field is shown when the checkout session already has a valid value for it (customer sent by `customer_id` or inline). `HIDDEN`: not shown, the value is sent. `READ_ONLY`: shown with the value and locked. `EDITABLE`: shown with the value and the shopper can change it. When the value is missing or invalid, the field is shown empty or with the error and is always editable. Only allowed on customer fields: first_name, last_name, email, document, phone, billing_address, shipping_address, zip_code, neighborhood, nationality, gender, date_of_birth. Any other field or value is rejected with 400. When omitted, the stored value is kept; with no stored value the checkout applies `HIDDEN`.", "example": "READ_ONLY" }
                                     },
                                     "required": ["field_name", "is_active"]
                                   }
                                 },
                                 "enrollment_fields": {
                                   "type": "array",
-                                  "description": "Per-field overrides for the enrolled (saved-card) flow. Same shape as `fields`.",
+                                  "description": "Per-field overrides for the enrolled (saved-card) flow. Same shape as `fields`, including `display`.",
                                   "items": {
                                     "type": "object",
                                     "properties": {
                                       "field_name": { "type": "string", "description": "The form field to override, e.g. `phone`, `security_code`.", "example": "phone" },
                                       "is_active": { "type": "boolean", "description": "Whether the field is shown/required on the form. This is the on/off switch for the field — set `false` to hide it.", "example": false },
                                       "current_value": { "type": "string", "enum": ["ALWAYS", "FIRST_TIME", "NONE"], "description": "A fixed value to apply instead of letting the payer enter one. Only meaningful for `security_code`. `NONE` returns 400 on the non-enrolled CARD flow. Unrelated to `is_active`.", "example": "ALWAYS" },
-                                      "conditions_to_override": { "type": "array", "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.", "items": { "type": "object" } }
+                                      "conditions_to_override": { "type": "array", "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.", "items": { "type": "object" } },
+                                      "display": { "type": "string", "enum": ["HIDDEN", "READ_ONLY", "EDITABLE"], "default": "HIDDEN", "description": "Optional. How an active customer field is shown when the checkout session already has a valid value for it (customer sent by `customer_id` or inline). `HIDDEN`: not shown, the value is sent. `READ_ONLY`: shown with the value and locked. `EDITABLE`: shown with the value and the shopper can change it. When the value is missing or invalid, the field is shown empty or with the error and is always editable. Only allowed on customer fields: first_name, last_name, email, document, phone, billing_address, shipping_address, zip_code, neighborhood, nationality, gender, date_of_birth. Any other field or value is rejected with 400. When omitted, the stored value is kept; with no stored value the checkout applies `HIDDEN`.", "example": "READ_ONLY" }
                                     },
                                     "required": ["field_name", "is_active"]
                                   }
@@ -314,6 +341,7 @@
                       "code": "INVALID_PARAMETERS",
                       "messages": [
                         "payment_methods[0].order_to_show must be >= 0",
+                        "payment_methods[0].required_fields_to_override.fields[1].display \"locked\" is not valid, use HIDDEN, READ_ONLY or EDITABLE",
                         "styles.global.accent_color must be a 6- or 8-digit hex color (#RRGGBB or #RRGGBBAA)"
                       ]
                     }
