@@ -23,7 +23,7 @@ Check the [3D Secure](/docs/security-and-compliance/3d-secure) page to learn how
 <Note>
 **Promotions**
 
-To charge a promotion's price, send the original `amount` and a discount line in `additional_data.order.discounts` with `type: YUNO_PROMOTION` and the `quote_id` of a promotion quote. Yuno charges the discounted price, keeps `amount` as you sent it, and returns `discount_amount`. To redeem a promotion code instead of a quote, send `{ "code": "<code>" }` on the discount line. See [Promotion codes](#promotion-codes) and [Promotions](/docs/payment-features/promotions).
+To charge a promotion's price, send the original `amount` and a discount line in `additional_data.order.discounts` with `type: YUNO_PROMOTION` and the `quote_id` of a promotion quote. Yuno charges the discounted price, keeps `amount` as you sent it, and returns `discount_amount`. To redeem a promotion code instead of a quote, send `{ "code": "<code>" }` on the discount line. A dry run takes no code (see [Dry run](#dry-run)). See [Promotion codes](#promotion-codes) and [Promotions](/docs/payment-features/promotions).
 </Note>
 
 To authorize a payment without capturing it immediately (the client is not charged), send `capture: false` inside the payment method detail, under the object that matches the payment method type: `payment_method.detail.card.capture` for cards and `payment_method.detail.wallet.capture` for wallets that support authorization (for example PayPal with a vaulted billing agreement). Yuno only reads the flag under the object that matches the payment method type, so `capture: false` under `card` is ignored on a wallet payment and the payment is captured right away.
@@ -91,7 +91,7 @@ No answer repeats your code. Where the promotions service quotes it back in a me
 
 ### Idempotency key and uses
 
-* **The `X-Idempotency-Key` is required.** A payment with a code and without that header is refused with `400 INVALID_PARAMETERS`: `The header 'x-idempotency-key' is required to apply a promotion code.` A dry run is the exception.
+* **The `X-Idempotency-Key` is required.** Create Payment requires it on every payment: without the header the answer is `400 INVALID_PARAMETERS` and `The header 'x-idempotency-key' is required.` Yuno also trims the key before it counts a use, and a key that is empty after the trim is refused with `400 INVALID_PARAMETERS`: `The header 'x-idempotency-key' is required to apply a promotion code.`
 * **A use is counted when Yuno accepts the code for a payment.** The count happens at the payment attempt, before the payment reaches a provider, and it is keyed by the `X-Idempotency-Key` of the payment.
 * **The same key again counts no second use.** A retry of a payment with the same key and the same code is priced from the first use.
 * **A key belongs to one code.** The same key with another code is refused with `422 PROMOTION_NOT_APPLICABLE` and the reason `IDEMPOTENCY_KEY_REUSED`.
@@ -99,7 +99,16 @@ No answer repeats your code. Where the promotions service quotes it back in a me
 
 ### Dry run
 
-A payment with the header `X-Dry-Run: true` is quoted with the code, and the quote counts no use. Only the value `true`, in any case, makes a dry run. A dry run does not need an `X-Idempotency-Key` for the code. A code with no use left is still refused in a dry run, with `USAGE_LIMIT_REACHED`. A dry run sends no key, so it is not refused with `ZERO_CHARGE`: a code that leaves a charge of zero is refused in a dry run with `ENGINE_UNAVAILABLE`.
+A dry run takes no promotion code. A payment with the header `X-Dry-Run: true` that carries a `code` on a discount line is refused with `400 INVALID_PARAMETERS`, and no payment is created:
+
+```json Dry run with a code (400)
+{
+    "code": "INVALID_PARAMETERS",
+    "messages": ["Promotion codes can't be used on a dry-run payment (X-Dry-Run). Test promotion codes in the sandbox environment."]
+}
+```
+
+Yuno refuses the payment before it asks for a quote, tokenizes a card or reaches a provider, so it counts no use. The message never repeats your code. Only the value `true`, in any case, makes a dry run. A dry run without a code, or with a `quote_id` line, is not affected. To try a promotion code, use the sandbox environment.
 
 ### Answers to a payment with a code
 
@@ -117,7 +126,7 @@ When a code does not become a quote, no payment is created and the answer says w
 | `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_DISCOUNT` | The promotion gives no discount on this amount. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_CHARGE` | The code applies and the payment would be charged zero or less. Yuno counts no use. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `PROMOTIONS_NOT_ENABLED` | Promotions is not enabled for your organization. |
-| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | Promotions is temporarily disabled by Yuno, the promotions service did not answer in time or answered with an error, or the winning promotion would leave a charge of zero in a dry run or when an automatic promotion wins. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | Promotions is temporarily disabled by Yuno, the promotions service did not answer in time or answered with an error, or an automatic promotion wins the selection and would leave a charge of zero. |
 
 ```json Code that leaves a charge of zero (422)
 {
@@ -127,7 +136,7 @@ When a code does not become a quote, no payment is created and the answer says w
 }
 ```
 
-`ZERO_CHARGE` belongs to a code that wins and to a payment that carries a key. When an automatic promotion wins the selection and its quote would charge zero, the payment is not refused with `ZERO_CHARGE`: Yuno refuses it with `422 PROMOTION_NOT_APPLICABLE` and the reason `ENGINE_UNAVAILABLE`, and no payment is created.
+`ZERO_CHARGE` belongs to a code that wins. When an automatic promotion wins the selection and its quote would charge zero, the payment is not refused with `ZERO_CHARGE`: Yuno refuses it with `422 PROMOTION_NOT_APPLICABLE` and the reason `ENGINE_UNAVAILABLE`, and no payment is created.
 
 A code is refused for these payments too, and no payment is created:
 

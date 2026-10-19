@@ -1,7 +1,7 @@
 ---
 title: "Create Promotion Quote"
 openapi: "/openapi/promotions/create-promotion-quote.json POST /promotions/quote"
-description: "Prices a payment before you create it and returns a signed quote when a promotion applies."
+description: "Prices a payment before you create it. Returns a signed quote when a promotion applies, or a preview of the price of a promotion code."
 noindex: true
 ---
 
@@ -44,7 +44,7 @@ The checkout page of a payment link asks for the quote by itself as soon as it h
 ## How to use the quote
 
 1. Send the context of the payment you're about to create. `amount` is the original amount, before any promotion. For a card, send inside `payment_method` either its `bin` (the first 6 to 8 digits) or a token (`token` or `vaulted_token`), never both.
-2. On `200`, show `charge_amount` to your customer. That's what they'll pay. The answer includes `quote_id`, `promotions` (one entry today: `id`, `name`, `description`, `discount`, `discount_amount`), the three totals outside the list (`original_amount`, `discount_amount`, `charge_amount`) and `expires_at`. The `quote_id` is long, about 300 to 730 characters: store it whole (up to 1000 characters) and send it unchanged.
+2. On `200`, show `charge_amount` to your customer. That's what they'll pay. The answer includes `quote_id`, `promotions` (one entry today: `id`, `name`, `description`, `discount`, `discount_amount`), the three totals outside the list (`original_amount`, `discount_amount`, `charge_amount`) and `expires_at`. The `quote_id` is long, about 300 to 730 characters: store it whole (up to 1000 characters) and send it unchanged. A request that carries a `code` gets a preview instead, with no `quote_id` and no `expires_at`: see [Price a promotion code](#price-a-promotion-code).
 3. Create the payment with the same original `amount` and `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": "<quote_id>" }]`. See [Create Payment](/reference/payments/create-payment) and [Promotions](/docs/payment-features/promotions).
 
 A promotion applies **only** when the payment carries that `quote_id` on a discount line. A payment without one is charged in full.
@@ -56,7 +56,7 @@ A promotion applies **only** when the payment carries that `quote_id` on a disco
 * **Every condition must already be true.** A quote exists only when the promotion's conditions all hold for the context you send.
 * **Quoted price or no payment.** If the quote expired, or the payment's amount, currency or account differs from what you quoted, or the payment differs in a detail the quote is bound to (the country, payment method, card type and card BIN when the promotion's conditions use them, and the checkout session when the quote was made with one), Yuno rejects the payment with `422` and one of the `PROMOTION_*` codes listed in [Promotions](/docs/payment-features/promotions#the-customer-pays-the-quoted-price-or-the-payment-is-rejected). It never re-prices. Get a new quote, and send the retry with a new `X-Idempotency-Key`.
 * **Nothing is consumed.** A quote is a read. Asking again gives the same price; the `expires_at`, and so the `quote_id`, move with the time you ask, so don't use the id as a key. A quote you never use needs no cleanup, and one quote can back several payments.
-* **No match isn't an error.** The answer is `204` when nothing applies. Create the payment as usual, with no `quote_id` on a discount line. A `204` also means Promotions is not enabled for your organization or is temporarily disabled by Yuno, Yuno could not price the payment in time, or the promotion would make the charge zero (a promotion never makes a charge of zero). If the request itself fails (`408`, `5xx`, no answer), create the payment as usual too: a quote never blocks a payment.
+* **No match isn't an error.** The answer is `204` when nothing applies. Create the payment as usual, with no `quote_id` on a discount line. A `204` also means Promotions is not enabled for your organization or is temporarily disabled by Yuno, Yuno could not price the payment in time, or an automatic promotion would make the charge zero (a promotion never makes a charge of zero; for a code, see [Price a promotion code](#price-a-promotion-code)). If the request itself fails (`408`, `5xx`, no answer), create the payment as usual too: a quote never blocks a payment.
 * **BIN or token, never both, inside `payment_method`.** A server that holds the card number sends `payment_method.bin`, the first 6 to 8 digits. A server that holds a token sends `payment_method.token` or `payment_method.vaulted_token`, and Yuno resolves the BIN and the card type from the card, exactly as it does on the payment. Any two of `bin`, `token` and `vaulted_token` together are rejected with `400 INVALID_PARAMETERS`, so don't copy the `payment_method` of a Create Payment request that carries both tokens. A promotion with a `bins` condition needs the BIN, and one with a `card_types` condition needs the `card_type` (not the BIN); without them it doesn't apply. Wallets (Apple Pay, Google Pay) aren't a supported target for this release: don't build on a wallet quote yet.
 * **Send the BIN, never the card number.** `payment_method.bin` is the first 6 to 8 digits of the card, digits only. Fewer than 6 digits, more than 8 (a longer card prefix or the full card number included), or anything but digits is rejected with `400 INVALID_PARAMETERS`.
 
@@ -74,22 +74,51 @@ A promotion that requires a code applies only when the payment carries that code
 }
 ```
 
+This endpoint sends no idempotency key, so the answer is a **preview**: the same amounts as a quote, with no `quote_id` and no `expires_at`.
+
+```json Preview (200)
+{
+    "promotions": [
+        {
+            "id": "00000000-0000-4000-8000-0000000000b1",
+            "name": "Summer 10",
+            "description": null,
+            "discount": { "type": "PERCENTAGE", "value": 10 },
+            "discount_amount": { "currency": "USD", "value": 25.00 }
+        }
+    ],
+    "original_amount": { "currency": "USD", "value": 250.00 },
+    "discount_amount": { "currency": "USD", "value": 25.00 },
+    "charge_amount": { "currency": "USD", "value": 225.00 }
+}
+```
+
+* **A preview shows the price and nothing more.** Show `charge_amount` to your customer. Yuno signs, stores and counts nothing. A preview can't be paid: there is no `quote_id` to put on a discount line. The payment carries the code itself, `additional_data.order.discounts: [{ "code": "SUMMER10" }]`. See [Promotion codes](/docs/payment-features/promotion-codes#send-the-code-on-the-payment).
 * **The code has 3 to 32 characters:** letters, digits, `_` and `-`. Yuno matches it without regard to case. A code with another character or another length finds no promotion and answers `404 PROMOTION_NOT_FOUND`.
 * **`payment_method.type` is still required** on this endpoint, as without a code.
-* **A code that doesn't apply answers `404` or `422`, not `204`.** The answer is `404 PROMOTION_NOT_FOUND` when no promotion of the account holds the code or the promotion holding it has not started, and `422 PROMOTION_NOT_APPLICABLE` with a `reason` when it holds the code and doesn't apply: `EXPIRED`, `DISABLED`, `USAGE_LIMIT_REACHED`, `CONDITIONS_NOT_MET`, `CURRENCY_MISMATCH` or `ZERO_DISCOUNT`. [Promotion Error Codes](/reference/promotions/promotion-error-codes) has the message of each.
-* **The quote counts no use of the code.** This endpoint sends no idempotency key, so asking for a quote with a `code` uses nothing up. Yuno counts a use when a payment carries the code. See [Promotion codes](/docs/payment-features/promotion-codes#uses-and-limits).
-* **This endpoint never answers `ZERO_CHARGE`.** That reason belongs to a payment that carries a code and a key. A quote request for a code that leaves a charge of zero gets `204`, as for any promotion that would make the charge zero.
-* **The quote can be for another promotion.** When an automatic promotion saves the customer more than the code, the quote is for that promotion, and `promotions[0].id` is its id.
+* **The preview counts no use of the code.** Yuno counts a use when a payment carries the code. See [Promotion codes](/docs/payment-features/promotion-codes#uses-and-limits).
+* **A code that doesn't apply is refused, not previewed.** It answers `404` or `422`, not `204`. The answer is `404 PROMOTION_NOT_FOUND` when no promotion of the account holds the code or the promotion holding it has not started, and `422 PROMOTION_NOT_APPLICABLE` with a `reason` when it holds the code and doesn't apply: `EXPIRED`, `DISABLED`, `USAGE_LIMIT_REACHED`, `CONDITIONS_NOT_MET`, `CURRENCY_MISMATCH`, `ZERO_DISCOUNT` or `ZERO_CHARGE`. [Promotion Error Codes](/reference/promotions/promotion-error-codes) has the message of each.
+* **A code that leaves a charge of zero answers `ZERO_CHARGE`.** When the code wins and the charge would be zero or less (a 100% discount, or a fixed discount at or above the amount), the answer is `422 PROMOTION_NOT_APPLICABLE` with the reason `ZERO_CHARGE`, as on a payment. The reason comes before `USAGE_LIMIT_REACHED`.
+* **The preview can be for another promotion.** When an automatic promotion saves the customer more than the code, the preview is for that promotion, and `promotions[0].id` is its id. An automatic promotion that would leave a charge of zero answers `204`.
+* **A request without a `code` is unchanged.** It gets a signed quote, with `quote_id` and `expires_at`. A payment that carries a code is quoted with its `X-Idempotency-Key`, and that quote is signed and counts a use. See [Promotion codes](/docs/payment-features/promotion-codes#uses-and-limits).
+
+```json Code that leaves a charge of zero (422)
+{
+    "code": "PROMOTION_NOT_APPLICABLE",
+    "messages": ["The promotion leaves a charge of zero on this amount."],
+    "reason": "ZERO_CHARGE"
+}
+```
 
 ## Answers
 
 | Status | Meaning |
 | --- | --- |
-| `200` | A promotion applies: the quote. |
-| `204` | Nothing applies (a request with a `code` gets a `404` or a `422` instead), Promotions is not enabled for your organization or is temporarily disabled by Yuno, Yuno could not price the payment in time, or the promotion would make the charge zero. No body. |
+| `200` | A promotion applies: the quote. A request with a `code` gets a preview, with no `quote_id` and no `expires_at`. |
+| `204` | Nothing applies (a request with a `code` gets a `404` or a `422` instead), Promotions is not enabled for your organization or is temporarily disabled by Yuno, Yuno could not price the payment in time, or an automatic promotion would make the charge zero. No body. |
 | `400` | The request doesn't validate (`INVALID_PARAMETERS`, `INVALID_ACCOUNT_ID`, `CHECKOUT_SESSION_NOT_EXISTS` or `BAD_REQUEST`, with the reason in `messages[]`), or the checkout session was already used or has expired. |
 | `401` | The credentials are missing or invalid. |
 | `404` | `PROMOTION_NOT_FOUND`: the request carries a `code`, and no promotion of the account holds it, or the promotion holding it has not started, or the code has a character outside `A-Z`, `0-9`, `_` and `-` or a length outside 3 to 32. |
-| `422` | `PROMOTION_NOT_APPLICABLE`: the request carries a `code` that a promotion holds and that doesn't apply. The `reason` is `EXPIRED`, `DISABLED`, `USAGE_LIMIT_REACHED`, `CONDITIONS_NOT_MET`, `CURRENCY_MISMATCH` or `ZERO_DISCOUNT`. |
+| `422` | `PROMOTION_NOT_APPLICABLE`: the request carries a `code` that a promotion holds and that doesn't apply. The `reason` is `EXPIRED`, `DISABLED`, `USAGE_LIMIT_REACHED`, `CONDITIONS_NOT_MET`, `CURRENCY_MISMATCH`, `ZERO_DISCOUNT` or `ZERO_CHARGE`. |
 | `408` | Yuno took too long to answer. Treat it like a `204`. |
 | `413` | The body is larger than 16 KiB. |

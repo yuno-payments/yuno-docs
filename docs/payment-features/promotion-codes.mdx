@@ -133,11 +133,26 @@ Other facts about the line:
 
 * **`payment_method.type` is not required for a code.** A code applies to the whole payment, whatever the payment method. Yuno sends the type to the promotions service only when your payment has one.
 * **A card number or token goes to the quote as the payment carries it.** Yuno sends the BIN (the first 8 digits at most) of a card number sent in the clear, never the number. A token or vaulted token goes as it is.
-* **The `X-Idempotency-Key` is required.** A payment with a code and without that header is refused with `400 INVALID_PARAMETERS`: `The header 'x-idempotency-key' is required to apply a promotion code.` A dry run is the exception (see below).
+* **The `X-Idempotency-Key` is required.** Create Payment requires it on every payment: without the header the answer is `400 INVALID_PARAMETERS` and `The header 'x-idempotency-key' is required.` Yuno also trims the key before it counts a use, and a key that is empty after the trim is refused with `400 INVALID_PARAMETERS`: `The header 'x-idempotency-key' is required to apply a promotion code.`
 
 ### Dry run
 
-A payment with the header `X-Dry-Run: true` is quoted with the code, and the quote counts no use. Only the value `true`, in any case, makes a dry run. A dry run does not need an `X-Idempotency-Key` for the code. A code with no use left is still refused in a dry run, with `USAGE_LIMIT_REACHED`. A dry run sends no key, so it is not refused with `ZERO_CHARGE`: a code that leaves a charge of zero is refused in a dry run with `ENGINE_UNAVAILABLE`.
+A dry run takes no promotion code. A payment with the header `X-Dry-Run: true` that carries a `code` on a discount line is refused with `400 INVALID_PARAMETERS`, and no payment is created:
+
+```json Dry run with a code (400)
+{
+    "code": "INVALID_PARAMETERS",
+    "messages": ["Promotion codes can't be used on a dry-run payment (X-Dry-Run). Test promotion codes in the sandbox environment."]
+}
+```
+
+Yuno refuses the payment before it asks for a quote, tokenizes a card or reaches a provider, so it counts no use. The message never repeats your code. Only the value `true`, in any case, makes a dry run. A dry run without a code, or with a `quote_id` line, is not affected. To try a promotion code, use the sandbox environment.
+
+## Show the price before the payment
+
+To show the discounted price before your customer pays, call [Create Promotion Quote](/reference/promotions/create-promotion-quote#price-a-promotion-code) with the `code`. That endpoint sends no idempotency key, so the answer is a **preview**: the promotion, `original_amount`, `discount_amount` and `charge_amount`, with no `quote_id` and no `expires_at`. Yuno signs, stores and counts nothing.
+
+A preview can't be paid: there is no `quote_id` to put on a discount line. The payment carries the code itself, as described in [Send the code on the payment](#send-the-code-on-the-payment).
 
 ## Uses and limits
 
@@ -149,9 +164,9 @@ A payment with the header `X-Dry-Run: true` is quoted with the code, and the quo
 * **The limit stops the next use.** When `limits.used` equals `limits.total`, a payment with the code is refused with `422 PROMOTION_NOT_APPLICABLE` and the reason `USAGE_LIMIT_REACHED`. No payment is created.
 * **`limits.used` counts the uses of a code that has a limit.** A code with no limit shows `limits: null`.
 * **Only the promotion that applies counts a use.** When an automatic promotion gives the customer a bigger discount than the code, that promotion applies and the code counts no use. See [When a code and an automatic promotion both apply](#when-a-code-and-an-automatic-promotion-both-apply).
-* **A quote request counts no use.** [Create Promotion Quote](/reference/promotions/create-promotion-quote) sends no key, so a quote made with a `code` counts nothing. A payment with a code counts the use.
-* **A quote request never answers `ZERO_CHARGE`.** `ZERO_CHARGE` needs a key. A quote request for a code that leaves a charge of zero gets `204`, as for any promotion that would make the charge zero. A payment with a code and a key gets `ZERO_CHARGE`.
-* **`ZERO_CHARGE` belongs to a code that wins.** When an automatic promotion wins the selection and its quote would charge zero, the payment is not refused with `ZERO_CHARGE`: Yuno refuses it with `422 PROMOTION_NOT_APPLICABLE` and the reason `ENGINE_UNAVAILABLE`. No payment is created.
+* **A quote request counts no use.** [Create Promotion Quote](/reference/promotions/create-promotion-quote) sends no key, so a quote made with a `code` is a preview: Yuno signs, stores and counts nothing. A payment with a code counts the use.
+* **A quote request answers `ZERO_CHARGE` too.** A quote request for a code that wins and leaves a charge of zero gets `422 PROMOTION_NOT_APPLICABLE` and the reason `ZERO_CHARGE`, as a payment does. It counts nothing, and the reason comes before `USAGE_LIMIT_REACHED` there too.
+* **`ZERO_CHARGE` belongs to a code that wins.** When an automatic promotion wins the selection and its quote would charge zero, the payment is not refused with `ZERO_CHARGE`: Yuno refuses it with `422 PROMOTION_NOT_APPLICABLE` and the reason `ENGINE_UNAVAILABLE`. No payment is created. A quote request in that case gets `204`.
 
 ## When a code and an automatic promotion both apply
 
@@ -200,7 +215,7 @@ When a code does not become a quote, no payment is created and the answer says w
 | `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_DISCOUNT` | The promotion gives no discount on this amount. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_CHARGE` | The code applies and the payment would be charged zero or less. Yuno counts no use. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `PROMOTIONS_NOT_ENABLED` | Promotions is not enabled for your organization. |
-| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | Promotions is temporarily disabled by Yuno, the promotions service did not answer in time or answered with an error, or the winning promotion would leave a charge of zero in a dry run or when an automatic promotion wins. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | Promotions is temporarily disabled by Yuno, the promotions service did not answer in time or answered with an error, or an automatic promotion wins the selection and would leave a charge of zero. |
 
 ```json Code that reached its limit (422)
 {
