@@ -1,0 +1,175 @@
+---
+title: "Full mode"
+description: "Migrate Android Full integrations (Activity.startCheckout + Activity.startPayment) to the unified Transaction API."
+---
+
+Full mode handed off the entire UI to the SDK: you called `startCheckout(…)` to wire up the launcher, then `startPayment(showPaymentStatus = …)`, and the SDK presented the method list, the form, the result screen, and reported back through your lambdas.
+
+In the unified API the method list is no longer implicit. `Transaction.start(activity, paymentSelected)` always requires a non-null `PaymentMethodSelected`, so the Full equivalent is a two-step flow: ask the SDK for the list with `transaction.getPaymentMethodsViews(…)`, capture the user's choice in `onPaymentSelected`, then call `start(paymentSelected = selection)` from your own Pay button.
+
+## Before you start
+
+- Replace the `com.yuno.sdk.*` imports with their `com.yuno.payments.sdk.api.*` counterparts (the side-by-side lists them). Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Full you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | `callbackOTT` / `callBackTokenWithInformation` implemented (the headless variant) | Override `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | No `callbackOTT` / `callBackTokenWithInformation` | No override | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Side-by-side
+
+<CodeGroup>
+
+```kotlin Before. Full mode
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.YunoConfig
+import com.yuno.sdk.payments.startCheckout
+import com.yuno.sdk.payments.startPayment
+
+class CheckoutActivity : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1. Initialize once at app startup
+        Yuno.initialize(
+            applicationContext,
+            apiKey = "your-public-api-key",
+            config = YunoConfig(saveCardEnabled = true, styles = customStyles),
+        )
+
+        // 2. Wire up the checkout launcher and result callbacks
+        startCheckout(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            callbackPaymentState = { state, subState -> handle(state, subState) },
+        )
+    }
+
+    // 3. Hand control off to the SDK: it renders methods + form + result
+    fun pay() {
+        startPayment(showPaymentStatus = true)
+    }
+}
+```
+
+```kotlin After. Unified Transaction
+import android.os.Bundle
+import android.view.ViewGroup
+import androidx.activity.ComponentActivity
+import com.yuno.payments.sdk.api.SdkPayments
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.PaymentListController
+import com.yuno.payments.sdk.api.models.PaymentMethodType
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
+
+class CheckoutActivity :
+    ComponentActivity(),
+    TransactionController,
+    PaymentListController {
+
+    private var transaction: Transaction? = null
+    private var selectedPayment: PaymentMethodSelected? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1. Initialize once at app startup
+        SdkPayments.initialize(applicationContext, apiKey = "your-public-api-key")
+
+        // 2. Build the transaction and embed the SDK's method list in your layout
+        val config = TransactionConfig(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            appearance = customAppearance,
+            controller = this,
+            showStatusScreen = true,
+        )
+
+        val tx = Transaction(config = config)
+        transaction = tx
+
+        val views = tx.getPaymentMethodsViews(
+            host = this,
+            types = listOf(
+                PaymentMethodType.GooglePay(),
+                PaymentMethodType.PaymentMethodList,
+            ),
+            controller = this,
+        )
+
+        views[PaymentMethodType.PaymentMethodList]?.let { view ->
+            findViewById<ViewGroup>(R.id.yuno_method_list_container).addView(view)
+        }
+    }
+
+    // 3. Capture the user's choice (do NOT start the transaction here)
+    override fun onPaymentSelected(paymentSelected: PaymentMethodSelected) {
+        selectedPayment = paymentSelected
+    }
+
+    // 4. Trigger the payment from your own "Pay" button
+    fun onPayButton() {
+        selectedPayment?.let { transaction?.start(activity = this, paymentSelected = it) }
+    }
+
+    override fun onStatus(status: TransactionStatus) {
+        // status.status: "SUCCEEDED" / "DECLINED" / "REJECTED" / "ERROR" / "PENDING" / "INTERNAL_ERROR" / "USER_CANCEL"
+    }
+}
+```
+
+</CodeGroup>
+
+## What changes
+
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
+
+### Initialization and config
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| `import com.yuno.sdk.*` | `import com.yuno.payments.sdk.api.*` | Renamed | |
+| `Yuno.initialize(context, apiKey, YunoConfig)` | `SdkPayments.initialize(context, apiKey)` | Renamed | `YunoConfig` is gone: its per-transaction settings move to `TransactionConfig` or disappear (next rows). |
+| `YunoConfig.styles` | `TransactionConfig.appearance` | Moved | Pass it per transaction instead of once at startup. |
+| `YunoConfig.language` | `TransactionConfig.language` | Moved | Pass it per transaction instead of once at startup. |
+| `YunoConfig.saveCardEnabled` | *(removed)* | Removed | Delete it: the flag is controlled server-side now. |
+| `YunoConfig.keepLoader` | *(removed)* | Removed | The SDK keeps its loader. Override `showLoading` to opt out and render your own. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+| `YunoConfig.isDynamicViewEnabled` | *(removed)* | Removed | Delete it: the dynamic view flow is the only flow in the unified API. |
+| `checkoutSession`, `countryCode` arguments of `startCheckout` | The same fields on `TransactionConfig` | Moved | The setup call's arguments become config fields. |
+| `showPaymentStatus` argument of `startPayment` | `TransactionConfig.showStatusScreen` | Moved | See the note below. |
+
+<Note>
+**The SDK result screen is off by default now.** Set `showStatusScreen = true` to keep it.
+</Note>
+
+### Controller
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| Lambdas passed to `startCheckout` (`callbackOTT`, `callbackPaymentState`, `callBackTokenWithInformation`) | `TransactionController` + `PaymentListController` | Renamed | Three separate lambdas collapse into the `TransactionController` interface; you implement only the methods you need. The list events go to `PaymentListController`, which you can implement on the same class, as in the example above. Pass it as `TransactionConfig.controller` and as the `controller` of `getPaymentMethodsViews`. The SDK does not retain it: keep it alive for the whole transaction. |
+| `callbackPaymentState: (state, subState) -> Unit` | `onStatus(status: TransactionStatus)` | Renamed | Still the single outcome callback, once per transaction, also when the SDK shows its result screen. The raw `(state, subState)` pair becomes a `TransactionStatus` object: `status` and `substatus` come from the backend, as the backend returns them. The legacy `REJECT`, `FAIL` and `PROCESSING` strings are no longer emitted: handle `DECLINED`, `REJECTED`, `ERROR` and `PENDING` instead. `CANCELED_BY_USER` is now `USER_CANCEL`. The SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `callbackOTT` / `callBackTokenWithInformation` | `createPayment(token: Map<String, Any>)` | Renamed | Optional. In Full these fired in the headless variant only. If you used them, override it: one handler replaces both lambdas and `token` is the full One-Time Token as a map. Create the payment and return; the SDK then polls the status, runs 3DS if needed and calls `onStatus`. If the handler throws, the flow stops and `onStatus` is not called, so show the error yourself. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment) and [Headless migration](/docs/yuno-sdk/migration/android/payment/headless). |
+| *(selection kept inside the SDK)* | `onPaymentSelected(paymentSelected)` on `PaymentListController` | New | Required. Store the `PaymentMethodSelected` it gives you and do not start the transaction there: `start` needs it from your own Pay button (see Entry points). |
+
+### Entry points
+
+| Full | Unified | Change | What to do |
+|---|---|---|---|
+| *(implicit: the SDK rendered the method list inside its own UI)* | `transaction.getPaymentMethodsViews(host, types, controller)` | New | Required for the Full equivalent, since the SDK no longer auto-renders the list: embed it in your layout (or build your own selector). Returns a `Map<PaymentMethodType, View?>`; read `views[PaymentMethodType.PaymentMethodList]`. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). |
+| `startCheckout(…)` + `startPayment(showPaymentStatus)` | `transaction.start(activity, paymentSelected)` | Renamed | Two explicit steps now: `getPaymentMethodsViews` (previous row), then `start` from your own button. The SDK no longer remembers the selection: `start` always takes a non-null `PaymentMethodSelected`, so pass the one you stored from `onPaymentSelected`. The `Activity` extension functions become calls on a regular `Transaction` instance. `showPaymentStatus` moved to the config (see Initialization and config). |
+
+## Related
+
+- [Get Started](/docs/yuno-sdk/get-started). Full unified-API walkthrough.
+- [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). The new `getPaymentMethodsViews` API.
+- [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Complete field reference.
+- [Migration / Lite](/docs/yuno-sdk/migration/android/payment/lite). The simpler case (single pre-selected method).
