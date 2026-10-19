@@ -1,0 +1,121 @@
+---
+title: "Webhook Integration Checklist"
+description: "A quick checklist for production-ready webhook handling"
+---
+
+Use this checklist to verify your webhook integration before going live. Each item links to the relevant documentation.
+
+## Endpoint setup
+
+<Steps>
+  <Step title="Use HTTPS">
+    Your webhook URL must be a public HTTPS endpoint. Yuno does not deliver to plain HTTP URLs.
+  </Step>
+  <Step title="Accept unauthenticated POST">
+    Your endpoint receives unauthenticated `POST` requests from Yuno. Verify authenticity using HMAC signatures instead of requiring auth headers.
+  </Step>
+  <Step title="Return HTTP 200 OK">
+    Return `200 OK` to acknowledge receipt. No response body is required. Any other status triggers retries.
+  </Step>
+</Steps>
+
+See [Configure Webhooks](/docs/webhooks/configure-webhooks) for setup instructions.
+
+## Signature verification
+
+<Steps>
+  <Step title="Enable HMAC authentication">
+    Check **Use HMAC Authentication** in the dashboard or set `hmac_client_secret` via API.
+  </Step>
+  <Step title="Verify x-hmac-signature header">
+    Compute HMAC-SHA256 of the **raw request body** (before JSON parsing) using your secret. Compare to the `x-hmac-signature` header.
+  </Step>
+  <Step title="Reject invalid signatures">
+    If signatures do not match, return `401` and do not process the event.
+  </Step>
+</Steps>
+
+```javascript
+const crypto = require('crypto');
+
+function verifySignature(rawBody, signatureHeader, secret) {
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('base64');
+  return crypto.timingSafeEqual(
+    Buffer.from(signatureHeader, 'base64'),
+    Buffer.from(expected, 'base64')
+  );
+}
+```
+
+See [Verify Webhook Signatures (HMAC)](/docs/webhooks/verify-webhook-signatures-hmac) for full examples.
+
+## Idempotency
+
+<Steps>
+  <Step title="Extract the idempotency key">
+    For payment events: `data.payment.idempotency_key`. For subscription events: `data.idempotency_key`. For split updates: `data.split_update.idempotency_key`.
+  </Step>
+  <Step title="Store processed keys">
+    Track `account_id` + `type_event` + idempotency key for each event you process.
+  </Step>
+  <Step title="Skip duplicates">
+    If you have already processed an event with the same key, return `200 OK` without reprocessing.
+  </Step>
+</Steps>
+
+```javascript
+async function handleEvent(event) {
+  const key = `${event.account_id}:${event.type_event}:${event.data.payment?.idempotency_key}`;
+  if (await store.has(key)) return; // duplicate
+  await processEvent(event);
+  await store.add(key);
+}
+```
+
+See [Webhooks Overview](/docs/webhooks) for de-duplication details.
+
+## Retries
+
+Yuno retries failed deliveries on this schedule:
+
+| Attempt | Delay after first try |
+| :--- | :--- |
+| 2nd | 5 minutes |
+| 3rd | 50 minutes |
+| 4th | 6 hours |
+| 5th | 24 hours |
+| 6th | 48 hours |
+| 7th | 96 hours |
+
+A brief outage does not lose events. Your endpoint should handle duplicate deliveries gracefully.
+
+## Quick reference
+
+| Item | Requirement |
+| :--- | :--- |
+| URL | Public HTTPS |
+| Method | Accept `POST` |
+| Response | Return `200 OK` |
+| Signature | Verify `x-hmac-signature` with raw body |
+| Duplicates | Check idempotency key before processing |
+| Retries | Up to 7 attempts over 4 days |
+
+## Related documentation
+
+<CardGroup cols={2}>
+  <Card title="Webhooks Overview" icon="webhook" href="/docs/webhooks">
+    Delivery behavior, retries, and de-duplication.
+  </Card>
+  <Card title="Configure Webhooks" icon="gear" href="/docs/webhooks/configure-webhooks">
+    Dashboard and API setup instructions.
+  </Card>
+  <Card title="Verify Signatures" icon="shield-check" href="/docs/webhooks/verify-webhook-signatures-hmac">
+    HMAC verification code examples.
+  </Card>
+  <Card title="Events and Triggers" icon="bolt" href="/docs/webhooks/events">
+    Full catalog of available events.
+  </Card>
+</CardGroup>

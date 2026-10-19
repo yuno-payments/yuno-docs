@@ -1,0 +1,125 @@
+---
+title: "Choosing Your Workflow"
+description: "Compare SDK_CHECKOUT, REDIRECT, and DIRECT workflows to pick the right integration for your use case"
+---
+
+Yuno supports three payment workflows. Each workflow suits a different integration style and PCI compliance level.
+
+## Workflow comparison
+
+| Workflow | Customer experience | PCI scope | Checkout session required |
+| :--- | :--- | :--- | :--- |
+| `SDK_CHECKOUT` | Stays in your UI. Yuno SDK handles payment input. | None on merchant. Yuno is PCI compliant. | Yes |
+| `REDIRECT` | Leaves your site for provider or Yuno hosted page. | None on merchant. | No |
+| `DIRECT` | You build the entire UX. Raw provider response returned. | **PCI certified merchant only.** | No |
+
+## SDK_CHECKOUT (default)
+
+Use Yuno's Web or Mobile SDK. The customer stays in your app. You create a checkout session, the SDK collects card or APM data and returns a one-time token. Your server calls `POST /v1/payments` with that token.
+
+**When to use:** You want a branded checkout without handling raw card data.
+
+```bash
+# 1. Server creates checkout session
+POST https://api-sandbox.y.uno/v1/checkout/sessions
+
+# 2. Frontend initializes SDK with session, customer pays
+# SDK returns one_time_token
+
+# 3. Server creates payment
+POST https://api-sandbox.y.uno/v1/payments
+{
+  "workflow": "SDK_CHECKOUT",
+  "checkout": {
+    "session": "<checkout_session_id>"
+  },
+  "payment_method": {
+    "token": "<one_time_token>"
+  },
+  ...
+}
+```
+
+See [Seamless SDK](/docs/sdks/seamless-sdk/web-payments) for the full guide.
+
+## REDIRECT
+
+Your server calls `POST /v1/payments` with `workflow: "REDIRECT"`. Yuno returns a redirect URL in `payment_method.detail.redirect_url`. Send your customer there. The provider or Yuno handles the payment UX.
+
+**When to use:** Alternative payment methods (PIX, PSE, BNPL) that do not embed in an SDK, or you prefer a hosted payment page.
+
+```bash
+POST https://api-sandbox.y.uno/v1/payments
+{
+  "workflow": "REDIRECT",
+  "payment_method": {
+    "type": "PIX"
+  },
+  ...
+}
+```
+
+Response includes:
+
+```json
+{
+  "payment_method": {
+    "detail": {
+      "redirect_url": "https://..."
+    }
+  }
+}
+```
+
+Redirect the customer to that URL.
+
+## DIRECT
+
+Your server sends full card data (or wallet token) directly to `POST /v1/payments` with `workflow: "DIRECT"`. Yuno returns the raw provider response. You control the entire customer experience.
+
+<Danger>
+**PCI requirement**
+
+DIRECT workflow requires your organization to be PCI DSS certified. Send your AOC to your account manager before implementing. Yuno recommends SDK integrations for most merchants.
+</Danger>
+
+**When to use:** You have PCI certification, need custom UX, or are migrating an existing direct integration.
+
+```bash
+POST https://api-sandbox.y.uno/v1/payments
+{
+  "workflow": "DIRECT",
+  "payment_method": {
+    "type": "CARD",
+    "detail": {
+      "card": {
+        "number": "4507990000000002",
+        "expiration_month": 12,
+        "expiration_year": 2028,
+        "security_code": "123",
+        "holder_name": "John Doe"
+      }
+    }
+  },
+  ...
+}
+```
+
+See [Direct Flow Integration](/docs/direct-integration-use-cases/direct-flow) for requirements and details.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Create Your First Payment" icon="play" href="/docs/how-yuno-works/step-2-your-first-payment">
+    Run the SDK sample project and make a test payment.
+  </Card>
+  <Card title="Direct Flow Integration" icon="server" href="/docs/direct-integration-use-cases/direct-flow">
+    Server-to-server integration for PCI merchants.
+  </Card>
+  <Card title="Seamless SDK" icon="wand-magic-sparkles" href="/docs/sdks/seamless-sdk/web-payments">
+    Integrate payment methods with Yuno's Web SDK.
+  </Card>
+  <Card title="Payment Examples" icon="code" href="/reference/payment-examples">
+    Request and response examples for each workflow.
+  </Card>
+</CardGroup>
