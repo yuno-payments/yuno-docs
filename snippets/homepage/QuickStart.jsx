@@ -30,9 +30,9 @@ const Ic = ({ n, size = 20 }) => {
 
   const H = '"public-api-key": "<PUBLIC_API_KEY>",\n    "private-secret-key": "<PRIVATE_SECRET_KEY>"';
   const STEPS = [
-    { n: '01', title: 'Set up your account', body: 'Get sandbox keys, connect the test gateway, and publish a route.', cta: 'Get ready', href: '/docs/how-yuno-works/step-1-set-up-your-account', file: '.env',
+    { n: '01', title: 'Set up your account', body: 'Get sandbox keys, connect the test gateway, and publish a route.', cta: 'Get ready', href: '/docs/quickstart', file: '.env',
       code: { all: '# Dashboard > Developers > Credentials\nYUNO_ACCOUNT_ID=<ACCOUNT_ID>\nYUNO_PUBLIC_API_KEY=<PUBLIC_API_KEY>\nYUNO_PRIVATE_SECRET_KEY=<PRIVATE_SECRET_KEY>\nYUNO_API_URL=https://api-sandbox.y.uno' } },
-    { n: '02', title: 'Build your checkout', body: 'Create a session on your server and collect details with the SDK.', cta: 'Start building', href: '/docs/how-yuno-works/step-2-your-first-payment', file: 'create-session',
+    { n: '02', title: 'Build your checkout', body: 'Create a session on your server and collect details with the SDK.', cta: 'Start building', href: '/docs/quickstart', file: 'create-session',
       code: {
         curl: 'curl -X POST https://api-sandbox.y.uno/v1/checkout/sessions \\\n  -H "public-api-key: $YUNO_PUBLIC_API_KEY" \\\n  -H "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "account_id": "\'$YUNO_ACCOUNT_ID\'",\n    "merchant_order_id": "order-0001",\n    "payment_description": "Test order",\n    "country": "US",\n    "amount": { "currency": "USD", "value": 25 }\n  }\'',
         node: 'const res = await fetch(`${YUNO_API_URL}/v1/checkout/sessions`, {\n  method: "POST",\n  headers: {\n    ' + H + ',\n    "Content-Type": "application/json"\n  },\n  body: JSON.stringify({\n    account_id: YUNO_ACCOUNT_ID,\n    merchant_order_id: "order-0001",\n    payment_description: "Test order",\n    country: "US",\n    amount: { currency: "USD", value: 25 }\n  })\n});\nconst { checkout_session } = await res.json();',
