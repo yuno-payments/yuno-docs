@@ -79,7 +79,7 @@ What to know before you create one:
 
 * **`X-Idempotency-Key` is required.** It is any text of 1 to 64 characters. The same key on the same account returns the first promotion with `201`, and Yuno does not compare the body. A body that is not valid is refused with `400` before the key is read.
 * **The mode is `CODE`.** Any other `redemption.mode` is refused with `400 INVALID_PARAMETERS`.
-* **A code you send has 3 to 16 characters:** letters, digits, `_` and `-`, in any case. Yuno trims the spaces around it, stores it in upper case and matches the code of a payment without regard to case. A code with another length is refused with `400 INVALID_REQUEST` and the message `redemption.code: CODE_LENGTH`, and a code with another character with `redemption.code: CODE_CHARACTERS`. A payment and a quote take 3 to 32 characters, so a code created earlier with more than 16 characters still redeems.
+* **A code you send has 3 to 32 characters:** letters, digits, `_` and `-`, in any case. Yuno trims the spaces around it, stores it in upper case and matches the code of a payment without regard to case. A code with another length is refused with `400 INVALID_REQUEST` and the message `redemption.code: CODE_LENGTH`, and a code with another character with `redemption.code: CODE_CHARACTERS`.
 * **A code is unique per account.** Another promotion of the account that is not disabled and whose schedule overlaps this one cannot hold the same code: the request answers `409 CODE_ALREADY_EXISTS`. A code is free again when the earlier promotion is disabled, or when its schedule ends at or before the start of the new one.
 * **Conditions are `countries` and `amounts` only.** A code applies to the whole payment, whatever the payment method. A `bins`, `payment_methods` or `card_types` condition is refused with `400 INVALID_REQUEST` and the messages `conditions.bins: FORBIDDEN`, `conditions.payment_methods: FORBIDDEN` or `conditions.card_types: FORBIDDEN`.
 * **`limits.total` is optional.** It is the most uses the code accepts, a whole number from 1 to 2147483647. Without it the code has no cap and the response shows `limits: null`. See [Uses and limits](#uses-and-limits).
@@ -89,7 +89,7 @@ To read a promotion, call [Retrieve Promotion](/reference/promotions/retrieve-pr
 
 ### Let Yuno generate the code
 
-`redemption.code` is optional. Leave it out, or send it as `null`, and Yuno generates a code of 16 characters, upper-case hexadecimal (`0-9` and `A-F`). The answer holds it in `redemption.code`, and [Retrieve Promotion](/reference/promotions/retrieve-promotion) and [List Promotions](/reference/promotions/list-promotions) return the same code. This request has no code:
+`redemption.code` is optional. Leave it out, or send it as `null`, and Yuno generates 16 random characters (upper-case hexadecimal: `0-9` and `A-F`). The code is not linked to the promotion id. The answer holds it in `redemption.code`, and [Retrieve Promotion](/reference/promotions/retrieve-promotion) and [List Promotions](/reference/promotions/list-promotions) return the same code. This request has no code:
 
 ```json Request body, no code
 {
@@ -113,7 +113,7 @@ To read a promotion, call [Retrieve Promotion](/reference/promotions/retrieve-pr
         "starts_at": "2026-11-01T00:00:00Z",
         "ends_at": "2026-12-01T00:00:00Z"
     },
-    "redemption": { "mode": "CODE", "code": "3F9A0C21B7D84E55" },
+    "redemption": { "mode": "CODE", "code": "7C41D0E9A2B35F68" },
     "discount": { "type": "PERCENTAGE", "value": 20, "amounts": null },
     "conditions": {
         "bins": null,
@@ -129,10 +129,11 @@ To read a promotion, call [Retrieve Promotion](/reference/promotions/retrieve-pr
 }
 ```
 
-* **A replay returns the same code.** The same `X-Idempotency-Key` on the same account returns the first promotion with `201` and the code Yuno generated for it. Yuno generates no second code.
+* **A replay returns the same code.** The same `X-Idempotency-Key` on the same account returns the first promotion with `201` and the code Yuno generated for it. The replay keeps that code and stores nothing.
 * **A blank code is not an omitted code.** A `code` that is empty or holds only spaces is refused with `400 INVALID_REQUEST` and the message `redemption.code: REQUIRED`. Yuno generates nothing for it.
-* **A generated code follows the rule of a code you send.** It is unique per account among the promotions that are not disabled and whose schedule overlaps, and a create without a code never answers `409 CODE_ALREADY_EXISTS`.
-* **If Yuno finds no free code, the create fails.** The answer is `500 INTERNAL_ERROR`, and Yuno stores nothing. The failure is on Yuno's side: retry the request.
+* **A generated code follows the rule of a code you send.** It is unique per account among the promotions that are not disabled and whose schedule overlaps, and a create without a code never answers `409 CODE_ALREADY_EXISTS`. If the code Yuno generates is taken, Yuno generates another one.
+* **You can't change the code.** A promotion can't be edited, and its code is part of it, whether Yuno generated the code or you sent it. To get another code, disable the promotion and create a new one.
+* **If Yuno can't generate a code, the create fails.** The answer is `500 INTERNAL_ERROR`, and Yuno stores nothing. The failure is on Yuno's side: retry the request.
 
 ## Send the code on the payment
 
@@ -163,8 +164,6 @@ The discount line follows these rules. A line that breaks one is refused with `4
 | `type` is left out or is `YUNO_PROMOTION`. A line with a `code` and no `type` is read as `YUNO_PROMOTION`. | On a `MERCHANT` line: `The field 'additional_data.order.discounts[0].code' must not be sent on a MERCHANT discount line.` |
 | The line has no `id`, `name` or `unit_amount`. Yuno fills them after it applies the promotion. | `The field 'additional_data.order.discounts[0].id' must not be sent on a YUNO_PROMOTION discount line.` (the same for `name` and `unit_amount`) |
 | The payment has one promotion line in all: one code, or one quote id. | `Only one YUNO_PROMOTION discount line is permitted per payment.` |
-
-A create takes a code of 3 to 16 characters, and a payment takes 3 to 32. A code created earlier with more than 16 characters still redeems.
 
 No answer repeats your code. Where the promotions service quotes it back in a message, Yuno replaces it with `***`.
 
