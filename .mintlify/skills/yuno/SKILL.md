@@ -135,7 +135,7 @@ Charge a saved card with the vaulted token only:
 "payment_method": { "type": "CARD", "vaulted_token": "<vaulted_token>" }
 ```
 
-Do not send `payment_method.token` together with `vaulted_token`: the vaulted token overrides the token, and fraud screening loses the device fingerprint. Read both `status` and `sub_status` on the response. If `payment_method.detail.redirect_url` is present, send the user there for 3DS.
+Do not send `payment_method.token` together with `vaulted_token`: the vaulted token overrides the token, and fraud screening loses the device fingerprint. Read both `status` and `sub_status` on the response. If `payment_method.payment_method_detail.<type>.redirect_url` is present, send the user there for 3DS.
 
 ### 3. Vault a card and charge it monthly (merchant-initiated)
 
