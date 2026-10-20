@@ -1,0 +1,72 @@
+---
+title: "List Succeeded Groups"
+description: "Lists the succeeded groups of an account, to reference by group_id from SUCCEEDED_GROUP routing outputs."
+openapi: "/openapi/organizations/routing/list-succeeded-groups.json GET /routing/succeeded-groups"
+---
+
+Lists the succeeded groups saved on an account: groups of success sub-statuses you reference with `status: "SUCCEEDED_GROUP"` in a routing output, to react to an authorization the provider holds for review (`PENDING_IN_REVIEW`) differently from a plain approval. Use the `id` of a group as `group_id` — see [Outcome groups](/reference/organizations/routing/routing-resource-shape#outcome-groups).
+
+The endpoint is read only. Succeeded groups are created in the dashboard.
+
+### Query Parameters
+
+<ParamField query="account_id" type="string" required>
+  The account to list groups for. Must belong to the organization your API credentials are scoped to.
+</ParamField>
+
+### Response
+
+An array with the groups of the account, or an empty array if it has none. Each group contains:
+
+<ResponseField name="id" type="integer">
+  The value to send as `group_id`.
+</ResponseField>
+<ResponseField name="name" type="string">
+  The group's name, as shown in the dashboard and returned as `group_name` on routing outputs.
+</ResponseField>
+<ResponseField name="type" type="enum">
+  Always `SUCCEEDED_GROUP`, the output `status` the group is used with.
+</ResponseField>
+<ResponseField name="succeeded_types" type="string[]">
+  The group's members. Today the only success sub-status that can be grouped is `PENDING_IN_REVIEW`. See [Transaction codes](/reference/payments/status-and-response-codes/transaction#succeeded-status).
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/routing/succeeded-groups?account_id=7825fc5e-e50a-4248-9ae8-5d3786afb0be' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK
+[
+  {
+    "id": 430,
+    "name": "Pending review",
+    "type": "SUCCEEDED_GROUP",
+    "succeeded_types": ["PENDING_IN_REVIEW"]
+  }
+]
+```
+
+```json 400 Bad Request — Missing account_id
+{
+  "code": "ROUTING_VALIDATION_FAILED",
+  "messages": ["account_id is required."]
+}
+```
+</CodeGroup>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `ROUTING_VALIDATION_FAILED` | Missing `account_id` query parameter. |
+| `400` | `INVALID_ACCOUNT_ID` | `account_id` belongs to an organization your API key doesn't own. |
+| `401` | `NOT_AUTHENTICATED` | Missing `public-api-key` or `private-secret-key` header. |
+| `401` | `INVALID_CREDENTIALS` | Wrong key pair, or a Dashboard **Customized API key** was used. Use an account key or organization key instead. |
+| `502` | `ROUTING_UPSTREAM_ERROR` | The routing service could not be reached. Retry the request. |
+
+</div>

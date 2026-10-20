@@ -33187,7 +33187,7 @@ paths:
                               description: >-
                                 The network token object. Only available for merchants that handle the network token
                                 generation/management from their side. [Direct Network token
-                                guide](https://docs.y.uno/docs/network-tokens#2--use-your-existing-network-tokens)
+                                guide](https://docs.y.uno/docs/security-and-compliance/network-tokens#2-use-your-existing-network-tokens)
                               properties:
                                 token_data:
                                   type: object
@@ -34138,7 +34138,7 @@ paths:
               Example - Placeholders:
                 value:
                   description: Test Payment
-                  account_id: '{{account-code}}'
+                  account_id: <account_id>
                   merchant_order_id: AA01
                   merchant_reference: Test_AAB
                   country: US
@@ -34216,9 +34216,9 @@ paths:
                     currency: USD
                     value: 5000
                   checkout:
-                    session: '{{checkout_session}}'
+                    session: <checkout_session>
                   customer_payer:
-                    id: '{{customer_id}}'
+                    id: <customer_id>
                     billing_address:
                       address_line_1: 123 Main St
                       address_line_2: Apt 502
@@ -34264,19 +34264,19 @@ paths:
                       zip_code: '10001'
                       neighborhood: Midtown
                   payment_method:
-                    token: '{{onetime_token}}'
+                    token: <one_time_token>
                   metadata:
                     - key: ID
                       value: SD00
                   callback_url: www.example.com
               Bank Transfer with additional fields:
                 value:
-                  account_id: '{{account-code}}'
+                  account_id: <account_id>
                   amount:
                     currency: BRL
                     value: 160
                   customer_payer:
-                    id: '{{customer_id}}'
+                    id: <customer_id>
                   workflow: DIRECT
                   payment_method:
                     type: PIX
@@ -34284,7 +34284,7 @@ paths:
                       bank_transfer:
                         code: PIX2
                         branch: PIX2
-                        branch_digit: '1234'
+                        branch_digit: '1'
                         country: BRL
                         account:
                           number: '646180142000000006'
@@ -34802,7 +34802,7 @@ paths:
                     last_name: Doe
                     email: johndoe@example.com
                   checkout:
-                    session: '{{checkout_session}}'
+                    session: <checkout_session>
                   workflow: DIRECT
                   payment_method:
                     type: CARD
@@ -34862,7 +34862,7 @@ paths:
               Split marketplace:
                 value:
                   description: Split marketplace payment
-                  account_id: <account-code>
+                  account_id: <account_id>
                   merchant_order_id: '000022'
                   country: US
                   additional_data:
@@ -35598,7 +35598,7 @@ paths:
               Create payment with split:
                 value:
                   description: SUCCEDED
-                  account_id: '{{account-code}}'
+                  account_id: <account_id>
                   merchant_order_id: '1753363203'
                   country: US
                   workflow: DIRECT
@@ -35685,12 +35685,12 @@ paths:
                     currency: USD
                     value: 50
                   checkout:
-                    session: '{{checkout_session}}'
+                    session: <checkout_session>
                   customer_payer:
                     id: 1a71c7b7-80c2-4ba5-b601-4d34d48c0e18
                   payment_method:
                     type: CARD
-                    token: <one_time_token_from_sdk>
+                    token: <one_time_token>
                   external_invoice:
                     id: in_1QwZzz
                     customer_id: cus_RplXYZ
@@ -86916,6 +86916,18 @@ paths:
                           Recommendations. Omit it to keep the event exactly as before.
                         examples:
                           - MIT
+                      recommendation_id:
+                        type: string
+                        format: uuid
+                        description: >-
+                          Optional. The `recommendation_id` returned by `POST /v1/routing/recommendations` for this
+                          payment, so Yuno can attribute the reported outcome to that recommendation. Must be the value
+                          exactly as returned: a lowercase UUID v4. It is not validated against existing
+                          recommendations. Any other value rejects the event with `INVALID_EVENT` and the message "The
+                          field 'recommendation_id' must be a UUID." Omit it (or send `null`) to keep the event exactly
+                          as before.
+                        examples:
+                          - 3f9c2a7e-1b7d-4c2a-9a1e-6e1f0c2b9d11
                       payment_method_details:
                         type: object
                         additionalProperties: false
@@ -86999,6 +87011,7 @@ paths:
                       latency_ms: 180
                       token_type_used: DPAN
                       initiation: MIT
+                      recommendation_id: 3f9c2a7e-1b7d-4c2a-9a1e-6e1f0c2b9d11
                       payment_method_details:
                         card:
                           bin: '45717360'
@@ -87863,9 +87876,43 @@ paths:
                               provider_id:
                                 type: string
                                 example: STRIPE
+                                description: >-
+                                  Required on provider steps; absent on action steps. Must match the provider of the
+                                  connection.
                               connection_id:
                                 type: string
                                 example: f1a3c4d5-...
+                                description: >-
+                                  Required on provider steps; absent on action and smart routing steps. Must be ACTIVE
+                                  and support the payment_method.
+                              provider_type:
+                                type: string
+                                enum:
+                                  - PAYMENT
+                                  - FRAUD
+                                  - THREE_D_SECURE
+                                  - AUTHENTICATION
+                                description: The kind the provider resolves to. Response only.
+                              action:
+                                type: string
+                                enum:
+                                  - CANCEL
+                                  - CAPTURE
+                                  - HOLD_FOR_REVIEW
+                                  - REVERT
+                                description: >-
+                                  Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
+                                  captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending
+                                  manual review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                                  HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart
+                                  routing step, REVERT the outputs of a fraud step that runs after the payment, CANCEL
+                                  never an approval. An action step has no provider_id, connection_id or output.
+                              action_delay:
+                                type: string
+                                example: PT5M
+                                description: >-
+                                  Only with action = CAPTURE. ISO-8601 duration between the approval and the capture, at
+                                  least PT1M and at most P7D. Omit to capture as soon as the approval is processed.
                               output:
                                 type: array
                                 items:
@@ -87876,10 +87923,32 @@ paths:
                                     status:
                                       type: string
                                       example: DECLINED
+                                      description: >-
+                                        APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING
+                                        (fraud, 3DS and authentication steps only) or INTERNAL_ERROR.
                                     decline_types:
                                       type: array
                                       items:
                                         type: string
+                                      description: >-
+                                        Members of the group on DECLINE_GROUP (decline sub-statuses) and MAC_CODE_GROUP
+                                        (Merchant Advice Codes) outputs.
+                                    group_id:
+                                      type: integer
+                                      example: 1044
+                                      description: >-
+                                        Id of the group behind a DECLINE_GROUP, MAC_CODE_GROUP or SUCCEEDED_GROUP
+                                        output.
+                                    group_name:
+                                      type: string
+                                      example: Soft declines
+                                      description: Name of the group behind group_id. Ignored on write.
+                                    retry:
+                                      type: boolean
+                                      example: false
+                                      description: >-
+                                        Whether this output retries the same provider once before following next. Always
+                                        returned.
                                     next:
                                       type: integer
                                       example: 2
@@ -87900,6 +87969,67 @@ paths:
                                           percentage:
                                             type: integer
                                             example: 70
+                                description: Per-outcome handlers. Returned as an empty array on action steps.
+                              fraud:
+                                type: object
+                                description: Configuration of a fraud provider step, returned on FRAUD steps.
+                                properties:
+                                  rules:
+                                    type: string
+                                    example: rule-a,rule-b
+                                  blocklists:
+                                    type: string
+                                  allowlists:
+                                    type: string
+                                  reviewlists:
+                                    type: string
+                                  preset:
+                                    type: string
+                                  report_only:
+                                    type: boolean
+                                    description: >-
+                                      Score without acting on the result. Only on a fraud step reached from declined
+                                      outputs of a payment step.
+                              smart_routing:
+                                type: object
+                                description: Returned on smart routing steps.
+                                properties:
+                                  type:
+                                    type: string
+                                    enum:
+                                      - COSTS
+                                      - LATENCY
+                                    example: LATENCY
+                                  providers:
+                                    type: array
+                                    minItems: 2
+                                    maxItems: 4
+                                    items:
+                                      type: object
+                                      required:
+                                        - provider_id
+                                        - connection_id
+                                      properties:
+                                        provider_id:
+                                          type: string
+                                          example: ADYEN
+                                        connection_id:
+                                          type: string
+                                          format: uuid
+                                        network_token_on:
+                                          type: boolean
+                                  no_retry_decline_types:
+                                    type: array
+                                    items:
+                                      type: string
+                                    description: Decline sub-statuses after which the next provider of the set is not tried.
+                                  no_retry_failure_causes:
+                                    type: array
+                                    items:
+                                      type: string
+                                    description: >-
+                                      Failure causes (for example PROVIDER_TIMEOUT) after which the next provider of the
+                                      set is not tried.
                     condition_sets:
                       type: array
                       items:
@@ -87911,12 +88041,104 @@ paths:
                           name:
                             type: string
                             example: High Value US
+                          description:
+                            type: string
                           conditions:
                             type: array
                             items:
                               type: object
+                              properties:
+                                condition_type:
+                                  type: string
+                                  example: COUNTRY
+                                  description: >-
+                                    See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT,
+                                    CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
+                                    TIME_PERIOD, VOLUME_PAYMENTS_LIMIT.
+                                conditional:
+                                  type: string
+                                  example: ONE_OF
+                                values:
+                                  type: array
+                                  items:
+                                    type: string
+                                  example:
+                                    - US
+                                    - CA
+                                  description: >-
+                                    Empty only on an AMOUNT condition with currency, which then matches any amount in
+                                    that currency.
+                                key:
+                                  type: string
+                                  description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                                currency:
+                                  type: string
+                                  example: USD
+                                  description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                                time_period_repeat_amount:
+                                  type: integer
+                                  example: 1
+                                  description: >-
+                                    TIME_PERIOD and VOLUME_PAYMENTS_LIMIT: every how many units of
+                                    time_period_repeat_frequency (schedule), or the length of a DAILY window in days, 1
+                                    to 90 (limit).
+                                time_period_repeat_frequency:
+                                  type: string
+                                  enum:
+                                    - DAILY
+                                    - WEEKLY
+                                    - MONTHLY
+                                    - QUARTERLY
+                                    - YEARLY
+                                  description: >-
+                                    TIME_PERIOD: recurrence unit. VOLUME_PAYMENTS_LIMIT: period of the limit, DAILY,
+                                    MONTHLY or QUARTERLY.
+                                time_period_repetition_days:
+                                  type: array
+                                  items:
+                                    type: string
+                                    enum:
+                                      - MONDAY
+                                      - TUESDAY
+                                      - WEDNESDAY
+                                      - THURSDAY
+                                      - FRIDAY
+                                      - SATURDAY
+                                      - SUNDAY
+                                  description: TIME_PERIOD only. Days of the week the schedule applies to; needs a frequency.
+                                time_period_start_time:
+                                  type: string
+                                  example: '09:00:00'
+                                  description: >-
+                                    TIME_PERIOD only. Start of the daily time window (HH:mm:ss), together with
+                                    time_period_end_time.
+                                time_period_end_time:
+                                  type: string
+                                  example: '18:00:00'
+                                  description: TIME_PERIOD only. End of the daily time window (HH:mm:ss), inclusive.
+                                timezone:
+                                  type: string
+                                  example: '-03:00'
+                                  description: >-
+                                    UTC offset. TIME_PERIOD: offset the schedule is read in (defaults to the offset of
+                                    values[0]). VOLUME_PAYMENTS_LIMIT: whole-hour offset where periods start (defaults
+                                    to +00:00).
+                                limit_by:
+                                  type: string
+                                  enum:
+                                    - PAYMENTS
+                                    - VOLUME
+                                  description: VOLUME_PAYMENTS_LIMIT only. Count payments (default) or sum amounts in currency.
+                                payments_count:
+                                  type: string
+                                  enum:
+                                    - ALL
+                                    - SUCCEEDED
+                                  description: VOLUME_PAYMENTS_LIMIT only. Which payments count toward the limit. Default ALL.
+                            description: Conditions combined with logical AND. See Routing Conditions.
                           route:
                             type: object
+                            description: Same shape as default_route, including start_split, output[].next_split and action steps.
                     created_at:
                       type: string
                       format: date-time
@@ -88022,8 +88244,6 @@ paths:
                         type: object
                         required:
                           - index
-                          - provider_id
-                          - connection_id
                         properties:
                           index:
                             type: integer
@@ -88031,10 +88251,36 @@ paths:
                           provider_id:
                             type: string
                             example: STRIPE
+                            description: >-
+                              Required on provider steps (SMART_ROUTING on a smart routing step); absent on action
+                              steps. Must match the provider of the connection.
                           connection_id:
                             type: string
                             format: uuid
                             example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
+                            description: >-
+                              Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                              support the payment_method.
+                          action:
+                            type: string
+                            enum:
+                              - CANCEL
+                              - CAPTURE
+                              - HOLD_FOR_REVIEW
+                              - REVERT
+                            description: >-
+                              Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
+                              captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
+                              review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                              HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart routing
+                              step, REVERT the outputs of a fraud step that runs after the payment, CANCEL never an
+                              approval. An action step has no provider_id, connection_id or output.
+                          action_delay:
+                            type: string
+                            example: PT5M
+                            description: >-
+                              Only with action = CAPTURE. ISO-8601 duration between the approval and the capture, at
+                              least PT1M and at most P7D. Omit to capture as soon as the approval is processed.
                           output:
                             type: array
                             items:
@@ -88045,10 +88291,31 @@ paths:
                                 status:
                                   type: string
                                   example: DECLINED
+                                  description: >-
+                                    APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (fraud,
+                                    3DS and authentication steps only) or INTERNAL_ERROR.
                                 decline_types:
                                   type: array
                                   items:
                                     type: string
+                                  description: >-
+                                    Decline sub-statuses. On DECLINE_GROUP, required unless group_id is sent; with
+                                    group_id it must equal the group's members. Not allowed on SUCCEEDED_GROUP.
+                                group_id:
+                                  type: integer
+                                  example: 1044
+                                  description: >-
+                                    Id of a decline, Merchant Advice Code or succeeded group of the account (see List
+                                    Decline Groups and List Succeeded Groups). Required on MAC_CODE_GROUP and
+                                    SUCCEEDED_GROUP, optional on DECLINE_GROUP, not allowed otherwise. Must be of the
+                                    kind the status expects.
+                                retry:
+                                  type: boolean
+                                  example: false
+                                  description: >-
+                                    true attempts the same provider once more when this outcome happens, before
+                                    following next. Only on DECLINED, INTERNAL_ERROR and DECLINE_GROUP. On update, an
+                                    omitted retry keeps the stored value.
                                 next:
                                   type: integer
                                   example: 2
@@ -88070,6 +88337,196 @@ paths:
                                       percentage:
                                         type: integer
                                         example: 70
+                            description: Per-outcome handlers of a provider step. Not allowed on an action step.
+                          fraud:
+                            type: object
+                            description: >-
+                              Configuration of a fraud provider step. Only on FRAUD providers; omitted on update keeps
+                              the stored configuration.
+                            properties:
+                              rules:
+                                type: string
+                                example: rule-a,rule-b
+                              blocklists:
+                                type: string
+                              allowlists:
+                                type: string
+                              reviewlists:
+                                type: string
+                              preset:
+                                type: string
+                              report_only:
+                                type: boolean
+                                description: >-
+                                  Score without acting on the result. Only on a fraud step reached from declined outputs
+                                  of a payment step.
+                          smart_routing:
+                            type: object
+                            description: >-
+                              Makes the step a smart routing step (provider_id SMART_ROUTING, no connection_id). Card
+                              routings only, one per route.
+                            required:
+                              - type
+                              - providers
+                            properties:
+                              type:
+                                type: string
+                                enum:
+                                  - COSTS
+                                  - LATENCY
+                                example: LATENCY
+                              providers:
+                                type: array
+                                minItems: 2
+                                maxItems: 4
+                                items:
+                                  type: object
+                                  required:
+                                    - provider_id
+                                    - connection_id
+                                  properties:
+                                    provider_id:
+                                      type: string
+                                      example: ADYEN
+                                    connection_id:
+                                      type: string
+                                      format: uuid
+                                    network_token_on:
+                                      type: boolean
+                              no_retry_decline_types:
+                                type: array
+                                items:
+                                  type: string
+                                description: Decline sub-statuses after which the next provider of the set is not tried.
+                              no_retry_failure_causes:
+                                type: array
+                                items:
+                                  type: string
+                                description: >-
+                                  Failure causes (for example PROVIDER_TIMEOUT) after which the next provider of the set
+                                  is not tried.
+                        description: >-
+                          A provider attempt (provider_id + connection_id) or an action step (action). index values are
+                          contiguous starting at 1.
+                condition_sets:
+                  type: array
+                  description: Optional. Ordered by sort_number, first matching set wins.
+                  items:
+                    type: object
+                    required:
+                      - sort_number
+                      - name
+                      - conditions
+                      - route
+                    properties:
+                      sort_number:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: US & Canada — high value
+                      description:
+                        type: string
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - condition_type
+                            - conditional
+                            - values
+                          properties:
+                            condition_type:
+                              type: string
+                              example: COUNTRY
+                              description: >-
+                                See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CARD_TYPE,
+                                CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, TIME_PERIOD,
+                                VOLUME_PAYMENTS_LIMIT.
+                            conditional:
+                              type: string
+                              example: ONE_OF
+                            values:
+                              type: array
+                              items:
+                                type: string
+                              example:
+                                - US
+                                - CA
+                              description: >-
+                                Empty only on an AMOUNT condition with currency, which then matches any amount in that
+                                currency.
+                            key:
+                              type: string
+                              description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                            currency:
+                              type: string
+                              example: USD
+                              description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                            time_period_repeat_amount:
+                              type: integer
+                              example: 1
+                              description: >-
+                                TIME_PERIOD and VOLUME_PAYMENTS_LIMIT: every how many units of
+                                time_period_repeat_frequency (schedule), or the length of a DAILY window in days, 1 to
+                                90 (limit).
+                            time_period_repeat_frequency:
+                              type: string
+                              enum:
+                                - DAILY
+                                - WEEKLY
+                                - MONTHLY
+                                - QUARTERLY
+                                - YEARLY
+                              description: >-
+                                TIME_PERIOD: recurrence unit. VOLUME_PAYMENTS_LIMIT: period of the limit, DAILY, MONTHLY
+                                or QUARTERLY.
+                            time_period_repetition_days:
+                              type: array
+                              items:
+                                type: string
+                                enum:
+                                  - MONDAY
+                                  - TUESDAY
+                                  - WEDNESDAY
+                                  - THURSDAY
+                                  - FRIDAY
+                                  - SATURDAY
+                                  - SUNDAY
+                              description: TIME_PERIOD only. Days of the week the schedule applies to; needs a frequency.
+                            time_period_start_time:
+                              type: string
+                              example: '09:00:00'
+                              description: >-
+                                TIME_PERIOD only. Start of the daily time window (HH:mm:ss), together with
+                                time_period_end_time.
+                            time_period_end_time:
+                              type: string
+                              example: '18:00:00'
+                              description: TIME_PERIOD only. End of the daily time window (HH:mm:ss), inclusive.
+                            timezone:
+                              type: string
+                              example: '-03:00'
+                              description: >-
+                                UTC offset. TIME_PERIOD: offset the schedule is read in (defaults to the offset of
+                                values[0]). VOLUME_PAYMENTS_LIMIT: whole-hour offset where periods start (defaults to
+                                +00:00).
+                            limit_by:
+                              type: string
+                              enum:
+                                - PAYMENTS
+                                - VOLUME
+                              description: VOLUME_PAYMENTS_LIMIT only. Count payments (default) or sum amounts in currency.
+                            payments_count:
+                              type: string
+                              enum:
+                                - ALL
+                                - SUCCEEDED
+                              description: VOLUME_PAYMENTS_LIMIT only. Which payments count toward the limit. Default ALL.
+                        description: Conditions combined with logical AND. See Routing Conditions.
+                      route:
+                        type: object
+                        description: Same shape as default_route, including start_split, output[].next_split and action steps.
       responses:
         '201':
           description: Created
@@ -88121,9 +88578,43 @@ paths:
                             provider_id:
                               type: string
                               example: STRIPE
+                              description: >-
+                                Required on provider steps; absent on action steps. Must match the provider of the
+                                connection.
                             connection_id:
                               type: string
                               example: f1a3c4d5-...
+                              description: >-
+                                Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                                support the payment_method.
+                            provider_type:
+                              type: string
+                              enum:
+                                - PAYMENT
+                                - FRAUD
+                                - THREE_D_SECURE
+                                - AUTHENTICATION
+                              description: The kind the provider resolves to. Response only.
+                            action:
+                              type: string
+                              enum:
+                                - CANCEL
+                                - CAPTURE
+                                - HOLD_FOR_REVIEW
+                                - REVERT
+                              description: >-
+                                Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
+                                captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
+                                review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                                HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart
+                                routing step, REVERT the outputs of a fraud step that runs after the payment, CANCEL
+                                never an approval. An action step has no provider_id, connection_id or output.
+                            action_delay:
+                              type: string
+                              example: PT5M
+                              description: >-
+                                Only with action = CAPTURE. ISO-8601 duration between the approval and the capture, at
+                                least PT1M and at most P7D. Omit to capture as soon as the approval is processed.
                             output:
                               type: array
                               items:
@@ -88134,10 +88625,30 @@ paths:
                                   status:
                                     type: string
                                     example: DECLINED
+                                    description: >-
+                                      APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING
+                                      (fraud, 3DS and authentication steps only) or INTERNAL_ERROR.
                                   decline_types:
                                     type: array
                                     items:
                                       type: string
+                                    description: >-
+                                      Members of the group on DECLINE_GROUP (decline sub-statuses) and MAC_CODE_GROUP
+                                      (Merchant Advice Codes) outputs.
+                                  group_id:
+                                    type: integer
+                                    example: 1044
+                                    description: Id of the group behind a DECLINE_GROUP, MAC_CODE_GROUP or SUCCEEDED_GROUP output.
+                                  group_name:
+                                    type: string
+                                    example: Soft declines
+                                    description: Name of the group behind group_id. Ignored on write.
+                                  retry:
+                                    type: boolean
+                                    example: false
+                                    description: >-
+                                      Whether this output retries the same provider once before following next. Always
+                                      returned.
                                   next:
                                     type: integer
                                     example: 2
@@ -88159,6 +88670,67 @@ paths:
                                         percentage:
                                           type: integer
                                           example: 70
+                              description: Per-outcome handlers. Returned as an empty array on action steps.
+                            fraud:
+                              type: object
+                              description: Configuration of a fraud provider step, returned on FRAUD steps.
+                              properties:
+                                rules:
+                                  type: string
+                                  example: rule-a,rule-b
+                                blocklists:
+                                  type: string
+                                allowlists:
+                                  type: string
+                                reviewlists:
+                                  type: string
+                                preset:
+                                  type: string
+                                report_only:
+                                  type: boolean
+                                  description: >-
+                                    Score without acting on the result. Only on a fraud step reached from declined
+                                    outputs of a payment step.
+                            smart_routing:
+                              type: object
+                              description: Returned on smart routing steps.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - COSTS
+                                    - LATENCY
+                                  example: LATENCY
+                                providers:
+                                  type: array
+                                  minItems: 2
+                                  maxItems: 4
+                                  items:
+                                    type: object
+                                    required:
+                                      - provider_id
+                                      - connection_id
+                                    properties:
+                                      provider_id:
+                                        type: string
+                                        example: ADYEN
+                                      connection_id:
+                                        type: string
+                                        format: uuid
+                                      network_token_on:
+                                        type: boolean
+                                no_retry_decline_types:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: Decline sub-statuses after which the next provider of the set is not tried.
+                                no_retry_failure_causes:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: >-
+                                    Failure causes (for example PROVIDER_TIMEOUT) after which the next provider of the
+                                    set is not tried.
                   condition_sets:
                     type: array
                     items:
@@ -88170,12 +88742,104 @@ paths:
                         name:
                           type: string
                           example: High Value US
+                        description:
+                          type: string
                         conditions:
                           type: array
                           items:
                             type: object
+                            properties:
+                              condition_type:
+                                type: string
+                                example: COUNTRY
+                                description: >-
+                                  See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT,
+                                  CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
+                                  TIME_PERIOD, VOLUME_PAYMENTS_LIMIT.
+                              conditional:
+                                type: string
+                                example: ONE_OF
+                              values:
+                                type: array
+                                items:
+                                  type: string
+                                example:
+                                  - US
+                                  - CA
+                                description: >-
+                                  Empty only on an AMOUNT condition with currency, which then matches any amount in that
+                                  currency.
+                              key:
+                                type: string
+                                description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                              currency:
+                                type: string
+                                example: USD
+                                description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                              time_period_repeat_amount:
+                                type: integer
+                                example: 1
+                                description: >-
+                                  TIME_PERIOD and VOLUME_PAYMENTS_LIMIT: every how many units of
+                                  time_period_repeat_frequency (schedule), or the length of a DAILY window in days, 1 to
+                                  90 (limit).
+                              time_period_repeat_frequency:
+                                type: string
+                                enum:
+                                  - DAILY
+                                  - WEEKLY
+                                  - MONTHLY
+                                  - QUARTERLY
+                                  - YEARLY
+                                description: >-
+                                  TIME_PERIOD: recurrence unit. VOLUME_PAYMENTS_LIMIT: period of the limit, DAILY,
+                                  MONTHLY or QUARTERLY.
+                              time_period_repetition_days:
+                                type: array
+                                items:
+                                  type: string
+                                  enum:
+                                    - MONDAY
+                                    - TUESDAY
+                                    - WEDNESDAY
+                                    - THURSDAY
+                                    - FRIDAY
+                                    - SATURDAY
+                                    - SUNDAY
+                                description: TIME_PERIOD only. Days of the week the schedule applies to; needs a frequency.
+                              time_period_start_time:
+                                type: string
+                                example: '09:00:00'
+                                description: >-
+                                  TIME_PERIOD only. Start of the daily time window (HH:mm:ss), together with
+                                  time_period_end_time.
+                              time_period_end_time:
+                                type: string
+                                example: '18:00:00'
+                                description: TIME_PERIOD only. End of the daily time window (HH:mm:ss), inclusive.
+                              timezone:
+                                type: string
+                                example: '-03:00'
+                                description: >-
+                                  UTC offset. TIME_PERIOD: offset the schedule is read in (defaults to the offset of
+                                  values[0]). VOLUME_PAYMENTS_LIMIT: whole-hour offset where periods start (defaults to
+                                  +00:00).
+                              limit_by:
+                                type: string
+                                enum:
+                                  - PAYMENTS
+                                  - VOLUME
+                                description: VOLUME_PAYMENTS_LIMIT only. Count payments (default) or sum amounts in currency.
+                              payments_count:
+                                type: string
+                                enum:
+                                  - ALL
+                                  - SUCCEEDED
+                                description: VOLUME_PAYMENTS_LIMIT only. Which payments count toward the limit. Default ALL.
+                          description: Conditions combined with logical AND. See Routing Conditions.
                         route:
                           type: object
+                          description: Same shape as default_route, including start_split, output[].next_split and action steps.
                   created_at:
                     type: string
                     format: date-time
@@ -88184,12 +88848,6 @@ paths:
                     type: string
                     format: date-time
                     example: '2026-05-12T14:30:00Z'
-                  warnings:
-                    type: array
-                    items:
-                      type: string
-                    example:
-                      - MONITOR_REDISTRIBUTION_DEFERRED
         '400':
           description: Bad Request
           content:
@@ -88199,13 +88857,13 @@ paths:
                 properties:
                   code:
                     type: string
-                    example: ROUTING_VALIDATION_FAILED
+                    example: INVALID_ROUTE_CONFIGURATION
                   messages:
                     type: array
                     items:
                       type: string
                     example:
-                      - Steps must be contiguous
+                      - step index=2 with action=CAPTURE must be reached only from an APPROVED output of a provider step
         '401':
           description: Unauthorized
           content:
@@ -88238,6 +88896,106 @@ paths:
                       type: string
                     example:
                       - A routing already exists for this payment method
+      tags:
+        - Organizations
+  /routing/decline-groups:
+    get:
+      summary: List Decline Groups
+      operationId: list-decline-groups
+      description: >-
+        Lists the decline groups (DECLINE_GROUP) and Merchant Advice Code groups (MAC_CODE_GROUP) of an account, to
+        reference by group_id from routing outputs. Read only.
+      parameters:
+        - name: account_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Account to list groups for. Must belong to the organization of your API credentials.
+      responses:
+        '200':
+          description: The groups of the account, or an empty array if it has none.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1044
+                      description: The value to send as group_id in a routing output.
+                    name:
+                      type: string
+                      example: Soft declines
+                    type:
+                      type: string
+                      enum:
+                        - DECLINE_GROUP
+                        - MAC_CODE_GROUP
+                      description: The output status the group is used with.
+                    decline_types:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        - DECLINED_BY_BANK
+                        - RESTRICTED_BY_BANK
+                      description: >-
+                        Members of the group: decline sub-statuses for DECLINE_GROUP, normalized Merchant Advice Codes
+                        for MAC_CODE_GROUP.
+        '400':
+          description: >-
+            Bad Request. `ROUTING_VALIDATION_FAILED` when `account_id` is missing, `INVALID_ACCOUNT_ID` when it belongs
+            to a different organization.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: ROUTING_VALIDATION_FAILED
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - account_id is required.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: NOT_AUTHENTICATED
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Not authenticated
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: ROUTING_UPSTREAM_ERROR
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - routing service unavailable.
       tags:
         - Organizations
   /routing/recommendations:
@@ -88494,6 +89252,104 @@ paths:
                       - routing service unavailable.
       tags:
         - Organizations
+  /routing/succeeded-groups:
+    get:
+      summary: List Succeeded Groups
+      operationId: list-succeeded-groups
+      description: >-
+        Lists the succeeded groups of an account, to reference by group_id from SUCCEEDED_GROUP routing outputs. Read
+        only.
+      parameters:
+        - name: account_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Account to list groups for. Must belong to the organization of your API credentials.
+      responses:
+        '200':
+          description: The groups of the account, or an empty array if it has none.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 430
+                      description: The value to send as group_id in a routing output.
+                    name:
+                      type: string
+                      example: Pending review
+                    type:
+                      type: string
+                      enum:
+                        - SUCCEEDED_GROUP
+                      description: Always SUCCEEDED_GROUP, the output status the group is used with.
+                    succeeded_types:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        - PENDING_IN_REVIEW
+                      description: >-
+                        Members of the group. Today the only success sub-status that can be grouped is
+                        PENDING_IN_REVIEW.
+        '400':
+          description: >-
+            Bad Request. `ROUTING_VALIDATION_FAILED` when `account_id` is missing, `INVALID_ACCOUNT_ID` when it belongs
+            to a different organization.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: ROUTING_VALIDATION_FAILED
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - account_id is required.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: NOT_AUTHENTICATED
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - Not authenticated
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: ROUTING_UPSTREAM_ERROR
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - routing service unavailable.
+      tags:
+        - Organizations
   /routing/{routing_id}:
     get:
       summary: Retrieve a Routing
@@ -88557,9 +89413,43 @@ paths:
                             provider_id:
                               type: string
                               example: STRIPE
+                              description: >-
+                                Required on provider steps; absent on action steps. Must match the provider of the
+                                connection.
                             connection_id:
                               type: string
                               example: f1a3c4d5-...
+                              description: >-
+                                Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                                support the payment_method.
+                            provider_type:
+                              type: string
+                              enum:
+                                - PAYMENT
+                                - FRAUD
+                                - THREE_D_SECURE
+                                - AUTHENTICATION
+                              description: The kind the provider resolves to. Response only.
+                            action:
+                              type: string
+                              enum:
+                                - CANCEL
+                                - CAPTURE
+                                - HOLD_FOR_REVIEW
+                                - REVERT
+                              description: >-
+                                Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
+                                captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
+                                review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                                HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart
+                                routing step, REVERT the outputs of a fraud step that runs after the payment, CANCEL
+                                never an approval. An action step has no provider_id, connection_id or output.
+                            action_delay:
+                              type: string
+                              example: PT5M
+                              description: >-
+                                Only with action = CAPTURE. ISO-8601 duration between the approval and the capture, at
+                                least PT1M and at most P7D. Omit to capture as soon as the approval is processed.
                             output:
                               type: array
                               items:
@@ -88570,10 +89460,30 @@ paths:
                                   status:
                                     type: string
                                     example: DECLINED
+                                    description: >-
+                                      APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING
+                                      (fraud, 3DS and authentication steps only) or INTERNAL_ERROR.
                                   decline_types:
                                     type: array
                                     items:
                                       type: string
+                                    description: >-
+                                      Members of the group on DECLINE_GROUP (decline sub-statuses) and MAC_CODE_GROUP
+                                      (Merchant Advice Codes) outputs.
+                                  group_id:
+                                    type: integer
+                                    example: 1044
+                                    description: Id of the group behind a DECLINE_GROUP, MAC_CODE_GROUP or SUCCEEDED_GROUP output.
+                                  group_name:
+                                    type: string
+                                    example: Soft declines
+                                    description: Name of the group behind group_id. Ignored on write.
+                                  retry:
+                                    type: boolean
+                                    example: false
+                                    description: >-
+                                      Whether this output retries the same provider once before following next. Always
+                                      returned.
                                   next:
                                     type: integer
                                     example: 2
@@ -88594,6 +89504,67 @@ paths:
                                         percentage:
                                           type: integer
                                           example: 70
+                              description: Per-outcome handlers. Returned as an empty array on action steps.
+                            fraud:
+                              type: object
+                              description: Configuration of a fraud provider step, returned on FRAUD steps.
+                              properties:
+                                rules:
+                                  type: string
+                                  example: rule-a,rule-b
+                                blocklists:
+                                  type: string
+                                allowlists:
+                                  type: string
+                                reviewlists:
+                                  type: string
+                                preset:
+                                  type: string
+                                report_only:
+                                  type: boolean
+                                  description: >-
+                                    Score without acting on the result. Only on a fraud step reached from declined
+                                    outputs of a payment step.
+                            smart_routing:
+                              type: object
+                              description: Returned on smart routing steps.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - COSTS
+                                    - LATENCY
+                                  example: LATENCY
+                                providers:
+                                  type: array
+                                  minItems: 2
+                                  maxItems: 4
+                                  items:
+                                    type: object
+                                    required:
+                                      - provider_id
+                                      - connection_id
+                                    properties:
+                                      provider_id:
+                                        type: string
+                                        example: ADYEN
+                                      connection_id:
+                                        type: string
+                                        format: uuid
+                                      network_token_on:
+                                        type: boolean
+                                no_retry_decline_types:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: Decline sub-statuses after which the next provider of the set is not tried.
+                                no_retry_failure_causes:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: >-
+                                    Failure causes (for example PROVIDER_TIMEOUT) after which the next provider of the
+                                    set is not tried.
                   condition_sets:
                     type: array
                     items:
@@ -88605,12 +89576,104 @@ paths:
                         name:
                           type: string
                           example: High Value US
+                        description:
+                          type: string
                         conditions:
                           type: array
                           items:
                             type: object
+                            properties:
+                              condition_type:
+                                type: string
+                                example: COUNTRY
+                                description: >-
+                                  See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT,
+                                  CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
+                                  TIME_PERIOD, VOLUME_PAYMENTS_LIMIT.
+                              conditional:
+                                type: string
+                                example: ONE_OF
+                              values:
+                                type: array
+                                items:
+                                  type: string
+                                example:
+                                  - US
+                                  - CA
+                                description: >-
+                                  Empty only on an AMOUNT condition with currency, which then matches any amount in that
+                                  currency.
+                              key:
+                                type: string
+                                description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                              currency:
+                                type: string
+                                example: USD
+                                description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                              time_period_repeat_amount:
+                                type: integer
+                                example: 1
+                                description: >-
+                                  TIME_PERIOD and VOLUME_PAYMENTS_LIMIT: every how many units of
+                                  time_period_repeat_frequency (schedule), or the length of a DAILY window in days, 1 to
+                                  90 (limit).
+                              time_period_repeat_frequency:
+                                type: string
+                                enum:
+                                  - DAILY
+                                  - WEEKLY
+                                  - MONTHLY
+                                  - QUARTERLY
+                                  - YEARLY
+                                description: >-
+                                  TIME_PERIOD: recurrence unit. VOLUME_PAYMENTS_LIMIT: period of the limit, DAILY,
+                                  MONTHLY or QUARTERLY.
+                              time_period_repetition_days:
+                                type: array
+                                items:
+                                  type: string
+                                  enum:
+                                    - MONDAY
+                                    - TUESDAY
+                                    - WEDNESDAY
+                                    - THURSDAY
+                                    - FRIDAY
+                                    - SATURDAY
+                                    - SUNDAY
+                                description: TIME_PERIOD only. Days of the week the schedule applies to; needs a frequency.
+                              time_period_start_time:
+                                type: string
+                                example: '09:00:00'
+                                description: >-
+                                  TIME_PERIOD only. Start of the daily time window (HH:mm:ss), together with
+                                  time_period_end_time.
+                              time_period_end_time:
+                                type: string
+                                example: '18:00:00'
+                                description: TIME_PERIOD only. End of the daily time window (HH:mm:ss), inclusive.
+                              timezone:
+                                type: string
+                                example: '-03:00'
+                                description: >-
+                                  UTC offset. TIME_PERIOD: offset the schedule is read in (defaults to the offset of
+                                  values[0]). VOLUME_PAYMENTS_LIMIT: whole-hour offset where periods start (defaults to
+                                  +00:00).
+                              limit_by:
+                                type: string
+                                enum:
+                                  - PAYMENTS
+                                  - VOLUME
+                                description: VOLUME_PAYMENTS_LIMIT only. Count payments (default) or sum amounts in currency.
+                              payments_count:
+                                type: string
+                                enum:
+                                  - ALL
+                                  - SUCCEEDED
+                                description: VOLUME_PAYMENTS_LIMIT only. Which payments count toward the limit. Default ALL.
+                          description: Conditions combined with logical AND. See Routing Conditions.
                         route:
                           type: object
+                          description: Same shape as default_route, including start_split, output[].next_split and action steps.
                   created_at:
                     type: string
                     format: date-time
@@ -88670,6 +89733,341 @@ paths:
           schema:
             type: string
             format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account_id
+                - payment_method
+                - name
+                - default_route
+              properties:
+                account_id:
+                  type: string
+                  format: uuid
+                  example: 7825fc5e-e50a-4248-9ae8-5d3786afb0be
+                  description: Must match the routing's account.
+                payment_method:
+                  type: string
+                  example: CARD
+                  description: Must match the routing's payment_method.
+                name:
+                  type: string
+                  example: Card routing
+                default_route:
+                  type: object
+                  required:
+                    - steps
+                  properties:
+                    start_split:
+                      type: array
+                      description: >-
+                        Splits the entry of the route across several steps by percentage. Omit to start every payment on
+                        step 1. Entries must sum to 100; returned only when the route has a split entry.
+                      items:
+                        type: object
+                        required:
+                          - index
+                          - percentage
+                        properties:
+                          index:
+                            type: integer
+                            example: 1
+                          percentage:
+                            type: integer
+                            example: 45
+                    steps:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - index
+                        properties:
+                          index:
+                            type: integer
+                            example: 1
+                          provider_id:
+                            type: string
+                            example: STRIPE
+                            description: >-
+                              Required on provider steps (SMART_ROUTING on a smart routing step); absent on action
+                              steps. Must match the provider of the connection.
+                          connection_id:
+                            type: string
+                            format: uuid
+                            example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
+                            description: >-
+                              Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                              support the payment_method.
+                          action:
+                            type: string
+                            enum:
+                              - CANCEL
+                              - CAPTURE
+                              - HOLD_FOR_REVIEW
+                              - REVERT
+                            description: >-
+                              Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
+                              captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
+                              review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                              HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart routing
+                              step, REVERT the outputs of a fraud step that runs after the payment, CANCEL never an
+                              approval. An action step has no provider_id, connection_id or output.
+                          action_delay:
+                            type: string
+                            example: PT5M
+                            description: >-
+                              Only with action = CAPTURE. ISO-8601 duration between the approval and the capture, at
+                              least PT1M and at most P7D. Omit to capture as soon as the approval is processed.
+                          output:
+                            type: array
+                            items:
+                              type: object
+                              required:
+                                - status
+                              properties:
+                                status:
+                                  type: string
+                                  example: DECLINED
+                                  description: >-
+                                    APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (fraud,
+                                    3DS and authentication steps only) or INTERNAL_ERROR.
+                                decline_types:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: >-
+                                    Decline sub-statuses. On DECLINE_GROUP, required unless group_id is sent; with
+                                    group_id it must equal the group's members. Not allowed on SUCCEEDED_GROUP.
+                                group_id:
+                                  type: integer
+                                  example: 1044
+                                  description: >-
+                                    Id of a decline, Merchant Advice Code or succeeded group of the account (see List
+                                    Decline Groups and List Succeeded Groups). Required on MAC_CODE_GROUP and
+                                    SUCCEEDED_GROUP, optional on DECLINE_GROUP, not allowed otherwise. Must be of the
+                                    kind the status expects.
+                                retry:
+                                  type: boolean
+                                  example: false
+                                  description: >-
+                                    true attempts the same provider once more when this outcome happens, before
+                                    following next. Only on DECLINED, INTERNAL_ERROR and DECLINE_GROUP. On update, an
+                                    omitted retry keeps the stored value.
+                                next:
+                                  type: integer
+                                  example: 2
+                                next_split:
+                                  type: array
+                                  description: >-
+                                    Splits the fallback across several steps by percentage: at least 2 entries whose
+                                    percentages sum to 100. next is optional next to it and, when sent, must equal the
+                                    first entry; responses return next = first entry alongside next_split.
+                                  items:
+                                    type: object
+                                    required:
+                                      - index
+                                      - percentage
+                                    properties:
+                                      index:
+                                        type: integer
+                                        example: 2
+                                      percentage:
+                                        type: integer
+                                        example: 70
+                            description: Per-outcome handlers of a provider step. Not allowed on an action step.
+                          fraud:
+                            type: object
+                            description: >-
+                              Configuration of a fraud provider step. Only on FRAUD providers; omitted on update keeps
+                              the stored configuration.
+                            properties:
+                              rules:
+                                type: string
+                                example: rule-a,rule-b
+                              blocklists:
+                                type: string
+                              allowlists:
+                                type: string
+                              reviewlists:
+                                type: string
+                              preset:
+                                type: string
+                              report_only:
+                                type: boolean
+                                description: >-
+                                  Score without acting on the result. Only on a fraud step reached from declined outputs
+                                  of a payment step.
+                          smart_routing:
+                            type: object
+                            description: >-
+                              Makes the step a smart routing step (provider_id SMART_ROUTING, no connection_id). Card
+                              routings only, one per route.
+                            required:
+                              - type
+                              - providers
+                            properties:
+                              type:
+                                type: string
+                                enum:
+                                  - COSTS
+                                  - LATENCY
+                                example: LATENCY
+                              providers:
+                                type: array
+                                minItems: 2
+                                maxItems: 4
+                                items:
+                                  type: object
+                                  required:
+                                    - provider_id
+                                    - connection_id
+                                  properties:
+                                    provider_id:
+                                      type: string
+                                      example: ADYEN
+                                    connection_id:
+                                      type: string
+                                      format: uuid
+                                    network_token_on:
+                                      type: boolean
+                              no_retry_decline_types:
+                                type: array
+                                items:
+                                  type: string
+                                description: Decline sub-statuses after which the next provider of the set is not tried.
+                              no_retry_failure_causes:
+                                type: array
+                                items:
+                                  type: string
+                                description: >-
+                                  Failure causes (for example PROVIDER_TIMEOUT) after which the next provider of the set
+                                  is not tried.
+                        description: >-
+                          A provider attempt (provider_id + connection_id) or an action step (action). index values are
+                          contiguous starting at 1.
+                condition_sets:
+                  type: array
+                  description: Optional. Ordered by sort_number, first matching set wins.
+                  items:
+                    type: object
+                    required:
+                      - sort_number
+                      - name
+                      - conditions
+                      - route
+                    properties:
+                      sort_number:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: US & Canada — high value
+                      description:
+                        type: string
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - condition_type
+                            - conditional
+                            - values
+                          properties:
+                            condition_type:
+                              type: string
+                              example: COUNTRY
+                              description: >-
+                                See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CARD_TYPE,
+                                CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, TIME_PERIOD,
+                                VOLUME_PAYMENTS_LIMIT.
+                            conditional:
+                              type: string
+                              example: ONE_OF
+                            values:
+                              type: array
+                              items:
+                                type: string
+                              example:
+                                - US
+                                - CA
+                              description: >-
+                                Empty only on an AMOUNT condition with currency, which then matches any amount in that
+                                currency.
+                            key:
+                              type: string
+                              description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                            currency:
+                              type: string
+                              example: USD
+                              description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                            time_period_repeat_amount:
+                              type: integer
+                              example: 1
+                              description: >-
+                                TIME_PERIOD and VOLUME_PAYMENTS_LIMIT: every how many units of
+                                time_period_repeat_frequency (schedule), or the length of a DAILY window in days, 1 to
+                                90 (limit).
+                            time_period_repeat_frequency:
+                              type: string
+                              enum:
+                                - DAILY
+                                - WEEKLY
+                                - MONTHLY
+                                - QUARTERLY
+                                - YEARLY
+                              description: >-
+                                TIME_PERIOD: recurrence unit. VOLUME_PAYMENTS_LIMIT: period of the limit, DAILY, MONTHLY
+                                or QUARTERLY.
+                            time_period_repetition_days:
+                              type: array
+                              items:
+                                type: string
+                                enum:
+                                  - MONDAY
+                                  - TUESDAY
+                                  - WEDNESDAY
+                                  - THURSDAY
+                                  - FRIDAY
+                                  - SATURDAY
+                                  - SUNDAY
+                              description: TIME_PERIOD only. Days of the week the schedule applies to; needs a frequency.
+                            time_period_start_time:
+                              type: string
+                              example: '09:00:00'
+                              description: >-
+                                TIME_PERIOD only. Start of the daily time window (HH:mm:ss), together with
+                                time_period_end_time.
+                            time_period_end_time:
+                              type: string
+                              example: '18:00:00'
+                              description: TIME_PERIOD only. End of the daily time window (HH:mm:ss), inclusive.
+                            timezone:
+                              type: string
+                              example: '-03:00'
+                              description: >-
+                                UTC offset. TIME_PERIOD: offset the schedule is read in (defaults to the offset of
+                                values[0]). VOLUME_PAYMENTS_LIMIT: whole-hour offset where periods start (defaults to
+                                +00:00).
+                            limit_by:
+                              type: string
+                              enum:
+                                - PAYMENTS
+                                - VOLUME
+                              description: VOLUME_PAYMENTS_LIMIT only. Count payments (default) or sum amounts in currency.
+                            payments_count:
+                              type: string
+                              enum:
+                                - ALL
+                                - SUCCEEDED
+                              description: VOLUME_PAYMENTS_LIMIT only. Which payments count toward the limit. Default ALL.
+                        description: Conditions combined with logical AND. See Routing Conditions.
+                      route:
+                        type: object
+                        description: Same shape as default_route, including start_split, output[].next_split and action steps.
       responses:
         '200':
           description: OK
@@ -88721,9 +90119,43 @@ paths:
                             provider_id:
                               type: string
                               example: STRIPE
+                              description: >-
+                                Required on provider steps; absent on action steps. Must match the provider of the
+                                connection.
                             connection_id:
                               type: string
                               example: f1a3c4d5-...
+                              description: >-
+                                Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
+                                support the payment_method.
+                            provider_type:
+                              type: string
+                              enum:
+                                - PAYMENT
+                                - FRAUD
+                                - THREE_D_SECURE
+                                - AUTHENTICATION
+                              description: The kind the provider resolves to. Response only.
+                            action:
+                              type: string
+                              enum:
+                                - CANCEL
+                                - CAPTURE
+                                - HOLD_FOR_REVIEW
+                                - REVERT
+                              description: >-
+                                Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE
+                                captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual
+                                review, REVERT reverts it after a post-payment fraud screening. CAPTURE and
+                                HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart
+                                routing step, REVERT the outputs of a fraud step that runs after the payment, CANCEL
+                                never an approval. An action step has no provider_id, connection_id or output.
+                            action_delay:
+                              type: string
+                              example: PT5M
+                              description: >-
+                                Only with action = CAPTURE. ISO-8601 duration between the approval and the capture, at
+                                least PT1M and at most P7D. Omit to capture as soon as the approval is processed.
                             output:
                               type: array
                               items:
@@ -88734,10 +90166,30 @@ paths:
                                   status:
                                     type: string
                                     example: DECLINED
+                                    description: >-
+                                      APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING
+                                      (fraud, 3DS and authentication steps only) or INTERNAL_ERROR.
                                   decline_types:
                                     type: array
                                     items:
                                       type: string
+                                    description: >-
+                                      Members of the group on DECLINE_GROUP (decline sub-statuses) and MAC_CODE_GROUP
+                                      (Merchant Advice Codes) outputs.
+                                  group_id:
+                                    type: integer
+                                    example: 1044
+                                    description: Id of the group behind a DECLINE_GROUP, MAC_CODE_GROUP or SUCCEEDED_GROUP output.
+                                  group_name:
+                                    type: string
+                                    example: Soft declines
+                                    description: Name of the group behind group_id. Ignored on write.
+                                  retry:
+                                    type: boolean
+                                    example: false
+                                    description: >-
+                                      Whether this output retries the same provider once before following next. Always
+                                      returned.
                                   next:
                                     type: integer
                                     example: 2
@@ -88758,6 +90210,67 @@ paths:
                                         percentage:
                                           type: integer
                                           example: 70
+                              description: Per-outcome handlers. Returned as an empty array on action steps.
+                            fraud:
+                              type: object
+                              description: Configuration of a fraud provider step, returned on FRAUD steps.
+                              properties:
+                                rules:
+                                  type: string
+                                  example: rule-a,rule-b
+                                blocklists:
+                                  type: string
+                                allowlists:
+                                  type: string
+                                reviewlists:
+                                  type: string
+                                preset:
+                                  type: string
+                                report_only:
+                                  type: boolean
+                                  description: >-
+                                    Score without acting on the result. Only on a fraud step reached from declined
+                                    outputs of a payment step.
+                            smart_routing:
+                              type: object
+                              description: Returned on smart routing steps.
+                              properties:
+                                type:
+                                  type: string
+                                  enum:
+                                    - COSTS
+                                    - LATENCY
+                                  example: LATENCY
+                                providers:
+                                  type: array
+                                  minItems: 2
+                                  maxItems: 4
+                                  items:
+                                    type: object
+                                    required:
+                                      - provider_id
+                                      - connection_id
+                                    properties:
+                                      provider_id:
+                                        type: string
+                                        example: ADYEN
+                                      connection_id:
+                                        type: string
+                                        format: uuid
+                                      network_token_on:
+                                        type: boolean
+                                no_retry_decline_types:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: Decline sub-statuses after which the next provider of the set is not tried.
+                                no_retry_failure_causes:
+                                  type: array
+                                  items:
+                                    type: string
+                                  description: >-
+                                    Failure causes (for example PROVIDER_TIMEOUT) after which the next provider of the
+                                    set is not tried.
                   condition_sets:
                     type: array
                     items:
@@ -88769,12 +90282,104 @@ paths:
                         name:
                           type: string
                           example: Updated Card routing
+                        description:
+                          type: string
                         conditions:
                           type: array
                           items:
                             type: object
+                            properties:
+                              condition_type:
+                                type: string
+                                example: COUNTRY
+                                description: >-
+                                  See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT,
+                                  CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
+                                  TIME_PERIOD, VOLUME_PAYMENTS_LIMIT.
+                              conditional:
+                                type: string
+                                example: ONE_OF
+                              values:
+                                type: array
+                                items:
+                                  type: string
+                                example:
+                                  - US
+                                  - CA
+                                description: >-
+                                  Empty only on an AMOUNT condition with currency, which then matches any amount in that
+                                  currency.
+                              key:
+                                type: string
+                                description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                              currency:
+                                type: string
+                                example: USD
+                                description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                              time_period_repeat_amount:
+                                type: integer
+                                example: 1
+                                description: >-
+                                  TIME_PERIOD and VOLUME_PAYMENTS_LIMIT: every how many units of
+                                  time_period_repeat_frequency (schedule), or the length of a DAILY window in days, 1 to
+                                  90 (limit).
+                              time_period_repeat_frequency:
+                                type: string
+                                enum:
+                                  - DAILY
+                                  - WEEKLY
+                                  - MONTHLY
+                                  - QUARTERLY
+                                  - YEARLY
+                                description: >-
+                                  TIME_PERIOD: recurrence unit. VOLUME_PAYMENTS_LIMIT: period of the limit, DAILY,
+                                  MONTHLY or QUARTERLY.
+                              time_period_repetition_days:
+                                type: array
+                                items:
+                                  type: string
+                                  enum:
+                                    - MONDAY
+                                    - TUESDAY
+                                    - WEDNESDAY
+                                    - THURSDAY
+                                    - FRIDAY
+                                    - SATURDAY
+                                    - SUNDAY
+                                description: TIME_PERIOD only. Days of the week the schedule applies to; needs a frequency.
+                              time_period_start_time:
+                                type: string
+                                example: '09:00:00'
+                                description: >-
+                                  TIME_PERIOD only. Start of the daily time window (HH:mm:ss), together with
+                                  time_period_end_time.
+                              time_period_end_time:
+                                type: string
+                                example: '18:00:00'
+                                description: TIME_PERIOD only. End of the daily time window (HH:mm:ss), inclusive.
+                              timezone:
+                                type: string
+                                example: '-03:00'
+                                description: >-
+                                  UTC offset. TIME_PERIOD: offset the schedule is read in (defaults to the offset of
+                                  values[0]). VOLUME_PAYMENTS_LIMIT: whole-hour offset where periods start (defaults to
+                                  +00:00).
+                              limit_by:
+                                type: string
+                                enum:
+                                  - PAYMENTS
+                                  - VOLUME
+                                description: VOLUME_PAYMENTS_LIMIT only. Count payments (default) or sum amounts in currency.
+                              payments_count:
+                                type: string
+                                enum:
+                                  - ALL
+                                  - SUCCEEDED
+                                description: VOLUME_PAYMENTS_LIMIT only. Which payments count toward the limit. Default ALL.
+                          description: Conditions combined with logical AND. See Routing Conditions.
                         route:
                           type: object
+                          description: Same shape as default_route, including start_split, output[].next_split and action steps.
                   created_at:
                     type: string
                     format: date-time
