@@ -1,0 +1,33 @@
+---
+title: "Create Promotion Codes"
+openapi: "/openapi/promotions/create-promotion-codes.json POST /promotions/{promotion_id}/codes"
+description: "Makes a batch of codes on a code promotion: each code is the prefix and a random suffix, with its own limit of uses."
+noindex: true
+---
+
+<Warning>
+**Promotions is enabled per organization**
+
+This endpoint works only after Yuno enables Promotions for your organization. Until then it answers `404 PROMOTION_NOT_FOUND`. Ask your Technical Account Manager or Key Account Manager. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Warning>
+
+This endpoint makes a batch of codes on a code promotion of your account. The guide [Create a batch of codes](/docs/payment-features/promotion-codes#create-a-batch-of-codes) explains the whole flow, and [List Promotion Codes](/reference/promotions/list-promotion-codes) reads the codes back.
+
+## What the request needs
+
+* **The account comes from the `X-Account-Code` header.** The promotion must belong to that account. Without the header the answer is `400 INVALID_PARAMETERS`.
+* **`X-Idempotency-Key` is required.** It is any text of 1 to 64 characters. The same key on the same promotion returns the first batch with `201`, and Yuno does not compare the body.
+* **The promotion id is a UUID v4 in the path.** An id that is not one answers `400 INVALID_PARAMETERS`. An id that is not on the account answers `404 PROMOTION_NOT_FOUND`.
+* **`quantity` is required,** a whole number from 1 to 1000. **`prefix` is required,** 1 to 8 letters or digits. **`uses_per_code` is optional,** a whole number from 1 to 1000000, and each code accepts one payment without it.
+* **A full code is refused.** A body with a `code` answers `400 INVALID_REQUEST` with `code: NOT_ALLOWED`. Yuno makes every code of the batch.
+* **The body is at most 256 KiB.** A larger body answers `413 REQUEST_ENTITY_TOO_LARGE`.
+
+## What the answer holds
+
+`201` returns the batch: `batch_id`, `promotion_id`, `quantity` and `codes`. Each entry of `codes` holds the `code` and its `uses_per_code`. The suffix of each code is 5 characters for up to 28 codes, 6 characters for 29 to 887 codes, and 7 characters for 888 to 1000 codes.
+
+The codes come back only in this answer and in [List Promotion Codes](/reference/promotions/list-promotion-codes). Keep them secret. Yuno does not write them to its logs.
+
+## Errors
+
+Two kinds of `400` exist, as for [Create Promotion](/reference/promotions/create-promotion). `INVALID_PARAMETERS` comes from the headers, the path and the check of the body as an object. `INVALID_REQUEST` comes from the rules of the batch: `quantity`, `uses_per_code`, `prefix` and `code`, with one `path: RULE` message for each failed path. A promotion that can't hold a batch answers `422 PROMOTION_NOT_APPLICABLE` with a `reason`. [Promotion Error Codes](/reference/promotions/promotion-error-codes) lists every answer.
