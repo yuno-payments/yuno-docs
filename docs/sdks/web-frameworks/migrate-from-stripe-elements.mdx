@@ -2,6 +2,9 @@
 title: "Migrate from Stripe Elements"
 description: "Map Stripe PaymentIntents, SetupIntents, Elements, and webhooks to their Yuno equivalents."
 ---
+import LegacySdkNotice from '/snippets/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
 
 If your checkout runs on Stripe Elements today, moving to Yuno changes the checkout layer, not your Stripe account. Yuno connects to Stripe as one provider among the ones you enable, so existing Stripe processing keeps working while you add routing, other providers, and Yuno's checkout. This page maps each Stripe concept to what you use on Yuno.
 
@@ -11,7 +14,7 @@ If your checkout runs on Stripe Elements today, moving to Yuno changes the check
 | :--- | :--- | :--- |
 | PaymentIntent | [Checkout session](/reference/checkout-sessions/create-checkout-session) plus [Create Payment](/reference/payments/create-payment) | The session carries amount, country, and customer and loads the payment methods enabled on your account. The payment is created on your server with the one-time token the SDK returns. |
 | `client_secret` | `checkout_session` | Created on your server with your private key and passed to the browser. Expires after 2.5 hours in production. |
-| SetupIntent | [Enrollment](/docs/payment-features/enrollment/enroll-payment-methods), or a payment with `vault_on_success: true` | A customer session plus `mountEnrollment` stores the card without charging it. `vault_on_success` stores it on the first successful payment. Both return a `vaulted_token`. |
+| SetupIntent | [Enrollment](/docs/payment-features/enrollment/enroll-payment-methods), or a payment with `vault_on_success: true` | A customer session plus `mountEnrollmentLite` stores the card without charging it. `vault_on_success` stores it on the first successful payment. Both return a `vaulted_token`. |
 | PaymentMethod id (`pm_...`) | `vaulted_token` | Charge it later by sending `payment_method.vaulted_token` with [stored credentials](/docs/payment-features/stored-credentials). |
 | Customer (`cus_...`) | [Customer](/reference/customers/create-customer) | Create the customer before the session and pass its id. |
 | `capture_method: 'manual'` | `payment_method.detail.card.capture: false` | Then [capture](/reference/payments/capture-authorization) or [cancel](/reference/payments/cancel-payment) the authorization. See [Cancel and Capture Flow](/docs/payment-features/Cancel-and-capture-flow). |
@@ -29,7 +32,7 @@ If your checkout runs on Stripe Elements today, moving to Yuno changes the check
 | Split card fields (`cardNumber`, `cardExpiry`, `cardCvc`) | Secure Fields `pan`, `expiration`, `cvv` | [Secure Fields](/docs/sdks/customization/secure-fields/payment-secure-fields) |
 | Express Checkout Element | Lite SDK `mountExternalButtons` (Apple Pay, Google Pay, PayPal) | [Lite SDK (Web)](/docs/sdks/lite-web/payment) |
 | `stripe.confirmPayment` | `yuno.startPayment` and your server's Create Payment call | [React and Next.js](/docs/sdks/web-frameworks/react-and-nextjs) |
-| `stripe.confirmSetup` | `yuno.mountEnrollment` | [Enrollment (Web)](/docs/sdks/card-enrollment/web-enrollment) |
+| `stripe.confirmSetup` | `yuno.mountEnrollmentLite` | [Enrollment (Web)](/docs/sdks/card-enrollment/web-enrollment) |
 | `elements.update({ amount })` | `yuno.updateCheckoutSession(newSession)` | [Web Reference](/docs/sdks/resources/references/web#updatecheckoutsession) |
 | `@stripe/react-stripe-js` | `@yuno-payments/sdk-web` with the patterns on the React page | [React and Next.js](/docs/sdks/web-frameworks/react-and-nextjs) |
 | Appearance API | Checkout Builder and SDK styling | [Checkout Builder](/docs/using-yuno/dashboard-overview/checkout-builder), [Styling](/docs/sdks/customization/web/styling) |
@@ -46,14 +49,14 @@ If your checkout runs on Stripe Elements today, moving to Yuno changes the check
   <Tab title="Yuno (Lite SDK / Secure Fields)">
     1. Server creates a [checkout session](/reference/checkout-sessions/create-checkout-session) and returns `checkout_session`.
     2. Browser mounts the SDK with the session and calls `yuno.startPayment()`.
-    3. The SDK gives you a one-time token in `yunoCreatePayment`; your server calls [Create Payment](/reference/payments/create-payment) with `payment_method.token` and `checkout.session`.
+    3. The SDK gives you a one-time token in `createPayment`; your server calls [Create Payment](/reference/payments/create-payment) with `payment_method.token` and `checkout.session`.
     4. If the response has `checkout.sdk_action_required: true`, the browser calls `yuno.continuePayment()` for 3DS or a redirect. Your server listens to the `payment.purchase` webhook for the final status.
   </Tab>
   <Tab title="Yuno (Seamless SDK)">
     1. Server creates a [checkout session](/reference/checkout-sessions/create-checkout-session) and returns `checkout_session`.
     2. Browser mounts the Seamless SDK with the session and calls `yuno.startPayment()`.
     3. The SDK creates the payment from the checkout session on your account. Your server listens to the `payment.purchase` webhook for the final status.
-    4. For 3DS or a redirect, the SDK handles the challenge automatically and returns the result in `yunoPaymentResult`.
+    4. For 3DS or a redirect, the SDK handles the challenge automatically and returns the result in `paymentResult`.
   </Tab>
 </Tabs>
 

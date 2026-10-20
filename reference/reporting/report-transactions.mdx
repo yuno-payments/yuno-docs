@@ -54,6 +54,15 @@ You can tell Yuno how each transaction was initiated by sending `initiation` at 
 - `initiation` is optional and flat at the event level, like `token_type_used`. It accepts only `CIT` or `MIT`; any other value rejects that event with `INVALID_EVENT` and the message `The field 'initiation' must be CIT or MIT.`
 - Omitting `initiation` keeps the event exactly as before: it feeds the non-initiation statistics only, and a recommendation request that carries no `payment.initiation` is unaffected.
 
+## Recommendation ID for outcome attribution
+
+If you route with the [Routing Recommendations API](/reference/organizations/routing/get-routing-recommendations), send the `recommendation_id` it returned for the payment on the event you report. Yuno uses it to attribute the reported outcome to the exact recommendation, instead of matching by `merchant_order_id`.
+
+- `recommendation_id` is optional and flat at the event level, like `initiation`. Send it exactly as returned: a lowercase UUID v4. Any other value, including an empty string, rejects that event with `INVALID_EVENT` and the message `The field 'recommendation_id' must be a UUID.`
+- Yuno checks the format only. It does not verify that the recommendation exists or belongs to your account, so an unknown value is stored but attributes nothing.
+- Send it with the first report of the event. Re-sending a `report_id` that was already ingested counts as a duplicate and does not add or change the `recommendation_id`.
+- Omitting `recommendation_id`, or sending `null`, keeps the event exactly as before.
+
 ## The raw provider response
 
 If you include `raw_provider_response` (the provider's response payload, verbatim, up to 64 KB), Yuno stores it with defensive card-data redaction applied — primary account numbers and security codes are removed before anything is persisted. It is never returned by any API.

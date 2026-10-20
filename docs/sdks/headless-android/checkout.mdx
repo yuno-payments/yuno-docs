@@ -4,6 +4,9 @@ description: "Create payments using the Headless SDK on Android, generating one-
 robots: index
 ---
 import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
 
 <GenericOrientation />
 This page provides a guide to the Yuno Headless Android SDK for payments.
@@ -107,7 +110,7 @@ Add the Yuno SDK dependency to your application in the `build.gradle` file:
 
 ```kotlin
 dependencies {
-    implementation 'com.yuno.payments:android-sdk:{last_version}'
+    implementation 'com.yuno.payments:android-sdk:2.26.0'
 }
 ```
 
@@ -173,6 +176,8 @@ After collecting the user information, create a one-time token (OTT) using the `
 
 When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected. This information is attached to the one-time token. You can also add installment information and a security code if the provider requires it.
 
+Both examples call `generateToken`, which is declared on the `ApiClientPayment` companion object. Add `import com.yuno.sdk.ApiClientPayment.Companion.generateToken` to your file.
+
 ```kotlin Example 1
 apiClientPayment.generateToken(
    collectedData = TokenCollectedData(
@@ -200,7 +205,6 @@ apiClientPayment.generateToken(
                merchantCustomerId = "merchant_customer_id",
                firstName = "firstName",
                lastName = "lastName",
-               gender = Gender.NB,
                dateOfBirth = "DD/MM/YYYY",
                email = "email@email.com",
                country = "US",
@@ -219,7 +223,7 @@ apiClientPayment.generateToken(
 )
 
 ```
-```javascript Example 2
+```kotlin Example 2
 apiClientPayment.generateToken(
    collectedData = TokenCollectedData(
        checkoutSession = "checkout_session",
@@ -246,8 +250,6 @@ apiClientPayment.generateToken(
                merchantCustomerId = "merchant_customer_id",
                firstName = "firstName",
                lastName = "lastName",
-               lastName = "lastName",
-               gender = Gender.NB,
                dateOfBirth = "DD/MM/YYYY",
                email = "email@email.com",
                country = "CO",
@@ -267,7 +269,7 @@ apiClientPayment.generateToken(
 
 ```
 
-The **apiClientPayment.generateToken** function returns an Observable type, which is a subclass of `LiveData`. You can observe the response as a common `LiveData` with the following type `SingleLiveEvent<Map<String, Any?>>`, which is a `LiveData` that only emits once. The response type is a `Map` containing the whole response. The following code block shows examples of responses after calling the `apiClientPayment.generateToken` function.
+The **apiClientPayment.generateToken** function is a `suspend` function. Call it from a coroutine (for example, `lifecycleScope.launch`). It returns a `Map<String, Any?>` containing the whole response. The following code block shows examples of responses after calling the `apiClientPayment.generateToken` function.
 
 ```json Example 1
 ["token": "9ee44ac7-9134-4598-ae28-a26fec03099d",
@@ -334,10 +336,14 @@ The **apiClientPayment.generateToken** function returns an Observable type, whic
 
 The endpoint response provides the `sdk_action_required` parameter that defines if additional actions are necessary.
 
-The following code block shows an example of observing the response:
+The following code block shows an example of reading the response. `generateToken` and `continueCardPayment` are declared on the `ApiClientPayment` companion object, so import them explicitly:
 
 ```kotlin
-apiClientPayment.generateToken(data, context).observe(context) { response ->
+import com.yuno.sdk.ApiClientPayment.Companion.continueCardPayment
+import com.yuno.sdk.ApiClientPayment.Companion.generateToken
+
+lifecycleScope.launch {
+   val response = apiClientPayment.generateToken(data, context)
    val token = response["token"] as String?
    val error = response["error"] as String?
 }

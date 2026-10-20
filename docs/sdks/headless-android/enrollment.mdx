@@ -4,6 +4,9 @@ description: "Enroll payment methods using the Headless SDK on Android, generati
 robots: index
 ---
 import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
 
 <GenericOrientation />
 This page provides a guide to the Yuno Headless SDK for Android enrollment.
@@ -105,7 +108,7 @@ maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 
 ```kotlin
 dependencies {
-    implementation 'com.yuno.payments:android-sdk:{last_version}'
+    implementation 'com.yuno.payments:android-sdk:2.26.0'
 }
 ```
 
@@ -130,7 +133,7 @@ class CustomApplication : Application() {
     Yuno.initialize(
       this,
       PUBLIC_API_KEY,
-      config: YunoConfig,
+      config = YunoConfig(),
     )
   }
 }
@@ -161,8 +164,8 @@ The following code block shows an example of the parameter configuration:
 ```kotlin
 override fun onCreate(savedInstanceState: Bundle?) {
 	val apiClientEnroll = Yuno.apiClientEnroll(
-  	country_code = "CO",
-    customer_session = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+    countryCode = "CO",
+    customerSession = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
     context = this 
   )
  }
@@ -189,6 +192,7 @@ apiClientEnroll.continueEnrollment(
                    holderName = "Firstname Lastname",
                    type = CardType.DEBIT
                ),
+           ),
            customer = Customer(
                id = "id",
                merchantCustomerId = "merchant_customer_id",
@@ -205,13 +209,13 @@ apiClientEnroll.continueEnrollment(
                )
             )
       )
-   ),
+  ),
   context = this
  )
 
 ```
 
-The `apiClientEnroll.continueEnrollment` function returns an Observable type that extends `LiveData`. You can observe the response as a standard `LiveData` with type `SingleLiveEvent<Map<String, Any?>>`. This `LiveData` emits only once and returns a `Map` containing the complete response. Below is an example response from calling `apiClientEnroll.continueEnrollment`:
+The `apiClientEnroll.continueEnrollment` function is a `suspend` function. Call it from a coroutine (for example, `lifecycleScope.launch`). It returns a `Map<String, Any?>` containing the complete response. Below is an example response from calling `apiClientEnroll.continueEnrollment`:
 
 ```json
 {
@@ -223,12 +227,15 @@ The `apiClientEnroll.continueEnrollment` function returns an Observable type tha
 }
 ```
 
-The following code block shows an example of observing the response:
+The following code block shows an example of reading the response. `continueEnrollment` is declared on the `ApiClientEnroll` companion object, so import it explicitly:
 
 ```kotlin
-apiClientPayment.continueEnrollment(data, context).observe(context) { response ->
+import com.yuno.sdk.ApiClientEnroll.Companion.continueEnrollment
+
+lifecycleScope.launch {
+   val response = apiClientEnroll.continueEnrollment(data, context)
    val status = response["status"] as String?
-   val vauldtedtoken = response["vaulted_token"] as String?
+   val vaultedToken = response["vaulted_token"] as String?
 }
 ```
 
