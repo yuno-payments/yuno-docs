@@ -6,6 +6,10 @@ metadata:
   robots: index
 description: "Reference all Web SDK parameters, SRI integration, payment retry, and enrollment options"
 ---
+import LegacySdkNotice from '/snippets/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
 Parameters, customizations, and advanced features for all Web SDK flows. See [Quickstart guide](/docs/sdks/overview/quickstart) and [Choose the Right Integration for You](/docs/sdks/overview/choose-integration) for introductory information.
 
 ## TypeScript support
@@ -392,6 +396,7 @@ externalButtons: {
 | `buttonWidth`        | `number`                                                                                                                                                                                      | `100%`       | Wrapper width in px                                        |
 | `buttonHeight`       | `number`                                                                                                                                                                                      | `40`         | Wrapper height in px                                       |
 | `buttonBorderRadius` | `number`                                                                                                                                                                                      | `30`         | Border radius in px                                        |
+| `topLevelDomain`     | `string` \| `boolean`                                                                                                                                                                         | Auto-detected | *(Web SDK 1.11.31+)* In cross-origin iframes, replaces the detected parent page domain for Apple Pay session validation. Set to `false` to turn detection off. Has no effect outside an iframe. |
 
 </div>
 
@@ -425,6 +430,37 @@ externalButtons: {
 | `locale`       | `string`                                                                     | PayPal decides from the shopper's browser | Button language, in PayPal's `language_COUNTRY` format (for example `en_US`, `es_ES`, `pt_BR`). See PayPal's [supported locales](https://developer.paypal.com/sdk/js/configuration/#locale). |
 
 </div>
+
+
+
+#### PayPal Braintree
+
+For merchants using PayPal processed through Braintree, customize button styling and shipping callbacks via `externalButtons.paypalBraintree`:
+
+```js
+externalButtons: {
+  paypalBraintree: {
+    style: {
+      type: 'pay', // 'pay' | 'checkout' | 'buynow' | 'subscribe'
+      color: 'gold', // 'gold' | 'blue' | 'white'
+      borderRadius: 4,
+      height: 45,
+    },
+    onShippingAddressChange: async ({ shippingAddress, paypalOrderId }) => {
+      // Return { action: 'UPDATE_PRICE', amount: '120.00' } or { action: 'ACCEPT' } or { action: 'REJECT' }
+      return { action: 'ACCEPT' }
+    },
+  }
+}
+```
+
+`onShippingAddressChange` receives `{ shippingAddress: { city, state, postalCode, countryCode }, paypalOrderId }` and returns a Promise with one of:
+
+- `{ action: 'ACCEPT' }`
+- `{ action: 'UPDATE_PRICE', amount, breakdown?: { itemTotal, shipping?, tax? } }`
+- `{ action: 'REJECT', reason?: 'COUNTRY' | 'STATE' | 'POSTAL_CODE' | 'ADDRESS' }`
+
+`paypalBraintree` also accepts `shippingAddressOverride`, a function that returns the address to prefill, or `undefined`.
 
 #### Full example
 
@@ -614,7 +650,7 @@ The SDK keeps the current UI mounted and swaps the checkout session id in intern
 
 ## Enrollment parameters (full reference)
 
-Parameters for `await yuno.mountEnrollment()`. All parameters used in [Enrollment flows (Web)](/docs/sdks/card-enrollment/web-enrollment) are listed here with full detail.
+Parameters for `await yuno.mountEnrollmentLite()`. All parameters used in [Enrollment flows (Web)](/docs/sdks/card-enrollment/web-enrollment) are listed here with full detail.
 
 <div className="code-nowrap-table dense-table">
 
@@ -635,7 +671,7 @@ Parameters for `await yuno.mountEnrollment()`. All parameters used in [Enrollmen
 
 ## Mount external buttons
 
-Use the `mountExternalButtons` method to render PayPal, Google Pay, and Apple Pay buttons in custom locations within your UI. This gives you control over where these buttons are displayed.
+Use the `mountExternalButtons` method to render PayPal, Google Pay, Apple Pay, and Samsung Pay buttons in custom locations within your UI. This gives you control over where these buttons are displayed.
 
 ```javascript
 await yuno.mountExternalButtons([
@@ -651,6 +687,10 @@ await yuno.mountExternalButtons([
     paymentMethodType: 'PAYPAL',
     elementSelector: '#paypal',
   },
+  {
+    paymentMethodType: 'SAMSUNG_PAY',
+    elementSelector: '#samsung-pay',
+  },
 ]);
 ```
 
@@ -660,7 +700,7 @@ await yuno.mountExternalButtons([
 
 | Parameter           | Description                                                                                                    |
 | :------------------ | :------------------------------------------------------------------------------------------------------------- |
-| `paymentMethodType` | The payment method type. Must be `'APPLE_PAY'`, `'GOOGLE_PAY'`, or `'PAYPAL'`.                                 |
+| `paymentMethodType` | The payment method type. Must be `'APPLE_PAY'`, `'GOOGLE_PAY'`, `'PAYPAL'`, or `'SAMSUNG_PAY'` *(Web SDK 1.10.0+)*. |
 | `elementSelector`   | The CSS selector for the HTML element where the button should be rendered (for example, `'#apple-pay'`, `'.button'`). |
 
 </div>

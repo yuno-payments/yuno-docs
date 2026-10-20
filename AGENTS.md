@@ -34,14 +34,14 @@ Web SDK (CDN script tag):
 iOS (CocoaPods):
 
 ```ruby
-pod 'YunoSDK', '~> 2.11.1'
+pod 'YunoSDK', '~> 2.27.0'
 ```
 
 iOS (Swift Package Manager):
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.11.1")
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.27.0")
 ]
 ```
 
@@ -51,7 +51,7 @@ Android (Gradle, add the repository and the dependency):
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 
 dependencies {
-    implementation 'com.yuno.payments:android-sdk:2.11.0'
+    implementation 'com.yuno.payments:android-sdk:2.26.0'
 }
 ```
 

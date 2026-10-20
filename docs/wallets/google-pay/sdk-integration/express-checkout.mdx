@@ -1,0 +1,370 @@
+---
+title: "Express checkout"
+description: "Show an order breakdown, offer shipping methods, and react to shipping address changes on the Google Pay sheet using the Android or Web SDK."
+---
+
+Available from Yuno Android SDK 2.24.0 and Yuno Web SDK 1.10.8.
+
+Order breakdown, shipping address updates, and shipping method selector turn the Google Pay sheet into an express checkout:
+
+- **Order breakdown**: show subtotal, shipping, taxes, and discounts instead of a single total.
+- **Shipping address updates**: recalculate the order when the customer picks or changes their shipping address, without leaving the sheet.
+- **Shipping method selector**: let the customer choose Standard, Express, or Same-day on the sheet, with instant price updates.
+
+Each capability is opt-in. If you don't use them, your Google Pay integration works exactly as before.
+
+## Requirements
+
+| Requirement | Value |
+|---|---|
+| Yuno Android SDK | 2.24.0 or newer, with `minSdkVersion` 23 (Android 6.0) or higher. No manifest changes. |
+| Yuno Web SDK | 1.10.8 or newer |
+| Google Pay | Enabled on your Yuno account |
+
+<Warning>
+  **On Android, upgrading to 2.24.0 is a breaking change.**
+
+  - Set `minSdkVersion` to 23 or higher. With 21 or 22 the build fails at the manifest merge step.
+  - If your app pins `com.google.android.gms:play-services-wallet` below `20.0.0`, remove the pin or use `20.0.0` or higher.
+  - If you call `startCheckout`, `startPayment`, `startPaymentLite`, `startPaymentSeamlessLite`, or `continuePayment` passing every argument by position, update the call: a new optional parameter was added before the last callback. Calls that use named arguments or a trailing lambda need no change.
+
+  See the [Android SDK changelog](/changelog/android#v2-24-0) for details.
+</Warning>
+
+On the Web there are no breaking changes and no page changes: the SDK loads and configures Google Pay for you. If you load a fixed SDK version (for example, with an integrity hash), make sure it is 1.10.8 or newer.
+
+## How it works
+
+1. Your backend adds `summary_items` and/or `shipping_methods` when it creates the checkout session.
+2. Your app registers `onShippingAddressChanged` when it starts the payment flow.
+3. On the Google Pay sheet, switching shipping method updates the price instantly without calling your app. Picking or changing the shipping address calls your handler, so you can return new totals, new methods, or an error.
+4. After the customer authorizes, the one-time token includes a `shipping` object with the selected method and the full address.
+
+Two rules apply everywhere:
+
+- Every `summary_items` list must end with the grand total. Its `amount` is the total shown on the sheet, and its `label` is shown next to it (we recommend your store name).
+- All amounts must use the session currency. A different currency makes the SDK ignore that breakdown or response.
+
+## Step 1: Show an order breakdown (backend only)
+
+Add `summary_items` when you [create the checkout session](/reference/create-checkout-session):
+
+```json
+{
+  "amount": { "currency": "USD", "value": 108.00 },
+  "customer_id": "customer-uuid",
+  "merchant_order_id": "order-123",
+  "country": "US",
+  "summary_items": [
+    { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+    { "id": "tax", "label": "Tax", "amount": { "currency": "USD", "value": 8.00 } },
+    { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 108.00 } }
+  ]
+}
+```
+
+The sheet now shows an expandable breakdown with the total labeled "ACME Inc." No app code is needed.
+
+- The ids `subtotal`, `shipping`, `tax`, and `discount` use Google's native line types. Any other id shows as a regular line. The customer only sees your labels.
+- The last entry must be the grand total and must match the session amount (tolerance 0.001 on Android, 0.01 on Web). If it doesn't, the sheet shows only the total.
+- Discounts can be negative, for example `-5.00`.
+- Send at least two entries: one line plus the grand total. If the list is invalid (fewer than two entries, missing label or amount, mixed currencies, no total), the sheet shows only the total. Nothing breaks and the customer sees no error.
+- Without a breakdown, the Web SDK labels the amount "Total" in the checkout language (SDK 1.11.17 or newer).
+- When you also send `shipping_methods` (Step 2) and register the handler, the sheet shows the first method's breakdown and this list is ignored.
+
+## Step 2: Offer shipping methods on the sheet
+
+Add `shipping_methods` to the checkout session. Each method has its own `summary_items`, so the sheet can update the price as soon as the customer switches method:
+
+```json
+"shipping_methods": [
+  {
+    "id": "standard",
+    "label": "Standard shipping",
+    "detail": "Arrives in 3-5 business days",
+    "amount": { "currency": "USD", "value": 5.00 },
+    "summary_items": [
+      { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+      { "id": "shipping", "label": "Shipping", "amount": { "currency": "USD", "value": 5.00 } },
+      { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 105.00 } }
+    ]
+  },
+  {
+    "id": "express",
+    "label": "Express shipping",
+    "detail": "Arrives in 1-2 business days",
+    "amount": { "currency": "USD", "value": 12.00 },
+    "summary_items": [
+      { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+      { "id": "shipping", "label": "Shipping", "amount": { "currency": "USD", "value": 12.00 } },
+      { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 112.00 } }
+    ]
+  }
+]
+```
+
+The selector needs the handler from Step 3. Without it, the sheet ignores the methods and works as before.
+
+- Every method needs a unique id. If two methods share an id, the selector is not shown.
+- The first method is preselected.
+- The price is shown in the option name, for example "$5.00: Standard shipping". `detail` is shown as the description.
+- Switching methods never calls your app or your backend. The total comes from that method's `summary_items`.
+- Each method's `summary_items` must end with that method's total, which can differ from the session amount. Send at least one line plus the total. A method with only the total shows no breakdown and Google's default total label.
+- If any method is invalid, the selector is not shown.
+- `delivery_estimate` (`{ "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }`) is accepted, but Google Pay does not display it on Android or on the Web.
+
+## Step 3: React to shipping address changes
+
+Register `onShippingAddressChanged` when you start the flow. Your handler receives the redacted address and answers with new totals, new methods, an error, or nothing to keep the sheet as it is.
+
+<Tabs>
+<Tab title="Android">
+
+```kotlin
+import com.yuno.sdk.payments.shipping.*
+
+activity.startCheckout(
+    checkoutSession = session,
+    countryCode = "US",
+    callbackOTT = { token -> /* create the payment on your server */ },
+    onShippingAddressChanged = { paymentMethodType, shippingInfo, complete ->
+        // paymentMethodType is "GOOGLE_PAY"
+        myShippingService.quoteAsync(shippingInfo.shippingAddress) { quote ->
+            complete(quote) // a ShippingUpdate, or null to keep the current values
+        }
+    },
+)
+```
+
+The same optional parameter exists in `startPayment`, `startPaymentLite`, `startPaymentSeamlessLite`, and `continuePayment`. Register it every time you start a flow.
+
+</Tab>
+<Tab title="Web">
+
+Register `onShippingAddressChanged` at the root of `externalButtons` when you start the checkout:
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+
+await yuno.startCheckout({
+  checkoutSession: CHECKOUT_SESSION,
+  elementSelector: '#root',
+  countryCode: 'US',
+  language: 'en',
+  externalButtons: {
+    onShippingAddressChanged: async ({ paymentMethodType, shippingInfo }) => {
+      // paymentMethodType is "GOOGLE_PAY"
+      const quote = await myShippingService.quote(shippingInfo.shippingAddress)
+      return quote // a ShippingUpdate, or null to keep the current values
+    },
+  },
+  async createPayment(oneTimeToken) {
+    // create the payment on your server
+  },
+})
+
+await yuno.mountCheckout()
+```
+
+- The handler must be an `async` function or return a Promise. If it returns a plain object, the SDK ignores the answer.
+- It works in every flow that shows the Google Pay button (`mountCheckout`, `mountExternalButtons` and `mountSeamlessExternalButtons`), as long as you pass it to `startCheckout` or `startSeamlessCheckout`.
+- Register it before the Google Pay button is rendered. The SDK checks for it once, when the button appears.
+- The handler is shared with Apple Pay: when the customer pays with Apple Pay it is called with `paymentMethodType: "APPLE_PAY"`, so branch on that value if you quote differently per wallet.
+
+</Tab>
+</Tabs>
+
+### What you receive: ShippingInfo
+
+Before authorization, Google shares only part of the address, which is enough to quote shipping and taxes:
+
+| Field | Type | Example |
+|---|---|---|
+| `shippingAddress.city` | `String?` | `"Mountain View"` |
+| `shippingAddress.state` | `String?` | `"CA"` |
+| `shippingAddress.postalCode` | `String?` | `"94043"` (may be shortened in some countries) |
+| `shippingAddress.countryCode` | `String?` | `"US"` |
+
+Every field can be missing: `null` on Android, absent on the Web. The full address arrives in the one-time token (Step 4).
+
+### What you return: ShippingUpdate
+
+Answer with any combination of these, or with `null` to keep the sheet as it is. On Android call `complete(...)`; on the Web return the value from the handler.
+
+<Tabs>
+<Tab title="Android">
+
+```kotlin
+// A) New totals for this address
+complete(ShippingUpdate(
+    summaryItems = listOf(
+        SummaryItem("subtotal", "Subtotal", SummaryAmount("USD", 100.00)),
+        SummaryItem("tax", "Tax", SummaryAmount("USD", 10.00)),
+        SummaryItem("total", "ACME Inc.", SummaryAmount("USD", 110.00)), // must be last
+    ),
+))
+```
+
+```kotlin
+// B) New shipping methods for this address
+complete(ShippingUpdate(
+    shippingMethods = listOf(
+        ShippingMethod(
+            id = "same-day", label = "Same-day delivery", detail = "Today before 9pm",
+            amount = SummaryAmount("USD", 15.00),
+            summaryItems = listOf(
+                SummaryItem("subtotal", "Subtotal", SummaryAmount("USD", 100.00)),
+                SummaryItem("shipping", "Shipping", SummaryAmount("USD", 15.00)),
+                SummaryItem("total", "ACME Inc.", SummaryAmount("USD", 115.00)),
+            ),
+        ),
+    ),
+))
+```
+
+```kotlin
+// C) An address you can't serve
+complete(ShippingUpdate(
+    errors = listOf(ShippingError(
+        code = "CITY_NOT_SUPPORTED",
+        message = "We don't ship to this city yet", // shown to the customer
+    )),
+))
+```
+
+</Tab>
+<Tab title="Web">
+
+```javascript
+// A) New totals for this address
+return {
+  summaryItems: [
+    { id: 'subtotal', label: 'Subtotal', amount: { currency: 'USD', value: 100.00 } },
+    { id: 'tax', label: 'Tax', amount: { currency: 'USD', value: 10.00 } },
+    { id: 'total', label: 'ACME Inc.', amount: { currency: 'USD', value: 110.00 } }, // must be last
+  ],
+}
+```
+
+```javascript
+// B) New shipping methods for this address
+return {
+  shippingMethods: [
+    {
+      id: 'same-day', label: 'Same-day delivery', detail: 'Today before 9pm',
+      amount: { currency: 'USD', value: 15.00 },
+      summaryItems: [
+        { id: 'subtotal', label: 'Subtotal', amount: { currency: 'USD', value: 100.00 } },
+        { id: 'shipping', label: 'Shipping', amount: { currency: 'USD', value: 15.00 } },
+        { id: 'total', label: 'ACME Inc.', amount: { currency: 'USD', value: 115.00 } },
+      ],
+    },
+  ],
+}
+```
+
+```javascript
+// C) An address you can't serve
+return {
+  errors: [
+    { code: 'CITY_NOT_SUPPORTED', message: "We don't ship to this city yet" }, // shown to the customer
+  ],
+}
+```
+
+</Tab>
+</Tabs>
+
+### Rules
+
+| Situation | What happens |
+|---|---|
+| You return `null` (or nothing on the Web) | The current values stay. |
+| You answer late | Answer as fast as you can. The SDK sets no time limit of its own, but Google does (about 30 to 45 seconds on the Web). After that, the sheet shows a timeout notice and keeps the current values. On Android only the first `complete(...)` counts. |
+| A currency differs from the session | The whole response is ignored, including errors. |
+| You send `summaryItems` | The list must end with the grand total, which becomes the sheet total. It can differ from the session amount. Always send a label. |
+| You send `shippingMethods` | They replace the options and the first one is preselected. Its breakdown sets the total, and any top-level `summaryItems` in the same response is ignored. Include `summaryItems` in each method, otherwise the total doesn't change when the customer switches. They are only shown if the session already had valid `shipping_methods`; otherwise they are dropped and your `summaryItems` and `errors` still apply. |
+| A method is invalid or two methods share an id | On Android the whole response is ignored. On the Web the methods are ignored and the totals don't change, but an error in the same response is still shown. |
+| You send `errors` | Google shows the first error on the sheet. These codes point to the address field: `CITY_NOT_SUPPORTED`, `STATE_NOT_SUPPORTED`, `COUNTRY_NOT_SUPPORTED`, `POSTAL_CODE_INVALID`, `ADDRESS_NOT_SUPPORTED`. Any other code is shown as a generic error. If the same response also has totals or methods, Google shows the error and applies them. |
+| Your handler throws (or rejects on the Web) | The current values stay. The sheet and your app don't crash. |
+| The sheet opens | Google usually calls your handler right away with the default address. Make your handler safe to call more than once, and don't depend on that first call. If you return methods on that call, they replace the session's methods; return `null` to keep them. |
+
+To change prices while the selector is shown, return the full `shippingMethods` list, each method with its own `summaryItems`. If you return only `summaryItems`, the total changes, but the next time the customer switches method the sheet goes back to that method's original breakdown.
+
+<Warning>
+  An error on the sheet does not block the payment. The customer can still pay, and the token carries the address you rejected. Always validate the address on your server when you create the payment. If a sale must not happen, return no available shipping method for that address.
+</Warning>
+
+## Step 4: Read the result in the one-time token
+
+After the customer authorizes, the one-time token you receive in `callbackOTT` (Android) or `createPayment` (Web) includes a `shipping` object with the full address and the selected method:
+
+```json
+"shipping": {
+  "method": {
+    "id": "express",
+    "label": "Express shipping",
+    "amount": { "currency": "USD", "value": 12.00 }
+  },
+  "address": {
+    "address_line_1": "1600 Amphitheatre Parkway",
+    "address_line_2": "",
+    "city": "Mountain View",
+    "state": "CA",
+    "zip_code": "94043",
+    "country": "US"
+  }
+}
+```
+
+- `method` is the one selected on the sheet, or the first one if the customer didn't change it. Its label is the one you sent, without the price.
+- Empty address fields come back as empty strings on Android and are left out on the Web.
+- `summary_items` are not sent back.
+- If you don't register a handler, the token doesn't include `shipping`.
+
+Use this object on your server to charge the final amount, validate the address, and ship the order.
+
+## What happens in each case
+
+| Handler registered | `summary_items` in session | `shipping_methods` in session | Google Pay sheet |
+|---|---|---|---|
+| No | No | No | Same as before (single total) |
+| No | Yes | – | Breakdown, no address updates |
+| No | – | Yes | Methods are ignored without the handler. A valid `summary_items` is still shown |
+| Yes | No | No | Address updates; totals change with your answers. No selector |
+| Yes | Yes | No | Breakdown first; your answers can update it |
+| Yes | – | Yes | Full experience: selector, instant method switches, and address updates |
+
+## Good to know
+
+- The addresses belong to the customer's Google account. In Google Pay's TEST environment you'll only see Google's test addresses; you can't add your own.
+- The sheet asks for a shipping address as soon as the handler is registered. Without a handler, it only asks when the shipping address is enabled as a required field in the Checkout Builder.
+- The selected method stays selected when the customer changes the address, unless you return new methods.
+- **Privacy:** the SDK never logs addresses, emails, or payment data.
+- Google Pay Pix (Brazil) is not affected.
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| Build fails at manifest merge after upgrading (Android) | Your `minSdkVersion` is below 23. |
+| The selector doesn't appear | The handler isn't registered on this flow start (on the Web, it wasn't registered when the button was rendered), two methods share an id, a method is invalid (each needs id, label, amount, and `summary_items` ending in the total), or a currency differs from the session. |
+| The breakdown doesn't appear | `summary_items` is invalid (no total, empty label, mixed currencies) or the total differs from the session amount. |
+| My handler is never called | On the Web, it was added after the button was rendered, or `externalButtons` wasn't passed to `startCheckout` or `startSeamlessCheckout`. Switching shipping method never calls it; change the address to test it. |
+| My handler runs but the sheet doesn't change | On the Web, the handler returns a plain object instead of a Promise; make it `async`. |
+| Methods returned by my handler don't appear, but the totals do | The session had no valid `shipping_methods`, so there is no selector to update. Send at least one valid method in the session. |
+| My methods replaced the session's when the sheet opened | Google calls your handler when the sheet opens, and your answer is applied. Return `null` on that call to keep the session's methods. |
+| Switching methods doesn't change the total | The methods have no `summaryItems`. Send a breakdown for each method. |
+| A method shows the total but no breakdown | Its `summary_items` has only the total. Add at least one line. |
+| My new total goes back to the old one when the customer switches method | You returned only `summaryItems` while the selector was shown. Return the full `shippingMethods` list instead. |
+| A customer paid with an address I rejected | Errors on the sheet don't block payment. Validate the address on your server when you create the payment. |
+| The sheet keeps the old totals after my answer | Your answer arrived after Google's time limit, `complete(...)` was called twice (Android), or a currency differs from the session. |
+| Delivery dates don't show | Google Pay doesn't display `delivery_estimate`. |
+
+## Related documentation
+
+* [Google Pay overview](/docs/google-pay)
+* [Setup and one-time payments](/docs/wallets/google-pay/google-pay-sdk-integration)
+* [Apple Pay SDK integration](/docs/wallets/apple-pay/apple-pay-sdk-integration)
+* [Web SDK reference: `externalButtons`](/docs/sdks/resources/references/web#express-button-styling-externalbuttons)
+* [Android SDK changelog](/changelog/android#v2-24-0) and [Web SDK changelog](/changelog/web#v1-10-8)
