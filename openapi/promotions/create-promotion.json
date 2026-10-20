@@ -44,7 +44,7 @@
     "/promotions": {
       "post": {
         "summary": "Create Promotion",
-        "description": "Creates a code promotion on the account of the `X-Account-Code` header. A customer redeems it when your server sends its code on a payment. The code is optional: send one of 3 to 32 characters, or leave `redemption.code` out and Yuno generates 16 random characters (upper-case hexadecimal) and returns the code in the answer. The generated code is not linked to the promotion id. Promotions must be enabled for your organization by Yuno before you can use this endpoint. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).",
+        "description": "Creates a code promotion on the account of the `X-Account-Code` header. A customer redeems it when your server sends its code on a payment. Send exactly one of `redemption.code` (a code of your own, 3 to 32 characters) and `redemption.prefix` (1 to 8 letters or digits). With a prefix, Yuno builds the code from the prefix and a random suffix of 4 characters, and returns the code in the answer. Promotions must be enabled for your organization by Yuno before you can use this endpoint. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).",
         "operationId": "create-promotion",
         "parameters": [
           {
@@ -135,7 +135,16 @@
                         ],
                         "minLength": 3,
                         "maxLength": 32,
-                        "description": "Optional. The code: 3 to 32 characters, `A-Z`, `0-9`, `_` and `-`, in any case. Yuno trims the spaces around it, stores it in upper case and matches the code of a payment without regard to case. Unique per account among the promotions that are not disabled and whose schedule overlaps this one: otherwise `409 CODE_ALREADY_EXISTS`. Omit it or send `null` and Yuno generates 16 random characters (upper-case hexadecimal: `0-9` and `A-F`) and returns the code in the answer. The generated code is not linked to the promotion id. A code that is empty or holds only spaces is refused with `redemption.code: REQUIRED`."
+                        "description": "A code of your own: 3 to 32 characters, `A-Z`, `0-9`, `_` and `-`, in any case. Yuno trims the spaces around it, stores it in upper case and matches the code of a payment without regard to case. Unique per account among the promotions that are not disabled and whose schedule overlaps this one: otherwise `409 CODE_ALREADY_EXISTS`. Send exactly one of `code` and `prefix`: neither answers `redemption: CODE_OR_PREFIX_REQUIRED` and both answer `redemption: CODE_AND_PREFIX_EXCLUSIVE`. A `null`, an empty text or a text with only spaces counts as not sent."
+                      },
+                      "prefix": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 8,
+                        "description": "The start of a code that Yuno builds: 1 to 8 letters or digits (`A-Z`, `a-z`, `0-9`). Yuno converts it to upper case and builds the code as the prefix and a random suffix of 4 characters from `A-Z` and `2-9`, without `0`, `O`, `1`, `I` and `L`, for example `SUMMERK7P2`. The `201` shows the code in `redemption.code`. A character outside `A-Z`, `a-z` and `0-9` answers `redemption.prefix: FORMAT`, and more than 8 characters `redemption.prefix: LENGTH`. Send exactly one of `code` and `prefix`. A `null`, an empty text or a text with only spaces counts as not sent.",
+                        "example": "SUMMER"
                       }
                     }
                   },
@@ -281,7 +290,7 @@
                     }
                   }
                 },
-                "Code left to Yuno": {
+                "A prefix, Yuno builds the code": {
                   "value": {
                     "name": "Summer 20",
                     "schedule": {
@@ -289,7 +298,8 @@
                       "ends_at": "2026-12-01T00:00:00Z"
                     },
                     "redemption": {
-                      "mode": "CODE"
+                      "mode": "CODE",
+                      "prefix": "SUMMER"
                     },
                     "discount": {
                       "type": "PERCENTAGE",
@@ -375,7 +385,7 @@
                       "disabled_at": null
                     }
                   },
-                  "A code promotion with a generated code": {
+                  "A code promotion built from a prefix": {
                     "value": {
                       "id": "00000000-0000-4000-8000-0000000000b2",
                       "account_id": "00000000-0000-4000-8000-0000000000a1",
@@ -387,7 +397,7 @@
                       },
                       "redemption": {
                         "mode": "CODE",
-                        "code": "7C41D0E9A2B35F68"
+                        "code": "SUMMERK7P2"
                       },
                       "discount": {
                         "type": "PERCENTAGE",
@@ -406,7 +416,7 @@
                       "created_at": "2026-10-16T15:04:05Z",
                       "disabled_at": null
                     },
-                    "summary": "The request had no redemption.code"
+                    "summary": "The request had a prefix"
                   }
                 },
                 "schema": {
@@ -465,7 +475,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "The code, in upper case: the code you sent, or the code Yuno generated when the request had none (16 random characters, `0-9` and `A-F`, not linked to the promotion `id`). `null` for an `AUTOMATIC` promotion."
+                          "description": "The code, in upper case: the code you sent, or the code Yuno built from your prefix (the prefix and a random suffix of 4 characters, for example `SUMMERK7P2`). `null` for an `AUTOMATIC` promotion."
                         }
                       }
                     },
@@ -708,14 +718,43 @@
                     },
                     "summary": "Code with more than 32 characters"
                   },
-                  "Blank code": {
+                  "Neither a code nor a prefix": {
                     "value": {
                       "code": "INVALID_REQUEST",
                       "messages": [
-                        "redemption.code: REQUIRED"
+                        "redemption: CODE_OR_PREFIX_REQUIRED",
+                        "Send exactly one of redemption.code or redemption.prefix."
                       ]
                     },
-                    "summary": "Code that is empty or holds only spaces"
+                    "summary": "No redemption.code and no redemption.prefix (null, empty or spaces count as not sent)"
+                  },
+                  "A code and a prefix": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "redemption: CODE_AND_PREFIX_EXCLUSIVE",
+                        "Send exactly one of redemption.code or redemption.prefix."
+                      ]
+                    },
+                    "summary": "Both redemption.code and redemption.prefix"
+                  },
+                  "Prefix with a bad character": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "redemption.prefix: FORMAT"
+                      ]
+                    },
+                    "summary": "Prefix with a character outside A-Z, a-z and 0-9"
+                  },
+                  "Prefix too long": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "redemption.prefix: LENGTH"
+                      ]
+                    },
+                    "summary": "Prefix with more than 8 characters"
                   },
                   "Code with a bad character": {
                     "value": {
@@ -897,7 +936,7 @@
             }
           },
           "500": {
-            "description": "500. The promotions service failed, or the request had no `redemption.code` and Yuno could not generate a code. Yuno stores nothing. Retry the request.",
+            "description": "500. The promotions service failed, or the request had a `redemption.prefix` and Yuno could not build a code. Yuno stores nothing. Retry the request.",
             "content": {
               "application/json": {
                 "examples": {

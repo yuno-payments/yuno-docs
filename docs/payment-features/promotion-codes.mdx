@@ -14,7 +14,7 @@ Until Yuno enables Promotions for your organization, the promotions endpoints an
 
 ## How it works
 
-1. **Create the promotion.** Call [Create Promotion](/reference/promotions/create-promotion) with `redemption.mode` set to `CODE`. You set the discount, the dates, the conditions, and, if you want a cap, the most uses (`limits.total`). You can set the code too. If you leave it out, Yuno generates one and returns it in the answer.
+1. **Create the promotion.** Call [Create Promotion](/reference/promotions/create-promotion) with `redemption.mode` set to `CODE`. You set the discount, the dates, the conditions, and, if you want a cap, the most uses (`limits.total`). You also send exactly one of two things: a code of your own (`redemption.code`), or a prefix (`redemption.prefix`). With a prefix, Yuno builds the code from it.
 2. **Collect the code.** Your customer gives you the code in your own checkout.
 3. **Send the code on the payment.** Add `{ "code": "SUMMER10" }` to `additional_data.order.discounts` on Create Payment, with the original `amount`.
 4. **Yuno charges the discounted price.** Yuno exchanges the code for a quote, counts one use of the code when the code applies, and charges the quoted amount. The answer is the one in [What the payment carries](/docs/payment-features/promotions#what-the-payment-carries).
@@ -87,23 +87,23 @@ What to know before you create one:
 
 To read a promotion, call [Retrieve Promotion](/reference/promotions/retrieve-promotion). To list the promotions of the account, newest first, call [List Promotions](/reference/promotions/list-promotions). The list also returns the account's `AUTOMATIC` promotions. [The Promotion Object](/reference/promotions/the-promotion-object) describes every field.
 
-### Let Yuno generate the code
+### Let Yuno build the code from a prefix
 
-`redemption.code` is optional. Leave it out, or send it as `null`, and Yuno generates 16 random characters (upper-case hexadecimal: `0-9` and `A-F`). The code is not linked to the promotion id. The answer holds it in `redemption.code`, and [Retrieve Promotion](/reference/promotions/retrieve-promotion) and [List Promotions](/reference/promotions/list-promotions) return the same code. This request has no code:
+Send exactly one of `redemption.code` and `redemption.prefix`. The prefix has 1 to 8 letters or digits (`A-Z`, `a-z`, `0-9`), in any case, and Yuno converts it to upper case. Yuno builds the code from it: the prefix, then a random suffix of 4 characters from `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (the letters and digits without `0`, `O`, `1`, `I` and `L`), with nothing between them. The code is not linked to the promotion `id`. The answer holds the code in `redemption.code`. This request sends a prefix:
 
-```json Request body, no code
+```json Request body, with a prefix
 {
     "name": "Summer 20",
     "schedule": {
         "starts_at": "2026-11-01T00:00:00Z",
         "ends_at": "2026-12-01T00:00:00Z"
     },
-    "redemption": { "mode": "CODE" },
+    "redemption": { "mode": "CODE", "prefix": "SUMMER" },
     "discount": { "type": "PERCENTAGE", "value": 20 }
 }
 ```
 
-```json Response (201), with the generated code
+```json Response (201), with the code Yuno built
 {
     "id": "00000000-0000-4000-8000-0000000000b2",
     "account_id": "00000000-0000-4000-8000-0000000000a1",
@@ -113,7 +113,7 @@ To read a promotion, call [Retrieve Promotion](/reference/promotions/retrieve-pr
         "starts_at": "2026-11-01T00:00:00Z",
         "ends_at": "2026-12-01T00:00:00Z"
     },
-    "redemption": { "mode": "CODE", "code": "7C41D0E9A2B35F68" },
+    "redemption": { "mode": "CODE", "code": "SUMMERK7P2" },
     "discount": { "type": "PERCENTAGE", "value": 20, "amounts": null },
     "conditions": {
         "bins": null,
@@ -129,11 +129,12 @@ To read a promotion, call [Retrieve Promotion](/reference/promotions/retrieve-pr
 }
 ```
 
-* **A replay returns the same code.** The same `X-Idempotency-Key` on the same account returns the first promotion with `201` and the code Yuno generated for it. The replay keeps that code and stores nothing.
-* **A blank code is not an omitted code.** A `code` that is empty or holds only spaces is refused with `400 INVALID_REQUEST` and the message `redemption.code: REQUIRED`. Yuno generates nothing for it.
-* **A generated code follows the rule of a code you send.** It is unique per account among the promotions that are not disabled and whose schedule overlaps, and a create without a code never answers `409 CODE_ALREADY_EXISTS`. If the code Yuno generates is taken, Yuno generates another one.
-* **You can't change the code.** A promotion can't be edited, and its code is part of it, whether Yuno generated the code or you sent it. To get another code, disable the promotion and create a new one.
-* **If Yuno can't generate a code, the create fails.** The answer is `500 INTERNAL_ERROR`, and Yuno stores nothing. The failure is on Yuno's side: retry the request.
+* **Send a code or a prefix, not both and not none.** A body with neither answers `400 INVALID_REQUEST` with the messages `redemption: CODE_OR_PREFIX_REQUIRED` and `Send exactly one of redemption.code or redemption.prefix.`. A body with both answers `redemption: CODE_AND_PREFIX_EXCLUSIVE` with the same second message. A `null`, an empty text and a text with only spaces count as not sent. A `code` that is not valid, sent with a prefix, counts as both.
+* **A wrong prefix is refused.** A character outside `A-Z`, `a-z` and `0-9` answers `redemption.prefix: FORMAT`. More than 8 characters answers `redemption.prefix: LENGTH`.
+* **A create with a prefix never answers `409 CODE_ALREADY_EXISTS`.** That answer is for a code you send. If the code Yuno draws is taken, Yuno draws another, up to six draws. If none of the six is free, the create fails (see below).
+* **A replay returns the same code.** The same `X-Idempotency-Key` on the same account returns the first promotion with `201` and the code Yuno built for it. The replay keeps that code and stores nothing.
+* **You can't change the code.** A promotion can't be edited, so its code can't change either. To get another code, disable the promotion and create a new one.
+* **If Yuno can't build a code, the create fails.** The answer is `500 INTERNAL_ERROR`, and Yuno stores nothing. The failure is on Yuno's side: retry the request.
 
 ## Send the code on the payment
 

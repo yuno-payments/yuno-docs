@@ -1,7 +1,7 @@
 ---
 title: "Create Promotion"
 openapi: "/openapi/promotions/create-promotion.json POST /promotions"
-description: "Creates a code promotion: a code you send or one Yuno generates, a discount, a date window, the conditions a payment must meet and, optionally, the most uses."
+description: "Creates a code promotion: a code you send or one Yuno builds from your prefix, a discount, a date window, the conditions a payment must meet and, optionally, the most uses."
 noindex: true
 ---
 
@@ -23,9 +23,9 @@ This endpoint creates code promotions. A customer redeems one when your server s
 
 * **The account comes from the `X-Account-Code` header.** The promotion belongs to that account. A body that carries `account_id` is refused with `400 INVALID_PARAMETERS`, and so is a body that repeats `redemption` or one of its members (names are compared without regard to case).
 * **`X-Idempotency-Key` is required.** It is any text of 1 to 64 characters. The same key on the same account returns the first promotion with `201`, and Yuno does not compare the body. A request that is not valid is refused with `400` before the key is read.
-* **`redemption.mode` is `CODE`** and `redemption.code` is optional.
+* **`redemption.mode` is `CODE`** and you send exactly one of `redemption.code` and `redemption.prefix`. Neither answers `400 INVALID_REQUEST` with `redemption: CODE_OR_PREFIX_REQUIRED`, and both answer `redemption: CODE_AND_PREFIX_EXCLUSIVE`. Each answer adds the message `Send exactly one of redemption.code or redemption.prefix.`. A `null`, an empty text and a text with only spaces count as not sent. A `redemption.code` that is not valid, sent with a prefix, counts as both.
 * **A code you send has 3 to 32 characters:** letters, digits, `_` and `-`, in any case. Yuno trims the spaces around it and stores it in upper case. A code with a character outside that set answers `redemption.code: CODE_CHARACTERS`, and one of the wrong length `redemption.code: CODE_LENGTH`.
-* **A code you leave out is generated.** Leave `redemption.code` out, or send `null`, and Yuno generates 16 random characters (upper-case hexadecimal: `0-9` and `A-F`). The code is not linked to the promotion `id`. The `201` shows it in `redemption.code`. The same `X-Idempotency-Key` returns the same promotion with the same code. If the code Yuno generates is already taken on the account (the uniqueness rule below), Yuno generates another one, so a create without a code never answers `409 CODE_ALREADY_EXISTS`. A `code` that is empty or holds only spaces is not an omitted code: it answers `redemption.code: REQUIRED`, and Yuno generates nothing. If Yuno can't generate a code, the create fails with `500 INTERNAL_ERROR` and Yuno stores nothing. The failure is on Yuno's side: retry the request.
+* **A prefix builds the code.** The prefix has 1 to 8 letters or digits (`A-Z`, `a-z`, `0-9`). Yuno converts it to upper case and builds the code as the prefix and a random suffix of 4 characters from `A-Z` and `2-9`, without `0`, `O`, `1`, `I` and `L`. For example, the prefix `SUMMER` can give `SUMMERK7P2`. The `201` shows the code in `redemption.code`. A character outside `A-Z`, `a-z` and `0-9` answers `redemption.prefix: FORMAT`, and more than 8 characters answers `redemption.prefix: LENGTH`. A create with a prefix never answers `409 CODE_ALREADY_EXISTS`. The same `X-Idempotency-Key` returns the same promotion with the same code. If Yuno can't build a code, the create fails with `500 INTERNAL_ERROR` and Yuno stores nothing: retry the request.
 * **A code is unique per account.** Another promotion of the account that is not disabled, with a schedule that overlaps the new one, cannot hold the same code: the request answers `409 CODE_ALREADY_EXISTS`. A code is free again when the earlier promotion is disabled, or when its schedule ends at or before the start of the new one.
 * **Conditions are `countries` and `amounts`.** A code applies to the whole payment, whatever the payment method. A `bins`, `payment_methods` or `card_types` condition answers `400 INVALID_REQUEST` with `conditions.bins: FORBIDDEN`, `conditions.payment_methods: FORBIDDEN` or `conditions.card_types: FORBIDDEN`.
 * **`limits.total` is optional.** It is the most uses the code accepts, a whole number from 1 to 2147483647. A promotion with no `limits` has no cap, and its response shows `limits: null`. Yuno counts a use when a payment takes the code. See [Uses and limits](/docs/payment-features/promotion-codes#uses-and-limits).
@@ -33,6 +33,6 @@ This endpoint creates code promotions. A customer redeems one when your server s
 
 ## What the answer holds
 
-`201` returns the promotion, as [The Promotion Object](/reference/promotions/the-promotion-object) describes it, with `status` computed from `schedule` and `limits.used` at `0`. Every member is present, with `null` for an absent value. `redemption.code` holds the code, whether you sent it or Yuno generated it.
+`201` returns the promotion, as [The Promotion Object](/reference/promotions/the-promotion-object) describes it, with `status` computed from `schedule` and `limits.used` at `0`. Every member is present, with `null` for an absent value. `redemption.code` holds the code, whether you sent it or Yuno built it from your prefix.
 
 Two kinds of `400` exist. `INVALID_PARAMETERS` comes from the checks Yuno makes before it reads the promotion: the headers, `account_id`, `redemption.mode`. `INVALID_REQUEST` comes from the rules of the promotion itself, with one `path: RULE` message for each failed path, in the order of the checks. [Promotion Error Codes](/reference/promotions/promotion-error-codes) lists them.
