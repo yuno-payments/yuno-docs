@@ -187,6 +187,156 @@ await yuno.startPayment();
 </Tab>
 </Tabs>
 
+### Lite checkout with several payment methods
+
+In Lite checkout your page owns the payment method list and the SDK renders one method at a time. To offer Fast Payments next to cards and other methods, mount the method the shopper selects and keep one Pay button on your page. Four rules decide the integration:
+
+* **One mounted method at a time.** `mountCheckoutLite` renders the chosen method's form into `renderMode.elementSelector.apmForm` (element mode) or into a modal. Calling it again with another `paymentMethodType` replaces the previous form, so typed data and validation state never carry over from one method to the next.
+* **Your Pay button.** With `showPayButton: false` the card and other-method forms render no button of their own. `onChange` tells you when the mounted form is complete, and `yuno.submitOneTimeTokenForm()` submits it.
+* **Mercado Pago confirms inside its own component.** The Fast Payments component keeps its *Continue* and *Pay* buttons, and `showPayButton` and `submitOneTimeTokenForm()` do not apply to it. In element mode, hide your Pay button while Mercado Pago is selected.
+* **A method with nothing to ask pays on mount.** When a method renders no form, the SDK creates the one-time token and calls `createPayment` as soon as the method mounts. Mount those methods when the shopper presses Pay, not when they select the method.
+
+<Tabs>
+<Tab title="Element render mode">
+
+```html
+<fieldset id="payment-methods">
+  <label><input type="radio" name="payment-method" value="MERCADO_PAGO_SUPERTOKEN" /> Mercado Pago</label>
+  <label><input type="radio" name="payment-method" value="CARD" /> Card</label>
+  <label><input type="radio" name="payment-method" value="PIX" /> Pix</label>
+</fieldset>
+
+<div id="yuno-root"></div>
+<div id="payment-form"></div>   <!-- the selected method's form renders here -->
+<div id="action-form"></div>    <!-- 3DS and other actions render here -->
+<button id="pay-button" type="button" disabled>Pay</button>
+```
+
+```javascript
+// Web SDK v1.11.21+
+const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
+
+const payButton = document.querySelector('#pay-button');
+let selectedType = null;
+let formIsValid = false;
+
+await yuno.startCheckout({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  elementSelector: '#yuno-root',
+  countryCode: 'BR',
+  renderMode: {
+    type: 'element',
+    elementSelector: {
+      apmForm: '#payment-form',
+      actionForm: '#action-form',
+    },
+  },
+  // Card and other-method forms render no Pay button; yours submits them
+  showPayButton: false,
+  onChange: ({ form }) => {
+    formIsValid = form.isValid;
+    refreshPayButton();
+  },
+  async createPayment(oneTimeToken, tokenWithInformation) {
+    // Create the payment from your backend with the one-time token
+    await createPaymentOnYourServer({ oneTimeToken, checkoutSession: 'CHECKOUT_SESSION_ID' });
+    await yuno.continuePayment();
+  },
+  paymentResult(status) {
+    console.log('Payment result:', status);
+  },
+  error(message, data) {
+    console.error('Error:', message, data);
+  },
+});
+
+// Methods that render a form: mount on selection, submit from your Pay button.
+// A method that asks nothing (Pix on this connection) creates the token as soon
+// as it mounts, so it is mounted from the Pay button instead.
+const MOUNT_ON_SELECTION = ['MERCADO_PAGO_SUPERTOKEN', 'CARD'];
+
+async function selectMethod(type) {
+  selectedType = type;
+  formIsValid = false;
+  if (MOUNT_ON_SELECTION.includes(type)) {
+    // Mounting another type replaces the previous form and its validation state
+    await yuno.mountCheckoutLite({ paymentMethodType: type });
+    await yuno.startPayment();
+  } else {
+    // Remove the previous method's form; Pix mounts when the shopper presses Pay
+    await yuno.unmountSdk();
+  }
+  refreshPayButton();
+}
+
+function refreshPayButton() {
+  // Mercado Pago confirms inside its own component
+  payButton.hidden = selectedType === 'MERCADO_PAGO_SUPERTOKEN';
+  // Disable only while a mounted form is incomplete
+  payButton.disabled = MOUNT_ON_SELECTION.includes(selectedType) && !formIsValid;
+}
+
+document.querySelectorAll('input[name="payment-method"]').forEach((radio) => {
+  radio.addEventListener('change', () => selectMethod(radio.value));
+});
+
+payButton.addEventListener('click', async () => {
+  if (MOUNT_ON_SELECTION.includes(selectedType)) {
+    await yuno.submitOneTimeTokenForm();
+    return;
+  }
+  await yuno.mountCheckoutLite({ paymentMethodType: selectedType });
+  await yuno.startPayment();
+});
+```
+
+The Mercado Pago component renders into `#payment-form` as soon as it mounts: the saved methods when the shopper is eligible, or the unavailable message described in [Lite checkout](#lite-checkout) when Mercado Pago cannot be used. In that case the shopper selects another method from your list and the next mount replaces the message.
+
+</Tab>
+<Tab title="Modal render mode">
+
+In modal render mode (the default) the SDK opens the method's modal as soon as it mounts, and the modal carries the SDK's own Pay button. Mount on the Pay click instead of on selection, keep `showPayButton` at its default, and closing the modal unmounts the method:
+
+```javascript
+// Web SDK v1.11.21+
+const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
+
+let selectedType = null;
+
+await yuno.startCheckout({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  elementSelector: '#yuno-root',
+  countryCode: 'BR',
+  // renderMode defaults to { type: 'modal' }
+  async createPayment(oneTimeToken, tokenWithInformation) {
+    await createPaymentOnYourServer({ oneTimeToken, checkoutSession: 'CHECKOUT_SESSION_ID' });
+    await yuno.continuePayment();
+  },
+  paymentResult(status) {
+    console.log('Payment result:', status);
+  },
+  error(message, data) {
+    console.error('Error:', message, data);
+  },
+});
+
+document.querySelectorAll('input[name="payment-method"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    selectedType = radio.value;
+  });
+});
+
+document.querySelector('#pay-button').addEventListener('click', async () => {
+  await yuno.mountCheckoutLite({ paymentMethodType: selectedType });
+  await yuno.startPayment();
+});
+```
+
+Mercado Pago opens as a modal with the shopper's saved methods, or with the unavailable message; the shopper closes it and picks another method from your list.
+
+</Tab>
+</Tabs>
+
 ### One-time token and payment creation
 
 When the shopper confirms, the SDK's one-time token carries the Mercado Pago details for you:
