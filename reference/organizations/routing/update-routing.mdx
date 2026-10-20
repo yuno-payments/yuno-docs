@@ -10,12 +10,18 @@ Replaces the routing's full configuration. The body has the same shape as [Creat
 
 This applies to percentage splits too: a condition set sent without `start_split` goes back to a single entry on step 1, and an output sent without `next_split` keeps only the `next` it declares. Retrieve the routing first if you want to keep the splits it already has.
 
-Two things are kept rather than replaced:
+Not everything the body leaves out is removed. What happens to each part the request omits:
 
-- An output sent **without** `retry` keeps the `retry` value already stored for that position. Send `retry: false` to turn a retry off.
-- A stored `CAPTURE` or `HOLD_FOR_REVIEW` step is kept when the request leaves it out and the output it hung from is sent without `next`; a `CAPTURE` sent without `action_delay` keeps the stored delay. Point that output at another step to remove the action, or send the step with its new `action_delay` to change it.
-- A fraud step sent without `fraud` keeps its stored configuration; sent with it, the six fields are replaced.
-- Steps and settings the API does not return — the `REFUND`, `DECLINE` and `END` actions, the per-step provider settings and the monitors — stay exactly as stored, so sending back what [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) gave you keeps the routing as it was. Change those parts in the dashboard. See [What the API does not show](/reference/organizations/routing/routing-resource-shape#what-the-api-does-not-show).
+| Omitted in the request | Result |
+|---|---|
+| `retry` on an output | Kept as stored for that position. Send `retry: false` to turn a retry off. |
+| A stored `CAPTURE` or `HOLD_FOR_REVIEW` step, with the output it hung from sent without `next` | Kept and attached again. Omitting it does **not** remove an auto-capture; point that output at another step instead. |
+| `action_delay` on a `CAPTURE` step | Kept as stored. Send the step with its new `action_delay` to change it. |
+| `fraud` on a fraud step | Kept as stored. Sent with it, the six fields are replaced. |
+| A stored smart routing step | **Removed.** The smart routing step belongs to the request: a body that does not carry it, for example one retrieved before smart routing was visible on this API, deletes it. Retrieve the routing first and send the step back. |
+| A `CANCEL` or `REVERT` step | Removed, like any other step the body does not carry. |
+| `start_split` / `next_split` | Reset: a condition set sent without `start_split` goes back to a single entry on step 1, an output sent without `next_split` keeps only its `next`. |
+| Parts the API does not return (`REFUND`, `DECLINE` and `END` actions, per-step provider settings, monitors) | Kept exactly as stored, so sending back what [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) gave you keeps the routing as it was. Change those parts in the dashboard. See [What the API does not show](/reference/organizations/routing/routing-resource-shape#what-the-api-does-not-show). |
 
 ### Path Parameters
 
@@ -220,7 +226,7 @@ curl -X PATCH 'https://api.y.uno/v1/routing/r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e
           { "status": "INTERNAL_ERROR", "next": 2, "retry": false }
         ]
       },
-      { "index": 2, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-...", "output": [] }
+      { "index": 2, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-...", "output": [{ "status": "APPROVED", "next": null, "decline_types": null, "retry": false }, { "status": "INTERNAL_ERROR", "next": null, "decline_types": null, "retry": false }] }
     ]
   },
   "condition_sets": [
@@ -232,7 +238,7 @@ curl -X PATCH 'https://api.y.uno/v1/routing/r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e
           "currency": "USD", "limit_by": "VOLUME", "payments_count": "ALL",
           "time_period_repeat_amount": 1, "time_period_repeat_frequency": "MONTHLY", "timezone": "-03:00" }
       ],
-      "route": { "steps": [ { "index": 1, "provider_id": "DLOCAL", "connection_id": "c3d5e6f7-...", "output": [] } ] }
+      "route": { "steps": [ { "index": 1, "provider_id": "DLOCAL", "connection_id": "c3d5e6f7-...", "output": [{ "status": "APPROVED", "next": null, "decline_types": null, "retry": false }, { "status": "INTERNAL_ERROR", "next": null, "decline_types": null, "retry": false }] } ] }
     },
     {
       "sort_number": 2,
@@ -243,7 +249,7 @@ curl -X PATCH 'https://api.y.uno/v1/routing/r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e
           "time_period_repetition_days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
           "time_period_start_time": "09:00:00", "time_period_end_time": "18:00:00", "timezone": "-03:00" }
       ],
-      "route": { "steps": [ { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-...", "output": [] } ] }
+      "route": { "steps": [ { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-...", "output": [{ "status": "APPROVED", "next": null, "decline_types": null, "retry": false }, { "status": "INTERNAL_ERROR", "next": null, "decline_types": null, "retry": false }] } ] }
     }
   ],
   "created_at": "2026-05-12T14:30:00Z",
@@ -274,6 +280,7 @@ curl -X PATCH 'https://api.y.uno/v1/routing/r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e
 | --- | --- |
 | `404` | `ROUTING_NOT_FOUND`<br />Unknown `routing_id`, or id belongs to a different account. |
 | `400` | `INVALID_PARAMETERS`<br />A field is missing or has an invalid value: a step with neither `provider_id` nor `action`, a `status` or `action` outside their enums, an `action_delay` on a step that is not `CAPTURE`, a malformed `group_id`. `messages` names the offending field. |
+| `400` | `INVALID_FORMAT`<br />A field has the wrong type or format: `time_period_start_time` / `time_period_end_time` not `HH:mm:ss`, a date in `values` of a `TIME_PERIOD` condition not ISO-8601, `time_period_repeat_amount` or `sort_number` not an integer, `retry` not a boolean. `messages` names the field. |
 | `400` | `INVALID_ROUTE_CONFIGURATION`<br />Route rule violation: non-contiguous step indexes, a `next` or split branch to a missing step, a split that does not sum to 100 or leaves a step unreachable, a `CAPTURE` or `HOLD_FOR_REVIEW` step not reached only from `APPROVED`, an `action_delay` under 1 minute or above 7 days, `retry` on a status that does not support it, a `group_id` that is unknown, of another account or of the wrong kind, `decline_types` that do not match the group, a condition that breaks a rule of its `condition_type`, or a `connection_id` not found for the account and provider. `messages` explains which rule. |
 | `400` | `INVALID_VOLUME_LIMIT_CURRENCY`, `INVALID_VOLUME_LIMIT_PERIOD`, `UNSUPPORTED_VOLUME_LIMIT_TIMEZONE`<br />A `VOLUME_PAYMENTS_LIMIT` condition with an invalid currency, period or timezone. See [Volume and count limits](/reference/organizations/routing/routing-conditions#volume-and-count-limits-volume_payments_limit). |
 | `400` | `INVALID_PROVIDER_ID`<br />`provider_id` has an invalid format. |

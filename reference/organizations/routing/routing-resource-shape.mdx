@@ -245,15 +245,15 @@ An action step ends the route with an action instead of calling a provider. It h
 
 - Only with `action = CAPTURE`; on any other step it is rejected.
 - ISO-8601 duration (`PT5M`, `PT3H`, `P2D`, `P1W`), at least **1 minute** (`PT1M`) and at most **7 days** (`P7D`).
-- A delay shorter than one minute runs as one minute. Omit it to capture as soon as the approval is processed (about one minute).
+- Omit it to capture as soon as the approval is processed (about one minute).
 
 A step that breaks these placement rules is rejected with `400 INVALID_ROUTE_CONFIGURATION`; `messages` names the step and the rule (`step index=N with action=CAPTURE must be reached only from an APPROVED or SUCCEEDED_GROUP output of a payment step`, `... action=REVERT must be reached only from an output of a fraud step that runs after the payment`, `... action=CANCEL must not be reached from an APPROVED or SUCCEEDED_GROUP output of a payment step`). A `CAPTURE`, `HOLD_FOR_REVIEW` or `REVERT` step placed as the route entry or inside a `start_split` is rejected too.
 
-On [Update a Routing](/reference/organizations/routing/update-routing), a stored `CAPTURE` or `HOLD_FOR_REVIEW` step is kept when the request leaves it out and the output it hung from is sent without `next`, and a `CAPTURE` step sent without `action_delay` keeps the stored delay, the same "stored wins" rule as `retry`. To change the capture, send the step with its new `action_delay`; to remove it, point that output at another step.
+On [Update a Routing](/reference/organizations/routing/update-routing), a stored `CAPTURE` or `HOLD_FOR_REVIEW` step is kept when the request leaves it out and the output it hung from is sent without `next`, and a `CAPTURE` step sent without `action_delay` keeps the stored delay, the same "stored wins" rule as `retry`. To change the capture, send the step with its new `action_delay`; to remove it, point that output at another step. Leaving the step out of the request does not remove it.
 
 ### Smart routing steps
 
-A smart routing step lets Yuno pick the provider per payment among a set of connections, by cost or by latency, instead of fixing one. It is the API form of the dashboard's Smart Routing box.
+A smart routing step lets Yuno pick the provider per payment among a set of connections, by cost or by latency, instead of fixing one. It is the API form of the dashboard's Smart Routing box. Unlike `CAPTURE` and `HOLD_FOR_REVIEW`, the step belongs to the request: an update that does not carry it removes it, so retrieve the routing first and send the step back when you change something else. See [Update a Routing](/reference/organizations/routing/update-routing).
 
 ```json
 {
@@ -324,5 +324,5 @@ Update a Routing replaces the full configuration, splits included. A condition s
 A few things the dashboard can configure have no representation here: the `REFUND`, `DECLINE` and `END` actions (not step actions in the dashboard either), the per-step provider settings (timeout, network token, 3DS exemptions) and the monitors, and an action step placed where the [placement rules](#action-steps) do not allow it.
 
 - [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) leaves those steps and branches out of the response.
-- [Update a Routing](/reference/organizations/routing/update-routing) does **not** delete them: what the response cannot show is kept exactly as stored, grafted onto the step it hung from, so a retrieve → update round trip keeps the routing as it was. The per-step provider settings follow the provider step with the same `provider_id` and `connection_id`; if you replace that connection, they go with it. A stored layout the merge cannot re-attach safely (the route enters on a hidden step, an output splits traffic between a hidden and a visible step, or a hidden step continues to a visible provider) is rejected with `400 INVALID_ROUTE_CONFIGURATION` and a message that ends with "Edit this routing in the dashboard".
+- [Update a Routing](/reference/organizations/routing/update-routing) does **not** delete them: what the response cannot show is kept exactly as stored, grafted onto the step it hung from, so a retrieve → update round trip keeps the routing as it was. One exception: a currency condition built in the dashboard with an operator other than `EQUAL` or with several currencies has no `AMOUNT` form; it reads back as raw `CURRENCY_AND_AMOUNT` rows and an update that sends them back is rejected with `400 INVALID_ROUTE_CONFIGURATION`. Edit that condition in the dashboard, or replace it with an `AMOUNT` condition on a single `currency`. The per-step provider settings follow the provider step with the same `provider_id` and `connection_id`; if you replace that connection, they go with it. A stored layout the merge cannot re-attach safely (the route enters on a hidden step, an output splits traffic between a hidden and a visible step, or a hidden step continues to a visible provider) is rejected with `400 INVALID_ROUTE_CONFIGURATION` and a message that ends with "Edit this routing in the dashboard".
 - To change any of those parts, use the dashboard.
