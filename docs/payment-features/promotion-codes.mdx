@@ -309,7 +309,14 @@ When a code does not become a quote, no payment is created and the answer says w
 | `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_DISCOUNT` | The promotion gives no discount on this amount. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_CHARGE` | The code applies and the payment would be charged zero or less. Yuno counts no use. |
 | `422` | `PROMOTION_NOT_APPLICABLE` | `PROMOTIONS_NOT_ENABLED` | Promotions is not enabled for your organization. |
-| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | Promotions is temporarily disabled by Yuno, the promotions service did not answer in time or answered with an error, or an automatic promotion wins the selection and would leave a charge of zero. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | The code could not be checked, so no payment was created. Two kinds of cause share this reason: transient ones, to retry later, and an automatic promotion that leaves a charge of zero, which a retry does not change. See the note after this table. |
+
+**`ENGINE_UNAVAILABLE` covers two causes, and the answer does not say which one it is.** Both come back with the same `reason` and the same message.
+
+* **Transient: retry later.** The promotions service did not answer in time, answered with an error, or Promotions is temporarily disabled by Yuno. Retry the same payment later.
+* **Not transient: a retry gets the same answer.** An automatic promotion wins the selection for this payment and would leave a charge of zero. Send the payment **without the code**. A payment with no code is charged in full, and the promotion check does not refuse it.
+
+The message says `Try again.` for both causes, so it does not tell you which one to retry. If the same payment still gets `ENGINE_UNAVAILABLE` after you retry later, send it without the code. The customer then pays the full price and loses the discount of that code for that payment.
 
 ```json Code that reached its limit (422)
 {
