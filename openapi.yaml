@@ -9215,7 +9215,10 @@ paths:
               properties:
                 merchant_customer_id:
                   type: string
-                  description: The unique identifier of the customer in the external merchant (MAX 255; MIN 3).
+                  description: >-
+                    The unique identifier of the customer in the external merchant (MAX 255; MIN 3). Unique per
+                    organization, not per account: reusing an id already used by another account in the same
+                    organization returns CUSTOMER_ID_DUPLICATED.
                 merchant_customer_created_at:
                   type: string
                   description: >-
@@ -17450,6 +17453,13 @@ paths:
                           format: uuid
                         name:
                           type: string
+                        status:
+                          type: string
+                          enum:
+                            - ACTIVE
+                            - SUSPENDED
+                          readOnly: true
+                          description: Read-only. `SUSPENDED` while the account is suspended, `ACTIVE` otherwise.
                         created_at:
                           type: string
                           format: date-time
@@ -17513,6 +17523,13 @@ paths:
                   account_group_id:
                     type: string
                     format: uuid
+                  status:
+                    type: string
+                    enum:
+                      - ACTIVE
+                      - SUSPENDED
+                    readOnly: true
+                    description: Read-only. `SUSPENDED` while the account is suspended, `ACTIVE` otherwise.
                   created_at:
                     type: string
                     format: date-time
@@ -17597,6 +17614,13 @@ paths:
                           format: uuid
                         name:
                           type: string
+                        status:
+                          type: string
+                          enum:
+                            - ACTIVE
+                            - SUSPENDED
+                          readOnly: true
+                          description: Read-only. `SUSPENDED` while the account is suspended, `ACTIVE` otherwise.
                         created_at:
                           type: string
                           format: date-time
@@ -17649,6 +17673,13 @@ paths:
                   account_group_id:
                     type: string
                     format: uuid
+                  status:
+                    type: string
+                    enum:
+                      - ACTIVE
+                      - SUSPENDED
+                    readOnly: true
+                    description: Read-only. `SUSPENDED` while the account is suspended, `ACTIVE` otherwise.
                   created_at:
                     type: string
                     format: date-time
@@ -17694,6 +17725,13 @@ paths:
                   account_group_id:
                     type: string
                     format: uuid
+                  status:
+                    type: string
+                    enum:
+                      - ACTIVE
+                      - SUSPENDED
+                    readOnly: true
+                    description: Read-only. `SUSPENDED` while the account is suspended, `ACTIVE` otherwise.
                   created_at:
                     type: string
                     format: date-time
@@ -17705,7 +17743,9 @@ paths:
     delete:
       summary: Delete Account
       operationId: delete-account
-      description: Disables an account.
+      description: >-
+        Deletes an account. Deleting is permanent: the account is no longer listed or retrievable by id, and the API
+        cannot restore it.
       parameters:
         - name: account_id
           in: path
@@ -17715,16 +17755,8 @@ paths:
             format: uuid
           description: Account UUID.
       responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Account disabled successfully
+        '204':
+          description: No Content — the account was deleted.
       tags:
         - Organizations
   /organizations/authenticate:
@@ -92274,12 +92306,18 @@ paths:
                       format: int32
                 billing_cycles:
                   type: object
-                  description: Specifies the `billing_cycles` object. Defines the number of charges associated to the subscription.
+                  description: >-
+                    Specifies the `billing_cycles` object. Defines the number of charges associated to the subscription.
+                    If omitted, the subscription has no cycle limit and keeps billing until it is canceled or reaches
+                    `availability.finish_at`, if one is set.
                   properties:
                     total:
                       type: integer
-                      description: The total number of billing cycles for the subscription (MIN 1).
+                      description: >-
+                        The total number of billing cycles for the subscription (MIN 1). Values lower than 1 are
+                        rejected with a `400` error.
                       format: int32
+                      minimum: 1
                 customer_payer:
                   type: object
                   description: >-
@@ -94302,9 +94340,12 @@ paths:
                     total:
                       type: integer
                       description: >-
-                        The total number of billing cycles for the subscription. On update, must be greater than or
-                        equal to the current `billing_cycles.current`; a lower value is rejected with 400.
+                        The total number of billing cycles for the subscription (MIN 1). On update it must also be
+                        greater than or equal to the current `billing_cycles.current`. A value below either limit is
+                        rejected with a `400` error. Sending `null`, or omitting this field, leaves the current value
+                        unchanged; clearing a previously set cycle limit is not supported.
                       format: int32
+                      minimum: 1
                 customer_payer:
                   type: object
                   description: Specifies the `customer_payer` object to identify the customer.
