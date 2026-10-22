@@ -56,7 +56,9 @@ tags:
 paths:
   /banking/accounts:
     post:
-      description: ''
+      description: >-
+        Creates a bank account for an onboarded entity. An onboarding of type PREVIOUSLY_ONBOARDED cannot create an
+        account today: the API answers 500 PROVIDER_ACCOUNT_CREATION_FAILED.
       responses:
         '200':
           description: ''
@@ -4167,7 +4169,7 @@ paths:
                   status:
                     type: string
                     example: PENDING
-                  direction:
+                  transfer_type:
                     type: string
                     example: OUTGOING
                   destination_account:
@@ -4224,7 +4226,7 @@ paths:
                       account_id: col_bank_account_789
                       transfer_id: col_transfer_xyz123
                     status: PENDING
-                    direction: OUTGOING
+                    transfer_type: OUTGOING
                     destination_account:
                       account_number_last_4: '3210'
                       routing_number: '987654321'
@@ -4488,7 +4490,7 @@ paths:
                       account_id: col_bank_account_789
                       transfer_id: col_transfer_xyz123
                     status: PENDING
-                    direction: OUTGOING
+                    transfer_type: OUTGOING
                     destination_account:
                       account_number_last_4: '3210'
                       routing_number: '987654321'
@@ -4517,7 +4519,7 @@ paths:
                       account_id: col_bank_account_789
                       transfer_id: col_transfer_xyz123
                     status: COMPLETED
-                    direction: OUTGOING
+                    transfer_type: OUTGOING
                     destination_account:
                       account_number_last_4: '3210'
                       routing_number: '987654321'
@@ -8809,7 +8811,9 @@ paths:
     delete:
       summary: Delete a Connection
       operationId: delete-connection
-      description: Deletes a connection. The connection moves to DELETED status and stops being available to routing.
+      description: >-
+        Deletes a connection. Known issue: the call returns 204, but retrieving the connection afterwards still returns
+        ACTIVE.
       parameters:
         - name: connection_id
           in: path
@@ -16767,6 +16771,7 @@ paths:
           description: The checkout session identifier (UUID, 36 chars).
           schema:
             type: string
+            example: 9f1c2b7e-5a3d-4e8b-9c6a-1d2e3f4a5b6c
         - name: country_code
           in: query
           description: Country code ([ISO 3166-1](/reference/country-reference)).
@@ -16982,13 +16987,6 @@ paths:
                   examples:
                     - false
             examples:
-              default:
-                value:
-                  vaulted_token: 9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70
-                  country: US
-                  amount:
-                    currency: USD
-                    value: 49.99
               cryptogram_only:
                 summary: Cryptogram-only (no PCI certification required)
                 value:
@@ -16998,6 +16996,13 @@ paths:
                     currency: USD
                     value: 49.99
                   include_network_token: false
+              default:
+                value:
+                  vaulted_token: 9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70
+                  country: US
+                  amount:
+                    currency: USD
+                    value: 49.99
       responses:
         '201':
           description: Cryptogram generated.
@@ -20508,6 +20513,11 @@ paths:
                     code: INVALID_REQUEST
                     messages:
                       - Invalid request
+                Organization not enrolled:
+                  value:
+                    code: BAD_REQUEST
+                    messages:
+                      - organization is not enrolled in account updater.
               schema:
                 type: object
                 properties:
@@ -20540,27 +20550,6 @@ paths:
                     items:
                       type: string
                       example: Invalid credentials
-        '403':
-          description: '403'
-          content:
-            application/json:
-              examples:
-                Forbidden:
-                  value:
-                    code: AUTHORIZATION_REQUIRED
-                    messages:
-                      - The merchant has no authorization to use this API.
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: string
-                    example: AUTHORIZATION_REQUIRED
-                  messages:
-                    type: array
-                    items:
-                      type: string
-                      example: The merchant has no authorization to use this API.
       deprecated: false
       tags:
         - Payment Methods Direct Workflow
@@ -79512,14 +79501,14 @@ paths:
                   account_id: '{{account_id}}'
                   merchant_reference: MR-Test-123
                   description: Test
-                  country: US
+                  country: CO
                   purpose: EXPENSES
                   amount:
-                    currency: USD
-                    value: 100
+                    currency: COP
+                    value: 50000
                   beneficiary:
                     merchant_beneficiary_id: test_merchant_deposit_id
-                    country: US
+                    country: CO
                     national_entity: INDIVIDUAL
                     first_name: John
                     last_name: Doe
@@ -79527,20 +79516,20 @@ paths:
                     email: john.doe@email.com
                     date_of_birth: '1980-01-01'
                     document:
-                      document_type: SSN
-                      document_number: 123-45-6789
+                      document_type: CC
+                      document_number: '1234567890'
                     phone:
-                      country_code: '1'
+                      country_code: '57'
                       number: '1234567890'
                     address:
                       address_line_1: 123 Main St
                       address_line_2: Apt 1
-                      city: New York
-                      state: NY
-                      zip_code: '10001'
-                      country: US
+                      city: Bogota
+                      state: DC
+                      zip_code: '110111'
+                      country: CO
                   withdrawal_method:
-                    type: WALLET
+                    type: NEQUI_PAYOUT
                     provider_id: NEQUI
                     detail:
                       wallet:
@@ -81700,6 +81689,23 @@ paths:
                     format: date-time
         '404':
           description: No notification with this merchant reference exists for your account.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: PRE_DEBIT_NOTIFICATION_NOT_FOUND
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                      example: Pre-debit notification not found.
+              example:
+                code: PRE_DEBIT_NOTIFICATION_NOT_FOUND
+                messages:
+                  - Pre-debit notification not found.
       tags:
         - Pre Debit Notifications
     post:
@@ -81819,7 +81825,7 @@ paths:
                   billing_date: '2026-08-01'
                   billing_sequence_number: '2'
                   customer_payer:
-                    id: 9a8b7c6d-5e4f-4a3b-2c1d-0e9f8a7b6c5d
+                    id: 9a8b7c6d-5e4f-4a3b-8c1d-0e9f8a7b6c5d
                   payment_method:
                     type: UPI_AUTOPAY
                     vaulted_token: 7c9e6679-7425-40de-944b-e07fc1f90ae7
@@ -82026,6 +82032,23 @@ paths:
                     format: date-time
         '404':
           description: No notification with this ID exists for your account.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: PRE_DEBIT_NOTIFICATION_NOT_FOUND
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                      example: Pre-debit notification not found.
+              example:
+                code: PRE_DEBIT_NOTIFICATION_NOT_FOUND
+                messages:
+                  - Pre-debit notification not found.
       tags:
         - Pre Debit Notifications
   /recipients:
@@ -87533,7 +87556,10 @@ paths:
                   description: >-
                     Starting timestamp of data to be included in the report run (MAX 24; MIN 24; [ISO
                     8601](https://en.wikipedia.org/wiki/ISO_8601)). Must be before `end_date`; otherwise the API answers
-                    400 REPORT_RANGE_ERROR.
+                    400 REPORT_RANGE_ERROR. Must also be before the current time, except for AGENDA and CASHFLOW
+                    reports, which accept future dates. For report types other than TRANSACTIONS, PAYMENTS,
+                    FRAUD_TRANSACTIONS, PAYOUTS, AGENDA and CASHFLOW, the range between `start_date` and `end_date` is
+                    at most 62 days; a longer range is rejected with 400.
                   format: date-time
                 end_date:
                   type: string
@@ -88203,7 +88229,7 @@ paths:
                   properties:
                     id:
                       type: string
-                      example: r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+                      example: 8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f
                     account_id:
                       type: string
                       example: acc-uuid
@@ -89784,7 +89810,7 @@ paths:
                 properties:
                   id:
                     type: string
-                    example: r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+                    example: 8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f
                   account_id:
                     type: string
                     example: acc-uuid
@@ -91266,6 +91292,15 @@ paths:
       tags:
         - AI Caller
       operationId: declined-payment-calls
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          description: >-
+            Unique identifier used in HTTP headers to ensure that a request is processed only once, even if it is
+            retried due to network issues or timeouts.
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -91569,7 +91604,7 @@ paths:
                         last_name: Perez
                         phone:
                           country_code: '57'
-                          number: '3132450765'
+                          number: '3000000000'
       responses:
         '200':
           description: Success
@@ -98781,9 +98816,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    type: string
-                    example: about:blank
                   title:
                     type: string
                     example: Not Found
@@ -104133,12 +104165,12 @@ webhooks:
               properties:
                 id:
                   type: string
-                  description: The unique identifier of the transfer (prefixed `xfer_`).
-                  example: xfer_cc0e8400-e29b-41d4-a716-446655440000
+                  description: The unique identifier of the transfer (UUID, 36 characters).
+                  example: cc0e8400-e29b-41d4-a716-446655440000
                 destination_account_id:
                   type: string
                   description: The `id` of the destination Banking Connectivity account that received the incoming transfer.
-                  example: acct_aa0e8400-e29b-41d4-a716-446655440000
+                  example: aa0e8400-e29b-41d4-a716-446655440000
                 account_id:
                   type: string
                   description: The merchant's Yuno account identifier.
@@ -104162,9 +104194,9 @@ webhooks:
                     - PENDING
                     - COMPLETED
                   example: COMPLETED
-                direction:
+                transfer_type:
                   type: string
-                  description: The transfer direction. Incoming transfer webhooks always have `INCOMING`.
+                  description: The transfer type. Incoming transfer webhooks always have `INCOMING`.
                   enum:
                     - INCOMING
                   example: INCOMING
@@ -104231,14 +104263,14 @@ webhooks:
               Incoming transfer notification:
                 summary: Incoming transfer notification
                 value:
-                  id: xfer_cc0e8400-e29b-41d4-a716-446655440000
-                  destination_account_id: acct_aa0e8400-e29b-41d4-a716-446655440000
+                  id: cc0e8400-e29b-41d4-a716-446655440000
+                  destination_account_id: aa0e8400-e29b-41d4-a716-446655440000
                   account_id: 550e8400-e29b-41d4-a716-446655440000
                   provider:
                     account_id: col_bank_account_789
                     transfer_id: col_incoming_xyz456
                   status: COMPLETED
-                  direction: INCOMING
+                  transfer_type: INCOMING
                   sender:
                     account_number_last_4: '5678'
                     routing_number: '987654321'
