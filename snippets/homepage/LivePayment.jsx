@@ -3,6 +3,7 @@ export const LivePayment = ({ steps = [], interval = 2500 }) => {
   const [paused, setPaused] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [shown, setShown] = useState(false);
+  const [run, setRun] = useState(0);
 
   useEffect(() => {
     try {
@@ -13,6 +14,9 @@ export const LivePayment = ({ steps = [], interval = 2500 }) => {
       return () => { if (m.removeEventListener) m.removeEventListener('change', on); };
     } catch (e) {}
   }, []);
+
+  // restart the bar whenever play resumes, the step timer below also restarts from zero
+  useEffect(() => { if (!paused) setRun((r) => r + 1); }, [paused]);
 
   useEffect(() => {
     if (reduced || paused || steps.length < 2) return;
@@ -43,7 +47,7 @@ export const LivePayment = ({ steps = [], interval = 2500 }) => {
                 <span className="yd-live-title">{s.title}</span>
                 <span className="yd-live-call">{s.call}</span>
               </span>
-              {k === i && !reduced && <span key={i} className={'yd-live-bar' + (paused ? ' is-paused' : '')} style={{ animationDuration: interval + 'ms' }} />}
+              {k === i && !reduced && <span key={i + '-' + run} className={'yd-live-bar' + (paused ? ' is-paused' : '')} style={{ animationDuration: interval + 'ms' }} />}
             </button>
           </li>
         ))}
