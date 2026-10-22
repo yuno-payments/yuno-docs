@@ -101,7 +101,7 @@ import {Ic} from '/snippets/homepage/Ic.jsx';
       <span className="yd-stepper-cta">Go-live checklist →</span>
     </a></li>
   </ol>
-  <p className="yd-code-note">Sandbox, illustrative values. Pick a step to see its code.</p>
+  <p className="yd-code-note">Sandbox, illustrative values. The tabs below hold the code for each step.</p>
   <Tabs>
   <Tab title="01 Set up your account">
 
@@ -232,14 +232,20 @@ curl -X POST https://your-app.example/webhooks/yuno \
 ```
 
 ```javascript Node.js
-app.post("/webhooks/yuno", express.json(), (req, res) => {
-  const event = req.body;
+app.post("/webhooks/yuno", express.raw({ type: "application/json" }), (req, res) => {
+  // 1. Verify the HMAC signature before trusting the body
+  //    (see Verify webhook signatures)
+  if (!verifyYunoSignature(req)) return res.sendStatus(401);
+  const event = JSON.parse(req.body);
+
+  // 2. Yuno retries on failure: skip a payment you already handled
+  if (alreadyProcessed(event.data.payment.id)) return res.sendStatus(200);
 
   if (event.type_event === "payment.purchase") {
     updateOrder(event.data.payment);
   }
 
-  // Respond fast; Yuno retries on failure
+  // Respond fast
   res.sendStatus(200);
 });
 ```
@@ -247,12 +253,20 @@ app.post("/webhooks/yuno", express.json(), (req, res) => {
 ```python Python
 @app.post("/webhooks/yuno")
 def yuno_webhook():
+    # 1. Verify the HMAC signature before trusting the body
+    #    (see Verify webhook signatures)
+    if not verify_yuno_signature(request):
+        return "", 401
     event = request.get_json()
+
+    # 2. Yuno retries on failure: skip a payment you already handled
+    if already_processed(event["data"]["payment"]["id"]):
+        return "", 200
 
     if event["type_event"] == "payment.purchase":
         update_order(event["data"]["payment"])
 
-    # Respond fast; Yuno retries on failure
+    # Respond fast
     return "", 200
 ```
 
