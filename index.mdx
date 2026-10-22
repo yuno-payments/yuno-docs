@@ -4,6 +4,7 @@ mode: "wide"
 ---
 
 import {Ic} from '/snippets/homepage/Ic.jsx';
+import {LivePayment} from '/snippets/homepage/LivePayment.jsx';
 
 <div style={{position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0}}>
   <h1>Yuno API Documentation</h1>
@@ -28,18 +29,65 @@ import {Ic} from '/snippets/homepage/Ic.jsx';
   </div>
   <div className="yd-hero-art">
     <img className="yd-hero-logo" src="/logo/dark.svg" alt="Yuno" height="24" />
-    <div className="yd-hero-flow">
-      <span className="yd-flow-chip">POST /v1/customers</span>
-      <Ic n="arrowRight" size={14} />
-      <span className="yd-flow-chip">POST /v1/checkout/sessions</span>
-      <Ic n="arrowRight" size={14} />
-      <span className="yd-flow-chip">one-time token <em>Web SDK</em></span>
-      <Ic n="arrowRight" size={14} />
-      <span className="yd-flow-chip">POST /v1/payments</span>
-      <Ic n="arrowRight" size={14} />
-      <span className="yd-flow-chip yd-flow-chip-hot">SUCCEEDED</span>
-    </div>
-    <p className="yd-hero-caption">four calls, one sandbox, about 10 minutes</p>
+    <LivePayment steps={[
+      {
+        title: 'Create a customer',
+        call: 'POST /v1/customers',
+        request: `POST /v1/customers
+{
+  "merchant_customer_id": "customer-0001",
+  "email": "john.doe@example.com"
+}`,
+        response: `201
+{ "id": "...", "merchant_customer_id": "customer-0001" }`,
+      },
+      {
+        title: 'Create a checkout session',
+        call: 'POST /v1/checkout/sessions',
+        request: `POST /v1/checkout/sessions
+{
+  "account_id": "...",
+  "merchant_order_id": "order-0001",
+  "payment_description": "First test payment",
+  "country": "US",
+  "customer_id": "...",
+  "amount": { "currency": "USD", "value": 25 },
+  "workflow": "SDK_CHECKOUT"
+}`,
+        response: `200
+{ "checkout_session": "..." }`,
+      },
+      {
+        title: 'Collect the card with the Web SDK',
+        call: 'one-time token',
+        request: `transaction.start({
+  paymentMethod: { type: "CARD" }
+})
+// the shopper enters the test card`,
+        response: `createPayment(oneTimeToken)
+// token.token
+// token.checkout_session`,
+      },
+      {
+        title: 'Create the payment',
+        call: 'POST /v1/payments',
+        request: `POST /v1/payments
+{
+  "account_id": "...",
+  "merchant_order_id": "order-0001",
+  "description": "First test payment",
+  "country": "US",
+  "amount": { "currency": "USD", "value": 25 },
+  "customer_payer": { "id": "..." },
+  "payment_method": { "token": "<oneTimeToken>" },
+  "checkout": { "session": "..." }
+}`,
+        response: `201
+{ "status": "SUCCEEDED" }`,
+        final: true,
+      },
+    ]} />
+    <p className="yd-hero-caption">four calls, one sandbox, about 10 minutes · <a href="/docs/how-yuno-works/step-2-your-first-payment">Run it yourself →</a></p>
   </div>
 </section>
 
