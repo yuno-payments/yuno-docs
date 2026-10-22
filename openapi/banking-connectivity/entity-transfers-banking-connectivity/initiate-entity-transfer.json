@@ -31,11 +31,11 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "xfer_bb0e8400-e29b-41d4-a716-446655440000"
+                      "example": "bb0e8400-e29b-41d4-a716-446655440000"
                     },
                     "source_account_id": {
                       "type": "string",
-                      "example": "acct_aa0e8400-e29b-41d4-a716-446655440000"
+                      "example": "aa0e8400-e29b-41d4-a716-446655440000"
                     },
                     "destination_account_id": {},
                     "account_id": {
@@ -128,8 +128,8 @@
                   "Accepted (Outgoing)": {
                     "summary": "Accepted (Outgoing)",
                     "value": {
-                      "id": "xfer_bb0e8400-e29b-41d4-a716-446655440000",
-                      "source_account_id": "acct_aa0e8400-e29b-41d4-a716-446655440000",
+                      "id": "bb0e8400-e29b-41d4-a716-446655440000",
+                      "source_account_id": "aa0e8400-e29b-41d4-a716-446655440000",
                       "destination_account_id": null,
                       "account_id": "550e8400-e29b-41d4-a716-446655440000",
                       "merchant_transfer_id": "merchant_txn_12345",
@@ -172,13 +172,13 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "example": "VALIDATION_ERROR"
+                      "example": "INVALID_PARAMETERS"
                     },
                     "messages": {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "example": "source_account_id is required"
+                        "example": "The field 'transfer_type' is required."
                       }
                     },
                     "http_code": {
@@ -192,10 +192,9 @@
                   "Bad Request": {
                     "summary": "Bad Request",
                     "value": {
-                      "code": "VALIDATION_ERROR",
+                      "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "source_account_id is required",
-                        "destination_account or destination_account_id must be provided"
+                        "The field 'transfer_type' is required."
                       ],
                       "http_code": 400
                     }
@@ -266,10 +265,9 @@
                 "required": [
                   "account_id",
                   "source_account_id",
-                  "direction",
+                  "transfer_type",
                   "amount",
-                  "payment_rail",
-                  "destination_account"
+                  "payment_rail"
                 ],
                 "properties": {
                   "account_id": {
@@ -279,22 +277,18 @@
                   },
                   "source_account_id": {
                     "type": "string",
-                    "description": "The `id` of the source Banking Connectivity account obtained from [Create Account](/reference/create-account-banking).",
-                    "example": "acct_aa0e8400-e29b-41d4-a716-446655440000"
+                    "description": "The `id` of the source Banking Connectivity account obtained from [Create Account](/reference/create-account-banking) (UUID, 36 characters).",
+                    "example": "aa0e8400-e29b-41d4-a716-446655440000"
                   },
-                  "destination_account_id": {
+                  "transfer_type": {
                     "type": "string",
-                    "nullable": true,
-                    "description": "The `id` of the destination Banking Connectivity account for internal (book) transfers. Set to `null` for external transfers.",
-                    "example": null
-                  },
-                  "direction": {
-                    "type": "string",
-                    "description": "The transfer direction.",
+                    "description": "The transfer type. `OUTGOING` sends funds to an external account (set `destination_account` with the bank details). `BOOK` moves funds to another Banking Connectivity account (set `destination_account.account_id`). `INCOMING` is an inbound transfer.",
+                    "example": "OUTGOING",
                     "enum": [
-                      "OUTGOING"
-                    ],
-                    "example": "OUTGOING"
+                      "OUTGOING",
+                      "BOOK",
+                      "INCOMING"
+                    ]
                   },
                   "amount": {
                     "type": "object",
@@ -318,18 +312,14 @@
                   },
                   "payment_rail": {
                     "type": "string",
-                    "description": "The payment rail to use for the transfer. Available rails depend on the provider region.",
+                    "description": "The payment rail to use for the transfer. Use `BOOK` with `transfer_type: BOOK`. Available rails depend on the provider region.",
                     "enum": [
                       "ACH_STANDARD",
                       "ACH_SAME_DAY",
                       "WIRE",
                       "RTP",
-                      "FPS",
-                      "CHAPS",
-                      "BACS",
-                      "NPP",
-                      "PAYTO",
-                      "BPAY"
+                      "BOOK",
+                      "PUSH_TO_CARD"
                     ],
                     "example": "ACH_STANDARD"
                   },
@@ -345,8 +335,13 @@
                   },
                   "destination_account": {
                     "type": "object",
-                    "description": "The external destination account details. Required fields depend on the region: US requires `account_number` and `routing_number`; UK requires `iban` or `account_number` with `sort_code`; Australia requires `account_number` with `bsb`.",
+                    "description": "The destination. For `OUTGOING` transfers, send the external bank details; required fields depend on the region: US requires `account_number` and `routing_number`; UK requires `iban` or `account_number` with `sort_code`; Australia requires `account_number` with `bsb`. For `BOOK` transfers, send only `account_id` with the `id` of the target Banking Connectivity account.",
                     "properties": {
+                      "account_id": {
+                        "type": "string",
+                        "description": "The `id` of the target Banking Connectivity account for `BOOK` transfers (UUID, 36 characters).",
+                        "example": "bb0e8400-e29b-41d4-a716-446655440000"
+                      },
                       "account_number": {
                         "type": "string",
                         "description": "The destination bank account number.",
@@ -401,9 +396,8 @@
                   "summary": "Outgoing Transfer",
                   "value": {
                     "account_id": "550e8400-e29b-41d4-a716-446655440000",
-                    "source_account_id": "acct_aa0e8400-e29b-41d4-a716-446655440000",
-                    "destination_account_id": null,
-                    "direction": "OUTGOING",
+                    "source_account_id": "aa0e8400-e29b-41d4-a716-446655440000",
+                    "transfer_type": "OUTGOING",
                     "amount": {
                       "value": 1000,
                       "currency": "USD"
@@ -414,10 +408,6 @@
                     "destination_account": {
                       "account_number": "9876543210",
                       "routing_number": "987654321",
-                      "iban": null,
-                      "bsb": null,
-                      "swift": null,
-                      "sort_code": null,
                       "account_name": "Jane Smith",
                       "bank_name": "Chase Bank"
                     }
@@ -427,25 +417,17 @@
                   "summary": "Book Transfer (Internal)",
                   "value": {
                     "account_id": "550e8400-e29b-41d4-a716-446655440000",
-                    "source_account_id": "acct_aa0e8400-e29b-41d4-a716-446655440000",
-                    "destination_account_id": "acct_bb0e8400-e29b-41d4-a716-446655440000",
-                    "direction": "OUTGOING",
+                    "source_account_id": "aa0e8400-e29b-41d4-a716-446655440000",
+                    "transfer_type": "BOOK",
                     "amount": {
                       "value": 500,
                       "currency": "USD"
                     },
-                    "payment_rail": "ACH_STANDARD",
+                    "payment_rail": "BOOK",
                     "description": "Internal transfer between accounts",
                     "merchant_transfer_id": "merchant_book_67890",
                     "destination_account": {
-                      "account_number": "1122334455",
-                      "routing_number": "123456789",
-                      "iban": null,
-                      "bsb": null,
-                      "swift": null,
-                      "sort_code": null,
-                      "account_name": "Jane Smith - Savings",
-                      "bank_name": "Column"
+                      "account_id": "bb0e8400-e29b-41d4-a716-446655440000"
                     }
                   }
                 }
