@@ -1,0 +1,371 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "promotions",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true,
+  "paths": {
+    "/promotions/{promotion_id}/codes": {
+      "get": {
+        "summary": "List Promotion Codes",
+        "description": "Lists the batch codes of a promotion of the account in the `X-Account-Code` header, oldest first, one page at a time. `limit` takes 1 to 500 and defaults to 100. Pass `next_cursor` of a page as `cursor` to read the next one; it is `null` on the last page. `used` is the number of payments that took the code. A disabled promotion lists its codes too. The codes are secret; Yuno does not write them to its logs.",
+        "operationId": "listPromotionCodes",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required. A promotion belongs to one account, and this header names it. Omitting it returns `400 INVALID_PARAMETERS` (\"x-account-code header is required.\")."
+          },
+          {
+            "in": "path",
+            "name": "promotion_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The promotion id (UUID v4). The promotion must belong to the account of `X-Account-Code` and must be a code promotion (`redemption.mode` is `CODE`). An id that is not a UUID v4 answers `400 INVALID_PARAMETERS`."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "default": 100
+            },
+            "description": "How many codes to return, from 1 to 500. Default 100. A value outside that range answers `400 INVALID_REQUEST` with `limit: RANGE`; a value with a character that is not a digit, or with more than three digits, answers `limit: FORMAT`."
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `next_cursor` of the previous page. A cursor that Yuno did not issue answers `400 INVALID_REQUEST` with `cursor: FORMAT`."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200. One page of the codes, oldest first. `next_cursor` is `null` on the last page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "codes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "description": "A secret."
+                          },
+                          "uses_per_code": {
+                            "type": "integer",
+                            "description": "How many payments the code accepts."
+                          },
+                          "used": {
+                            "type": "integer",
+                            "description": "How many payments took the code."
+                          },
+                          "batch_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the code was created. All the codes of one batch share it."
+                          }
+                        }
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Pass it as `cursor` to read the next page. `null` on the last page."
+                    }
+                  }
+                },
+                "examples": {
+                  "A page of codes": {
+                    "summary": "Two codes, the last page",
+                    "value": {
+                      "codes": [
+                        {
+                          "code": "SUMMERA7KQ9",
+                          "uses_per_code": 1,
+                          "used": 1,
+                          "batch_id": "3f6a9c1e-2b7d-8e4a-9f15-6c0d2b8e7a41",
+                          "created_at": "2026-10-20T14:00:00.000001Z"
+                        },
+                        {
+                          "code": "SUMMERM2TX4",
+                          "uses_per_code": 1,
+                          "used": 0,
+                          "batch_id": "3f6a9c1e-2b7d-8e4a-9f15-6c0d2b8e7a41",
+                          "created_at": "2026-10-20T14:00:00.000001Z"
+                        }
+                      ],
+                      "next_cursor": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400. No `X-Account-Code` header (`INVALID_PARAMETERS`), or `limit` or `cursor` is not valid (`INVALID_REQUEST`).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "No X-Account-Code": {
+                    "summary": "No X-Account-Code header",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "x-account-code header is required."
+                      ]
+                    }
+                  },
+                  "limit out of range": {
+                    "summary": "limit is 0 or more than 500",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "limit: RANGE"
+                      ]
+                    }
+                  },
+                  "cursor not issued": {
+                    "summary": "A cursor that Yuno did not issue",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "cursor: FORMAT"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404. No promotion of the account holds this id, or Promotions is not enabled for your organization.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Promotion not on the account": {
+                    "summary": "The promotion is not on the account",
+                    "value": {
+                      "code": "PROMOTION_NOT_FOUND",
+                      "messages": [
+                        "The promotion does not exist on the account."
+                      ]
+                    }
+                  },
+                  "Promotions not enabled": {
+                    "summary": "Promotions is not enabled",
+                    "value": {
+                      "code": "PROMOTION_NOT_FOUND"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500. The promotions service failed, or the request had a `redemption.prefix` and Yuno could not build a code. Yuno stores nothing. Retry the request.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Internal error": {
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "messages": [
+                        "Internal error"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INTERNAL_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503. The promotions service is not configured or not available.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Service unavailable": {
+                    "value": {
+                      "code": "PROMOTION_ENGINE_UNAVAILABLE",
+                      "messages": [
+                        "The promotions service is unavailable."
+                      ]
+                    }
+                  },
+                  "Store unavailable": {
+                    "value": {
+                      "code": "STORE_UNAVAILABLE",
+                      "messages": [
+                        "The store is unavailable."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_ENGINE_UNAVAILABLE"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "504. The promotions service did not answer in time.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Gateway timeout": {
+                    "value": {
+                      "code": "PROMOTION_ENGINE_TIMEOUT",
+                      "messages": [
+                        "The promotions service did not answer in time."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_ENGINE_TIMEOUT"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

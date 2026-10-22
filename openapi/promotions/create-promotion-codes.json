@@ -1,0 +1,559 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "promotions",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true,
+  "paths": {
+    "/promotions/{promotion_id}/codes": {
+      "post": {
+        "summary": "Create Promotion Codes",
+        "description": "Makes a batch of codes on a code promotion of the account in the `X-Account-Code` header. Each code is the prefix and a random suffix, with its own limit of uses (`uses_per_code`). `quantity` (1 to 1000) and `prefix` are required. A promotion holds at most 10,000 batch codes. The same `X-Idempotency-Key` on the same promotion returns the first batch. The codes come back only in this answer and in List Promotion Codes. Keep them secret; Yuno does not write them to its logs.",
+        "operationId": "createPromotionCodes",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required. A promotion belongs to one account, and this header names it. Omitting it returns `400 INVALID_PARAMETERS` (\"x-account-code header is required.\")."
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "Required. Any text of 1 to 64 characters. The same key on the same promotion returns the first batch with `201`. Yuno does not compare the body."
+          },
+          {
+            "in": "path",
+            "name": "promotion_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The promotion id (UUID v4). The promotion must belong to the account of `X-Account-Code` and must be a code promotion (`redemption.mode` is `CODE`). An id that is not a UUID v4 answers `400 INVALID_PARAMETERS`."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "quantity",
+                  "prefix"
+                ],
+                "properties": {
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000,
+                    "description": "The number of codes in the batch, from 1 to 1000. A missing value answers `quantity: REQUIRED`, and a value outside that range answers `quantity: RANGE`. Both are `400 INVALID_REQUEST`."
+                  },
+                  "uses_per_code": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000,
+                    "default": 1,
+                    "description": "How many payments each code accepts, from 1 to 1000000. Optional: without it each code accepts one payment. A value outside that range answers `uses_per_code: RANGE`."
+                  },
+                  "prefix": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8,
+                    "description": "Required. 1 to 8 letters or digits (`A-Z`, `0-9`), in any case. Yuno converts it to upper case and builds each code from it: the prefix, then a random suffix. A missing or blank prefix answers `prefix: REQUIRED`. A body with a `code` is refused with `code: NOT_ALLOWED`."
+                  }
+                }
+              },
+              "examples": {
+                "Batch of three codes": {
+                  "summary": "A batch of three codes with a prefix",
+                  "value": {
+                    "quantity": 3,
+                    "uses_per_code": 1,
+                    "prefix": "SUMMER"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201. The batch, with its codes. The same key on the same promotion returns the same batch with `201`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "A batch of codes.",
+                  "properties": {
+                    "batch_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "The id of the batch. It is derived from the account, the promotion and the key."
+                    },
+                    "promotion_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "description": "The number of codes in the answer."
+                    },
+                    "codes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "description": "A secret. The prefix and a random suffix of 5, 6 or 7 characters, by the quantity of the request."
+                          },
+                          "uses_per_code": {
+                            "type": "integer",
+                            "description": "How many payments the code accepts."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Batch created": {
+                    "summary": "A batch of three codes",
+                    "value": {
+                      "batch_id": "3f6a9c1e-2b7d-8e4a-9f15-6c0d2b8e7a41",
+                      "promotion_id": "660e8400-e29b-41d4-a716-446655440001",
+                      "quantity": 3,
+                      "codes": [
+                        {
+                          "code": "SUMMERA7KQ9",
+                          "uses_per_code": 1
+                        },
+                        {
+                          "code": "SUMMERM2TX4",
+                          "uses_per_code": 1
+                        },
+                        {
+                          "code": "SUMMERP8W6R",
+                          "uses_per_code": 1
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400. The headers, the path or the body is not valid (`INVALID_PARAMETERS`), or a rule of the batch failed (`INVALID_REQUEST`, with one `path: RULE` message for each failed path).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "No X-Account-Code": {
+                    "summary": "No X-Account-Code header",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "x-account-code header is required."
+                      ]
+                    }
+                  },
+                  "No X-Idempotency-Key": {
+                    "summary": "No X-Idempotency-Key header",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The header 'X-Idempotency-Key' is required and must not exceed 64 characters."
+                      ]
+                    }
+                  },
+                  "account_id in the body": {
+                    "summary": "account_id in the body",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'account_id' is not accepted in the body: the promotion belongs to the account of the x-account-code header."
+                      ]
+                    }
+                  },
+                  "Quantity out of range": {
+                    "summary": "quantity is 0 or more than 1000",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "quantity: RANGE"
+                      ]
+                    }
+                  },
+                  "No prefix": {
+                    "summary": "No prefix",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "prefix: REQUIRED"
+                      ]
+                    }
+                  },
+                  "Prefix with a bad character": {
+                    "summary": "A prefix character outside A-Z and 0-9",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "prefix: FORMAT"
+                      ]
+                    }
+                  },
+                  "Prefix too long": {
+                    "summary": "A prefix of more than 8 characters",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "prefix: LENGTH"
+                      ]
+                    }
+                  },
+                  "uses_per_code out of range": {
+                    "summary": "uses_per_code is 0 or more than 1000000",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "uses_per_code: RANGE"
+                      ]
+                    }
+                  },
+                  "A code in the body": {
+                    "summary": "A full code in the body",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "code: NOT_ALLOWED"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404. No promotion of the account holds this id, or Promotions is not enabled for your organization. The gate answer has a `code` and no `messages`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Promotion not on the account": {
+                    "summary": "The promotion is not on the account",
+                    "value": {
+                      "code": "PROMOTION_NOT_FOUND",
+                      "messages": [
+                        "The promotion does not exist on the account."
+                      ]
+                    }
+                  },
+                  "Promotions not enabled": {
+                    "value": {
+                      "code": "PROMOTION_NOT_FOUND"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_NOT_FOUND"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "413. The body is larger than 256 KiB.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Request too large": {
+                    "value": {
+                      "code": "REQUEST_ENTITY_TOO_LARGE",
+                      "messages": [
+                        "The request body must not exceed 256 KiB."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "REQUEST_ENTITY_TOO_LARGE"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422. The promotion can't hold the batch: `PROMOTION_NOT_APPLICABLE`, with the `reason`. Yuno stores nothing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_NOT_APPLICABLE"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "NOT_CODE_PROMOTION",
+                        "DISABLED",
+                        "EXPIRED",
+                        "BATCH_LIMIT_REACHED"
+                      ]
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Not a code promotion": {
+                    "summary": "An AUTOMATIC promotion has no code",
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "reason": "NOT_CODE_PROMOTION",
+                      "messages": [
+                        "Only a promotion with a code can hold batch codes."
+                      ]
+                    }
+                  },
+                  "Disabled": {
+                    "summary": "The promotion is disabled",
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "reason": "DISABLED",
+                      "messages": [
+                        "The promotion is disabled."
+                      ]
+                    }
+                  },
+                  "Expired": {
+                    "summary": "The promotion ended",
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "reason": "EXPIRED",
+                      "messages": [
+                        "The promotion expired."
+                      ]
+                    }
+                  },
+                  "Batch limit reached": {
+                    "summary": "The batch would pass 10,000 codes",
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "reason": "BATCH_LIMIT_REACHED",
+                      "messages": [
+                        "The promotion cannot hold more than 10000 batch codes."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500. The promotions service failed, or Yuno could not draw enough codes that are free for the batch. Yuno stores nothing: retry the request.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Internal error": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "INTERNAL_ERROR",
+                      "messages": [
+                        "Internal error"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "503. The promotions service is not configured or not available.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Service unavailable": {
+                    "value": {
+                      "code": "PROMOTION_ENGINE_UNAVAILABLE",
+                      "messages": [
+                        "The promotions service is unavailable."
+                      ]
+                    }
+                  },
+                  "Store unavailable": {
+                    "value": {
+                      "code": "STORE_UNAVAILABLE",
+                      "messages": [
+                        "The store is unavailable."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_ENGINE_UNAVAILABLE"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "504. The promotions service did not answer in time.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Gateway timeout": {
+                    "value": {
+                      "code": "PROMOTION_ENGINE_TIMEOUT",
+                      "messages": [
+                        "The promotions service did not answer in time."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_ENGINE_TIMEOUT"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

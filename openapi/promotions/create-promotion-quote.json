@@ -47,7 +47,7 @@
     "/promotions/quote": {
       "post": {
         "summary": "Create Promotion Quote",
-        "description": "Prices a payment before you create it. Returns a signed quote when a promotion applies, or `204` when nothing applies. Nothing is consumed: asking again gives the same price, with an `expires_at` (and so a `quote_id`) that moves with the time you ask, and one quote can back several payments. A quote lives 30 minutes after it is issued, on both credentials. Every condition of the promotion must already be true for a quote to exist. Promotions must be enabled for your organization by Yuno before you can use this endpoint. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).",
+        "description": "Prices a payment before you create it. Returns a signed quote when a promotion applies, or `204` when nothing applies. Nothing is consumed: asking again gives the same price, with an `expires_at` (and so a `quote_id`) that moves with the time you ask, and one quote can back several payments. A quote lives 30 minutes after it is issued, on both credentials. A request that carries a `code` gets a preview instead: the same amounts, with no `quote_id` and no `expires_at`. Nothing is signed, stored or counted, and the code is applied when the payment carries it. Every condition of the promotion must already be true for a quote to exist. Promotions must be enabled for your organization by Yuno before you can use this endpoint. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).",
         "operationId": "create-promotion-quote",
         "requestBody": {
           "content": {
@@ -134,7 +134,7 @@
                   },
                   "code": {
                     "type": "string",
-                    "description": "Reserved for promotion codes, which aren't available yet: the Dashboard creates promotions that apply automatically, and no promotion can require a code today. Leave it out. A quote that carries a `code` finds no promotion."
+                    "description": "Optional. A promotion code to price: 3 to 32 characters, `A-Z`, `0-9`, `_` and `-`, in any case. A code with another character or another length finds no promotion. This endpoint sends no idempotency key, so a request with a `code` gets a preview: the same amounts as a quote, with no `quote_id` and no `expires_at`. Yuno signs, stores and counts nothing: the code is applied when the payment carries it, and a preview can't be sent on a payment. When an automatic promotion saves the customer more than the code, the preview is for that promotion. A code that doesn't apply answers `404` or `422`, not `204`, and a code that leaves a charge of zero answers `422` with the reason `ZERO_CHARGE`. See [Promotion codes](/docs/payment-features/promotion-codes)."
                   }
                 }
               },
@@ -177,6 +177,20 @@
                       "type": "CARD",
                       "vaulted_token": "330953e7-09d8-47cf-a99c-cfb7968f13f9"
                     }
+                  }
+                },
+                "Price a promotion code": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 250.0
+                    },
+                    "country": "US",
+                    "payment_method": {
+                      "type": "CARD"
+                    },
+                    "code": "SUMMER10"
                   }
                 }
               }
@@ -222,22 +236,52 @@
                       },
                       "expires_at": "2026-10-04T18:41:02Z"
                     }
+                  },
+                  "A promotion code (preview)": {
+                    "summary": "A promotion code (preview)",
+                    "value": {
+                      "promotions": [
+                        {
+                          "id": "00000000-0000-4000-8000-0000000000b1",
+                          "name": "Summer 10",
+                          "description": null,
+                          "discount": {
+                            "type": "PERCENTAGE",
+                            "value": 10
+                          },
+                          "discount_amount": {
+                            "currency": "USD",
+                            "value": 25.0
+                          }
+                        }
+                      ],
+                      "original_amount": {
+                        "currency": "USD",
+                        "value": 250.0
+                      },
+                      "discount_amount": {
+                        "currency": "USD",
+                        "value": 25.0
+                      },
+                      "charge_amount": {
+                        "currency": "USD",
+                        "value": 225.0
+                      }
+                    }
                   }
                 },
                 "schema": {
                   "type": "object",
                   "required": [
-                    "quote_id",
                     "promotions",
                     "original_amount",
                     "discount_amount",
-                    "charge_amount",
-                    "expires_at"
+                    "charge_amount"
                   ],
                   "properties": {
                     "quote_id": {
                       "type": "string",
-                      "description": "Opaque and long: about 300 to 730 characters. Store it whole, up to 1000 characters, and send it unchanged on the payment as `quote_id` on an `additional_data.order.discounts` line with `type: YUNO_PROMOTION`. Never parse or shorten it."
+                      "description": "Opaque and long: about 300 to 730 characters. Store it whole, up to 1000 characters, and send it unchanged on the payment as `quote_id` on an `additional_data.order.discounts` line with `type: YUNO_PROMOTION`. Never parse or shorten it. Absent when the request carries a `code`: that answer is a preview, and a preview can't be paid."
                     },
                     "promotions": {
                       "type": "array",
@@ -344,7 +388,7 @@
                     "expires_at": {
                       "type": "string",
                       "format": "date-time",
-                      "description": "The quote is valid until this instant: 30 minutes after it was issued."
+                      "description": "The quote is valid until this instant: 30 minutes after it was issued. Absent from a preview (a request that carries a `code`)."
                     }
                   }
                 }
@@ -534,10 +578,10 @@
             }
           },
           "204": {
-            "description": "No promotion applies to this payment context, Promotions is not enabled for your organization or is temporarily disabled by Yuno, Yuno could not price the payment in time, or the promotion would make the charge zero. There is no body. Create the payment as usual, with no `quote_id` on a discount line."
+            "description": "No promotion applies to this payment context (a request with a `code` gets a `404` or a `422` instead), Promotions is not enabled for your organization or is temporarily disabled by Yuno, Yuno could not price the payment in time, or an automatic promotion would make the charge zero. There is no body. Create the payment as usual, with no `quote_id` on a discount line."
           },
           "404": {
-            "description": "404. The request carries a `code`. Promotion codes aren't available yet, so no promotion holds one: leave `code` out.",
+            "description": "404. The request carries a `code`, and no promotion of the account holds it, or the promotion holding it has not started, or the code has a character outside `A-Z`, `0-9`, `_` and `-` or a length outside 3 to 32.",
             "content": {
               "application/json": {
                 "examples": {
@@ -563,6 +607,82 @@
                       "items": {
                         "type": "string"
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422. The request carries a `code` that a promotion of the account holds, and the code doesn't apply. The `reason` says why: `EXPIRED`, `DISABLED`, `USAGE_LIMIT_REACHED`, `CONDITIONS_NOT_MET`, `CURRENCY_MISMATCH`, `ZERO_DISCOUNT` or `ZERO_CHARGE`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Code that reached its limit": {
+                    "summary": "Code that reached its limit",
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "messages": [
+                        "The promotion reached its limit of uses."
+                      ],
+                      "reason": "USAGE_LIMIT_REACHED"
+                    }
+                  },
+                  "Code outside the conditions": {
+                    "summary": "Code outside the conditions",
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "messages": [
+                        "The payment does not meet the conditions of the promotion."
+                      ],
+                      "reason": "CONDITIONS_NOT_MET"
+                    }
+                  },
+                  "Code that expired": {
+                    "summary": "Code that expired",
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "messages": [
+                        "The promotion expired."
+                      ],
+                      "reason": "EXPIRED"
+                    }
+                  },
+                  "Code that leaves a charge of zero": {
+                    "summary": "Code that leaves a charge of zero",
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "messages": [
+                        "The promotion leaves a charge of zero on this amount."
+                      ],
+                      "reason": "ZERO_CHARGE"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PROMOTION_NOT_APPLICABLE"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "EXPIRED",
+                        "DISABLED",
+                        "USAGE_LIMIT_REACHED",
+                        "CONDITIONS_NOT_MET",
+                        "CURRENCY_MISMATCH",
+                        "ZERO_DISCOUNT",
+                        "ZERO_CHARGE"
+                      ]
                     }
                   }
                 }

@@ -1,0 +1,344 @@
+---
+title: "Promotion codes"
+description: "Create a promotion that customers redeem with a code, and send the code on the payment"
+noindex: true
+---
+
+A promotion code is a promotion that applies only when a payment carries its code, for example `SUMMER10` for "10% off in summer". You create the promotion with the API, your customer gives you the code, and your server sends the code on [Create Payment](/reference/payments/create-payment). Yuno prices the payment with the code and charges the discounted amount.
+
+<Warning>
+**Promotions is enabled per organization**
+
+Until Yuno enables Promotions for your organization, the promotions endpoints answer `404 PROMOTION_NOT_FOUND`, and a payment that carries a code is refused with `422 PROMOTION_NOT_APPLICABLE` and the reason `PROMOTIONS_NOT_ENABLED`. No payment is created. Ask your Technical Account Manager or Key Account Manager to enable it. See [Promotions](/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Warning>
+
+## How it works
+
+1. **Create the promotion.** Call [Create Promotion](/reference/promotions/create-promotion) with `redemption.mode` set to `CODE`. You set the discount, the dates, the conditions, and, if you want a cap, the most uses (`limits.total`). You also send exactly one of two things: a code of your own (`redemption.code`), or a prefix (`redemption.prefix`). With a prefix, Yuno builds the code from it.
+2. **Collect the code.** Your customer gives you the code in your own checkout.
+3. **Send the code on the payment.** Add `{ "code": "SUMMER10" }` to `additional_data.order.discounts` on Create Payment, with the original `amount`.
+4. **Yuno charges the discounted price.** Yuno exchanges the code for a quote, counts one use of the code when the code applies, and charges the quoted amount. The answer is the one in [What the payment carries](/docs/payment-features/promotions#what-the-payment-carries).
+
+A payment that carries no code is charged in full, as before.
+
+## Create a code promotion
+
+Send the promotion to `POST /v1/promotions`. The promotion belongs to the account in the `X-Account-Code` header. A body that carries `account_id` is refused with `400 INVALID_PARAMETERS`.
+
+```bash Request
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/promotions \
+     --header 'public-api-key: <PUBLIC_API_KEY>' \
+     --header 'private-secret-key: <PRIVATE_SECRET_KEY>' \
+     --header 'X-Account-Code: 00000000-0000-4000-8000-0000000000a1' \
+     --header 'X-Idempotency-Key: 00000000-0000-4000-8000-0000000000c1' \
+     --header 'content-type: application/json' \
+     --data '{
+       "name": "Summer 10",
+       "schedule": {
+         "starts_at": "2026-11-01T00:00:00Z",
+         "ends_at": "2026-12-01T00:00:00Z"
+       },
+       "redemption": { "mode": "CODE", "code": "SUMMER10" },
+       "discount": { "type": "PERCENTAGE", "value": 10 },
+       "conditions": {
+         "countries": { "values": ["US"] },
+         "amounts": { "values": [{ "currency": "USD", "min": 50.00, "max": 5000.00 }] }
+       },
+       "limits": { "total": 100 }
+     }'
+```
+
+```json Response (201)
+{
+    "id": "00000000-0000-4000-8000-0000000000b1",
+    "account_id": "00000000-0000-4000-8000-0000000000a1",
+    "name": "Summer 10",
+    "description": null,
+    "schedule": {
+        "starts_at": "2026-11-01T00:00:00Z",
+        "ends_at": "2026-12-01T00:00:00Z"
+    },
+    "redemption": { "mode": "CODE", "code": "SUMMER10" },
+    "discount": { "type": "PERCENTAGE", "value": 10, "amounts": null },
+    "conditions": {
+        "bins": null,
+        "payment_methods": null,
+        "card_types": null,
+        "countries": { "values": ["US"] },
+        "amounts": { "values": [{ "currency": "USD", "min": 50.00, "max": 5000.00 }] }
+    },
+    "limits": { "total": 100, "used": 0 },
+    "status": "SCHEDULED",
+    "created_at": "2026-10-16T15:04:05Z",
+    "disabled_at": null
+}
+```
+
+What to know before you create one:
+
+* **`X-Idempotency-Key` is required.** It is any text of 1 to 64 characters. The same key on the same account returns the first promotion with `201`, and Yuno does not compare the body. A request with no valid key is refused with `400` before the body is read.
+* **The mode is `CODE`.** Any other `redemption.mode` is refused with `400 INVALID_PARAMETERS`.
+* **A code you send has 3 to 32 characters:** letters, digits, `_` and `-`, in any case. Yuno trims the spaces around it, stores it in upper case and matches the code of a payment without regard to case. A code with another length is refused with `400 INVALID_REQUEST` and the message `redemption.code: CODE_LENGTH`, and a code with another character with `redemption.code: CODE_CHARACTERS`.
+* **A code is unique per account.** Another promotion of the account that is not disabled and whose schedule overlaps this one cannot hold the same code, and no batch code of the account can hold it either: the request answers `409 CODE_ALREADY_EXISTS`. A code is free again when the earlier promotion is disabled, or when its schedule ends at or before the start of the new one.
+* **Conditions are `countries` and `amounts` only.** A code applies to the whole payment, whatever the payment method. A `bins`, `payment_methods` or `card_types` condition is refused with `400 INVALID_REQUEST` and the messages `conditions.bins: FORBIDDEN`, `conditions.payment_methods: FORBIDDEN` or `conditions.card_types: FORBIDDEN`.
+* **`limits.total` is optional.** It is the most uses the code accepts, a whole number from 1 to 2147483647. Without it the code has no cap and the response shows `limits: null`. See [Uses and limits](#uses-and-limits).
+* **Promotions can't be edited, and there is no delete.** The only change is [Disable Promotion](/reference/promotions/disable-promotion), and it is final. To change a discount, disable the promotion and create a new one.
+
+To read a promotion, call [Retrieve Promotion](/reference/promotions/retrieve-promotion). To list the promotions of the account, newest first, call [List Promotions](/reference/promotions/list-promotions). The list also returns the account's `AUTOMATIC` promotions. [The Promotion Object](/reference/promotions/the-promotion-object) describes every field.
+
+### Let Yuno build the code from a prefix
+
+Send exactly one of `redemption.code` and `redemption.prefix`. The prefix has 1 to 8 letters or digits (`A-Z`, `a-z`, `0-9`), in any case, and Yuno converts it to upper case. Yuno builds the code from it: the prefix, then a random suffix of 5 characters from `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (the letters and digits without `0`, `O`, `1`, `I` and `L`), with nothing between them. The code is not linked to the promotion `id`. The answer holds the code in `redemption.code`, and [Retrieve Promotion](/reference/promotions/retrieve-promotion) returns the same code. This request sends a prefix:
+
+```json Request body, with a prefix
+{
+    "name": "Summer 20",
+    "schedule": {
+        "starts_at": "2026-11-01T00:00:00Z",
+        "ends_at": "2026-12-01T00:00:00Z"
+    },
+    "redemption": { "mode": "CODE", "prefix": "SUMMER" },
+    "discount": { "type": "PERCENTAGE", "value": 20 }
+}
+```
+
+```json Response (201), with the code Yuno built
+{
+    "id": "00000000-0000-4000-8000-0000000000b2",
+    "account_id": "00000000-0000-4000-8000-0000000000a1",
+    "name": "Summer 20",
+    "description": null,
+    "schedule": {
+        "starts_at": "2026-11-01T00:00:00Z",
+        "ends_at": "2026-12-01T00:00:00Z"
+    },
+    "redemption": { "mode": "CODE", "code": "SUMMERK7P2X" },
+    "discount": { "type": "PERCENTAGE", "value": 20, "amounts": null },
+    "conditions": {
+        "bins": null,
+        "payment_methods": null,
+        "card_types": null,
+        "countries": null,
+        "amounts": null
+    },
+    "limits": null,
+    "status": "SCHEDULED",
+    "created_at": "2026-10-16T15:04:05Z",
+    "disabled_at": null
+}
+```
+
+* **Send a code or a prefix, not both and not none.** A body with neither answers `400 INVALID_REQUEST` with the messages `redemption: CODE_OR_PREFIX_REQUIRED` and `Send exactly one of redemption.code or redemption.prefix.`. A body with both answers `redemption: CODE_AND_PREFIX_EXCLUSIVE` with the same second message. A `null`, an empty text and a text with only spaces count as not sent. A `code` that is not valid, sent with a prefix, counts as both.
+* **A wrong prefix is refused.** A character outside `A-Z`, `a-z` and `0-9` answers `redemption.prefix: FORMAT`. More than 8 characters answers `redemption.prefix: LENGTH`.
+* **A create with a prefix never answers `409 CODE_ALREADY_EXISTS`.** That answer is for a code you send. Yuno never builds a code that another promotion of your account holds, whatever its status: active, scheduled, ended or disabled, and no batch code of your account holds it. If the code Yuno draws is taken, Yuno draws another, up to six draws. If none of the six is free, the create fails (see below).
+* **A replay returns the same code.** The same `X-Idempotency-Key` on the same account returns the first promotion with `201` and the code Yuno built for it. The replay keeps that code and stores nothing, also when its prefix is different.
+* **You can't change the code.** A promotion can't be edited, so its code can't change, whether Yuno built the code or you sent it. To get another code, disable the promotion and create a new one.
+* **If Yuno can't build a code, the create fails.** The answer is `500 INTERNAL_ERROR`, and Yuno stores nothing. The failure is on Yuno's side: retry the request.
+
+## Create a batch of codes
+
+A batch gives one code promotion many codes at once, for example one code for each customer of a campaign. Each code of the batch has its own limit of uses, and the promotion keeps its total limit. [Create Promotion Codes](/reference/promotions/create-promotion-codes) makes the batch, and [List Promotion Codes](/reference/promotions/list-promotion-codes) reads the codes back.
+
+The request sends the `X-Account-Code` and `X-Idempotency-Key` headers, both required, and a body with `quantity` and `prefix`:
+
+```json Request body
+{
+    "quantity": 3,
+    "uses_per_code": 1,
+    "prefix": "SUMMER"
+}
+```
+
+* **`quantity` is required.** It is the number of codes in the batch, a whole number from 1 to 1000. A missing value answers `quantity: REQUIRED`, and a value outside that range answers `quantity: RANGE`. Both are `400 INVALID_REQUEST`.
+* **`prefix` is required.** It has 1 to 8 letters or digits (`A-Z` and `0-9`), in any case, and Yuno converts it to upper case. A missing or blank prefix answers `prefix: REQUIRED`. A character outside `A-Z` and `0-9` answers `prefix: FORMAT`, and more than 8 characters answer `prefix: LENGTH`.
+* **`uses_per_code` is optional.** It is how many payments each code accepts, a whole number from 1 to 1000000. Without it, each code accepts one payment. A value outside that range answers `uses_per_code: RANGE`.
+* **A full code is refused.** Yuno makes every code of a batch from the prefix, so a body with a `code` answers `400 INVALID_REQUEST` with `code: NOT_ALLOWED`.
+
+Each code is the prefix and a random suffix, with nothing between them. The suffix uses `ABCDEFGHJKMNPQRSTUVWXYZ23456789`, the letters and digits without `0`, `O`, `1`, `I` and `L`. Its length depends on the quantity of the request: Yuno takes the shortest suffix that has at least one million possible values for each code. That is 5 characters for up to 28 codes, 6 characters for 29 to 887 codes, and 7 characters for 888 to 1000 codes.
+
+```json Response, 201
+{
+    "batch_id": "3f6a9c1e-2b7d-8e4a-9f15-6c0d2b8e7a41",
+    "promotion_id": "660e8400-e29b-41d4-a716-446655440001",
+    "quantity": 3,
+    "codes": [
+        { "code": "SUMMERA7KQ9", "uses_per_code": 1 },
+        { "code": "SUMMERM2TX4", "uses_per_code": 1 },
+        { "code": "SUMMERP8W6R", "uses_per_code": 1 }
+    ]
+}
+```
+
+* **The same key returns the same batch.** A repeated `X-Idempotency-Key` on the same promotion returns the first batch with `201`, with the same codes. Yuno does not compare the body.
+* **Every code is unique in the account.** No code of the batch is a code that a promotion of your account holds, whatever the status of that promotion, and no code of another batch. A code you send, and a code Yuno builds from a prefix, can't be a batch code either.
+* **A promotion holds up to 10,000 batch codes.** A batch that would take the promotion past 10,000 codes answers `422 PROMOTION_NOT_APPLICABLE` with the reason `BATCH_LIMIT_REACHED`, and stores nothing.
+* **Only a code promotion holds a batch.** An `AUTOMATIC` promotion has no code, and it answers `422 PROMOTION_NOT_APPLICABLE` with the reason `NOT_CODE_PROMOTION`. A disabled promotion answers `DISABLED`, and an ended one answers `EXPIRED`.
+* **Keep the codes secret.** Each code works as a credential. The codes come back only in this answer and in [List Promotion Codes](/reference/promotions/list-promotion-codes), and Yuno does not write them to its logs.
+
+### Read the codes
+
+[List Promotion Codes](/reference/promotions/list-promotion-codes) returns the codes of a promotion, oldest first. `limit` takes 1 to 500 and defaults to 100, and `next_cursor` is `null` on the last page. Each code shows its `uses_per_code` and its `used` count. A disabled promotion lists its codes too.
+
+## Send the code on the payment
+
+Put the code on a discount line of [Create Payment](/reference/payments/create-payment) (`POST /v1/payments`). Send the original `amount`, never the discounted one.
+
+```json Request
+{
+    "account_id": "00000000-0000-4000-8000-0000000000a1",
+    "country": "US",
+    "amount": { "currency": "USD", "value": 250.00 },
+    "additional_data": {
+        "order": {
+            "discounts": [{ "code": "SUMMER10" }]
+        }
+    }
+}
+```
+
+This is the part of the request that matters here; the rest is the [Create Payment](/reference/payments/create-payment) body you already send. Send `X-Idempotency-Key` on the request, as on every payment.
+
+The discount line follows these rules. A line that breaks one is refused with `400 INVALID_PARAMETERS` before anything else happens, and no payment is created.
+
+| Rule | Message when broken |
+| --- | --- |
+| `code` has 3 to 32 characters: letters, digits, `-` and `_`. Yuno trims the spaces around it. | `The field 'additional_data.order.discounts[0].code' must have 3 to 32 characters, letters, digits, hyphens and underscores only.` |
+| `code` is not blank. | `The field 'additional_data.order.discounts[0].code' must not be blank.` |
+| The line has no `quote_id`. A line carries a code or a quote id, never both. | `The fields 'additional_data.order.discounts[0].code' and 'additional_data.order.discounts[0].quote_id' must not be sent together.` |
+| `type` is left out or is `YUNO_PROMOTION`. A line with a `code` and no `type` is read as `YUNO_PROMOTION`. | On a `MERCHANT` line: `The field 'additional_data.order.discounts[0].code' must not be sent on a MERCHANT discount line.` |
+| The line has no `id`, `name` or `unit_amount`. Yuno fills them after it applies the promotion. | `The field 'additional_data.order.discounts[0].id' must not be sent on a YUNO_PROMOTION discount line.` (the same for `name` and `unit_amount`) |
+| The payment has one promotion line in all: one code, or one quote id. | `Only one YUNO_PROMOTION discount line is permitted per payment.` |
+
+No answer repeats your code. Where the promotions service quotes it back in a message, Yuno replaces it with `***`.
+
+### What Yuno does with the code
+
+Yuno handles the line before it creates the payment and before it tokenizes the card:
+
+1. It checks the rules above. A break is a `400`.
+2. It checks that Promotions is enabled for your organization, and that the payment can carry a code. See [Payments that can't carry a code](#payments-that-cant-carry-a-code).
+3. It asks the promotions service for a quote with your account, the payment `amount`, the `country` and the code. It sends the `X-Idempotency-Key` of your payment, so the service counts one use for the payment.
+4. When the service gives a quote, Yuno replaces the code with the quote on the discount line, and the payment goes on as a [payment with a quote](/docs/payment-features/promotions#create-the-payment-with-the-quote). Yuno does not send the code on with the payment.
+5. When the service gives no quote, Yuno refuses the payment, and the answer says why (see [Answers](#answers)). No payment is created. Yuno never charges the full price for a payment that carries a code.
+
+Other facts about the line:
+
+* **`payment_method.type` is not required for a code.** A code applies to the whole payment, whatever the payment method. Yuno sends the type to the promotions service only when your payment has one.
+* **A card number or token goes to the quote as the payment carries it.** Yuno sends the BIN (the first 8 digits at most) of a card number sent in the clear, never the number. A token or vaulted token goes as it is.
+* **The `X-Idempotency-Key` is required.** Create Payment requires it on every payment: without the header the answer is `400 INVALID_PARAMETERS` and `The header 'x-idempotency-key' is required.` Yuno also trims the key before it counts a use, and a key that is empty after the trim is refused with `400 INVALID_PARAMETERS`: `The header 'x-idempotency-key' is required to apply a promotion code.`
+
+### Dry run
+
+A dry run takes no promotion code. A payment with the header `X-Dry-Run: true` that carries a `code` on a discount line is refused with `400 INVALID_PARAMETERS`, and no payment is created:
+
+```json Dry run with a code (400)
+{
+    "code": "INVALID_PARAMETERS",
+    "messages": ["Promotion codes can't be used on a dry-run payment (X-Dry-Run). Test promotion codes in the sandbox environment."]
+}
+```
+
+Yuno refuses the payment before it asks for a quote, tokenizes a card or reaches a provider, so it counts no use. The message never repeats your code. Only the value `true`, in any case, makes a dry run. A dry run without a code, or with a `quote_id` line, is not affected. To try a promotion code, use the sandbox environment.
+
+## Show the price before the payment
+
+To show the discounted price before your customer pays, call [Create Promotion Quote](/reference/promotions/create-promotion-quote#price-a-promotion-code) with the `code`. That endpoint sends no idempotency key, so the answer is a **preview**: the promotion, `original_amount`, `discount_amount` and `charge_amount`, with no `quote_id` and no `expires_at`. Yuno signs, stores and counts nothing.
+
+A preview can't be paid: there is no `quote_id` to put on a discount line. The payment carries the code itself, as described in [Send the code on the payment](#send-the-code-on-the-payment).
+
+## Uses and limits
+
+* **A use is counted when Yuno accepts the code for a payment.** The count happens at the payment attempt, before the payment reaches a provider, and it is keyed by the `X-Idempotency-Key` of the payment.
+* **The same key again counts no second use.** A retry of a payment with the same key and the same code is priced from the first use. This holds even if the promotion was disabled, ended or reached its limit after the first attempt.
+* **A key belongs to one code.** The same key with another code is refused with `422 PROMOTION_NOT_APPLICABLE` and the reason `IDEMPOTENCY_KEY_REUSED`.
+* **A code that leaves a charge of zero counts no use.** When the code is the promotion that applies and the payment would be charged zero or less (a 100% discount, or a fixed discount at or above the amount), Yuno refuses the payment with `422 PROMOTION_NOT_APPLICABLE` and the reason `ZERO_CHARGE` before it counts a use. This holds for a code with a limit and for one without. A code at its limit that also leaves a charge of zero answers `ZERO_CHARGE`, not `USAGE_LIMIT_REACHED`.
+* **A declined payment keeps its use.** Yuno gives no use back. The count only grows. A new attempt after a decline needs a new `X-Idempotency-Key`, and it counts a new use.
+* **The limit stops the next use.** When `limits.used` equals `limits.total`, a payment with the code is refused with `422 PROMOTION_NOT_APPLICABLE` and the reason `USAGE_LIMIT_REACHED`. No payment is created.
+* **`limits.used` counts the uses of a code that has a limit.** A code with no limit shows `limits: null`.
+* **Only the promotion that applies counts a use.** When an automatic promotion gives the customer a bigger discount than the code, that promotion applies and the code counts no use. See [When a code and an automatic promotion both apply](#when-a-code-and-an-automatic-promotion-both-apply).
+* **A batch code counts against its own limit and the total limit, in one step.** A payment that takes a batch code adds one to the `used` count of the code and, when the promotion has `limits.total`, one to `limits.used`. Both counts happen or neither does. A code at its limit, or a promotion at its total limit, refuses the payment with `422 PROMOTION_NOT_APPLICABLE` and the reason `USAGE_LIMIT_REACHED`. See [Create a batch of codes](#create-a-batch-of-codes).
+* **A quote request counts no use.** [Create Promotion Quote](/reference/promotions/create-promotion-quote) sends no key, so a quote made with a `code` is a preview: Yuno signs, stores and counts nothing. A payment with a code counts the use.
+* **A quote request answers `ZERO_CHARGE` too.** A quote request for a code that wins and leaves a charge of zero gets `422 PROMOTION_NOT_APPLICABLE` and the reason `ZERO_CHARGE`, as a payment does. It counts nothing, and the reason comes before `USAGE_LIMIT_REACHED` there too.
+* **`ZERO_CHARGE` belongs to a code that wins.** When an automatic promotion wins the selection and its quote would charge zero, the payment is not refused with `ZERO_CHARGE`: Yuno refuses it with `422 PROMOTION_NOT_APPLICABLE` and the reason `ENGINE_UNAVAILABLE`. No payment is created. A quote request in that case gets `204`.
+
+## When a code and an automatic promotion both apply
+
+One payment gets **one** promotion. Promotions don't add up.
+
+When a payment carries a code, the promotion of the code and the account's automatic promotions that match the payment compete in one selection. The one that saves the customer the most wins. If two save the same amount, the oldest one (earliest `created_at`) wins; if that also ties, the smallest `id` wins. The code has no advantage.
+
+| Payment of USD 250 | Saving | Result |
+| --- | --- | --- |
+| Code `SUMMER10`: 10% off | USD 25 | |
+| Automatic promotion: 12% off | USD 30 | **Applies** |
+
+In this example the payment is charged USD 220. The code counts no use, and the payment is not refused.
+
+A code that fails is refused with its own reason, and no automatic promotion takes its place. For example, a code that reached its limit and would have won answers `USAGE_LIMIT_REACHED`; Yuno does not apply the automatic promotion instead.
+
+An automatic promotion that has a payment method condition competes only when the payment carries `payment_method.type`: without it the payment has no method to meet the condition.
+
+## Payments that can't carry a code
+
+A code applies to one-time payments on `POST /v1/payments`. These payments are refused, and no payment is created:
+
+| Payment | Answer |
+| --- | --- |
+| A payment that carries a `subscription` | `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED`: `YUNO_PROMOTION discount lines are not supported on subscriptions.` |
+| A payment that carries an `external_subscription` or an `external_invoice` | `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED`: `Subscription payments cannot carry a promotion quote.` |
+| A payment whose `amount` carries a `currency_conversion` or a `merchant_currency_conversion` | `422 PROMOTION_CONTEXT_MISMATCH`: `The payment context does not match the promotion quote.` |
+
+Yuno refuses all three before it asks for the quote, so the refusal counts no use. These bodies have a `code` and `messages`, and no `reason`.
+
+Every other route that takes `additional_data.order.discounts` refuses a code line exactly as it refuses a `YUNO_PROMOTION` quote line: the same status, the same `code` and the same messages. This covers checkout sessions, payment links, subscriptions, capture, and `POST /v2/payments`. See [What's not included yet](/docs/payment-features/promotions#whats-not-included-yet).
+
+## Answers
+
+When a code does not become a quote, no payment is created and the answer says why.
+
+| HTTP | Code | Reason | When |
+| --- | --- | --- | --- |
+| `404` | `PROMOTION_NOT_FOUND` | | No promotion of the account holds the code, or the promotion holding it has not started. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `EXPIRED` | The promotion ended. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `DISABLED` | You disabled the promotion. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `USAGE_LIMIT_REACHED` | The code has no use left. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `IDEMPOTENCY_KEY_REUSED` | The payment key already counted a use of another code. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `CONDITIONS_NOT_MET` | The country or the amount does not meet the conditions of the promotion. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `CURRENCY_MISMATCH` | The promotion lists no amount rule for the currency of the payment, or it is a fixed discount with no amount in that currency. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_DISCOUNT` | The promotion gives no discount on this amount. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_CHARGE` | The code applies and the payment would be charged zero or less. Yuno counts no use. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `PROMOTIONS_NOT_ENABLED` | Promotions is not enabled for your organization. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | The code could not be checked, so no payment was created. Two kinds of cause share this reason: transient ones, to retry later, and an automatic promotion that leaves a charge of zero, which a retry does not change. See the note after this table. |
+
+**`ENGINE_UNAVAILABLE` covers two causes, and the answer does not say which one it is.** Both come back with the same `reason` and the same message.
+
+* **Transient: retry later.** The promotions service did not answer in time, answered with an error, or Promotions is temporarily disabled by Yuno. Retry the same payment later.
+* **Not transient: a retry gets the same answer.** An automatic promotion wins the selection for this payment and would leave a charge of zero. Send the payment **without the code**. A payment with no code is charged in full, and the promotion check does not refuse it.
+
+The message says `Try again.` for both causes, so it does not tell you which one to retry. If the same payment still gets `ENGINE_UNAVAILABLE` after you retry later, send it without the code. The customer then pays the full price and loses the discount of that code for that payment.
+
+```json Code that reached its limit (422)
+{
+    "code": "PROMOTION_NOT_APPLICABLE",
+    "messages": ["The promotion reached its limit of uses."],
+    "reason": "USAGE_LIMIT_REACHED"
+}
+```
+
+```json Unknown code (404)
+{
+    "code": "PROMOTION_NOT_FOUND",
+    "messages": ["The promotion does not exist on the account."]
+}
+```
+
+```json Code that leaves a charge of zero (422)
+{
+    "code": "PROMOTION_NOT_APPLICABLE",
+    "messages": ["The promotion leaves a charge of zero on this amount."],
+    "reason": "ZERO_CHARGE"
+}
+```
+
+[Promotion Error Codes](/reference/promotions/promotion-error-codes) lists every answer of the promotions endpoints and of a payment with a code, with the text of each message.
