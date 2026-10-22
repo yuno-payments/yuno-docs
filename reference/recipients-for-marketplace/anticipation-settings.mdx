@@ -29,7 +29,7 @@ When no settings resource exists, GET returns `200` with exactly these three fie
 
 Disabled and never-configured both return `enabled: false` without top-level `type`, `delay` or `volume_percentage`. Existing resources retain `revision` and operational metadata, including status, dates, requested settings and history when present. For a new write, use PATCH when `revision` is present and POST when it is absent. This does not change retries: keep the original write method and idempotency key when retrying an earlier request.
 
-Writes still require an eligible onboarding. PATCH with no stored settings returns `404 ANTICIPATION_SETTINGS_NOT_FOUND`; it does not create the resource. Once a write is admitted, its settings resource remains even if the result is `REJECTED` or a historical creation intent ends `NOT_APPLIED`. A new POST then returns `409 ANTICIPATION_SETTINGS_ALREADY_EXIST`. Use PATCH for a new attempt; send a complete configuration when there is no confirmed base.
+Writes still require an eligible onboarding. PATCH with no stored settings returns `404 ANTICIPATION_SETTINGS_NOT_FOUND`; it does not create the resource. Once a write is admitted, its settings resource remains even if the result is `REJECTED`. A new POST then returns `409 ANTICIPATION_SETTINGS_ALREADY_EXIST`. Use PATCH for a new attempt; send a complete configuration when there is no confirmed base.
 
 ## Choose a model
 
@@ -58,9 +58,9 @@ For example, this complete configuration uses the minimum delay:
 
 ## Update confirmed settings
 
-PATCH merges omitted fields only into the last confirmed configuration and validates the merged settings. An explicit `false` disables anticipation, but does not bypass delay validation. If a stored configuration has delay zero, omitting `delay` while retaining that model inherits the invalid value; supply a delay from 1 to 365. Any change to the `type` string discards inherited `delay` and `volume_percentage`, even when changing from `1025` to its `1025_PERCENTAGE` alias. Send the delay again to preserve it: changing confirmed `1025` with delay 30 to `{"type":"1025_PERCENTAGE","volume_percentage":100}` resets the delay to 15. Changing to `FULL` removes an inherited delay, but explicitly sending a delay with `FULL` is invalid.
+PATCH merges omitted fields only into the last confirmed configuration and validates the merged settings. An explicit `false` disables anticipation, but does not bypass delay validation. Any change to the `type` string discards inherited `delay` and `volume_percentage`, even when changing from `1025` to its `1025_PERCENTAGE` alias. Send the delay again to preserve it: changing confirmed `1025` with delay 30 to `{"type":"1025_PERCENTAGE","volume_percentage":100}` resets the delay to 15. Changing to `FULL` removes an inherited delay, but explicitly sending a delay with `FULL` is invalid.
 
-When no confirmed configuration is available, send a complete configuration with `enabled`, `type` and all required model fields. This includes updates during an uncertain operation and re-enabling a sparse disabled configuration. An incomplete body can return `400 INVALID_PARAMETERS` before the operation-conflict check. A complete body targeting a held operation returns `409 ANTICIPATION_OPERATION_IN_PROGRESS`.
+When no confirmed configuration is available, send a complete configuration with `enabled`, `type` and all required model fields. This includes updates during an uncertain operation and re-enabling a sparse disabled configuration. An incomplete body can return `400 INVALID_PARAMETERS` before the operation-conflict check. A complete body targeting a held operation returns `409 ANTICIPATION_OPERATION_IN_PROGRESS`, or `409 ANTICIPATION_OPERATION_QUARANTINED` when that operation is quarantined.
 
 ## Distinguish intent from confirmation
 
@@ -74,8 +74,6 @@ When no confirmed configuration is available, send a complete configuration with
 | `confirmed_at` | Time of the confirming observation, not a guarantee that no later external change occurred. |
 
 GET returns Yuno's stored state and does not query the provider. It is not provider readback. A `200` GET can report `UNKNOWN`, `REJECTED`, a pending operation or quarantine; missing confirmation does not become `enabled: false`. Requested and historical settings and operation diagnostics remain available. Read the status fields before using the settings. Database or service read failures remain errors, never a disabled fallback.
-
-Stored settings and frozen replies can still show delay zero in confirmed, requested or historical settings. They are not rewritten by the new validation rule. A zero in a response does not make it valid in a new write.
 
 ## Retry an uncertain result
 
@@ -124,5 +122,3 @@ For example, this 503 is a recorded rejection, not an instruction to retry indef
 Do not include `anticipation_settings` in a recipient-creation request, either at the top level or inside `onboardings`. Its presence returns `400 INVALID_PARAMETERS` before a recipient is created, including when its value is `null`. Omitting the field preserves ordinary recipient creation.
 
 Dedicated onboarding create, continue and update requests also reject `anticipation_settings`, including `null`. Create the recipient and complete onboarding first, then use the dedicated nested settings endpoints when the target is eligible and the provider connection is enabled.
-
-Historical creation intents may still appear in stored status/history. Their recovery is retained; they do not mean new inline requests are accepted. An intent can end `NOT_APPLIED` when its target becomes permanently ineligible or a preflight read reports permanent refusal. Failed preflight reads also end the intent at 10 attempts, or when a failed read occurs more than 24 hours after preflight started; this is not a 24-hour limit on waiting for onboarding eligibility. After correcting the cause, use PATCH with a complete configuration; POST cannot replace the retained resource.
