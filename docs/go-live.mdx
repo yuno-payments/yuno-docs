@@ -1,0 +1,109 @@
+---
+title: "Go live"
+sidebarTitle: "Go live"
+description: "Move a working sandbox integration to production: live keys, a published route, verified webhooks, 3DS and PCI scope, and a first real payment."
+keywords: ["go live", "production", "Live Mode", "activation", "prod_ keys", "webhooks", "HMAC", "idempotency", "3DS", "PCI DSS", "refund"]
+---
+
+<div className="yd-page">
+
+<div className="yd-eyebrow">
+  <span className="yd-eyebrow-accent">Getting started</span>
+  <span className="yd-eyebrow-rule" />
+  <span className="yd-eyebrow-muted">Guide</span>
+</div>
+
+<p className="yd-lead" style={{marginTop: '18px', maxWidth: 'none'}}>A sandbox payment that succeeds is the starting point. Work through these five steps with your engineering and operations teams before you send real transactions.</p>
+
+<div className="yd-chips" style={{margin: '20px 0 8px'}}>
+  <span className="yd-chip">Activate Live Mode</span>
+  <span className="yd-chip">Publish a live route</span>
+  <span className="yd-chip">Verify webhooks</span>
+  <span className="yd-chip">Run a real payment and refund</span>
+</div>
+
+<Steps>
+
+<Step titleSize="h3" title="Activate Live Mode and switch to production keys">
+
+Your organization starts with access to Test Mode only. To get Live Mode, submit an activation request from the dashboard home page. The organization status changes from "Inactive" to "Under Verification", and Test Mode stays available while Yuno verifies the account. See [Environments](/docs/using-yuno/environments).
+
+When Live Mode is enabled:
+
+* Copy the Live keys from **Developers**. Yuno keeps separate keys for Test and Live. See [Developers credentials](/docs/using-yuno/settings/developers-credentials).
+* Check the key prefix. Sandbox keys start with `sandbox_` and production keys start with `prod_`. The Yuno SDK picks the environment from this prefix. See [Get started with the Yuno SDK](/docs/yuno-sdk/get-started).
+* Point your server at the production base URL of your region, listed on [Developers](/docs/developers). Each organization belongs to one region, and data is not shared between regions.
+* Keep the `private-secret-key` on your server and out of public places such as a GitHub repository. See [Authentication](/reference/getting-started/authentication).
+
+</Step>
+
+<Step titleSize="h3" title="Connect a live provider and publish the route">
+
+The Yuno Test Payment Gateway works in sandbox only, so production payments need a connection to a real provider.
+
+1. With the context chip set to **Live**, open [Connections](/docs/using-yuno/dashboard-overview/connections) and connect each provider you launch with.
+2. Open **Routing** and check the **Not published** tab. Every payment method that has a connection but no route is listed there.
+3. Create the route, add the provider step, and click **Publish**. See [Routing](/docs/using-yuno/dashboard-overview/routing).
+4. Open **Checkout builder**, turn on the payment methods that have a published route, and click **Publish settings**. Changes stay **Not published** until you publish them.
+
+</Step>
+
+<Step titleSize="h3" title="Set up the production webhook and safe retries">
+
+Confirm the outcome of each payment on your server, from a webhook or from the payments API, before you fulfill the order.
+
+* [Configure a production webhook](/docs/webhooks/configure-webhooks) with a public HTTPS URL that returns HTTP 200. Yuno retries a delivery that does not get HTTP 200, so the same event can arrive more than once. Refund and chargeback events carry the same `data.payment.idempotency_key` as their payment, so record each processed event under its `account_id`, `type_event`, and idempotency key together, and skip an event that is already recorded. See [De-duplication](/docs/webhooks/index#de-duplication).
+* Turn on **Use HMAC Authentication** and verify the `x-hmac-signature` header against the raw request body, before you parse the JSON, with the secret configured for that webhook. See [Verify webhook signatures](/docs/webhooks/verify-webhook-signatures-hmac).
+* Send an `X-Idempotency-Key` when you create a payment. If the outcome is unclear (a timeout, a connection error, or a `500`), retry with the same key. A `400 REQUEST_IN_PROCESS` means the first request is still running, so retry with the same key after a few seconds. A `400 IDEMPOTENCY_DUPLICATED` means no payment exists for that key, so correct the request and send it with a new key. See [Idempotency](/reference/getting-started/authentication#idempotency).
+* Use [Retrieve payment](/reference/payments/retrieve-payment-by-id-v2) to recover the state of a payment when a webhook or a request outcome is unclear.
+
+</Step>
+
+<Step titleSize="h3" title="Decide on 3DS and your PCI scope">
+
+**3D Secure.** You decide whether your card payments use 3DS2. You add the 3DS step to a Card route before the provider step, under **Routing** > **Card Routes** > **3DS Step**. 3DS DIRECT also needs acquirer data: an acquirer BIN per card brand, the merchant ID, the MCC, the merchant name and URL, and the country code. See [3D Secure](/docs/security-and-compliance/3d-secure).
+
+**PCI DSS.** With the Yuno SDK (Full Checkout, Lite Checkout, or Secure Fields), card data goes from the customer's browser or app to Yuno and your servers receive only tokens, so most merchants qualify for SAQ A. If your server sends raw card numbers, as the `DIRECT` workflow in the Quickstart does, your systems are in PCI DSS scope. See [PCI compliance](/docs/security-and-compliance/pci-compliance).
+
+</Step>
+
+<Step titleSize="h3" title="Run a real payment and refund, then watch the first payments">
+
+Test cards belong to the sandbox. In Live Mode, run a low-value payment with a real card through each provider and payment method you launch, then refund it.
+
+* Refund with [Refund payments](/docs/direct-integration-use-cases/refund-payments). Each refund call needs an `X-Idempotency-Key` with a new value per attempt. Wait for a refund to reach `SUCCEEDED`, `DECLINED`, or `ERROR` before you start another one on the same transaction.
+* Whether a refund is confirmed at once or stays `PENDING`, and whether partial refunds are allowed, depends on the provider. Check the behavior of each provider you launch with.
+* Open **Payments** in the dashboard in Live Mode to see every payment and transaction, filter them, and export reports. See [Payments](/docs/using-yuno/dashboard-overview/payments).
+* Check [service status](https://status.y.uno) for incidents, and write to [support@y.uno](mailto:support@y.uno) with the payment ID when a result does not match what you expect.
+
+</Step>
+
+</Steps>
+
+## Test beyond the happy path
+
+Before launch, show that your application handles each of these cases. Use the [Yuno Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway) in sandbox and the testing instructions of each provider. Sandbox results do not prove how every live provider behaves.
+
+| Scenario | What your application must show |
+| --- | --- |
+| Approved payment | The backend confirms the outcome and fulfills the order once. |
+| Decline | The order stays unpaid and the customer can try again. |
+| Authentication or redirect | The customer completes the action, and the server confirms the resulting status. |
+| Pending asynchronous payment | The order waits for confirmation from a webhook or the payments API. |
+| Timeout after sending a request | A retry with the same `X-Idempotency-Key` does not create a second payment. |
+| Duplicate or delayed webhook | The event does not fulfill the order twice or overwrite a newer state. |
+| Browser closes before completion | The webhook or a payment lookup on your server still decides the outcome. |
+| Refund or cancellation | The provider result and your order or ledger record match. |
+
+## Next
+
+<ol className="yd-next">
+  <li><div><a href="/docs/troubleshooting">Troubleshooting</a><span className="yd-card-body"><span className="yd-kind">Reference</span> The response, its cause, and the fix for the errors a new integration hits first.</span></div></li>
+  <li><div><a href="/docs/webhooks/index">Webhooks</a><span className="yd-card-body"><span className="yd-kind">Guide</span> Delivery, retries, de-duplication, and the pages to configure and verify a webhook.</span></div></li>
+  <li><div><a href="/docs/how-yuno-works/how-yuno-payment-flow-works">Payment flow</a><span className="yd-card-body"><span className="yd-kind">Concept</span> Each step of a payment, field by field.</span></div></li>
+  <li><div><a href="/reference/payments/create-payment">Create payment</a><span className="yd-card-body"><span className="yd-kind">Reference</span> The request and response schema for the call that creates a payment.</span></div></li>
+</ol>
+
+</div>
+
+{/* TODO unverified: no page in docs/ states whether Test Mode connections, routes and Checkout builder settings carry over to Live Mode. The step tells the reader to check in Live Mode without claiming either way. */}
