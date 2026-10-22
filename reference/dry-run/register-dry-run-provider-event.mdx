@@ -28,7 +28,7 @@ One call can carry up to **10** event entries (REQUEST, RESPONSE, and/or WEBHOOK
 </Note>
 
 <Note>
-This endpoint has a companion: `POST /v1/payments` accepts an `X-Dry-Run: true` request header that tells Yuno to validate instead of routing. Both legs must share the same `merchant_reference` so validation can pair them.
+This endpoint has a companion: `POST /v1/payments` and `POST /v1/customers/{customer_id}/payment-methods` (workflow `DIRECT`) accept an `X-Dry-Run: true` request header that tells Yuno to validate instead of routing. Both legs must share the same `merchant_reference` (or, for an enrollment, the same `X-Orchestrator-Dry-Run-Id`; see [Pairing an enrollment](#pairing-an-enrollment)) so validation can pair them.
 </Note>
 
 <Note>
@@ -45,6 +45,19 @@ Use `X-Idempotency-Key` for safe retries. Same key + same payload returns the or
 
 ## Correlation
 
-- `merchant_reference` is always required and uniquely identifies the order on your side. Yuno uses it to resolve the event to a payment asynchronously when `payment_id` is not supplied.
+- `merchant_reference` uniquely identifies the order on your side. Yuno uses it to resolve the event to a payment asynchronously when `payment_id` is not supplied.
+- `X-Orchestrator-Dry-Run-Id` is a request header you can send as an alternative to `merchant_reference`. It must be 3 to 255 characters. When you send both `X-Orchestrator-Dry-Run-Id` and `merchant_reference`, they must match; if they differ, the request returns `400 INVALID_PARAMETERS`. Send at least one of the two: with neither, the request returns `400 TRAFFIC_LOG_MERCHANT_REFERENCE_REQUIRED`.
 - `payment_id`, if supplied, is resolved immediately. If the id is unknown for your account the request returns `404 PAYMENT_NOT_FOUND`.
 - `provider_id` + `payment_method_type` optionally identify which integration surface the dry-run exercises (for example `stripe` + `CREDIT_CARD`). If omitted, Yuno uses the information from the associated payment.
+- `operation_type` on each event identifies the operation being simulated: `PURCHASE`, `AUTHORIZE`, `CAPTURE`, `CANCEL`, `REFUND`, `CHARGEBACK`, `THREE_D_SECURE`, or `ENROLLMENT`. Use `ENROLLMENT` when the exchange corresponds to saving a payment method rather than a payment.
+
+## Pairing an enrollment
+
+To validate an enrollment instead of a payment, use the same `X-Orchestrator-Dry-Run-Id` on both legs:
+
+1. Call `POST /v1/customers/{customer_id}/payment-methods` with `workflow` set to `DIRECT` and the headers `X-Dry-Run: true` and `X-Orchestrator-Dry-Run-Id: <your id>`. Yuno accepts the request, makes no provider enrollment, sends no webhook, and stores it for comparison.
+2. Call `POST /v1/dry-run/provider-events` with the provider exchange for the enrollment, `operation_type` set to `ENROLLMENT`, and the same `X-Orchestrator-Dry-Run-Id` (or a `merchant_reference` equal to it).
+
+Yuno pairs the two records and grades the enrollment request the same way it grades a payment.
+
+When Yuno makes no provider request for the enrollment (a provider token import, or card data enrolled without a provider connection), there is nothing to compare against, so the comparison stays partial.
