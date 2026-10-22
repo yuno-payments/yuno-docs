@@ -51,6 +51,29 @@ For a subscription that is *not* linked to a plan, `billing_cycle_behavior` is a
 Placement rules: on a plan-linked subscription the top-level field returns `400` (the anchor is managed through `plan_change`), and combining the top-level field with a `plan_change` block returns `400` — use `plan_change.billing_cycle_behavior` instead. A `PAUSED` subscription returns `409 INVALID_SUBSCRIPTION_STATUS`: a restart is accepted while the subscription is `ACTIVE`, `TRIALING` or `PAST_DUE` — or while it is still `CREATED`, where (unlike `plan_change`) the request is allowed and the re-anchored date clamps to `availability.start_at`. A top-level restart emits no webhook — read the new anchor from the subscription object.
 </Note>
 
+<Note>
+**Subscription Promotions**
+
+Send `promotion` with an `id` or a `code` to apply a promotion that is attached to the subscription's plan. The subscription must be `ACTIVE` or `TRIALING`. The discount takes effect from the next charge. The response includes the `promotion` object. Applying a promotion while another one is active replaces it: the current one ends with `end_reason` `REPLACED`, and the new one starts at 0 cycles used.
+
+```json
+{ "promotion": { "code": "WELCOME50" } }
+```
+
+To remove the active promotion, use [Remove Promotion from Subscription](/reference/subscriptions/remove-subscription-promotion).
+</Note>
+
+<Note>
+**Promotions on a plan change**
+
+Two optional fields in `plan_change` decide what happens to an active promotion:
+
+* `promotion_behavior`: `KEEP` (default) keeps the promotion, with its remaining cycles, on the new plan. `END` ends it with `end_reason` `PLAN_CHANGE`. It is ignored when there is no active promotion.
+* `apply_new_plan_promotion`: `true` (default) applies the new plan's `AUTOMATIC` promotion, if it has one, and ends the current promotion with `PLAN_CHANGE`. `false` leaves the new plan's promotion unapplied, and `promotion_behavior` decides what happens to the current one.
+
+See [Plan changes](/docs/payment-features/subscriptions/promotions#plan-changes) for the result at each timing.
+</Note>
+
 ### Plan change errors
 
 Each of the `409` and `422` errors below carries a `current_status` field alongside `code` and `messages`, holding the subscription's status at the moment the request was rejected. The rejected request makes no change.

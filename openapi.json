@@ -119900,6 +119900,20 @@
                   "subscription_agreement_id": {
                     "type": "string",
                     "description": "Links this subscription to the initial payment created with the same agreement ID. Used for tracking, reconciliation, and chargeback handling. Must exactly match the `subscription_agreement_id` sent in `payment_method.detail.card.stored_credentials.subscription_agreement_id` on the originating payment (MAX 255)."
+                  },
+                  "promotion": {
+                    "type": "object",
+                    "description": "Applies a promotion attached to the subscription's plan. Send exactly one of `id` or `code`. The subscription must be `ACTIVE` or `TRIALING`, and the discount takes effect from the next charge. Applying a promotion while another one is active replaces it: the current one ends with `end_reason` `REPLACED`, and the new one starts at 0 cycles used. See [Promotions on subscription plans](/docs/payment-features/subscriptions/promotions).",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The ID of the promotion (UUID). Use `id` or `code`, not both."
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "The code of a promotion that has one. Use `id` or `code`, not both."
+                      }
+                    }
                   }
                 }
               },
@@ -121140,6 +121154,16 @@
                           "country_prices": []
                         }
                       ],
+                      "promotions": [
+                        {
+                          "promotion_id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+                          "name": "Welcome 20% x3",
+                          "type": "AUTOMATIC",
+                          "status": "ENABLED",
+                          "cycles": 3,
+                          "attached_at": "2026-11-02T14:00:00Z"
+                        }
+                      ],
                       "created_at": "2024-01-15T10:30:00.000000Z",
                       "updated_at": "2024-01-15T10:30:00.000000Z"
                     }
@@ -121264,6 +121288,45 @@
                         "type": "object"
                       },
                       "description": "The metered prices attached to this plan. Empty when the plan has no usage-based pricing; see [Attach Meter to Plan](/reference/meters/attach-meter-to-plan)."
+                    },
+                    "promotions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "promotion_id": {
+                            "type": "string",
+                            "description": "The ID of the attached promotion (UUID)."
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "The name of the promotion."
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "The type of the promotion. `AUTOMATIC` promotions apply without a code."
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "ENABLED",
+                              "DISABLED",
+                              "UNKNOWN"
+                            ],
+                            "description": "Read from the promotions engine. `UNKNOWN` when the engine does not respond."
+                          },
+                          "cycles": {
+                            "type": "integer",
+                            "description": "The number of charges the promotion covers on this plan."
+                          },
+                          "attached_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the promotion was attached to the plan."
+                          }
+                        }
+                      },
+                      "description": "The promotions attached to this plan. Empty when none is attached. See [Promotions on subscription plans](/docs/payment-features/subscriptions/promotions)."
                     }
                   }
                 }
@@ -121305,6 +121368,267 @@
           }
         },
         "deprecated": false,
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/subscriptions/plans/{plan_id}/promotions": {
+      "post": {
+        "summary": "Attach Promotion to Plan",
+        "description": "Attaches an existing promotion to the plan for `cycles` charges. Subscriptions on the plan can then receive it when they are created or updated. Attachments are not edited: to change `cycles` or `on_pause`, remove the attachment and attach the promotion again.",
+        "operationId": "attach-plan-promotion",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required — omitting it returns `400 BAD_REQUEST` (\"Invalid x-account-code header.\")."
+          },
+          {
+            "name": "plan_id",
+            "in": "path",
+            "description": "The unique identifier of the plan.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "promotion_id",
+                  "cycles"
+                ],
+                "properties": {
+                  "promotion_id": {
+                    "type": "string",
+                    "description": "The ID of an existing promotion (UUID)."
+                  },
+                  "cycles": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "The number of charges the discount covers. At least 1."
+                  },
+                  "on_pause": {
+                    "type": "string",
+                    "enum": [
+                      "KEEP",
+                      "END"
+                    ],
+                    "default": "KEEP",
+                    "description": "What a pause does to the promotion once it is applied to a subscription. `KEEP` (default) keeps its remaining cycles for when the subscription resumes. `END` ends the promotion with `end_reason` `PAUSE`."
+                  }
+                }
+              },
+              "examples": {
+                "Request": {
+                  "value": {
+                    "promotion_id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+                    "cycles": 3
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201. The promotion is attached to the plan.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "promotion_id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+                      "name": "Welcome 20% x3",
+                      "type": "AUTOMATIC",
+                      "status": "ENABLED",
+                      "cycles": 3,
+                      "attached_at": "2026-11-02T14:00:00Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "promotion_id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "The promotion's type. `AUTOMATIC` promotions apply without a code."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "`ENABLED` when the attachment is created."
+                    },
+                    "cycles": {
+                      "type": "integer"
+                    },
+                    "attached_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404. The promotion does not exist, or belongs to another account.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "PROMOTION_NOT_FOUND",
+                      "messages": [
+                        "Promotion not found."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409. The plan already has this promotion.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "PROMOTION_ALREADY_ATTACHED",
+                      "messages": [
+                        "The promotion is already attached to this plan."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422. The promotion cannot be attached. `reason` says why, for example `EXPIRED`, or `PROMOTIONS_NOT_ENABLED` when promotions are not turned on for the organization.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "messages": [
+                        "The promotion cannot be applied."
+                      ],
+                      "reason": "EXPIRED"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "reason": {
+                      "type": "string",
+                      "description": "Why the promotion cannot be attached or applied."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/subscriptions/plans/{plan_id}/promotions/{promotion_id}": {
+      "delete": {
+        "summary": "Remove Promotion from Plan",
+        "description": "Removes the attachment of a promotion from the plan. Subscriptions that already have the promotion are not changed: they keep their copy until it is `COMPLETED` or `ENDED`.",
+        "operationId": "remove-plan-promotion",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required — omitting it returns `400 BAD_REQUEST` (\"Invalid x-account-code header.\")."
+          },
+          {
+            "name": "plan_id",
+            "in": "path",
+            "description": "The unique identifier of the plan.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "promotion_id",
+            "in": "path",
+            "description": "The ID of the promotion to remove from the plan (UUID).",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204. The promotion was removed from the plan. The response has no body."
+          }
+        },
         "tags": [
           "Plans"
         ]
@@ -122479,6 +122803,18 @@
                           "RESTART"
                         ],
                         "description": "What happens to the billing anchor when the plan changes in place with `effective: IMMEDIATE`. KEEP (default — omitting the field behaves identically): the next charge date is untouched. RESTART: the next charge re-anchors to the moment of the change plus the new plan's frequency — the anchor alone resets; billing cycle counters, the retry configuration and the subscription status survive. RESTART requires `effective: IMMEDIATE` and returns 400 with a scheduled change; KEEP alongside a scheduled change is accepted and simply schedules the change as usual. Write-only: this field is never echoed in any response."
+                      },
+                      "promotion_behavior": {
+                        "type": "string",
+                        "enum": [
+                          "KEEP",
+                          "END"
+                        ],
+                        "description": "What happens to the active promotion when the plan changes. `KEEP` (default) keeps it, with its remaining cycles, on the new plan. `END` ends it with `end_reason` `PLAN_CHANGE`. Ignored when there is no active promotion."
+                      },
+                      "apply_new_plan_promotion": {
+                        "type": "boolean",
+                        "description": "Whether the new plan's `AUTOMATIC` promotion applies when the plan changes. `true` (default) applies it and ends the current promotion with `PLAN_CHANGE`. `false` leaves it unapplied, and `promotion_behavior` decides what happens to the current promotion."
                       }
                     }
                   },
@@ -122501,6 +122837,20 @@
                       "value": {
                         "type": "string",
                         "description": "Object value for the key defined  (MAX 512 ; MIN 1)."
+                      }
+                    }
+                  },
+                  "promotion": {
+                    "type": "object",
+                    "description": "Applies a promotion attached to the subscription's plan. Send exactly one of `id` or `code`. The subscription must be `ACTIVE` or `TRIALING`, and the discount takes effect from the next charge. Applying a promotion while another one is active replaces it: the current one ends with `end_reason` `REPLACED`, and the new one starts at 0 cycles used. See [Promotions on subscription plans](/docs/payment-features/subscriptions/promotions).",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The ID of the promotion (UUID). Use `id` or `code`, not both."
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "The code of a promotion that has one. Use `id` or `code`, not both."
                       }
                     }
                   }
@@ -122770,6 +123120,99 @@
                     "updated_at": {
                       "type": "string",
                       "example": "2024-09-30T12:04:23.265372Z"
+                    },
+                    "promotion": {
+                      "type": "object",
+                      "description": "The copy of the promotion stored on the subscription. See [The Subscription Promotion Object](/reference/subscriptions/the-subscription-promotion-object).",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "The ID of the promotion (UUID)."
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "discount": {
+                          "type": "object",
+                          "description": "`PERCENTAGE` with `value`, or `FIXED` with `amount` and `currency`.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "PERCENTAGE",
+                                "FIXED"
+                              ]
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "`PERCENTAGE` only. From 0 to 100, with at most 2 decimals."
+                            },
+                            "amount": {
+                              "type": "number",
+                              "description": "`FIXED` only. With the currency's decimals."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "`FIXED` only. ISO 4217 code."
+                            }
+                          }
+                        },
+                        "cycles": {
+                          "type": "object",
+                          "properties": {
+                            "total": {
+                              "type": "integer"
+                            },
+                            "used": {
+                              "type": "integer",
+                              "description": "Cycles counted since the promotion was applied."
+                            },
+                            "remaining": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "on_pause": {
+                          "type": "string",
+                          "enum": [
+                            "KEEP",
+                            "END"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ACTIVE",
+                            "COMPLETED",
+                            "ENDED"
+                          ]
+                        },
+                        "applied_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "ended_at": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "date-time"
+                        },
+                        "end_reason": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "REPLACED",
+                            "REMOVED",
+                            "PLAN_CHANGE",
+                            "PAUSE",
+                            "CANCELED",
+                            null
+                          ]
+                        }
+                      }
                     }
                   }
                 }
@@ -124550,6 +124993,201 @@
           }
         },
         "deprecated": false,
+        "tags": [
+          "Subscriptions"
+        ]
+      }
+    },
+    "/subscriptions/{subscription_id}/promotion": {
+      "delete": {
+        "summary": "Remove Promotion from Subscription",
+        "description": "Ends the active promotion on the subscription. The promotion's `status` becomes `ENDED` and its `end_reason` becomes `REMOVED`. The next charge is the full price.",
+        "operationId": "remove-subscription-promotion",
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "description": "The unique identifier of the subscription.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200. The subscription, with its promotion in status `ENDED` and `end_reason` `REMOVED`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "id": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+                      "status": "ACTIVE",
+                      "promotion": {
+                        "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+                        "name": "Welcome 20% x3",
+                        "discount": {
+                          "type": "PERCENTAGE",
+                          "value": 20
+                        },
+                        "cycles": {
+                          "total": 3,
+                          "used": 1,
+                          "remaining": 2
+                        },
+                        "on_pause": "KEEP",
+                        "status": "ENDED",
+                        "applied_at": "2026-11-02T14:00:00Z",
+                        "ended_at": "2026-11-10T09:00:00Z",
+                        "end_reason": "REMOVED"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "promotion": {
+                      "type": "object",
+                      "description": "The copy of the promotion stored on the subscription. See [The Subscription Promotion Object](/reference/subscriptions/the-subscription-promotion-object).",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "The ID of the promotion (UUID)."
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "discount": {
+                          "type": "object",
+                          "description": "`PERCENTAGE` with `value`, or `FIXED` with `amount` and `currency`.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "PERCENTAGE",
+                                "FIXED"
+                              ]
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "`PERCENTAGE` only. From 0 to 100, with at most 2 decimals."
+                            },
+                            "amount": {
+                              "type": "number",
+                              "description": "`FIXED` only. With the currency's decimals."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "`FIXED` only. ISO 4217 code."
+                            }
+                          }
+                        },
+                        "cycles": {
+                          "type": "object",
+                          "properties": {
+                            "total": {
+                              "type": "integer"
+                            },
+                            "used": {
+                              "type": "integer",
+                              "description": "Cycles counted since the promotion was applied."
+                            },
+                            "remaining": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "on_pause": {
+                          "type": "string",
+                          "enum": [
+                            "KEEP",
+                            "END"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ACTIVE",
+                            "COMPLETED",
+                            "ENDED"
+                          ]
+                        },
+                        "applied_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "ended_at": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "date-time"
+                        },
+                        "end_reason": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "REPLACED",
+                            "REMOVED",
+                            "PLAN_CHANGE",
+                            "PAUSE",
+                            "CANCELED",
+                            null
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409. The subscription has no active promotion. The response includes `current_status`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "SUBSCRIPTION_PROMOTION_NOT_ACTIVE",
+                      "messages": [
+                        "The subscription has no active promotion."
+                      ],
+                      "current_status": "ACTIVE"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "current_status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "tags": [
           "Subscriptions"
         ]

@@ -1,0 +1,258 @@
+---
+title: "Promotions on subscription plans"
+description: "Attach a discount to a plan for a set number of charges and apply it to its subscriptions, without creating a new plan or changing the amount of each subscription"
+---
+
+A promotion on a plan is a time-limited discount on top of the plan's price. For example, "50% off the first 3 months" lets you offer a starter price without creating a new plan, or changing the amount of each subscription with a PATCH. The plan keeps its full price. A subscription that has the promotion gets the discount on its next charges, and pays the full price again once the promotion's cycles are used.
+
+<Note>
+**Where it is available**
+
+Subscription promotions run in the US region only. Promotions are turned on per organization. Until your organization has them on, attaching or applying a promotion returns `422 PROMOTION_NOT_APPLICABLE` with the reason `PROMOTIONS_NOT_ENABLED`. Ask your Technical Account Manager or Key Account Manager to turn them on.
+</Note>
+
+## How it works
+
+1. **Attach the promotion to a plan.** Call [Attach Promotion to Plan](/reference/plans/attach-plan-promotion) with the `promotion_id` and `cycles`, the number of charges the discount covers. A promotion can be attached to several plans, each with its own `cycles`.
+2. **Apply it to a subscription.** Send `promotion` when you [create the subscription](/reference/subscriptions/create-subscription), or [update it](/reference/subscriptions/update-subscription) later. You can apply by `id`, or by `code` for [promotion codes](/docs/payment-features/promotion-codes). The discount takes effect from the next charge.
+3. **Each charge gets the discount.** After `cycles` counted charges, the promotion becomes `COMPLETED` and the subscription is charged the full price.
+
+<Note>
+**The subscription keeps its own copy**
+
+When you apply a promotion, the subscription stores a copy of it: the promotion's ID, the discount, the number of cycles and the pause behavior. The copy is never edited. Removing the promotion from the plan, disabling it or letting it expire does not change the subscriptions that already have a copy.
+</Note>
+
+## Example: 20% off for 3 months
+
+The gym Gimnasio Andes sells a monthly plan for USD 100.00. It attaches the promotion "Welcome 20% x3" to the plan with `cycles` set to 3, and applies it to a subscription:
+
+| Charge | Full price | Discount | Net charged | Count |
+| :----- | :--------- | :------- | :---------- | :---- |
+| Cycle 1 | USD 100.00 | USD 20.00 | USD 80.00 | 1 of 3 |
+| Cycle 2 | USD 100.00 | USD 20.00 | USD 80.00 | 2 of 3 |
+| Cycle 3 | USD 100.00 | USD 20.00 | USD 80.00 | 3 of 3, the promotion becomes `COMPLETED` |
+| Cycle 4 | USD 100.00 | none | USD 100.00 | Full price |
+
+Each discounted charge carries the full price in `amount`, the discount in `discount_amount`, and a `SUBSCRIPTION_PROMOTION` discount line. Yuno adds the line; you don't send it. The customer pays the net amount. This is the cycle 2 charge:
+
+```json Cycle 2 charge
+{
+  "amount": { "currency": "USD", "value": 100.00 },
+  "discount_amount": 20.00,
+  "additional_data": {
+    "order": {
+      "discounts": [
+        {
+          "type": "SUBSCRIPTION_PROMOTION",
+          "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+          "name": "Welcome 20% x3",
+          "unit_amount": 20.00
+        }
+      ]
+    }
+  }
+}
+```
+
+## Attach a promotion to a plan
+
+Attaching makes the promotion available to the subscriptions on that plan. The request takes:
+
+* `promotion_id`: the ID of an existing promotion.
+* `cycles`: the number of charges the discount covers. At least 1.
+* `on_pause` (optional): `KEEP` (default) or `END`. It decides what a pause does to the promotion. See [Pause, cancellation and reactivation](#pause-cancellation-and-reactivation).
+
+The attachment is not edited. To change `cycles`, remove the attachment with [Remove Promotion from Plan](/reference/plans/remove-plan-promotion) and attach it again. Removing an attachment does not change the subscriptions that already have the promotion.
+
+[Retrieve Plan](/reference/plans/retrieve-plan) returns the attached promotions in a `promotions` list. Each entry has a `status` of `ENABLED` or `DISABLED`, read from the promotions engine. If the engine does not respond, the entry's `status` is `UNKNOWN`.
+
+Attaching fails when the promotion does not exist, has expired, or is already attached to the plan. See [Subscription promotion error codes](/reference/subscriptions/subscription-promotion-error-codes).
+
+## Apply a promotion to a subscription
+
+Apply a promotion when you create a subscription, or later with an update. Both take a `promotion` object with either an `id` or a `code`:
+
+```json Apply by ID
+{ "promotion": { "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10" } }
+```
+
+```json Apply by code
+{ "promotion": { "code": "WELCOME50" } }
+```
+
+The subscription must meet these conditions:
+
+* It is `ACTIVE` or `TRIALING`. Otherwise the request returns `409 SUBSCRIPTION_STATUS_NOT_ELIGIBLE`.
+* It is on a plan. Otherwise the request returns `422 SUBSCRIPTION_NOT_ON_A_PLAN`.
+* The plan has the promotion attached. Otherwise the request returns `422 PROMOTION_NOT_ATTACHED_TO_PLAN`.
+* Yuno charges the subscription. Subscriptions that the merchant or the provider charges are rejected with `422 EXECUTION_TYPE_NOT_SUPPORTED`.
+
+The promotion's conditions (country, currency and amount, payment method type, BIN, and the type of the stored card) are checked once, when you apply the promotion. They are not checked again on renewals. A promotion that does not meet them returns `422 PROMOTION_NOT_APPLICABLE` with the reason `CONDITIONS_NOT_MET`. A fixed-amount discount needs an amount in the subscription's currency, or the request returns the reason `CURRENCY_MISMATCH`.
+
+The first time a promotion is applied to a subscription, it uses one of the promotion's uses. Applying it again to the same subscription does not use another. When no uses are left, applying fails with the reason `USAGE_LIMIT_REACHED`.
+
+A successful apply returns the subscription with a `promotion` object. See [The subscription promotion object](/reference/subscriptions/the-subscription-promotion-object).
+
+### Applying again replaces the current promotion
+
+If a promotion is already active, applying another one (or the same one again) ends the current copy with `end_reason` `REPLACED`. The new copy starts with 0 cycles used. This is how you give a subscription more discounted charges. For example, if "Welcome 20% x3" has 2 of 3 cycles used and you apply it again, the subscription gets 3 new discounted charges.
+
+After a promotion is `COMPLETED` or `ENDED`, you can apply the same promotion or another one. The new copy starts at 0.
+
+## What each charge carries
+
+While the counted cycles are below `cycles`, each renewal charges the plan price minus the discount. The discount is calculated for each charge and stored, so a retry of the same charge uses the same amount.
+
+A cycle counts toward `cycles` when:
+
+* The charge is approved.
+* The cycle is a trial cycle. A trial cycle counts even though it has no payment.
+* The cycle is a 100% cycle (see below).
+
+A declined charge does not count. An approved retry counts once, with the same discounted amount. A late approved result counts when it arrives.
+
+Once the counted cycles reach `cycles`, the promotion becomes `COMPLETED`. The next charge, and the ones after it, are charged the full price with no discount line.
+
+Renewals do not call the promotions engine. An engine outage, or a promotion that is disabled, expired or removed from the plan, does not change the discount of a renewal that is already in progress. Renewals also do not check whether promotions are turned on for your organization.
+
+### Rounding and amount types
+
+* Percentages have at most 2 decimals, for example `12.5`.
+* Fixed amounts have the currency's decimals, for example `25.00`.
+* The discount is calculated with exact decimals and rounded half up to the currency's minor units (2 for USD). For example, 33% of USD 19.99 is 6.5967, which rounds to 6.60, so the charge is USD 13.39.
+* A fixed discount larger than the price leaves the charge at 0. The cycle is then a 100% cycle.
+
+### Trial periods
+
+A trial period always counts as one cycle. For example, a plan of USD 100.00 with a 1-month trial and "50% x3" charges USD 0.00 in month 1 (1 of 3), USD 50.00 in months 2 and 3 (2 and 3 of 3), and USD 100.00 from month 4.
+
+### 100% cycles
+
+If the discount covers the whole price, the cycle is not charged. It is marked `EXECUTED` with the reason `FULL_DISCOUNT`, it counts as used, and the subscription receives a [`subscription.cycle_executed`](/docs/webhooks/events) webhook. For example, "Free first month" (100% x1) gives a first cycle that is executed with no charge and counts as 1 of 1.
+
+### Plans with several price phases
+
+On a plan with several price phases, the discount applies to the price of each phase. See [Plans](/docs/payment-features/subscriptions/plans) for phases.
+
+### Usage-based billing
+
+On a plan with usage charges (meters), the discount applies only to the plan price. Usage is charged in full. For example, a USD 100.00 plan with USD 30.00 of usage and "Welcome 20%" is charged USD 80.00 + USD 30.00 = USD 110.00. See [Usage-based billing](/docs/payment-features/subscriptions/usage-based-billing).
+
+### Only the subscription's own promotion applies
+
+A subscription charge uses only the subscription's own promotion. No other promotion, automatic or with a code, is added on top. The discounted amount is the one Yuno's subscription service calculates.
+
+## Automatic promotions
+
+A promotion of type `AUTOMATIC` applies without a code. When an `AUTOMATIC` promotion is attached to a plan, it applies once, when a subscription is created on that plan. Renewals do not evaluate it again, and subscriptions that were already on the plan do not receive it.
+
+If the request that creates the subscription also sends a `promotion`, the larger discount wins. The two promotions do not stack.
+
+<Warning>
+**An automatic plan promotion can also discount one-off payments**
+
+An `AUTOMATIC` promotion attached to a plan may also discount the account's one-off payments, that is, payments that are not subscription charges. Attaching a promotion to a plan does not limit it to subscriptions. Subscription charges still use only the subscription's own discount, as described above. For how one-off promotions work, see [Promotions](/docs/payment-features/promotions).
+</Warning>
+
+## Plan changes
+
+When you change a subscription's plan with the `plan_change` object of [Update Subscription](/reference/subscriptions/update-subscription), you choose what happens to the active promotion. The choice has two fields:
+
+* `promotion_behavior`: `KEEP` (default) keeps the promotion, with its remaining cycles, on the new plan. `END` ends it with the reason `PLAN_CHANGE`. The field is ignored when the subscription has no active promotion.
+* `apply_new_plan_promotion`: `true` (default) applies the new plan's `AUTOMATIC` promotion, if it has one. The current promotion ends with `PLAN_CHANGE`, and the new plan's promotion starts at 0. `false` leaves the new plan's promotion unapplied, and `promotion_behavior` decides what happens to the current one.
+
+The result depends on when the change takes effect:
+
+| When the change takes effect | `effective` | `billing_cycle_behavior` | `promotion_behavior: KEEP` (default) | `promotion_behavior: END` |
+| :--------------------------- | :---------- | :----------------------- | :----------------------------------- | :------------------------ |
+| Now, same date | `IMMEDIATE` | `KEEP` (default) | The next charge is the new price minus the discount. A percentage is recalculated on the new price. A fixed amount stays the same. | The next charge is the full price. |
+| Now, restarting the cycle | `IMMEDIATE` | `RESTART` | The first charge on the new plan has the discount, and it counts. | The first charge on the new plan is the full price. |
+| At the next cycle | `NEXT_BILLING_CYCLE` (default) | Not applicable | The promotion moves to the effective date. | The promotion stays active until the effective date and ends there. |
+
+For example, Basic at USD 10.00 changes to Pro at USD 20.00 in the middle of a cycle. The subscription has "Welcome 20% x6" with 3 cycles already used. With `KEEP`, the next three charges are USD 16.00 each (4 of 6, 5 of 6 and 6 of 6), and then USD 20.00. With `END`, the promotion ends at the change, and every charge is USD 20.00.
+
+Other rules:
+
+* A change to another billing frequency, for example from monthly to annual, does not end the promotion by default. With `KEEP`, the remaining cycles continue on the new plan's billing cycles.
+* A trial period on the new plan that is not skipped counts toward the remaining cycles.
+* Cancelling a scheduled change also undoes the `promotion_behavior` choice.
+* A plan in another currency is rejected with `400`.
+
+Example: a Monthly subscription with "Welcome 20%" (1 of 3 cycles used) moves to Plus at USD 150.00, which has an `AUTOMATIC` "Plus 30%" for 2 cycles. By default (`apply_new_plan_promotion: true`), the subscription pays USD 105.00 for each of those 2 cycles, and then USD 150.00. With `apply_new_plan_promotion: false` and `promotion_behavior: KEEP`, it pays USD 120.00 for each of those 2 cycles, and then USD 150.00.
+
+## Pause, cancellation and reactivation
+
+The `on_pause` value you chose when you attached the promotion decides what a pause does:
+
+| `on_pause` | What happens when the subscription is paused |
+| :--------- | :------------------------------------------- |
+| `KEEP` (default) | The promotion stays active. Its remaining cycles continue when the subscription resumes. |
+| `END` | The promotion ends with the reason `PAUSE`. When the subscription resumes, it is charged the full price. |
+
+Cancelling a subscription ends its promotion with the reason `CANCELED`. Reactivating the subscription does not restart the promotion.
+
+## Remove a promotion from a subscription
+
+Call [Remove Promotion from Subscription](/reference/subscriptions/remove-subscription-promotion) to remove the active promotion. The promotion ends with the reason `REMOVED`, and the next charge is the full price. If the subscription has no active promotion, the request returns `409 SUBSCRIPTION_PROMOTION_NOT_ACTIVE`.
+
+## Promotion states
+
+An applied promotion is `ACTIVE` until its cycles are used, which makes it `COMPLETED`, or until it ends early, which makes it `ENDED`. The `end_reason` field tells you why it ended early:
+
+| `end_reason` | When it happens |
+| :----------- | :-------------- |
+| `REPLACED` | Another promotion, or the same one, is applied to the subscription. |
+| `REMOVED` | The promotion is removed from the subscription. |
+| `PLAN_CHANGE` | The plan changes and the promotion ends, with `promotion_behavior: END` or `apply_new_plan_promotion: true`. |
+| `PAUSE` | The subscription is paused and `on_pause` is `END`. |
+| `CANCELED` | The subscription is cancelled. |
+
+| Event | Effect on the active promotion |
+| :---- | :----------------------------- |
+| Charge approved, or trial cycle | One cycle counts. When the count reaches `cycles`, the promotion becomes `COMPLETED`. |
+| Charge declined | Nothing. The cycle does not count. |
+| Approved retry | The cycle counts once, with the same discounted amount. |
+| Late approved result | The cycle counts when the result arrives. |
+| Promotion removed from the plan, disabled, or expired | Nothing. The copy on the subscription continues. |
+| Organization turned off | No new promotions can be applied. Promotions in progress continue. |
+
+## Webhooks
+
+| Event | When it is sent | Promotion data |
+| :---- | :-------------- | :------------- |
+| `subscription.promotion_applied` | A promotion is applied to a subscription, including when it replaces another one. | The promotion object. |
+| `subscription.cycle_executed` | A cycle of a subscription with a promotion is charged or executed, including a 100% cycle. | `promotion` with `id`, `discount_amount` and `cycles_remaining`. |
+
+There is no event when a promotion ends. To see the state of a promotion, read the subscription. For the full list of events, see [Events and Triggers](/docs/webhooks/events).
+
+## Payment links and checkout
+
+A subscription created from a payment link can carry a promotion on its first payment. In checkout and payment links, only `AUTOMATIC` promotions and the promotion the merchant sets on the link apply. The buyer cannot enter a code.
+
+The promotion is copied to the subscription when the link creates it, before the buyer pays. Subscription payment links today are single-use, save the card, require an identified customer, and accept cards only. Promotions on these links follow the same conditions.
+
+If the discount leaves the first charge at 0, for example with "Free first month", the subscription is created and activated without a payment. Cycle 1 is executed with the reason `FULL_DISCOUNT` and counts as used.
+
+## Not supported in this release
+
+* Two promotions on the same subscription at once. Applying a new one replaces the current one.
+* Proration. A plan change is not charged in proportion to the time used.
+* Scheduling a promotion for a future date. A promotion applies from the next charge.
+* Editing an attachment or the copy on a subscription. Remove and attach again instead.
+* Subscriptions created with a single-step flow, such as a payment that creates the subscription, for example Pix Automático.
+* Turning off all the promotions in progress for a merchant at once. Turning the feature off stops new applications only.
+* Subscriptions that the merchant or the provider charges.
+
+## Errors
+
+The error codes, their HTTP statuses and the reasons for `PROMOTION_NOT_APPLICABLE` are listed in [Subscription promotion error codes](/reference/subscriptions/subscription-promotion-error-codes).
+
+## Related
+
+* [Plans](/docs/payment-features/subscriptions/plans)
+* [Promotions](/docs/payment-features/promotions) (promotions on one-off payments)
+* [Attach Promotion to Plan](/reference/plans/attach-plan-promotion)
+* [Remove Promotion from Plan](/reference/plans/remove-plan-promotion)
+* [Remove Promotion from Subscription](/reference/subscriptions/remove-subscription-promotion)
+* [The Subscription Promotion Object](/reference/subscriptions/the-subscription-promotion-object)
