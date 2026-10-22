@@ -92412,7 +92412,8 @@ paths:
                       type: string
                       description: >-
                         The start date that the subscription plan will be available to use. If not set, the subscription
-                        is available from the moment it is created.
+                        is available from the moment it is created. Must be later than the current time: a past date
+                        returns `400 BAD_REQUEST`.
                       format: date-time
                     finish_at:
                       type: string
@@ -92548,7 +92549,7 @@ paths:
                     card:
                       installments: 3
                   availability:
-                    start_at: '2024-11-01T00:00:00Z'
+                    start_at: '2030-01-01T00:00:00Z'
                   trial_period:
                     billing_cycles: 1
                     amount:
@@ -93161,6 +93162,7 @@ paths:
             examples:
               Plan:
                 value:
+                  account_id: <your account_id>
                   name: Streaming Pro
                   description: Access to Pro features, billed monthly
                   merchant_reference: streaming-pro-monthly
@@ -94369,8 +94371,8 @@ paths:
                 payment_method:
                   type: object
                   description: >-
-                    Specifies the `payment_method` object. Supported types are `CARD` and `PAYPAL_ENROLLMENT`. You can
-                    use the `token`, the `vaulted_token`, or the card information through the card object.
+                    Specifies the `payment_method` object. Supported type is `CARD`. When you send `payment_method`,
+                    `type` and `vaulted_token` are required, even if you only change `card.usage`.
                   properties:
                     type:
                       type: string
@@ -94379,44 +94381,11 @@ paths:
                         - CARD
                     vaulted_token:
                       type: string
-                      description: 'The vaulted token (MAX: 64; MIN: 36).'
+                      description: 'The vaulted token (UUID, MAX: 64; MIN: 36). Required whenever `payment_method` is sent.'
                     card:
                       type: object
                       description: Specifies the card object.
                       properties:
-                        verify:
-                          type: boolean
-                          description: >-
-                            Using  `amount` = 0 and `verify` = true, you can verify the user´s card without authorizing
-                            a real amount.
-                        card_data:
-                          type: object
-                          description: Specifies the card data object.
-                          properties:
-                            number:
-                              type: string
-                              description: >-
-                                Card’s number without any separators.  (MAX 19; MIN 8) - only available for PCI
-                                certified merchants.
-                            expiration_month:
-                              type: integer
-                              description: Card’s expiration month - MM (MAX 2; MIN 2) - only available for PCI certified merchants
-                              format: int32
-                            expiration_year:
-                              type: integer
-                              description: >-
-                                Card’s expiration year in the YYYY format (MAX 4; MIN 4) - only available for PCI
-                                certified merchants
-                              format: int32
-                            security_code:
-                              type: integer
-                              description: Card’s security code (MAX 4; MIN 3) - only available for PCI certified merchants.
-                              format: int32
-                            holder_name:
-                              type: string
-                              description: >-
-                                Cardholder’s full name as it appears on the card (MAX 26; MIN 2) - only available for
-                                PCI certified merchants
                         usage:
                           type: string
                           description: >-
@@ -94426,8 +94395,9 @@ paths:
                           enum:
                             - FIRST
                             - USED
-                    '':
-                      type: string
+                  required:
+                    - type
+                    - vaulted_token
                 availability:
                   type: object
                   description: >-
@@ -94601,6 +94571,17 @@ paths:
                     value:
                       type: string
                       description: Object value for the key defined  (MAX 512 ; MIN 1).
+            examples:
+              Update card usage:
+                summary: Set the stored credential usage
+                value:
+                  payment_method:
+                    type: CARD
+                    vaulted_token: <current vaulted_token of the subscription>
+                    card:
+                      usage: FIRST
+                  retries:
+                    strategy: DEFAULT
       responses:
         '200':
           description: '200'
@@ -94970,8 +94951,8 @@ paths:
                       start_at: '2024-01-16T00:00:00.786342Z'
                       finish_at: '2024-05-26T20:00:00.786342Z'
                     metadata:
-                      key: sub_ext_id
-                      value: AA001
+                      - key: sub_ext_id
+                        value: AA001
                     payments:
                       - 5104911d-5df9-229e-8468-bd41abea1a4s
                     created_at: '2023-12-16T20:46:54.786342Z'
@@ -95204,15 +95185,17 @@ paths:
                         example: '2024-05-26T20:00:00.786342Z'
                   metadata:
                     type:
-                      - object
+                      - array
                       - 'null'
-                    properties:
-                      key:
-                        type: string
-                        example: sub_ext_id
-                      value:
-                        type: string
-                        example: AA001
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                          example: sub_ext_id
+                        value:
+                          type: string
+                          example: AA001
                   payments:
                     type: array
                     items:
@@ -95454,8 +95437,8 @@ paths:
                       start_at: '2024-01-16T00:00:00.786342Z'
                       finish_at: '2024-05-26T20:00:00.786342Z'
                     metadata:
-                      key: sub_ext_id
-                      value: AA001
+                      - key: sub_ext_id
+                        value: AA001
                     payments:
                       - 5104911d-5df9-229e-8468-bd41abea1a4s
                     created_at: '2023-12-16T20:46:54.786342Z'
@@ -95584,20 +95567,25 @@ paths:
                         example: '2024-05-26T20:00:00.786342Z'
                   metadata:
                     type:
-                      - object
+                      - array
                       - 'null'
-                    properties:
-                      key:
-                        type: string
-                        example: sub_ext_id
-                      value:
-                        type: string
-                        example: AA001
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                          example: sub_ext_id
+                        value:
+                          type: string
+                          example: AA001
                   payments:
                     type: array
                     items:
                       type: string
                       example: 5104911d-5df9-229e-8468-bd41abea1a4s
+                    description: >-
+                      List of payment IDs created by the subscription. Omitted from the response when the subscription
+                      has no payments.
                   created_at:
                     type: string
                     example: '2023-12-16T20:46:54.786342Z'
@@ -96132,8 +96120,8 @@ paths:
                       start_at: '2024-01-16T00:00:00.786342Z'
                       finish_at: '2024-05-26T20:00:00.786342Z'
                     metadata:
-                      key: sub_ext_id
-                      value: AA001
+                      - key: sub_ext_id
+                        value: AA001
                     payments:
                       - 5104911d-5df9-229e-8468-bd41abea1a4s
                     created_at: '2023-12-16T20:46:54.786342Z'
@@ -96262,20 +96250,25 @@ paths:
                         example: '2024-05-26T20:00:00.786342Z'
                   metadata:
                     type:
-                      - object
+                      - array
                       - 'null'
-                    properties:
-                      key:
-                        type: string
-                        example: sub_ext_id
-                      value:
-                        type: string
-                        example: AA001
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                          example: sub_ext_id
+                        value:
+                          type: string
+                          example: AA001
                   payments:
                     type: array
                     items:
                       type: string
                       example: 5104911d-5df9-229e-8468-bd41abea1a4s
+                    description: >-
+                      List of payment IDs created by the subscription. Omitted from the response when the subscription
+                      has no payments.
                   created_at:
                     type: string
                     example: '2023-12-16T20:46:54.786342Z'
