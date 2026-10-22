@@ -1,12 +1,12 @@
 # Docs hygiene report
 
-Generated 2026-10-22, in-scope pages: 276
+Generated 2026-10-22, in-scope pages: 280
 
 - description-missing: 0
 - description-short: 2
 - title-long: 12
-- third-party-video: 8
-- jsx-import: 19
+- third-party-video: 6
+- jsx-import: 20
 - export-const: 0
 - hidden-in-nav: 1 (tabs hidden by design excluded)
 - legacy-no-notice: 9
@@ -26,6 +26,9 @@ Generated 2026-10-22, in-scope pages: 276
 | changelog/react-native | jsx-import | import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx'; |
 | changelog/web | jsx-import | import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx'; |
 | changelog/whats-new | jsx-import | import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx'; |
+| changelog/yuno-sdk/android | jsx-import | import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx'; |
+| changelog/yuno-sdk/ios | jsx-import | import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx'; |
+| changelog/yuno-sdk/web | jsx-import | import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx'; |
 | docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp | title-long | 49 chars, no sidebarTitle |
 | docs/ai-capabilities/maia-ai-technical-account-manager | title-long | 33 chars, no sidebarTitle |
 | docs/direct-integration-use-cases/set-up-payment-connection | jsx-import | import { Video } from "/snippets/Video.jsx"; |
@@ -52,12 +55,8 @@ Generated 2026-10-22, in-scope pages: 276
 | docs/sdks/universal-pilot | hidden-in-nav | frontmatter hidden: true but listed in docs.json |
 | docs/sdks/universal-pilot | legacy-no-notice | no LegacySdkNotice import |
 | docs/using-yuno/dashboard-overview/checkout-builder-new-payment-method-settings | title-long | 49 chars, no sidebarTitle |
-| docs/using-yuno/dashboard-overview/insights | jsx-import | import { Video } from "/snippets/Video.jsx"; |
-| docs/using-yuno/dashboard-overview/insights | third-party-video | asset hosted on github.com/writechoiceorg/yuno-images |
 | docs/using-yuno/dashboard-overview/monitors | jsx-import | import { Video } from "/snippets/Video.jsx"; |
 | docs/using-yuno/dashboard-overview/monitors | third-party-video | asset hosted on github.com/writechoiceorg/yuno-images |
-| docs/using-yuno/dashboard-overview/payments | jsx-import | import { Video } from "/snippets/Video.jsx"; |
-| docs/using-yuno/dashboard-overview/payments | third-party-video | asset hosted on github.com/writechoiceorg/yuno-images |
 | docs/using-yuno/dashboard-overview/routing | jsx-import | import { Video } from "/snippets/Video.jsx"; |
 | docs/using-yuno/dashboard-overview/routing | third-party-video | asset hosted on github.com/writechoiceorg/yuno-images |
 | docs/using-yuno/organization/accounts | jsx-import | import { Video } from "/snippets/Video.jsx"; |
