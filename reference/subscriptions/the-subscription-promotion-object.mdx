@@ -1,0 +1,118 @@
+---
+title: "The Subscription Promotion Object"
+description: "Documents the promotion object on a subscription: the discount, the cycles used, the pause behavior and how the promotion ended"
+---
+
+When a promotion is applied to a subscription, Yuno stores a copy of it on the subscription. The copy is the `promotion` object. [Create Subscription](/reference/subscriptions/create-subscription) and [Update Subscription](/reference/subscriptions/update-subscription) return it. The copy is never edited: changing the plan's attachment or the promotion afterwards does not change it. See [Promotions on subscription plans](/docs/payment-features/subscriptions/promotions).
+
+## Attributes
+
+<ParamField body="id" type="string">
+  The ID of the promotion (UUID).
+
+  Example: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+</ParamField>
+
+<ParamField body="name" type="string">
+  The name of the promotion.
+
+  Example: Welcome 20% x3
+</ParamField>
+
+<ParamField body="discount" type="object">
+  The discount. The fields depend on `type`.
+
+  <Expandable title="properties">
+    <ParamField body="type" type="enum">
+      `PERCENTAGE` or `FIXED`.
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      `PERCENTAGE` only. The percentage, from 0 to 100, with at most 2 decimals.
+
+      Example: 20
+    </ParamField>
+
+    <ParamField body="amount" type="number">
+      `FIXED` only. The amount, with the currency's decimals.
+
+      Example: 15.00
+    </ParamField>
+
+    <ParamField body="currency" type="string">
+      `FIXED` only. The ISO 4217 currency of `amount`.
+
+      Example: USD
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="cycles" type="object">
+  The number of charges the discount covers.
+
+  <Expandable title="properties">
+    <ParamField body="total" type="integer">
+      The number of cycles the promotion covers, set when it was attached to the plan.
+    </ParamField>
+
+    <ParamField body="used" type="integer">
+      Cycles counted since it was applied: approved charges, trial cycles and 100% cycles. A declined charge does not count. A retry of the same charge counts once.
+    </ParamField>
+
+    <ParamField body="remaining" type="integer">
+      `total` minus `used`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="on_pause" type="enum">
+  What a pause does to the promotion: `KEEP` (its remaining cycles continue on resume) or `END` (the promotion ends with the reason `PAUSE`). It is copied from the plan's attachment when the promotion is applied.
+</ParamField>
+
+<ParamField body="status" type="enum">
+  `ACTIVE`, while cycles remain. `COMPLETED`, when all cycles are used. `ENDED`, when the promotion ends early.
+</ParamField>
+
+<ParamField body="applied_at" type="timestamp">
+  When the promotion was applied (ISO 8601).
+
+  Example: 2026-11-02T14:00:00Z
+</ParamField>
+
+<ParamField body="ended_at" type="timestamp">
+  When the promotion ended. `null` while it is active.
+</ParamField>
+
+<ParamField body="end_reason" type="enum">
+  `null` while the promotion is active. Otherwise one of: `REPLACED` (another promotion was applied), `REMOVED` (removed from the subscription), `PLAN_CHANGE` (the plan changed and the promotion ended), `PAUSE` (the subscription was paused and `on_pause` is `END`), or `CANCELED` (the subscription was canceled).
+</ParamField>
+
+## Example
+
+A subscription with a percentage promotion, 2 of 3 cycles used:
+
+```json Promotion object
+{
+  "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+  "name": "Welcome 20% x3",
+  "discount": { "type": "PERCENTAGE", "value": 20 },
+  "cycles": { "total": 3, "used": 2, "remaining": 1 },
+  "on_pause": "KEEP",
+  "status": "ACTIVE",
+  "applied_at": "2026-11-02T14:00:00Z",
+  "ended_at": null,
+  "end_reason": null
+}
+```
+
+A fixed-amount promotion:
+
+```json Fixed discount
+{
+  "discount": { "type": "FIXED", "amount": 15.00, "currency": "USD" }
+}
+```
+
+## In webhooks
+
+[`subscription.promotion_applied`](/docs/webhooks/object-and-examples#subscription-promotion_applied) carries this object. [`subscription.cycle_executed`](/docs/webhooks/object-and-examples#subscription-cycle_executed) carries a shorter `promotion` object on each discounted cycle, with `id`, `discount_amount` and `cycles_remaining`.
