@@ -29,6 +29,7 @@
         "operationId": "create-connection",
         "description": "Creates a connection in ACTIVE status.",
         "parameters": [
+          { "name": "X-account-code", "in": "header", "required": true, "description": "The account that owns the connection.", "schema": { "type": "string" } },
           { "name": "X-Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "requestBody": {
@@ -37,24 +38,61 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["account_id", "merchant_connection_id", "provider_id", "flow_type", "payment_methods", "params"],
+                "required": ["merchant_connection_id", "provider_id", "payment_methods", "params"],
                 "properties": {
-                  "account_id": { "type": "string", "format": "uuid", "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
-                  "merchant_connection_id": { "type": "string", "example": "adyen-us-prod-001" },
-                  "provider_id": { "type": "string", "example": "ADYEN" },
-                  "flow_type": { "type": "string", "example": "PAYIN" },
-                  "payment_methods": { "type": "array", "items": { "type": "string" }, "example": ["CARD", "GOOGLE_PAY"] },
+                  "merchant_connection_id": { "type": "string", "example": "stripe-us-prod-001" },
+                  "provider_id": { "type": "string", "example": "STRIPE" },
+                  "flow_type": { "type": "string", "description": "Optional. Defaults to PAYIN.", "example": "PAYIN" },
+                  "payment_methods": { "type": "array", "items": { "type": "string" }, "example": ["CARD"] },
                   "params": {
                     "type": "array",
                     "items": {
                       "type": "object",
                       "properties": {
                         "param_id": { "type": "string" },
-                        "value": { "type": "string" }
+                        "value": { "type": ["string", "boolean", "number", "array"] }
+                      }
+                    }
+                  },
+                  "costs": {
+                    "type": "array",
+                    "description": "Optional. Per-connection cost configuration.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "sort_number": { "type": "integer" },
+                        "cost_name": { "type": "string" },
+                        "currency": { "type": "string" },
+                        "cost_values": { "type": "object" }
                       }
                     }
                   }
                 }
+              },
+              "example": {
+                "merchant_connection_id": "stripe-us-prod-001",
+                "provider_id": "STRIPE",
+                "flow_type": "PAYIN",
+                "payment_methods": ["CARD"],
+                "params": [
+                  { "param_id": "INTEGRATION_TYPE", "value": "STRIPE_CHARGES" },
+                  { "param_id": "SECRET_KEY", "value": "sk_live_..." },
+                  { "param_id": "RADAR_FRAUD_ANALYSIS", "value": false },
+                  { "param_id": "SEND_RECEIPT_EMAIL_PARAMETER", "value": false },
+                  { "param_id": "SETUP_FUTURE_USAGE", "value": false },
+                  { "param_id": "ORDER_ID", "value": "DEFAULT" }
+                ],
+                "costs": [
+                  {
+                    "sort_number": 1,
+                    "cost_name": "Transaction Fee",
+                    "currency": "USD",
+                    "cost_values": {
+                      "successful": { "fixed_fee": 0.3, "percentage": 2.9 },
+                      "unsuccessful": { "fixed_fee": 0.0, "percentage": 0.0 }
+                    }
+                  }
+                ]
               }
             }
           }
@@ -72,7 +110,7 @@
                     "provider_id": { "type": "string", "example": "STRIPE" },
                     "status": { "type": "string", "example": "ACTIVE" },
                     "flow_type": { "type": "string", "example": "PAYIN" },
-                    "payment_methods": { "type": "array", "items": { "type": "string" }, "example": ["CARD", "GOOGLE_PAY", "APPLE_PAY"] },
+                    "payment_methods": { "type": "array", "items": { "type": "string" }, "example": ["CARD"] },
                     "params": { "type": "array", "items": { "type": "object" } },
                     "costs": { "type": "array", "items": { "type": "object" } },
                     "created_at": { "type": "string", "format": "date-time", "example": "2026-05-12T10:24:00Z" },
@@ -91,7 +129,7 @@
                   "properties": {
                     "type": { "type": "string", "example": "validation_error" },
                     "code": { "type": "string", "example": "MISSING_REQUIRED_PARAM" },
-                    "message": { "type": "string", "example": "Required param 'API_KEY' is missing" },
+                    "message": { "type": "string", "example": "Required param 'SECRET_KEY' is missing" },
                     "details": { "type": "object" }
                   }
                 }

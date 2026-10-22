@@ -81,6 +81,10 @@ dependencies: [
 pod 'SdkPayments', '~> 3.0'
 ````
 
+<Warning>
+`SdkPayments` 3.0.0 is not published on CocoaPods trunk yet, so `pod install` can't resolve `~> 3.0`. Use Swift Package Manager until it is.
+</Warning>
+
 Then initialize in your `AppDelegate` or `App` struct, depending on your app's entry point:
 
 ````swift
@@ -106,6 +110,8 @@ repositories {
 
 dependencies {
     implementation 'com.yuno.payments:android-sdk:3.0.0'
+    // The SDK ships androidx.activity at runtime scope only, so add it to compile ComponentActivity
+    implementation 'androidx.activity:activity-ktx:1.9.3'
 }
 ````
 
@@ -158,10 +164,12 @@ private-secret-key: <your-private-secret-key>
   "payment_description": "Order 123",
   "country": "US",
   "customer_id": "customer-123",
-  "amount": { "currency": "USD", "value": 2500 },
+  "amount": { "currency": "USD", "value": 25 },
   "workflow": "SDK_SEAMLESS"
 }
 ````
+
+`amount.value` is in major units of the currency: `25` is USD 25.00, not 25 cents.
 
 <Warning>
 Create the session with `workflow: "SDK_SEAMLESS"`, a field on the session-create body above, **not** on `TransactionConfig`. It is what lets the SDK create the payment for you. Without it, the transaction ends in `INTERNAL_ERROR`. See the [`workflow` field](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow).
@@ -169,10 +177,10 @@ Create the session with `workflow: "SDK_SEAMLESS"`, a field on the session-creat
 
 ### Put the methods on screen
 
-The shopper's choice reaches the SDK as a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected): only `paymentMethodType` (`type` on Web) is required; `vaultedToken` and `transactionData` (`data` on Web) are optional. Two ways to get it:
+The shopper's choice reaches the SDK as a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected): only `paymentMethodType` (`type` on Web and Android) is required; `vaultedToken` and `transactionData` (`data` on Web) are optional. Two ways to get it:
 
 - **Use the SDK's pre-built methods list.** Call `getPaymentMethodsViews` to render a list of methods. When the user picks one, your `onPaymentSelected` controller receives a `PaymentMethodSelected` you can pass to `start()`. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list).
-- **Build your own list.** Fetch the available payment methods from Yuno's API and construct `PaymentMethodSelected` yourself based on the user's choice. See [`GET /v1/checkout/sessions/{checkout_session}/payment-methods`](https://docs.y.uno/reference/checkout-sessions/retrieve-payment-methods-for-checkout#retrieve-payment-methods-for-checkout).
+- **Build your own list.** Fetch the available payment methods from Yuno's API and construct `PaymentMethodSelected` yourself based on the user's choice. See [`GET /v1/checkout/sessions/{checkout_session}/payment-methods`](https://docs.y.uno/reference/checkout-sessions/retrieve-payment-methods-for-checkout).
 
 ## Take the payment
 
@@ -269,7 +277,7 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
     private fun startCheckout() {
         // Tell the SDK which method to use ("CARD", "PIX", ...).
         // See "Put the methods on screen" above.
-        val paymentSelected = PaymentMethodSelected(paymentMethodType = "CARD")
+        val paymentSelected = PaymentMethodSelected(type = "CARD")
 
         // Create the checkout session on your backend, then pass it here.
         val config = TransactionConfig(
@@ -316,20 +324,22 @@ By default, the SDK creates the payment for you. You don't need this endpoint.
 If you override `createPayment` to take control of payment creation, your backend calls this endpoint with the One-Time Token delivered by the SDK.
 
 - **Endpoint**: `POST /v1/payments`
-- **Required**: One-Time Token, checkout session, `account_id`, `merchant_order_id`, `description`, `country`, and `amount` (`value` + `currency`)
+- **Required**: One-Time Token, checkout session, `account_id`, `merchant_order_id`, `description`, `country`, `amount` (`value` + `currency`), `customer_payer.id` (the customer the session was created for) and an `X-Idempotency-Key` header
 - **Reference**: [`POST /v1/payments`](https://docs.y.uno/reference/payments/create-payment)
 
 ````http
 POST https://api-sandbox.y.uno/v1/payments
 public-api-key: <your-public-api-key>
 private-secret-key: <your-private-secret-key>
+X-Idempotency-Key: <unique-key-per-payment>
 
 {
   "account_id": "your-account-id",
   "merchant_order_id": "order-123",
   "description": "Order 123",
   "country": "US",
-  "amount": { "currency": "USD", "value": 2500 },
+  "amount": { "currency": "USD", "value": 25 },
+  "customer_payer": { "id": "customer-123" },
   "payment_method": { "token": "one-time-token-from-sdk" },
   "checkout": { "session": "checkout-session-id" }
 }
