@@ -1,0 +1,86 @@
+---
+title: "Troubleshooting"
+sidebarTitle: "Troubleshooting"
+description: "The response, its cause, and the fix for common Yuno integration errors: keys, workflow, routes, test cards, webhooks, retries, and amounts."
+keywords: ["troubleshooting", "errors", "401", "INVALID_CREDENTIALS", "INTERNAL_ERROR", "routing", "test cards", "x-hmac-signature", "X-Idempotency-Key", "REQUEST_IN_PROCESS", "IDEMPOTENCY_DUPLICATED"]
+---
+
+<div className="yd-page">
+
+<div className="yd-eyebrow">
+  <span className="yd-eyebrow-accent">Getting started</span>
+  <span className="yd-eyebrow-rule" />
+  <span className="yd-eyebrow-muted">Reference</span>
+</div>
+
+<p className="yd-lead" style={{marginTop: '18px', maxWidth: 'none'}}>Find the response you got in the first column, then apply the fix. Before you send a payment request again, find out whether the first request created a payment.</p>
+
+## Find your response
+
+{/* TODO: spec section 6 asks for each Response below to be reproduced on the Montmartre sandbox before the PR. Not done in this commit, deferred to the PR stage (Task 10). */}
+
+| Response | Cause | Fix |
+| --- | --- | --- |
+| `401` `INVALID_CREDENTIALS` | The `public-api-key` or `private-secret-key` header is missing or wrong. Sandbox and production use different keys. | Send the keys of the environment you call. In sandbox, copy them from the dashboard in Test Mode. See [Authentication](/reference/getting-started/authentication) and [Developers credentials](/docs/using-yuno/settings/developers-credentials). |
+| The transaction ends in `INTERNAL_ERROR` | The `workflow` does not match your integration. | Use `DIRECT` when your server sends the card. Use `SDK_SEAMLESS` on the checkout session when the Web SDK creates the payment. |
+| No provider in the response | Card has no published route. | Open [Routing](/docs/using-yuno/dashboard-overview/routing) and check that the Card route is under the **Published** tab. Check that Card is turned on in the Checkout builder. |
+| The card is declined | Test cards are specific to a provider. The Quickstart cards only work when your sandbox routes Card to the Yuno Test Payment Gateway. | Route Card to the gateway, or use the test cards of the provider you route to. See [Yuno Test Payment Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway). |
+| No payment methods in the checkout | The Checkout builder shows only payment methods that have a published route and are turned on. A display condition (country, amount, currency, or metadata) can also hide a method. | Publish the route, turn the method on, and click **Publish settings** in the Checkout builder. Then check the display conditions of the method. |
+| `400` `INVALID_CUSTOMER_FOR_TOKEN` | The token in the payment is associated with another customer object. | Send the customer the token belongs to. If you created the checkout session with a `customer_id`, send the same customer in `customer_payer.id`. See [Payment flow](/docs/how-yuno-works/how-yuno-payment-flow-works). |
+| `sdk_action_required` is `true` and the checkout does not finish | The payment needs another customer action, such as 3DS or a redirect, and the SDK has not run it. | Call the SDK's `continuePayment` method after the payment is created. |
+| The payment stays `PENDING` after the redirect | The payment method is asynchronous, so the payment passes through `PENDING` before it reaches a final status. | Confirm the final status on your server from a [webhook](/docs/webhooks/index) or [Retrieve payment](/reference/payments/retrieve-payment-by-id-v2) before you fulfill the order. |
+| A `METADATA` routing condition never matches | The key is absent from `payment.metadata`. A missing key never matches, whatever the operator, `NOT_EQUAL` and `NOT_ONE_OF` included. | Send the key in the payment's `metadata`. To split traffic by whether a key is present, see [Routing conditions](/reference/organizations/routing/routing-conditions). |
+| The `x-hmac-signature` does not match | Your code parsed or re-serialized the body before it computed the signature, or it uses another secret. | Compute the HMAC over the raw request body with the secret configured for that webhook. See [Verify webhook signatures](/docs/webhooks/verify-webhook-signatures-hmac). |
+| Your endpoint processes a webhook twice | Yuno retries a delivery that does not get HTTP 200, so the same event can arrive more than once. | Skip duplicates with the event's idempotency key, `data.payment.idempotency_key` for v2 payment events. See [De-duplication](/docs/webhooks/index#de-duplication). |
+| The amount is 100 times the order total | The amount was sent in minor units (cents). `amount.value` is in major units. | Send `25` for USD 25.00. Validate the amount against your stored order. |
+
+{/* TODO: the amount row follows docs/yuno-sdk/get-started ("25 is USD 25.00"). The Create Payment reference examples use values such as 5000 without a unit (see the TODO in docs/quickstart.mdx). Confirm with the API team. */}
+
+{/* Cut from the seed: "Checkout session request returns 404" (wrong path). 404 is not in reference/getting-started/response-codes, so the row has no verified response. */}
+
+## Handle an uncertain request outcome
+
+If a request times out, loses its connection, returns a `500`, or returns a response you cannot parse, retry it with the same `X-Idempotency-Key`. A retry with a new key creates a duplicate operation when the first request succeeded.
+
+The retry returns one of these results:
+
+* **The original payment.** The first request created a payment, so handle that payment's current status. Yuno ignores the body of the retry.
+* **`400 REQUEST_IN_PROCESS`.** The first request is still being processed. Retry with the same key after a few seconds.
+* **`400 IDEMPOTENCY_DUPLICATED`.** The first request failed before a payment was created. No payment exists for this key, and you cannot reuse the key. Correct the request and send it with a new key.
+* **Normal processing.** The first request was rejected before processing started, so the key was not used and the retry runs as a new request.
+
+The full rules are in [Idempotency](/reference/getting-started/authentication#idempotency). For every HTTP status and error code, see [Response codes](/reference/getting-started/response-codes).
+
+## Check the right environment
+
+Sandbox and production have different keys and different account IDs. Before you compare records, check four values:
+
+* **API host.** Sandbox is `https://api-sandbox.y.uno`. Production is `https://api.y.uno` (US) or `https://api.eu.y.uno` (EMEA).
+* **Dashboard mode.** The context chip in the top bar shows **Test** or **Live**.
+* **Region.** Each organization belongs to US or EMEA, and data is not shared between regions.
+* **Account ID and keys.** Each account has one account ID and one set of keys per mode.
+
+See [Environments](/docs/using-yuno/environments) and [Developers credentials](/docs/using-yuno/settings/developers-credentials).
+
+## Ask for help with useful evidence
+
+Write to [support@y.uno](mailto:support@y.uno) and include:
+
+* The environment, and the time of the request with its timezone.
+* The endpoint, the HTTP method, the HTTP status, and the error `code`.
+* The payment ID or checkout session ID, and your order reference.
+* The SDK platform and version, what you expected, and what happened.
+* The steps to reproduce, with the request and response fields that matter.
+
+Remove private keys, credentials, raw card numbers, and personal data you do not need to send. Check [service status](https://status.y.uno) for current incidents, and see [Developers](/docs/developers) for SDK versions and changelogs.
+
+## Next
+
+<ol className="yd-next">
+  <li><div><a href="/docs/go-live">Go live</a><span className="yd-card-body"><span className="yd-kind">Guide</span> Live keys, a published route, verified webhooks, and a first real payment.</span></div></li>
+  <li><div><a href="/reference/getting-started/response-codes">Response codes</a><span className="yd-card-body"><span className="yd-kind">Reference</span> The HTTP statuses and error codes the Yuno API returns.</span></div></li>
+  <li><div><a href="/docs/webhooks/index">Webhooks</a><span className="yd-card-body"><span className="yd-kind">Guide</span> Delivery, retries, de-duplication, and signature checks.</span></div></li>
+  <li><div><a href="/docs/quickstart">Quickstart</a><span className="yd-card-body"><span className="yd-kind">Tutorial</span> Connect the test gateway and send one sandbox payment.</span></div></li>
+</ol>
+
+</div>

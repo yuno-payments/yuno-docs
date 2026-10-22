@@ -46,7 +46,7 @@ const Ic = ({ n, size = 20 }) => {
       <div>
         <div className="yd-label">A little help goes a long way.</div>
         <div className="yd-help">
-          <a href="/reference/getting-started/response-codes">Troubleshoot an integration <Ic n="arrowRight" size={14} /></a>
+          <a href="/docs/troubleshooting">Troubleshoot an integration <Ic n="arrowRight" size={14} /></a>
           <a href="/changelog/whats-new">See what’s new <Ic n="arrowRight" size={14} /></a>
         </div>
       </div>
