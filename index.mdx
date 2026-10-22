@@ -27,13 +27,19 @@ import {Ic} from '/snippets/homepage/Ic.jsx';
     </div>
   </div>
   <div className="yd-hero-art">
-    <div className="yd-flow">
-      <span className="yd-flow-chip">Your app</span>
-      <Ic n="arrowRight" size={12} />
-      <span className="yd-flow-chip yd-flow-chip-hot">Yuno</span>
-      <Ic n="arrowRight" size={12} />
-      <span className="yd-flow-chip">Your providers</span>
+    <img className="yd-hero-logo" src="/logo/dark.svg" alt="Yuno" height="24" />
+    <div className="yd-hero-flow">
+      <span className="yd-flow-chip">POST /v1/customers</span>
+      <Ic n="arrowRight" size={14} />
+      <span className="yd-flow-chip">POST /v1/checkout/sessions</span>
+      <Ic n="arrowRight" size={14} />
+      <span className="yd-flow-chip">one-time token <em>Web SDK</em></span>
+      <Ic n="arrowRight" size={14} />
+      <span className="yd-flow-chip">POST /v1/payments</span>
+      <Ic n="arrowRight" size={14} />
+      <span className="yd-flow-chip yd-flow-chip-hot">SUCCEEDED</span>
     </div>
+    <p className="yd-hero-caption">four calls, one sandbox, about 10 minutes</p>
   </div>
 </section>
 
@@ -46,6 +52,7 @@ import {Ic} from '/snippets/homepage/Ic.jsx';
       <span className="yd-tile-top"><Ic n="squares" size={22} /><span className="yd-tag">Recommended</span></span>
       <span className="yd-tile-title">SDK</span>
       <span className="yd-tile-body">One SDK for iOS, Android, and Web. Start with the default checkout and manage payment methods in the Dashboard.</span>
+      <span className="yd-chips"><span className="yd-chip">Web</span><span className="yd-chip">iOS</span><span className="yd-chip">Android</span></span>
     </a>
     <a className="yd-tile" href="/docs/yuno-sdk/controllers/take-over-the-sdk">
       <span className="yd-tile-top"><Ic n="sliders" size={22} /><span className="yd-tag">More control</span></span>
@@ -91,6 +98,165 @@ import {Ic} from '/snippets/homepage/Ic.jsx';
       <span className="yd-stepper-cta">Go-live checklist →</span>
     </a></li>
   </ol>
+  <p className="yd-code-note">Sandbox, illustrative values. Pick a step to see its code.</p>
+  <Tabs>
+  <Tab title="01 Set up your account">
+
+```bash .env
+# Dashboard > Developers > Credentials
+YUNO_ACCOUNT_ID=<ACCOUNT_ID>
+YUNO_PUBLIC_API_KEY=<PUBLIC_API_KEY>
+YUNO_PRIVATE_SECRET_KEY=<PRIVATE_SECRET_KEY>
+YUNO_API_URL=https://api-sandbox.y.uno
+```
+
+  </Tab>
+  <Tab title="02 Build your checkout">
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api-sandbox.y.uno/v1/checkout/sessions \
+  -H "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  -H "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "account_id": "'$YUNO_ACCOUNT_ID'",
+    "merchant_order_id": "order-0001",
+    "payment_description": "Test order",
+    "country": "US",
+    "amount": { "currency": "USD", "value": 25 }
+  }'
+```
+
+```javascript Node.js
+const res = await fetch(`${YUNO_API_URL}/v1/checkout/sessions`, {
+  method: "POST",
+  headers: {
+    "public-api-key": "<PUBLIC_API_KEY>",
+    "private-secret-key": "<PRIVATE_SECRET_KEY>",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    account_id: YUNO_ACCOUNT_ID,
+    merchant_order_id: "order-0001",
+    payment_description: "Test order",
+    country: "US",
+    amount: { currency: "USD", value: 25 }
+  })
+});
+const { checkout_session } = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.post(
+    f"{YUNO_API_URL}/v1/checkout/sessions",
+    headers={
+        "public-api-key": PUBLIC_API_KEY,
+        "private-secret-key": PRIVATE_SECRET_KEY,
+    },
+    json={
+        "account_id": ACCOUNT_ID,
+        "merchant_order_id": "order-0001",
+        "payment_description": "Test order",
+        "country": "US",
+        "amount": {"currency": "USD", "value": 25},
+    },
+)
+checkout_session = res.json()["checkout_session"]
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="03 Confirm the outcome">
+
+<CodeGroup>
+
+```bash cURL
+curl https://api-sandbox.y.uno/v1/payments/$PAYMENT_ID \
+  -H "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  -H "private-secret-key: $YUNO_PRIVATE_SECRET_KEY"
+```
+
+```javascript Node.js
+const res = await fetch(`${YUNO_API_URL}/v1/payments/${paymentId}`, {
+  headers: {
+    "public-api-key": "<PUBLIC_API_KEY>",
+    "private-secret-key": "<PRIVATE_SECRET_KEY>"
+  }
+});
+const { payment } = await res.json();
+
+if (payment.status === "SUCCEEDED") {
+  fulfillOrder(payment.merchant_order_id);
+}
+```
+
+```python Python
+res = requests.get(
+    f"{YUNO_API_URL}/v1/payments/{payment_id}",
+    headers={
+        "public-api-key": PUBLIC_API_KEY,
+        "private-secret-key": PRIVATE_SECRET_KEY,
+    },
+)
+payment = res.json()["payment"]
+
+if payment["status"] == "SUCCEEDED":
+    fulfill_order(payment["merchant_order_id"])
+```
+
+</CodeGroup>
+
+  </Tab>
+  <Tab title="04 Get production ready">
+
+<CodeGroup>
+
+```bash cURL
+# Send a test event to your own endpoint
+curl -X POST https://your-app.example/webhooks/yuno \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "payment",
+    "type_event": "payment.purchase",
+    "version": 2,
+    "data": { "payment": { "status": "SUCCEEDED" } }
+  }'
+```
+
+```javascript Node.js
+app.post("/webhooks/yuno", express.json(), (req, res) => {
+  const event = req.body;
+
+  if (event.type_event === "payment.purchase") {
+    updateOrder(event.data.payment);
+  }
+
+  // Respond fast; Yuno retries on failure
+  res.sendStatus(200);
+});
+```
+
+```python Python
+@app.post("/webhooks/yuno")
+def yuno_webhook():
+    event = request.get_json()
+
+    if event["type_event"] == "payment.purchase":
+        update_order(event["data"]["payment"])
+
+    # Respond fast; Yuno retries on failure
+    return "", 200
+```
+
+</CodeGroup>
+
+  </Tab>
+  </Tabs>
 </section>
 
 <section className="yd-section" id="keep-building">
