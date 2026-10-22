@@ -34,10 +34,11 @@ function collect(items, out) {
   }
 }
 
-function inScopePages(docsJson) {
+function inScopePages(docsJson, opts = {}) {
   const out = [];
   for (const tab of docsJson.navigation.tabs) {
     if (tab.tab === API_TAB) continue;
+    if (opts.skipHiddenTabs && tab.hidden === true) continue;
     collect(tab.groups, out);
     collect(tab.pages, out);
   }
@@ -140,13 +141,27 @@ function rewriteRedirectLinks(mdx, redirects) {
   );
 }
 
+const BLOCK_SCALARS = new Set([">-", ">", "|", "|-"]);
+
 function frontmatter(mdx) {
   const m = mdx.match(/^---\n([\s\S]*?)\n---/);
   const fm = {};
   if (!m) return fm;
-  for (const line of m[1].split("\n")) {
-    const k = line.match(/^([A-Za-z_][\w-]*):\s*(.*)$/);
-    if (k) fm[k[1]] = k[2].trim().replace(/^(["'])(.*)\1$/, "$2");
+  const lines = m[1].split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const k = lines[i].match(/^([A-Za-z_][\w-]*):\s*(.*)$/);
+    if (!k) continue;
+    let value = k[2].trim();
+    if (BLOCK_SCALARS.has(value)) {
+      // YAML block scalar: the value is the following indented lines, joined with single spaces.
+      const parts = [];
+      while (i + 1 < lines.length && (/^\s+\S/.test(lines[i + 1]) || lines[i + 1].trim() === "")) {
+        i++;
+        if (lines[i].trim()) parts.push(lines[i].trim());
+      }
+      value = parts.join(" ");
+    }
+    fm[k[1]] = value.replace(/^(["'])(.*)\1$/, "$2");
   }
   return fm;
 }
@@ -168,7 +183,9 @@ function reportPage(page, mdx, nav) {
   if (imp) add("jsx-import", imp[0].trim());
   const exp = body.match(/^export const\b.*$/m);
   if (exp) add("export-const", exp[0].trim().slice(0, 60));
-  if (nav && fm.hidden === "true" && inScopePages(nav).includes(page)) add("hidden-in-nav", "frontmatter hidden: true but listed in docs.json");
+  // tabs with "hidden": true in docs.json are hidden by design (In-Person), so their pages are not flagged
+  if (nav && fm.hidden === "true" && inScopePages(nav, { skipHiddenTabs: true }).includes(page)) add("hidden-in-nav", "frontmatter hidden: true but listed in docs.json");
+  if (page.startsWith("docs/sdks/") && !/^import\s+LegacySdkNotice\b/m.test(body)) add("legacy-no-notice", "no LegacySdkNotice import");
   return res;
 }
 
@@ -186,7 +203,8 @@ function loadRedirects(root, docs) {
   return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : [];
 }
 
-const RULES = ["description-missing", "description-short", "title-long", "third-party-video", "jsx-import", "export-const", "hidden-in-nav", "nav-no-file"];
+const RULES = ["description-missing", "description-short", "title-long", "third-party-video", "jsx-import", "export-const", "hidden-in-nav", "legacy-no-notice", "nav-no-file"];
+const RULE_NOTES = { "hidden-in-nav": " (tabs hidden by design excluded)" };
 
 function main(argv) {
   const ri = argv.indexOf("--root");
@@ -221,7 +239,7 @@ function main(argv) {
     }
     rows.sort((a, b) => a.page.localeCompare(b.page) || a.rule.localeCompare(b.rule));
     const out = ["# Docs hygiene report", "", "Generated " + new Date().toISOString().slice(0, 10) + ", in-scope pages: " + pages.length, ""];
-    for (const r of RULES) out.push("- " + r + ": " + rows.filter((x) => x.rule === r).length);
+    for (const r of RULES) out.push("- " + r + ": " + rows.filter((x) => x.rule === r).length + (RULE_NOTES[r] || ""));
     out.push("", "| Page | Rule | Detail |", "| --- | --- | --- |");
     for (const r of rows) out.push("| " + r.page + " | " + r.rule + " | " + r.detail.replace(/\|/g, "\\|") + " |");
     fs.writeFileSync(path.join(root, "scripts", "docs-hygiene-report.md"), out.join("\n") + "\n");
@@ -233,4 +251,4 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
-module.exports = { inScopePages, tagFences, rewriteRedirectLinks, reportPage, main };
+module.exports = { inScopePages, tagFences, rewriteRedirectLinks, frontmatter, reportPage, main };
