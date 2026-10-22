@@ -113,6 +113,8 @@ After collecting all user information, you can start the payment. First, you nee
 1. **Example 1**: Create a one-time token utilizing a card as the payment method and including all requisite card information.
 2. **Example 2**: Create a one-time token using the `vaulted_token` information.
 
+To split one payment across two cards, pass an array in `payment_method`. See [Split one payment across two cards](#split-one-payment-across-two-cards).
+
 <Note>
 **Benefits of Using a Vaulted Token**
 
@@ -334,6 +336,8 @@ const data = await apiClientPayment.getThreeDSecureChallenge(checkoutSession?: s
 ```
 
 If the card does not require a challenge to verify the customer's identity, the `url` will return `null`.
+
+For a payment split across two cards, call this function once per card. See [Run the 3DS challenge of each card](#run-the-3ds-challenge-of-each-card).
 
 In a web browser, you can open the URL in a new tab or an IFrame. To open the URL in an iframe, you must set the param `embedded = true`. If not, you can omit this parameter, whose default value is `false`. The following code block shows an example of displaying the 3DS challenge content in an IFrame:
 
@@ -596,6 +600,123 @@ The specific implementation for handling each action type will depend on your ap
 
 In addition to the code examples provided, you can access the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation of Yuno SDKs (clone from the repository).
 </Note>
+
+## Split one payment across two cards
+
+From Web SDK 1.11.43, `generateToken` can create one token for a payment that two cards fund together. Each card pays its own part of the amount. The flow is headless only: there is no checkout UI for it.
+
+<Note>
+**Version**
+
+You need Web SDK 1.11.43 or later. If you load the SDK from `https://sdk-web.y.uno/v1.11/main.js`, you already get it. If you install it from npm, run `npm install @yuno-payments/sdk-web@1.11.43` or a later version.
+</Note>
+
+### Generate one token for both cards
+
+Pass `payment_method` as an array with one item per card, instead of a single object. Each item takes the same fields as a single payment method (`type`, `card` or `vaulted_token`, `customer`, `device_fingerprints`, `third_party_data`) plus the `amount` that card pays. You can also send `total` next to `payment_method`.
+
+```javascript
+const compositeToken = await apiClientPayment.generateToken({
+  checkout_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+  total: { currency: "USD", value: 100 },
+  payment_method: [
+    {
+      type: "CARD",
+      amount: { currency: "USD", value: 60 },
+      card: {
+        detail: {
+          expiration_month: 11,
+          expiration_year: 29,
+          number: "4111111111111111",
+          security_code: "123",
+          holder_name: "ANDREA B",
+          type: "CREDIT"
+        }
+      }
+    },
+    {
+      type: "CARD",
+      amount: { currency: "USD", value: 40 },
+      vaulted_token: "aad8578e-ac2f-40a0-8065-25b5957f6555",
+      card: {
+        detail: {
+          security_code: "123"
+        }
+      }
+    }
+  ]
+});
+```
+
+| Parameter                         | Description                                                                                                                                  |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `payment_method`                  | An array of two or more items, one per card. The order of the items is the order in which the cards go through 3DS.                          |
+| `payment_method[].type`           | Payment method type, set to "CARD".                                                                                                          |
+| `payment_method[].card`           | Card information, as in Example 1. Each item needs `card` or `vaulted_token`.                                                                |
+| `payment_method[].vaulted_token`  | Use the vaulted token of a previously enrolled card, as in Example 2.                                                                        |
+| `payment_method[].amount.currency`| Currency of the part this card pays. Must not be empty.                                                                                      |
+| `payment_method[].amount.value`   | Amount this card pays, as a number greater than zero.                                                                                        |
+| `total`                           | Optional. When you send it, every item must use `total.currency` and the item amounts must add up to `total.value`. Yuno also checks it against the checkout session amount. |
+
+The SDK collects the fraud data and browser information for each item, as it does for a single card. When you pass an array, the function resolves to a single composite token:
+
+```json
+{
+  "token": "ee78bc2a-63b4-45bb-bd28-3e6829ab1c3d",
+  "checkout_session": "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+  "expires_at": "2026-10-22T15:30:00Z"
+}
+```
+
+When you pass an object, `generateToken` behaves as before and returns the response shown in [Step 4](#step-4-generate-token). Existing integrations do not change.
+
+The SDK checks the array before it sends any request and throws an error that names the item at fault. Wrap the call in `try/catch`.
+
+| Input                                                     | Error message                                                                          |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Fewer than two items                                      | `payment_method must have at least two items; use an object for one payment method`   |
+| An item without `card` or `vaulted_token`                 | `payment_method[1] needs card or vaulted_token`                                        |
+| A missing, zero or negative `amount.value`                | `payment_method[0].amount.value=0 is not valid`                                        |
+| An empty `amount.currency`                                | `payment_method[0].amount.currency= is not valid`                                      |
+| An unknown `type`                                         | `payment_method[0].type=CARDS is not valid`                                            |
+| An item currency different from `total.currency`          | `payment_method[1].amount.currency=EUR does not match total.currency=USD`              |
+| Item amounts that do not add up to `total.value`          | `payment_method amounts add up to 60 + 30 but total.value=100`                         |
+
+### Create the payment
+
+Create the payment from your server as in [Step 5](#step-5-create-the-payment). Send the composite token in `payment_method.token` and set `amount.value` to the sum of the card amounts.
+
+### Run the 3DS challenge of each card
+
+When the cards need 3DS, call `getThreeDSecureChallenge` once per card, in the order of the `payment_method` array. Render each URL it returns as described in [Step 6](#step-6-get-the-3ds-challenge-url), and wait for that challenge to finish before you call it again. When no card is waiting for 3DS any more, the call resolves with `url: null`.
+
+```javascript
+// showChallenge renders the URL in an iframe, as in Step 6,
+// and resolves with event.data.status when the CHALLENGE message arrives.
+async function runCardChallenges(checkoutSession, cardCount) {
+  for (let card = 0; card < cardCount; card++) {
+    const { url } = await apiClientPayment.getThreeDSecureChallenge(checkoutSession);
+
+    if (!url) {
+      return; // No card is waiting for 3DS
+    }
+
+    const status = await showChallenge(url);
+
+    if (status === 'ERROR') {
+      return; // The payment has ended: do not offer the other card
+    }
+  }
+}
+```
+
+A payment paid with one card behaves as before: one call, one challenge.
+
+### How Yuno processes the two cards
+
+* Each card is charged as soon as its own 3DS finishes.
+* If the challenge of a card fails or its issuer declines it, the whole payment ends. Yuno refunds a card that was already charged and cancels the pending 3DS of the other card. Do not ask your customer to continue with the remaining card: start a new payment instead.
+* The final payment has one transaction per card, each with its own status. Read it from your [webhooks](/docs/webhooks/configure-webhooks) or with the [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) endpoint.
 
 ## Error handling
 
