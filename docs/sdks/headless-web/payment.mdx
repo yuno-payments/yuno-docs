@@ -684,7 +684,46 @@ The SDK checks the array before it sends any request and throws an error that na
 
 ### Create the payment
 
-Create the payment from your server as in [Step 5](#step-5-create-the-payment). Send the composite token in `payment_method.token` and set `amount.value` to the sum of the card amounts.
+Create the payment from your server with `POST /v2/payments` (`https://api.y.uno/v2/payments`, or `https://api-sandbox.y.uno/v2/payments` in sandbox). Use the same authentication headers as the other payment endpoints. The v1 [Create Payment endpoint](/reference/payments/create-payment) from [Step 5](#step-5-create-the-payment) does not accept a composite token.
+
+```json
+{
+  "merchant_order_id": "0000023",
+  "country": "US",
+  "account_id": "<Your account_id>",
+  "description": "Order paid with two cards",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  },
+  "customer_payer": {
+    "first_name": "Andrea",
+    "last_name": "B",
+    "email": "andrea.b@example.com"
+  },
+  "checkout": {
+    "session": "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+  },
+  "workflow": "SDK_CHECKOUT",
+  "payment_method": {
+    "token": "ee78bc2a-63b4-45bb-bd28-3e6829ab1c3d",
+    "capture": true
+  },
+  "callback_url": "https://merchant.example.com/checkout/return"
+}
+```
+
+| Field                   | Description                                                                                                       |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `amount.value`          | The total of the payment: the sum of the card amounts.                                                            |
+| `amount.currency`       | The same currency as the card amounts.                                                                            |
+| `checkout.session`      | The checkout session you created the composite token for.                                                         |
+| `workflow`              | Set to `SDK_CHECKOUT`.                                                                                            |
+| `payment_method.token`  | The composite token. Do not send `payment_method.type`: the token already identifies the cards.                   |
+| `payment_method.capture`| Whether to capture the payment.                                                                                   |
+| `callback_url`          | Required. Where each card's 3DS challenge returns your customer.                                                  |
+
+To read the result for each card, call [Retrieve Payment by ID (v2)](/reference/payments/retrieve-payment-by-id-v2) (`GET /v2/payments/{payment_id}`). Its `payment_method.payment_methods` array has one entry per card, each with its own `sequence`, `amount`, `status` and `transactions`.
 
 ### Run the 3DS challenge of each card
 
@@ -716,7 +755,7 @@ A payment paid with one card behaves as before: one call, one challenge.
 
 * Each card is charged as soon as its own 3DS finishes.
 * If the challenge of a card fails or its issuer declines it, the whole payment ends. Yuno refunds a card that was already charged and cancels the pending 3DS of the other card. Do not ask your customer to continue with the remaining card: start a new payment instead.
-* The final payment has one transaction per card, each with its own status. Read it from your [webhooks](/docs/webhooks/configure-webhooks) or with the [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) endpoint.
+* The final payment has one transaction per card, each with its own status. Read it from your [webhooks](/docs/webhooks/configure-webhooks) or with the [Retrieve Payment by ID (v2)](/reference/payments/retrieve-payment-by-id-v2) endpoint.
 
 ## Error handling
 
