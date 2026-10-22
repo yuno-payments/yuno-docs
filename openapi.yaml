@@ -8071,6 +8071,12 @@ paths:
       operationId: create-connection
       description: Creates a connection in ACTIVE status.
       parameters:
+        - name: X-account-code
+          in: header
+          required: false
+          description: Code of the account under which the connection is created.
+          schema:
+            type: string
         - name: X-Idempotency-Key
           in: header
           required: true
@@ -8084,25 +8090,20 @@ paths:
             schema:
               type: object
               required:
-                - account_id
                 - merchant_connection_id
                 - provider_id
-                - flow_type
                 - payment_methods
                 - params
               properties:
-                account_id:
-                  type: string
-                  format: uuid
-                  example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
                 merchant_connection_id:
                   type: string
-                  example: adyen-us-prod-001
+                  example: stripe-us-prod-001
                 provider_id:
                   type: string
-                  example: ADYEN
+                  example: STRIPE
                 flow_type:
                   type: string
+                  description: Optional. Defaults to PAYIN.
                   example: PAYIN
                 payment_methods:
                   type: array
@@ -8110,7 +8111,6 @@ paths:
                     type: string
                   example:
                     - CARD
-                    - GOOGLE_PAY
                 params:
                   type: array
                   items:
@@ -8119,7 +8119,55 @@ paths:
                       param_id:
                         type: string
                       value:
+                        type:
+                          - string
+                          - boolean
+                          - number
+                          - array
+                costs:
+                  type: array
+                  description: Optional. Per-connection cost configuration.
+                  items:
+                    type: object
+                    properties:
+                      sort_number:
+                        type: integer
+                      cost_name:
                         type: string
+                      currency:
+                        type: string
+                      cost_values:
+                        type: object
+            example:
+              merchant_connection_id: stripe-us-prod-001
+              provider_id: STRIPE
+              flow_type: PAYIN
+              payment_methods:
+                - CARD
+              params:
+                - param_id: INTEGRATION_TYPE
+                  value: STRIPE_CHARGES
+                - param_id: SECRET_KEY
+                  value: sk_live_...
+                - param_id: RADAR_FRAUD_ANALYSIS
+                  value: false
+                - param_id: SEND_RECEIPT_EMAIL_PARAMETER
+                  value: false
+                - param_id: SETUP_FUTURE_USAGE
+                  value: false
+                - param_id: ORDER_ID
+                  value: DEFAULT
+              costs:
+                - sort_number: 1
+                  cost_name: Transaction Fee
+                  currency: USD
+                  cost_values:
+                    successful:
+                      fixed_fee: 0.3
+                      percentage: 2.9
+                    unsuccessful:
+                      fixed_fee: 0
+                      percentage: 0
       responses:
         '201':
           description: Created
@@ -8149,8 +8197,6 @@ paths:
                       type: string
                     example:
                       - CARD
-                      - GOOGLE_PAY
-                      - APPLE_PAY
                   params:
                     type: array
                     items:
@@ -8182,7 +8228,7 @@ paths:
                     example: MISSING_REQUIRED_PARAM
                   message:
                     type: string
-                    example: Required param 'API_KEY' is missing
+                    example: Required param 'SECRET_KEY' is missing
                   details:
                     type: object
         '401':
@@ -8461,7 +8507,7 @@ paths:
                     properties:
                       param_id:
                         type: string
-                        example: API_KEY
+                        example: SECRET_KEY
                       value:
                         type: string
                         example: sk_live_...
@@ -8529,8 +8575,6 @@ paths:
                       type: string
                     example:
                       - CARD
-                      - GOOGLE_PAY
-                      - APPLE_PAY
                   params:
                     type: array
                     items:
@@ -8538,7 +8582,7 @@ paths:
                       properties:
                         param_id:
                           type: string
-                          example: API_KEY
+                          example: SECRET_KEY
                         value:
                           type: string
                           example: '***'
@@ -8579,7 +8623,7 @@ paths:
                     example: UNKNOWN_PARAM
                   message:
                     type: string
-                    example: Param 'FOO' is not part of the catalog for provider 'STRIPE'
+                    example: Param 'FOO' is not part of provider 'STRIPE' catalog
         '401':
           description: Unauthorized
           content:
@@ -17357,6 +17401,24 @@ paths:
                   updated_at:
                     type: string
                     format: date-time
+        '400':
+          description: Not found. When no account group matches the id, the API returns HTTP 400 with `code` set to `"404"`.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: '404'
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                code: '404'
+                messages:
+                  - Account group not found
       tags:
         - Organizations
     patch:
@@ -17772,6 +17834,24 @@ paths:
                   updated_at:
                     type: string
                     format: date-time
+        '400':
+          description: Not found. When no account matches the id, the API returns HTTP 400 with `code` set to `"404"`.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: '404'
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                code: '404'
+                messages:
+                  - Account not found
       tags:
         - Organizations
     patch:
@@ -18417,6 +18497,24 @@ paths:
                   updated_at:
                     type: string
                     format: date-time
+        '400':
+          description: Not found. When no user matches the id, the API returns HTTP 400 with `code` set to `"404"`.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: '404'
+                  messages:
+                    type: array
+                    items:
+                      type: string
+              example:
+                code: '404'
+                messages:
+                  - User not found
       tags:
         - Organizations
     patch:
@@ -18526,7 +18624,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  permissions:
+                  user_id:
+                    type: string
+                    format: uuid
+                  account_group_permissions:
                     type: array
                     items:
                       type: object
@@ -18541,7 +18642,23 @@ paths:
                         role_name:
                           type: string
                         accounts_count:
-                          type: integer
+                          type:
+                            - integer
+                            - 'null'
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+              example:
+                user_id: 20abf272-d8ec-4e0c-8bd8-4c6a889ed620
+                account_group_permissions:
+                  - account_group_id: dca39563-5027-44d7-9fed-0f2674fbd210
+                    account_group_name: EMEA accounts
+                    role_id: 0ac83b0f-4fd7-4d25-8f77-e133ff8c396f
+                    role_name: Operator
+                    accounts_count: 2
+                updated_at: '2026-10-22T06:57:28.618979485Z'
       tags:
         - Organizations
     put:
@@ -18586,9 +18703,41 @@ paths:
               schema:
                 type: object
                 properties:
-                  status:
+                  user_id:
                     type: string
-                    example: ok
+                    format: uuid
+                  account_group_permissions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        account_group_id:
+                          type: string
+                          format: uuid
+                        account_group_name:
+                          type: string
+                        role_id:
+                          type: string
+                        role_name:
+                          type: string
+                        accounts_count:
+                          type:
+                            - integer
+                            - 'null'
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+              example:
+                user_id: 20abf272-d8ec-4e0c-8bd8-4c6a889ed620
+                account_group_permissions:
+                  - account_group_id: dca39563-5027-44d7-9fed-0f2674fbd210
+                    account_group_name: EMEA accounts
+                    role_id: 0ac83b0f-4fd7-4d25-8f77-e133ff8c396f
+                    role_name: Operator
+                    accounts_count: 2
+                updated_at: '2026-10-22T06:57:28.618979485Z'
       tags:
         - Organizations
     patch:
@@ -18633,7 +18782,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  permissions:
+                  user_id:
+                    type: string
+                    format: uuid
+                  account_group_permissions:
                     type: array
                     items:
                       type: object
@@ -18648,7 +18800,23 @@ paths:
                         role_name:
                           type: string
                         accounts_count:
-                          type: integer
+                          type:
+                            - integer
+                            - 'null'
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+              example:
+                user_id: 20abf272-d8ec-4e0c-8bd8-4c6a889ed620
+                account_group_permissions:
+                  - account_group_id: dca39563-5027-44d7-9fed-0f2674fbd210
+                    account_group_name: EMEA accounts
+                    role_id: 0ac83b0f-4fd7-4d25-8f77-e133ff8c396f
+                    role_name: Operator
+                    accounts_count: 2
+                updated_at: '2026-10-22T06:57:28.618979485Z'
       tags:
         - Organizations
   /organizations/users/{user_id}/account-group-permissions/{account_group_id}:
@@ -18697,7 +18865,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  permissions:
+                  user_id:
+                    type: string
+                    format: uuid
+                  account_permissions:
                     type: array
                     items:
                       type: object
@@ -18711,6 +18882,26 @@ paths:
                           type: string
                         role_name:
                           type: string
+                        account_group_id:
+                          type:
+                            - string
+                            - 'null'
+                          format: uuid
+                          description: Set when the access comes from an account group grant, null otherwise.
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+              example:
+                user_id: bf3d9b16-1523-4a48-a425-95cb7dc426cc
+                account_permissions:
+                  - account_id: a858ec8f-cb93-45c0-ad61-b9fa1f893b72
+                    account_name: Account 1
+                    role_id: rol_sAnEykYxo6e4x2wY
+                    role_name: Admin
+                    account_group_id: null
+                updated_at: null
       tags:
         - Organizations
     put:
@@ -18755,9 +18946,43 @@ paths:
               schema:
                 type: object
                 properties:
-                  status:
+                  user_id:
                     type: string
-                    example: ok
+                    format: uuid
+                  account_permissions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        account_id:
+                          type: string
+                          format: uuid
+                        account_name:
+                          type: string
+                        role_id:
+                          type: string
+                        role_name:
+                          type: string
+                        account_group_id:
+                          type:
+                            - string
+                            - 'null'
+                          format: uuid
+                          description: Set when the access comes from an account group grant, null otherwise.
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+              example:
+                user_id: bf3d9b16-1523-4a48-a425-95cb7dc426cc
+                account_permissions:
+                  - account_id: a858ec8f-cb93-45c0-ad61-b9fa1f893b72
+                    account_name: Account 1
+                    role_id: rol_sAnEykYxo6e4x2wY
+                    role_name: Admin
+                    account_group_id: null
+                updated_at: null
       tags:
         - Organizations
     patch:
@@ -18802,7 +19027,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  permissions:
+                  user_id:
+                    type: string
+                    format: uuid
+                  account_permissions:
                     type: array
                     items:
                       type: object
@@ -18816,6 +19044,26 @@ paths:
                           type: string
                         role_name:
                           type: string
+                        account_group_id:
+                          type:
+                            - string
+                            - 'null'
+                          format: uuid
+                          description: Set when the access comes from an account group grant, null otherwise.
+                  updated_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+              example:
+                user_id: bf3d9b16-1523-4a48-a425-95cb7dc426cc
+                account_permissions:
+                  - account_id: a858ec8f-cb93-45c0-ad61-b9fa1f893b72
+                    account_name: Account 1
+                    role_id: rol_sAnEykYxo6e4x2wY
+                    role_name: Admin
+                    account_group_id: null
+                updated_at: null
       tags:
         - Organizations
   /organizations/users/{user_id}/account-permissions/{account_id}:
@@ -88751,6 +88999,50 @@ paths:
                       route:
                         type: object
                         description: Same shape as default_route, including start_split, output[].next_split and action steps.
+            example:
+              account_id: 7825fc5e-e50a-4248-9ae8-5d3786afb0be
+              payment_method: GOOGLE_PAY
+              name: Google Pay routing
+              default_route:
+                steps:
+                  - index: 1
+                    provider_id: ADYEN
+                    connection_id: b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f
+                    output:
+                      - status: APPROVED
+                        next: 3
+                      - status: DECLINED
+                        retry: false
+                        next_split:
+                          - index: 2
+                            percentage: 70
+                          - index: 4
+                            percentage: 30
+                  - index: 2
+                    provider_id: ADYEN
+                    connection_id: b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f
+                    output:
+                      - status: APPROVED
+                        next: 3
+                  - index: 3
+                    action: CAPTURE
+                    action_delay: PT5M
+                  - index: 4
+                    action: CANCEL
+              condition_sets:
+                - sort_number: 1
+                  name: US & Canada
+                  conditions:
+                    - condition_type: COUNTRY
+                      conditional: ONE_OF
+                      values:
+                        - US
+                        - CA
+                  route:
+                    steps:
+                      - index: 1
+                        provider_id: ADYEN
+                        connection_id: b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f
       responses:
         '201':
           description: Created
@@ -88761,7 +89053,7 @@ paths:
                 properties:
                   id:
                     type: string
-                    example: r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+                    example: 8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f
                   account_id:
                     type: string
                     example: acc-uuid
@@ -88807,7 +89099,7 @@ paths:
                                 connection.
                             connection_id:
                               type: string
-                              example: f1a3c4d5-...
+                              example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
                               description: >-
                                 Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
                                 support the payment_method.
@@ -90292,6 +90584,49 @@ paths:
                       route:
                         type: object
                         description: Same shape as default_route, including start_split, output[].next_split and action steps.
+            example:
+              account_id: 7825fc5e-e50a-4248-9ae8-5d3786afb0be
+              payment_method: GOOGLE_PAY
+              name: Google Pay routing v2
+              default_route:
+                steps:
+                  - index: 1
+                    provider_id: ADYEN
+                    connection_id: b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f
+                    output:
+                      - status: APPROVED
+                        next: 3
+                      - status: DECLINED
+                        retry: false
+                        next_split:
+                          - index: 2
+                            percentage: 70
+                          - index: 4
+                            percentage: 30
+                  - index: 2
+                    provider_id: ADYEN
+                    connection_id: b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f
+                    output:
+                      - status: APPROVED
+                        next: 3
+                  - index: 3
+                    action: CAPTURE
+                    action_delay: PT5M
+                  - index: 4
+                    action: CANCEL
+              condition_sets:
+                - sort_number: 1
+                  name: US & Canada
+                  conditions:
+                    - condition_type: COUNTRY
+                      conditional: ONE_OF
+                      values:
+                        - US
+                        - CA
+                  route:
+                    steps:
+                      - index: 1
+                        action: CANCEL
       responses:
         '200':
           description: OK
@@ -90302,7 +90637,7 @@ paths:
                 properties:
                   id:
                     type: string
-                    example: r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f
+                    example: 8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f
                   account_id:
                     type: string
                     example: acc-uuid
@@ -90348,7 +90683,7 @@ paths:
                                 connection.
                             connection_id:
                               type: string
-                              example: f1a3c4d5-...
+                              example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
                               description: >-
                                 Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and
                                 support the payment_method.
