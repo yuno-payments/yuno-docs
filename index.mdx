@@ -238,11 +238,14 @@ app.post("/webhooks/yuno", express.raw({ type: "application/json" }), (req, res)
   if (!verifyYunoSignature(req)) return res.sendStatus(401);
   const event = JSON.parse(req.body);
 
-  // 2. Yuno retries on failure: skip a payment you already handled
-  if (alreadyProcessed(event.data.payment.id)) return res.sendStatus(200);
+  // 2. Acknowledge events you do not handle
+  if (event.type_event !== "payment.purchase") return res.sendStatus(200);
 
-  if (event.type_event === "payment.purchase") {
-    updateOrder(event.data.payment);
+  // 3. Yuno retries on failure and sends one event per status change:
+  //    act once per payment and status
+  const payment = event.data.payment;
+  if (!alreadyHandled(payment.id, payment.status)) {
+    updateOrder(payment);
   }
 
   // Respond fast
@@ -259,12 +262,15 @@ def yuno_webhook():
         return "", 401
     event = request.get_json()
 
-    # 2. Yuno retries on failure: skip a payment you already handled
-    if already_processed(event["data"]["payment"]["id"]):
+    # 2. Acknowledge events you do not handle
+    if event["type_event"] != "payment.purchase":
         return "", 200
 
-    if event["type_event"] == "payment.purchase":
-        update_order(event["data"]["payment"])
+    # 3. Yuno retries on failure and sends one event per status change:
+    #    act once per payment and status
+    payment = event["data"]["payment"]
+    if not already_handled(payment["id"], payment["status"]):
+        update_order(payment)
 
     # Respond fast
     return "", 200
