@@ -44,6 +44,8 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 | `ADDITIONAL_FIELD` | A field of the payment request named by `key` — customer, address, order, airline or card data. See [Additional fields](#additional-fields-additional_field) | Any string; requires sibling `key` from the supported list | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `CONTAINS` | no |
 | `TIME_PERIOD` | The moment the payment is created, against a schedule. See [Schedules](#schedules-time_period) | One or two ISO-8601 date-times **with offset**: the start and, optionally, the end | `EQUAL` | no |
 | `VOLUME_PAYMENTS_LIMIT` | The account's accumulated volume or payment count in the current period, including this payment. See [Volume and count limits](#volume-and-count-limits-volume_payments_limit) | Exactly one positive number as **string**: the limit | `LESS_OR_EQUAL_THAN` | no |
+| `SUBSCRIPTION_RETRY` | Whether the payment is a scheduled auto-retry of a Yuno-managed subscription (`subscription_context.retry_count > 0`); set by Yuno on each attempt, never sent by you | `"true"` or `"false"` | `EQUAL` | no |
+| `SUBSCRIPTION_RETRY_COUNT` | Position of the attempt in the subscription retry ladder: `0` on the first attempt of a billing cycle, `1..n` on each scheduled retry | Non-negative integer as **string** (e.g. `"3"`) | `EQUAL`, `GREATER_THAN`, `GREATER_OR_EQUAL_THAN`, `LESS_THAN`, `LESS_OR_EQUAL_THAN`, `BETWEEN`, `ONE_OF` | no |
 
 <Warning>
 `CURRENCY` and `INSTALLMENTS` are **not** valid standalone `condition_type` values. Sending either one rejects the whole routing with `400 INVALID_ROUTE_CONFIGURATION`. To filter by currency, use `AMOUNT` with the sibling `currency` field — with an amount comparison, or with an empty `values` list to match the currency alone.
@@ -59,7 +61,8 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 | `NOT_ONE_OF` | ≥ 1 | `attribute ∉ values` | no |
 | `GREATER_THAN` | exactly 1 | numeric `attribute > values[0]` | yes |
 | `LESS_THAN` | exactly 1 | numeric `attribute < values[0]` | no |
-| `LESS_OR_EQUAL_THAN` | exactly 1 | `VOLUME_PAYMENTS_LIMIT` only — the period total including this payment is `<= values[0]` | yes |
+| `LESS_OR_EQUAL_THAN` | exactly 1 | `VOLUME_PAYMENTS_LIMIT`: the period total including this payment is `<= values[0]`; `SUBSCRIPTION_RETRY_COUNT`: numeric `attribute <= values[0]` | yes |
+| `GREATER_OR_EQUAL_THAN` | exactly 1 | numeric `attribute >= values[0]` | yes |
 | `BETWEEN` | exactly 2 | inclusive on both ends | yes |
 | `CONTAINS` | exactly 1 | `attribute` contains `values[0]` as a substring | yes |
 
@@ -68,9 +71,22 @@ There is no `NOT_BETWEEN` operator. It is not a member of the `conditional` enum
 rejects the whole routing at deserialization — use `BETWEEN` on the complementary ranges instead.
 </Warning>
 
-`LESS_OR_EQUAL_THAN` is the operator of `VOLUME_PAYMENTS_LIMIT` and is not meant for the other
-types in the table: the limit condition carries its own threshold semantics (the account total over a
-period, see below) rather than a generic comparison of one attribute.
+`LESS_OR_EQUAL_THAN` is the operator of `VOLUME_PAYMENTS_LIMIT`, where it carries the limit's own
+threshold semantics (the account total over a period, see below) rather than a generic comparison of
+one attribute, and a plain numeric `<=` for `SUBSCRIPTION_RETRY_COUNT`. It is not meant for the other
+types in the table.
+
+`SUBSCRIPTION_RETRY` and `SUBSCRIPTION_RETRY_COUNT` read `subscription_context.retry_count`, which Yuno
+attaches to payments created by its subscription engine. When it is absent (one-off payments, or
+retries you trigger yourself with `POST /v1/payments`) `SUBSCRIPTION_RETRY EQUAL "false"` **matches**
+(the payment counts as a first attempt) while every positive `SUBSCRIPTION_RETRY_COUNT` operator does
+not match. Keep the retry branch (`SUBSCRIPTION_RETRY EQUAL "true"`) above your default route and let
+first attempts fall to the default; a `EQUAL "false"` set above the default also catches every one-off
+payment of the account. A retry you force with `POST /v1/subscriptions/{code}/retry` carries the last
+stored count, which is `0` until a scheduled retry has run. Rules using these types are evaluated at
+payment time only: the checkout and installments listings skip a set that holds only these types, and
+any such set disables multi-provider installments resolution for that account and payment method; the
+routing simulator always evaluates them as a first attempt.
 
 `CONTAINS` is a substring test for `METADATA`. For `ADDITIONAL_FIELD` it compares for equality against
 the values the field resolves to: on a multi-valued field, such as `order_fee_item_sku_code`, it matches
