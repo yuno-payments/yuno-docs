@@ -10506,6 +10506,7 @@
               "examples": {
                 "Configuration and styling": {
                   "value": {
+                    "name": "Main Checkout",
                     "config": {
                       "payment_methods": [
                         {
@@ -10578,12 +10579,44 @@
                       }
                     }
                   }
+                },
+                "Hide a field on the card form": {
+                  "value": {
+                    "name": "My Checkout",
+                    "config": {
+                      "payment_methods": [
+                        {
+                          "payment_method_type": "CARD",
+                          "type": "PAYMENT_METHOD",
+                          "order_to_show": 1,
+                          "is_active": true,
+                          "active_enrollment_type": "BOTH",
+                          "required_fields_to_override": {
+                            "is_active": true,
+                            "fields": [
+                              {
+                                "field_name": "phone",
+                                "is_active": false
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
                 }
               },
               "schema": {
                 "type": "object",
-                "description": "At least one of `config` or `styling` is required.",
+                "description": "`name` is required on every request. At least one of `config` or `styling` is also required.",
+                "required": [
+                  "name"
+                ],
                 "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The checkout's display name. Required; a missing or blank value is rejected with 400 (`name must not be blank`)."
+                  },
                   "config": {
                     "type": "object",
                     "description": "Checkout configuration: payment methods and general settings. Sparse upsert; omitted payment methods keep their previous state.",
@@ -10607,6 +10640,14 @@
                               "type": "string",
                               "description": "Payment method type, e.g. CARD, PAYPAL, NU_PAY, GOOGLE_PAY.",
                               "example": "CARD"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "PAYMENT_METHOD",
+                                "ENROLLMENT"
+                              ],
+                              "description": "Which stored row this entry updates for the given `payment_method_type`: the one-time payment flow (`PAYMENT_METHOD`) or the enrollment/saved-card flow (`ENROLLMENT`). checkout-ms matches the existing row by this field; omitting it means no row matches, so `required_fields_to_override` is silently ignored (the request still returns 200, but the card form doesn't change)."
                             },
                             "order_to_show": {
                               "type": "integer",
@@ -10644,14 +10685,72 @@
                                 },
                                 "fields": {
                                   "type": "array",
+                                  "description": "Per-field overrides for the non-enrolled (one-time payment) flow.",
                                   "items": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                      "field_name": {
+                                        "type": "string",
+                                        "description": "The form field to override, e.g. `phone`, `security_code`.",
+                                        "example": "phone"
+                                      },
+                                      "is_active": {
+                                        "type": "boolean",
+                                        "description": "Whether the field is shown/required on the form. This is the on/off switch for the field — set `false` to hide it.",
+                                        "example": false
+                                      },
+                                      "current_value": {
+                                        "type": "string",
+                                        "description": "A fixed value to apply instead of letting the payer enter one. Only meaningful for `security_code`, where `\"ALWAYS\"` forces the CVV to always be requested; unrelated to `is_active`.",
+                                        "example": "ALWAYS"
+                                      },
+                                      "conditions_to_override": {
+                                        "type": "array",
+                                        "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.",
+                                        "items": {
+                                          "type": "object"
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "field_name",
+                                      "is_active"
+                                    ]
                                   }
                                 },
                                 "enrollment_fields": {
                                   "type": "array",
+                                  "description": "Per-field overrides for the enrolled (saved-card) flow. Same shape as `fields`.",
                                   "items": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                      "field_name": {
+                                        "type": "string",
+                                        "description": "The form field to override, e.g. `phone`, `security_code`.",
+                                        "example": "phone"
+                                      },
+                                      "is_active": {
+                                        "type": "boolean",
+                                        "description": "Whether the field is shown/required on the form. This is the on/off switch for the field — set `false` to hide it.",
+                                        "example": false
+                                      },
+                                      "current_value": {
+                                        "type": "string",
+                                        "description": "A fixed value to apply instead of letting the payer enter one. Only meaningful for `security_code`, where `\"ALWAYS\"` forces the CVV to always be requested; unrelated to `is_active`.",
+                                        "example": "ALWAYS"
+                                      },
+                                      "conditions_to_override": {
+                                        "type": "array",
+                                        "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.",
+                                        "items": {
+                                          "type": "object"
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "field_name",
+                                      "is_active"
+                                    ]
                                   }
                                 },
                                 "is_enrollment_active": {
