@@ -1,0 +1,338 @@
+---
+title: "First integration tutorial"
+sidebarTitle: "First integration"
+description: "Continue from your first payment: retrieve a payment, receive a webhook, refund a payment, and vault a card."
+---
+
+This tutorial continues from the [Quickstart](/docs/quickstart). You have sent your first payment in sandbox. Now retrieve it, listen for webhooks, refund it, and vault a card for future payments.
+
+<Accordion title="Environments and base URLs">
+<Snippet file="environments-table.mdx" />
+</Accordion>
+
+## Prerequisites
+
+Before you start, you need:
+
+- A sandbox payment from the [Quickstart](/docs/quickstart). Save its `id` as `YUNO_PAYMENT_ID`.
+- Your sandbox credentials set as environment variables: `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, `YUNO_ACCOUNT_ID`.
+- A customer from the Quickstart. Save its `id` as `YUNO_CUSTOMER_ID`.
+
+## Retrieve a payment
+
+After creating a payment, retrieve it to confirm the status server-side. Never rely only on the SDK callback for fulfillment.
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url "https://api-sandbox.y.uno/v1/payments/$YUNO_PAYMENT_ID" \
+  --header "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  --header "private-secret-key: $YUNO_PRIVATE_SECRET_KEY"
+```
+
+```javascript Node.js
+const res = await fetch(
+  `https://api-sandbox.y.uno/v1/payments/${process.env.YUNO_PAYMENT_ID}`,
+  {
+    headers: {
+      "public-api-key": process.env.YUNO_PUBLIC_API_KEY,
+      "private-secret-key": process.env.YUNO_PRIVATE_SECRET_KEY,
+    },
+  }
+);
+const payment = await res.json();
+console.log(payment.status, payment.sub_status);
+```
+
+```python Python
+import os
+import requests
+
+res = requests.get(
+    f"https://api-sandbox.y.uno/v1/payments/{os.environ['YUNO_PAYMENT_ID']}",
+    headers={
+        "public-api-key": os.environ["YUNO_PUBLIC_API_KEY"],
+        "private-secret-key": os.environ["YUNO_PRIVATE_SECRET_KEY"],
+    },
+)
+payment = res.json()
+print(payment["status"], payment["sub_status"])
+```
+
+</CodeGroup>
+
+The response includes the full payment object. Check `status` equals `SUCCEEDED` and `sub_status` equals `APPROVED` before fulfilling an order.
+
+For the full response shape, see [Retrieve payment](/reference/payments/retrieve-payment-by-id-v2).
+
+## Receive a webhook
+
+Webhooks notify your server when events happen asynchronously. Configure one to receive payment events.
+
+### Configure a webhook endpoint
+
+1. Open the [Yuno Dashboard](https://dashboard.y.uno/).
+2. Go to **Settings** > **Webhooks**.
+3. Click **Add webhook**.
+4. Enter your endpoint URL (for example, `https://yoursite.com/webhooks/yuno`).
+5. Select the events you want to receive. Start with `payment.succeeded` and `payment.declined`.
+6. Click **Save**.
+
+For local testing, use a tunnel service like [ngrok](https://ngrok.com) to expose your local server.
+
+### Handle the webhook
+
+Your endpoint receives a POST request with a JSON body. Verify the signature before processing.
+
+```javascript Node.js
+import crypto from "crypto";
+
+const WEBHOOK_SECRET = process.env.YUNO_WEBHOOK_SECRET;
+
+function verifySignature(payload, signature) {
+  const expected = crypto
+    .createHmac("sha256", WEBHOOK_SECRET)
+    .update(payload)
+    .digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+
+app.post("/webhooks/yuno", (req, res) => {
+  const signature = req.headers["x-signature"];
+  const payload = JSON.stringify(req.body);
+
+  if (!verifySignature(payload, signature)) {
+    return res.status(401).send("Invalid signature");
+  }
+
+  const event = req.body;
+  console.log("Event type:", event.type);
+  console.log("Payment ID:", event.data?.id);
+
+  if (event.type === "payment.succeeded") {
+    // Fulfill the order
+  }
+
+  res.status(200).send("OK");
+});
+```
+
+<Warning>
+Process each webhook idempotently. Yuno may retry delivery, so check whether you already processed the event before taking action.
+</Warning>
+
+For the full webhook signature verification process, see [Verify webhook signatures](/docs/webhooks/verify-webhook-signatures-hmac). For all event types, see [Webhook events](/docs/webhooks/events).
+
+## Refund a payment
+
+Refund a succeeded payment partially or fully. The refund goes back to the original payment method.
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url "https://api-sandbox.y.uno/v1/payments/$YUNO_PAYMENT_ID/refunds" \
+  --header "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  --header "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \
+  --header "X-Idempotency-Key: $(uuidgen)" \
+  --header "content-type: application/json" \
+  --data '{
+    "amount": { "currency": "USD", "value": 25 },
+    "reason": "Customer requested refund"
+  }'
+```
+
+```javascript Node.js
+const res = await fetch(
+  `https://api-sandbox.y.uno/v1/payments/${process.env.YUNO_PAYMENT_ID}/refunds`,
+  {
+    method: "POST",
+    headers: {
+      "public-api-key": process.env.YUNO_PUBLIC_API_KEY,
+      "private-secret-key": process.env.YUNO_PRIVATE_SECRET_KEY,
+      "X-Idempotency-Key": crypto.randomUUID(),
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      amount: { currency: "USD", value: 25 },
+      reason: "Customer requested refund",
+    }),
+  }
+);
+const refund = await res.json();
+console.log(refund.status);
+```
+
+```python Python
+import os
+import uuid
+import requests
+
+res = requests.post(
+    f"https://api-sandbox.y.uno/v1/payments/{os.environ['YUNO_PAYMENT_ID']}/refunds",
+    headers={
+        "public-api-key": os.environ["YUNO_PUBLIC_API_KEY"],
+        "private-secret-key": os.environ["YUNO_PRIVATE_SECRET_KEY"],
+        "X-Idempotency-Key": str(uuid.uuid4()),
+    },
+    json={
+        "amount": {"currency": "USD", "value": 25},
+        "reason": "Customer requested refund",
+    },
+)
+print(res.json()["status"])
+```
+
+</CodeGroup>
+
+For partial refunds, set `amount.value` to less than the original payment amount. You can refund multiple times until the total equals the original amount.
+
+For the full refund flow, see [Refund payments](/docs/direct-integration-use-cases/refund-payments).
+
+## Vault a card
+
+Vaulting stores a card securely so the customer can reuse it without entering details again. This is also called enrollment.
+
+### Create a customer session
+
+First, create a customer session for enrollment.
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url https://api-sandbox.y.uno/v1/customers/sessions \
+  --header "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  --header "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \
+  --header "content-type: application/json" \
+  --data '{
+    "account_id": "'"$YUNO_ACCOUNT_ID"'",
+    "customer_id": "'"$YUNO_CUSTOMER_ID"'",
+    "country": "US"
+  }'
+```
+
+```javascript Node.js
+const res = await fetch("https://api-sandbox.y.uno/v1/customers/sessions", {
+  method: "POST",
+  headers: {
+    "public-api-key": process.env.YUNO_PUBLIC_API_KEY,
+    "private-secret-key": process.env.YUNO_PRIVATE_SECRET_KEY,
+    "content-type": "application/json",
+  },
+  body: JSON.stringify({
+    account_id: process.env.YUNO_ACCOUNT_ID,
+    customer_id: process.env.YUNO_CUSTOMER_ID,
+    country: "US",
+  }),
+});
+const session = await res.json();
+console.log(session.customer_session);
+```
+
+```python Python
+import os
+import requests
+
+res = requests.post(
+    "https://api-sandbox.y.uno/v1/customers/sessions",
+    headers={
+        "public-api-key": os.environ["YUNO_PUBLIC_API_KEY"],
+        "private-secret-key": os.environ["YUNO_PRIVATE_SECRET_KEY"],
+    },
+    json={
+        "account_id": os.environ["YUNO_ACCOUNT_ID"],
+        "customer_id": os.environ["YUNO_CUSTOMER_ID"],
+        "country": "US",
+    },
+)
+print(res.json()["customer_session"])
+```
+
+</CodeGroup>
+
+### Enroll the card with the SDK
+
+Use the SDK to render an enrollment form. The card is tokenized and stored securely.
+
+```html Browser
+<div id="enrollment-form"></div>
+<script src="https://sdk-web.y.uno/v2.1.2/main.js"></script>
+<script>
+  async function startEnrollment() {
+    const sdkPayments = await SdkPayments.initialize("your-public-api-key");
+    const enrollment = sdkPayments.enrollment({
+      customerSession: "customer-session-from-your-server",
+      countryCode: "US",
+      elementSelector: "#enrollment-form",
+      onStatus: (result) => {
+        console.log("Enrollment status:", result.status);
+        if (result.vaultedToken) {
+          console.log("Vaulted token:", result.vaultedToken);
+        }
+      },
+    });
+    await enrollment.start({ paymentMethodType: "CARD" });
+  }
+
+  if (window.SdkPayments) {
+    startEnrollment();
+  } else {
+    window.addEventListener("sdk-payments-ready", startEnrollment);
+  }
+</script>
+```
+
+The `vaultedToken` in `onStatus` is the stored card token. Use it in future payments by passing it as `payment_method.token` or in the SDK's `PaymentMethodSelected`.
+
+For the full enrollment flow, see [Enrollment](/docs/yuno-sdk/features/enrollment).
+
+### Use the vaulted card
+
+When the customer returns, pass their `customer_id` when creating a checkout session. The SDK shows their saved payment methods.
+
+```json
+{
+  "account_id": "your-account-id",
+  "merchant_order_id": "order-456",
+  "payment_description": "Repeat purchase",
+  "country": "US",
+  "customer_id": "customer-123",
+  "amount": { "currency": "USD", "value": 50 },
+  "workflow": "SDK_SEAMLESS"
+}
+```
+
+The saved card appears in the payment method list. The customer selects it and pays without entering card details.
+
+## Next steps
+
+<CardGroup cols={3}>
+  <Card title="Testing" icon="vial" href="/docs/testing">
+    Test cards and sandbox scenarios.
+  </Card>
+  <Card title="Go live" icon="rocket" href="/docs/go-live">
+    Checklist before production.
+  </Card>
+  <Card title="Webhooks" icon="bell" href="/docs/webhooks/events">
+    All webhook event types.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="Refund fails with 'Payment not refundable'">
+The payment must be in `SUCCEEDED` status to refund. Retrieve the payment and check its status. Some providers also require a settlement period before refunds are allowed.
+</Accordion>
+<Accordion title="Webhook signature verification fails">
+Check that you are using the correct webhook secret from the dashboard. The secret is different for sandbox and production. Verify that you are hashing the raw request body, not a parsed and re-stringified version.
+</Accordion>
+<Accordion title="Vaulted card does not appear">
+The checkout session must include `customer_id` matching the customer who enrolled the card. Check that the enrollment completed successfully with a `vaultedToken` in the response.
+</Accordion>
+</AccordionGroup>
