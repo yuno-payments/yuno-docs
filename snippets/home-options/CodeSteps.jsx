@@ -43,7 +43,7 @@ export const CodeSteps = () => {
             className={i === active ? 'hxb-step is-on' : 'hxb-step'}
             onClick={() => setActive(i)}
           >
-            <span className="hxb-step-num">0{i + 1}</span>{st.title}
+            <span className="hxb-step-num">{String(i + 1).padStart(2, "0")}</span>{st.title}
           </button>
         ))}
       </div>
