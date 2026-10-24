@@ -1,302 +1,103 @@
 ---
 title: "What is Yuno?"
 sidebarTitle: "Introduction"
-description: "Yuno is the AI operating system for payments: one API and one SDK connect you to payment providers, banks, fraud tools, and local payment methods, with AI agents on top. Your first payment, how it works, the core objects, integration options, and the product index."
-mode: "wide"
+description: "One integration to accept payments through many providers and payment methods."
 ---
 
-import AtAGlance from '/snippets/getting-started/at-a-glance.mdx';
-import {Explainer} from '/snippets/how-yuno-works/Explainer.jsx';
+Yuno is a payment orchestration platform. You integrate once with Yuno, and Yuno connects you to payment providers, acquirers, banks, and local payment methods. You add providers and change routing rules in the dashboard without changing your code.
 
-<div className="yd-intro">
+## How Yuno fits in your stack
 
-<section className="yd-hero yd-hero-explainer">
-  <div className="yd-hero-copy">
-    <div className="yd-eyebrow">
-      <span className="yd-eyebrow-accent">How Yuno works</span>
-      <span className="yd-eyebrow-rule" />
-      <span className="yd-eyebrow-muted">Introduction</span>
-    </div>
-    <h1 className="yd-h1">What is Yuno?</h1>
-    <p className="yd-lead">Yuno is the AI operating system for payments.</p>
-  </div>
-  <Explainer steps={[
-    { title: 'Integrate once', body: 'You integrate Yuno once. Online, payment links, MCP, and in-person all use the same integration.', chips: ['Yuno SDK', 'Direct API', 'Payment links', 'MCP', 'In-person (POS)'] },
-    { title: 'Reach every provider', body: 'You add providers in the Dashboard. Your code does not change.', chips: ['Payment providers', 'Acquirers', 'Banks', 'Fraud tools', 'Local payment methods'] },
-    { title: 'Route each payment', body: 'Each payment goes to the provider that fits it. You change routing rules in the Dashboard.', chips: ['Routing', 'Fraud and 3DS', 'Vault'] },
-    { title: 'AI agents', body: 'Yuno\u2019s AI agents keep working after the payment is sent.', chips: ['Recover declined payments', 'Analyze your payment data', 'Support your integration'] },
-  ]} />
-  <div className="yd-cta-row wy-actions">
-    <a className="yd-btn yd-btn-primary" href="/docs/quickstart">Get sandbox keys</a>
-    <a className="yd-btn yd-btn-secondary" href="#integrate">Choose an integration</a>
-  </div>
-  <div className="yd-hero-code">
+```mermaid
+flowchart LR
+    subgraph Your app
+        A[Your frontend]
+        B[Your backend]
+    end
 
-<CodeGroup>
+    subgraph Yuno
+        C[Yuno SDK<br/>or Direct API]
+        D[Connections<br/>Routing<br/>Vault<br/>Risk]
+    end
 
-```bash cURL
-curl --request POST \
-  --url https://api-sandbox.y.uno/v1/payments \
-  --header "public-api-key: $YUNO_PUBLIC_API_KEY" \
-  --header "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \
-  --header "X-Idempotency-Key: $(uuidgen)" \
-  --header "content-type: application/json" \
-  --data '{
-    "account_id": "'"$YUNO_ACCOUNT_ID"'",
-    "merchant_order_id": "order-0001",
-    "description": "First test payment",
-    "country": "US",
-    "amount": { "currency": "USD", "value": 25 },
-    "workflow": "DIRECT",
-    "payment_method": {
-      "type": "CARD",
-      "detail": { "card": { "card_data": {
-        "number": "4507990000000002",
-        "expiration_month": 11,
-        "expiration_year": 28,
-        "security_code": "123",
-        "holder_name": "John Doe"
-      } } }
-    }
-  }'
+    subgraph Providers
+        E[Acquirers<br/>PSPs<br/>Banks<br/>Wallets]
+    end
+
+    F[Customer's bank<br/>or wallet]
+
+    A --> C
+    B --> C
+    C --> D
+    D --> E
+    E --> F
 ```
 
-```javascript Node.js
-const res = await fetch("https://api-sandbox.y.uno/v1/payments", {
-  method: "POST",
-  headers: {
-    "public-api-key": process.env.YUNO_PUBLIC_API_KEY,
-    "private-secret-key": process.env.YUNO_PRIVATE_SECRET_KEY,
-    "X-Idempotency-Key": crypto.randomUUID(),
-    "content-type": "application/json",
-  },
-  body: JSON.stringify({
-    account_id: process.env.YUNO_ACCOUNT_ID,
-    merchant_order_id: "order-0001",
-    description: "First test payment",
-    country: "US",
-    amount: { currency: "USD", value: 25 },
-    workflow: "DIRECT",
-    payment_method: {
-      type: "CARD",
-      detail: { card: { card_data: {
-        number: "4507990000000002",
-        expiration_month: 11,
-        expiration_year: 28,
-        security_code: "123",
-        holder_name: "John Doe",
-      } } },
-    },
-  }),
-});
-const payment = await res.json();
-console.log(payment.status); // SUCCEEDED
-```
+Your app sends payment requests to Yuno through the SDK or the Direct API. Yuno routes each payment to the right provider based on your rules. The provider processes the payment with the customer's bank or wallet.
 
-```python Python
-import os
-import uuid
-import requests
+## Core concepts
 
-res = requests.post(
-    "https://api-sandbox.y.uno/v1/payments",
-    headers={
-        "public-api-key": os.environ["YUNO_PUBLIC_API_KEY"],
-        "private-secret-key": os.environ["YUNO_PRIVATE_SECRET_KEY"],
-        "X-Idempotency-Key": str(uuid.uuid4()),
-    },
-    json={
-        "account_id": os.environ["YUNO_ACCOUNT_ID"],
-        "merchant_order_id": "order-0001",
-        "description": "First test payment",
-        "country": "US",
-        "amount": {"currency": "USD", "value": 25},
-        "workflow": "DIRECT",
-        "payment_method": {
-            "type": "CARD",
-            "detail": {"card": {"card_data": {
-                "number": "4507990000000002",
-                "expiration_month": 11,
-                "expiration_year": 28,
-                "security_code": "123",
-                "holder_name": "John Doe",
-            }}},
-        },
-    },
-)
-print(res.json()["status"])  # SUCCEEDED
-```
+| Concept | What it is | Learn more |
+|---------|-----------|------------|
+| **Organization** | Your company in Yuno. Contains accounts and team members. | [Organization](/docs/using-yuno/organization/index) |
+| **Account** | A business unit or store. Payments belong to an account. | [Accounts](/docs/using-yuno/organization/accounts) |
+| **Connection** | A link between your account and a payment provider. Set up in the dashboard. | [Connections](/docs/using-yuno/dashboard-overview/connections) |
+| **Routing** | Rules that decide which connection processes each payment. | [Routing](/docs/using-yuno/dashboard-overview/routing) |
+| **Payment method** | How the customer pays: card, bank transfer, wallet, or local method. | [Payment methods](/docs/basic-concepts/payment-methods) |
+| **Customer** | The payer. Stores their details and saved payment methods for reuse. | [Customers](/docs/basic-concepts/customers) |
+| **Checkout session** | A record of one payment attempt. The SDK uses it to show available payment methods. | [Sessions](/docs/basic-concepts/sessions) |
+| **Webhook** | A notification Yuno sends to your server when a payment status changes. | [Webhooks](/docs/basic-concepts/webhooks-1) |
 
-</CodeGroup>
+## How a payment flows
 
-{/* TODO: verify on proof org. Same test card as the Quickstart (4507 9900 0000 0002, 11/28, CVV 123, John Doe, from docs/direct-integration-use-cases/yuno-testing-gateway.mdx). This request needs the Yuno Test Payment Gateway connected and a Card route published, see the Quickstart. */}
+<Steps>
+  <Step title="Create a checkout session">
+    Your backend calls `POST /v1/checkout/sessions` with the amount, currency, and country. Yuno returns a session ID.
+  </Step>
+  <Step title="Show payment methods">
+    Your frontend loads the Yuno SDK with the session ID. The SDK shows the payment methods available for this session.
+  </Step>
+  <Step title="Customer pays">
+    The customer selects a payment method and enters their details. The SDK tokenizes the card data and sends it to Yuno.
+  </Step>
+  <Step title="Yuno routes the payment">
+    Yuno picks the connection that matches your routing rules and sends the payment to that provider.
+  </Step>
+  <Step title="Receive the result">
+    The SDK shows the result to the customer. Yuno sends a webhook to your server with the payment status.
+  </Step>
+</Steps>
 
-<p className="yd-foot">This request is real and runs in sandbox, so copy it, set your keys, and run it. <a href="/reference/payments/create-payment">Run it in the API playground</a>. Sandbox setup is in the <a href="/docs/quickstart">Quickstart</a>. In production, sending card data from your server requires PCI DSS.</p>
+For the detailed sequence with API fields, see [How a payment flows](/docs/how-yuno-works/how-yuno-payment-flow-works).
 
-</div>
-</section>
+## Choose how to integrate
 
-<AtAGlance />
+<CardGroup cols={2}>
+  <Card title="Yuno SDK" icon="window" href="/docs/yuno-sdk/get-started">
+    Web, iOS, and Android. The SDK renders the checkout form and keeps card data out of your PCI scope. Recommended for most integrations.
+  </Card>
+  <Card title="Direct API" icon="code" href="/docs/direct-integration-use-cases/direct-flow">
+    Server-to-server. Your backend calls the API and owns the full flow. Sending card data requires PCI DSS compliance.
+  </Card>
+</CardGroup>
 
-<section className="yd-section" id="how">
-  <div className="yd-eyebrow-sm">01 / How it works</div>
-  <h2 className="yd-h2">Your app talks to Yuno. Yuno talks to everyone else.</h2>
-  <p className="yd-sub">You add providers and change routing in the Dashboard. Your code does not change.</p>
-  <div className="yd-hiw" role="img" aria-label="Your app, integrated once through the SDK, the API, payment links, the MCP server or in-person terminals, sends API calls to Yuno and receives webhooks back. Yuno orchestrates: AI agents, routing, fraud and 3DS, vault, reconciliation, payouts. Connections, added in the Dashboard, reach any provider: PSPs and acquirers, banks, local payment methods, fraud and 3DS tools.">
-    <div className="yd-hiw-node yd-hiw-o1"><span className="yd-hiw-label">Integrate once</span><span className="yd-hiw-title">Your app</span></div>
-    <div className="yd-hiw-lane yd-hiw-o3" aria-hidden="true">
-      <div className="yd-hiw-row"><span>API calls</span><span className="yd-hiw-line yd-hiw-fwd"></span></div>
-      <div className="yd-hiw-row yd-hiw-back"><span className="yd-hiw-line yd-hiw-rev"></span><span>Webhooks</span></div>
-    </div>
-    <div className="yd-hiw-node yd-hiw-hub yd-hiw-o4"><span className="yd-hiw-label">Orchestrate</span><img src="/logo/yuno_wordmark_white.svg" alt="Yuno" width="80" height="22" /></div>
-    <div className="yd-hiw-lane yd-hiw-single yd-hiw-o6" aria-hidden="true"><span>Connections</span><span className="yd-hiw-line yd-hiw-both"></span><span className="yd-hiw-note">Added in the Dashboard</span></div>
-    <div className="yd-hiw-node yd-hiw-o7"><span className="yd-hiw-label">Connect any</span><span className="yd-hiw-title">Providers</span></div>
-    <div className="yd-hiw-list yd-hiw-o2"><span>Yuno SDK</span><span>Direct API</span><span>Payment links</span><span>MCP</span><span>In-person (POS)</span></div>
-    <div className="yd-hiw-spacer"></div>
-    <div className="yd-hiw-list yd-hiw-hublist yd-hiw-o5"><span>AI agents</span><span>Routing</span><span>Fraud and 3DS</span><span>Vault</span><span>Reconciliation</span><span>Payouts</span></div>
-    <div className="yd-hiw-spacer"></div>
-    <div className="yd-hiw-list yd-hiw-o8"><span>PSPs and acquirers</span><span>Banks</span><span>Local payment methods</span><span>Fraud and 3DS tools</span></div>
-  </div>
-</section>
+<Note>
+Older SDKs (Lite, Full, Headless, Seamless) are still supported but not recommended for new integrations. See [Legacy SDKs](/docs/sdks/overview/quickstart) if you need them.
+</Note>
 
-<section className="yd-section" id="objects">
-  <div className="yd-eyebrow-sm">02 / Core objects</div>
-  <h2 className="yd-h2">Four objects, in the order you use them.</h2>
-  <p className="yd-sub">Every payment follows this sequence, with any method and any provider.</p>
-  <ol className="yd-objects">
-    <li>
-      <a className="yd-object" href="/docs/basic-concepts/customers">
-        <span className="yd-object-num">1</span>
-        <span className="yd-object-title">Customer <span className="yd-object-opt">Optional</span></span>
-        <code>POST /v1/customers</code>
-        <span className="yd-object-body">The payer. Stores their details and saved payment methods for reuse.</span>
-      </a>
-    </li>
-    <li>
-      <a className="yd-object" href="/docs/basic-concepts/sessions">
-        <span className="yd-object-num">2</span>
-        <span className="yd-object-title">Checkout session</span>
-        <code>POST /v1/checkout/sessions</code>
-        <span className="yd-object-body">The amount and country. The SDK uses it to show the payment methods your account has enabled.</span>
-      </a>
-    </li>
-    <li>
-      <a className="yd-object" href="/docs/basic-concepts/payments-1">
-        <span className="yd-object-num">3</span>
-        <span className="yd-object-title">Payment</span>
-        <code>POST /v1/payments</code>
-        <span className="yd-object-body">The charge. It holds the transactions: authorization, capture, and refund.</span>
-      </a>
-    </li>
-    <li>
-      <a className="yd-object" href="/docs/basic-concepts/webhooks-1">
-        <span className="yd-object-num">4</span>
-        <span className="yd-object-title">Webhook</span>
-        <code>Yuno → your server</code>
-        <span className="yd-object-body">Yuno sends each status change to a URL you register in the Dashboard or by API.</span>
-      </a>
-    </li>
-  </ol>
-  <p className="yd-foot">The SDK turns card data into a one-time token (OTT) that you send with the payment. The Direct API skips the session and sends card data from your server, which requires PCI DSS. Full sequence: <a href="/docs/how-yuno-works/how-yuno-payment-flow-works">Payment flow</a>.</p>
-</section>
+## Next steps
 
-<section className="yd-section" id="integrate">
-  <div className="yd-eyebrow-sm">03 / Choose your integration</div>
-  <h2 className="yd-h2">Pick how much of the flow you own.</h2>
-  <p className="yd-sub">All four use the same objects and the same API keys.</p>
-  <div className="yd-paths">
-    <a className="yd-path is-active" href="/docs/yuno-sdk/introduction">
-      <span className="yd-tag">Recommended</span>
-      <span className="yd-path-title">Yuno SDK</span>
-      <span className="yd-path-body">Web, iOS, and Android. The SDK renders the checkout and keeps card data out of your PCI scope.</span>
-    </a>
-    <a className="yd-path" href="/docs/direct-integration-use-cases/direct-flow">
-      <span className="yd-tag">Server to server</span>
-      <span className="yd-path-title">Direct API</span>
-      <span className="yd-path-body">Your backend calls the API and owns the whole flow. Card data requires PCI DSS.</span>
-    </a>
-    <a className="yd-path" href="/docs/using-yuno/dashboard-overview/payment-links">
-      <span className="yd-tag">No code</span>
-      <span className="yd-path-title">Payment links</span>
-      <span className="yd-path-body">A hosted checkout URL, created in the Dashboard or by API.</span>
-    </a>
-    <a className="yd-path" href="/docs/ai-capabilities/remote-yuno-mcp-server">
-      <span className="yd-tag">AI agents</span>
-      <span className="yd-path-title">Remote MCP server</span>
-      <span className="yd-path-body">Agents call the Yuno API as MCP tools, authenticated with your API keys.</span>
-    </a>
-  </div>
-  <p className="yd-foot">Also: <a href="/docs/sdks/additional-platforms/flutter">Flutter</a>, <a href="/docs/sdks/additional-platforms/react-native/index">React Native</a>, <a href="/docs/plugins/woocommerce/index">WooCommerce</a>, <a href="/docs/plugins/vtex/index">VTEX</a>. To build with a coding agent, see <a href="/docs/ai-capabilities/build-with-ai">Build with AI</a>.</p>
-</section>
-
-<section className="yd-section" id="products">
-  <div className="yd-eyebrow-sm">04 / Product index</div>
-  <h2 className="yd-h2">Everything else Yuno does.</h2>
-  <p className="yd-sub">One line each. Each link opens the guide or the API reference.</p>
-  <div className="yd-index not-prose">
-    <div className="yd-index-group">
-      <div className="yd-index-head">AI</div>
-      <ul>
-        <li><a href="/docs/ai-capabilities/nova"><b>NOVA</b><span>Recovers declined payments by WhatsApp or voice call</span></a></li>
-        <li><a href="/docs/ai-capabilities/payment-concierge"><b>Payment Concierge</b><span>An AI analyst for your payment data</span></a></li>
-        <li><a href="/docs/ai-capabilities/maia-ai-technical-account-manager"><b>Maia</b><span>AI technical account manager for your setup</span></a></li>
-        <li><a href="/docs/ai-capabilities/agent-toolkit"><b>Agent Toolkit</b><span>Build AI payment experiences in your framework</span></a></li>
-        <li><a href="/docs/ai-capabilities/remote-yuno-mcp-server"><b>Remote MCP server</b><span>The Yuno API as tools for AI agents</span></a></li>
-      </ul>
-    </div>
-    <div className="yd-index-group">
-      <div className="yd-index-head">Accept</div>
-      <ul>
-        <li><a href="/docs/basic-concepts/payment-methods"><b>Payment methods</b><span>Cards, wallets, and local methods</span></a></li>
-        <li><a href="/docs/payment-features/subscriptions/index"><b>Subscriptions</b><span>Plans and recurring billing</span></a></li>
-        <li><a href="/docs/payment-features/split-payments-marketplace"><b>Split payments</b><span>Marketplace payments across recipients</span></a></li>
-        <li><span className="yd-index-static"><b>In-person (POS)</b><span>Card-present payments on store terminals</span></span></li>
-        <li><span className="yd-index-static"><b>Crypto</b><span>Ask your Yuno account team</span></span></li>
-      </ul>
-    </div>
-    <div className="yd-index-group">
-      <div className="yd-index-head">Optimize</div>
-      <ul>
-        <li><a href="/docs/using-yuno/dashboard-overview/routing"><b>Smart routing</b><span>A provider per payment, with fallback on decline</span></a></li>
-        <li><a href="/reference/organizations/routing/get-routing-recommendations"><b>Routing recommendations <i>Beta</i></b><span>Routes ranked by your own history</span></a></li>
-        <li><a href="/docs/payment-features/transaction-retries"><b>Transaction retries</b><span>Retry failed captures and refunds</span></a></li>
-        <li><a href="/docs/security-and-compliance/network-tokens"><b>Network tokens</b><span>Network tokens in place of card numbers</span></a></li>
-        <li><a href="/docs/additional-services/card-account-updater"><b>Card account updater</b><span>Refresh expired or replaced stored cards</span></a></li>
-      </ul>
-    </div>
-    <div className="yd-index-group">
-      <div className="yd-index-head">Protect</div>
-      <ul>
-        <li><a href="/docs/basic-concepts/fraud"><b>Fraud prevention</b><span>Screening with external fraud tools</span></a></li>
-        <li><a href="/docs/security-and-compliance/3d-secure"><b>3D Secure</b><span>Cardholder authentication on the payment</span></a></li>
-        <li><a href="/docs/payment-features/3ds-standalone"><b>3DS standalone</b><span>Authentication only, no authorization</span></a></li>
-        <li><a href="/docs/basic-concepts/tokens"><b>Vault and tokens</b><span>Store cards once, reuse across providers</span></a></li>
-        <li><a href="/docs/security-and-compliance/pci-proxy/overview"><b>PCI Proxy</b><span>Send card data to third-party APIs</span></a></li>
-      </ul>
-    </div>
-    <div className="yd-index-group">
-      <div className="yd-index-head">Operate</div>
-      <ul>
-        <li><a href="/docs/using-yuno/dashboard-overview/reconciliations"><b>Reconciliation</b><span>Match transactions to settlements</span></a></li>
-        <li><a href="/docs/direct-integration-use-cases/build-reports"><b>Reports</b><span>Payment data in one format</span></a></li>
-        <li><a href="/docs/payouts-and-disputes/payouts"><b>Payouts</b><span>Send money to recipients</span></a></li>
-        <li><a href="/docs/payouts-and-disputes/chargeback-management"><b>Disputes</b><span>Manage chargebacks across providers</span></a></li>
-        <li><a href="/reference/banking-connectivity/index"><b>Banking connectivity</b><span>Bank accounts, transfers, entity onboarding</span></a></li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section className="yd-section" id="next">
-  <div className="yd-eyebrow-sm">Next</div>
-  <h2 className="yd-h2">Your first sandbox payment.</h2>
-  <ol className="yd-next">
-    <li><a href="/docs/quickstart"><span className="yd-next-num">1</span><span className="yd-next-text"><span className="yd-next-title">Quickstart <span className="yd-kind">Tutorial</span></span><span className="yd-next-body">Connect the test gateway and send one sandbox payment.</span></span></a></li>
-    <li><a href="/docs/developers"><span className="yd-next-num">2</span><span className="yd-next-text"><span className="yd-next-title">Developers <span className="yd-kind">Reference</span></span><span className="yd-next-body">Base URLs, keys, specs, SDK versions, and tools.</span></span></a></li>
-    <li><a href="/docs/how-yuno-works/how-yuno-payment-flow-works"><span className="yd-next-num">3</span><span className="yd-next-text"><span className="yd-next-title">Payment flow <span className="yd-kind">Concept</span></span><span className="yd-next-body">Each step of a payment, field by field.</span></span></a></li>
-    <li><a href="/reference/getting-started/api-reference-overview"><span className="yd-next-num">4</span><span className="yd-next-text"><span className="yd-next-title">API reference <span className="yd-kind">Reference</span></span><span className="yd-next-body">Every endpoint, with request and response schemas.</span></span></a></li>
-  </ol>
-  <p className="yd-foot">Stuck on a term? See the <a href="/docs/glossary">Glossary</a>.</p>
-</section>
-
-</div>
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/docs/quickstart">
+    Send your first sandbox payment in about 10 minutes.
+  </Card>
+  <Card title="Connections" icon="plug" href="/docs/using-yuno/dashboard-overview/connections">
+    Add a payment provider to your account.
+  </Card>
+  <Card title="Routing" icon="route" href="/docs/using-yuno/dashboard-overview/routing">
+    Create rules that decide which provider handles each payment.
+  </Card>
+  <Card title="Testing" icon="vial" href="/docs/testing">
+    Test cards, sandbox environment, and 3DS testing.
+  </Card>
+</CardGroup>
