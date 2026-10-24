@@ -1,0 +1,128 @@
+---
+title: "Testing"
+description: "Test your integration in sandbox with test cards, 3DS flows, and different payment scenarios."
+---
+
+Test your integration in sandbox before going live. This page covers test cards, 3DS testing, and how to simulate different payment outcomes.
+
+## Sandbox environment
+
+Sandbox is your testing environment. No real money moves, and test data does not affect production.
+
+<Snippet file="environments-table.mdx" />
+
+### Sandbox vs production
+
+| Aspect | Sandbox | Production |
+|--------|---------|------------|
+| Base URL | `https://api-sandbox.y.uno` | `https://api.y.uno` (US) or `https://api.eu.y.uno` (EMEA) |
+| API keys | Start with `sandbox_` | Start with `prod_` |
+| Dashboard | Test Mode toggle | Live Mode toggle |
+| Payments | Simulated | Real transactions |
+| Providers | Test Payment Gateway + real providers in test mode | Real providers |
+
+## Test cards
+
+Use these test cards with the [Yuno Test Payment Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway) in sandbox.
+
+<Snippet file="test-cards-note.mdx" />
+
+### Basic test cards
+
+<Snippet file="test-cards-basic.mdx" />
+
+### Cards by outcome
+
+| Card number | Expiry | CVV | Result |
+|-------------|--------|-----|--------|
+| 4507 9900 0000 0002 | 11/28 | 123 | SUCCEEDED |
+| 4507 9900 0000 0028 | 11/28 | 123 | DECLINED_BY_BANK |
+| 4507 9900 0000 0010 | 11/28 | 123 | INSUFFICIENT_FUNDS |
+| 4507 9900 0000 0036 | 11/28 | 123 | INVALID_CARD |
+| 4507 9900 0000 0044 | 11/28 | 123 | EXPIRED_CARD |
+| 4507 9900 0000 0051 | 11/28 | 123 | STOLEN_CARD |
+| 4507 9900 0000 0069 | 11/28 | 123 | FRAUD_SUSPECTED |
+
+### Cards by brand
+
+| Brand | Card number | Expiry | CVV | Result |
+|-------|-------------|--------|-----|--------|
+| Visa | 4507 9900 0000 0002 | 11/28 | 123 | SUCCEEDED |
+| Mastercard | 5424 0000 0000 0015 | 11/28 | 123 | SUCCEEDED |
+| Amex | 3400 0000 0000 009 | 11/28 | 1234 | SUCCEEDED |
+
+For the complete list of test cards and scenarios, see [Yuno Test Payment Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway).
+
+## 3DS testing
+
+Test 3D Secure flows to verify your integration handles authentication correctly.
+
+### 3DS test cards
+
+| Card number | Expiry | CVV | 3DS result |
+|-------------|--------|-----|------------|
+| 4000 0200 0000 0000 | 11/28 | 123 | Frictionless success |
+| 4000 0200 0000 0018 | 11/28 | 123 | Challenge required |
+| 4000 0200 0000 0026 | 11/28 | 123 | Authentication failed |
+
+### Testing 3DS flows
+
+1. **Frictionless flow**: The card is authenticated without cardholder interaction. Use the frictionless test card.
+2. **Challenge flow**: The cardholder completes a verification step. Use the challenge test card and complete the mock challenge.
+3. **Failed authentication**: The authentication is declined. Use the failed authentication test card.
+
+For detailed 3DS testing, see [3DS configuration and testing](/docs/direct-integration-use-cases/3ds-configuration-and-testing).
+
+## Simulating payment outcomes
+
+### Using payment description
+
+Set the payment `description` to the desired outcome to simulate specific results:
+
+```json
+{
+  "description": "SUCCEEDED",
+  ...
+}
+```
+
+Available outcomes: `SUCCEEDED`, `DECLINED`, `PENDING`, `ERROR`, `CANCELLED`.
+
+### Simulating chargebacks
+
+To simulate a chargeback in sandbox, use this description format:
+
+```
+SUCCEEDED+CHARGEBACK <outcome>
+```
+
+For example: `SUCCEEDED+CHARGEBACK WON` or `SUCCEEDED+CHARGEBACK LOST`.
+
+The payment succeeds first. About two minutes later, Yuno creates a chargeback transaction and emits webhook events.
+
+## Testing checklist
+
+Before going live, verify your integration handles these scenarios:
+
+| Scenario | How to test | What to verify |
+|----------|-------------|----------------|
+| Successful payment | Use the SUCCEEDED test card | Order is fulfilled once |
+| Declined payment | Use a decline test card | Customer can retry |
+| 3DS challenge | Use the challenge test card | Challenge completes and payment succeeds |
+| Webhook delivery | Create a test payment | Webhook is received and processed |
+| Duplicate webhook | Send the same event twice | Event is processed only once |
+| Timeout recovery | Let a request time out | Retry with same idempotency key works |
+
+## Next steps
+
+<CardGroup cols={3}>
+  <Card title="Yuno Test Payment Gateway" icon="vial" href="/docs/direct-integration-use-cases/yuno-testing-gateway">
+    Full test card list and scenarios.
+  </Card>
+  <Card title="3DS testing" icon="shield" href="/docs/direct-integration-use-cases/3ds-configuration-and-testing">
+    Configure and test 3D Secure.
+  </Card>
+  <Card title="Go live" icon="rocket" href="/docs/go-live">
+    Checklist before production.
+  </Card>
+</CardGroup>
