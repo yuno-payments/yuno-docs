@@ -7896,10 +7896,11 @@ paths:
       summary: Publish Checkout Configuration
       description: >-
         Writes configuration and/or styling for the checkout in a single call. The body may contain a `config` object, a
-        `styling` object, or both; at least one is required. Each part is validated independently before being applied;
-        if any rule fails, the request is rejected with a single aggregated 400 and nothing is applied. Configuration is
-        a sparse upsert (omitted payment methods keep their previous state; new methods cannot be created). Styling is a
-        partial merge (omitted or null fields are preserved).
+        `styling` object, or both; at least one is required. When the body includes `config`, `name` is also required.
+        Each part is validated independently before being applied; if any rule fails, the request is rejected with a
+        single aggregated 400 and nothing is applied. Configuration is a sparse upsert (omitted payment methods keep
+        their previous state; new methods cannot be created). Styling is a partial merge (omitted or null fields are
+        preserved).
       operationId: publish-checkout-configuration
       parameters:
         - name: checkout_code
@@ -7971,13 +7972,16 @@ paths:
                       force_default_styles: false
             schema:
               type: object
-              description: At least one of `config` or `styling` is required.
+              description: At least one of `config` or `styling` is required. `name` is required when `config` is sent.
               properties:
                 name:
                   type: string
                   minLength: 1
                   maxLength: 50
-                  description: Name of the checkout configuration (1 to 50 characters). Required.
+                  description: >-
+                    Name of the checkout configuration (1 to 50 characters). Required when the body includes `config`; a
+                    request with `config` and no `name` returns 400 `name must not be blank`. A styling-only request
+                    does not need it. The value replaces the current checkout name, so send the current name to keep it.
                   example: Main checkout
                 config:
                   type: object
@@ -8127,8 +8131,6 @@ paths:
                         type: object
                     payment_link_styles:
                       type: object
-              required:
-                - name
       responses:
         '200':
           description: >-
