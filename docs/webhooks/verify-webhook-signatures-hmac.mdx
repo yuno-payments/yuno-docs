@@ -68,14 +68,15 @@ Verify the `x-hmac-signature` header using the **raw request body** (before pars
 const crypto = require('crypto');
 
 function verifyWebhookSignature(rawBody, signatureHeader, secret) {
+  if (typeof signatureHeader !== 'string') return false;
   const expected = crypto
     .createHmac('sha256', secret)
     .update(rawBody)
     .digest('base64');
-  return crypto.timingSafeEqual(
-    Buffer.from(signatureHeader, 'base64'),
-    Buffer.from(expected, 'base64')
-  );
+  const received = Buffer.from(signatureHeader);
+  const computed = Buffer.from(expected);
+  // timingSafeEqual throws when lengths differ, so check the length first
+  return received.length === computed.length && crypto.timingSafeEqual(received, computed);
 }
 
 // Example: const isValid = verifyWebhookSignature(req.body, req.headers['x-hmac-signature'], process.env.WEBHOOK_SECRET);

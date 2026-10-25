@@ -26,6 +26,40 @@
   ],
   "paths": {
     "/pci-proxy/forward": {
+      "get": {
+        "summary": "Invoke Forward Proxy (GET)",
+        "description": "Same as `POST /pci-proxy/forward`, sent with the `GET` method. The proxy forwards the request to the destination with the same method, and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions in the body and header values.",
+        "operationId": "invokeForwardProxyGet",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyDestinationUrl"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyTimeout"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyAccountId"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuth"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuthSecretKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The destination's response, passed through unchanged: status, content type and body. The body can be JSON, XML, text or empty, so no schema is enforced.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "Whatever the destination returned."
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "summary": "Invoke Forward Proxy",
         "description": "Forwards your request to the destination indicated in the `yuno-proxy-destination-url` header, replacing `{{vaulted_token.<TOKEN>.<field>}}` expressions in the body and header values with real card data inside Yuno's PCI DSS Level 1 environment. The destination's status code, headers, and body are returned unchanged. `GET`, `PUT`, `PATCH`, and `DELETE` are also supported and forwarded verbatim. The full destination (including its path and query string) is specified in `yuno-proxy-destination-url`; a query string on the `/pci-proxy/forward` request itself is rejected. Every proxy response carries a `yuno-proxy-request-id` header; a `401` returned before the request reaches the proxy is the only exception.",
@@ -87,7 +121,7 @@
           }
         ],
         "requestBody": {
-          "description": "The body the destination API expects, with vaulted token expressions where card data belongs. The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions anywhere in the raw body, so any content type is supported (JSON, form-encoded, XML). The JSON object below is illustrative. Supported fields: `number`, `expiration_month`, `expiration_year`, `holder_name`; when the card has a network token, `network_token_number` (DPAN), `network_token_expiration_month`, `network_token_expiration_year`; and `network_transaction_id` (NTID: the scheme's reference for the card's original transaction, for merchant-initiated transactions). The security code is not stored and cannot be injected; cryptograms are per-transaction and are not resolved — include the value directly in the body if your destination requires one. At most 20 distinct tokens per request; maximum body size 1 MB. Expressions are also resolved in header values. All non-expression content is forwarded untouched.",
+          "description": "The body the destination API expects, with vaulted token expressions where card data belongs. The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions anywhere in the raw body, so any content type is supported (JSON, form-encoded, XML). The JSON object below is illustrative. Supported fields: `number`, `expiration_month`, `expiration_year`, `holder_name`, `security_code`; when the card has a network token, `network_token_number` (DPAN), `network_token_expiration_month`, `network_token_expiration_year`; and `network_transaction_id` (NTID: the scheme's reference for the card's original transaction, for merchant-initiated transactions). `security_code` resolves only if the card was enrolled with a security code, and only for a limited window after enrollment (see the [Forward Proxy guide](/docs/security-and-compliance/pci-proxy/forward-proxy)); when it is unavailable the request fails with `EXPRESSION_RESOLUTION_FAILED`. Cryptograms are per-transaction and are not resolved — include the value directly in the body if your destination requires one. At most 20 distinct tokens per request; maximum body size 1 MB. Expressions are also resolved in header values. All non-expression content is forwarded untouched.",
           "content": {
             "application/json": {
               "schema": {
@@ -114,7 +148,7 @@
         },
         "responses": {
           "200": {
-            "description": "Response from the destination, passed through unchanged (the actual status code is whatever the destination returned; check `yuno-proxy-destination-status`).",
+            "description": "The destination's response, passed through unchanged: status, content type and body. The body can be JSON, XML, text or empty, so no schema is enforced.",
             "headers": {
               "yuno-proxy-request-id": {
                 "description": "Unique identifier of this proxy invocation.",
@@ -142,11 +176,9 @@
               }
             },
             "content": {
-              "application/json": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "description": "The destination's response body, unchanged."
+                  "description": "Whatever the destination returned."
                 }
               }
             }
@@ -352,6 +384,144 @@
             }
           }
         }
+      },
+      "put": {
+        "summary": "Invoke Forward Proxy (PUT)",
+        "description": "Same as `POST /pci-proxy/forward`, sent with the `PUT` method. The proxy forwards the request to the destination with the same method, and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions in the body and header values.",
+        "operationId": "invokeForwardProxyPut",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyDestinationUrl"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyTimeout"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyAccountId"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuth"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuthSecretKey"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Optional. Same format and expression rules as the `POST` request body.",
+          "content": {
+            "application/json": {
+              "schema": {}
+            },
+            "*/*": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The destination's response, passed through unchanged: status, content type and body. The body can be JSON, XML, text or empty, so no schema is enforced.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "Whatever the destination returned."
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Invoke Forward Proxy (PATCH)",
+        "description": "Same as `POST /pci-proxy/forward`, sent with the `PATCH` method. The proxy forwards the request to the destination with the same method, and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions in the body and header values.",
+        "operationId": "invokeForwardProxyPatch",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyDestinationUrl"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyTimeout"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyAccountId"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuth"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuthSecretKey"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Optional. Same format and expression rules as the `POST` request body.",
+          "content": {
+            "application/json": {
+              "schema": {}
+            },
+            "*/*": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The destination's response, passed through unchanged: status, content type and body. The body can be JSON, XML, text or empty, so no schema is enforced.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "Whatever the destination returned."
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Invoke Forward Proxy (DELETE)",
+        "description": "Same as `POST /pci-proxy/forward`, sent with the `DELETE` method. The proxy forwards the request to the destination with the same method, and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions in the body and header values.",
+        "operationId": "invokeForwardProxyDelete",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyDestinationUrl"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyTimeout"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyAccountId"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuth"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuthSecretKey"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Optional. Same format and expression rules as the `POST` request body.",
+          "content": {
+            "application/json": {
+              "schema": {}
+            },
+            "*/*": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The destination's response, passed through unchanged: status, content type and body. The body can be JSON, XML, text or empty, so no schema is enforced.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "Whatever the destination returned."
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -399,6 +569,62 @@
               "type": "string"
             }
           }
+        }
+      }
+    },
+    "parameters": {
+      "ForwardProxyProxyDestinationUrl": {
+        "name": "yuno-proxy-destination-url",
+        "in": "header",
+        "required": true,
+        "description": "The complete destination URL, including its path and any query string (for example `https://api.example-processor.com/charges/ch_123/capture?expand=true`). Must be a public HTTPS hostname on port 443, and the host must be registered on your destination allowlist; IP addresses and internal networks are rejected. It must not contain `{{vaulted_token...}}` expressions (card data must never appear in a URL).",
+        "schema": {
+          "type": "string",
+          "example": "https://api.example-processor.com/charges"
+        }
+      },
+      "ForwardProxyProxyTimeout": {
+        "name": "yuno-proxy-timeout",
+        "in": "header",
+        "required": false,
+        "description": "Destination timeout in seconds. Default 30, maximum 120.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120,
+          "example": 30
+        }
+      },
+      "ForwardProxyAccountId": {
+        "name": "yuno-account-id",
+        "in": "header",
+        "required": false,
+        "description": "Optional account scope. Narrows which allowlisted destinations are permitted for this request; it does not affect token resolution (vaulted tokens are always scoped to your organization). Like all `yuno-*` headers it is removed before forwarding and never reaches the destination.",
+        "schema": {
+          "type": "string",
+          "example": "acc_123"
+        }
+      },
+      "ForwardProxyProxyAuth": {
+        "name": "yuno-proxy-auth",
+        "in": "header",
+        "required": false,
+        "description": "Signing scheme for destinations that require HMAC request signing over the body. The proxy computes the signature over the resolved body (after expression substitution) and injects the destination's auth headers; your signing secret is used in memory and discarded — nothing is stored. Supported: `DLOCAL_HMAC` (the proxy generates `X-Date` and computes `Authorization: V2-HMAC-SHA256, Signature: <hex>` over `X-Login + X-Date + resolved body`; you send `X-Login`, `X-Trans-Key`, and `X-Version` as normal destination headers). An unknown value — or a `DLOCAL_HMAC` request missing the `X-Login` or `X-Trans-Key` headers — is rejected with `400 INVALID_REQUEST` before the destination is contacted.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "DLOCAL_HMAC"
+          ],
+          "example": "DLOCAL_HMAC"
+        }
+      },
+      "ForwardProxyProxyAuthSecretKey": {
+        "name": "yuno-proxy-auth-secret-key",
+        "in": "header",
+        "required": false,
+        "description": "Your signing secret for this request (required when `yuno-proxy-auth` is present). Like every `yuno-*` header it is stripped before forwarding and excluded from logs.",
+        "schema": {
+          "type": "string"
         }
       }
     }
