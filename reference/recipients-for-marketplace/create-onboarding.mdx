@@ -22,3 +22,17 @@ The onboarding process supports two flows:
 
 For `type: "TWO_STEP_ONBOARDING"` flows, use the [Continue Onboarding](/reference/continue-onboarding) endpoint to complete the KYC process after account creation.
 </Note>
+
+## Rate limits and retries
+
+If Yuno has enabled an onboarding creation limit for your organization, that limit is shared across all of the organization's accounts and across recipient creation and onboarding creation. Requests that exceed this capacity return `429` with code `TOO_MANY_REQUESTS` and a `Retry-After` header containing the number of seconds to wait. Requests admitted below the limit follow the existing creation flow.
+
+An admission refusal occurs before this attempt creates a recipient or onboarding, uploads documents, or contacts the provider. Wait at least the `Retry-After` interval before retrying the same request, and add a small random delay so parallel workers do not all retry together. Limit retry attempts and reduce concurrency if refusals continue.
+
+If the admission check is temporarily unavailable, it returns `503` with code `INTERNAL_ERROR` and `Retry-After` before starting creation. This is separate from exceeding the rate limit.
+
+<Warning>
+These retry instructions apply to explicit admission refusals. A timeout, connection loss, or other server error can leave the result unknown. Check the recipient and onboarding state before resubmitting; creation is not guaranteed to be idempotent for every failure.
+</Warning>
+
+Accepted onboardings continue to report their results through the existing GET endpoints and `onboarding.*` webhooks. Reading results and continuing an existing onboarding do not consume this creation allowance.
