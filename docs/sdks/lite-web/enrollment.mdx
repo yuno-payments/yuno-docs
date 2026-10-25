@@ -206,6 +206,55 @@ await yuno.mountEnrollmentLite({
 - `enrollmentStatus` receives the `vaultedToken` with status `ENROLLED`.
 - If the shopper closes the popup, `error` receives `CANCELED_BY_USER`.
 
+## KCP KakaoPay and PAYCO enrollment (Web)
+
+<Note>
+KakaoPay is available from Web SDK **1.11.27**. PAYCO desktop enrollment is supported from Web SDK **1.11.43**.
+</Note>
+
+Yuno Lite Web SDK supports KakaoPay (`KAKAO_PAY`) and PAYCO (`KCP_PAYCO`) enrollment via KCP on desktop browsers, as well as automatic HTTP POST form redirects for enrollment providers requiring form-based handoffs.
+
+### Desktop enrollment flow
+
+On desktop browsers, KakaoPay and PAYCO enrollments render an action button inside the lite enrollment component.
+
+#### How it works
+
+1. **Script loading:** When the enrollment component mounts, the SDK verifies and loads KCP's script bundle from `script_url` (`https://*.kcp.co.kr`).
+2. **User action:** The shopper clicks the action button. The SDK sets up the KCP callback handler (`window.m_Completepayment`) and opens the KCP authorization window (`KCP_Pay_Execute_Web`).
+3. **Completion & submission:** Once the shopper completes or closes the provider flow, KCP populates the result fields (`res_cd`, `res_msg`, `enc_data`, `enc_info`, `tran_cd`) and forwards them via POST to the backend `result_url` (`https://*.y.uno` or your white-label API host).
+
+#### Button states and error recovery
+
+- **Button disabled:** If required backend enrollment configuration (`script_url`, `form_fields`, or `result_url`) is missing or targets an unauthorized host, the button is disabled and displays an inline error message.
+- **Script load retry:** If KCP scripts fail to load initially, clicking the button re-attempts loading the SDK before initiating payment execution.
+- **Dismissed popup recovery:** If the shopper closes the KCP popup without approving, the SDK detects layer removal via DOM mutation observers and re-enables the button for another attempt.
+- **Timeout recovery:** If the browser remains on the page 10 seconds after posting the enrollment result (typically caused by missing CSP form-action policies blocking form submission), the SDK clears the processing state, triggers an error callback, and allows the shopper to retry.
+
+### KCP mobile POST redirect
+
+When enrolling via KCP on mobile browsers or providers requiring form submissions, the backend returns a `require_action.redirect` payload with `method: "POST"` and `init_url` targeting a KCP host (`*.kcp.co.kr`).
+
+The Lite Web SDK automatically detects the POST redirect configuration, builds a hidden form populated with `form_fields`, appends it to the DOM, and submits the form to navigate the user directly to the provider.
+
+### Content Security Policy (CSP) requirements
+
+If your website enforces a strict Content Security Policy (CSP), configure the following directives to allow the KCP scripts, iframe overlays, and form submissions:
+
+<div className="nowrap-col1-table dense-table">
+
+| Directive | Allowed sources | Description |
+| --------- | --------------- | ----------- |
+| `script-src` | `https://*.kcp.co.kr` | Allows loading KCP SDK hub and helper scripts (`kcp_spay_hub.js`, `kcp_jquery`, etc.). |
+| `frame-src` | `https://*.kcp.co.kr` | Allows rendering the KCP overlay modal and payment iframe. |
+| `form-action` | `https://*.kcp.co.kr https://*.y.uno` | Allows hidden form POST navigation to KCP and posting the enrollment result to Yuno (or your white-label API domain). |
+
+</div>
+
+<Warning>
+Missing `form-action` directives for `*.y.uno` or `*.kcp.co.kr` will cause browser-level form submission blocks without JavaScript errors, resulting in the enrollment timing out.
+</Warning>
+
 ## Step 5: Initiate the enrollment (Required)
 
 After mounting the SDK using `await yuno.mountEnrollmentLite()`, the form will be displayed in the specified element. The user can then proceed with entering their payment method details to complete the enrollment.
