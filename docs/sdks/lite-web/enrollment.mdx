@@ -209,10 +209,10 @@ await yuno.mountEnrollmentLite({
 ## KCP KakaoPay and PAYCO enrollment (Web)
 
 <Note>
-KakaoPay is available from Web SDK **1.11.27**. PAYCO desktop enrollment is supported from Web SDK **1.11.43**.
+KakaoPay desktop enrollment and KCP mobile POST redirects are available from Web SDK **1.11.27**. PAYCO desktop enrollment is supported from Web SDK **1.11.43**.
 </Note>
 
-Yuno Lite Web SDK supports KakaoPay (`KAKAO_PAY`) and PAYCO (`KCP_PAYCO`) enrollment via KCP on desktop browsers, as well as automatic HTTP POST form redirects for KCP enrollment.
+Yuno Lite Web SDK supports KakaoPay (`KAKAO_PAY`) and PAYCO (`KCP_PAYCO`) enrollment via KCP on desktop browsers, as well as automatic HTTP POST form redirects for KCP enrollment on mobile browsers.
 
 ### Desktop enrollment flow
 
@@ -222,14 +222,15 @@ On desktop browsers, KakaoPay and PAYCO enrollments render an action button insi
 
 1. **Script loading & callback setup:** When the enrollment component mounts, the SDK declares the KCP callback handler (`window.m_Completepayment`), then verifies and loads KCP's script bundle from `script_url` (`https://*.kcp.co.kr`).
 2. **User action:** The shopper clicks the action button. The SDK prepares the order form and opens the KCP authorization window (`KCP_Pay_Execute_Web`).
-3. **Completion & submission:** When the shopper finishes in KCP, KCP calls the SDK's callback with the result (`res_cd`, `res_msg`, `enc_data`, `enc_info`, `tran_cd`), and the SDK posts it to the backend `result_url` (`https://*.y.uno` or your white-label API host) using a hidden form submission.
+3. **Completion & submission:** When the shopper finishes in KCP, KCP calls the SDK's callback with the result (`res_cd`, `res_msg`, `enc_data`, `enc_info`, `tran_cd`), and the SDK posts it to the backend `result_url` (`https://*.y.uno` or your white-label API host) using a hidden form submission. When configured with `RENDER_POPUP`, the POST submission occurs within the popup rather than navigating the parent page.
+4. **Cleanup:** Unmounting the enrollment component closes any open KCP window and restores any pre-existing `window.m_Completepayment` handler.
 
 #### Button states and error recovery
 
 - **Button disabled:** If required backend enrollment configuration (`script_url`, `form_fields`, or `result_url`) is missing or targets an unauthorized host, the button is disabled and displays an inline error message.
 - **Script load retry:** If KCP scripts fail to load, the button shows an inline error; clicking it loads KCP again, and once loaded, the next click opens KCP.
 - **Dismissed popup recovery:** If the shopper closes the KCP popup without approving, the SDK detects layer removal via DOM mutation observers and re-enables the button for another attempt.
-- **Timeout recovery:** If the browser remains on the page 10 seconds after posting the enrollment result (typically caused by missing CSP form-action policies blocking form submission), the SDK clears the processing state, shows an inline error and re-enables the button so the shopper can retry.
+- **Timeout recovery:** If the browser remains on the page 10 seconds after posting the enrollment result (typically caused by missing CSP form-action policies blocking form submission), the SDK clears the processing state, shows an inline error and re-enables the button so the shopper can retry. Notice that no merchant error callback is fired.
 
 ### KCP mobile POST redirect
 
