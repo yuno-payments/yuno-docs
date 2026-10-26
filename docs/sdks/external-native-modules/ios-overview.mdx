@@ -20,6 +20,7 @@ The Yuno iOS SDK stays small on purpose: every third-party native SDK ships as a
 |---|---|---|
 | ClearSale antifraud | Collects the ClearSale device fingerprint and attaches it to the payment | 14.0 |
 | Koin antifraud | Collects the Koin device fingerprint and attaches it to the payment | 14.0 |
+| Riskified antifraud | Starts the Riskified beacon with the checkout session and attaches that session to the payment | 14.0 |
 | Netcetera 3DS | Runs 3D Secure challenges natively in your app, for payments and enrollment | 14.0 |
 | Revolut Pay | Native Revolut Pay checkout on top of Revolut's official SDK | 15.0 |
 
@@ -29,10 +30,11 @@ Package names by installation method:
 |---|---|---|
 | ClearSale antifraud | `YunoAntifraudClearsale` | `YunoClearsaleAntifraud` |
 | Koin antifraud | `YunoAntifraudKoin` | `YunoAntifraudKoin` |
+| Riskified antifraud | `YunoAntifraudRiskified` | `YunoAntifraudRiskified` |
 | Netcetera 3DS | `Yuno3DSNetcetera` | `Yuno3DSNetcetera` |
 | Revolut Pay | Not available | `YunoRevolutPay` |
 
-All modules require **YunoSDK 2.25.0 or higher**. Netcetera has extra setup steps (sandbox certificate), covered in [Netcetera 3DS (iOS)](/docs/sdks/external-native-modules/netcetera-3ds-ios).
+All modules require **YunoSDK 2.25.0 or higher**, except Riskified, which requires **YunoSDK 2.29.0 or higher**. Netcetera has extra setup steps (sandbox certificate), covered in [Netcetera 3DS (iOS)](/docs/sdks/external-native-modules/netcetera-3ds-ios).
 
 ## Installation
 
@@ -44,11 +46,11 @@ All modules require **YunoSDK 2.25.0 or higher**. Netcetera has extra setup step
     https://github.com/yuno-payments/yuno-sdk-ios
     ```
 
-    choose the **Up to Next Major Version** rule starting at `2.25.0`, and in the product list tick `YunoSDK` plus the modules you need (`YunoAntifraudClearsale`, `YunoAntifraudKoin`, `Yuno3DSNetcetera`). Nothing else is required: each product brings its own vendor binary.
+    choose the **Up to Next Major Version** rule starting at `2.25.0` (`2.29.0` if you add Riskified), and in the product list tick `YunoSDK` plus the modules you need (`YunoAntifraudClearsale`, `YunoAntifraudKoin`, `YunoAntifraudRiskified`, `Yuno3DSNetcetera`). Nothing else is required: each product brings its own vendor binary.
   </Tab>
 
   <Tab title="CocoaPods">
-    Add the pods you need next to `YunoSDK`. Each module pod already depends on `YunoSDK ~> 2.25`, so the versions stay compatible:
+    Add the pods you need next to `YunoSDK`. Each module pod already depends on `YunoSDK ~> 2.25` (`~> 2.29` for Riskified), so the versions stay compatible:
 
     ```ruby
     platform :ios, '14.0'   # 15.0 if you add YunoRevolutPay
@@ -59,6 +61,7 @@ All modules require **YunoSDK 2.25.0 or higher**. Netcetera has extra setup step
       pod 'YunoSDK', '~> 2.25'
       pod 'YunoClearsaleAntifraud', '~> 1.0'
       pod 'YunoAntifraudKoin', '~> 1.0'
+      pod 'YunoAntifraudRiskified', '~> 2.0'
       pod 'Yuno3DSNetcetera', '~> 3.0'
       pod 'YunoRevolutPay', '~> 1.0'
     end
@@ -79,6 +82,10 @@ All modules require **YunoSDK 2.25.0 or higher**. Netcetera has extra setup step
     ```bash
     pod install
     ```
+
+    <Note>
+      Riskified installs Riskified's official pod `RiskifiedBeaconXCFramework` as a dependency, in the `~> 1.6.4` range. If your Podfile already declares it, align it to that range.
+    </Note>
 
     <Note>
       Revolut Pay installs `lottie-ios` as a dependency, in the 4.4.1 to 4.5.x range.
@@ -110,18 +117,20 @@ How a module registers itself with the Yuno SDK depends on how you installed it.
     import YunoSDK
     import YunoAntifraudClearsale
     import YunoAntifraudKoin
+    import YunoAntifraudRiskified
     import Yuno3DSNetcetera
     import YunoRevolutPay
 
     YunoAntifraudClearsale.register()
     YunoAntifraudKoin.register()
+    YunoAntifraudRiskified.register()
     Yuno3DSNetcetera.register()
     YunoRevolutPay.register()
 
     Yuno.initialize(apiKey: "YOUR_API_KEY", config: YunoConfig())
     ```
 
-    Register only the modules you need and have installed; the example above registers all four for reference.
+    Register only the modules you need and have installed; the example above registers all five for reference.
   </Tab>
 </Tabs>
 
@@ -139,13 +148,16 @@ How a module registers itself with the Yuno SDK depends on how you installed it.
     The `platform` line in your Podfile is below the module's minimum. Use `platform :ios, '14.0'` for the antifraud and 3DS modules, or `'15.0'` if you add `YunoRevolutPay`.
   </Accordion>
   <Accordion title="pod install: CocoaPods could not find compatible versions for pod YunoSDK">
-    A module pod depends on `YunoSDK ~> 2.25`. If your Podfile pins an older SDK (for example `'2.24.1'`), relax it to `'~> 2.25'`.
+    A module pod depends on `YunoSDK ~> 2.25` (`~> 2.29` for `YunoAntifraudRiskified`). If your Podfile pins an older SDK (for example `'2.24.1'`), relax it to the module's range.
   </Accordion>
   <Accordion title="pod install: CocoaPods could not find compatible versions for pod RevolutPayments">
     `YunoRevolutPay` requires `RevolutPayments/RevolutPay ~> 3.16.0`. If your Podfile pins another version of `RevolutPayments`, align it to `'~> 3.16.0'` or remove the pin and let `YunoRevolutPay` bring it.
   </Accordion>
   <Accordion title="pod install: SDK does not contain 'libarclite' (YunoRevolutPay)">
     Add the `post_install` hook shown in the CocoaPods tab above so every pod target builds for iOS 15.0.
+  </Accordion>
+  <Accordion title="Swift Package Manager: duplicate RiskifiedBeacon framework">
+    The `YunoAntifraudRiskified` product already brings Riskified's `RiskifiedBeacon` 1.6.4. If your app also adds Riskified's own package, remove it and keep only the Yuno product.
   </Accordion>
   <Accordion title="Revolut Pay never completes after coming back to the app">
     The return deeplink is not reaching the Yuno SDK. Make sure your app declares a URL scheme, that incoming URLs are forwarded to `Yuno.receiveDeeplink(url)`, and that a `guard` on the scheme is not dropping the Revolut Pay return URL (`yourscheme://revolut-pay`).
