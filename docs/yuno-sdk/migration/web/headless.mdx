@@ -7,9 +7,49 @@ Headless was a pure-tokenization client: the merchant collected card data in the
 
 In the unified API the same scenario is a headless `start()`. Pass the pre-collected data inside `data` on the `paymentMethod` you give to `start()`, override [`createPayment`](/docs/yuno-sdk/controllers/create-payment) to POST to your backend (manual mode), and let the SDK orchestrate tokenization, 3DS, and status polling automatically. If you don't want the SDK to continue the flow after creating the payment, set `autoContinuePayment` to `false` on the [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config) object.
 
-<Note>
-**Headless doesn't mean no SDK components.** You can use [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list) to mount the SDK's payment method list for selection, let the shopper pick a method, and then call `start()` with your own pre-collected data for that method. The list handles method rendering, saved methods, and express wallets — you supply the payment details. This gives you control over the data collection while keeping the SDK's method selection UI. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list) for the full API.
-</Note>
+## Using Payment Methods List with Headless
+
+Headless doesn't mean you cannot use SDK components. You can combine [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list) for method selection with a headless `start()` for payment execution.
+
+* **Ownership split:**
+  - **Yuno handles:** Rendering the payment method list, displaying customer saved payment methods, express wallet buttons (Apple Pay, Google Pay, PayPal), 3DS challenges, redirects, and handoffs.
+  - **Merchant handles:** Rendering custom card collection inputs and your own Pay button.
+
+```typescript
+let selectedMethod: PaymentMethodSelected | null = null
+
+const views = transaction.getPaymentMethodsViews({
+    types: ['applePay', 'googlePay', 'paymentMethodList'],
+    onPaymentSelected: (selection) => {
+        // selection contains { type, name, vaultedToken, selectionSource }
+        selectedMethod = selection
+    },
+})
+
+views.paymentMethodList?.mount({ elementSelector: '#payment-list' })
+
+// When the customer submits your custom card form with your own Pay button:
+if (selectedMethod) {
+    await transaction.start({
+        paymentMethod: {
+            type: selectedMethod.type,
+            data: {
+                card: {
+                    holderName: cardHolder,
+                    number: cardNumber,
+                    securityCode: cvv,
+                    expirationMonth: expMonth,
+                    expirationYear: expYear,
+                },
+            },
+        },
+    })
+}
+```
+
+<Warning>
+**Unfolded display cannot be used with headless card collection.** When **Unfolded display** is enabled in **Checkout Builder → Styling**, selecting a method embeds and submits Yuno's pre-built form directly inside the list row. To collect card details in your own inputs, ensure Unfolded display is disabled so the list acts strictly as a selector.
+</Warning>
 
 ## Before you start
 
