@@ -28,22 +28,45 @@ const views = transaction.getPaymentMethodsViews({
 
 views.paymentMethodList?.mount({ elementSelector: '#payment-list' })
 
-// When the customer submits your custom card form with your own Pay button:
+// When the customer submits with your own Pay button:
 if (selectedMethod) {
-    await transaction.start({
-        paymentMethod: {
-            type: selectedMethod.type,
-            data: {
-                card: {
-                    holderName: cardHolder,
-                    number: cardNumber,
-                    securityCode: cvv,
-                    expirationMonth: expMonth,
-                    expirationYear: expYear,
+    if (selectedMethod.vaultedToken) {
+        // Customer selected a saved (vaulted) method
+        await transaction.start({
+            paymentMethod: {
+                type: selectedMethod.type,
+                vaultedToken: selectedMethod.vaultedToken,
+                data: {
+                    card: {
+                        securityCode: cvv,
+                    },
                 },
             },
-        },
-    })
+        })
+    } else if (selectedMethod.type === 'CARD') {
+        // Customer selected new card: submit your custom card form data
+        await transaction.start({
+            paymentMethod: {
+                type: 'CARD',
+                data: {
+                    card: {
+                        holderName: cardHolder,
+                        number: cardNumber,
+                        securityCode: cvv,
+                        expirationMonth: expMonth,
+                        expirationYear: expYear,
+                    },
+                },
+            },
+        })
+    } else {
+        // Non-card method (e.g. APM or direct redirect)
+        await transaction.start({
+            paymentMethod: {
+                type: selectedMethod.type,
+            },
+        })
+    }
 }
 ```
 
