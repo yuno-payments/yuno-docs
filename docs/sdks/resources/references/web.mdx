@@ -648,6 +648,47 @@ The SDK keeps the current UI mounted and swaps the checkout session id in intern
 `yuno.updateCheckoutSession()` automatically propagates to the Secure Fields instance — there is no need to call it on the SF instance directly.
 </Note>
 
+## isPaymentMethodAvailable
+
+`isPaymentMethodAvailable({ paymentMethodType, checkoutSession? })` resolves to `true` or `false`: whether the payment method will render for the current shopper and checkout session. Use it when you draw your own payment-method list (Lite, Seamless Lite, or express buttons placed inside your own list) to show only the methods the SDK can render.
+
+```javascript
+await yuno.startCheckout({ checkoutSession, elementSelector: '#root', countryCode: 'US' });
+
+const showGooglePay = await yuno.isPaymentMethodAvailable({ paymentMethodType: 'GOOGLE_PAY' });
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Parameter           | Type   | Required | Description |
+| :------------------ | :----- | :------- | :---------- |
+| `paymentMethodType` | string | Yes      | The payment method type, for example `'CARD'`, `'PIX'`, `'GOOGLE_PAY'`. |
+| `checkoutSession`   | string | No       | The checkout session to check. Defaults to the session passed to `startCheckout`. |
+
+</div>
+
+How the answer is decided. It is the same decision the SDK takes when it renders the method:
+
+1. **Enabled for the checkout session.** The method has to be one of the session's payment methods and enabled for it. Otherwise the answer is `false`.
+2. **Device and browser check, for the methods that need one.** The SDK runs the same check it runs before showing that method:
+
+<div className="nowrap-col1-table dense-table">
+
+| Payment method | Device check |
+| :------------- | :----------- |
+| `APPLE_PAY`    | Apple Pay exists in the browser, the session has an amount, and the session's Apple Pay configuration is complete. When enabled for your account, Apple's `applePayCapabilities()` must report a card in Apple Wallet; otherwise `ApplePaySession.canMakePayments()` decides. Android phones resolve `false` (Web SDK 1.11.43 and later). |
+| `GOOGLE_PAY`   | Google Pay's `isReadyToPay()` for the session's configuration. |
+| `PAYPAL`       | The PayPal connection of the session supports the PayPal button (Web SDK 1.11.43 and later; on 1.10, enabled for the session decides). |
+| Any other type | None: enabled for the session decides. |
+
+</div>
+
+The method never rejects: if a request or a check fails, it resolves `false`, the same as the SDK, which does not render the method in that case. The only fallback is the SDK's own: when Apple's `applePayCapabilities()` call fails, `ApplePaySession.canMakePayments()` decides. Without a checkout session (no `startCheckout` and no `checkoutSession` argument) it resolves `false`.
+
+<Note>
+Available on Web SDK 1.11.43 and later, and from 1.10.35. Lines 1.9 and older don't have it. The types are in `@yuno-payments/sdk-web-types` 5.14.0 and `@yuno-payments/sdk-web` 9.10.0. On the Universal Web SDK, call `transaction.isPaymentMethodAvailable({ paymentMethodType })`: it uses the checkout session of the transaction and is not available on enrollment transactions.
+</Note>
+
 ## Enrollment parameters (full reference)
 
 Parameters for `await yuno.mountEnrollmentLite()`. All parameters used in [Enrollment flows (Web)](/docs/sdks/card-enrollment/web-enrollment) are listed here with full detail.
