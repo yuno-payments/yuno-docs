@@ -520,6 +520,8 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 - [List Routings](https://docs.y.uno/reference/organizations/routing/list-routings.md)
 - [Retrieve a Routing](https://docs.y.uno/reference/organizations/routing/retrieve-routing.md)
 - [Update a Routing](https://docs.y.uno/reference/organizations/routing/update-routing.md)
+- [List Decline Groups](https://docs.y.uno/reference/organizations/routing/list-decline-groups.md)
+- [List Succeeded Groups](https://docs.y.uno/reference/organizations/routing/list-succeeded-groups.md)
 
 #### White-label providers
 

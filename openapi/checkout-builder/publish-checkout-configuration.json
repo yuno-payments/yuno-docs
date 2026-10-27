@@ -51,7 +51,7 @@
     "/checkouts/{checkout_code}": {
       "put": {
         "summary": "Publish Checkout Configuration",
-        "description": "Writes configuration and/or styling for the checkout in a single call. The body may contain a `config` object, a `styling` object, or both; at least one is required. Each part is validated independently before being applied; if any rule fails, the request is rejected with a single aggregated 400 and nothing is applied. Configuration is a sparse upsert (omitted payment methods keep their previous state; new methods cannot be created). Styling is a partial merge (omitted or null fields are preserved).",
+        "description": "Writes configuration and/or styling for the checkout in a single call. The body may contain a `config` object, a `styling` object, or both; at least one is required. When the body includes `config`, `name` is also required. Each part is validated independently before being applied; if any rule fails, the request is rejected with a single aggregated 400 and nothing is applied. Configuration is a sparse upsert (omitted payment methods keep their previous state; new methods cannot be created). Styling is a partial merge (omitted or null fields are preserved).",
         "operationId": "publish-checkout-configuration",
         "parameters": [
           {
@@ -76,10 +76,12 @@
               "examples": {
                 "Configuration and styling": {
                   "value": {
+                    "name": "Main checkout",
                     "config": {
                       "payment_methods": [
                         {
                           "payment_method_type": "CARD",
+                          "type": "PAYMENT_METHOD",
                           "order_to_show": 0,
                           "is_active": true,
                           "active_enrollment_type": "BOTH",
@@ -127,8 +129,15 @@
               },
               "schema": {
                 "type": "object",
-                "description": "At least one of `config` or `styling` is required.",
+                "description": "At least one of `config` or `styling` is required. `name` is required when `config` is sent.",
                 "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "description": "Name of the checkout configuration (1 to 50 characters). Required when the body includes `config`; a request with `config` and no `name` returns 400 `name must not be blank`. A styling-only request does not need it. The value replaces the current checkout name, so send the current name to keep it.",
+                    "example": "Main checkout"
+                  },
                   "config": {
                     "type": "object",
                     "description": "Checkout configuration: payment methods and general settings. Sparse upsert; omitted payment methods keep their previous state.",
@@ -139,6 +148,7 @@
                         "items": {
                           "type": "object",
                           "properties": {
+                            "type": { "type": "string", "enum": ["PAYMENT_METHOD", "ENROLLMENT"], "description": "Kind of item. Use `PAYMENT_METHOD` for a payment method. If `type` is missing, the field overrides of the item are silently skipped.", "example": "PAYMENT_METHOD" },
                             "payment_method_type": { "type": "string", "description": "Payment method type, e.g. CARD, PAYPAL, NU_PAY, GOOGLE_PAY.", "example": "CARD" },
                             "order_to_show": { "type": "integer", "description": "Display order (>= 0). Lower is shown first.", "example": 0 },
                             "is_active": { "type": "boolean", "description": "Whether the method is offered.", "example": true },
@@ -213,7 +223,7 @@
         },
         "responses": {
           "200": {
-            "description": "The updated checkout (configuration + styling composed). Its identifier is exposed as the top-level `id`.",
+            "description": "Summary of the updated checkout. The configuration and styling are not returned in this response; read them with [Fetch checkout configuration](/reference/checkout-builder/fetch-checkout-configuration). Its identifier is exposed as the top-level `id`.",
             "content": {
               "application/json": {
                 "examples": {
@@ -221,14 +231,24 @@
                     "value": {
                       "id": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
                       "name": "Main Checkout",
-                      "status": "PUBLISHED",
+                      "description": "Default checkout",
                       "is_default": true,
-                      "config": { "payment_methods": [], "general_settings": {} },
-                      "styling": { "styles": {}, "settings": {}, "flags": {} }
+                      "is_active": true,
+                      "created_at": "2026-10-22T03:16:36Z"
                     }
                   }
                 },
-                "schema": { "type": "object" }
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "example": "8005ca91-dcfb-4428-b9f6-49c6e3446474" },
+                    "name": { "type": "string", "example": "Main Checkout" },
+                    "description": { "type": "string", "example": "Default checkout" },
+                    "is_default": { "type": "boolean", "example": true },
+                    "is_active": { "type": "boolean", "example": true },
+                    "created_at": { "type": "string", "example": "2026-10-22T03:16:36Z" }
+                  }
+                }
               }
             }
           },

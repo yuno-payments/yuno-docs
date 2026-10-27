@@ -1,0 +1,119 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Routing API - List Decline Groups",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "https://api-sandbox.y.uno/v1", "description": "Sandbox" },
+    { "url": "https://api.y.uno/v1", "description": "Production (US)" },
+    { "url": "https://api.eu.y.uno/v1", "description": "Production (EMEA)" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": { "type": "apiKey", "in": "header", "name": "PUBLIC-API-KEY", "x-default": "<Your PUBLIC-API-KEY>" },
+      "sec1": { "type": "apiKey", "in": "header", "name": "PRIVATE-SECRET-KEY", "x-default": "<Your PRIVATE-SECRET-KEY>" }
+    }
+  },
+  "security": [
+    { "sec0": [], "sec1": [] }
+  ],
+  "paths": {
+    "/routing/decline-groups": {
+      "get": {
+        "summary": "List Decline Groups",
+        "operationId": "list-decline-groups",
+        "description": "Lists the decline groups (DECLINE_GROUP) and Merchant Advice Code groups (MAC_CODE_GROUP) of an account, to reference by group_id from routing outputs. Read only.",
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Account to list groups for. Must belong to the organization of your API credentials."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The groups of the account, or an empty array if it has none.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer", "example": 1044, "description": "The value to send as group_id in a routing output." },
+                      "name": { "type": "string", "example": "Soft declines" },
+                      "type": { "type": "string", "enum": ["DECLINE_GROUP", "MAC_CODE_GROUP"], "description": "The output status the group is used with." },
+                      "decline_types": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "example": ["DECLINED_BY_BANK", "RESTRICTED_BY_BANK"],
+                        "description": "Members of the group: decline sub-statuses for DECLINE_GROUP, normalized Merchant Advice Codes for MAC_CODE_GROUP."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. `ROUTING_VALIDATION_FAILED` when `account_id` is missing, `INVALID_ACCOUNT_ID` when it belongs to a different organization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "ROUTING_VALIDATION_FAILED" },
+                    "messages": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["account_id is required."]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "NOT_AUTHENTICATED" },
+                    "messages": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["Not authenticated"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "ROUTING_UPSTREAM_ERROR" },
+                    "messages": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "example": ["routing service unavailable."]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

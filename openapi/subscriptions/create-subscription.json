@@ -105,7 +105,7 @@
                   },
                   "plan_id": {
                     "type": "string",
-                    "description": "The unique identifier of a [plan](/reference/plans/the-plan-object) to subscribe this customer to. Mutually exclusive with `amount` — send exactly one of the two. Omit `trial_period` and `billing_date` when set: both are inherited from the plan and the request is rejected with `400 BAD_REQUEST` if you send them. Also omit `frequency` — it's inherited from the plan too, but sending it anyway is not rejected: it's silently ignored and overridden by the plan's frequency."
+                    "description": "The unique identifier of a [plan](/reference/plans/the-plan-object) to subscribe this customer to. Mutually exclusive with `amount` — send exactly one of the two. Omit `trial_period` and `billing_date` when set: both are inherited from the plan and the request is rejected with `400 BAD_REQUEST` if you send them. Also omit `frequency` — it's inherited from the plan too, but sending it anyway is not rejected: it's silently ignored and overridden by the plan's frequency. If the plan has its own retry configuration, also omit `retries`: the subscription inherits the plan's retries, and sending both is rejected with `400 INVALID_PARAMETERS`."
                   },
                   "additional_data": {
                     "type": "object",
@@ -221,12 +221,13 @@
                   },
                   "billing_cycles": {
                     "type": "object",
-                    "description": "Specifies the `billing_cycles` object. Defines the number of charges associated to the subscription.",
+                    "description": "Specifies the `billing_cycles` object. Defines the number of charges associated to the subscription. If omitted, the subscription has no cycle limit and keeps billing until it is canceled or reaches `availability.finish_at`, if one is set.",
                     "properties": {
                       "total": {
                         "type": "integer",
-                        "description": "The total number of billing cycles for the subscription (MIN 1).",
-                        "format": "int32"
+                        "description": "The total number of billing cycles for the subscription (MIN 1). Values lower than 1 are rejected with a `400` error.",
+                        "format": "int32",
+                        "minimum": 1
                       }
                     }
                   },
@@ -325,7 +326,7 @@
                     "properties": {
                       "start_at": {
                         "type": "string",
-                        "description": "The start date that the subscription plan will be available to use. If not set, the subscription is available from the moment it is created.",
+                        "description": "The start date that the subscription plan will be available to use. If not set, the subscription is available from the moment it is created. Must be later than the current time: a past date returns `400 BAD_REQUEST`.",
                         "format": "date-time"
                       },
                       "finish_at": {
@@ -354,7 +355,7 @@
                   },
                   "retries": {
                     "type": "object",
-                    "description": "Specified the 'retries' object. If we need to retry declined transactions in Yuno and the amount if necessary",
+                    "description": "Specified the 'retries' object. If we need to retry declined transactions in Yuno and the amount if necessary. With `plan_id`, send `retries` only when the plan has no retry configuration of its own. If the plan defines retries, the subscription inherits them and a request that also sends `retries` is rejected with `400 INVALID_PARAMETERS`.",
                     "properties": {
                       "retry_on_decline": {
                         "type": "boolean",
@@ -491,7 +492,7 @@
                       }
                     },
                     "availability": {
-                      "start_at": "2024-11-01T00:00:00Z"
+                      "start_at": "2030-01-01T00:00:00Z"
                     },
                     "trial_period": {
                       "billing_cycles": 1,
@@ -580,7 +581,26 @@
                       },
                       "metadata": null,
                       "created_at": "2024-09-30T12:04:23.265372Z",
-                      "updated_at": "2024-09-30T12:04:23.265372Z"
+                      "updated_at": "2024-09-30T12:04:23.265372Z",
+                      "retries": {
+                        "retry_on_decline": false,
+                        "amount": 6,
+                        "strategy": "DEFAULT",
+                        "schedule": null,
+                        "stop_on_hard_decline": null,
+                        "cancel_on_exhausted_retries": null
+                      },
+                      "additional_data": null,
+                      "initial_payment_validation": false,
+                      "reason": null,
+                      "subscription_agreement_id": null,
+                      "renewal_notification_days": null,
+                      "cancellation_time": null,
+                      "cancellation_source": null,
+                      "ending_time": null,
+                      "pending_plan_change": null,
+                      "current_period_start": "2026-10-23T00:00:00Z",
+                      "current_period_end": "2026-11-23T00:00:00Z"
                     }
                   }
                 },

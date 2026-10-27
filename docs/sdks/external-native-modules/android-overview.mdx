@@ -1,7 +1,7 @@
 ---
 title: "External Native Modules (Android)"
 sidebarTitle: "Overview (Android)"
-description: "Add a third-party native SDK (antifraud, 3DS) to the Yuno Android SDK without changing your payment code."
+description: "Add a third-party native SDK (antifraud, 3DS, Revolut Pay) to the Yuno Android SDK without changing your payment code."
 robots: index
 ---
 import LegacySdkNotice from '/snippets/LegacySdkNotice.mdx'
@@ -26,15 +26,19 @@ The Yuno Android SDK stays small on purpose: every third-party native SDK ships 
 |---|---|---|
 | ClearSale antifraud | Collects the ClearSale device fingerprint and attaches it to the payment | 6.0 (API 23) |
 | Koin antifraud | Collects the Koin device fingerprint and attaches it to the payment | 6.0 (API 23) |
+| Riskified antifraud | Starts the Riskified beacon with the checkout session and attaches that session to the payment | 6.0 (API 23) |
 | Netcetera 3DS | Runs 3D Secure challenges natively in your app, for payments and enrollment | 6.0 (API 23) |
+| Revolut Pay | Runs the Revolut Pay checkout natively, on top of Revolut's official SDK | 6.0 (API 23) |
 
 Maven coordinates and compatibility:
 
 | Module | Dependency | Current version | Requires `android-sdk` |
 |---|---|---|---|
-| ClearSale antifraud | `com.yuno.payments:yuno-sdk-antifraud-clearsale` | `1.0.0` | `2.25.0` or higher |
+| ClearSale antifraud | `com.yuno.payments:yuno-sdk-antifraud-clearsale` | `1.0.1` | `2.25.0` or higher |
 | Koin antifraud | `com.yuno.payments:yuno-sdk-antifraud-koin` | `1.0.0` | `2.25.0` or higher |
+| Riskified antifraud | `com.yuno.payments:yuno-sdk-antifraud-riskified` | `1.0.0` | `2.27.0` or higher |
 | Netcetera 3DS | `com.yuno.payments:yuno-sdk-3ds-netcetera` | `1.0.1` | `2.16.0` or higher |
+| Revolut Pay | `com.yuno.payments:yuno-sdk-revolut-pay` | `1.0.0` | `2.24.0` or higher |
 
 All modules are published to the same repository as the Yuno SDK (`https://yunopayments.jfrog.io/artifactory/snapshots-libs-release`). A module does not pin a specific Yuno SDK version: you stay in control of the `android-sdk` version, as long as it is at or above the minimum in the table. Netcetera has extra setup (a second Maven repository and a sandbox certificate), covered in [Netcetera 3DS (Android)](/docs/sdks/external-native-modules/netcetera-3ds-android).
 
@@ -48,12 +52,14 @@ Add the modules you need to your app module's build file, next to the Yuno SDK d
 
     ```groovy
     dependencies {
-        implementation "com.yuno.payments:android-sdk:2.26.0"
+        implementation "com.yuno.payments:android-sdk:2.27.0"
 
         // Add only the modules your account uses
-        implementation "com.yuno.payments:yuno-sdk-antifraud-clearsale:1.0.0"
+        implementation "com.yuno.payments:yuno-sdk-antifraud-clearsale:1.0.1"
         implementation "com.yuno.payments:yuno-sdk-antifraud-koin:1.0.0"
+        implementation "com.yuno.payments:yuno-sdk-antifraud-riskified:1.0.0"
         implementation "com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1"
+        implementation "com.yuno.payments:yuno-sdk-revolut-pay:1.0.0"
     }
     ```
   </Tab>
@@ -63,19 +69,21 @@ Add the modules you need to your app module's build file, next to the Yuno SDK d
 
     ```kotlin
     dependencies {
-        implementation("com.yuno.payments:android-sdk:2.26.0")
+        implementation("com.yuno.payments:android-sdk:2.27.0")
 
         // Add only the modules your account uses
-        implementation("com.yuno.payments:yuno-sdk-antifraud-clearsale:1.0.0")
+        implementation("com.yuno.payments:yuno-sdk-antifraud-clearsale:1.0.1")
         implementation("com.yuno.payments:yuno-sdk-antifraud-koin:1.0.0")
+        implementation("com.yuno.payments:yuno-sdk-antifraud-riskified:1.0.0")
         implementation("com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1")
+        implementation("com.yuno.payments:yuno-sdk-revolut-pay:1.0.0")
     }
     ```
   </Tab>
 </Tabs>
 
 <Note>
-  The Netcetera module also needs Netcetera's Maven repository declared in your project, because its 3DS SDK is not hosted on Maven Central. The exact lines are in [Netcetera 3DS (Android)](/docs/sdks/external-native-modules/netcetera-3ds-android#step-1-declare-the-netcetera-maven-repository). The antifraud modules need no extra repository.
+  The Netcetera module also needs Netcetera's Maven repository declared in your project, because its 3DS SDK is not hosted on Maven Central. The exact lines are in [Netcetera 3DS (Android)](/docs/sdks/external-native-modules/netcetera-3ds-android#step-1-declare-the-netcetera-maven-repository). The other modules need no extra repository: Riskified and Revolut Pay pull their vendor SDKs from Maven Central.
 </Note>
 
 ## Activating a module
@@ -100,7 +108,10 @@ To confirm a module loaded, filter Logcat by its tag right after the app starts.
 ```bash
 adb logcat -s KoinAntifraud
 adb logcat -s ClearSaleAntifraud
+adb logcat -s RiskifiedAntifraud
 ```
+
+Revolut Pay registers silently; it only logs under the `YunoRevolutPay` tag when your `android-sdk` is older than 2.24.0 and the module could not register.
 
 <Accordion title="If your app disables App Startup">
   Some apps remove the App Startup content provider from their manifest (`androidx.startup.InitializationProvider` with `tools:node="remove"`) to control startup work themselves. In that case the modules cannot register on their own. Run their initializers yourself, once, before `Yuno.initialize(...)`, using App Startup's manual API:
@@ -109,15 +120,19 @@ adb logcat -s ClearSaleAntifraud
   import androidx.startup.AppInitializer
   import com.yuno.antifraud.clearsale.ClearSaleAntifraudInitializer
   import com.yuno.antifraud.koin.KoinAntifraudInitializer
+  import com.yuno.antifraud.riskified.RiskifiedAntifraudInitializer
+  import com.yuno.revolut.RevolutPayInitializer
   import com.yuno.threedsecure.netcetera.Netcetera3DSInitializer
 
   val initializer = AppInitializer.getInstance(applicationContext)
   initializer.initializeComponent(ClearSaleAntifraudInitializer::class.java)
   initializer.initializeComponent(KoinAntifraudInitializer::class.java)
+  initializer.initializeComponent(RiskifiedAntifraudInitializer::class.java)
   initializer.initializeComponent(Netcetera3DSInitializer::class.java)
+  initializer.initializeComponent(RevolutPayInitializer::class.java)
   ```
 
-  Initialize only the modules you installed; the example lists all three for reference.
+  Initialize only the modules you installed; the example lists all of them for reference.
 </Accordion>
 
 ## What each module needs from your app
@@ -127,10 +142,10 @@ adb logcat -s ClearSaleAntifraud
 - Sends ClearSale's own session id to Yuno as the payment's `customer.device_fingerprint`. Nothing changes in the data you send.
 - Collection runs when the shopper confirms the payment. It is bounded by the `timeout` configured for the ClearSale provider in your Yuno account (5 seconds by default). Keep that timeout above 1 second, otherwise collection times out and the payment continues without a fingerprint.
 - Declares `INTERNET`, `ACCESS_NETWORK_STATE` and `ACCESS_WIFI_STATE`; they are merged into your manifest automatically.
-- Never requests or uses location. Do **not** add `play-services-location` version 21 or higher next to this module: those versions are incompatible with the bundled ClearSale SDK.
+- Never requests or uses location. It works whether or not your app, or a library such as `react-native-maps`, pulls in `play-services-location`, including version 21 and above.
 
 <Note>
-  Because the location library is absent, the ClearSale SDK prints a `NoClassDefFoundError: com.google.android.gms.location.LocationServices` stack trace on every collection. It is caught inside the ClearSale SDK, which then skips its location collector. The trace is expected and harmless.
+  Version `1.0.0` did not send the ClearSale fingerprint when your app resolved `play-services-location` 21 or later. Use `1.0.1` or later; no change to `android-sdk` is required.
 </Note>
 
 <Accordion title="Migrating from the legacy com.yuno.fraud-prevention:clearsale dependency">
@@ -147,10 +162,23 @@ adb logcat -s ClearSaleAntifraud
 - Declares `INTERNET`; it is merged into your manifest automatically.
 - Never requests or uses location. The Koin SDK is initialized with its geolocation feature disabled, so the module does not read `ACCESS_FINE_LOCATION` or `ACCESS_COARSE_LOCATION` even when your app holds them.
 
+### Riskified antifraud
+
+- Starts Riskified's device beacon whenever your checkout configuration enables Riskified, and sends the beacon session to Yuno as the payment's `customer.device_fingerprint`, for any payment method including Google Pay.
+- Brings Riskified's Android SDK (`nogoogle` variant) from Maven Central: no Google Play services dependency and no location tracking.
+- Declares `INTERNET`; it is merged into your manifest automatically. The module removes the `READ_PHONE_STATE` permission declared by Riskified's SDK, so it never reaches your app.
+
 ### Netcetera 3DS
 
 - Runs the 3D Secure challenge inside your app, for payments and card enrollment, instead of the WebView-based challenge. If your app customizes the Yuno SDK styles, they propagate to the challenge screen.
 - Needs Netcetera's Maven repository in your project and, for sandbox testing only, a certificate provided by your Yuno TAM. Both steps are in [Netcetera 3DS (Android)](/docs/sdks/external-native-modules/netcetera-3ds-android).
+
+### Revolut Pay
+
+- After you create the payment and call `continuePayment()`, the SDK hands the shopper to the Revolut app when it is installed, otherwise to Revolut's web flow, and brings them back automatically. Supported in the Full, Lite, Seamless and Render flows.
+- Declares the return deeplink `yunorevolut://<your.application.id>` and the package visibility for the Revolut app; both are merged into your manifest automatically.
+- Brings Revolut's Android SDK (`com.revolut:revolutpay`) from Maven Central.
+- In Render the checkout lives inside your own Activity: do not finish it on back press while the Revolut screen is showing, so the shopper can return and the final status can be delivered.
 
 ## Troubleshooting
 
@@ -159,7 +187,7 @@ adb logcat -s ClearSaleAntifraud
     Check, in this order:
 
     1. The provider is enabled for your Yuno account. Modules only run when the backend asks for that provider on the transaction; ask your Yuno TAM if you are not sure.
-    2. The module registered at startup: filter Logcat by `KoinAntifraud` or `ClearSaleAntifraud` and look for the `registered` line.
+    2. The module registered at startup: filter Logcat by `KoinAntifraud`, `ClearSaleAntifraud` or `RiskifiedAntifraud` and look for the `registered` line.
     3. Your app is not removing the App Startup provider from the manifest. If it is, run the module initializers manually as described in [Activating a module](#activating-a-module).
   </Accordion>
   <Accordion title="Crash at runtime with NoSuchMethodError or NoSuchFieldError mentioning com.yuno">
@@ -169,10 +197,10 @@ adb logcat -s ClearSaleAntifraud
     Netcetera's SDK is not on Maven Central. Declare Netcetera's Maven repository as shown in [Netcetera 3DS (Android)](/docs/sdks/external-native-modules/netcetera-3ds-android#step-1-declare-the-netcetera-maven-repository).
   </Accordion>
   <Accordion title="Logcat: NoClassDefFoundError com.google.android.gms.location.LocationServices (ClearSale)">
-    Expected. The ClearSale SDK looks for the location library, does not find it, and skips its location collector. The fingerprint is still collected. Do not add `play-services-location` 21 or higher to work around it: it breaks the bundled ClearSale SDK.
+    Printed only by version `1.0.0` when your app does not include `play-services-location`. It is caught inside the ClearSale SDK and the fingerprint is still collected. Version `1.0.1` no longer looks for the location library: update to it and the trace goes away.
   </Accordion>
   <Accordion title="Payments go through but without a ClearSale fingerprint">
-    The provider `timeout` configured in your Yuno account is too low for ClearSale's capture (which waits 500 ms before generating the session id). Keep it at 1 second or more; the default is 5 seconds.
+    If you are on version `1.0.0` and your app resolves `play-services-location` 21 or higher, update to `1.0.1`. Otherwise, the provider `timeout` configured in your Yuno account is too low for ClearSale's capture (which waits 500 ms before generating the session id). Keep it at 1 second or more; the default is 5 seconds.
   </Accordion>
   <Accordion title="Manifest merger conflict on androidx.startup.InitializationProvider">
     Another library in your app also uses App Startup with a conflicting declaration. Merge both with `tools:node="merge"` on the provider, or run the module initializers manually as described in [Activating a module](#activating-a-module).
