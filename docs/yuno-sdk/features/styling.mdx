@@ -24,24 +24,139 @@ The Web SDK renders into your page as regular DOM, so you style it with CSS plus
 | Lever | Where | What it changes |
 |---|---|---|
 | Checkout Builder | Yuno Dashboard | Colors, fonts, and button shape of the built-in views. The SDK applies them on every mount, no code needed. |
-| CSS classes with the `sdk-payments-` prefix | Your stylesheet | Every element the SDK renders on your page carries a class with that prefix, for example `sdk-payments-payment-list__radio`, `sdk-payments-fieldset__box`, and `sdk-payments-input__label`. Target them from your own CSS. |
+| CSS classes with the `sdk-payments-` prefix | Your stylesheet | Every element the SDK renders on your page carries a class with that prefix. Target them from your own CSS. |
 | `card.styles` | `TransactionConfig` | A CSS string injected inside the card number, expiry, and CVV iframes, which your page CSS cannot reach. |
 | `card.fonts` | `TransactionConfig` | Fonts to load inside the card iframes. |
+| `card.texts` | `TransactionConfig` | Custom labels for card form fields. |
 | `inputDesignType` | `TransactionConfig` (payments only) | Label layout of the inputs: `float-label` (default), `float-label-static`, or `label-placeholder`. |
 | Wallet button options | `mount()` of each wallet view, or `externalButtons` on the config | Type, color, shape, size, and locale of the Apple Pay, Google Pay, PayPal, Samsung Pay, and Revolut Pay buttons. |
 | `options.styles` | `secureFields.create()` | CSS inside each secure field iframe. |
 
-## Usage
+## CSS classes
+
+Every element the SDK renders on your page carries a class with the `sdk-payments-` prefix. Target them from your stylesheet to customize colors, spacing, borders, and other visual properties. Common classes include:
+
+| Class pattern | What it styles |
+|---|---|
+| `sdk-payments-payment-list__*` | Payment method list container and rows |
+| `sdk-payments-fieldset__*` | Form field containers and boxes |
+| `sdk-payments-input__*` | Input fields and labels |
+| `sdk-payments-button__*` | Buttons |
+| `sdk-payments-card__*` | Card form elements |
+
+```css
+/* Example: customize the payment method list and inputs */
+.sdk-payments-payment-list__radio {
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.sdk-payments-input__label {
+    color: #333;
+    font-weight: 500;
+}
+
+.sdk-payments-user-form__submit {
+    background-color: #6200ee;
+    border-radius: 24px;
+}
+```
+
+<Note>
+CSS classes may change between SDK versions. Inspect the rendered DOM in your browser's developer tools to find the current class names.
+</Note>
+
+## Styling card iframes
+
+Card number, expiry, and CVV render inside iframes for PCI compliance. Your page CSS cannot reach them. Use `card.styles` to inject CSS and `card.fonts` to load custom fonts inside the iframes.
 
 ```typescript
 const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
-    inputDesignType: 'float-label',
     card: {
-        styles: 'input { font-family: Inter, sans-serif; color: #111; }',
+        styles: `
+            input {
+                font-family: 'Inter', sans-serif;
+                font-size: 16px;
+                color: #111;
+            }
+            input::placeholder {
+                color: #999;
+            }
+            input:focus {
+                border-color: #6200ee;
+            }
+        `,
+        fonts: [
+            {
+                src: 'url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff2)',
+                family: 'Inter',
+            },
+        ],
     },
     onStatus: (result) => showResult(result),
+})
+```
+
+## Input design types
+
+The `inputDesignType` field controls how labels and placeholders appear on form inputs:
+
+| Value | Behavior |
+|---|---|
+| `float-label` (default) | Label floats above the input when focused or filled. |
+| `float-label-static` | Label stays above the input at all times. |
+| `label-placeholder` | Label appears as placeholder text inside the input. |
+
+```typescript
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    inputDesignType: 'float-label-static',
+    onStatus: (result) => showResult(result),
+})
+```
+
+## Wallet button options
+
+Customize express wallet buttons through the `mount()` options or `externalButtons` on the config:
+
+```typescript
+const views = transaction.getPaymentMethodsViews({
+    types: ['applePay', 'googlePay'],
+    onPaymentSelected: (pm) => { /* ... */ },
+})
+
+views.applePay?.mount({
+    elementSelector: '#apple-pay',
+    buttonType: 'buy',       // 'plain', 'buy', 'book', 'donate', etc.
+    buttonStyle: 'black',    // 'black', 'white', 'white-outline'
+})
+
+views.googlePay?.mount({
+    elementSelector: '#google-pay',
+    buttonColor: 'black',    // 'black', 'white'
+    buttonType: 'pay',       // 'pay', 'buy', 'book', 'donate', etc.
+})
+```
+
+## Secure fields styling
+
+For [Secure Fields](/docs/yuno-sdk/features/secure-fields), pass `styles` when creating each field:
+
+```typescript
+const cardNumber = secureFields.create('cardNumber', {
+    placeholder: 'Card number',
+    styles: `
+        input {
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 12px;
+        }
+    `,
 })
 ```
 
