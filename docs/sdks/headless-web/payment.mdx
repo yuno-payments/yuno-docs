@@ -603,7 +603,7 @@ In addition to the code examples provided, you can access the [Demo App](https:/
 
 ## Split one payment across two cards
 
-From Web SDK 1.11.43, `generateToken` can create one token for a payment that two cards fund together. Each card pays its own part of the amount. The flow is headless only: there is no checkout UI for it.
+From Web SDK 1.11.43, `generateToken` can create one token for a payment that two cards fund together. Each card pays its own part of the amount. The flow is headless only: there is no checkout UI for it. For enablement, statuses, reversals, operations and errors, see [Pay with two cards](/docs/payment-features/pay-with-two-cards).
 
 <Note>
 **Version**
@@ -721,9 +721,9 @@ Create the payment from your server with `POST /v2/payments` (`https://api.y.uno
 | `workflow`              | Set to `SDK_CHECKOUT`.                                                                                            |
 | `payment_method.token`  | The composite token. `payment_method.type` is not needed: the token already identifies the cards.                 |
 | `payment_method.capture`| Whether to capture the payment.                                                                                   |
-| `callback_url`          | Required. Where each card's 3DS challenge returns your customer.                                                  |
+| `callback_url`          | Optional. Where each card's 3DS challenge returns your customer. Send it when a card can need 3DS.                |
 
-To read the result for each card, call `GET /v2/payments/{payment_id}` from your server with the same authentication headers. Its `payment_method.payment_methods` array has one entry per card, each with its own `sequence` (the position of the card in the token), `amount`, `status` and `transactions`, where the `THREE_D_SECURE` transaction of the card carries the result of its challenge. The v1 Retrieve Payment endpoint shows the payment as a whole, not each card.
+To read the result for each card, call `GET /v2/payments/{payment_id}` from your server with the same authentication headers. Its `payment_method.payment_methods` array has one entry per card, each with its `sequence` (the position of the card in the token), `type`, `amount` and `transactions`. A card has no status of its own: read the outcome of each card from its transactions, where the `THREE_D_SECURE` transaction of the card carries the result of its challenge. The payment-level `status` and `sub_status` sum up both cards. The v1 Retrieve Payment endpoint shows the payment as a whole, not each card. See [Pay with two cards](/docs/payment-features/pay-with-two-cards) for the full response, the statuses and the operations, and the [Retrieve Payment (v2)](/reference/payments/retrieve-payment-v2) reference.
 
 ### Run the 3DS challenge of each card
 
@@ -759,7 +759,7 @@ A payment paid with one card behaves as before: one call, one challenge.
 
 * A card that needs 3DS is charged as soon as its own challenge finishes. A card that needs no 3DS is charged when the payment is created.
 * If the challenge of a card fails or its issuer declines it, the whole payment ends. Yuno reverses the charge of a card that was already charged and cancels the pending 3DS of the other card. Do not ask your customer to continue with the remaining card: start a new payment instead.
-* The final payment has one entry per card in `payment_method.payment_methods`, each with its own status and transactions. Read it from your [webhooks](/docs/webhooks/configure-webhooks) or with `GET /v2/payments/{payment_id}`.
+* The final payment has one entry per card in `payment_method.payment_methods`, each with its `sequence`, `type`, `amount` and `transactions`. There is no status per card: read each card's outcome from its transactions. Read it from your [webhooks](/docs/webhooks/configure-webhooks) or with `GET /v2/payments/{payment_id}`.
 
 ## Error handling
 
