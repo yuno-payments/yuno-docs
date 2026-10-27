@@ -9,7 +9,7 @@ const json = (rel) => JSON.parse(read(rel));
 
 const endpoints = [
   ["create-payment-v2", "post", "/payments"],
-  ["retrieve-payment-by-id-v2", "get", "/payments/{payment_id}"],
+  ["retrieve-payment-two-cards", "get", "/payments/{payment_id}"],
   ["capture-authorization-v2", "post", "/payments/{payment_id}/transactions/{transaction_id}/capture"],
   ["cancel-payment-v2", "post", "/payments/{payment_id}/transactions/{transaction_id}/cancel"],
   ["refund-payment-v2", "post", "/payments/{payment_id}/transactions/{transaction_id}/refund"],
@@ -20,13 +20,8 @@ const guide = "docs/payment-features/pay-with-two-cards";
 const changedPages = [
   guide,
   ...endpoints.map(([slug]) => `reference/payments/${slug}`),
-  "reference/payments/retrieve-payment-by-id",
   "reference/payments/status-and-response-codes/payment",
   "docs/sdks/headless-web/payment",
-  "docs/go-live",
-  "docs/troubleshooting",
-  "docs/wallets/click-to-pay",
-  "reference/payments/cancel-payment",
   "changelog/web",
 ];
 
@@ -49,12 +44,25 @@ test("every v2 endpoint has a v2 OpenAPI fragment bound to a nav-visible referen
     const op = spec.paths[p] && spec.paths[p][method];
     assert.ok(op, `${slug} declares ${method.toUpperCase()} ${p}`);
     const idem = (op.parameters || []).find((x) => x.name === "X-Idempotency-Key");
-    if (method === "post") assert.equal(idem && idem.required, true, `${slug} requires X-Idempotency-Key`);
+    if (method === "post") assert.equal(idem?.required, true, `${slug} requires X-Idempotency-Key`);
     const page = read(`reference/payments/${slug}.mdx`);
     assert.match(page, new RegExp(`^openapi: "/openapi/payments/${slug}\\.json ${method.toUpperCase()} ${p.replace(/[{}]/g, "\\$&")}"$`, "m"));
     assert.ok(nav.has(`reference/payments/${slug}`), `${slug} in docs.json`);
   }
   assert.ok(nav.has(guide));
+});
+
+test("the v1 retrieve page keeps its slug and the two-card pages link the two-card retrieve page", () => {
+  const nav = navPages();
+  assert.ok(nav.has("reference/payments/retrieve-payment-by-id-v2"));
+  assert.ok(!nav.has("reference/payments/retrieve-payment-by-id"));
+  assert.match(read("reference/payments/retrieve-payment-by-id.mdx"), /^hidden: true$/m);
+  const v1 = json("openapi/payments/retrieve-payment-by-id-v2.json");
+  assert.ok(v1.servers.every((s) => s.url.endsWith("/v1")));
+  for (const f of ["reference/payments/create-payment-v2.mdx", "docs/payment-features/pay-with-two-cards.mdx", "docs/sdks/headless-web/payment.mdx"]) {
+    assert.ok(read(f).includes("(/reference/payments/retrieve-payment-two-cards)"), f);
+    assert.ok(!read(f).includes("(/reference/payments/retrieve-payment-by-id-v2)"), f);
+  }
 });
 
 test("operations answer 201 and every response uses the v2 payment shape", () => {
@@ -66,8 +74,8 @@ test("operations answer 201 and every response uses the v2 payment shape", () =>
   }
 });
 
-test("retrieve v2 declares split_payment_methods, payment_methods_count and per-card sequence, type, amount, transactions without a per-card status", () => {
-  const spec = json("openapi/payments/retrieve-payment-by-id-v2.json");
+test("retrieve two-card v2 declares split_payment_methods, payment_methods_count and per-card sequence, type, amount, transactions without a per-card status", () => {
+  const spec = json("openapi/payments/retrieve-payment-two-cards.json");
   assert.ok(spec.servers.every((s) => s.url.endsWith("/v2")));
   const schema = spec.components.schemas.PaymentV2;
   assert.ok(schema.properties.split_payment_methods);
@@ -137,7 +145,7 @@ test("changed pages document nothing that is out of scope and no internal names"
   const files = [...changedPages.map((p) => `${p}.mdx`), ...endpoints.map(([s]) => `openapi/payments/${s}.json`)];
   for (const f of files) {
     const s = f === "changelog/web.mdx" ? read(f).split("\n").filter((l) => l.includes("composite one-time token")).join("\n") : read(f);
-    const scoped = f.includes("v2") || f.includes("pay-with-two-cards") ? s : s.split("\n").filter((l) => /two cards|two-card|v2/i.test(l)).join("\n");
+    const scoped = f.includes("v2") || f.includes("two-cards") ? s : s.split("\n").filter((l) => /two cards|two-card|v2/i.test(l)).join("\n");
     for (const re of forbidden) assert.doesNotMatch(scoped, re, `${f} matches ${re}`);
   }
 });
