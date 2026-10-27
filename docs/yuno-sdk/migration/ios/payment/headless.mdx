@@ -9,42 +9,46 @@ In the unified API the same scenario maps to **non-seamless headless** mode: pas
 
 ## Using Payment Methods List with Headless
 
-Headless doesn't mean you cannot use SDK components. You can combine [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list) for method selection with a headless `startPayment()` for payment execution.
+Headless doesn't mean you cannot use SDK components. You can combine [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list) for method selection with a headless `start()` for payment execution.
 
 * **Ownership split:**
   - **Yuno handles:** Rendering the payment method list, displaying customer saved payment methods, express wallet buttons (Apple Pay), 3DS challenges, redirects, and handoffs.
   - **Merchant handles:** Rendering custom card collection inputs and your own Pay button.
 
 ```swift
-// Request views and observe method selection via paymentListController
+var selectedPayment: SdkPayments.PaymentMethodSelected?
+
+// Request the views. The list reports the shopper's choice to your PaymentListController
 let views = transaction.getPaymentMethodsViews(
     types: [.APPLE_PAY(), .PAYMENT_METHOD_LIST],
-    paymentListController: paymentListController
+    controller: self
 )
 
-// When the customer triggers your custom Pay button:
-if let selected = selectedPaymentMethod {
-    if let vaultedToken = selected.vaultedToken {
-        // Saved card: provide security code if required
-        transaction.startPayment(
-            with: .vaulted(
-                token: vaultedToken,
-                cardData: CardData(securityCode: cvv)
-            )
-        )
-    } else {
-        // Custom card form collection
-        transaction.startPayment(
-            with: .card(
-                cardData: CardData(
-                    holderName: cardHolder,
+// In your SdkPayments.PaymentListController:
+func onPaymentSelected(paymentSelected: SdkPayments.PaymentMethodSelected) {
+    selectedPayment = paymentSelected
+}
+
+// When the customer taps your own Pay button:
+if let selected = selectedPayment {
+    if selected.paymentMethodType == "CARD" && selected.vaultedToken == nil {
+        // New card: send the data collected in your own inputs
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: "CARD",
+            transactionData: SdkPayments.TransactionData(
+                card: SdkPayments.CardTransactionData(
                     number: cardNumber,
                     securityCode: cvv,
                     expirationMonth: expMonth,
-                    expirationYear: expYear
+                    expirationYear: expYear,
+                    holderName: cardHolder
                 )
             )
         )
+        transaction.start(paymentSelected: paymentSelected)
+    } else {
+        // Saved method or non-card method: pass the selection as it is
+        transaction.start(paymentSelected: selected)
     }
 }
 ```

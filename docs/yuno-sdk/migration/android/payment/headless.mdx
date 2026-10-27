@@ -9,41 +9,48 @@ In the unified API the same scenario maps to **non-seamless headless** mode: pas
 
 ## Using Payment Methods List with Headless
 
-Headless doesn't mean you cannot use SDK components. You can combine [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list) for method selection with a headless `startPayment()` for payment execution.
+Headless doesn't mean you cannot use SDK components. You can combine [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list) for method selection with a headless `start()` for payment execution.
 
 * **Ownership split:**
   - **Yuno handles:** Rendering the payment method list, displaying customer saved payment methods, express wallet buttons (Google Pay), 3DS challenges, redirects, and handoffs.
   - **Merchant handles:** Rendering custom card collection inputs and your own Pay button.
 
 ```kotlin
-// Request views and observe method selection via paymentListController
+var selectedPayment: PaymentMethodSelected? = null
+
+// Request the views. The list reports the shopper's choice to your PaymentListController
 val views = transaction.getPaymentMethodsViews(
-    types = listOf(
-        PaymentMethodType.GooglePay(),
-        PaymentMethodType.PaymentMethodList
-    ),
-    paymentListController = paymentListController
+    host = this,
+    types = listOf(PaymentMethodType.GooglePay(), PaymentMethodType.PaymentMethodList),
+    controller = this
 )
 
-// When the customer triggers your custom Pay button:
-selectedPaymentMethod?.let { selected ->
-    val paymentMethod = if (selected.vaultedToken != null) {
-        PaymentMethod.Vaulted(
-            vaultedToken = selected.vaultedToken,
-            cardData = CardData(securityCode = cvv)
+// In your PaymentListController:
+override fun onPaymentSelected(paymentSelected: PaymentMethodSelected) {
+    selectedPayment = paymentSelected
+}
+
+// When the customer taps your own Pay button:
+selectedPayment?.let { selected ->
+    val paymentSelected = if (selected.type == "CARD" && selected.vaultedToken == null) {
+        // New card: send the data collected in your own inputs
+        PaymentMethodSelected(
+            type = "CARD",
+            transactionData = TransactionData(
+                card = CardData(
+                    number = cardNumber,
+                    securityCode = cvv,
+                    expirationMonth = expMonth,
+                    expirationYear = expYear,
+                    holderName = cardHolder,
+                ),
+            ),
         )
     } else {
-        PaymentMethod.Card(
-            cardData = CardData(
-                holderName = cardHolder,
-                number = cardNumber,
-                securityCode = cvv,
-                expirationMonth = expMonth,
-                expirationYear = expYear
-            )
-        )
+        // Saved method or non-card method: pass the selection as it is
+        selected
     }
-    transaction.startPayment(paymentMethod)
+    transaction.start(activity = this, paymentSelected = paymentSelected)
 }
 ```
 
