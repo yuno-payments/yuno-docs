@@ -14,7 +14,7 @@ Yuno's subscription service lets you manage recurring payments and automate subs
 
 ## Yuno subscriptions
 
-A subscription in Yuno's environment can go through several stages, starting with its creation status. When a subscription is created, it automatically receives the **CREATED** status. However, it is a transitory status that is active while the payment isn't processed. After that, the subscription will be **ACTIVE** or **CANCELED**, depending on the payment confirmation.
+A subscription in Yuno's environment can go through several stages, starting with its creation status. When a subscription is created, it automatically receives the **CREATED** status. However, it is a transitory status that is active while the payment isn't processed. After that, the subscription will be **ACTIVE** or **CANCELED**, depending on the payment confirmation. If the first payment is declined and retries are on, the subscription stays **CREATED** while the retries run.
 
 When the payment related to the subscription is confirmed, the subscription status changes to **ACTIVE** — or to **TRIALING** if it starts inside a plan's trial phase, which becomes **ACTIVE** on its own once the trial ends. It remains active while the subscription is within its availability date range and the customer pays the bills. From there it can change to four different statuses:
 
@@ -27,7 +27,7 @@ When the payment related to the subscription is confirmed, the subscription stat
   <img src="/images/reference/status-subscriptions/subscription-lifecycle.svg" alt="Subscription lifecycle: CREATED to TRIALING or ACTIVE, with PAUSED, PAST_DUE, COMPLETED and CANCELED, plus a transversal ERROR state" />
 </Frame>
 
-A subscription in the trial phase behaves like an active one: it can be paused, it enters `PAST_DUE` on a failed charge and returns to `TRIALING` when a later charge succeeds. Any non-terminal status can be canceled, and a subscription created with `initial_payment_validation: true` goes straight from `CREATED` to `CANCELED` if the first payment fails.
+A subscription in the trial phase behaves like an active one: it can be paused, it enters `PAST_DUE` on a failed charge and returns to `TRIALING` when a later charge succeeds. Any non-terminal status can be canceled. A subscription created with `initial_payment_validation: true` stays in `CREATED` while its first payment is declined and retried (when `retries.retry_on_decline` is `true`). It moves to `CANCELED` once the last retry fails, or right away when retries are off.
 
 Learn more about the status of the subscription on the [Subscription Status](/reference/subscriptions/status-subscriptions) page.
 
@@ -58,7 +58,7 @@ To start using the subscriptions feature, you need a Yuno account and integratio
   * **Trial periods**: This feature lets you define a period where your customers can benefit from a reduced amount. It could be partial or total (for example, a free trial). You need to determine the value to be reduced from the total amount of each subscription charge and the billing cycles it should apply to.
   * **Initial payment validation**: A flag to identify if the subscription should wait for the first payment to continue. False by default. If the field is set to true, the subscription should remain in the CREATED status while waiting for the first payment of the subscription.
     * If the first payment succeeds (SUCCEEDED), the subscription transitions to ACTIVE.
-    * If the first payment fails (DECLINED/REJECTED), the subscription transitions to CANCELED.
+    * If the first payment fails (DECLINED/REJECTED), the subscription stays CREATED while it is retried (when `retries.retry_on_decline` is `true`). It transitions to CANCELED once the last retry fails, or right away when retries are off.
 
 ## Using Yuno subscription solution
 
@@ -91,7 +91,7 @@ Subscriptions support `CARD`, `PAYPAL_ENROLLMENT` and `PIX_AUTOMATIC` as payment
 <Danger>
 **Declined Payments**
 
-If a payment from a subscription created with [Create Subscription](/reference/subscriptions/create-subscription) is declined (including the first payment attempt), the subscription will continue its schedule for future payment attempts, giving the merchant the possibility to charge the client the pending amount through a different process and continue with the ongoing subscription. If you want to cancel a subscription, feel free to use the [cancel subscription endpoint](/reference/subscriptions/cancel-subscription).
+If a payment from a subscription created with [Create Subscription](/reference/subscriptions/create-subscription) is declined (including the first payment attempt), the subscription will continue its schedule for future payment attempts, giving the merchant the possibility to charge the client the pending amount through a different process and continue with the ongoing subscription. If you want to cancel a subscription, feel free to use the [cancel subscription endpoint](/reference/subscriptions/cancel-subscription). The exception is a subscription created with `initial_payment_validation: true`: a declined first payment is retried when retries are on, the subscription stays `CREATED` meanwhile, and it is canceled when the last retry fails or right away when retries are off — see [Subscription Status](/reference/subscriptions/status-subscriptions).
 
 On the one-call route a declined first charge creates no subscription at all — see [Start a subscription with the first payment](/docs/payment-features/subscriptions/start-with-payment).
 </Danger>
