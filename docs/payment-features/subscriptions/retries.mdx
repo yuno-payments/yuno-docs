@@ -101,6 +101,8 @@ Where the `PAST_DUE` status is enabled for the account, a failed recurring charg
 
 Where the status is not enabled, a failed charge leaves the subscription in `ACTIVE` while the retries run, and only the `payment.purchase` webhook reports the decline. Contact your Yuno representative to have `PAST_DUE` enabled.
 
+A declined first payment on a subscription created with `initial_payment_validation: true` is retried in `CREATED` and never enters `PAST_DUE`; see the [note on first payments](#canceling-a-subscription-when-retries-run-out) below.
+
 Canceling a `PAST_DUE` subscription — immediately, or because a scheduled cancellation becomes due — never errors and always stops that cycle's retries. See [Cancel Subscription](/reference/subscriptions/cancel-subscription) for scheduling a cancellation ahead of time, including the `past_due_behavior` option that controls whether a pending schedule waits for retries to finish or fires right away.
 
 ### Canceling a subscription when retries run out
@@ -141,5 +143,5 @@ This applies whichever way the retries ended — the schedule running to its las
 </Note>
 
 <Note>
-This flag applies to renewal cycles. Subscriptions created with `initial_payment_validation: true` already cancel themselves when their first payment fails, and that path reports `cancellation_source` as `SYSTEM` rather than `RETRIES_EXHAUSTED`.
+Subscriptions created with `initial_payment_validation: true` follow the same retry schedule for their first payment, but they stay in `CREATED` while it runs: they never enter `PAST_DUE`. While the retries run, [Retrieve Subscription](/reference/subscriptions/retrieve-subscription) returns `retries.attempts_made`, `retries.next_retry_at` and `unpaid_cycle`. The declined attempts send no `subscription.*` webhook of their own: after `subscription.create`, the next status webhook is sent when the subscription leaves `CREATED`. If the first payment is still declined after the last retry — or right away when `retry_on_decline` is `false` — Yuno cancels the subscription with `cancellation_source` `SYSTEM` (not `RETRIES_EXHAUSTED`) and sends one `SUBSCRIPTION.CANCEL` webhook. `cancel_on_exhausted_retries` applies to renewal cycles only.
 </Note>
