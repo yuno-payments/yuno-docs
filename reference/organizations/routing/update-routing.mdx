@@ -18,10 +18,12 @@ Not everything the body leaves out is removed. What happens to each part the req
 | A stored `CAPTURE` or `HOLD_FOR_REVIEW` step, with the output it hung from sent without `next` | Kept and attached again. Omitting it does **not** remove an auto-capture; point that output at another step instead. |
 | `action_delay` on a `CAPTURE` step | Kept as stored. Send the step with its new `action_delay` to change it. |
 | `fraud` on a fraud step | Kept as stored. Sent with it, the six fields are replaced. |
+| `network_token_on` on a payment step | Kept as stored. Send `network_token_on: false` to turn it off. |
+| `three_d_secure_exemptions` on a 3DS step | Kept as stored. Send `three_d_secure_exemptions: []` to clear it. |
 | A stored smart routing step | **Removed.** The smart routing step belongs to the request: a body that does not carry it, for example one retrieved before smart routing was visible on this API, deletes it. Retrieve the routing first and send the step back. |
 | A `CANCEL` or `REVERT` step | Removed, like any other step the body does not carry. |
 | `start_split` / `next_split` | Reset: a condition set sent without `start_split` goes back to a single entry on step 1, an output sent without `next_split` keeps only its `next`. |
-| Parts the API does not return (`REFUND`, `DECLINE` and `END` actions, per-step provider settings, monitors) | Kept exactly as stored, so sending back what [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) gave you keeps the routing as it was. Change those parts in the dashboard. See [What the API does not show](/reference/organizations/routing/routing-resource-shape#what-the-api-does-not-show). |
+| Parts the API does not return (`REFUND`, `DECLINE` and `END` actions, monitors) | Kept exactly as stored, so sending back what [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) gave you keeps the routing as it was. Change those parts in the dashboard. See [What the API does not show](/reference/organizations/routing/routing-resource-shape#what-the-api-does-not-show). |
 
 ### Path Parameters
 
@@ -63,6 +65,12 @@ Not everything the body leaves out is removed. What happens to each part the req
         </ParamField>
         <ParamField body="fraud" type="object">
             Configuration of a fraud provider step: `rules`, `blocklists`, `allowlists`, `reviewlists`, `preset` (codes copied from the dashboard, kept as given) and `report_only`. Only on `FRAUD` providers. See [Provider step kinds](/reference/organizations/routing/routing-resource-shape#provider-step-kinds).
+        </ParamField>
+        <ParamField body="network_token_on" type="boolean">
+            Only on payment provider steps of a `CARD` routing. `true` pays with the network token of the card when one is available. The organization must be onboarded to network tokens and the provider must support them (`network_token_enable` on the response), otherwise `400 NETWORK_TOKEN_NOT_ONBOARDED` or `400 NETWORK_TOKEN_NOT_SUPPORTED`. When omitted, the stored value is kept; send `false` to turn it off. See [Provider step settings](/reference/organizations/routing/routing-resource-shape#provider-step-settings).
+        </ParamField>
+        <ParamField body="three_d_secure_exemptions" type="string[]">
+            Only on 3DS provider steps. The [SCA exemptions](/docs/payment-features/sca-exemptions#allowed-values) this step may apply, e.g. `["LOW_VALUE", "TRANSACTION_RISK_ANALYSIS"]`. When omitted, the stored list is kept; send `[]` to clear it. See [Provider step settings](/reference/organizations/routing/routing-resource-shape#provider-step-settings).
         </ParamField>
         <ParamField body="smart_routing" type="object">
             Makes the step a smart routing step: `type` (`COSTS` or `LATENCY`), `providers` (two to four `{ provider_id, connection_id, network_token_on }` payment providers) and `no_retry_decline_types`. Card routings only, one per route. See [Smart routing steps](/reference/organizations/routing/routing-resource-shape#smart-routing-steps).
