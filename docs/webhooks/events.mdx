@@ -52,8 +52,8 @@ A webhook subscribes to events through trigger fields, one per domain, and needs
 | `CREATE` | `subscription.create` | Sent when a subscription is first created. |
 | `ACTIVE` | `subscription.active` | Sent once, when the subscription first becomes active. Not re-sent on subsequent renewal cycles. |
 | `PAUSE` | `subscription.pause` | Sent when a subscription is paused. |
-| `RESUME` | `subscription.resume` | Sent when a paused subscription is resumed. |
-| `CANCEL` | `subscription.cancel` | Sent when a subscription is canceled. Once canceled it is terminated and cannot be reactivated. |
+| `RESUME` | `subscription.resume` | Sent when a paused subscription is resumed and returns to `ACTIVE` or `TRIALING`. Carries `resume_reason` — `MERCHANT` when [Resume Subscription](/reference/subscriptions/resume-subscription) was called, `SCHEDULED` when an automatic resume completed on its own — and the resulting `billing_cycles.next_at`. |
+| `CANCEL` | `subscription.cancel` | Sent when a subscription is canceled. A canceled subscription can be brought back with [Reactivate Subscription](/reference/subscriptions/reactivate-subscription). Carries `refund` when a refund quote was computed for the cancellation. |
 | `COMPLETE` | `subscription.complete` | Sent when a subscription reaches its end date or total billing cycles and transitions to `COMPLETED`. |
 | `CLOSE_TO_RENEWAL` | `subscription.close_to_renewal` | Sent ahead of an upcoming renewal. Timing is controlled by `renewal_days` when set via the [API](/reference/webhooks#triggers), reflected on the subscription as `renewal_notification_days`. |
 | `PLAN_CHANGE_SCHEDULED` | `subscription.plan_change_scheduled` | Sent when a plan change is scheduled for the next billing cycle. |
@@ -75,6 +75,8 @@ The following subscription events aren't gated by a trigger value of their own; 
 | `subscription.phase_completed` | Sent for plan-based subscriptions when a billing phase ends, immediately before the `subscription.phase_started` of the phase that replaces it. Not sent for the first phase, which has no predecessor. |
 | `subscription.cancel_scheduled` | Sent when a cancellation is scheduled for a future date or billing cycle via `POST /v1/subscriptions/{id}/cancel` with a `schedule` block. |
 | `subscription.cancel_schedule_canceled` | Sent when a pending scheduled cancellation is undone. Not sent when the schedule instead fires — `subscription.cancel` fires then. |
+| `subscription.reactivate` | Sent when a `CANCELED` or `COMPLETED` subscription returns to `ACTIVE` or `TRIALING` through [Reactivate Subscription](/reference/subscriptions/reactivate-subscription). |
+| `subscription.auto_resume_failed` | Sent when the automatic resume of a paused subscription could not be completed after its retries; the subscription stays `PAUSED`. Available to organizations enabled for it; contact Yuno. |
 
 <Note>
 Treat the plan-change events as notifications, not as the source of truth. Reconcile against `GET /v1/subscriptions/{id}` rather than relying on webhook delivery alone. The same applies to the cancel-scheduling events. See [Payloads and Examples](/docs/webhooks/object-and-examples#subscription-plan_change_scheduled) for the full field reference of each.
