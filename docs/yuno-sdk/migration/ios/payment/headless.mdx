@@ -31,7 +31,17 @@ func onPaymentSelected(paymentSelected: SdkPayments.PaymentMethodSelected) {
 
 // When the customer taps your own Pay button:
 if let selected = selectedPayment {
-    if selected.paymentMethodType == "CARD" && selected.vaultedToken == nil {
+    if let vaultedToken = selected.vaultedToken {
+        // Saved card: keep the token from the list and add the CVV from your own input
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: selected.paymentMethodType,
+            vaultedToken: vaultedToken,
+            transactionData: SdkPayments.TransactionData(
+                card: SdkPayments.CardTransactionData(securityCode: cvv)
+            )
+        )
+        transaction.start(paymentSelected: paymentSelected)
+    } else if selected.paymentMethodType == "CARD" {
         // New card: send the data collected in your own inputs
         let paymentSelected = SdkPayments.PaymentMethodSelected(
             paymentMethodType: "CARD",
@@ -47,7 +57,7 @@ if let selected = selectedPayment {
         )
         transaction.start(paymentSelected: paymentSelected)
     } else {
-        // Saved method or non-card method: pass the selection as it is
+        // Non-card method (e.g. APM or redirect): pass the selection as it is
         transaction.start(paymentSelected: selected)
     }
 }

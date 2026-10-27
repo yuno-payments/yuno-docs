@@ -32,23 +32,34 @@ override fun onPaymentSelected(paymentSelected: PaymentMethodSelected) {
 
 // When the customer taps your own Pay button:
 selectedPayment?.let { selected ->
-    val paymentSelected = if (selected.type == "CARD" && selected.vaultedToken == null) {
-        // New card: send the data collected in your own inputs
-        PaymentMethodSelected(
-            type = "CARD",
-            transactionData = TransactionData(
-                card = CardData(
-                    number = cardNumber,
-                    securityCode = cvv,
-                    expirationMonth = expMonth,
-                    expirationYear = expYear,
-                    holderName = cardHolder,
+    val paymentSelected = when {
+        selected.vaultedToken != null -> {
+            // Saved card: keep the token from the list and add the CVV from your own input
+            PaymentMethodSelected(
+                type = selected.type,
+                vaultedToken = selected.vaultedToken,
+                transactionData = TransactionData(
+                    card = CardData(securityCode = cvv),
                 ),
-            ),
-        )
-    } else {
-        // Saved method or non-card method: pass the selection as it is
-        selected
+            )
+        }
+        selected.type == "CARD" -> {
+            // New card: send the data collected in your own inputs
+            PaymentMethodSelected(
+                type = "CARD",
+                transactionData = TransactionData(
+                    card = CardData(
+                        number = cardNumber,
+                        securityCode = cvv,
+                        expirationMonth = expMonth,
+                        expirationYear = expYear,
+                        holderName = cardHolder,
+                    ),
+                ),
+            )
+        }
+        // Non-card method (e.g. APM or redirect): pass the selection as it is
+        else -> selected
     }
     transaction.start(activity = this, paymentSelected = paymentSelected)
 }
