@@ -2466,6 +2466,33 @@ Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification
 
 Sent for plan-based subscriptions when a `$0` cycle is executed, either a trial cycle or a fully discounted one. Those cycles produce no `payment.purchase` webhook, so this event is the only receipt for them. `reason` is `TRIAL` or `FULL_DISCOUNT`, `phase` is the phase the cycle belongs to, and `breakdown` carries the same line-item detail as a paid cycle, with a zero total.
 
+On a discounted cycle of a subscription with an active [promotion](/docs/payment-features/subscriptions/promotions), the event also includes a `promotion` object in `data`. It carries the promotion `id`, the `discount_amount` taken off that charge, and `cycles_remaining`, the number of discounted cycles left after this one. A full-price charge with no promotion does not send this event. A charged discounted cycle carries no `reason`. `reason` is `FULL_DISCOUNT` only when the cycle's charge is 0.
+
+| Cycle | Sent? |
+| :---- | :---- |
+| Approved charge with a discount | Yes. It includes the `promotion` object and is sent after the cycle is counted. |
+| Automatic or forced retry, approved | Yes, once for the cycle, with the `promotion` object. |
+| Late result, approved | Yes, once, when the result arrives. |
+| Declined charge | No. |
+| Trial cycle | Sent only for subscriptions on a plan with phases, as today (reason `TRIAL`). When the trial cycle counts toward a promotion, the event includes the promotion object with `discount_amount` 0. |
+| Phase $0 cycle of a plan with phases, no promotion | Yes, with reason `TRIAL` or `FULL_DISCOUNT`. Unchanged. |
+| 100% cycle (`FULL_DISCOUNT`) | Yes, with reason `FULL_DISCOUNT`. The `promotion` object is included when it can be read. |
+| Full-price charge with no promotion | No. |
+
+```json
+"promotion": {
+  "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+  "discount_amount": 50,
+  "cycles_remaining": 2
+}
+```
+
+<Note>
+**Amounts are JSON numbers**
+
+Amounts in webhook payloads are JSON numbers, so a trailing zero may not be kept: an amount of 50.00 can arrive as 50.0. Compare amounts as numbers, not as text.
+</Note>
+
 ```json JSON
 {
   "type": "subscription",

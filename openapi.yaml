@@ -96311,6 +96311,22 @@ paths:
                           type: string
                           description: Must match the subscription's own currency.
                           example: COP
+                promotion:
+                  type: object
+                  description: >-
+                    Applies a promotion attached to the plan this subscription is created on. Send exactly one of `id`
+                    or `code`. The promotion starts with the subscription and discounts the first charge. If it cannot
+                    be applied (it is not attached to the plan, has expired, is disabled, has not started, or has no
+                    uses left), the request is rejected and nothing is created. If the plan also has an automatic
+                    promotion, the larger discount on the first charge applies, and the promotion you send wins a tie.
+                    See [Promotions on subscription plans](/docs/payment-features/subscriptions/promotions).
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the promotion (UUID). Use `id` or `code`, not both.
+                    code:
+                      type: string
+                      description: The code of a promotion that has one. Use `id` or `code`, not both.
             examples:
               Subscription:
                 value:
@@ -97721,6 +97737,14 @@ paths:
                         amount: null
                         total_payments: null
                         country_prices: []
+                    promotions:
+                      - promotion_id: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+                        name: Welcome 20% x3
+                        type: AUTOMATIC
+                        status: ENABLED
+                        cycles: 3
+                        on_pause: KEEP
+                        attached_at: '2026-11-02T14:00:00Z'
                     created_at: '2024-01-15T10:30:00.000000Z'
                     updated_at: '2024-01-15T10:30:00.000000Z'
                     account_ids:
@@ -97815,6 +97839,49 @@ paths:
                     description: >-
                       The metered prices attached to this plan. Empty when the plan has no usage-based pricing; see
                       [Attach Meter to Plan](/reference/meters/attach-meter-to-plan).
+                  promotions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        promotion_id:
+                          type: string
+                          description: The ID of the attached promotion (UUID).
+                        name:
+                          type: string
+                          description: The name of the promotion.
+                        type:
+                          type: string
+                          enum:
+                            - AUTOMATIC
+                            - CODE
+                          description: >-
+                            The redemption mode of the promotion. `AUTOMATIC` promotions apply by themselves when a
+                            subscription is created on the plan. `CODE` promotions apply when the merchant sends the
+                            code.
+                        status:
+                          type: string
+                          enum:
+                            - ENABLED
+                            - DISABLED
+                            - UNKNOWN
+                          description: Read from the promotions engine. `UNKNOWN` when the engine does not respond.
+                        cycles:
+                          type: integer
+                          description: The number of charges the promotion covers on this plan.
+                        on_pause:
+                          type: string
+                          enum:
+                            - KEEP
+                            - END
+                          description: 'What a pause does to a copy of this promotion: `KEEP` (default) or `END`.'
+                        attached_at:
+                          type: string
+                          format: date-time
+                          description: When the promotion was attached to the plan.
+                    description: >-
+                      The promotions attached to this plan. Empty when none is attached. See [Promotions on subscription
+                      plans](/docs/payment-features/subscriptions/promotions).
         '404':
           description: '404'
           content:
@@ -97837,6 +97904,224 @@ paths:
                     items:
                       type: string
       deprecated: false
+      tags:
+        - Plans
+  /subscriptions/plans/{plan_id}/promotions:
+    post:
+      summary: Attach Promotion to Plan
+      description: >-
+        Attaches an existing promotion to the plan for `cycles` charges. Subscriptions on the plan can then receive it
+        when they are created or updated. Attachments are not edited: to change `cycles` or `on_pause`, remove the
+        attachment and attach the promotion again.
+      operationId: attach-plan-promotion
+      parameters:
+        - in: header
+          name: X-Account-Code
+          required: true
+          schema:
+            type: string
+          description: >-
+            The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required —
+            omitting it returns `400 BAD_REQUEST` ("Invalid x-account-code header.").
+        - name: plan_id
+          in: path
+          description: The unique identifier of the plan.
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - promotion_id
+                - cycles
+              properties:
+                promotion_id:
+                  type: string
+                  description: The ID of an existing promotion (UUID).
+                cycles:
+                  type: integer
+                  minimum: 1
+                  description: The number of charges the discount covers. At least 1.
+                on_pause:
+                  type: string
+                  enum:
+                    - KEEP
+                    - END
+                  default: KEEP
+                  description: >-
+                    What a pause does to the promotion once it is applied to a subscription. `KEEP` (default) keeps its
+                    remaining cycles for when the subscription resumes. `END` ends the promotion with `end_reason`
+                    `PAUSE`.
+            examples:
+              Request:
+                value:
+                  promotion_id: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+                  cycles: 3
+      responses:
+        '201':
+          description: 201. The promotion is attached to the plan.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    promotion_id: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+                    name: Welcome 20% x3
+                    type: AUTOMATIC
+                    status: ENABLED
+                    cycles: 3
+                    attached_at: '2026-11-02T14:00:00Z'
+                    on_pause: KEEP
+              schema:
+                type: object
+                properties:
+                  promotion_id:
+                    type: string
+                  name:
+                    type: string
+                  type:
+                    type: string
+                    description: >-
+                      The redemption mode of the promotion. `AUTOMATIC` promotions apply by themselves when a
+                      subscription is created on the plan. `CODE` promotions apply when the merchant sends the code.
+                    enum:
+                      - AUTOMATIC
+                      - CODE
+                  status:
+                    type: string
+                    description: '`ENABLED` when the attachment is created.'
+                  cycles:
+                    type: integer
+                  attached_at:
+                    type: string
+                    format: date-time
+                  on_pause:
+                    type: string
+                    enum:
+                      - KEEP
+                      - END
+                    description: What a pause does to the promotion once it is applied to a subscription.
+        '404':
+          description: 404. The promotion does not exist, or belongs to another account.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: PROMOTION_NOT_FOUND
+                    messages:
+                      - Promotion not found.
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+        '409':
+          description: 409. The plan already has this promotion.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: PROMOTION_ALREADY_ATTACHED
+                    messages:
+                      - The promotion is already attached to this plan.
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+        '422':
+          description: >-
+            422. The promotion cannot be attached. `reason` says why, for example `EXPIRED`, or `PROMOTIONS_NOT_ENABLED`
+            when promotions are not turned on for the organization.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: PROMOTION_NOT_APPLICABLE
+                    messages:
+                      - The promotion cannot be applied.
+                    reason: EXPIRED
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  reason:
+                    type: string
+                    description: Why the promotion cannot be attached or applied.
+      tags:
+        - Plans
+  /subscriptions/plans/{plan_id}/promotions/{promotion_id}:
+    delete:
+      summary: Remove Promotion from Plan
+      description: >-
+        Removes the attachment of a promotion from the plan. Subscriptions that already have the promotion are not
+        changed: they keep their copy until it is `COMPLETED` or `ENDED`.
+      operationId: remove-plan-promotion
+      parameters:
+        - in: header
+          name: X-Account-Code
+          required: true
+          schema:
+            type: string
+          description: >-
+            The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required —
+            omitting it returns `400 BAD_REQUEST` ("Invalid x-account-code header.").
+        - name: plan_id
+          in: path
+          description: The unique identifier of the plan.
+          schema:
+            type: string
+          required: true
+        - name: promotion_id
+          in: path
+          description: The ID of the promotion to remove from the plan (UUID).
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: 204. The promotion was removed from the plan. The response has no body.
+        '404':
+          description: >-
+            404. The plan does not exist (`PLAN_NOT_FOUND`), or the promotion is not attached to this plan
+            (`PROMOTION_NOT_FOUND`).
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: PROMOTION_NOT_FOUND
+                    messages:
+                      - Promotion not found.
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
       tags:
         - Plans
   /subscriptions/plans/{plan_id}/status:
@@ -99006,6 +99291,21 @@ paths:
                         status survive. RESTART requires `effective: IMMEDIATE` and returns 400 with a scheduled change;
                         KEEP alongside a scheduled change is accepted and simply schedules the change as usual.
                         Write-only: this field is never echoed in any response.
+                    promotion_behavior:
+                      type: string
+                      enum:
+                        - KEEP
+                        - END
+                      description: >-
+                        What happens to the active promotion when the plan changes. `KEEP` (default) keeps it, with its
+                        remaining cycles, on the new plan. `END` ends it with `end_reason` `PLAN_CHANGE`. Ignored when
+                        there is no active promotion.
+                    apply_new_plan_promotion:
+                      type: boolean
+                      description: >-
+                        Whether the new plan's `AUTOMATIC` promotion applies when the plan changes. `true` (default)
+                        applies it and ends the current promotion with `PLAN_CHANGE`. `false` leaves it unapplied, and
+                        `promotion_behavior` decides what happens to the current promotion.
                 billing_cycle_behavior:
                   type: string
                   enum:
@@ -99068,6 +99368,21 @@ paths:
                           type: string
                           description: Must match the subscription's own currency.
                           example: COP
+                promotion:
+                  type: object
+                  description: >-
+                    Applies a promotion attached to the subscription's plan. Send exactly one of `id` or `code`. The
+                    subscription must be `ACTIVE` or `TRIALING`, and the discount takes effect from the next charge.
+                    Applying a promotion while another one is active replaces it: the current one ends with `end_reason`
+                    `REPLACED`, and the new one starts at 0 cycles used. See [Promotions on subscription
+                    plans](/docs/payment-features/subscriptions/promotions).
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the promotion (UUID). Use `id` or `code`, not both.
+                    code:
+                      type: string
+                      description: The code of a promotion that has one. Use `id` or `code`, not both.
             examples:
               Update card usage:
                 summary: Mark the card as already used, so rebills are sent as subsequent payments
@@ -99788,6 +100103,75 @@ paths:
                         type: integer
                       last_failure_code:
                         type: string
+                  promotion:
+                    type: object
+                    description: >-
+                      The copy of the promotion stored on the subscription. See [The Subscription Promotion
+                      Object](/reference/subscriptions/the-subscription-promotion-object).
+                    properties:
+                      id:
+                        type: string
+                        description: The ID of the promotion (UUID).
+                      name:
+                        type: string
+                      discount:
+                        type: object
+                        description: '`PERCENTAGE` with `value`, or `FIXED` with `amount` and `currency`.'
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - PERCENTAGE
+                              - FIXED
+                          value:
+                            type: number
+                            description: '`PERCENTAGE` only. From 0 to 100, with at most 2 decimals.'
+                          amount:
+                            type: number
+                            description: '`FIXED` only. With the currency''s decimals.'
+                          currency:
+                            type: string
+                            description: '`FIXED` only. ISO 4217 code.'
+                      cycles:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          used:
+                            type: integer
+                            description: 'Cycles counted since it was applied: approved charges, trial cycles and 100% cycles.'
+                          remaining:
+                            type: integer
+                      on_pause:
+                        type: string
+                        enum:
+                          - KEEP
+                          - END
+                      status:
+                        type: string
+                        enum:
+                          - ACTIVE
+                          - COMPLETED
+                          - ENDED
+                      applied_at:
+                        type: string
+                        format: date-time
+                      ended_at:
+                        type:
+                          - string
+                          - 'null'
+                        format: date-time
+                      end_reason:
+                        type:
+                          - string
+                          - 'null'
+                        enum:
+                          - REPLACED
+                          - REMOVED
+                          - PLAN_CHANGE
+                          - PAUSE
+                          - CANCELED
+                          - null
         '400':
           description: '400'
           content:
@@ -102199,6 +102583,16 @@ paths:
                               type: number
                         currency:
                           type: string
+                        discount_amount:
+                          type: number
+                          description: >-
+                            The discount applied to this charge, in the currency's decimals. Present only when the
+                            charge had a promotion.
+                        net_amount:
+                          type: number
+                          description: >-
+                            `amount` minus `discount_amount`: what the customer pays for this charge. `0` for a 100%
+                            cycle. Present only when the charge had a promotion.
                         subtotal:
                           type: number
                         total:
@@ -103212,6 +103606,152 @@ paths:
                     messages:
                       - The target plan does not exist or is not linked to this account.
       deprecated: false
+      tags:
+        - Subscriptions
+  /subscriptions/{subscription_id}/promotion:
+    delete:
+      summary: Remove Promotion from Subscription
+      description: >-
+        Ends the active promotion on the subscription. The promotion's `status` becomes `ENDED` and its `end_reason`
+        becomes `REMOVED`. The next charge is the full price.
+      operationId: remove-subscription-promotion
+      parameters:
+        - name: subscription_id
+          in: path
+          description: The unique identifier of the subscription.
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: 200. The subscription, with its promotion in status `ENDED` and `end_reason` `REMOVED`.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    id: e98ef674-9baa-4f7a-8da4-4c812c4749a4
+                    status: ACTIVE
+                    promotion:
+                      id: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+                      name: Welcome 20% x3
+                      discount:
+                        type: PERCENTAGE
+                        value: 20
+                      cycles:
+                        total: 3
+                        used: 1
+                        remaining: 2
+                      on_pause: KEEP
+                      status: ENDED
+                      applied_at: '2026-11-02T14:00:00Z'
+                      ended_at: '2026-11-10T09:00:00Z'
+                      end_reason: REMOVED
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+                  promotion:
+                    type: object
+                    description: >-
+                      The copy of the promotion stored on the subscription. See [The Subscription Promotion
+                      Object](/reference/subscriptions/the-subscription-promotion-object).
+                    properties:
+                      id:
+                        type: string
+                        description: The ID of the promotion (UUID).
+                      name:
+                        type: string
+                      discount:
+                        type: object
+                        description: '`PERCENTAGE` with `value`, or `FIXED` with `amount` and `currency`.'
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - PERCENTAGE
+                              - FIXED
+                          value:
+                            type: number
+                            description: '`PERCENTAGE` only. From 0 to 100, with at most 2 decimals.'
+                          amount:
+                            type: number
+                            description: '`FIXED` only. With the currency''s decimals.'
+                          currency:
+                            type: string
+                            description: '`FIXED` only. ISO 4217 code.'
+                      cycles:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          used:
+                            type: integer
+                            description: 'Cycles counted since it was applied: approved charges, trial cycles and 100% cycles.'
+                          remaining:
+                            type: integer
+                      on_pause:
+                        type: string
+                        enum:
+                          - KEEP
+                          - END
+                      status:
+                        type: string
+                        enum:
+                          - ACTIVE
+                          - COMPLETED
+                          - ENDED
+                      applied_at:
+                        type: string
+                        format: date-time
+                      ended_at:
+                        type:
+                          - string
+                          - 'null'
+                        format: date-time
+                      end_reason:
+                        type:
+                          - string
+                          - 'null'
+                        enum:
+                          - REPLACED
+                          - REMOVED
+                          - PLAN_CHANGE
+                          - PAUSE
+                          - CANCELED
+                          - null
+        '409':
+          description: >-
+            409. The subscription has no active promotion. The response includes `current_status`: the status of its
+            latest promotion (`COMPLETED` or `ENDED`), or `null` if the subscription never had one.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: SUBSCRIPTION_PROMOTION_NOT_ACTIVE
+                    messages:
+                      - The subscription has no active promotion.
+                    current_status: COMPLETED
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  current_status:
+                    type:
+                      - string
+                      - 'null'
+                    description: >-
+                      The status of the subscription's latest promotion, `COMPLETED` or `ENDED`. `null` if the
+                      subscription never had a promotion.
       tags:
         - Subscriptions
   /subscriptions/{subscription_id}/reactivate:
