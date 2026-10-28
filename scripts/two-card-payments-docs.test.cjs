@@ -40,7 +40,7 @@ test("every v2 endpoint has a v2 OpenAPI fragment bound to a nav-visible referen
   for (const [slug, method, p] of endpoints) {
     const spec = json(`openapi/payments/${slug}.json`);
     assert.equal(spec.openapi, "3.1.0", slug);
-    assert.deepEqual(spec.servers.map((s) => s.url), ["https://api-sandbox.y.uno/v2", "https://api.y.uno/v2"], slug);
+    assert.deepEqual(spec.servers.map((s) => s.url), ["https://api-sandbox.y.uno/v2", "https://api.y.uno/v2", "https://api.eu.y.uno/v2"], slug);
     const op = spec.paths[p] && spec.paths[p][method];
     assert.ok(op, `${slug} declares ${method.toUpperCase()} ${p}`);
     const idem = (op.parameters || []).find((x) => x.name === "X-Idempotency-Key");
