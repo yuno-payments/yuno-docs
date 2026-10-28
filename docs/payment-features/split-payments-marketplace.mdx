@@ -15,7 +15,7 @@ The key features of the split payments marketplace include:
 * **Flexible configuration**: Supports both absolute-based and auto-calculation splits.
 * **Auto Split Configuration**: Define rules at the recipient level (percentage, fixed, or mixed) to automate split calculations without specifying amounts in each payment request.
 * **Integration with providers**: Splits can be executed by payment providers that support this functionality.
-* **Detailed handling of fees**: The system allows for fine-tuning of how transaction fees and chargebacks are managed.
+* **Detailed handling of fees**: The system allows for fine-tuning of how transaction fees and chargebacks are managed. In each split entry, the `liability` object sets who pays the transaction fee (`processing_fee`: `MERCHANT`, `RECIPIENT`, or `SHARED`) and whether the recipient is liable for chargebacks (`chargebacks`). See [Payment split integration](#3-payment-split-integration).
 * **Onboarding transfer**: Allows the transfer of onboardings between different recipients.
 
 To use this feature, you must **first onboard your recipients** for the payment split, and **then create the payment** specifying the necessary information.
@@ -35,7 +35,11 @@ This **architecture** enables:
 * Independent status tracking per provider.
 * Easy scaling of submerchant operations across providers.
 
-This design ensures flexibility, transparency, and full traceability throughout the onboarding lifecycle. The [recipients endpoint](/reference/create-recipient-1) is used to create and manage each submerchant profile and to trigger the corresponding provider-specific onboarding workflows.
+This design ensures flexibility, transparency, and full traceability throughout the onboarding lifecycle. The [recipients endpoint](/reference/recipients-for-marketplace/create-recipient-1) is used to create and manage each submerchant profile and to trigger the corresponding provider-specific onboarding workflows.
+
+<Note>
+  **Recipients, Sellers, and Payouts.** Recipients are the submerchant model: you onboard them per provider and reference them in `split_marketplace` and in [Standalone Transfers](#4-standalone-transfers). [Sellers (Franchise)](/reference/sellers/manage-sellers) are a different feature: a franchise merchant registers per-provider seller identities so that Yuno resolves the correct `merchant_id` of the connection at payment time. [Payouts](/docs/payouts-and-disputes/payouts) is a separate API that sends funds to beneficiaries through bank, card, or wallet withdrawal methods.
+</Note>
 
 ### Onboarding flows
 
@@ -79,7 +83,7 @@ The onboarding workflow follows a structured process that ensures submerchants a
 
 1. **Organization & Account Setup**: The marketplace owner creates an organization in Yuno and configures accounts with payment provider connections.
 
-2. **Recipient Creation**: For each submerchant, the marketplace creates a recipient using the [Create Recipients API](/reference/create-recipient-1) endpoint, specifying either:
+2. **Recipient Creation**: For each submerchant, the marketplace creates a recipient using the [Create Recipients API](/reference/recipients-for-marketplace/create-recipient-1) endpoint, specifying either:
 
    * `provider_recipient_id` for pre-onboarded submerchants
    * Provider connection details for new onboarding
@@ -127,7 +131,7 @@ To ensure precision across different currencies, Yuno supports three rounding st
 
 ### Implementation
  
- You can define the `split_configuration` when [creating](/reference/create-recipient-1) or [updating](/reference/update-recipient-1) a recipient.
+ You can define the `split_configuration` when [creating](/reference/recipients-for-marketplace/create-recipient-1) or [updating](/reference/recipients-for-marketplace/update-recipient-1) a recipient.
  
  <div className="nowrap-col1-table dense-table">
 
@@ -580,7 +584,7 @@ The goal of this flow is to allow the transfer of onboardings between recipients
 
 The process has several stages. First, the initial recipient is created with its onboarding (a prior step). Later, when a transfer is required, follow the steps to create the new recipient, use the transfer service, and, if needed, reverse the operation.
 
-1. **Recipient and onboarding (before any transfer)**: [Create recipient](/reference/create-recipient-1), then [create onboarding](/reference/create-onboarding).
+1. **Recipient and onboarding (before any transfer)**: [Create recipient](/reference/recipients-for-marketplace/create-recipient-1), then [create onboarding](/reference/recipients-for-marketplace/create-onboarding).
 
 <Note>
   This step happens in advance when a new recipient is created and its onboarding is assigned. It is not part of the transfer itself.
@@ -588,16 +592,16 @@ The process has several stages. First, the initial recipient is created with its
 
 If you decide to transfer the onboarding to another recipient, continue the flow:
 
-2. **Create the new recipient and onboarding**: Use the [create recipient](/reference/create-recipient-1) and [create onboarding](/reference/create-onboarding) endpoints to set up the recipient and onboarding that will receive the transfer.
+2. **Create the new recipient and onboarding**: Use the [create recipient](/reference/recipients-for-marketplace/create-recipient-1) and [create onboarding](/reference/recipients-for-marketplace/create-onboarding) endpoints to set up the recipient and onboarding that will receive the transfer.
 
-3. **Transfer the onboarding**: Use [transfer onboarding](/reference/transfer-onboarding) and include:
+3. **Transfer the onboarding**: Use [transfer onboarding](/reference/recipients-for-marketplace/transfer-onboarding) and include:
 
    * `recipient_id`: the target recipient ID
    * `onboarding_id`: the onboarding to transfer
 
    The onboarding will be transferred to the new recipient.
 
-4. **Reverse the transfer (optional)**: Use [reverse onboarding](/reference/reverse-onboarding) to revert the previous transfer, providing the same `recipient_id` and `onboarding_id`.
+4. **Reverse the transfer (optional)**: Use [reverse onboarding](/reference/recipients-for-marketplace/reverse-onboarding) to revert the previous transfer, providing the same `recipient_id` and `onboarding_id`.
 
 The `onboarding` object includes a `history` element that stores the complete traceability of the onboarding. This history includes not only updates to the object but also events related to transfers between recipients, ensuring full lifecycle visibility.
 
@@ -660,17 +664,17 @@ Both the creation and reversal of standalone transfers require an **Idempotency 
 
 This section lists the API endpoints involved in managing split payments.
 
-* **[Create recipients](/reference/create-recipient-1)**: **POST**: `https://api-sandbox.y.uno/v1/recipients`
-* **[Create onboarding](/reference/create-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings`
-* **[Continue onboarding](/reference/continue-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/continue`
-* **[Create payment](/reference/create-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments`
-* **[Capture authorization](/reference/capture-authorization)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/capture`
+* **[Create recipients](/reference/recipients-for-marketplace/create-recipient-1)**: **POST**: `https://api-sandbox.y.uno/v1/recipients`
+* **[Create onboarding](/reference/recipients-for-marketplace/create-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings`
+* **[Continue onboarding](/reference/recipients-for-marketplace/continue-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/continue`
+* **[Create payment](/reference/payments/create-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments`
+* **[Capture authorization](/reference/payments/capture-authorization)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/capture`
 * **[Update the split of a paid transaction](/reference/recipients-for-marketplace/update-split-marketplace)**: **PUT**: `https://api-sandbox.y.uno/v1/payments/{payment_id}/transactions/{transaction_id}/split-marketplace`
-* **[Refund payment](/reference/refund-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/refund`
-* **[Cancel or refund a payment](/reference/cancel-or-refund-a-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/cancel-or-refund`
-* **[Cancel or refund a payment with transaction](/reference/cancel-or-refund-payment-with-transaction)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/cancel-or-refund`
-* **[Transfer onboarding](/reference/transfer-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/transfer`
-* **[Reverse onboarding transfer](/reference/reverse-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/reverse-transfer`
-* **[Create standalone transfer](/reference/create-standalone-transfer)**: **POST**: `https://api-sandbox.y.uno/v1/split-marketplace/transfers`
-* **[Get standalone transfer](/reference/get-standalone-transfer)**: **GET**: `https://api-sandbox.y.uno/v1/split-marketplace/transfers/{transfer_id}`
-* **[Reverse standalone transfer](/reference/reverse-standalone-transfer)**: **POST**: `https://api-sandbox.y.uno/v1/split-marketplace/transfers/{transfer_id}/reverse`
+* **[Refund payment](/reference/payments/refund-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/refund`
+* **[Cancel or refund a payment](/reference/payments/cancel-or-refund-a-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/cancel-or-refund`
+* **[Cancel or refund a payment with transaction](/reference/payments/cancel-or-refund-payment-with-transaction)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/cancel-or-refund`
+* **[Transfer onboarding](/reference/recipients-for-marketplace/transfer-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/transfer`
+* **[Reverse onboarding transfer](/reference/recipients-for-marketplace/reverse-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/reverse-transfer`
+* **[Create standalone transfer](/reference/transfers/create-standalone-transfer)**: **POST**: `https://api-sandbox.y.uno/v1/split-marketplace/transfers`
+* **[Get standalone transfer](/reference/transfers/get-standalone-transfer)**: **GET**: `https://api-sandbox.y.uno/v1/split-marketplace/transfers/{transfer_id}`
+* **[Reverse standalone transfer](/reference/transfers/reverse-standalone-transfer)**: **POST**: `https://api-sandbox.y.uno/v1/split-marketplace/transfers/{transfer_id}/reverse`

@@ -18,8 +18,7 @@ Check these points against your use case before you integrate:
 * **Retries.** Stripe Smart Retries are not available. You configure a custom retry schedule or Billing automations instead.
 * **Disputes and refunds.** You handle both in Yuno. Stripe cannot start a refund or manage a dispute for a payment it did not process.
 * **Fees.** Stripe charges Billing fees on the volume Yuno processes. See [Billing fees](#billing-fees).
-
-{/* TODO(owner PR #926): confirm whether Yuno collects one-off Stripe invoices or only subscription invoices. Stripe allows both; Primer supports subscription invoices only. */}
+* **Invoices.** Yuno collects the invoices of Stripe Billing subscriptions. If Stripe asks Yuno to collect an invoice that has no subscription, Yuno does not charge it and reports nothing to Stripe. To collect a one-off invoice with Yuno, create the payment yourself with the `external_invoice` object. See [Pay a Stripe invoice (top-ups)](/docs/payment-features/subscriptions/stripe-billing-top-ups).
 
 ## Who does what
 
@@ -86,10 +85,32 @@ On the Yuno side, every payment created this way carries the `external_subscript
 * A Yuno account with your providers connected and routing published.
 * A Stripe account with Billing and third-party payment processing enabled.
 * A **restricted API key** from your Stripe account, shared with your Yuno contact during onboarding. Yuno uses it to register the webhook endpoint and report payments. Yuno stores it encrypted and uses it only for your account.
+* A **custom payment method** that you create in the Stripe Dashboard, under **Settings → Payment methods → Custom payment methods**. Send its ID (it starts with `cpmt_`) to your Yuno contact together with the restricted key. Yuno checks it when you onboard and uses it for the subscription payments of every payment method that has no custom payment method of its own. For PayPal, see [PayPal](#paypal).
 
-{/* TODO(owner PR #926): list the restricted key permissions Yuno needs (Payment Records, Payment Methods, Invoices, Credit Notes, Webhook Endpoints?). */}
-{/* TODO(owner PR #926): state who creates the Stripe custom payment method type (Dashboard-only, ID not retrievable by API). If the merchant creates it, add a setup step here and say where to send the ID. */}
-{/* TODO(owner PR #926): list the Stripe webhook events Yuno subscribes to (at least invoice.payment_attempt_required). */}
+### Restricted key permissions
+
+Give the restricted key these permissions for subscription payments, renewals, refunds and card changes. **Write** includes **Read**. The Stripe permission names come from Stripe's [API permissions reference](https://docs.stripe.com/keys/permissions-reference).
+
+| Permission | Level | Stripe permission | What Yuno does with it |
+| --- | --- | --- | --- |
+| Webhook Endpoints | Write | `webhook_write` | Registers the webhook endpoint when you onboard. |
+| Accounts | Read | `connected_account_read` | Reads your account when you onboard. |
+| Payment Methods | Write | `payment_method_write` | Checks your custom payment method when you onboard, then creates the payment method reference and attaches it to the customer. |
+| Subscriptions | Write | `subscription_write` | Reads the subscription and sets its default payment method. |
+| Invoices | Write | `invoice_write` | Reads the invoice and attaches each payment to it. |
+| Payment Records | Write | `payment_records_write` | Reports payments, retries and refunds. |
+| Credit Notes | Write | `credit_note_write` | Creates the credit note of each refund. |
+
+Onboarding uses only the first three. The others are used for the first time when Yuno reports a payment or a refund, so a missing permission shows up only then, as a report that fails. Set all of them before you share the key.
+
+### Webhook events
+
+When you onboard, Yuno registers one webhook endpoint in your Stripe account. It receives two events:
+
+* `invoice.payment_attempt_required`: Stripe asks Yuno to collect an invoice.
+* `customer.subscription.deleted`: the subscription ended, so Yuno stops charging it.
+
+Yuno ignores any other event. Do not delete the endpoint or remove these events: Yuno learns about renewals and retries only through them.
 
 ## Step 1: Create the subscription in Stripe
 
@@ -125,7 +146,7 @@ Run your normal Yuno checkout and create the payment from your backend with two 
 
 ### Match the amount to the invoice
 
-Charge the invoice's `amount_due`, in the invoice's currency. `amount_due` already includes tax, discounts and proration. Yuno reports the amount it charged, so any other value leaves the Stripe invoice mismatched.
+Charge the invoice's `amount_due`, in the invoice's currency. `amount_due` already includes tax, discounts and proration. If the amount or the currency of the payment differs from the invoice, Yuno does not report the payment: the customer is charged and the invoice stays open.
 
 Stripe and Yuno format amounts differently, so convert both fields:
 
@@ -149,12 +170,25 @@ Stripe and Yuno format amounts differently, so convert both fields:
 
 When the payment is approved, Yuno creates a payment method reference in your Stripe account (no card data), attaches it to the subscription as its default payment method, and reports the payment. Stripe then marks the first invoice as paid and activates the subscription.
 
-{/* TODO(owner PR #926): document what happens when Yuno approves the charge but the report to Stripe fails (Stripe API error, revoked key). Does Yuno retry the report? How does the merchant see it? Without this, a customer can be charged while the invoice stays open. */}
-{/* TODO(owner PR #926): document PENDING payments (async methods, 3DS not completed). Does Yuno report to Stripe only on the final status? */}
+### If the report to Stripe fails
+
+Yuno charges first and reports to Stripe afterwards. A report that fails never undoes the payment: it stays approved in Yuno, and Yuno does not cancel or refund it.
+
+* **Retries.** When Stripe cannot be reached or returns an error, Yuno retries the report on its own, with growing waits, for a limited time, and then stops. Yuno does not retry the report of a first payment that Stripe refuses as invalid, or whose amount is not the invoice's `amount_due`. Until a report is delivered, the invoice stays open in Stripe. For a first payment, the subscription also stays `incomplete`, and Stripe expires it 23 hours after you created it.
+* **Before the report.** For a first payment, Yuno first creates the payment method reference in Stripe and sets it as the subscription's default. If that fails, Yuno retries for a few seconds and then stops: it reports nothing and does not link the card to the subscription.
+* **No notification.** Yuno does not notify you when a report fails. The sign is an invoice that stays open in Stripe after the Yuno payment was approved. If you see one, contact your Yuno contact.
+
+A revoked restricted key, or one without a permission Yuno needs, makes the reports fail while payments are still charged. To change the key, send the new one to your Yuno contact first, and revoke the old one only after Yuno confirms the change.
+
+### Pending payments
+
+Yuno reports a first payment to Stripe only once it is approved. While it is pending, and if it ends declined, expired or canceled, Yuno reports nothing to Stripe and the invoice stays open.
+
+A renewal that comes back pending is reported to Stripe right away, as an attempt without a result. When the payment is approved, Yuno reports it as paid. If the pending renewal ends declined, expired or canceled instead, Yuno does not report that result, and it does not charge the later requests Stripe sends for that invoice. If an invoice stays open with a pending attempt, contact your Yuno contact.
 
 ## Free trials
 
-When signup starts a **trial**, there is no first charge. The trigger is the **$0 card verification** of the enrollment flow instead. Create the Stripe subscription with `trial_end` as usual, then enroll the card through the [Enroll payment method](/reference/enroll-payment-method-api) endpoint with the `external_subscription` object nested inside `verify`:
+When signup starts a **trial**, there is no first charge. The trigger is the **$0 card verification** of the enrollment flow instead. Create the Stripe subscription with `trial_end` as usual, then enroll the card through the [Enroll payment method](/reference/payment-methods-direct-workflow/enroll-payment-method-api) endpoint with the `external_subscription` object nested inside `verify`:
 
 ```json
 {
@@ -188,7 +222,7 @@ On a successful verification, Yuno links the vaulted card to the trialing subscr
 
 Renewals need no code on your side. Stripe finalizes the invoice and sends `invoice.payment_attempt_required`. Yuno charges the vaulted card as a merchant-initiated transaction, through your routing and provider cascade, and reports the result. Each charge appears as a normal payment in your Yuno dashboard and reports.
 
-{/* TODO(owner PR #926): confirm Yuno deduplicates redelivered invoice.payment_attempt_required events (one charge per invoice attempt). */}
+Yuno charges each request from Stripe once. If Stripe sends the same event again, Yuno ignores it. If Stripe sends a new request for an invoice that is already paid, or whose charge is still in progress, Yuno does not charge it again either. A new request for an invoice whose last charge was declined is the next retry, and Yuno charges it.
 
 ## Failed payments and retries
 
@@ -202,7 +236,7 @@ A custom retry schedule runs the same way for every failed invoice. Stripe does 
 
 Keep the retry schedule short, and cancel the subscription or mark the invoice `uncollectible` when the decline reason in Yuno shows that a retry cannot succeed.
 
-{/* TODO(owner PR #926): does Yuno classify the decline (hard/soft) and write it to the Stripe invoice metadata, so a Billing automation can cancel on hard declines? Does Yuno skip a scheduled retry after a hard decline? Document whichever is true; Primer's guide stamps the classification into invoice metadata for this purpose. */}
+Yuno does not classify declines as hard or soft, and a failed attempt reaches Stripe without a reason or a code: only that it failed, and when. Yuno also does not skip a retry after a decline: it charges every retry Stripe asks for. Stopping the retries is up to you, from the decline reason in Yuno.
 
 ### Detect the final attempt
 
@@ -219,21 +253,23 @@ Then the subscription moves to the state set in your Stripe retry settings (canc
 
 ## Change the customer's card
 
-Use this flow for card updates and for recovering a `past_due` subscription:
+Use this flow to change the card of a subscription, including a `past_due` one:
 
 <Steps>
   <Step title="Bring the customer back to your Yuno checkout">
     Send the customer to your own card-update page. Stripe does not send this email for you.
   </Step>
   <Step title="Collect a new payment or verification">
-    Create a payment (or, for a trialing subscription, a verification) with the same `external_subscription.id` and `vault_on_success: true`.
+    Create a verification, as for a [free trial](#free-trials), or a payment, with the same `external_subscription.id` and `vault_on_success: true`. A verification changes the card without charging the customer.
   </Step>
   <Step title="Yuno switches the default in Stripe">
     Yuno vaults the new card and sets it as the subscription's default payment method in Stripe. Renewals continue on the new card.
   </Step>
 </Steps>
 
-{/* TODO(owner PR #926): when the subscription is past_due, does a new payment with the same external_subscription.id pay the open invoice, or only switch the card and wait for the next scheduled retry? */}
+<Warning>
+  A payment in this flow only changes the card. Yuno does not apply it to the open invoice, even when the subscription is `past_due`, and does not report it to Stripe. Stripe retries the invoice on its own schedule, and Yuno charges the new card at that retry. Do not charge the amount due in this payment: the customer would pay twice. To collect the open invoice right away, pay it with `external_invoice` instead. See [Pay a Stripe invoice (top-ups)](/docs/payment-features/subscriptions/stripe-billing-top-ups).
+</Warning>
 
 ## Customer portal
 
@@ -268,8 +304,7 @@ Stripe counts the volume Yuno processes toward your total Stripe Billing volume 
 
 ## Test in sandbox
 
-{/* TODO(owner PR #926): confirm a Yuno sandbox account can be linked to a Stripe test-mode account, and whether Yuno handles invoices from Stripe test clocks. Remove this section if either is false. */}
-
+* **Link your sandbox.** Onboard your Yuno sandbox account with a restricted key and a custom payment method ID from your Stripe test mode. Yuno handles them, and the invoices of Stripe test clocks, the same way as live ones.
 * **Signup and renewals.** Create the subscription on a Stripe [test clock](https://docs.stripe.com/billing/testing/test-clocks), pay the first invoice through your Yuno sandbox checkout, then advance the clock past the renewal date. Check that a new payment appears in Yuno and the invoice is paid in Stripe.
 * **Retries.** Use a Yuno test card that declines, then advance the clock past `next_payment_attempt`. If the retry event does not arrive, advance the clock again by about one minute.
 * **Dunning in real time.** To validate dunning as production runs it, create a subscription without a test clock on a short custom retry schedule and let it run.
@@ -280,8 +315,8 @@ Stripe counts the volume Yuno processes toward your total Stripe Billing volume 
   <Step title="Stripe: enable third-party payment processing">
     Ask your Stripe account team, and confirm your business country is supported.
   </Step>
-  <Step title="Yuno onboarding: share a restricted Stripe API key">
-    Send it to your Yuno contact. Yuno registers the webhook endpoint.
+  <Step title="Yuno onboarding: share a restricted Stripe API key and a custom payment method ID">
+    Give the key the [permissions Yuno needs](#restricted-key-permissions) and send both to your Yuno contact. Yuno registers the webhook endpoint.
   </Step>
   <Step title="Stripe: configure retries">
     Set a short custom retry schedule or Billing automations, and the final state after the last retry.
@@ -316,6 +351,7 @@ Stripe counts the volume Yuno processes toward your total Stripe Billing volume 
 | Renewals stop and no error appears anywhere | The invoice has `auto_advance: false`, so Stripe never sends `invoice.payment_attempt_required` | Set `auto_advance` back to `true` |
 | Renewals appear in Stripe but not in Yuno | The customer switched to a Stripe-supported payment method in the customer portal | Turn off payment method updates in the portal and collect a new card through Yuno |
 | A `Canceled` payment sits next to each reported payment | Stripe cancels its own PaymentIntent once Yuno reports the payment | Expected behavior, no action needed |
+| Payment approved in Yuno, invoice still open in Stripe | Yuno could not report the payment: the restricted key was revoked or lacks a permission, Stripe was unavailable, or the first payment's amount is not the invoice's `amount_due` | Contact your Yuno contact. See [If the report to Stripe fails](#if-the-report-to-stripe-fails) |
 
 ## PayPal
 
