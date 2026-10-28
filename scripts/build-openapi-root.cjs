@@ -23,7 +23,8 @@
  *   - non-default servers (e.g. the v2 report download) kept as op-level servers
  *   - security requirements mapped to canonical scheme names; attached at op
  *     level when they differ from the global public+private pair
- *   - webhook-payload fragments (servers use {merchant_base_URL}) published
+ *   - webhook-payload fragments (servers use {merchant_base_URL}, or a native
+ *     `webhooks` key) published
  *     under the OpenAPI 3.1 `webhooks` key, not as API paths
  *   - component name collisions renamed with the fragment's own refs rewritten
  *   - equivalent templated paths with different parameter spellings unified
@@ -317,6 +318,20 @@ function buildSpec() {
         const np = normPath(p);
         if (!spellings.has(np)) spellings.set(np, new Map());
         spellings.get(np).set(p, (spellings.get(np).get(p) || 0) + 1);
+      }
+    }
+
+    // native 3.1 webhook fragments: published under their own `webhooks` keys
+    for (const [name, item] of Object.entries(doc.webhooks || {})) {
+      for (const [method, op] of Object.entries(item)) {
+        const m = method.toLowerCase();
+        if (!METHOD_ORDER.includes(m) || !op || typeof op !== "object") continue;
+        for (const k of Object.keys(op)) if (k.startsWith("x-readme")) delete op[k];
+        delete op.security;
+        delete op.servers;
+        delete op.operationId;
+        webhooks[name] = webhooks[name] || {};
+        webhooks[name][m] = op;
       }
     }
   }

@@ -137,6 +137,36 @@
             "$ref": "#/components/responses/Unauthorized"
           }
         }
+      },
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Get Customer by External ID",
+        "operationId": "get-customer-by-external-id",
+        "parameters": [
+          {
+            "name": "merchant_customer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your internal customer identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/customers/{customer_id}": {
@@ -222,38 +252,6 @@
         "responses": {
           "204": {
             "description": "Customer deleted"
-          }
-        }
-      }
-    },
-    "/v1/customers/external/{merchant_customer_id}": {
-      "get": {
-        "tags": [
-          "Customers"
-        ],
-        "summary": "Get Customer by External ID",
-        "operationId": "get-customer-by-external-id",
-        "parameters": [
-          {
-            "name": "merchant_customer_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Your internal customer identifier"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Customer found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Customer"
-                }
-              }
-            }
           }
         }
       }
@@ -404,7 +402,7 @@
         }
       }
     },
-    "/v1/customer-sessions": {
+    "/v1/customers/sessions": {
       "post": {
         "tags": [
           "Payment Methods"
@@ -556,9 +554,7 @@
             }
           }
         }
-      }
-    },
-    "/v1/enrolled-payment-methods": {
+      },
       "get": {
         "tags": [
           "Payment Methods"
@@ -568,8 +564,8 @@
         "parameters": [
           {
             "name": "customer_id",
-            "in": "query",
-            "required": false,
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -582,9 +578,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EnrolledPaymentMethod"
+                  "type": "object",
+                  "properties": {
+                    "payment_methods": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EnrolledPaymentMethod"
+                      }
+                    }
                   }
                 }
               }
@@ -788,7 +789,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Payment details",
             "content": {
               "application/json": {
@@ -839,7 +840,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Payment captured",
             "content": {
               "application/json": {
@@ -887,7 +888,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Payment cancelled",
             "content": {
               "application/json": {
@@ -952,7 +953,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Refund processed",
             "content": {
               "application/json": {
@@ -1008,7 +1009,7 @@
         }
       }
     },
-    "/v1/payments/{payment_id}/fulfillment": {
+    "/v1/payments/{payment_id}/fulfillments": {
       "post": {
         "tags": [
           "Payments"
@@ -1026,13 +1027,52 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "status",
+                  "fulfillments"
+                ],
                 "properties": {
-                  "fulfilled_at": {
+                  "status": {
                     "type": "string",
-                    "format": "date-time"
+                    "description": "Overall fulfillment status of the order, for example `PARTIAL`."
                   },
-                  "reference": {
-                    "type": "string"
+                  "fulfillments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "carriers"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "shipped_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "delivered_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "carriers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          },
+                          "description": "Required. Send an empty array when there is no carrier data."
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -1040,8 +1080,8 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Fulfillment notified"
+          "202": {
+            "description": "Fulfillment accepted. The response has no body."
           }
         }
       }
@@ -1085,7 +1125,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Payment link created",
             "content": {
               "application/json": {
@@ -1116,7 +1156,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Payment link details",
             "content": {
               "application/json": {
@@ -1147,7 +1187,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Payment link cancelled"
           }
         }
@@ -1568,7 +1608,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/v1/reports/list": {
       "get": {
         "tags": [
           "Reports"
@@ -1578,6 +1620,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/OrgCode"
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1632,7 +1683,7 @@
         }
       }
     },
-    "/v1/reports/{report_id}/download": {
+    "/v2/reports/{report_id}/download": {
       "get": {
         "tags": [
           "Reports"
@@ -1655,7 +1706,26 @@
         ],
         "responses": {
           "200": {
-            "description": "Report file (CSV or JSON)"
+            "description": "Download link for the report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "download_link": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

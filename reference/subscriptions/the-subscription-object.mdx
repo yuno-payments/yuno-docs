@@ -95,7 +95,7 @@ This object represents a subscription that can be associated with a customer.
 <ParamField body="previous_subscription_id" type="string">
   When this subscription was created by a [plan change](/reference/subscriptions/change-subscription-plan) (switching an existing subscription to a different plan), this is the `id` of the subscription it replaced. Only present in that case.
 
-  Scheduled changes made with the `plan_change` object on [Update Subscription](/reference/subscriptions/update-subscription) apply in place and never set this field.
+  A `plan_change` scheduled with [Update Subscription](/reference/subscriptions/update-subscription) — whether it fires later at the next billing cycle, or is applied `IMMEDIATE`ly in the same call — is applied to this same subscription and never sets this field. Reactivating a `CANCELED` or `COMPLETED` subscription also never sets it: reactivate returns the same subscription to an active status rather than creating a successor.
 </ParamField>
 
 <ParamField body="phases" type="array of objects">
@@ -535,6 +535,28 @@ This object represents a subscription that can be associated with a customer.
   </Expandable>
 </ParamField>
 
+<ParamField body="refund_rule" type="object">
+  The standing rule used to size a `CUSTOM` refund on cancellation when the cancel request carries no `refund_amount`. Omitted — not `null` — when no rule is configured. Set it on [Create Subscription](/reference/subscriptions/create-subscription#setting-a-refund-rule) or [Update Subscription](/reference/subscriptions/update-subscription#setting-a-refund-rule); send `"refund_rule": null` on update to clear it. Available to organizations enabled for it; contact Yuno. See [Cancel Subscription](/reference/subscriptions/cancel-subscription#custom) for how it is used.
+
+  <Expandable title="properties">
+    <ParamField body="type" type="enum">
+      `PERCENT` or `FIXED`. The two are exclusive: a `PERCENT` rule carries only `percent`, a `FIXED` rule only `amount`.
+    </ParamField>
+
+    <ParamField body="percent" type="decimal">
+      The share of the charged amount to refund, between `0` and `100`, when `type` is `PERCENT`. Applied to whatever the cycle was actually charged, so it needs no currency of its own.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      The flat amount to refund when `type` is `FIXED`, as `value` and `currency`. Its currency must equal the subscription's own currency — a request that would leave the two disagreeing is rejected with `REFUND_RULE_CURRENCY_MISMATCH`, including an update that changes the subscription's currency while a `FIXED` rule in the old one is still stored.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="pause_until" type="Timestamp">
+  When a paused subscription will resume on its own. Present only while `status` is `PAUSED` and a duration was given on the pause; omitted — not `null` — for an open-ended pause and for every other status. Set with `pause_cycles` or `pause_until` on [Pause Subscription](/reference/subscriptions/pause-subscription#pause-for-a-set-time) — a duration given in cycles is resolved to an instant once, at the moment of the pause, and reported here on every later read.
+</ParamField>
+
 <ParamField body="unpaid_cycle" type="object">
   The current billing cycle, when it is `PAST_DUE` and has not settled. Omitted — not `null` — for every other state.
 
@@ -705,7 +727,9 @@ This object represents a subscription that can be associated with a customer.
 </ParamField>
 
 <ParamField body="reason" type="string">
-  Free-form reason for the subscription's current status, when one was recorded. `null` for subscriptions whose status changed without one.
+  Free-form reason for the subscription's current status, when one was recorded. `null` for subscriptions whose status changed without one, at most 255 characters.
+
+  Set with the subscription's own `reason` field on [Create Subscription](/reference/subscriptions/create-subscription), [Update Subscription](/reference/subscriptions/update-subscription), [Pause Subscription](/reference/subscriptions/pause-subscription) and [Resume Subscription](/reference/subscriptions/resume-subscription) — each of those writes its own `reason`, so a later one overwrites an earlier one. Reactivating a `CANCELED` or `COMPLETED` subscription clears it back to `null`.
 
   Example: "merchant request"
 </ParamField>
