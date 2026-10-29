@@ -80,10 +80,11 @@ Applies to VTEX connector 4.2.378 and later. `affiliationName` is optional in th
 `/session/preflight/payments` (`orderFormId`, `payment`, `affiliationName`, `createPaymentInAuth`), but the
 app must send it in both.
 
-- Without it, or with an empty string, the connector takes the first affiliation of the store whose provider
-  is Yuno, in the order VTEX lists them. A VTEX affiliation carries no test or production flag, so a test
+- Without it, or with an empty string, the connector takes the first affiliation of the store whose
+  implementation name contains "Yuno" (any case), in the order VTEX lists them. A VTEX affiliation carries no test or production flag, so a test
   affiliation (status "Teste" in the VTEX admin) listed before the production one is the one used. The session
-  is then opened with the test affiliation's credentials, Yuno refuses them, and preflight answers
+  is then opened with the test affiliation's credentials and fails when they are not valid for production
+  (for example an Account ID that does not exist), and preflight answers
   `500 {"error":"Failed to create preflight session"}`.
 - With a name, the connector looks for an affiliation with exactly that name, same spelling and case. A name
   the store does not have answers `404 {"error":"Yuno affiliation not found"}` on both routes.
@@ -92,14 +93,15 @@ app must send it in both.
 - Send the same name in both calls. The payment is bound to the session the first call opened and to the Yuno
   account of the affiliation the second call resolves, so two names pair a session of one account with
   another account.
-- FAIL if either call omits `affiliationName` or sends `''`, `null` or `undefined`.
+- FAIL if either call omits `affiliationName` or sends `''` or `null`.
 - FAIL if the name is hard-coded to one value while the app serves stores whose production affiliation has a
   different name.
 - FAIL if the two calls can send different names for one order.
 - Report the value sent in each call, where the app reads it from, and whether the store has more than one
   affiliation of the Yuno provider. When the code cannot tell, say so and ask for the store's affiliation list.
 - Symptom: with the same app build, the wallet button fails in some stores and works in others, preflight
-  answers the 500 above, and card payments in the same stores work.
+  answers the 500 above, and card payments in the same stores work. The same 500 also appears when the store's affiliation lookup fails
+  on the VTEX side, whatever name is sent, so a 500 alone does not prove a wrong name.
 
 ### 5. Payment method type matches what VTEX authorizes
 
@@ -215,8 +217,8 @@ comes from Step 8 and the order:
 
 | `gatewayCallback` answer | Meaning | What the app does |
 |---|---|---|
-| **428** | The connector did not use the stored body and answered with the Payment App payload (payment method mismatch, amount/currency/country mismatch, or an expired preflight) | Error screen; log the response |
-| **Other non-2xx** (e.g. 500 `CHK0223`) | Payment denied; the error body carries the connector's message | Error screen; log the response |
+| **428** | The connector did not use the stored body and answered with the Payment App payload (payment method mismatch, or no stored session for this order form id) | Error screen; log the response |
+| **Other non-2xx** (e.g. 500 `CHK0223`) | Payment denied; the error body carries the connector's message, for example `Preflight session expired or does not match the order. Please retry.` on an amount/currency/country mismatch or a session older than 5 hours | Error screen; log the response |
 | **2xx** | Not denied — **approved or still pending**; VTEX answers both the same way | Read the order |
 
 After a 2xx, `GET /api/checkout/pub/orders/order-group/{orderGroup}` and decide from each order's `status`:

@@ -79,10 +79,11 @@ code "looks right": quote the line that proves it.
 
 `affiliationName` is optional in both bodies, but the backend must send it in both.
 
-- Without it, or with an empty string, the connector takes the first affiliation of the store whose provider
-  is Yuno, in the order VTEX lists them. A VTEX affiliation carries no test or production flag, so a test
+- Without it, or with an empty string, the connector takes the first affiliation of the store whose
+  implementation name contains "Yuno" (any case), in the order VTEX lists them. A VTEX affiliation carries no test or production flag, so a test
   affiliation (status "Teste" in the VTEX admin) listed before the production one is the one used. The session
-  is then opened with the test affiliation's credentials, Yuno refuses them, and preflight answers
+  is then opened with the test affiliation's credentials and fails when they are not valid for production
+  (for example an Account ID that does not exist), and preflight answers
   `500 {"error":"Failed to create preflight session"}`.
 - With a name, the connector looks for an affiliation with exactly that name, same spelling and case. A name
   the store does not have answers `404 {"error":"Yuno affiliation not found"}` on both routes.
@@ -98,7 +99,8 @@ code "looks right": quote the line that proves it.
 - Report the value sent in each call, where the backend reads it from, and whether the store has more than one
   affiliation of the Yuno provider. When the code cannot tell, say so and ask for the store's affiliation list.
 - Symptom: the wallet button fails in some stores and works in others, preflight answers the 500 above, and
-  card payments in the same stores work.
+  card payments in the same stores work. The same 500 also appears when the store's affiliation lookup fails
+  on the VTEX side, whatever name is sent, so a 500 alone does not prove a wrong name.
 
 ### 3. The preflight payment runs only after a non-empty token
 
@@ -132,7 +134,7 @@ against the type the backend sends. A mismatch makes the connector ignore the st
   A missing or non-numeric amount, currency or country answers
   `400 {"error":"Missing required fields for preflight validation: amount, currency, country"}`.
 - At authorization the connector recomputes the fingerprint from the VTEX order's value, currency and
-  billing country, and checks that the session is less than 5 hours old. When either fails, the order is
+  country (the order's billing country or the country sent in the preflight payment), and checks that the session is less than 5 hours old. When either fails, the order is
   denied with `Preflight session expired or does not match the order. Please retry.`
 - FAIL if the two calls read the amount from different sources (cart total in one, order total in the
   other), or if the amount sent can differ from the total of the VTEX order.
@@ -162,7 +164,7 @@ FAIL if wallets are offered without checking the cart can produce a single order
 | --- | --- | --- | --- |
 | Session preflight | `400 {"error":"Missing required fields: orderFormId, amount, currency, country"}` | A field is missing, or the amount is `0` | Fix the request; do not retry |
 | Both | `404 {"error":"Yuno affiliation not found"}` | The `affiliationName` does not exist in this store. On the preflight payment it can also follow a failed affiliation lookup on the VTEX side | Check the name against the store's affiliations (check 2); on the preflight payment, retry once first |
-| Session preflight | `500 {"error":"Failed to create preflight session"}` | The session could not be created | Retry once after a short delay; a second 500 means check the affiliation (check 2) |
+| Session preflight | `500 {"error":"Failed to create preflight session"}` | The session could not be created | Retry once after a short delay; a second 500 means the affiliation name (check 2) or a failed affiliation lookup on the VTEX side; the body is the same for both |
 | Preflight payment | `400 {"error":"Missing required fields: orderFormId, payment"}` | A field is missing | Fix the request; do not retry |
 | Preflight payment | `404 {"error":"Preflight session not found for this orderFormId"}` | No session preflight for that order form | Run the session preflight first, with the same `orderFormId` |
 | Preflight payment | `409` fingerprint mismatch (check 5) | The amount, currency or country changed | Rerun preflight and restart the wallet with the new session |
