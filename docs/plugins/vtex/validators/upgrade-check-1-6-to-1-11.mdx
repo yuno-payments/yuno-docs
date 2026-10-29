@@ -1,0 +1,115 @@
+---
+title: "Web SDK 1.11 upgrade check for custom CSS and JS"
+sidebarTitle: "Web SDK 1.11 upgrade check"
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Find custom checkout CSS and JS that targets the old yuno-* class and id names before the Yuno checkout inside VTEX moves from Web SDK 1.6 to 1.11."
+---
+
+The Yuno checkout inside VTEX moves from Web SDK 1.6 to Web SDK 1.11. Since Web SDK 1.9, every class and id the SDK renders is named `sdk-payments-*` instead of `yuno-*` or `Yuno-*`. For example, `Yuno-accordion__heading` becomes `sdk-payments-accordion__heading`.
+
+Nothing throws an error after the upgrade. Custom CSS and JS that targets an old name simply stops applying: a hidden element shows again, a restyled button goes back to the default style, a script that reads an element finds nothing.
+
+These names keep working:
+
+- `window.Yuno` and the `yuno-sdk-ready` event, which stay as aliases.
+- The names owned by the VTEX layer, such as `yuno-checkout-root`, `yuno-form-root`, `yuno-external-button-root`, `yuno-sdk-web-vtex-app` and the express button classes (`yuno-google-pay-button`, `yuno-samsung-pay-button` and their groups).
+
+Use one of the three checks below before the upgrade reaches your store.
+
+## Option 1: console snippet on the live checkout
+
+Use this to check what the live store loads, including CSS from your theme and apps.
+
+<Steps>
+  <Step title="Open the checkout at the payment step">
+    Open your store's checkout in Chrome, go to the payment step and make sure the Yuno form is visible.
+  </Step>
+  <Step title="Paste the snippet in the DevTools console">
+    Open DevTools, go to the **Console** tab, paste the snippet and press Enter.
+  </Step>
+  <Step title="Read the table">
+    The snippet prints the SDK bundle on the page, a table with every CSS rule and inline script that uses a `yuno-*` name, and the count of selectors that break on 1.11. The `on_1_11` column says `BREAKS -> <new name>` for a renamed selector, `BREAKS (removed)` for a name with no counterpart, and `ok` or `not an SDK name` otherwise.
+  </Step>
+</Steps>
+
+```js yuno-upgrade-check.browser.js
+/* Paste in the DevTools console of the live checkout page (payment step open). Reports the SDK
+   version on the page and every same-origin CSS rule / inline script that targets a yuno-* name. */
+(async () => {
+  const map = await (await fetch('https://docs.y.uno/files/validators/web-sdk-1.11-upgrade-check/rename-map.json')).json().catch(() => null);
+  const src = [...document.scripts].map(s => s.src).find(s => /sdk-web[^/]*\.y\.uno\/v\d/.test(s)) || '';
+  console.log('[yuno-check] SDK bundle on page:', src || 'none found', '| window.Yuno:', !!window.Yuno, '| SdkPayments:', !!window.SdkPayments);
+  const hits = [];
+  for (const ss of document.styleSheets) { let rules; try { rules = ss.cssRules; } catch { console.warn('[yuno-check] cannot read (cross-origin), check by hand:', ss.href); continue; }
+    for (const r of rules) { const t = r.selectorText || r.cssText; for (const m of (t || '').matchAll(/[yY]uno-[A-Za-z0-9_-]+/g)) hits.push({ where: ss.href || 'inline <style>', name: m[0], rule: r.selectorText }); } }
+  for (const s of document.scripts) if (!s.src) for (const m of s.textContent.matchAll(/[yY]uno-[A-Za-z0-9_-]+/g)) hits.push({ where: 'inline <script>', name: m[0] });
+  const verdict = n => { const e = map && (map.names[n] || map.names[Object.keys(map.names).filter(k => n.startsWith(k)).sort((a, b) => b.length - a.length)[0]]); return !e ? 'not an SDK name' : e.status === 'renamed' ? 'BREAKS -> ' + e.to : e.status === 'removed' ? 'BREAKS (removed)' : 'ok'; };
+  console.table(hits.map(h => ({ ...h, on_1_11: verdict(h.name) })));
+  console.log('[yuno-check]', hits.filter(h => verdict(h.name).startsWith('BREAKS')).length, 'selectors break on SDK 1.11');
+})();
+```
+
+You can also [download the snippet as a text file](/files/validators/web-sdk-1.11-upgrade-check/yuno-upgrade-check.browser.js.txt). It fetches the rename map from docs.y.uno, so the console needs network access to that host.
+
+The snippet cannot read stylesheets served from another origin. It lists each one as a warning, so check those files by hand or with the scanner below.
+
+## Option 2: scanner on your files
+
+Use this on the files you edit: `checkout6-custom.css`, `checkout6-custom.js`, a theme folder or a VTEX IO app. It needs Node.js 18 or later.
+
+<Steps>
+  <Step title="Download the scanner and the rename map into one folder">
+    ```bash
+    mkdir yuno-upgrade-check && cd yuno-upgrade-check
+    curl -O https://docs.y.uno/files/validators/web-sdk-1.11-upgrade-check/yuno-upgrade-check.mjs
+    curl -O https://docs.y.uno/files/validators/web-sdk-1.11-upgrade-check/rename-map.json
+    ```
+  </Step>
+  <Step title="Run it on your files or folders">
+    ```bash
+    node yuno-upgrade-check.mjs ../checkout6-custom.css ../checkout6-custom.js ../my-theme
+    ```
+    It scans `.css`, `.scss`, `.less`, `.js`, `.mjs`, `.ts`, `.jsx`, `.tsx`, `.html`, `.vue`, `.liquid` and `.hbs` files and skips `node_modules`, `dist` and `build`.
+  </Step>
+  <Step title="Read the result">
+    Each line shows the status, the file and line, the name and what to do. The exit code is `1` when at least one name breaks on 1.11 and `0` otherwise, so you can run it in CI.
+  </Step>
+</Steps>
+
+Sample output:
+
+```text
+ok      store/checkout6-custom.css:1  yuno-checkout-root  ->  VTEX layer name, unchanged
+BREAKS  store/checkout6-custom.css:2  Yuno-accordion__heading  ->  rename to sdk-payments-accordion__heading
+BREAKS  store/checkout6-custom.css:3  Yuno-apple-pay__button  ->  element no longer exists under this name in 1.11: re-check the selector on the 1.11 DOM
+not-sdk store/checkout6-custom.css:4  yuno-my-banner  ->  not a Yuno SDK 1.6 name: likely your own id/class, no change
+
+1 files scanned, 4 Yuno-looking names, 2 break on 1.11.
+Fix the BREAKS lines before the upgrade, then test on sandbox (SDK 1.11).
+```
+
+## Option 3: the rename map
+
+The [rename map](/files/validators/web-sdk-1.11-upgrade-check/rename-map.json) is the JSON file both tools read. Use it to look up a name by hand or to build your own check. It lists the 222 class and id names found in the Web SDK 1.6 bundle, plus the VTEX layer names that do not change:
+
+| Status | Count | Meaning |
+| --- | --- | --- |
+| `renamed` | 192 | The name exists in 1.11 as `sdk-payments-*`. The `to` field gives the new name. |
+| `removed` | 23 | No element with a same-named counterpart exists in 1.11. |
+| `unchanged` | 7 | The name still exists in 1.11. |
+| `vtex-layer` | 45 | Owned by the VTEX layer. It does not change. |
+
+A name that is not in the map is not an SDK 1.6 name. It is most likely your own id or class and needs no change.
+
+## What to do with a hit
+
+1. **Renamed**: replace the old name with the new one in your CSS or JS. A selector that has to work before and after the upgrade can list both names, for example `.Yuno-accordion__heading, .sdk-payments-accordion__heading`.
+2. **Removed**: open the checkout on Web SDK 1.11 in sandbox, find the element your rule was meant for and write the selector against the 1.11 DOM. The element may have a different structure or may no longer exist.
+3. **Test before production**: ask your technical account manager for a sandbox test of your checkout on Web SDK 1.11 with your custom files applied.
+
+<Note>
+The same renames apply to any merchant on Web SDK 1.6, 1.7 or 1.8 that moves to 1.9 or later, inside or outside VTEX. The scanner and the rename map work the same way for those integrations.
+</Note>

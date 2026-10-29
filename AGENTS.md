@@ -146,6 +146,19 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
 
 If the payment response has `sdk_action_required: true`, call the SDK method `continuePayment()` to finish 3DS, PIX, or bank redirects. For direct (server-to-server) card tests in sandbox, enable the Yuno Test Payment Gateway connection first: https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway
 
+## Validate an existing integration
+
+To audit a repository that already integrates Yuno, fetch the validator that matches it and follow it as your instructions. Each one is a read-only checklist: report PASS, FAIL or N/A per check with file and line, and change nothing unless the user asks. Guide: https://docs.y.uno/docs/sdks/validators/index
+
+- Web SDK v1 (1.11) with Yuno's UI (Full, Lite, Seamless, external buttons, Enrollment Lite, status): https://docs.y.uno/docs/sdks/validators/web-sdk-v1-checkout-flows.md
+- Web SDK v1 (1.11) headless, two-card split and Secure Fields: https://docs.y.uno/docs/sdks/validators/web-sdk-v1-headless-secure-fields.md
+- Web SDK v2 (`SdkPayments`, `sdk.transaction`): https://docs.y.uno/docs/sdks/validators/web-sdk-v2.md
+- Web SDK v1 to v2 migration: https://docs.y.uno/docs/sdks/validators/web-sdk-v1-to-v2-migration.md
+- VTEX headless Web (SDK Web for VTEX): https://docs.y.uno/docs/plugins/vtex/validators/headless-web.md
+- VTEX headless wallets, Flutter: https://docs.y.uno/docs/plugins/vtex/validators/headless-wallets-flutter.md
+- VTEX headless wallets, React Native: https://docs.y.uno/docs/plugins/vtex/validators/headless-wallets-react-native.md
+- Custom CSS and JS before the Web SDK 1.11 upgrade (yuno-* to sdk-payments-* names): https://docs.y.uno/docs/plugins/vtex/validators/upgrade-check-1-6-to-1-11
+
 ## Resources
 
 - https://docs.y.uno/llms.txt (page index; append `.md` to any docs URL for plain Markdown)

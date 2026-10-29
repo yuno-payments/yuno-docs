@@ -1,0 +1,385 @@
+---
+title: "Validator: Web SDK v1 headless and Secure Fields"
+sidebarTitle: "Web SDK v1: headless and Secure Fields"
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "A read-only checklist for AI coding agents that audits headless payment and enrollment, the two-card split and Secure Fields in a Yuno Web SDK 1.11 integration."
+---
+
+Drop this file in the root of your project and ask your coding agent:
+
+> Validate my Yuno Web SDK headless / Secure Fields integration following this file.
+
+It works as a `CLAUDE.md`, an `AGENTS.md` or a pasted prompt, with any coding agent. It audits the Yuno Web SDK v1
+(line 1.11) used without Yuno's checkout UI: headless payment and enrollment, the two-card split, and Secure Fields
+(`pan`, `expiration`, `cvv` iframes) with lifecycle, fraud preload and CSP. It reports issues with file and line,
+reads code only and changes nothing unless you ask. UI flows belong to the sibling `web-sdk-v1-checkout-flows.md`.
+
+## How to use
+
+First detect which of the five contracts the repository uses, then run the cross-cutting checks (1 to 4) plus
+the groups that apply, and mark the others N/A:
+
+`grep -rnE "apiClientPayment|apiClientEnroll|generateToken|generateTokenWithInformation|generateHeadlessToken|getThreeDSecureChallenge|getContinuePaymentAction|continueEnrollment|executeFraudCheck|\.secureFields\(|unmountSync|generateVaultedToken|generateVaultedTokenWithInformation|payment_method: *\[|\.initialize\(|loadScript|sdk-web\.y\.uno" --exclude-dir=node_modules --exclude-dir=dist .`
+
+| Contract | Present when you find | Groups |
+|---|---|---|
+| Headless payment | `apiClientPayment(` | Cross-cutting, Headless payment |
+| Headless enrollment | `apiClientEnroll(` | Cross-cutting, 6, 11, 13, Headless enrollment |
+| Secure Fields payment | `.secureFields({ checkoutSession` | Cross-cutting, 14, 17, Secure Fields, Lifecycle |
+| Secure Fields enrollment | `generateVaultedToken(` | Cross-cutting, Secure Fields, Lifecycle |
+| Two-card split | `generateToken({ ... payment_method: [` | Headless payment plus Two-card split |
+
+Run the sibling validator for any `startCheckout` or `mount*` call. Server code (sessions, Create Payment) is in
+scope when it is in the repository. Do not pass a check because the code "looks right": quote the line.
+
+## The flows being validated
+
+One instance per page: `const yuno = await Yuno.initialize(PUBLIC_API_KEY)`. Sessions come from your server.
+
+```
+Headless payment:
+  session from your server -> await yuno.executeFraudCheck({ checkoutSession })   (when the card form renders)
+  -> const api = await yuno.apiClientPayment({ country_code, checkout_session })   (async; snake_case)
+  -> submit: await api.generateToken({ checkout_session?, payment_method: { type: 'CARD', card: { detail:
+       { number, expiration_month, expiration_year, security_code, holder_name, type } }, vaulted_token? } })
+  -> server: POST /v1/payments with payment_method.token, checkout.session, absolute callback_url
+  -> 3DS: const { url } = await api.getThreeDSecureChallenge(checkoutSession)  (string; null = no challenge)
+  -> other actions: await api.getContinuePaymentAction({ checkoutSession })  -> final status from the webhook
+
+Headless enrollment:
+  server creates customer + a new customer session + enrollment payment method object
+  -> const enroll = await yuno.apiClientEnroll({ country_code, customer_session })
+  -> const r = await enroll.continueEnrollment({ customer_session?, payment_method: { type: 'CARD', card } })
+  -> success only when r.status === 'ENROLLED'; keep r.vaulted_token
+
+Secure Fields payment:
+  const sf = await yuno.secureFields({ countryCode, checkoutSession, installmentEnable?, language? })  (once)
+  -> for pan, expiration, cvv: const f = sf.create({ name, options }); await f.render('#existing-el')
+  -> onChange({ error, isFieldComplete, ... }) gates your Pay button
+  -> submit: const token = await sf.generateToken({ cardHolderName, saveCard?, ... })   (never checkoutSession)
+  -> server creates payment -> DECLINED/ERROR or sdk_action_required: await yuno.continuePayment()
+  -> teardown: await sf.unmountSync()   (no arguments: closes every field and the hidden mediator)
+
+Secure Fields enrollment:
+  const sf = await yuno.secureFields({ countryCode, customerSession })   (no checkoutSession)
+  -> create/render the fields -> await sf.generateVaultedToken({ cardHolderName }) -> await sf.unmountSync()
+
+Two-card split (headless only, SDK 1.11.43+, enabled per account):
+  await api.generateToken({ checkout_session, total: { currency, value },
+       payment_method: [ { type, amount: { currency, value }, card | vaulted_token }, { ... } ] })
+  -> composite { token, checkout_session, expires_at } -> server POST /v2/payments with callback_url
+  -> per card, in order: getThreeDSecureChallenge(checkoutSession) -> render -> wait until that card leaves
+     PENDING -> call again; stop on url === null; a failed card ends the whole payment
+```
+
+## Checks
+
+Severity: (B) blocks or silently corrupts a payment, (H) likely incident, (M) degraded behaviour or security
+hygiene, (L) hygiene. Report PASS / FAIL / N/A for each. Validation errors are thrown as `<key>=<value> is not
+valid`; quote them exactly when you explain a FAIL.
+
+### Cross-cutting
+
+#### 1. One `Yuno.initialize` per page, awaited, instance kept (H1, H)
+- Look at `Yuno.initialize(` and `loadScript(` in component bodies, unguarded effects, click handlers, per-attempt
+  helpers, and without `await`.
+- FAIL on: more than one call path per page load; no `await`; the instance not kept in module scope, context or ref.
+- Why: without `await`, `yuno` is a Promise and the first call throws `TypeError: yuno.secureFields is not a
+  function` (or `apiClientPayment`); each `initialize` replaces the global API client, so host-side calls (fraud,
+  3DS, headless) of earlier clients switch to the newest key. Secure Fields card calls keep their own client.
+
+#### 2. Only the public API key reaches the browser (H2, B)
+- Grep client code for `private-secret-key`, `PRIVATE_SECRET_KEY`, secrets in `NEXT_PUBLIC_*`, `VITE_*`,
+  `REACT_APP_*`, or a secret passed to `Yuno.initialize(`.
+- FAIL on: any match in browser-reachable code.
+- Why: the secret authorizes Create Payment and refunds; anyone who reads the bundle can move money.
+
+#### 3. CSP and network allow the Yuno hosts (H3, H)
+- Check `Content-Security-Policy` (meta, server, `next.config.js`, nginx) and ad-block or WAF allowlists.
+- FAIL on: `frame-src` (or `default-src`) without `https://sdk-web-card.<env>.y.uno` and `https://sdk-3ds.<env>.y.uno`;
+  `connect-src` without the API host (`api.y.uno`, `api-sandbox.y.uno`, EU `api.eu.y.uno`) and `wss://<env>.y.uno`;
+  `script-src` without `https://sdk-web.y.uno` and its lazy-chunk host; rules that block `*.y.uno`. Fraud
+  providers load their own scripts and frames, so the hosts of the providers on the account are needed too.
+- Why: if the mediator cannot connect, a field `render()` never settles (an SDK defect, so `render().catch` shows
+  nothing; add your own UI timeout) while `generateToken` rejects after 30 s with `bridge: child did not connect
+  within 30000ms`; a blocked 3DS frame looks like a hung challenge. Verify the hang at runtime.
+- Yuno's docs publish no CSP allowlist; this list comes from the SDK code. EU, MENA, white-label: verify at runtime.
+
+#### 4. White-label `apiUrl` / `assetUrl` only behind a complete proxy (H4, M)
+- Look for `apiUrl:` or `assetUrl:` in the `Yuno.initialize(` options.
+- FAIL on: set without a proxy that forwards every Yuno path, including `/v<card-version>/pages/*` and the 3DS
+  host; `apiUrl` pointing at a host that is not the merchant's own proxy.
+- Why: card iframes served from `*.y.uno` reject a foreign `apiUrl` (logged as `API_URL_REJECTED`) and use Yuno's
+  API anyway; an incomplete proxy leaves fields or icons blank.
+
+### Headless payment
+
+#### 5. `apiClientPayment` is awaited and only real methods are called (H5, B)
+- Look at `.apiClientPayment(` without `await`; `apiClientEnrollment`, `getPaymentMethods`, `api.continuePayment`,
+  `api.generateHeadlessToken` without `account_id`.
+- FAIL on: the client used without await, or a method that does not exist. The headless client has exactly
+  `generateToken`, `getThreeDSecureChallenge`, `getContinuePaymentAction` and `generateHeadlessToken`.
+- Why: `api.generateToken` is `undefined` on a Promise and throws `TypeError: ... is not a function`.
+
+#### 6. `country_code` is snake_case, uppercase ISO, from the enum (H6, B)
+- Look at the argument keys of `apiClientPayment({` and `apiClientEnroll({`.
+- FAIL on: `countryCode` (camelCase) here; lowercase `'co'`; a country name; a value outside `CountryCode`.
+- Why: throws `country_code=undefined is not valid` or `country_code=co is not valid`; no token is possible.
+
+#### 7. Fraud collection starts when the form renders, not at the Pay click (H7, H)
+- Look for `apiClientPayment(` and `generateToken(` in the same submit handler, with no earlier
+  `executeFraudCheck(` and no earlier `apiClientPayment({ checkout_session })`.
+- FAIL on: neither `executeFraudCheck({ checkoutSession })` nor `apiClientPayment({ checkout_session })` runs before
+  the submit handler. A client without `checkout_session` after `executeFraudCheck` is correct (cached result).
+- Why: the token waits for a running collection up to the account fraud timeout (3 s by default); when collection
+  starts at the click and takes longer, the token has no device fingerprint and the provider can decline.
+
+#### 8. `executeFraudCheck` uses camelCase arguments (H8, H)
+- Look at `executeFraudCheck({`. FAIL on `checkout_session` / `country_code` keys (as the docs show).
+- Why: the promise rejects with `checkoutSession=undefined is not valid`, so the preload the merchant thinks is
+  running never starts. `countryCode` is optional and only the EBANX collector reads it: a missing one is a FAIL
+  only on accounts that route to EBANX.
+
+#### 9. `generateToken` and `getThreeDSecureChallenge` are awaited inside try/catch (H9, M)
+- Look for these calls outside `try`, a `.then().catch()` chain only, or an empty `catch {}`.
+- FAIL on: any of those.
+- Why: argument validation throws synchronously, so a `.catch` chain never sees it and the page crashes; API
+  errors carry the useful text in `error.response.data` (for example `INVALID_PARAMS: holder_name value less than
+  allowed (3 chars minimum)`). Secure Fields errors expose `error.data` and `error.code` instead.
+
+#### 10. A checkout session reaches `generateToken` (H10, B)
+- Look for `apiClientPayment({ country_code })` and `generateToken({ payment_method })`, both without a session.
+- FAIL on: neither call carries the session; the token session differs from the one sent to Create Payment.
+- Why: `generateToken` rejects with `checkout session is required`.
+
+#### 11. `payment_method.type` is an uppercase `Payment.Type` (H11, B)
+- FAIL on `type:` inside `payment_method` set to `'card'`, `'credit_card'`, `'CREDIT_CARD'`, empty.
+- Why: throws `type=card is not valid` (split: `payment_method[0].type=CARDS is not valid`), also in enrollment.
+
+#### 12. No docs-only `device_fingerprint` / `third_party_session_id` (H12, H)
+- Look for `device_fingerprint:` or `third_party_session_id:` inside `payment_method`.
+- FAIL on: present without the `device_fingerprints` (array of `{ provider_id, id }`) or `third_party_data` (array
+  of `{ provider_id, session_id }`) forms.
+- Why: the SDK never reads those two names, so the value is dropped (a lost fingerprint made Mercado Pago decline
+  every payment for one merchant).
+
+#### 13. Raw PAN: full unmasked number, validated by you, never logged (H13, H)
+- Look at what feeds `card.detail.number`: `maskedPan`, `lastFour`, `*` or bullet characters, spaces or dashes;
+  no Luhn or length check; `console.log`, analytics, Sentry or server logs of the call argument.
+- Why (FAIL on any): headless passes the number as received with no Luhn or brand-length check, so a masked or
+  malformed PAN declines at the provider (`CardNumber: Invalid parameter size`); logging writes card data to logs.
+- Spaces in the PAN or a 2-digit string year: not confirmed in code, verify at runtime. Docs list SAQ A only for
+  Full, Lite and Secure Fields; with Headless the PAN passes through your page (report as information).
+
+#### 14. Create Payment: token only, absolute `callback_url`, same session (H14, B)
+- Read the server code that builds the Create Payment body (also for Secure Fields).
+- FAIL on: `vaulted_token` next to `token`; `callback_url` missing, null, relative or without `https://`;
+  `checkout.session` different from the token's session; your own `checkout_session_id` on a DIRECT-flow create.
+- Why: `vaulted_token` overrides the whole payment method, fingerprint included; a `callback_url` without protocol
+  broke the 3DS page, and a null one left the challenge blank (incident findings, not SDK code: verify at runtime).
+
+#### 15. 3DS challenge: guard `url`, keep it intact, check the origin (H15, B)
+- Look at `getThreeDSecureChallenge(`, the code that sets the iframe `src`, and `addEventListener('message'`.
+- FAIL on: (a) no check for `url === null` or the literal `'work in progress'`; (b) the URL parsed and rebuilt,
+  dropping `session`, `challenge-url` or `access-token`; (c) `embedded=true` missing for iframe use; (d) a listener
+  that accepts any origin or matches `includes('sdk-3ds')` on a white-label setup, instead of checking
+  `data.origin === 'CHALLENGE'` and `data.status` from the 3DS origin; (e) an object argument (`{ checkoutSession }`)
+  instead of the string; (f) a framing page on another origin than the one the session was created from.
+- Why: `{ url: null }` is the normal no-challenge answer, so `null&embedded=true` shows an error page; the challenge
+  posts its result only to the origin signed in its `session` token (how it is derived: verify at runtime).
+
+#### 16. No bare `yuno.continuePayment()` in headless (H16, M)
+- Look for `yuno.continuePayment(` in a repo that uses `apiClientPayment` and never calls `startCheckout` or
+  `secureFields`.
+- FAIL on: called without `{ checkoutSession }`. Why: headless never sets the SDK state, so a bare call resolves
+  `null` and shows nothing; with a session it renders Yuno's UI. Use the headless client calls instead.
+
+#### 17. The payment result comes from the webhook or Retrieve Payment (H17, H)
+- Look for fulfilment gated on `paymentResult`, `yunoPaymentResult`, the iframe `message` event or the redirect
+  landing page alone.
+- FAIL on: order status set from the browser only.
+- Why: a redirect 3DS navigates away before any in-page callback runs, and a client signal can be forged.
+
+#### 18. No logic on `card_data.fingerprint` from the token (H18, L)
+- Look for `.card_data.fingerprint` or `.fingerprint` on the token response used for dedupe or risk.
+- Why: null for a first-time, non-vaulted card, set on the payment response (backend rule: verify at runtime).
+
+### Headless enrollment
+
+#### 19. Fresh `customer_session`, awaited client, status check (H19, H)
+- Look at `apiClientEnroll(`, `continueEnrollment(` and the server code that creates customer sessions.
+- FAIL on: one `customer_session` reused across enrollments; `apiClientEnroll` without `await`; success assumed
+  without `status === 'ENROLLED'`; `ENROLL_IN_PROCESS` or `PENDING` treated as failure; no session on either call
+  (throws `customer_session is required`).
+- Why: `DECLINED`, `REJECTED`, `ERROR` are not an enrolled card; `ENROLL_IN_PROCESS` and `PENDING` settle by webhook,
+  so failing them drops a card that enrolls later. A reused session failing the vault call: verify at runtime.
+
+### Secure Fields
+
+#### 20. One `secureFields` instance per form, kept in a ref, used for fields and token (H20, B)
+- Look for `.secureFields(` in a component body, render function, `onSubmit`, or an effect without stored result;
+  two call sites; no `useRef` or module variable.
+- FAIL on: `yuno.secureFields()` able to run twice per mount; `generateToken` on another instance than the one that
+  created the fields.
+- Why: each instance owns its own hidden mediator and field map, so a token from the second instance sends an empty
+  card that the API rejects (verify the answer at runtime); it also takes over the retry hook and session listener.
+
+#### 21. Each field created once, rendered into its own existing visible element, `render` awaited (H21, B)
+- Look at `.create({ name:` repeated for one name; `.render('#...')` targeting an element the framework creates
+  later or re-creates; `render` without `await` / catch; names other than `pan`, `expiration`, `cvv`, `cardPin`,
+  `cardLoadPreview`; one container for two fields; a container (or ancestor) with `display:none` or clipped by
+  `overflow:hidden`.
+- FAIL on: any of these, but report `cardPin` and `cardLoadPreview` (supported, undocumented) as information. There
+  is no holder-name field; the name goes in `cardHolderName` (check 23).
+- Why: `render` rejects with `Element #pan doesn't exist in the DOM` (an unhandled rejection if not awaited); an
+  unknown name fails with `bridge: url is required`; the iframe sets its own pixel height from the child, so a zero
+  height container is fine but a hidden or clipping one shows nothing. A second `create` with the same name leaving
+  the old iframe in the DOM is code reading: verify at runtime.
+
+### Re-render and framework lifecycle (Secure Fields)
+
+#### 22. One mount per component, cleanup on unmount, StrictMode and remount safety (H22, H)
+- React: `initialize` once (module-level promise or guarded ref); `secureFields()` and the `create` / `render`
+  sequence in one effect with a `cancelled` guard after each `await`; one field instance per field name; deps
+  limited to `[yuno, checkoutSession, countryCode]`, callbacks read from a ref; cleanup sets `cancelled = true` and
+  calls `await sf.unmountSync()` with no arguments. StrictMode runs the effect twice in development, so the first
+  mount must be fully torn down. Never create fields during render or in `onChange`.
+- Re-render: call `f.render(selector)` again on the same field (it replaces its iframe); after `sf.unmountSync()`
+  the instance is dead, so create a new `yuno.secureFields()`.
+- Next.js: the component is `'use client'` or loaded with `dynamic(..., { ssr: false })`; no `loadScript` or
+  `initialize` in server code (`document is not defined`). Vue / Angular / SPA (guidance, not in Yuno docs): create
+  in `onMounted` / `ngAfterViewInit`, `unmountSync()` in `onBeforeUnmount` / `ngOnDestroy` or on route leave.
+- FAIL on: no teardown; teardown that only calls `field.unmountSync()` per field; a `renderedFlag` instead of
+  cleanup (the Yuno React demo does this; do not copy it); deps that change each render; no `cancelled` guard;
+  callbacks closing over stale state; `create` on a dead instance; a route change that leaves the old form mounted.
+- Why: a leaked first mount adds a second set of iframes and mediator (competing forms after SPA navigation lost
+  input and installments); `render()` waits for the mediator, so an earlier cleanup can leave an iframe behind;
+  calls after `sf.unmountSync()` reject with `bridge closed`. Per-field `unmountSync` leaving the mediator alive is
+  code reading: verify at runtime by counting iframes in `document.body` after unmount.
+
+### Secure Fields (continued)
+
+#### 23. `generateToken` after render, with `cardHolderName`, without `checkoutSession`, form state checked (H23, B)
+- Look at `.generateToken(` / `.generateTokenWithInformation(` on the Secure Fields instance.
+- FAIL on: no `cardHolderName`; a `checkoutSession` key when payment retry is on for the account (or a value that
+  can differ from the instance's current session); no check that the three fields rendered and are valid
+  (`onChange` flags or `await field.validate()`); a call from another instance (check 20).
+- Why: no local validation (the Luhn check only logs), so an empty field goes as `''` and the API answers 400, e.g.
+  `INVALID_PARAMS: holder_name value less than allowed (3 chars minimum)`; a passed `checkoutSession` wins over the
+  cloned retry session. Without retry the docs allow it on `generateToken`.
+
+#### 24. Field helpers only after `render`, guarded after unmount (H24, M)
+- FAIL on `.focus(`, `.blur(`, `.validate(`, `.setError(`, `.clearError(`, `.resetFields(`, `.setCardType(` with no
+  guard: before `await render()` resolves, in cleanup after unmount, or on a possibly `undefined` `getElement()`.
+- Why: before the field reached the mediator, the mediator indexes its map without a null check and rejects with
+  `Cannot read properties of undefined (reading 'validateElement')` (same family as the `clearValueElement`
+  crash); after a field or full unmount the call rejects with `bridge closed`.
+
+#### 25. Teardown uses `secureFields.unmountSync()`, not `unmountSdk` (H25, M)
+- FAIL on `unmountSdk(` as the only Secure Fields cleanup, including after a payment that needs no further action.
+- Why: `unmountSdk` only unmounts the SDK's React root (such as one `continuePayment` rendered), never the Secure
+  Fields iframes or mediator, which stay on the page after payment and can capture a second submit.
+
+#### 26. Payment retry wiring when the retry flag is on (H26, H)
+- Look at the handling after Create Payment, `continuePayment(` and `updateCheckoutSession(`.
+- FAIL on: a `DECLINED` / `ERROR` card result not followed by `yuno.continuePayment()`; the `pan` field destroyed
+  before retry; `checkoutSession` passed to the token call.
+- Why: the form is left open with no next step, or retry runs on a stale session; retry reads the field named
+  `pan`. Retry is a server flag per organization (whether sandbox has it: verify at runtime).
+
+#### 27. Styling and options respect the iframe (H27, L)
+- Look at `options.styles`, `designType`, `validateOnBlur`, `validationType` and `onChange` data reads.
+- FAIL on: `designType` outside `float-label`, `float-label-static`, `label-placeholder`; page CSS expected to
+  reach inside the iframe; `onChange` data read without `?.`. `validateOnBlur` still works (treated as `on_blur`):
+  report it as information, since the payment docs page calls it deprecated in favour of `validationType`.
+- Why: `designType=<value> is not valid` is thrown; `styles` is a CSS string injected only in the iframe; style the
+  wrapper via its `focus`, `hover`, `error` classes (the SDK sets `font-size:0`, `margin:-1px`).
+
+#### 28. Secure Fields enrollment: `customerSession` only, `cardHolderName` passed (H28, H)
+- Look at `secureFields({` with `customerSession` and at `generateVaultedToken(`.
+- FAIL on: both `checkoutSession` and `customerSession` (the SDK runs in payment mode); no customer session at all
+  (a `customerSession` passed to `generateVaultedToken` is an accepted fallback); no `cardHolderName`.
+- Why: `secureFields()` validates nothing, so a missing session fails only later inside the iframes.
+
+### Two-card split (headless)
+
+#### 29. Composite token: shape, totals and order (H29, B)
+- Look at `generateToken({ ... payment_method: [`.
+- FAIL on: fewer than two items; an item with neither `card` nor `vaulted_token`; `amount.value` missing, zero or a
+  string (`"60"`); empty `amount.currency`; a currency different from `total.currency`; amounts that do not add up
+  exactly; an unknown `type`. Report no `total` and a third item as warnings: the docs require `total` and exactly
+  two items, the SDK does not.
+- Why: the SDK throws before any request: `payment_method must have at least two items; use an object for one
+  payment method`, `payment_method[1] needs card or vaulted_token`, `payment_method[0].amount.value=0 is not valid`,
+  `payment_method[0].amount.currency= is not valid`, `payment_method[0].type=CARDS is not valid`,
+  `payment_method[1].amount.currency=EUR does not match total.currency=USD`, `payment_method amounts add up to 60 +
+  30 but total.value=100`,
+  `payment_method must be an object or an array of payment methods`, `total.currency=<v> is not valid`,
+  `total.value=<v> is not valid`. `total` is optional in SDK and core; the docs say `POST /v2/payments` rejects a
+  payment without it: verify at runtime, as for a third item. Per-item `device_fingerprints` and
+  `third_party_data` are dropped by the v2 token route today, so split tokens carry no merchant fraud data.
+
+#### 30. Composite token redeemed on v2, challenges run one by one (H30, B)
+- Read the server code that receives the composite token and the loop around `getThreeDSecureChallenge`.
+- FAIL on: the token sent to `/v1/payments`; no `callback_url`; the next challenge requested before the previous
+  card's `THREE_D_SECURE` transaction left `PENDING` (webhook or `GET /v2/payments/{id}`) or before its `CHALLENGE`
+  message; a fixed-count loop instead of stopping on `url === null`; the other card offered after `status ===
+  'ERROR'`; `card_data` read from the composite result.
+- Why: an early call returns the same card again (first card still waiting), and after `ERROR` the SDK still hands
+  out the next card, so stopping is your job. The docs say the token works only on `POST /v2/payments` and the other
+  card is reversed after a failure: verify at runtime. Split must be enabled on the account by Yuno.
+
+#### 31. SDK version supports split and the fixes referenced here (H31, M)
+- Read `@yuno-payments/sdk-web` in `package.json` and the lockfile, and script URLs (`sdk-web.y.uno/v1.xx/main.js`,
+  `loadScript`).
+- FAIL on: split used on a line older than 1.11.43; a pinned older patch where a referenced fix landed (for example
+  the Secure Fields `clearValueElement` guard).
+- Why: on 1.11.42 and older the array goes through the single-card validator and throws
+  `type=undefined is not valid` before any request. The `v1.11` URL already serves 1.11.43 or later.
+
+## Report format
+
+```
+CHECK H1   One initialize per page              FAIL  src/pay/CardForm.tsx:18 Yuno.initialize in component body
+CHECK H6   country_code snake_case uppercase    FAIL  src/pay/headless.ts:12 countryCode -> country_code=undefined is not valid
+CHECK H8   executeFraudCheck camelCase          FAIL  src/pay/headless.ts:9 { checkout_session } -> checkoutSession=undefined is not valid
+CHECK H29  Composite token shape                N/A   no split payment in this repository
+...
+SDK: @yuno-payments/sdk-web 9.7.0 (package-lock.json), bundle v1.11; sdk-web-card from iframe URL v1.93.0
+```
+
+Finish with the failures ordered by impact (payment blocked or card data exposed, then lost fraud data or wrong
+result, then degraded UX), each with a one-line fix.
+
+## Diagnostics to capture
+
+1. The SDK version (script URL or `@yuno-payments/sdk-web`) and the sdk-web-card version from the iframe `src`
+   (`sdk-web-card.<env>.y.uno/v<version>/pages/...`); the card version follows the loaded `main.js`.
+2. The checkout session id (customer session for enrollment) and the UTC time.
+3. Browser console errors, especially `bridge: child did not connect within 30000ms`, `bridge closed`,
+   `Element #<id> doesn't exist in the DOM` and any `<key>=<value> is not valid`.
+4. CSP violation reports, blocked `*.y.uno` requests, a field `render()` that never settles, and the
+   `sdk-web-card` iframe count after a remount.
+5. The failing call without card data or keys, and `error.response.data` or `error.code` / `error.data`.
+
+## Docs versus code
+
+Where the public docs and the code disagree, follow the code and tell the merchant the docs are being fixed.
+
+| Topic | Docs say | Code does |
+|---|---|---|
+| `executeFraudCheck` arguments | `{ checkout_session, country_code }` | `{ checkoutSession, countryCode }`; `checkoutSession` is validated |
+| Fingerprint fields in `generateToken` | `device_fingerprint`, `third_party_session_id` | only `device_fingerprints` and `third_party_data` arrays are read |
+| Split `total` | required, rejected without it | optional in the SDK and core; the backend rejection is unconfirmed |
+| Split item count | exactly two | the SDK enforces at least two, no upper bound |
+| Secure Fields teardown | `unmountSdk` when nothing is left to do | `unmountSdk` leaves the fields and mediator; use `secureFields.unmountSync()` |
+| `validationType` default | no default outside checkout flows | validates on change |
+| `validateOnBlur` | deprecated on the payment page, documented on the enrollment page | still typed and honoured as `on_blur` |
+| `checkoutSession` in Secure Fields token calls | forbidden only for `generateTokenWithInformation` | overrides the retry session in both token calls |
+| React cleanup | `field.unmountSync()` per field | only `secureFields.unmountSync()` with no arguments closes the mediator |
+
+Sources: the Web SDK 1.11.47 source code (served `v1.11` bundle 1.11.45), the card form 1.93.0,
+`@yuno-payments/sdk-web-types` 5.8.1 and the public Yuno docs. Research 2026-10-29.
