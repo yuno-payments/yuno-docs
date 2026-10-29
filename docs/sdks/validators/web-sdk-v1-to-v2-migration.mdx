@@ -1,0 +1,336 @@
+---
+title: "Validator: Web SDK v1 to v2 migration"
+sidebarTitle: "Web SDK v1 to v2 migration"
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "A read-only checklist for AI coding agents that lists what a Yuno Web SDK 1.11 integration must change to move to v2, and which flows have no v2 equivalent yet."
+---
+
+Drop this file in the root of your project and ask your coding agent:
+
+> List what I must change to move my Yuno Web SDK integration to v2, following this file.
+
+It works as `CLAUDE.md`, `AGENTS.md` or a pasted prompt, with Claude Code, Cursor, Codex or Copilot. It is
+read-only: it scans your code and reports, and it changes nothing unless you ask.
+
+**The target.** v2 is the sdk-web 2.x line ("Yuno SDK 2.x", the unified Transaction API). The latest release is
+version 2.2.0 (2026-10-27). It is served at
+`https://sdk-web.y.uno/v2.2.0/main.js`, and `v2.0.0`, `v2.1.0`, `v2.1.2` are also live. There is no rolling
+folder: `/v2/`, `/v2.0/` and `/v2.2/` return 404, so you pin a full version and bump it by hand. The EU host
+`sdk-web.prod.eu.y.uno` serves up to `v2.1.2` and returns 404 for `v2.2.0` (at the time of writing). The SRI path is
+`https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v2.2.0/main.js`. Public docs: the "SDK" tab
+(`docs/yuno-sdk/*`, migration series in `docs/yuno-sdk/migration/web/*`). The "SDKs" tab is the 1.x line.
+v1.x stays supported side by side until 2027.
+
+**The source.** v1.11 (`window.Yuno`, rolling `/v1.11/main.js`), the current 1.x line.
+
+```
+v1.11                                              v2
+<script .../v1.11/main.js>                         <script .../v2.2.0/main.js>
+yuno = await Yuno.initialize(key)                  sdk = await SdkPayments.initialize(key)
+yuno.startCheckout(cfg)        (or Seamless)       tx = sdk.transaction(cfg)   (session, country, onStatus,
+yuno.mountCheckoutLite({...})                           createPayment present = manual, absent = managed)
+yuno.mountCheckout()                               tx.start({ paymentMethod })          form or headless
+yunoCreatePayment(ott, info, cs)                   tx.getPaymentMethodsViews({...}).paymentMethodList.mount()
+yuno.continuePayment()                             createPayment(token)  -> SDK continues by itself
+yunoPaymentResult(status) / yunoError(...)         onStatus({ status, substatus, message })
+yuno.unmountSdk()                                  await tx.unmount()
+```
+
+## What v2 keeps (do not report these as blocking)
+
+- **v2 keeps no v1 alias.** It sets only `window.SdkPayments` and dispatches only `sdk-payments-ready`. It does
+  not set `window.Yuno` and never fires `yuno-sdk-ready`. Every `window.Yuno` and `yuno-sdk-ready` use must change.
+- **v1.11 already exposes the v2 names.** It sets both globals and fires both events. So
+  `window.SdkPayments` and `sdk-payments-ready` in a v1.11 repo are already correct. That rename can ship on 1.11
+  first, before the script switch.
+- **Unchanged on v2:** the `sdk-payments-*` CSS prefix; the `initialize` options keys (`cookies`, `sdkType`,
+  `apiUrl`, `assetUrl`, `plugin`); `clearApiCache()` and `setCanaryMode()` on the instance; `onChange(state)`;
+  the options `onPromotionQuoteUpdated`, `externalButtons`, `texts`, `issuersFormEnable`, `showPayButton`,
+  `deviceFingerprints`, `paymentListConfig`, `savePaymentMethodEnabled`; the `card` keys `styles`, `type`
+  (except `'step'`), `vaultOnSuccess`, `texts`, `documentEnable`, `isCreditCardProcessingOnly`, `fonts`,
+  `onChange`, `onGetInstallments`, `onInstallmentSelected`.
+- **Silent keys.** v2 forwards unknown or v1-only config keys without any error. Most are never read: the
+  feature they controlled just disappears. Mark those rows SILENT. Three v1 keys are still read on 2.2.0:
+  `onLoading` is still called when no `showLoading` function is set; `paymentMethodSelected` and
+  `yunoPaymentMethodSelected` still fire on every list selection, so keeping one next to `onPaymentSelected`
+  gives two calls per selection; `yunoCreatePayment` is merged into `createPayment` in state. Rename them anyway.
+- **CSS.** v2 renders `yuno-container-spinner-content` and `yuno-container-spinner-ring` (the loading spinner
+  of every mount) and sets `data-yuno-placeholder`. These are v2 names: never report selectors on them.
+
+## How to use
+
+1. **Find the v1 surface.** Run over source, server templates, tag-manager snippets and `package.json`:
+
+```
+grep -rnE "window\.Yuno\b|\bYuno\.initialize|yuno-sdk-ready|YunoSDK|sdk-web\.[a-z.]*y\.uno/v[0-9.]+/main\.js|sdk-static-bundles-ms/sdk-web/|loadScript\(|@yuno-payments/sdk-web(-types)?" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
+grep -rnE "\.(startCheckout|startSeamlessCheckout|mountCheckout|mountCheckoutLite|mountSeamlessCheckout|mountSeamlessCheckoutLite|mountSeamlessExternalButtons|mountExternalButtons|unmountExternalButton|unmountAllExternalButtons|unmountSeamlessExternalButtons?|mountEnrollmentLite|mountFraud|mountStatusPayment|startPayment|continuePayment|submitOneTimeTokenForm|unmountSdk|showLoader|hideLoader|notifyError|apiClientPayment|apiClientEnroll|continueEnrollment|clickToPay|executeFraudCheck|generateToken\w*|getThreeDSecureChallenge|getContinuePaymentAction|isPaymentMethodAvailable|updateCheckoutSession|refreshPromotionQuote)\(" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
+grep -rnE "yunoPaymentResult|paymentResult|yunoError|yunoEnrollmentStatus|enrollmentStatus|yunoCreatePayment|createPayment|yunoPaymentMethodSelected|paymentMethodSelected|onLoading|showLoading|showPaymentStatus|renderMode|viewContainer|onlyExpressPaymentMethods|stickyPayButton|__internal|cardSaveEnable|requiredFieldsOrderedEnabled|topLevelDomain|isRetrying|newCheckoutSession|payment_method\.card\.detail|holder_name|enableV2|enableMultiplesCard|\.render\(" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
+grep -rnE "'(FAIL|REJECT|PROCESSING|READY)'|\"(FAIL|REJECT|PROCESSING|READY)\"|type:\s*['\"]step['\"]|checkout/sessions|workflow" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
+```
+
+2. **Find any v2 surface already present:** `grep -rnE "SdkPayments\.initialize|\.transaction\(|\.start\(\{|getPaymentMethodsViews|transactionStatus|\.antifraud\(|onStatus|saveCardEnabled|showStatusScreen|sdk-web\.[a-z.]*y\.uno/v2"`.
+   A repo with both is mid-migration: report the v1 leftovers on every page that loads the v2 script. At
+   runtime, `typeof sdk.transaction === 'function'` means v2; a v1 instance has `startCheckout` and no `transaction`.
+3. **Classify each flow** (Lite, Full, Seamless, Seamless Lite, external buttons, headless, Secure Fields,
+   enrollment, fraud, status screen) as manual (merchant creates the payment) or managed (SDK creates it).
+4. **Map every hit** with the table below, run checks M1 to M25, and write the report.
+
+## Mapping
+
+Sections follow the research table 3.A to 3.H. Kind: KEEP, RENAME, MOVE, BEHAVIOUR, NEW REQUIRED,
+REMOVED (no replacement), SILENT (v2 accepts and ignores the old key), BLOCKED (parity gap: report "blocked: parity gap, do not migrate this flow yet", not as a change).
+
+### 3.A Bootstrap and globals
+
+| v1.11 | v2 | Kind | What to do | Evidence |
+|---|---|---|---|---|
+| `window.Yuno`, `new Yuno`, `YunoSDK` | `window.SdkPayments` | RENAME | Replace every reference | `src/main.ts` on 1.11 vs 2.2.0 |
+| `yuno-sdk-ready` event | `sdk-payments-ready` | RENAME | Listen to the new event; also check `window.SdkPayments` first | same |
+| `<script .../v1.11/main.js>` | `<script .../v2.x.y/main.js>` | BEHAVIOUR | Pin a full version; no rolling folder | CDN probes at the time of writing |
+| npm `loadScript()` | `loadScript({ baseUrl: 'https://sdk-web.y.uno/v2.x.y' })` | BEHAVIOUR | Pass `baseUrl`; drop `sri: true` (its URL and hashes are fixed to v1.11) | npm loader `get-url.ts`, `inject-script.ts` |
+| `@yuno-payments/sdk-web-types` | none published | REMOVED | Write a local declaration from the public v2 migration pages | `@yuno-payments/sdk-web-types` declares `startCheckout`, no `transaction` |
+| `await Yuno.initialize(key, appSession?, opts?)` | `await SdkPayments.initialize(...)` | RENAME + BEHAVIOUR | Same args; same args return the same instance, new args supersede the old one | `sdk-payments.ts` |
+
+### 3.B Entry points and flow modes
+
+| v1.11 | v2 | Kind | What to do | Evidence |
+|---|---|---|---|---|
+| `startCheckout(cfg)` + `mountCheckoutLite({paymentMethodType, vaultedToken})` | `sdk.transaction(cfg)` + `tx.start({paymentMethod:{type, vaultedToken}})` | RENAME | Move config to `transaction()` | docs `migration/web/lite` |
+| `startCheckout(cfg)` + `mountCheckout()` | `transaction(cfg)` + `getPaymentMethodsViews({types:['paymentMethodList'], onPaymentSelected})` + `views.paymentMethodList.mount({elementSelector})` | RENAME + NEW REQUIRED | Your Pay button calls `tx.start({paymentMethod: selected})` | docs `full` |
+| `startSeamlessCheckout` + `mountSeamlessCheckout()` + `startPayment()` | Full flow without `createPayment`; `startPayment()` becomes `start({paymentMethod})` | RENAME | Keep `workflow: SDK_SEAMLESS` | docs `seamless` |
+| `startSeamlessCheckout` + `mountSeamlessCheckoutLite` + `startPayment()` | `transaction({...showPayButton:false})` + `start({paymentMethod})` + `tx.submit()` | RENAME | | docs `seamless-lite` |
+| `mountSeamlessExternalButtons([{elementSelector, paymentMethodType}])` | `getPaymentMethodsViews({types:[wallets]})` + `views.<wallet>.mount({elementSelector})` | RENAME | Keys `applePay googlePay samsungPay paypal paypalBraintree revolutPay` | docs `seamless` |
+| `apiClientPayment(...).generateToken(card)` + backend call + `continuePayment()` | `start({paymentMethod:{type:'CARD', data:{card}}})` with `createPayment` | RENAME | | docs `headless` |
+| `getThreeDSecureChallenge`, `getContinuePaymentAction`, `generateHeadlessToken` | none (3DS is internal) | REMOVED | Delete custom 3DS code | docs `headless` |
+| `secureFields(args)` | `await tx.secureFields({installmentEnable?})` | MOVE | Session, country, language, fingerprints go to `transaction()`; drop `enableV2`, `enableMultiplesCard` | docs `secure-fields` |
+| `mountEnrollmentLite({customerSession,...})` | `transaction({customerSession,...}).start()` | RENAME | | docs `enrollment` |
+| `apiClientEnroll(...).continueEnrollment(...)` | `transaction({customerSession}).start({paymentMethod:{type, data}})` | RENAME | | docs `enrollment` |
+| `mountStatusPayment({checkoutSession, language, countryCode})` | `await sdk.transactionStatus({checkoutSession, elementSelector, ...})` | RENAME + NEW REQUIRED | `elementSelector` is now required | docs `status` |
+| `executeFraudCheck(args)` | `await sdk.antifraud(args)` | RENAME + BEHAVIOUR | Never rejects; branch on `result.status` | docs `fraud` |
+| `mountFraud({checkoutSession, language, type, yunoCreatePayment, ...})`: a card UI that creates the payment | `sdk.transaction({checkoutSession, countryCode, deviceFingerprints?, createPayment?, onStatus})` + `tx.start({paymentMethod:{type:'CARD'}})` | RENAME + BEHAVIOUR | Do not delete: it is a payment flow. `yunoCreatePayment(ott, info)` becomes `createPayment(token)`; `yunoError` goes to `onStatus`. The repo's `docs/NEW_PUBLIC_API.md` row 16 maps it to `sdk.antifraud` and disagrees; follow the public page | v1 `sdk/fraud/mount-fraud.ts`; docs `migration/web/fraud.mdx` |
+| `submitOneTimeTokenForm()` | `tx.submit()` | RENAME | Only after `start()` resolved | docs `lite` |
+| `unmountSdk()` | `await tx.unmount()` | RENAME + BEHAVIOUR | Async; may deliver `USER_CANCEL`; wallets stay | `transaction.ts` |
+| `updateCheckoutSession(cs)` | `tx.updateCheckoutSession(cs)` | MOVE | Payment only | SDK source |
+| `isPaymentMethodAvailable({paymentMethodType, checkoutSession?})` | `tx.isPaymentMethodAvailable({paymentMethodType})` | MOVE | Session comes from the config | SDK source |
+| `refreshPromotionQuote()` | `tx.refreshPromotionQuote()` | MOVE | @alpha, inert today | SDK source |
+| `continuePayment(options?)` | none | REMOVED | Delete; the SDK continues after `createPayment` resolves | docs `lite` |
+| `notifyError()` | reject the `createPayment` promise | RENAME | Listed as a v1-only feature, but rejection covers it | SDK source |
+
+### 3.C Option and callback names
+
+| v1.11 | v2 | Kind | What to do | Evidence |
+|---|---|---|---|---|
+| `yunoPaymentResult` / `paymentResult(status, subStatus, details)` | `onStatus({status, substatus, message})` | RENAME + SILENT | Old key is ignored: no result ever arrives | docs `lite` |
+| statuses `'FAIL' 'REJECT' 'PROCESSING' 'READY'` | backend statuses + `INTERNAL_ERROR` + `USER_CANCEL` | BEHAVIOUR | Rewrite every comparison | v1 SDK source |
+| `details.isRetrying`, `details.newCheckoutSession` | `token.checkout_session` in `createPayment` | REMOVED | | docs `create-payment` |
+| `yunoError` / `error(message, data)` | `onStatus` `INTERNAL_ERROR` or a rejected `start()` | REMOVED + SILENT | | v2 has no read of `yunoError` |
+| `yunoEnrollmentStatus` / `enrollmentStatus({status, vaultedToken})` | `onStatus`; no `vaultedToken` | RENAME + BEHAVIOUR | Fetch the vaulted token server-side | docs `enrollment` |
+| `yunoCreatePayment` / `createPayment(ott, info, checkoutSession)` | `createPayment(token)`, returns a Promise | RENAME + BEHAVIOUR | `token.token` = old `ott`; `token.checkout_session` = old third arg. A lone `yunoCreatePayment` is merged into `createPayment`, but rename it | core `types/handlers.ts` `CreatePaymentCallback`; `lib/callback-aliases.ts` |
+| `yunoPaymentMethodSelected` / `paymentMethodSelected({type,name})` | `onPaymentSelected` in `getPaymentMethodsViews` | RENAME + BEHAVIOUR | Store it and pass it to `start()`. Remove the old key: it still fires on list selections, so both give two calls | docs `full`; SDK source |
+| `onLoading({isLoading, type})` | `showLoading(isLoading)` | RENAME | Not silent: v2 still calls `onLoading` when no `showLoading` function is set. Move to `showLoading`, which replaces the SDK loader | docs `show-loading`; SDK source |
+| `showLoading: true/false` | `showLoading` must be a function | BEHAVIOUR | `true` throws a TypeError that names a minified function, not `showLoading`; `false` is treated as no handler and silently brings back the SDK loader | SDK source |
+| `showPaymentStatus` | `showStatusScreen` | RENAME + SILENT | | v2 SDK source |
+| `elementSelector` on `startCheckout` | on `transaction()`, `string \| HTMLElement` | MOVE | Required for a form, ignored by headless | `view-bridge.ts` |
+| `language`, `countryCode`, `checkoutSession` | same keys on `transaction()` | MOVE | `countryCode` required; TypeScript also requires `language`, `showStatusScreen` | `transaction-config.ts` |
+| none | `autoContinuePayment`, `cardFormUnfoldedEnable` | new, optional | No action | SDK source |
+| `enableRedesign`, `isDynamicViewEnabled`, `enabledRequiredFields` | not in the public v2 type | REMOVED (type) | Remove for TypeScript | `PaymentOnlyConfigFields` |
+
+### 3.D Required or new behaviour
+
+| v1.11 | v2 | Kind | What to do | Evidence |
+|---|---|---|---|---|
+| none | exactly one of `checkoutSession` / `customerSession` | NEW REQUIRED | Both or neither throws | `transaction.utils.ts` |
+| secure field `.render('#sel')` | `.mount('#sel')` | RENAME | | core 9.4.1 `SecureFieldV2Instance.mount` |
+| `generateTokenWithInformation` + POST + `continuePayment()` | `tx.start({paymentMethod:{type:'CARD', data:{card:{holderName}}}})` | RENAME | No PCI keys in `data.card` (it throws) | `transaction.utils.ts` |
+| `payment_method.card.detail.{holder_name,number,security_code,expiration_month,expiration_year}` | `paymentMethod.data.card.{holderName,number,securityCode,expirationMonth,expirationYear}` | RENAME | camelCase envelope | docs `headless` |
+| who creates the payment: Seamless = SDK, `startCheckout` + `yunoCreatePayment` = merchant | presence of `createPayment` decides; managed needs session `workflow: "SDK_SEAMLESS"` | NEW REQUIRED | Match each flow to its session workflow | docs `create-payment.mdx` |
+| new payment on the same session after a final result | `The payment on this checkout session already finished...` | BEHAVIOUR | New session and new transaction per retry after a final result | `settled-checkout-session.ts` |
+
+### 3.E CSS, DOM and white label
+
+| v1.11 | v2 | Kind | What to do | Evidence |
+|---|---|---|---|---|
+| class prefix `sdk-payments-*` | `sdk-payments-*` | KEEP | Keep selectors; re-check overrides visually (only three classes compared) | the SDK core `STYLE_CLASS_PREFIX` |
+| no `yuno-*` class in 1.11 | `yuno-container-spinner-content`, `yuno-container-spinner-ring`, `<style id="yuno-container-spinner-style">`, `data-yuno-placeholder` | KEEP (v2 renders them) | Never report selectors on these. A white-label page on v2 always contains these `yuno` strings | SDK source |
+| `HTMLElement` container without `id` | gets `yuno-view-<random>` | BEHAVIOUR | Give it an `id` on white-label pages | SDK source |
+| `apiUrl`, `assetUrl` | same keys | KEEP | Set them together; proxy `/sdk-static-bundles-ms/*` | `sdk-payments.ts`, white-label docs |
+
+### 3.F `card` option and nested config
+
+| v1.11 | v2 | Kind | What to do | Evidence |
+|---|---|---|---|---|
+| `card.cardSaveEnable` | `card.saveCardEnabled` | RENAME + SILENT | Old key hides the save-card checkbox | SDK source |
+| `card.requiredFieldsOrderedEnabled` | none | REMOVED | Delete (unread in both lines) | core `CardStore` |
+| `externalButtons.applePay.topLevelDomain` | not in the public type | REMOVED + SILENT | Ignored: v2 always calls `setApplePayTopLevelDomain({ option: undefined })` and auto-detects the top frame. Delete it | `ApplePayButtonConfig`; SDK source |
+
+### 3.G Behaviour that differs and is easy to miss
+
+| v1.11 | v2 | Kind | What to do | Evidence |
+|---|---|---|---|---|
+| `createPayment` first argument is a string | it is an object; the string is `token.token` | BEHAVIOUR | Sending the object as the token fails Create Payment (inferred) | core `types/handlers.ts` `CreatePaymentCallback` |
+| session is the third `createPayment` argument | `token.checkout_session`; the config session goes stale after a retryable decline | BEHAVIOUR | Read the session from the token | SDK source |
+| result callback fires on final results | `onStatus` also fires on non-final retryable results in manual mode | BEHAVIOUR | Do not redirect on every call | SDK source |
+| modal checkout | inline form in the host page | BEHAVIOUR | Size the container | SDK source |
+| mount resolves when shown | `start()` resolving means form mounted, not paid | BEHAVIOUR | Never show success after `await start()` | `transaction.ts` |
+
+### 3.H Features in v1 and absent from v2 (BLOCKED: parity gap)
+
+| v1.11 | v2 | Kind | What to do | Evidence |
+|---|---|---|---|---|
+| `unmountSeamlessExternalButtons()`, `unmountSeamlessExternalButton(t)` | none | BLOCKED if the flow needs per-wallet removal | Otherwise delete; wallets stay until the container is removed | docs `seamless` "Removed" |
+| `mountExternalButtons`, `unmountExternalButton`, `unmountAllExternalButtons` | none | BLOCKED | Non-seamless wallet buttons have no v2 form | SDK source |
+| `showLoader()`, `hideLoader()` | none | BLOCKED if the merchant drives the loader by hand | `showLoading(handler)` is the only hook | SDK source |
+| `clickToPay(args)` standalone | none | BLOCKED | In-form Click to Pay via `c2p` config only | SDK source |
+| `renderMode: {type:'modal'\|'element'}` | none; forms render inline at `elementSelector` | SILENT; BLOCKED if a modal is required | | SDK source |
+| `card.type: 'step'` (step-by-step form) | none | BLOCKED | Removed; the SDK core `CardDisplayMode` has only `extends`. Verify at runtime what a stray `'step'` renders | core `CardDisplayMode` type |
+| `onlyExpressPaymentMethods` | none | BLOCKED | | zero reads on v2 |
+| `stickyPayButton`, single or sticky Yuno Pay button | none | BLOCKED | | removed from v2 |
+| `__internal` | none | BLOCKED | | SDK source |
+| `onChange` on the card enrollment form, `submit()` for enrollment | never reports; throws | BLOCKED | | SDK source |
+| redirect-return handling, `PaymentStatus` registry | none (`sdk.handleRedirect` was removed before release) | BLOCKED | Verify at runtime which v1 call the merchant relies on | SDK source |
+
+## Checks
+
+Report each as PASS / FAIL / N/A with file:line, and quote the line. Each title ends with the research check id
+and a severity: B blocking (no payment or no result), H high (feature silently lost or wrong outcome), M medium
+(degraded UX), L low (hygiene), P parity gap (report as blocked, never as a change to make).
+
+### 1. Global and ready event (M1, B)
+
+Look: `window.Yuno`, `Yuno.initialize`, `yuno-sdk-ready`. Still v1: any hit. Change: `window.SdkPayments`, `sdk-payments-ready`, check the global before listening. Symptom: `Yuno is not defined`, init never runs.
+
+### 2. Script URL and loader (M2, B)
+
+Look: script tags, `loadScript`, `sdk-static-bundles-ms`. Still v1: `/v1.11/`, `loadScript()` without `baseUrl`, `sri: true`; also wrong: `/v2/`, `/v2.2/`. Change: full `v2.x.y` URL; EU pages check the EU host has the version. A `v2.0.0` pin that matches the public docs sample is valid, not a finding. Symptom: `sdk.transaction is not a function`, or 404.
+
+### 3. v1 entry points (M3, B)
+
+Look: the second grep. Still v1: any call. Change: per Mapping; REMOVED rows say "no replacement". Symptom: `yuno.startCheckout is not a function`.
+
+### 4. Mode and session workflow (M4, B)
+
+Look: v1 mode (Seamless = managed; `startCheckout` with `yunoCreatePayment` = manual) and the backend `POST /v1/checkout/sessions` body. Change: managed has no `createPayment` and uses `workflow: "SDK_SEAMLESS"`; manual has `createPayment` and the default workflow. Symptom: `onStatus` `INTERNAL_ERROR`.
+
+### 5. `createPayment` signature (M5, B)
+
+Look: `(yuno)?[cC]reatePayment`, `continuePayment`. Still v1: two or three parameters, the first used as a string, the config session used, `continuePayment()`, `notifyError()`. Change: one `token`; send `token.token` and `token.checkout_session`; return a Promise that settles on every path; reject on failure. Rename `yunoCreatePayment`: the 2.2.0 code keeps an alias, but mode selection reads only `createPayment` (verify at runtime). Symptom: Create Payment 4xx, stale-session payment, form stuck.
+
+### 6. Result callbacks and statuses (M6, B)
+
+Look: `yunoPaymentResult`, `paymentResult`, `yunoError`, `enrollmentStatus`, the v1 status strings. Change: one `onStatus(result)` on backend statuses plus `INTERNAL_ERROR` and `USER_CANCEL`; SDK error codes (`FORM_INVALID`, `MERCHANT_CREATE_PAYMENT_FAILED`, `ELEMENT_NOT_FOUND`) are in `message.code` and `substatus` is `null`, so never branch on `substatus` for them; `FORM_INVALID` and retryable declines are not final. Symptom: no result handled, console warns `...created without an onStatus function...`.
+
+### 7. Rendering model (M7, H)
+
+Look: `renderMode`, `viewContainer`, overlay CSS. Change: a sized container and `elementSelector` on `transaction()`. Symptom: form inline instead of modal; `Wrong element selector`. Blocked if the merchant requires a modal.
+
+### 8. Status screen option (M8, H)
+
+Look: `showPaymentStatus`. Change: `showStatusScreen`. Symptom: the SDK result screen shows anyway and `onStatus` waits for the shopper to dismiss it. The public v2.1.0 changelog still says `showPaymentStatus` (doc drift).
+
+### 9. Loading (M9, M)
+
+Look: `onLoading`, `showLoading`, `showLoader`, `hideLoader`. Change: `showLoading: (isLoading) => void`, drop `type`; a boolean must go. Symptom: a kept `onLoading` still runs, so nothing breaks until both are set; `showLoading: true` throws a minified TypeError; `showLoading: false` silently shows the SDK loader. Blocked where the loader is driven by hand with `showLoader`/`hideLoader`.
+
+### 10. List selection and Pay (M10, B)
+
+Look: `paymentMethodSelected`, `startPayment`, `mountCheckout`. Change: `getPaymentMethodsViews`, store `onPaymentSelected`, Pay calls `start({paymentMethod: selected})`, ignore `selectionSource: 'auto'`. Symptom: the list shows and nothing pays.
+
+### 11. External buttons (M11, H)
+
+Look: `mount(Seamless)?ExternalButtons`, `unmount*ExternalButton*`. Change: one view `mount` per wallet, awaited or caught. Symptom: wallet missing, unhandled rejection. The non-seamless family is blocked.
+
+### 12. `card` keys (M12, H)
+
+Look: `cardSaveEnable`, `requiredFieldsOrderedEnabled`, `type: 'step'`. Change: `saveCardEnabled`; drop the other. Symptom: save-card checkbox silently gone. `'step'` is blocked.
+
+### 13. Removed options (M13, H)
+
+Look: `onlyExpressPaymentMethods`, `stickyPayButton`, `__internal`, `renderMode`. Change: report each; decide with the merchant. Symptom: behaviour silently missing. `onLoading` is not in this list: it is still called (M9). The parity-gap items are blocked.
+
+### 14. Secure Fields (M14, B)
+
+Look: `secureFields(`, `.render(`, `generateToken*`, `enableV2`, `enableMultiplesCard`. Change: `tx.secureFields()`, `.mount`, pay with `start` and only non-PCI keys in `data.card` (`holderName`, `type`, `installment`, `customer`, `vaultOnSuccess`); gate Pay on `!error && isDirty`. Symptom: `render is not a function`, PCI-keys error.
+
+### 15. Headless (M15, B)
+
+Look: `apiClientPayment`, `generateToken`, `getThreeDSecureChallenge`, `payment_method.card.detail`, `holder_name`. Change: camelCase `data.card` plus `createPayment`; delete 3DS code; one headless `start()` per transaction. Symptom: tokenization error, empty fields.
+
+### 16. Enrollment (M16, B)
+
+Look: `mountEnrollmentLite`, `apiClientEnroll`, `continueEnrollment`, `vaultedToken` in callbacks. Change: `transaction({customerSession}).start(...)`; success is `ENROLLED` (UI) or `CREATED` (headless); vaulted token from the backend. Symptom: `undefined` token stored.
+
+### 17. Fraud and status screen (M17, H)
+
+Look: `executeFraudCheck`, `mountFraud`, `mountStatusPayment`. Change: `executeFraudCheck` becomes `sdk.antifraud`, checked on `status === 'success'`; `mountFraud` is a card payment UI, so it becomes a normal `transaction({...})` plus `start({paymentMethod:{type:'CARD'}})` with its `yunoCreatePayment` moved to `createPayment(token)`, per the public fraud migration page; `transactionStatus` with `elementSelector`. Symptom: undefined fingerprints sent; `not a function`; a deleted `mountFraud` removes a payment flow.
+
+### 18. Utility calls (M18, H)
+
+Look: `isPaymentMethodAvailable`, `updateCheckoutSession`, `refreshPromotionQuote`, `unmountSdk` on the instance. Change: move them to the transaction; keep `clearApiCache`, `setCanaryMode`. Symptom: `... is not a function`.
+
+### 19. `initialize` lifecycle (M19, H)
+
+Look: where and how often `initialize` runs (render bodies, effects, per checkout, changing `applicationSession`). Change: one instance per page with stable args, one transaction per checkout. Symptom: `This SdkPayments instance is no longer active: a later initialize() replaced it...` and the form vanishes. Two calls on a superseded instance do not throw: `antifraud()` resolves `{status:'error'}` and `isPaymentMethodAvailable()` resolves `false`.
+
+### 20. Unmount (M20, M)
+
+Look: `unmountSdk(`, effect cleanups. Change: `await tx.unmount()`; treat the `USER_CANCEL` it delivers as teardown, not abandonment. Symptom: error screen on navigation. React StrictMode remounts are untested in v2: verify at runtime.
+
+### 21. Retry (M21, H)
+
+Look: `isRetrying`, `newCheckoutSession`, custom retry code. Change: manual mode keeps the form after a retryable decline (session in `token.checkout_session`); after a final result, new session and new transaction. Symptom: retry broken; `The payment on this checkout session already finished...`.
+
+### 22. CSS, DOM, white label (M22, M)
+
+Look: CSS and JS selectors on SDK class names and attributes. Still v1: a selector on a v1.11 name that v2 does not render. Exempt: `yuno-container-spinner-content`, `yuno-container-spinner-ring` and `data-yuno-placeholder`, which v2 renders. Change: keep `sdk-payments-`; re-check each override visually (only three classes were compared); give an `HTMLElement` container an `id`, or v2 adds `yuno-view-<random>`. A white-label page on v2 always contains the spinner `yuno` names; report that as a note, not a failure. Symptom: lost styling.
+
+### 23. TypeScript types (M23, L)
+
+Look: `@yuno-payments/sdk-web-types`, `YunoSDK` types. Change: a local v2 declaration written from the public v2 migration pages. Symptom: compile errors or silent `any`.
+
+### 24. Parity-gap review (M24, P)
+
+Look: every BLOCKED row. Report the flow as "blocked: parity gap, do not migrate this flow yet" and keep it on v1.11. Ask your Yuno contact for the current parity-gap list and cross-check it.
+
+### 25. Rollout and rollback (M25, M)
+
+Look: a flag or per-environment switch for the script URL. Change: keep the v1.11 path, roll v2 by flag, test on sandbox first. Symptom: no way back.
+
+## Report format
+
+```
+PART 1  Migration list (B first, then H, M, L)
+B  M5   src/checkout/pay.ts:41    yunoCreatePayment(ott, info, cs) -> createPayment(token), send token.token
+B  M6   src/checkout/pay.ts:58    yunoPaymentResult -> onStatus; 'FAIL' -> DECLINED/REJECTED/INTERNAL_ERROR
+H  M12  src/checkout/config.ts:9  card.cardSaveEnable -> card.saveCardEnabled
+KEEP    src/index.html:12         window.SdkPayments / sdk-payments-ready already v2-compatible
+
+PART 2  Parity gaps (flows that cannot migrate yet)
+P  M11  src/wallets.ts:20  mountExternalButtons (non-seamless wallets): blocked: parity gap, do not migrate this flow yet
+P  M13  src/cart.ts:77     stickyPayButton: blocked: parity gap, do not migrate this flow yet
+```
+
+One line per finding: severity, check, file:line, the one-line change. End with the v1 and v2 script versions
+found and whether the repo is v1-only or mixed.
+
+## Diagnostics to capture
+
+1. The script URL actually loaded (Network tab) and the value of `typeof sdk.transaction` (`function` on v2 only).
+2. The checkout session id, its `workflow`, and the UTC time of the attempt.
+3. Every `onStatus` payload received (`status`, `substatus`, `message.code`, `message.reason`).
+4. Console lines starting with `SdkPayments`, and any thrown message from `transaction()`, `start()` or `mount()`.
+5. The `createPayment` request your backend sent (token field and session, personal data removed).
+
+## Verify at runtime
+
+These could not be confirmed by reading code; test them before relying on them:
+what a lone `yunoCreatePayment` (v1 signature) does once merged into `createPayment`; what
+`card.type: 'step'` renders; `transaction.unmount()` under a React StrictMode remount; the full CSS class list;
+EU availability of `v2.2.0`. Part of this was read from unreleased v2 code, so some behaviour
+may not be in the 2.2.0 bundle yet.
+
+Sources: the Web SDK 1.11.47 and 2.2.0 source code, the v2 API report, the npm loader
+`@yuno-payments/sdk-web`, `@yuno-payments/sdk-web-types` and the public Yuno docs (the "SDK" tab, its migration
+guides and changelog, and the white-label page); CDN probes. Research date 2026-10-29.
