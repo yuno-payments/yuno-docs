@@ -134,6 +134,22 @@
                         "description": "The payment amount (multiple of 0.0001).",
                         "format": "float"
                       },
+                      "source": {
+                        "type": "string",
+                        "description": "Where the amount comes from. `YUNO_FX_QUOTE`: the amount is the `local_amount` of a Yuno FX quote, and `fx_quote_id` is required. `MERCHANT`: you priced the amount yourself. Defaults to `MERCHANT`. See [Create FX Quote](/reference/fx-rates/create-fx-quote).",
+                        "enum": [
+                          "YUNO_FX_QUOTE",
+                          "MERCHANT"
+                        ],
+                        "default": "MERCHANT",
+                        "example": "YUNO_FX_QUOTE"
+                      },
+                      "fx_quote_id": {
+                        "type": "string",
+                        "description": "The `fx_quote_id` returned by [Create FX Quote](/reference/fx-rates/create-fx-quote) (MAX 64). Required when `source` is `YUNO_FX_QUOTE`, and rejected with `400 INVALID_PARAMETERS` otherwise. `currency` and `value` must equal the quote's `local_amount`, the quote must belong to your organization, it must not have expired, and its `fx_date` must still be the latest available day; otherwise the payment is rejected with `400 INVALID_PARAMETERS`. It cannot be combined with `currency_conversion` or `merchant_currency_conversion` (`400 INVALID_PARAMETERS`); a `YUNO_PROMOTION` discount is allowed and applies on top of the quoted amount. A payment keeps the rate of its quote once it is created.",
+                        "maxLength": 64,
+                        "example": "fxq_01JB7Q2M8XK3"
+                      },
                       "currency_conversion": {
                         "type": "object",
                         "description": "The currency conversion (DCC) object. Used when the cardholder pays in their home currency at the point of sale while the merchant settles in their own. `cardholder_currency` must differ from `amount.currency`.",
@@ -4718,6 +4734,29 @@
                           }
                         ]
                       }
+                    }
+                  }
+                },
+                "Card - With a Yuno FX quote": {
+                  "value": {
+                    "description": "Card payment priced with a Yuno FX quote",
+                    "account_id": "<account_id>",
+                    "merchant_order_id": "0000024",
+                    "country": "CO",
+                    "merchant_reference": "reference-002",
+                    "amount": {
+                      "currency": "COP",
+                      "value": 67459.74,
+                      "source": "YUNO_FX_QUOTE",
+                      "fx_quote_id": "fxq_01JB7Q2M8XK3"
+                    },
+                    "customer_payer": {
+                      "id": "<customer_id>"
+                    },
+                    "workflow": "DIRECT",
+                    "payment_method": {
+                      "type": "CARD",
+                      "vaulted_token": "<vaulted_token>"
                     }
                   }
                 }
@@ -30780,6 +30819,30 @@
                       "code": "INVALID_REQUEST",
                       "messages": [
                         "Invalid Request. external_invoice and external_subscription can not be sent together. Please send only one of them."
+                      ]
+                    }
+                  },
+                  "FX quote rate superseded": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'amount.fx_quote_id' was priced on the rate of 2026-10-11, which is no longer the latest available. Request a new quote."
+                      ]
+                    }
+                  },
+                  "FX quote not usable": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'amount.fx_quote_id' does not match an active FX quote, it may have expired. Request a new quote."
+                      ]
+                    }
+                  },
+                  "Amount differs from the FX quote": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'amount.value' must be 67459.74, the local amount of the FX quote."
                       ]
                     }
                   },
