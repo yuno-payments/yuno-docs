@@ -91,7 +91,7 @@ REMOVED (no replacement), SILENT (v2 accepts and ignores the old key), BLOCKED (
 | `yuno-sdk-ready` event | `sdk-payments-ready` | RENAME | Listen to the new event; also check `window.SdkPayments` first | same |
 | `<script .../v1.11/main.js>` | `<script .../v2.x.y/main.js>` | BEHAVIOUR | Pin a full version; no rolling folder | CDN probes at the time of writing |
 | npm `loadScript()` | `loadScript({ baseUrl: 'https://sdk-web.y.uno/v2.x.y' })` | BEHAVIOUR | Pass `baseUrl`; drop `sri: true` (its URL and hashes are fixed to v1.11) | npm loader `get-url.ts`, `inject-script.ts` |
-| `@yuno-payments/sdk-web-types` | none published | REMOVED | Write a local declaration from `etc/sdk-web-v2.api.md` | `@yuno-payments/sdk-web-types` declares `startCheckout`, no `transaction` |
+| `@yuno-payments/sdk-web-types` | none published | REMOVED | Write a local declaration from the public v2 migration pages | `@yuno-payments/sdk-web-types` declares `startCheckout`, no `transaction` |
 | `await Yuno.initialize(key, appSession?, opts?)` | `await SdkPayments.initialize(...)` | RENAME + BEHAVIOUR | Same args; same args return the same instance, new args supersede the old one | `sdk-payments.ts` |
 
 ### 3.B Entry points and flow modes
@@ -113,11 +113,11 @@ REMOVED (no replacement), SILENT (v2 accepts and ignores the old key), BLOCKED (
 | `mountFraud({checkoutSession, language, type, yunoCreatePayment, ...})`: a card UI that creates the payment | `sdk.transaction({checkoutSession, countryCode, deviceFingerprints?, createPayment?, onStatus})` + `tx.start({paymentMethod:{type:'CARD'}})` | RENAME + BEHAVIOUR | Do not delete: it is a payment flow. `yunoCreatePayment(ott, info)` becomes `createPayment(token)`; `yunoError` goes to `onStatus`. The repo's `docs/NEW_PUBLIC_API.md` row 16 maps it to `sdk.antifraud` and disagrees; follow the public page | v1 `sdk/fraud/mount-fraud.ts`; docs `migration/web/fraud.mdx` |
 | `submitOneTimeTokenForm()` | `tx.submit()` | RENAME | Only after `start()` resolved | docs `lite` |
 | `unmountSdk()` | `await tx.unmount()` | RENAME + BEHAVIOUR | Async; may deliver `USER_CANCEL`; wallets stay | `transaction.ts` |
-| `updateCheckoutSession(cs)` | `tx.updateCheckoutSession(cs)` | MOVE | Payment only | `NEW_PUBLIC_API.md` row 20 |
-| `isPaymentMethodAvailable({paymentMethodType, checkoutSession?})` | `tx.isPaymentMethodAvailable({paymentMethodType})` | MOVE | Session comes from the config | row 34 |
-| `refreshPromotionQuote()` | `tx.refreshPromotionQuote()` | MOVE | @alpha, inert today | `etc/sdk-web-v2.api.md` |
+| `updateCheckoutSession(cs)` | `tx.updateCheckoutSession(cs)` | MOVE | Payment only | SDK source |
+| `isPaymentMethodAvailable({paymentMethodType, checkoutSession?})` | `tx.isPaymentMethodAvailable({paymentMethodType})` | MOVE | Session comes from the config | SDK source |
+| `refreshPromotionQuote()` | `tx.refreshPromotionQuote()` | MOVE | @alpha, inert today | SDK source |
 | `continuePayment(options?)` | none | REMOVED | Delete; the SDK continues after `createPayment` resolves | docs `lite` |
-| `notifyError()` | reject the `createPayment` promise | RENAME | Listed as a v1-only feature, but rejection covers it | row 22 |
+| `notifyError()` | reject the `createPayment` promise | RENAME | Listed as a v1-only feature, but rejection covers it | SDK source |
 
 ### 3.C Option and callback names
 
@@ -135,7 +135,7 @@ REMOVED (no replacement), SILENT (v2 accepts and ignores the old key), BLOCKED (
 | `showPaymentStatus` | `showStatusScreen` | RENAME + SILENT | | v2 SDK source |
 | `elementSelector` on `startCheckout` | on `transaction()`, `string \| HTMLElement` | MOVE | Required for a form, ignored by headless | `view-bridge.ts` |
 | `language`, `countryCode`, `checkoutSession` | same keys on `transaction()` | MOVE | `countryCode` required; TypeScript also requires `language`, `showStatusScreen` | `transaction-config.ts` |
-| none | `autoContinuePayment`, `cardFormUnfoldedEnable` | new, optional | No action | `etc/sdk-web-v2.api.md` |
+| none | `autoContinuePayment`, `cardFormUnfoldedEnable` | new, optional | No action | SDK source |
 | `enableRedesign`, `isDynamicViewEnabled`, `enabledRequiredFields` | not in the public v2 type | REMOVED (type) | Remove for TypeScript | `PaymentOnlyConfigFields` |
 
 ### 3.D Required or new behaviour
@@ -162,7 +162,7 @@ REMOVED (no replacement), SILENT (v2 accepts and ignores the old key), BLOCKED (
 
 | v1.11 | v2 | Kind | What to do | Evidence |
 |---|---|---|---|---|
-| `card.cardSaveEnable` | `card.saveCardEnabled` | RENAME + SILENT | Old key hides the save-card checkbox | commit `713867464` |
+| `card.cardSaveEnable` | `card.saveCardEnabled` | RENAME + SILENT | Old key hides the save-card checkbox | SDK source |
 | `card.requiredFieldsOrderedEnabled` | none | REMOVED | Delete (unread in both lines) | core `CardStore` |
 | `externalButtons.applePay.topLevelDomain` | not in the public type | REMOVED + SILENT | Ignored: v2 always calls `setApplePayTopLevelDomain({ option: undefined })` and auto-detects the top frame. Delete it | `ApplePayButtonConfig`; SDK source |
 
@@ -171,9 +171,9 @@ REMOVED (no replacement), SILENT (v2 accepts and ignores the old key), BLOCKED (
 | v1.11 | v2 | Kind | What to do | Evidence |
 |---|---|---|---|---|
 | `createPayment` first argument is a string | it is an object; the string is `token.token` | BEHAVIOUR | Sending the object as the token fails Create Payment (inferred) | core `types/handlers.ts` `CreatePaymentCallback` |
-| session is the third `createPayment` argument | `token.checkout_session`; the config session goes stale after a retryable decline | BEHAVIOUR | Read the session from the token | NOTES "Single-argument callback" |
-| result callback fires on final results | `onStatus` also fires on non-final retryable results in manual mode | BEHAVIOUR | Do not redirect on every call | `status-channel.md` |
-| modal checkout | inline form in the host page | BEHAVIOUR | Size the container | `NEW_PUBLIC_API.md` §3 |
+| session is the third `createPayment` argument | `token.checkout_session`; the config session goes stale after a retryable decline | BEHAVIOUR | Read the session from the token | SDK source |
+| result callback fires on final results | `onStatus` also fires on non-final retryable results in manual mode | BEHAVIOUR | Do not redirect on every call | SDK source |
+| modal checkout | inline form in the host page | BEHAVIOUR | Size the container | SDK source |
 | mount resolves when shown | `start()` resolving means form mounted, not paid | BEHAVIOUR | Never show success after `await start()` | `transaction.ts` |
 
 ### 3.H Features in v1 and absent from v2 (BLOCKED: parity gap)
@@ -181,16 +181,16 @@ REMOVED (no replacement), SILENT (v2 accepts and ignores the old key), BLOCKED (
 | v1.11 | v2 | Kind | What to do | Evidence |
 |---|---|---|---|---|
 | `unmountSeamlessExternalButtons()`, `unmountSeamlessExternalButton(t)` | none | BLOCKED if the flow needs per-wallet removal | Otherwise delete; wallets stay until the container is removed | docs `seamless` "Removed" |
-| `mountExternalButtons`, `unmountExternalButton`, `unmountAllExternalButtons` | none | BLOCKED | Non-seamless wallet buttons have no v2 form | `docs/NEW_PUBLIC_API.md` rows 29-31 |
-| `showLoader()`, `hideLoader()` | none | BLOCKED if the merchant drives the loader by hand | `showLoading(handler)` is the only hook | rows 8-9 |
-| `clickToPay(args)` standalone | none | BLOCKED | In-form Click to Pay via `c2p` config only | row 25 |
-| `renderMode: {type:'modal'\|'element'}` | none; forms render inline at `elementSelector` | SILENT; BLOCKED if a modal is required | | `NEW_PUBLIC_API.md` §3 |
-| `card.type: 'step'` (step-by-step form) | none | BLOCKED | Removed; the SDK core `CardDisplayMode` has only `extends`. Verify at runtime what a stray `'step'` renders | ledger; core `zoid/types/card.ts` |
+| `mountExternalButtons`, `unmountExternalButton`, `unmountAllExternalButtons` | none | BLOCKED | Non-seamless wallet buttons have no v2 form | SDK source |
+| `showLoader()`, `hideLoader()` | none | BLOCKED if the merchant drives the loader by hand | `showLoading(handler)` is the only hook | SDK source |
+| `clickToPay(args)` standalone | none | BLOCKED | In-form Click to Pay via `c2p` config only | SDK source |
+| `renderMode: {type:'modal'\|'element'}` | none; forms render inline at `elementSelector` | SILENT; BLOCKED if a modal is required | | SDK source |
+| `card.type: 'step'` (step-by-step form) | none | BLOCKED | Removed; the SDK core `CardDisplayMode` has only `extends`. Verify at runtime what a stray `'step'` renders | core `CardDisplayMode` type |
 | `onlyExpressPaymentMethods` | none | BLOCKED | | zero reads on v2 |
 | `stickyPayButton`, single or sticky Yuno Pay button | none | BLOCKED | | removed from v2 |
 | `__internal` | none | BLOCKED | | SDK source |
-| `onChange` on the card enrollment form, `submit()` for enrollment | never reports; throws | BLOCKED | | `enrollment-flows.md:91`, NOTES |
-| redirect-return handling, `PaymentStatus` registry | none (`sdk.handleRedirect` was removed before release) | BLOCKED | Verify at runtime which v1 call the merchant relies on | `docs/NEW_PUBLIC_API.md` §3 |
+| `onChange` on the card enrollment form, `submit()` for enrollment | never reports; throws | BLOCKED | | SDK source |
+| redirect-return handling, `PaymentStatus` registry | none (`sdk.handleRedirect` was removed before release) | BLOCKED | Verify at runtime which v1 call the merchant relies on | SDK source |
 
 ## Checks
 
@@ -264,7 +264,7 @@ Look: `mountEnrollmentLite`, `apiClientEnroll`, `continueEnrollment`, `vaultedTo
 
 ### 17. Fraud and status screen (M17, H)
 
-Look: `executeFraudCheck`, `mountFraud`, `mountStatusPayment`. Change: `executeFraudCheck` becomes `sdk.antifraud`, checked on `status === 'success'`; `mountFraud` is a card payment UI, so it becomes a normal `transaction({...})` plus `start({paymentMethod:{type:'CARD'}})` with its `yunoCreatePayment` moved to `createPayment(token)`, per the public fraud migration page (the repo's API notes say `sdk.antifraud` and disagree); `transactionStatus` with `elementSelector`. Symptom: undefined fingerprints sent; `not a function`; a deleted `mountFraud` removes a payment flow.
+Look: `executeFraudCheck`, `mountFraud`, `mountStatusPayment`. Change: `executeFraudCheck` becomes `sdk.antifraud`, checked on `status === 'success'`; `mountFraud` is a card payment UI, so it becomes a normal `transaction({...})` plus `start({paymentMethod:{type:'CARD'}})` with its `yunoCreatePayment` moved to `createPayment(token)`, per the public fraud migration page; `transactionStatus` with `elementSelector`. Symptom: undefined fingerprints sent; `not a function`; a deleted `mountFraud` removes a payment flow.
 
 ### 18. Utility calls (M18, H)
 
@@ -288,7 +288,7 @@ Look: CSS and JS selectors on SDK class names and attributes. Still v1: a select
 
 ### 23. TypeScript types (M23, L)
 
-Look: `@yuno-payments/sdk-web-types`, `YunoSDK` types. Change: a local v2 declaration from `etc/sdk-web-v2.api.md`. Symptom: compile errors or silent `any`.
+Look: `@yuno-payments/sdk-web-types`, `YunoSDK` types. Change: a local v2 declaration written from the public v2 migration pages. Symptom: compile errors or silent `any`.
 
 ### 24. Parity-gap review (M24, P)
 

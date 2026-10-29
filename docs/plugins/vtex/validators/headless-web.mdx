@@ -47,7 +47,7 @@ Report each one as PASS / FAIL / N/A with the evidence (file:line). Do not pass 
 ### 1. Mount runs only after the connector payload exists
 
 - Trace where `payload` comes from. Per the public guide it is the payload the Yuno connector returns during the
-  authorization step of this order, and it must exist before `mount`. On-call tickets show VTEX delivering it as
+  authorization step of this order, and it must exist before `mount`. Support cases show VTEX delivering it as
   the `appPayload` of a 428 answer to `gatewayCallback` (or your backend relaying `paymentAppData.payload`).
 - FAIL if `mount` can run before the code has received that payload (page load, `useEffect` with no payload guard, a timer), with a
   hardcoded or sample payload (the README/guide sample `"{\"isVTEXCard\":true,...}"`), or with a payload cached
@@ -90,10 +90,10 @@ Report each one as PASS / FAIL / N/A with the evidence (file:line). Do not pass 
 - FAIL on: a trailing slash (`https://mystore.myvtex.com/`), any path (`https://store.com/br`), a missing
   scheme (`store.myvtex.com`), or a value built by concatenation that can end in `/`.
 - Why: the bundle lowercases the value and prepends it as is (`yuno-api.ts`), so a trailing slash produces
-  `https://<host>//api/io/_v/yunopartnerbr.yuno/v4/payments/yuno`. On-call ticket (a WhatsApp checkout
-  flow, 2026-10-16): VTEX answered the CORS preflight on that URL with 405 and no CORS headers, the
+  `https://<host>//api/io/_v/yunopartnerbr.yuno/v4/payments/yuno`. In a reported incident (a WhatsApp
+  checkout flow), VTEX answered the CORS preflight on that URL with 405 and no CORS headers, the
   browser blocked the call (`Network Error`, no status), no payment was created and the orders were cancelled
-  after 24 h. The bundle in production (1.11.1) does not strip the slash; a fix is in progress.
+  after 24 h. At the time of writing the production bundle does not strip the slash.
   A value without `http(s)://` raises `onError('Domain must be https.  It is <value>')`.
 - Stores served under a sub-path use the connector's `Store Base Path` affiliation field, never a path in
   `domainVTEX`. If the page is served from the store origin itself, `domainVTEX` may be omitted.
@@ -132,7 +132,7 @@ Report each one as PASS / FAIL / N/A with the evidence (file:line). Do not pass 
   registry and `startCheckout` crashes with `Cannot read properties of undefined (reading 'call')`: endless
   spinner. If another sdk-web was loaded with the id `yuno-script`, the bundle reuses that `window.Yuno`
   instead of its own v1.6. The Payment App works around this with `resetForeignYunoSdk()`; a headless page has
-  no such reset. On-call ticket: two copies of the bundle on one page lost payment confirmations.
+  no such reset. In a reported incident, two copies of the bundle on one page lost payment confirmations.
 
 ### 9. `loadScript` options
 
