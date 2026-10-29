@@ -1,0 +1,151 @@
+---
+title: "Lite mode"
+description: "Migrate React Native Lite integrations (YunoSdk.startPaymentLite) to the unified Transaction API."
+---
+
+Lite mode pre-selected the payment method on your side and handed off to the SDK to render the form and tokenize. In React Native 1.x the SDK then emitted the One-Time Token through `onOneTimeToken`, your backend created the payment, and `continuePayment` resumed the flow. In the unified API this is `Transaction.start(paymentSelected)` with a `createPayment` controller: the SDK waits for your backend and continues on its own.
+
+## Before you start
+
+- Upgrade `@yuno-payments/yuno-sdk-react-native` to 2.0.0 and run `pod install`. Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- On Android, `minSdkVersion` is now 23. If your `android/build.gradle` applies the Compose compiler plugin to the Yuno module (a 1.x workaround), remove that block: with 2.0.0 the build fails with "The Compose Compiler requires the Compose Runtime to be on the class path".
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Lite you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | `onOneTimeToken`, your backend call, then `continuePayment` | Implement `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | `startPaymentSeamlessLite` (see [Seamless Lite](/docs/yuno-sdk/migration/react-native/payment/seamless-lite)) | Do not implement `createPayment` | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` in the controller ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Side-by-side
+
+<CodeGroup>
+
+```tsx Before. Lite mode
+import { YunoSdk, YunoStatus } from '@yuno-payments/yuno-sdk-react-native';
+
+// 1. Initialize once at app startup
+await YunoSdk.initialize({
+  apiKey: 'your-public-api-key',
+  countryCode: 'CO',
+  yunoConfig: { language: 'en', saveCardEnabled: true },
+});
+
+// 2. Subscribe to the token and the result
+const tokenSubscription = YunoSdk.onOneTimeToken(async (token) => {
+  await myBackend.createPayment(token);
+  await YunoSdk.continuePayment(checkoutSession, 'CO', true);
+});
+const statusSubscription = YunoSdk.onPaymentStatus((state) => {
+  switch (state.status) {
+    case YunoStatus.SUCCEEDED: console.log('Success'); break;
+    case YunoStatus.REJECTED: console.log('Rejected'); break;
+    case YunoStatus.FAILED: console.log('Failed'); break;
+    case YunoStatus.PROCESSING: console.log('Processing'); break;
+    case YunoStatus.CANCELLED_BY_USER: console.log('User cancelled'); break;
+  }
+});
+
+// 3. Trigger the payment with a pre-selected method
+await YunoSdk.startPaymentLite({
+  checkoutSession,
+  methodSelected: { paymentMethodType: 'CARD', vaultedToken: savedToken },
+  showPaymentStatus: true,
+});
+
+// 4. Remove the subscriptions when the screen goes away
+tokenSubscription.remove();
+statusSubscription.remove();
+```
+
+```tsx After. Unified Transaction
+import { SdkPayments, Transaction } from '@yuno-payments/yuno-sdk-react-native';
+
+// 1. Initialize once at app startup
+await SdkPayments.initialize('your-public-api-key');
+
+// 2. Build the transaction with its controller
+const transaction = new Transaction({
+  checkoutSession,
+  countryCode: 'CO',
+  language: 'en',
+  saveCardEnabled: true,
+  showStatusScreen: true,
+  controller: {
+    createPayment: async (token) => {
+      await myBackend.createPayment(token);
+    },
+    onStatus: (status) => {
+      switch (status.status) {
+        case 'SUCCEEDED': console.log('Success'); break;
+        case 'DECLINED': console.log('Declined'); break;
+        case 'REJECTED': console.log('Rejected'); break;
+        case 'ERROR': console.log('Error'); break;
+        case 'PENDING': console.log('Pending'); break;
+        case 'INTERNAL_ERROR': console.log('Internal error'); break;
+        case 'USER_CANCEL': console.log('User cancelled'); break;
+      }
+    },
+  },
+});
+
+// 3. Trigger the payment with a pre-selected method
+await transaction.start({ type: 'CARD', vaultedToken: savedToken });
+
+// 4. Release it when the screen goes away
+transaction.dispose();
+```
+
+</CodeGroup>
+
+## What changes
+
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
+
+### Initialization and config
+
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoSdk` | `SdkPayments` and `Transaction` | Renamed | `SdkPayments` keeps the global calls; everything about a payment lives on a `Transaction`. |
+| `YunoSdk.initialize({ apiKey, countryCode, yunoConfig, iosConfig, androidConfig })` | `SdkPayments.initialize(apiKey)` | Renamed | It takes only the key now. The other arguments move to `TransactionConfig` or disappear (next rows). |
+| `countryCode` of `initialize`, and the optional `countryCode` argument of each call | `TransactionConfig.countryCode` | Moved | Pass it once per transaction. |
+| `yunoConfig.language` | `TransactionConfig.language` | Moved | Pass it per transaction instead of once at startup. |
+| `yunoConfig.saveCardEnabled` | `TransactionConfig.saveCardEnabled` | Moved | Pass it per transaction instead of once at startup. |
+| `yunoConfig.keepLoader` | *(removed)* | Removed | The SDK keeps its loader. Implement `showLoading` only if you want your own (see Controller). |
+| `yunoConfig.isDynamicViewEnabled`, `cardFormDeployed`, the `CardFlow` enum | *(removed)* | Removed | Delete them: the SDK has one card form, and the unfolded payment methods list is set in the Checkout Builder of your Dashboard. |
+| `iosConfig`, `androidConfig` | *(removed)* | Removed | Delete them. |
+| `checkoutSession` of `startPaymentLite` | `TransactionConfig.checkoutSession` | Moved | The call's argument becomes a config field. |
+| `showPaymentStatus` of `startPaymentLite` | `TransactionConfig.showStatusScreen` | Moved | See the note below. |
+| *(none)* | `TransactionConfig.appearance` | New | Optional. Colors and font of the SDK views, per transaction. See [Styling](/docs/yuno-sdk/features/styling). |
+
+<Note>
+**The SDK result screen is off by default now.** Set `showStatusScreen: true` to keep it.
+</Note>
+
+### Controller
+
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| Event subscriptions (`onPaymentStatus`, `onOneTimeToken`) | `TransactionConfig.controller` | Renamed | Listeners become one plain object with methods, passed in the config. There are no subscriptions to remove: call `transaction.dispose()` when the screen goes away. |
+| `YunoSdk.onPaymentStatus((state) => …)` | `onStatus(status)` | Renamed | Still the single outcome callback, once per transaction on the terminal status, also when the SDK shows its result screen. `state.status` becomes `status.status`, and `status.substatus` and `status.message` are new. `status` and `substatus` come from the backend, as the backend returns them: the 1.x `FAILED` and `PROCESSING` values are no longer emitted, so handle `DECLINED`, `REJECTED`, `ERROR` and `PENDING` instead. `CANCELLED_BY_USER` is now `USER_CANCEL`. The SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `YunoSdk.onOneTimeToken(listener)` / `onOneTimeTokenInfo(listener)` + your backend call + `YunoSdk.continuePayment(checkoutSession, countryCode, showPaymentStatus)` | `createPayment(token)` | Renamed | The three steps become one method. `token` is the full One-Time Token object, not just the token string: send `token.token` to your backend. Create the payment and resolve the returned Promise; the SDK then queries the status, runs 3DS if needed and calls `onStatus`. If the Promise rejects, the flow stops: on Android `onStatus` receives `INTERNAL_ERROR` with `message.code` `MERCHANT_CREATE_PAYMENT_FAILED`, on iOS the flow closes without a status. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment). |
+| `getLastOneTimeToken`, `getLastOneTimeTokenInfo`, `clearLastOneTimeToken`, `clearLastPaymentStatus` | *(removed)* | Removed | The token arrives in `createPayment` and the result in `onStatus`: there is nothing cached to read or clear. |
+| `YunoSdk.hideLoader()` | `showLoading(isLoading)` | Renamed | Optional. Implement it and the SDK hides its own loader and reports the loading state to you. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+| *(none)* | `showView(view, process, step)` | New | Optional. Embed the SDK's form in your own screen with `<YunoView>`. See [`showView`](/docs/yuno-sdk/controllers/show-view). |
+
+### Entry points
+
+| Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoSdk.startPaymentLite({ checkoutSession, methodSelected, showPaymentStatus }, countryCode)` | `new Transaction(config).start(paymentSelected)` | Renamed | Build the config, then `start`. You still pick the method and pass it. `checkoutSession` and `showPaymentStatus` moved to the config (see Initialization and config). |
+| `methodSelected: { paymentMethodType, vaultedToken }` | `PaymentMethodSelected`: `{ type, vaultedToken }` | Renamed | `paymentMethodType` is now `type`. See [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected). |
+| `YunoSdk.receiveDeeplink(url)` | `transaction.handleDeeplink(url)` | Renamed | Forward the URLs your app receives to the transaction. See [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). |
+
+## Related
+
+- [Get Started](/docs/yuno-sdk/get-started). Full unified-API walkthrough.
+- [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Complete field reference.
+- [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). Values and substatus.

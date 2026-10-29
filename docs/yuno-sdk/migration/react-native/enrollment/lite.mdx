@@ -1,0 +1,96 @@
+---
+title: "Lite enrollment"
+description: "Migrate React Native enrollment (YunoSdk.enrollmentPayment) to the unified Transaction API."
+---
+
+`YunoSdk.enrollmentPayment` opened the SDK's enrollment form for a customer session and reported the outcome through `onEnrollmentStatus`. In the unified API enrollment is the same `Transaction` as a payment: pass `customerSession` instead of `checkoutSession` and call `start()`. The SDK presents the form, enrolls the method and reports the result through `onStatus`.
+
+## Before you start
+
+- Upgrade `@yuno-payments/yuno-sdk-react-native` to 2.0.0 and run `pod install`. Your public API key and the customer sessions your backend creates do not change ([Enrollment: before you start](/docs/yuno-sdk/features/enrollment#before-you-start)).
+- On Android, `minSdkVersion` is now 23. If your `android/build.gradle` applies the Compose compiler plugin to the Yuno module (a 1.x workaround), remove that block: with 2.0.0 the build fails with "The Compose Compiler requires the Compose Runtime to be on the class path".
+- There is no payment to create: `createPayment` is not invoked during enrollment.
+
+## Side-by-side
+
+<CodeGroup>
+
+```tsx Before. Lite enrollment
+import { YunoSdk, YunoStatus } from '@yuno-payments/yuno-sdk-react-native';
+
+const subscription = YunoSdk.onEnrollmentStatus((state) => {
+  if (state.status === YunoStatus.SUCCEEDED) {
+    console.log('Card saved');
+  }
+});
+
+await YunoSdk.enrollmentPayment({
+  customerSession,
+  countryCode: 'CO',
+  showPaymentStatus: true,
+});
+
+// When the screen goes away
+subscription.remove();
+```
+
+```tsx After. Unified Transaction
+import { Transaction } from '@yuno-payments/yuno-sdk-react-native';
+
+const enrollment = new Transaction({
+  customerSession,
+  countryCode: 'CO',
+  showStatusScreen: true,
+  controller: {
+    onStatus: (status) => {
+      if (status.status === 'ENROLLED') {
+        console.log('Card saved');
+      }
+    },
+  },
+});
+
+await enrollment.start({ type: 'CARD' });
+
+// When the screen goes away
+enrollment.dispose();
+```
+
+</CodeGroup>
+
+## What changes
+
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
+
+### Initialization and config
+
+| Lite enrollment | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoSdk.initialize({ apiKey, countryCode, yunoConfig })` | `SdkPayments.initialize(apiKey)` | Renamed | It takes only the key now. `countryCode` and `language` move to `TransactionConfig`. |
+| `customerSession` of `enrollmentPayment` | `TransactionConfig.customerSession` | Moved | The session type is what makes the transaction an enrollment. Do not pass `checkoutSession` too: the constructor throws. |
+| `countryCode` of `enrollmentPayment` | `TransactionConfig.countryCode` | Moved | |
+| `showPaymentStatus` of `enrollmentPayment` | `TransactionConfig.showStatusScreen` | Moved | Off by default now: set `showStatusScreen: true` to keep the SDK result screen. |
+
+### Controller
+
+| Lite enrollment | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoSdk.onEnrollmentStatus((state) => …)` | `onStatus(status)` | Renamed | Implement it in the `controller` of the config; there is no subscription to remove. `status` and `substatus` come from the backend: a successful enrollment reports `ENROLLED` instead of the 1.x `SUCCEEDED`, and `USER_CANCEL` replaces `CANCELLED_BY_USER`. The SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| *(none)* | `showView(view, process, step)` | New | Optional. Embed the enrollment form in your own screen with `<YunoView>` and submit it from your own button with `process.onSubmit()`. See [`showView`](/docs/yuno-sdk/controllers/show-view). |
+| *(none)* | `showLoading(isLoading)` | New | Optional. Show your own loader. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+
+### Entry points
+
+| Lite enrollment | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoSdk.enrollmentPayment({ customerSession, countryCode, showPaymentStatus })` | `new Transaction(config).start(paymentSelected)` | Renamed | Build the config with the customer session, then `start` with the method to enroll, for example `{ type: 'CARD' }`. |
+
+<Note>
+The vaulted token is not returned to the app. After the success status arrives, fetch it from your backend's list-customer-payment-methods endpoint and store it against your customer.
+</Note>
+
+## Related
+
+- [Enrollment](/docs/yuno-sdk/features/enrollment). Unified-API enrollment walkthrough.
+- [Headless enrollment](/docs/yuno-sdk/migration/react-native/enrollment/headless). Enroll with data you collected yourself.
+- [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). Values and substatus.

@@ -3,12 +3,13 @@ export const ConfigBuilder = () => {
     { id: 'ios', label: 'iOS' },
     { id: 'android', label: 'Android' },
     { id: 'web', label: 'Web' },
+    { id: 'react-native', label: 'React Native' },
   ];
   const DECISIONS = [
     { id: 'enrollment', step: 1, name: 'Save a payment method instead of charging', off: 'Payment', on: 'Enrollment', href: '/docs/yuno-sdk/features/enrollment', label: 'customerSession' },
     { id: 'create-payment', step: 2, name: 'Your backend creates the payment', off: 'SDK', on: 'Yours', href: '/docs/yuno-sdk/controllers/create-payment', label: 'createPayment' },
     { id: 'transaction-data', step: 3, name: 'You collect the payment data', off: 'SDK forms', on: 'Yours', href: '/docs/yuno-sdk/reference/objects-you-pass#transaction-data', label: 'transactionData' },
-    { id: 'show-view', step: 4, name: 'You embed the form in your layout', off: 'Full-screen', on: 'Yours', href: '/docs/yuno-sdk/controllers/show-view', label: 'showView', platforms: ['ios', 'android'] },
+    { id: 'show-view', step: 4, name: 'You embed the form in your layout', off: 'Full-screen', on: 'Yours', href: '/docs/yuno-sdk/controllers/show-view', label: 'showView', platforms: ['ios', 'android', 'react-native'] },
     { id: 'show-loading', step: 5, name: 'You show your own loader', off: 'SDK', on: 'Yours', href: '/docs/yuno-sdk/controllers/show-loading', label: 'showLoading' },
     { id: 'status-screen', step: 6, name: 'The SDK shows a result screen', off: 'No', on: 'Yes', href: '/docs/yuno-sdk/reference/objects-you-pass#transaction-config', label: 'showStatusScreen' },
   ];
@@ -16,6 +17,7 @@ export const ConfigBuilder = () => {
     ios: { config: (l) => /^\s*controller: self/.test(l), selected: (l) => /let paymentSelected =/.test(l), configStart: (l) => /let config =/.test(l), blockEnd: (l) => /^ {8}\)\s*$/.test(l) },
     android: { config: (l) => /^\s*controller = this/.test(l), selected: (l) => /val paymentSelected =/.test(l), configStart: (l) => /val config =/.test(l), blockEnd: (l) => /^ {8}\)\s*$/.test(l) },
     web: { config: (l) => /^\s*onStatus:/.test(l), selected: (l) => /const paymentMethod =/.test(l), configStart: (l) => /sdkPayments\.transaction\(\{/.test(l), blockEnd: (l) => /^\}\)\s*$/.test(l) },
+    'react-native': { config: (l) => /^\s*controller: \{/.test(l), selected: (l) => /const paymentSelected =/.test(l), configStart: (l) => /const config: TransactionConfig = \{/.test(l), blockEnd: (l) => /^ {2}\};\s*$/.test(l), controllerEnd: (l) => /^ {4}\},\s*$/.test(l) },
   };
 
   const [platform, setPlatform] = useState('ios');
@@ -32,7 +34,7 @@ export const ConfigBuilder = () => {
       if (!pre) return;
       map[el.getAttribute('data-fragment') + ':' + el.getAttribute('data-platform')] = pre.textContent.replace(/\n+$/, '');
     });
-    if (!(map['base:ios'] && map['base:android'] && map['base:web'])) return;
+    if (!(map['base:ios'] && map['base:android'] && map['base:web'] && map['base:react-native'])) return;
     setFragments(map);
 
     const cleanups = [];
@@ -101,6 +103,14 @@ export const ConfigBuilder = () => {
     if (i < 0) return ls;
     return ls.slice(0, i).concat([{ t: '', src: block[0].src }], block, ls.slice(i));
   };
+  const insertBeforeBlockEnd = (ls, startMatcher, endMatcher, block) => {
+    const s = ls.findIndex((l) => startMatcher(l.t));
+    if (s < 0) return ls;
+    let e = s + 1;
+    while (e < ls.length && !endMatcher(ls[e].t)) e++;
+    if (e >= ls.length) return ls;
+    return ls.slice(0, e).concat(block, ls.slice(e));
+  };
   const appendArgAfter = (ls, matcher, block) => {
     const i = ls.findIndex((l) => matcher(l.t));
     if (i < 0) return ls;
@@ -113,11 +123,13 @@ export const ConfigBuilder = () => {
     const frag = (id) => tag(id, fragments[id + ':' + platform]);
     let ls = tag('base', fragments['base:' + platform]);
     if (isActive('enrollment')) ls = replaceBlock(ls, a.configStart, a.blockEnd, frag('enrollment'), false);
-    if (isActive('transaction-data')) ls = replaceBlock(ls, a.selected, a.blockEnd, frag('transaction-data'), platform === 'web');
+    if (isActive('transaction-data')) ls = replaceBlock(ls, a.selected, a.blockEnd, frag('transaction-data'), platform === 'web' || platform === 'react-native');
     if (isActive('status-screen')) ls = platform === 'ios' ? appendArgAfter(ls, a.config, frag('status-screen')) : insertBefore(ls, a.config, frag('status-screen'));
     ['create-payment', 'show-view', 'show-loading'].forEach((id) => {
       if (!isActive(id)) return;
-      ls = platform === 'web' ? insertBefore(ls, a.config, frag(id)) : insertBeforeLastBrace(ls, frag(id));
+      if (platform === 'web') ls = insertBefore(ls, a.config, frag(id));
+      else if (platform === 'react-native') ls = insertBeforeBlockEnd(ls, a.config, a.controllerEnd, frag(id));
+      else ls = insertBeforeLastBrace(ls, frag(id));
     });
     return ls;
   };
