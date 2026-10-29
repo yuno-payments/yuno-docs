@@ -157,7 +157,7 @@ To audit a repository that already integrates Yuno, fetch the validator that mat
 - VTEX headless Web (SDK Web for VTEX): https://docs.y.uno/docs/plugins/vtex/validators/headless-web.md
 - VTEX headless wallets, Flutter: https://docs.y.uno/docs/plugins/vtex/validators/headless-wallets-flutter.md
 - VTEX headless wallets, React Native: https://docs.y.uno/docs/plugins/vtex/validators/headless-wallets-react-native.md
-- Custom CSS and JS before the Web SDK 1.11 upgrade (yuno-* to sdk-payments-* names): https://docs.y.uno/docs/plugins/vtex/validators/upgrade-check-1-6-to-1-11
+- Custom CSS and JS before the Web SDK 1.11 upgrade (yuno-* to sdk-payments-* names): https://docs.y.uno/docs/plugins/vtex/validators/upgrade-check-1-6-to-1-11.md
 
 ## Resources
 
