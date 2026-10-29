@@ -9,7 +9,7 @@ Enrollment lets you tokenize and save a customer's payment method without proces
 The same `Transaction` class handles enrollment. Only the session type changes. On Web the enrollment transaction exposes `start()`, `secureFields()`, and `unmount()`. The payment-only methods (`getPaymentMethodsViews`, `submit`, `updateCheckoutSession`) and the payment-only config fields are not available.
 
 <Note>
-The session type is what selects the mode: passing `checkoutSession` runs a **payment**, while passing `customerSession` runs an **enrollment**. Exactly one of the two must be provided. On iOS the choice is made at compile time: `TransactionConfig` has one initializer per session type, so a config with both or neither cannot be written. On Android and Web, supplying both, or neither, fails at construction time with a validation error. On Android it reads `Exactly one of checkoutSession or customerSession must be provided`. On Web it reads `Provide either checkoutSession or customerSession, not both.` or `A checkoutSession or customerSession is required.` See [Where do I start?](/docs/yuno-sdk/where-do-i-start) for the full decision guide.
+The session type is what selects the mode: passing `checkoutSession` runs a **payment**, while passing `customerSession` runs an **enrollment**. Exactly one of the two must be provided. On iOS the choice is made at compile time: `TransactionConfig` has one initializer per session type, so a config with both or neither cannot be written. On Android and Web, supplying both, or neither, fails at construction time with a validation error. On Android it reads `Exactly one of checkoutSession or customerSession must be provided`. On Web it reads `Provide either checkoutSession or customerSession, not both.` or `A checkoutSession or customerSession is required.` On React Native, `new Transaction(config)` throws `Exactly one of checkoutSession or customerSession must be provided`. See [Where do I start?](/docs/yuno-sdk/where-do-i-start) for the full decision guide.
 </Note>
 
 ## Before you start
@@ -22,7 +22,7 @@ Your backend must create the resources required for enrollment:
 
 ## Implementation
 
-Pass the `customerSession` (instead of `checkoutSession`) in `TransactionConfig` and call `start()`. On Android pass the method the customer chose in `paymentSelected`, the same way you do for a payment. On iOS `start(paymentSelected:)` takes the same object, but the method to enroll is the one your backend created on the customer session: the SDK reads it from the session and does not use `paymentMethodType` to select it. On Web, `start()` renders the SDK form for the method your backend enrolled on the customer session, and `paymentMethod` is needed only for a headless enrollment (see Skip the form). The SDK delivers the final status to `onStatus` once enrollment is complete.
+Pass the `customerSession` (instead of `checkoutSession`) in `TransactionConfig` and call `start()`. On Android pass the method the customer chose in `paymentSelected`, the same way you do for a payment. On iOS `start(paymentSelected:)` takes the same object, but the method to enroll is the one your backend created on the customer session: the SDK reads it from the session and does not use `paymentMethodType` to select it. On Web, `start()` renders the SDK form for the method your backend enrolled on the customer session, and `paymentMethod` is needed only for a headless enrollment (see Skip the form). On React Native, `start(paymentSelected)` behaves as the native SDK of the platform does. The SDK delivers the final status to `onStatus` once enrollment is complete.
 
 Rendering and selecting the payment method to enroll is your responsibility. The SDK does not present a list of enrollable methods. To fetch the available methods, call [`GET /v1/customers/sessions/{customer_session}/payment-methods`](https://docs.y.uno/reference/payment-methods-checkout/retrieve-payment-methods-to-enroll-checkout). On iOS and Web, the choice reaches the SDK through the customer session, with the `POST` call from Before you start.
 
@@ -92,6 +92,26 @@ Transaction(config)
 ```
 
   </Tab>
+
+  <Tab title="React Native">
+
+```tsx
+const enrollment = new Transaction({
+  customerSession: 'session-from-backend',
+  countryCode: 'US',
+  language: 'en', // optional, falls back to device language
+  controller: {
+    onStatus: (status) => console.log('Enrollment status:', status.status),
+  },
+});
+
+await enrollment.start({
+  type: 'CARD',
+  // transactionData: ... // optional. See "Skip the form" below.
+});
+```
+
+  </Tab>
 </Tabs>
 
 ### Skip the form
@@ -105,7 +125,7 @@ If you collect the customer's data in your own UI, pass it via `transactionData`
 ## Notes
 
 - A 3DS challenge can occur during enrollment.
-- `createPayment` does not apply because there is no payment to create. On Web the enrollment config does not accept it (TypeScript rejects the property). On iOS and Android it is not invoked.
+- `createPayment` does not apply because there is no payment to create. On Web the enrollment config does not accept it (TypeScript rejects the property). On iOS, Android and React Native it is not invoked.
 - When enrollment succeeds, `onStatus` delivers the final status, with the same payload shape as payment flows (`status`, `substatus`, `message`). The vaulted token is not surfaced to the client: retrieve it from your backend's list-customer-payment-methods endpoint after the success status arrives, and store it against your customer to use in future payments.
 
 ## Related

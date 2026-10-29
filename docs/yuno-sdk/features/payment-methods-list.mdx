@@ -9,7 +9,7 @@ description: "Render pre-built views for payment methods, including express butt
 This feature applies to payment flows only. It is not available for enrollment.
 
 <Note>
-**The list is selection-only.** It renders payment methods for the shopper to choose from, but does not process payments on its own. After the shopper picks a method, you start the transaction to process the payment. This makes the list composable with any payment flow — including headless integrations where you collect the payment data yourself in your own UI. Mount the list for method selection, receive the selection through the selection callback or controller, and start the transaction with your own pre-collected payment data. See the Headless migration guides ([Web](/docs/yuno-sdk/migration/web/headless), [iOS](/docs/yuno-sdk/migration/ios/payment/headless), [Android](/docs/yuno-sdk/migration/android/payment/headless)) for details.
+**The list is selection-only.** It renders payment methods for the shopper to choose from, but does not process payments on its own. After the shopper picks a method, you start the transaction to process the payment. This makes the list composable with any payment flow — including headless integrations where you collect the payment data yourself in your own UI. Mount the list for method selection, receive the selection through the selection callback or controller, and start the transaction with your own pre-collected payment data. See the Headless migration guides ([Web](/docs/yuno-sdk/migration/web/headless), [iOS](/docs/yuno-sdk/migration/ios/payment/headless), [Android](/docs/yuno-sdk/migration/android/payment/headless), [React Native](/docs/yuno-sdk/migration/react-native/payment/headless)) for details.
 </Note>
 
 ## Compact or unfolded: choose the layout
@@ -38,7 +38,7 @@ The compact layout is the standard out-of-the-box behavior. It requires zero das
 - Starting the transaction opens or mounts that method's payment form separately to collect details, or you trigger submission from your own custom Pay button.
 
 <Tip>
-**Combine compact selection with headless.** Because compact mode functions purely as a selection menu, you can use it alongside a headless integration. Mount the list for method selection, receive the shopper's choice through your platform callback or controller, and start the transaction passing your own custom-collected payment data. See the Headless migration guides ([Web](/docs/yuno-sdk/migration/web/headless), [iOS](/docs/yuno-sdk/migration/ios/payment/headless), [Android](/docs/yuno-sdk/migration/android/payment/headless)) for code examples.
+**Combine compact selection with headless.** Because compact mode functions purely as a selection menu, you can use it alongside a headless integration. Mount the list for method selection, receive the shopper's choice through your platform callback or controller, and start the transaction passing your own custom-collected payment data. See the Headless migration guides ([Web](/docs/yuno-sdk/migration/web/headless), [iOS](/docs/yuno-sdk/migration/ios/payment/headless), [Android](/docs/yuno-sdk/migration/android/payment/headless), [React Native](/docs/yuno-sdk/migration/react-native/payment/headless)) for code examples.
 </Tip>
 
 ### Unfolded layout
@@ -135,19 +135,47 @@ selectedPayment?.let { transaction.start(activity = this, paymentSelected = it) 
 ```
 
   </Tab>
+
+  <Tab title="React Native">
+
+```tsx
+import { YunoView, type PaymentMethodSelected, type YunoViewHandle } from '@yuno-payments/yuno-sdk-react-native';
+
+const [listView, setListView] = useState<YunoViewHandle | null>(null);
+const [selected, setSelected] = useState<PaymentMethodSelected | null>(null);
+
+useEffect(() => {
+  transaction
+    .getPaymentMethodsViews([{ kind: 'PAYMENT_METHOD_LIST' }], {
+      onPaymentSelected: setSelected,
+    })
+    .then((views) => setListView(views[0]?.view ?? null));
+}, [transaction]);
+
+// Later, when the user confirms (e.g. your Pay button):
+// if (selected) transaction.start(selected);
+
+return listView ? <YunoView view={listView} /> : null;
+```
+
+On React Native, `getPaymentMethodsViews` returns a Promise of `{ type, view }` entries in the order you requested them. Render each `view` with `<YunoView>`; a type the platform does not support comes back with `view: null`.
+
+  </Tab>
 </Tabs>
 
 ## PaymentMethodType
 
 | Value | Available on | What you get |
 |---|---|---|
-| `APPLE_PAY` | iOS, Web | The native Apple Pay button, wired to start the payment flow. On iOS this is an enum case with associated values — write it as `.APPLE_PAY()`, or pass `type:` / `style:` to customize the button. |
-| `GOOGLE_PAY` | Android, Web | The native Google Pay button, wired to start the payment flow. |
+| `APPLE_PAY` | iOS, Web, React Native (iOS) | The native Apple Pay button, wired to start the payment flow. On iOS this is an enum case with associated values — write it as `.APPLE_PAY()`, or pass `type:` / `style:` to customize the button. |
+| `GOOGLE_PAY` | Android, Web, React Native (Android) | The native Google Pay button, wired to start the payment flow. |
 | `PAYPAL` | Web | The native PayPal button, wired to start the payment flow. |
 | `PAYPAL_BRAINTREE` | Web | The PayPal button for accounts that process PayPal through Braintree. |
 | `SAMSUNG_PAY` | Web | The Samsung Pay button, wired to start the payment flow. |
 | `REVOLUT_PAY` | Web | The Revolut Pay button, wired to start the payment flow. |
-| `PAYMENT_METHOD_LIST` | iOS, Android, Web | Full list of payment methods enabled in your Yuno dashboard. |
+| `PAYMENT_METHOD_LIST` | iOS, Android, Web, React Native | Full list of payment methods enabled in your Yuno dashboard. |
+
+On React Native, pass objects: `{ kind: 'PAYMENT_METHOD_LIST' }`, `{ kind: 'GOOGLE_PAY', cta, theme, cornerRadius }` and `{ kind: 'APPLE_PAY', buttonType, buttonStyle }`, with the same button options as the native SDK of each platform.
 
 On Web, pass the values as camelCase strings in `types`: `'applePay'`, `'googlePay'`, `'paypal'`, `'paypalBraintree'`, `'samsungPay'`, `'revolutPay'`, and `'paymentMethodList'`.
 
@@ -177,19 +205,19 @@ This also holds inside the list on Web. When the shopper selects an express wall
 
 ## PaymentListController
 
-The controller you pass to `getPaymentMethodsViews`. On iOS and Android only `onPaymentSelected` is required. On Web `onPaymentSelected` is optional, but without it the list cannot tell you what the shopper picked, so pass it whenever you request `'paymentMethodList'`.
+The controller you pass to `getPaymentMethodsViews`. On iOS, Android and React Native only `onPaymentSelected` is required. On Web `onPaymentSelected` is optional, but without it the list cannot tell you what the shopper picked, so pass it whenever you request `'paymentMethodList'`.
 
 | Method | Required | Platforms | Behavior |
 |---|---|---|---|
-| `onPaymentSelected(paymentSelected)` | Yes (Web: optional) | iOS, Android, Web | Invoked when the user picks a payment method. Pass the `PaymentMethodSelected` to `Transaction.start()`. |
-| `onHeightChange(newHeight)` | No\* | iOS, Android | Invoked when the rendered view's height changes, so you can apply it to your layout. |
-| `onUnenroll(success)` | No | iOS, Android | Invoked after the SDK has attempted to remove a saved payment method initiated from the list. Receives a boolean indicating whether the unenroll succeeded. |
+| `onPaymentSelected(paymentSelected)` | Yes (Web: optional) | iOS, Android, Web, React Native | Invoked when the user picks a payment method. Pass the `PaymentMethodSelected` to `Transaction.start()`. |
+| `onHeightChange(newHeight)` | No\* | iOS, Android, React Native | Invoked when the rendered view's height changes, so you can apply it to your layout. |
+| `onUnenroll(success)` | No | iOS, Android, React Native | Invoked after the SDK has attempted to remove a saved payment method initiated from the list. Receives a boolean indicating whether the unenroll succeeded. |
 
 <Note>
 **\* `onHeightChange` is optional to _implement_, but you must apply the reported height when your layout constrains the list.**
 </Note>
 
-On Web and iOS, `onPaymentSelected` can fire before any tap. When the list preselects the shopper's preferred method on mount, the callback runs with `selectionSource: 'auto'` (`.auto` on iOS). A tap runs it with `selectionSource: 'user'` (`.user` on iOS). On Web it also fires when the shopper taps an express button you mounted. The Web `PaymentMethodSelected` is `{ type, name?, vaultedToken?, selectionSource? }`. Keep the latest value and pass it to `start()` only from your own Pay control.
+On Web and iOS, `onPaymentSelected` can fire before any tap. When the list preselects the shopper's preferred method on mount, the callback runs with `selectionSource: 'auto'` (`.auto` on iOS). A tap runs it with `selectionSource: 'user'` (`.user` on iOS). On Web it also fires when the shopper taps an express button you mounted. The Web `PaymentMethodSelected` is `{ type, name?, vaultedToken?, selectionSource? }`. Keep the latest value and pass it to `start()` only from your own Pay control. On React Native, `selectionSource` is `'AUTO'` or `'USER'`.
 
 <Note>
 If the list cannot be loaded because the payment methods service fails, the SDK reports it through your `TransactionController.onStatus` with status `INTERNAL_ERROR` and a `message`: `source` `backend` with the backend error code in `code` (the HTTP status when the body has none) and the error body in `raw`, or `source` `sdk` for network failures, with `context` `MethodsViewImplementation.getPaymentMethods` on iOS and `paymentMethodList.getPaymentMethods` on Web. The list stays empty: show your own error state or request the views again to retry.
@@ -201,7 +229,7 @@ The **Edit / remove** control that lets a shopper delete a saved method — and 
 
 ## Notes
 
-- `getPaymentMethodsViews` is synchronous.
+- `getPaymentMethodsViews` is synchronous on iOS, Android and Web. On React Native it returns a Promise.
 - You can request any combination of types available on your platform in a single call.
 - The `PaymentMethodSelected` delivered by `onPaymentSelected` is what you pass to `Transaction.start()`. See [Get Started](/docs/yuno-sdk/get-started).
 - **Checking method availability before mounting custom lists (Web):** If you build your own custom payment method selector instead of using `paymentMethodList`, use [`transaction.isPaymentMethodAvailable({ paymentMethodType })`](/docs/yuno-sdk/reference/objects-you-receive#checking-payment-method-availability-web) to verify whether express wallets (such as `APPLE_PAY` or `GOOGLE_PAY`) or specific methods are eligible to render on the customer's current device and checkout session before displaying them.

@@ -10,7 +10,7 @@ description: "Invoked when the SDK has a view to present (form or action)."
 WebViews: for example, 3DS challenges or redirects required by some payment methods, are always presented by the SDK full-screen. They do not come through `showView`, so overriding it does not change that behavior.
 </Note>
 
-`showView` is available on iOS and Android. On Web the SDK renders the form inside the element you pass as `elementSelector`, so there is no view to hand over. To submit that form from your own button, see [Web: submit from your own button](#web-submit-from-your-own-button).
+`showView` is available on iOS, Android and React Native. On Web the SDK renders the form inside the element you pass as `elementSelector`, so there is no view to hand over. To submit that form from your own button, see [Web: submit from your own button](#web-submit-from-your-own-button).
 
 ## Behavior
 
@@ -36,6 +36,20 @@ func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: Sdk
 }
 ```
 
+On React Native, call `SdkPayments.defaultShowView(view, process, step)` from your override with the arguments it received:
+
+```tsx
+showView: (view, process, step) => {
+  if (step !== 'FORM' || !view) {
+    SdkPayments.defaultShowView(view, process, step);
+    return;
+  }
+  setEmbeddedForm({ view, process }); // render <YunoView view={view} /> and call process.onSubmit() from your own button
+},
+```
+
+On React Native, the steps you receive follow the native SDK underneath: on iOS both `FORM` and `ACTION` views reach `showView`; on Android only `FORM` does, because the Android SDK presents action views itself.
+
 ## Signature
 
 <Tabs>
@@ -52,6 +66,16 @@ func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: Sdk
 ```kotlin
 fun showView(view: Fragment, process: TransactionProcess, step: TransactionViewStep)
 ```
+
+  </Tab>
+
+  <Tab title="React Native">
+
+```typescript
+showView?(view: YunoViewHandle | null, process: TransactionProcess, step: TransactionViewStep): void
+```
+
+Render the view with `<YunoView view={view} />` from `@yuno-payments/yuno-sdk-react-native`. It sizes itself to the native content.
 
   </Tab>
 </Tabs>
@@ -79,7 +103,7 @@ You don't need to handle success or failure here. The result of submission flows
 
 ## Threading
 
-On iOS and Android, `showView` is invoked on the main thread. You can update UI directly from inside this handler.
+On iOS and Android, `showView` is invoked on the main thread. You can update UI directly from inside this handler. On React Native it runs on the JavaScript thread: update your component state from it.
 
 ## Web: submit from your own button
 
