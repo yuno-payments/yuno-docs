@@ -10770,7 +10770,7 @@
               "examples": {
                 "Configuration and styling": {
                   "value": {
-                    "name": "Main checkout",
+                    "name": "Main Checkout",
                     "config": {
                       "payment_methods": [
                         {
@@ -10843,6 +10843,31 @@
                       }
                     }
                   }
+                },
+                "Hide a field on the card form": {
+                  "value": {
+                    "name": "My Checkout",
+                    "config": {
+                      "payment_methods": [
+                        {
+                          "payment_method_type": "CARD",
+                          "type": "PAYMENT_METHOD",
+                          "order_to_show": 1,
+                          "is_active": true,
+                          "active_enrollment_type": "BOTH",
+                          "required_fields_to_override": {
+                            "is_active": true,
+                            "fields": [
+                              {
+                                "field_name": "phone",
+                                "is_active": false
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
                 }
               },
               "schema": {
@@ -10866,19 +10891,18 @@
                         "items": {
                           "type": "object",
                           "properties": {
+                            "payment_method_type": {
+                              "type": "string",
+                              "description": "Payment method type, e.g. CARD, PAYPAL, NU_PAY, GOOGLE_PAY.",
+                              "example": "CARD"
+                            },
                             "type": {
                               "type": "string",
                               "enum": [
                                 "PAYMENT_METHOD",
                                 "ENROLLMENT"
                               ],
-                              "description": "Kind of item. Use `PAYMENT_METHOD` for a payment method. If `type` is missing, the field overrides of the item are silently skipped.",
-                              "example": "PAYMENT_METHOD"
-                            },
-                            "payment_method_type": {
-                              "type": "string",
-                              "description": "Payment method type, e.g. CARD, PAYPAL, NU_PAY, GOOGLE_PAY.",
-                              "example": "CARD"
+                              "description": "Which stored row this entry updates for the given `payment_method_type`: the one-time payment flow (`PAYMENT_METHOD`) or the enrollment/saved-card flow (`ENROLLMENT`). The existing row is matched by this field; omitting it means no row matches, so `fields` is silently ignored (the request still returns 200, but the non-enrolled card form doesn't change). `enrollment_fields` still applies when the payment method already has a stored enrollment row."
                             },
                             "order_to_show": {
                               "type": "integer",
@@ -10916,14 +10940,82 @@
                                 },
                                 "fields": {
                                   "type": "array",
+                                  "description": "Per-field overrides for the non-enrolled (one-time payment) flow.",
                                   "items": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                      "field_name": {
+                                        "type": "string",
+                                        "description": "The form field to override, e.g. `phone`, `security_code`.",
+                                        "example": "phone"
+                                      },
+                                      "is_active": {
+                                        "type": "boolean",
+                                        "description": "Whether the field is shown/required on the form. This is the on/off switch for the field — set `false` to hide it.",
+                                        "example": false
+                                      },
+                                      "current_value": {
+                                        "type": "string",
+                                        "enum": [
+                                          "ALWAYS",
+                                          "FIRST_TIME",
+                                          "NONE"
+                                        ],
+                                        "description": "A fixed value to apply instead of letting the payer enter one. Only meaningful for `security_code`. `NONE` returns 400 on the non-enrolled CARD flow. Unrelated to `is_active`.",
+                                        "example": "ALWAYS"
+                                      },
+                                      "conditions_to_override": {
+                                        "type": "array",
+                                        "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.",
+                                        "items": {
+                                          "type": "object"
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "field_name",
+                                      "is_active"
+                                    ]
                                   }
                                 },
                                 "enrollment_fields": {
                                   "type": "array",
+                                  "description": "Per-field overrides for the enrolled (saved-card) flow. Same shape as `fields`.",
                                   "items": {
-                                    "type": "object"
+                                    "type": "object",
+                                    "properties": {
+                                      "field_name": {
+                                        "type": "string",
+                                        "description": "The form field to override, e.g. `phone`, `security_code`.",
+                                        "example": "phone"
+                                      },
+                                      "is_active": {
+                                        "type": "boolean",
+                                        "description": "Whether the field is shown/required on the form. This is the on/off switch for the field — set `false` to hide it.",
+                                        "example": false
+                                      },
+                                      "current_value": {
+                                        "type": "string",
+                                        "enum": [
+                                          "ALWAYS",
+                                          "FIRST_TIME",
+                                          "NONE"
+                                        ],
+                                        "description": "A fixed value to apply instead of letting the payer enter one. Only meaningful for `security_code`. `NONE` returns 400 on the non-enrolled CARD flow. Unrelated to `is_active`.",
+                                        "example": "ALWAYS"
+                                      },
+                                      "conditions_to_override": {
+                                        "type": "array",
+                                        "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.",
+                                        "items": {
+                                          "type": "object"
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "field_name",
+                                      "is_active"
+                                    ]
                                   }
                                 },
                                 "is_enrollment_active": {
