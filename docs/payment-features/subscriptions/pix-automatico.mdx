@@ -98,6 +98,68 @@ These rules apply to free-trial plans only, where nothing is collected until the
   are rejected with `400 INVALID_STATE` until the mandate is approved. If the setup is canceled
   without an approval, they stay rejected.
 
+## Pix with vault on success
+
+With EBANX you can also collect Pix Automático through the `PIX` payment method: the first payment
+creates the recurring authorization and saves it as a `vaulted_token`, and later charges use that
+token. `PIX_AUTOMATIC` remains a separate payment method; enable in your checkout only the ones you
+want to offer. Here your system decides when to charge (`frequency.execution` `MERCHANT`).
+
+**1. First payment.** Send `vault_on_success: true` and a `subscription` that describes what the
+customer authorizes. Without the `subscription` block the payment is rejected with
+`INVALID_PARAMETERS`, because a recurring authorization needs a frequency and an amount.
+
+```json Create the first Pix payment
+{
+  "account_id": "<ACCOUNT_ID>",
+  "merchant_order_id": "order-0001",
+  "description": "Monthly plan",
+  "country": "BR",
+  "amount": { "currency": "BRL", "value": 15.00 },
+  "workflow": "DIRECT",
+  "customer_payer": { "id": "<CUSTOMER_ID>" },
+  "payment_method": { "type": "PIX", "vault_on_success": true },
+  "subscription": {
+    "frequency": { "type": "MONTH", "value": 1, "execution": "MERCHANT" },
+    "availability": { "finish_at": "2027-10-27T00:00:00Z" },
+    "amount": { "currency": "BRL", "value": 15.00, "type": "FIXED" }
+  }
+}
+```
+
+The response is `READY_TO_PAY` with the Pix QR code. The customer pays it once in their bank app,
+which settles this payment and approves the recurring authorization.
+
+**2. The vaulted token.** When the payment reaches `SUCCEEDED`, read
+`transactions[].payment_method.vaulted_token` from the payment webhook or
+[Retrieve Payment](/reference/payments/retrieve-payment-by-id). The customer's Pix payment method is saved
+with that token.
+
+**3. Later charges.** Charge the stored authorization with the vaulted token. No QR code and no
+customer approval are needed:
+
+```json Charge with the vaulted token
+{
+  "account_id": "<ACCOUNT_ID>",
+  "merchant_order_id": "order-0002",
+  "description": "Monthly plan - November",
+  "country": "BR",
+  "amount": { "currency": "BRL", "value": 15.00 },
+  "workflow": "DIRECT",
+  "customer_payer": { "id": "<CUSTOMER_ID>" },
+  "payment_method": { "type": "PIX", "vaulted_token": "<VAULTED_TOKEN>" }
+}
+```
+
+A Pix Automático charge is a scheduled debit: the payment is accepted right away and the final
+status (`SUCCEEDED` or declined) arrives by webhook when the provider settles it. A charge against
+an authorization that is unknown or was cancelled by the customer is declined and no money moves.
+
+**Authorizations created before Yuno.** If you already hold Pix Automático authorizations created
+with EBANX, enroll each one once as a provider token (see
+[Tokens](/docs/basic-concepts/tokens#saving-a-payment-method-while-paying)) and charge with the
+returned `vaulted_token`.
+
 ## Accepted billing cadences
 
 A Pix Automático mandate can only express the periodicities the Pix rail defines, so a cadence the
