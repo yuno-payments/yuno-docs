@@ -110,6 +110,10 @@ Each step is a **provider step** (`provider_id` + `connection_id`: a payment, fr
 | `connection_id` | UUID | provider steps | Must be `ACTIVE`, in the same account, and support the routing's `payment_method`. Omit on action and smart routing steps. |
 | `provider_type` | enum | response only | The kind the provider resolves to: `PAYMENT`, `FRAUD`, `THREE_D_SECURE`, `AUTHENTICATION`. Ignored on write. |
 | `fraud` | object | no | Configuration of a fraud provider step: `rules`, `blocklists`, `allowlists`, `reviewlists`, `preset` (opaque codes taken from the dashboard) and `report_only`. Only on `FRAUD` providers. See [Provider step kinds](#provider-step-kinds). |
+| `network_token_on` | boolean | no | Payment provider steps of a `CARD` routing only. `true` pays with the network token of the card when one is available. The organization must be onboarded to network tokens and the provider must support them, otherwise `400`. See [Provider step settings](#provider-step-settings). |
+| `three_d_secure_exemptions` | string[] | no | 3DS provider steps only. The [SCA exemptions](/docs/payment-features/sca-exemptions#allowed-values) this step may apply. See [Provider step settings](#provider-step-settings). |
+| `timeout` | int | response only | Provider steps. The timeout in seconds of the provider, from Yuno's provider catalog. Ignored on write. |
+| `network_token_enable` | boolean | response only | Payment provider steps. Whether `network_token_on` can be `true` on this step: the organization is onboarded to network tokens and the provider supports them. Ignored on write. |
 | `smart_routing` | object | smart routing steps | `type`, `providers[]`, `no_retry_decline_types[]` and `no_retry_failure_causes[]`. See [Smart routing steps](#smart-routing-steps). |
 | `action` | enum | action steps | `CANCEL`, `CAPTURE`, `HOLD_FOR_REVIEW` or `REVERT`. See [Action steps](#action-steps). Omit on provider steps. |
 | `action_delay` | string | no | ISO-8601 duration, only with `action = CAPTURE`. How long after the approval Yuno captures. See [Action steps](#action-steps). |
@@ -182,6 +186,21 @@ The kind of a provider step is derived from its `provider_id` and returned as `p
 </div>
 
 Responses return `fraud` on every `FRAUD` step (fields without a value are omitted, `report_only` always). On [Update a Routing](/reference/organizations/routing/update-routing) a fraud step sent **without** `fraud` keeps its stored configuration; a step sent **with** it replaces all six fields. `fraud` on a step that is not a fraud provider is rejected.
+
+**Provider step settings.** Two more settings of the dashboard's provider step are on the API, each on the kind of provider it applies to:
+
+<div className="code-nowrap-table dense-table">
+
+| Field | On | Notes |
+|---|---|---|
+| `network_token_on` | `PAYMENT` steps of a `CARD` routing | `true` pays with the network token of the card when one is available, instead of the card number. The organization must be onboarded to network tokens and the provider must support them, which is what `network_token_enable` reports on the response; otherwise the request is rejected with `400 NETWORK_TOKEN_NOT_ONBOARDED` or `400 NETWORK_TOKEN_NOT_SUPPORTED`. Sent on any other kind of step, or `true` on a routing that is not `CARD`, it is `400 INVALID_ROUTE_CONFIGURATION`. These checks run only on a value that differs from the one stored on the step, so a routing updated from its own `GET` response is never rejected for a `network_token_on` the request did not change. |
+| `three_d_secure_exemptions` | `THREE_D_SECURE` steps | The SCA exemptions the step is willing to apply, as an array of the values in [SCA exemptions](/docs/payment-features/sca-exemptions#allowed-values): `LOW_VALUE`, `TRANSACTION_RISK_ANALYSIS`, `SECURE_CORPORATE`, `TRUSTED_BENEFICIARY`, `RECURRING_PAYMENT`, `STRONG_CUSTOMER_AUTHENTICATION`, `OUT_OF_SCOPE`. At payment time Yuno applies only the exemptions of this list that the fraud screening or the payment flow confirms, and skips the 3DS step when the confirmed ones include `OUT_OF_SCOPE` or `RECURRING_PAYMENT`. An unknown value, or the field on a step that is not a 3DS provider, is `400 INVALID_ROUTE_CONFIGURATION`. |
+
+</div>
+
+Responses return `timeout` on every provider step, `network_token_enable` and `network_token_on` on every `PAYMENT` step, and `three_d_secure_exemptions` on every `THREE_D_SECURE` step (an empty array when none). `timeout` and `network_token_enable` are informational: Yuno resolves them from the provider catalog and the organization's network token onboarding when the routing is saved, and ignores them on write.
+
+Omitting a setting is not the same as clearing it. On [Update a Routing](/reference/organizations/routing/update-routing) a provider step sent **without** `network_token_on` or `three_d_secure_exemptions` keeps the stored value of the step with the same `provider_id` and `connection_id`; to clear them send `network_token_on: false` or `three_d_secure_exemptions: []`. A new step, or one whose connection changed, starts with `false` and `[]`.
 
 **Evaluation rules**
 
@@ -321,8 +340,8 @@ Update a Routing replaces the full configuration, splits included. A condition s
 
 ### What the API does not show
 
-A few things the dashboard can configure have no representation here: the `REFUND`, `DECLINE` and `END` actions (not step actions in the dashboard either), the per-step provider settings (timeout, network token, 3DS exemptions) and the monitors, and an action step placed where the [placement rules](#action-steps) do not allow it.
+A few things the dashboard can configure have no representation here: the `REFUND`, `DECLINE` and `END` actions (not step actions in the dashboard either), the monitors, and an action step placed where the [placement rules](#action-steps) do not allow it.
 
 - [Retrieve a Routing](/reference/organizations/routing/retrieve-routing) leaves those steps and branches out of the response.
-- [Update a Routing](/reference/organizations/routing/update-routing) does **not** delete them: what the response cannot show is kept exactly as stored, grafted onto the step it hung from, so a retrieve → update round trip keeps the routing as it was. One exception: a currency condition built in the dashboard with an operator other than `EQUAL` or with several currencies has no `AMOUNT` form; it reads back as raw `CURRENCY_AND_AMOUNT` rows and an update that sends them back is rejected with `400 INVALID_ROUTE_CONFIGURATION`. Edit that condition in the dashboard, or replace it with an `AMOUNT` condition on a single `currency`. The per-step provider settings follow the provider step with the same `provider_id` and `connection_id`; if you replace that connection, they go with it. A stored layout the merge cannot re-attach safely (the route enters on a hidden step, an output splits traffic between a hidden and a visible step, or a hidden step continues to a visible provider) is rejected with `400 INVALID_ROUTE_CONFIGURATION` and a message that ends with "Edit this routing in the dashboard".
+- [Update a Routing](/reference/organizations/routing/update-routing) does **not** delete them: what the response cannot show is kept exactly as stored, grafted onto the step it hung from, so a retrieve → update round trip keeps the routing as it was. One exception: a currency condition built in the dashboard with an operator other than `EQUAL` or with several currencies has no `AMOUNT` form; it reads back as raw `CURRENCY_AND_AMOUNT` rows and an update that sends them back is rejected with `400 INVALID_ROUTE_CONFIGURATION`. Edit that condition in the dashboard, or replace it with an `AMOUNT` condition on a single `currency`. The [provider step settings](#provider-step-settings) the request leaves out follow the provider step with the same `provider_id` and `connection_id`; if you replace that connection, they go with it. A stored layout the merge cannot re-attach safely (the route enters on a hidden step, an output splits traffic between a hidden and a visible step, or a hidden step continues to a visible provider) is rejected with `400 INVALID_ROUTE_CONFIGURATION` and a message that ends with "Edit this routing in the dashboard".
 - To change any of those parts, use the dashboard.
