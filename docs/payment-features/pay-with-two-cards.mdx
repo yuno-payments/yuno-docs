@@ -1,0 +1,284 @@
+---
+title: "Pay with two cards"
+description: "Fund one payment with exactly two cards through the Direct API or the headless Web SDK: requests, response, statuses, reversals and operations."
+---
+
+A two-card payment is one payment funded by exactly two cards. Each card pays its own part of the amount, and the two parts add up to the payment amount. Your customer pays one order, and you reconcile one payment.
+
+Use it when a customer wants to split an order between two cards, for example because one card does not have enough limit for the whole order.
+
+## Limits
+
+* Exactly two cards, both `type: CARD`.
+* One currency: both card amounts use the currency of the payment.
+* `split_marketplace`, `external_subscription` and `amount.currency_conversion` are not allowed, and promotion quotes are not accepted (see [Promotions](/docs/payment-features/promotions)).
+* All or nothing: both cards succeed or the payment fails. See [All or nothing](#all-or-nothing).
+* `payment_method.capture` is shared by both cards.
+
+## Enablement
+
+In production, two-card payments are enabled per organization. Until Yuno enables them, `POST /v2/payments` answers:
+
+```json
+{
+  "code": "PRODUCT_NOT_ENABLED",
+  "messages": [
+    "Payments with more than one payment method are enabled per account. Contact your Key Account Manager (KAM) to activate it."
+  ]
+}
+```
+
+with HTTP status `403`. Contact your Key Account Manager to enable it. In sandbox, two-card payments are enabled for every organization.
+
+## Create the payment
+
+Send `POST /v2/payments` (`https://api-sandbox.y.uno/v2/payments` in sandbox, `https://api.y.uno/v2/payments` in production, `https://api.eu.y.uno/v2/payments` in production for EMEA) with the same `public-api-key` and `private-secret-key` headers as the v1 endpoints. The `X-Idempotency-Key` header is required on this request and on every v2 operation; without it the request is rejected with `400` and the message `The header 'x-idempotency-key' is required.`
+
+| Field | Description |
+| --- | --- |
+| `workflow` | `DIRECT`, `REDIRECT` or `SDK_CHECKOUT`. |
+| `amount` | Total of the payment. It must equal the sum of the two card amounts. |
+| `payment_method.payment_methods` | `DIRECT` and `REDIRECT` only. Exactly two items, both `type: CARD`. |
+| `payment_method.payment_methods[].amount` | `currency` and `value` of the part this card pays. `value` greater than 0, `currency` the same as `amount.currency`. |
+| `payment_method.payment_methods[].detail.card` | The card data. Send it or `vaulted_token`. Do not send `capture` here. |
+| `payment_method.payment_methods[].vaulted_token` | The vaulted token of an enrolled card. |
+| `payment_method.payment_methods[].payment_method_owner` | Optional. The cardholder of this card, when it is not the payer. |
+| `payment_method.payment_methods[].account_updater` | Optional. |
+| `payment_method.token` | `SDK_CHECKOUT` only. The composite token. Do not send `payment_methods` with it. |
+| `checkout.session` | `SDK_CHECKOUT` only. The checkout session the composite token was created for. |
+| `payment_method.capture` | Shared by both cards. Defaults to `true` (both cards are charged). Send `false` to authorize both cards and capture each one later. |
+| `customer_payer` | Required. The payer, shared by both cards. |
+| `callback_url` | Optional. Where a 3DS challenge or a redirect returns the customer. |
+
+<CodeGroup>
+
+```bash DIRECT: two new cards
+curl --request POST \
+  --url https://api-sandbox.y.uno/v2/payments \
+  --header 'X-Idempotency-Key: 6f1c2a3b-4d5e-4f60-8a7b-9c0d1e2f3a4b' \
+  --header 'public-api-key: <PUBLIC_API_KEY>' \
+  --header 'private-secret-key: <PRIVATE_SECRET_KEY>' \
+  --header 'content-type: application/json' \
+  --data '{
+    "account_id": "<ACCOUNT_ID>",
+    "merchant_order_id": "order-10045",
+    "description": "Order paid with two cards",
+    "country": "BR",
+    "amount": { "currency": "BRL", "value": 300 },
+    "workflow": "DIRECT",
+    "customer_payer": { "id": "<CUSTOMER_ID>" },
+    "payment_method": {
+      "capture": true,
+      "payment_methods": [
+        {
+          "type": "CARD",
+          "amount": { "currency": "BRL", "value": 200 },
+          "detail": { "card": { "number": "4111111111111111", "expiration_month": 11, "expiration_year": 2029, "security_code": "123", "holder_name": "ANA SOUZA" } }
+        },
+        {
+          "type": "CARD",
+          "amount": { "currency": "BRL", "value": 100 },
+          "detail": { "card": { "number": "5555555555554444", "expiration_month": 3, "expiration_year": 2030, "security_code": "456", "holder_name": "ANA SOUZA" } }
+        }
+      ]
+    }
+  }'
+```
+
+```bash DIRECT: one vaulted card and one new card
+curl --request POST \
+  --url https://api-sandbox.y.uno/v2/payments \
+  --header 'X-Idempotency-Key: 7a2d3b4c-5e6f-4a71-9b8c-0d1e2f3a4b5c' \
+  --header 'public-api-key: <PUBLIC_API_KEY>' \
+  --header 'private-secret-key: <PRIVATE_SECRET_KEY>' \
+  --header 'content-type: application/json' \
+  --data '{
+    "account_id": "<ACCOUNT_ID>",
+    "merchant_order_id": "order-10046",
+    "description": "Order paid with two cards",
+    "country": "BR",
+    "amount": { "currency": "BRL", "value": 300 },
+    "workflow": "DIRECT",
+    "customer_payer": { "id": "<CUSTOMER_ID>" },
+    "payment_method": {
+      "capture": false,
+      "payment_methods": [
+        {
+          "type": "CARD",
+          "amount": { "currency": "BRL", "value": 120 },
+          "vaulted_token": "aad8578e-ac2f-40a0-8065-25b5957f6555"
+        },
+        {
+          "type": "CARD",
+          "amount": { "currency": "BRL", "value": 180 },
+          "detail": { "card": { "number": "4111111111111111", "expiration_month": 11, "expiration_year": 2029, "security_code": "123", "holder_name": "JOAO SOUZA" } },
+          "payment_method_owner": { "first_name": "Joao", "last_name": "Souza", "email": "joao.souza@example.com" }
+        }
+      ]
+    }
+  }'
+```
+
+```bash SDK_CHECKOUT: composite token
+curl --request POST \
+  --url https://api-sandbox.y.uno/v2/payments \
+  --header 'X-Idempotency-Key: 8b3e4c5d-6f7a-4b82-8c9d-1e2f3a4b5c6d' \
+  --header 'public-api-key: <PUBLIC_API_KEY>' \
+  --header 'private-secret-key: <PRIVATE_SECRET_KEY>' \
+  --header 'content-type: application/json' \
+  --data '{
+    "account_id": "<ACCOUNT_ID>",
+    "merchant_order_id": "order-10047",
+    "description": "Order paid with two cards",
+    "country": "BR",
+    "amount": { "currency": "BRL", "value": 300 },
+    "workflow": "SDK_CHECKOUT",
+    "checkout": { "session": "<CHECKOUT_SESSION>" },
+    "customer_payer": { "id": "<CUSTOMER_ID>" },
+    "payment_method": { "token": "<COMPOSITE_TOKEN>", "capture": true },
+    "callback_url": "https://merchant.example.com/checkout/return"
+  }'
+```
+
+</CodeGroup>
+
+On the SDK path, create the composite token with `generateToken` in the [headless Web SDK](/docs/sdks/headless-web/payment#split-one-payment-across-two-cards). The token carries both cards and their amounts.
+
+See the full reference in [Create Payment (two cards)](/reference/payments/create-payment-v2).
+
+## Read the response
+
+The create request and [Retrieve Payment (two cards)](/reference/payments/retrieve-payment-two-cards) return the same shape:
+
+```json
+{
+  "id": "7c1b6e2a-5f3d-4a8e-9b21-3e4f5a6b7c8d",
+  "status": "SUCCEEDED",
+  "sub_status": "APPROVED",
+  "split_payment_methods": true,
+  "payment_methods_count": 2,
+  "sdk_action_required": false,
+  "amount": { "currency": "BRL", "value": 300 },
+  "payment_method": {
+    "capture": true,
+    "payment_methods": [
+      {
+        "sequence": 1,
+        "type": "CARD",
+        "amount": { "currency": "BRL", "value": 200 },
+        "transactions": [
+          { "id": "d2a4f6b8-1c3e-4a5b-8d7f-9e0a1b2c3d4e", "type": "PURCHASE", "status": "SUCCEEDED", "amount": 200, "response_code": "SUCCEEDED" }
+        ]
+      },
+      {
+        "sequence": 2,
+        "type": "CARD",
+        "amount": { "currency": "BRL", "value": 100 },
+        "transactions": [
+          { "id": "e3b5a7c9-2d4f-4b6c-9e8a-0f1b2c3d4e5f", "type": "PURCHASE", "status": "SUCCEEDED", "amount": 100, "response_code": "SUCCEEDED" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+* `split_payment_methods` is `true` and `payment_methods_count` is `2`.
+* `payment_method.payment_methods` has one entry per card, with its `sequence` (`1` or `2`), `type`, `amount` (`currency` and `value`) and `transactions`.
+* A card has no status of its own. Read each card's outcome from its `transactions`: the last transaction of the card and its `status` tell you what happened to that card. A card that went through 3DS shows `THREE_D_SECURE` followed by `PURCHASE` (or `AUTHORIZE` when `capture` is `false`).
+* Read the payment outcome from the payment-level `status` and `sub_status`. When `sdk_action_required` is `true`, the SDK has to continue the payment, for example to run a 3DS challenge.
+
+## Statuses
+
+Yuno sums up both cards in the payment `status` and `sub_status`. The first rule that matches wins:
+
+| Cards | `status` | `sub_status` |
+| --- | --- | --- |
+| Any card declined by fraud screening | `DECLINED` | `FRAUD_DECLINED` |
+| Both cards rejected | `REJECTED` | `REJECTED` |
+| Any card declined | `DECLINED` | `DECLINED` |
+| Any card with an error | `ERROR` | `ERROR` |
+| Any card expired | `EXPIRED` | `EXPIRED` |
+| A card in fraud review | `PENDING` | `PENDING_FRAUD_REVIEW` |
+| A card waiting for 3DS | `PENDING` | `WAITING_ADDITIONAL_STEP` |
+| Both cards authorized (`capture: false`) | `PENDING` | `AUTHORIZED` |
+| Both cards charged | `SUCCEEDED` | `APPROVED` |
+| Both cards captured by you | `SUCCEEDED` | `CAPTURED` |
+| One card captured, the other not yet | `SUCCEEDED` | `PARTIALLY_CAPTURED` |
+| One card refunded | `SUCCEEDED` | `PARTIALLY_REFUNDED` |
+| Both cards refunded | `REFUNDED` | `REFUNDED` |
+| An open chargeback on a card | `IN_DISPUTE` | |
+
+See [Payment status](/reference/payments/status-and-response-codes/payment) for every status and sub status.
+
+## All or nothing
+
+Both cards succeed or the payment fails. If one card fails (declined, error or fraud), Yuno reverses the other card **before it answers the create request**, so the response already shows the final outcome:
+
+* A card that was charged (`PURCHASE`, or captured) is **refunded**.
+* A card that was only authorized is **canceled**.
+* A card waiting for 3DS is closed by Yuno, with no call to the provider.
+
+If a reversal fails, the payment stays `DECLINED` with sub status `REFUND_RETRY_IN_PROCESS` or `CANCEL_RETRY_IN_PROCESS`, and Yuno retries the reversal automatically. While the payment is in one of these sub statuses, capture and cancel are rejected.
+
+<Warning>
+Do not ask your customer to continue with the remaining card after a failure. Start a new payment instead.
+</Warning>
+
+## Fraud screening
+
+* A rejection of one card before authorization declines the payment (`DECLINED / FRAUD_DECLINED`), and Yuno closes the other card.
+* A decline after authorization reverses **both** cards.
+
+## Operations
+
+Capture, cancel and refund are per card: send the `id` of the card's transaction, from `payment_method.payment_methods[].transactions`. Every operation answers `201` with the payment in the same v2 shape and requires an `X-Idempotency-Key`.
+
+| Operation | Request |
+| --- | --- |
+| Capture one card | [`POST /v2/payments/{payment_id}/transactions/{transaction_id}/capture`](/reference/payments/capture-authorization-v2) |
+| Cancel one card | [`POST /v2/payments/{payment_id}/transactions/{transaction_id}/cancel`](/reference/payments/cancel-payment-v2) |
+| Refund one card | [`POST /v2/payments/{payment_id}/transactions/{transaction_id}/refund`](/reference/payments/refund-payment-v2) |
+| Cancel or refund one card | [`POST /v2/payments/{payment_id}/transactions/{transaction_id}/cancel-or-refund`](/reference/payments/cancel-or-refund-payment-with-transaction-v2) |
+| Cancel or refund the payment | [`POST /v2/payments/{payment_id}/cancel-or-refund`](/reference/payments/cancel-or-refund-a-payment-v2) |
+
+* A refund on a card is capped at that card's amount minus what was already refunded on it.
+* The payment-level `cancel-or-refund` accepts an optional `amount`. Yuno spreads it across the cards, starting with the card that has the most refundable amount. An `amount` above the total refundable amount is rejected.
+* While a card has an open chargeback, refunds are rejected with `INVALID_STATUS`.
+
+## Webhook
+
+The payment webhook has the same payload as for v1 payments, plus:
+
+* `split_payment_methods` and `payment_methods_count`.
+* `payment_method.capture`.
+* `payment_method.payment_methods[]`, with `sequence`, `type`, `amount` and `transactions` for each card.
+
+There is no status per card in the webhook either: read each card's outcome from its transactions. See [Configure webhooks](/docs/webhooks/configure-webhooks).
+
+## Errors
+
+Errors are `400 INVALID_PARAMETERS` unless noted. The `messages` array lists every problem found in the request.
+
+| Case | Message |
+| --- | --- |
+| Missing idempotency key | `The header 'x-idempotency-key' is required.` |
+| Workflow not allowed | `The field 'workflow' has an invalid value for /v2/payments, the allowed values are: 'DIRECT', 'REDIRECT', 'SDK_CHECKOUT'.` |
+| `SDK_CHECKOUT` without `checkout.session` | `The field 'checkout.session' is required for the SDK_CHECKOUT workflow.` |
+| `SDK_CHECKOUT` without `payment_method.token` | `The field 'payment_method.token' is required for the SDK_CHECKOUT workflow.` |
+| `payment_method.token` is not a UUID | `The field 'payment_method.token' must be a valid UUID.` |
+| `payment_methods` with `SDK_CHECKOUT` | `The field 'payment_method.payment_methods' is not allowed for the SDK_CHECKOUT workflow, the one-time token carries the payment methods.` |
+| `token` with `DIRECT` or `REDIRECT` | `The field 'payment_method.token' is only allowed for the SDK_CHECKOUT workflow, not for DIRECT.` (`not for REDIRECT.` with `REDIRECT`) |
+| `split_marketplace` with two cards | `The field 'split_marketplace' is not allowed with more than one payment method.` |
+| `external_subscription` with two cards | `The field 'external_subscription' is not allowed with more than one payment method.` |
+| `amount.currency_conversion` with two cards | `The field 'amount.currency_conversion' is not allowed with more than one payment method.` |
+| `capture` inside `detail.card` | `The field 'payment_method.payment_methods[0].detail.card.capture' is not allowed, use 'payment_method.capture' for every payment method.` |
+| A card that is not `CARD` | `The field 'payment_method.payment_methods[1].type' must be 'CARD'.` |
+| A card amount of 0 or less | `The field 'payment_method.payment_methods[0].amount.value' must be greater than 0.` |
+| A card currency different from the payment | `The field 'payment_method.payment_methods[1].amount.currency' must match 'amount.currency'.` |
+| Card amounts that do not add up | `The sum of 'payment_method.payment_methods[].amount.value' must equal 'amount.value'.` |
+| Composite token already used | Code `INVALID_TOKEN_USED` |
+| Checkout session not valid for the token | Code `INVALID_CHECKOUT_SESSION` |
+| Composite token not valid | Code `INVALID_TOKEN` |
+| Token total different from `amount` | `Token total does not match the payment amount` |
+| Not enabled for the organization | `403 PRODUCT_NOT_ENABLED` |
