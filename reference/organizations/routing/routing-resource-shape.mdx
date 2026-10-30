@@ -141,8 +141,8 @@ Each step is a **provider step** (`provider_id` + `connection_id`: a payment, fr
 |---|---|---|
 | `APPROVED` | The provider returned success. Implicit by default; list explicitly only for post-approval routing, such as a [`CAPTURE` or `HOLD_FOR_REVIEW` step](#action-steps). | — |
 | `DECLINED` | Any decline (catch-all). Place last in the array. | — |
-| `DECLINE_GROUP` | Decline whose normalized sub-status is in the group. | `group_id` and/or `decline_types[]` |
-| `MAC_CODE_GROUP` | Decline whose normalized [Merchant Advice Code](/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac) is in the group. | `group_id` |
+| `DECLINE_GROUP` | Decline whose normalized sub-status, or normalized [Merchant Advice Code](/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac), is in the group. | `group_id` and/or `decline_types[]` |
+| `MAC_CODE_GROUP` | Decline whose normalized [Merchant Advice Code](/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac) is in the group. The sub-status is not compared. | `group_id` |
 | `SUCCEEDED_GROUP` | Success whose sub-status is in the group — today that is `PENDING_IN_REVIEW`, an authorization the provider holds for manual review. | `group_id` |
 | `PENDING` | A fraud, 3DS or authentication provider left the payment pending (a review to resolve, a challenge to complete). Only on those steps. See [Provider step kinds](#provider-step-kinds). | — |
 | `INTERNAL_ERROR` | The provider returned an error (5xx, connection failure, timeout) before reaching the issuer. | — |
@@ -207,7 +207,8 @@ A group is a named set of outcomes you keep on the account, so several routes ca
 
 Rules:
 
-- `group_id` must be a group of the routing's account **and** of the kind the `status` expects. An unknown id, an id of another account, or a Merchant Advice Code group sent as `DECLINE_GROUP` is rejected with `400 INVALID_ROUTE_CONFIGURATION`; `messages` names the `group_id` and the kind it actually is.
+- `group_id` must be a group of the routing's account. `MAC_CODE_GROUP` takes a Merchant Advice Code group; `DECLINE_GROUP` takes a decline group or a Merchant Advice Code group. An unknown id, an id of another account, or a decline group sent as `MAC_CODE_GROUP` is rejected with `400 INVALID_ROUTE_CONFIGURATION`; `messages` names the `group_id` and the kind it actually is.
+- A Merchant Advice Code group behaves differently under each status, and the status is kept as you send it. As `MAC_CODE_GROUP`, the entry matches a decline only when its Merchant Advice Code is in the group. As `DECLINE_GROUP`, it also matches a decline whose sub-status is one of the group's values, including declines that carry no Merchant Advice Code. The dashboard saves Merchant Advice Code groups as `DECLINE_GROUP`, and a retrieved routing returns them that way, so send them back unchanged to keep how they route. Changing the status changes which declines the entry catches.
 - `DECLINE_GROUP` with `decline_types[]` and no `group_id` keeps working as before: Yuno creates a decline group named `auto_…` with those sub-statuses on every save. Prefer `group_id` when the group already exists, so the account does not accumulate automatic groups.
 - `DECLINE_GROUP` with both `group_id` and `decline_types[]` is accepted only when the list equals the group's members as a set (order does not matter). This is what lets you send a retrieved routing back unchanged, since responses return both. A different list is rejected: edit the group in the dashboard instead.
 - `MAC_CODE_GROUP` and `SUCCEEDED_GROUP` require `group_id`; `SUCCEEDED_GROUP` does not accept `decline_types[]`. Create those groups in the dashboard first.
@@ -219,6 +220,7 @@ Rules:
 `retry: true` on a `DECLINED`, `INTERNAL_ERROR` or `DECLINE_GROUP` entry tells Yuno to attempt the **same provider once more** when that outcome happens, before following the entry's `next` / `next_split`. The second attempt uses the step's other outputs as usual: if it is approved, the `APPROVED` path applies; if it fails again, the original destination of the entry applies. There is at most one retry per entry per payment.
 
 - `retry: true` on `APPROVED`, `MAC_CODE_GROUP` or `SUCCEEDED_GROUP` is rejected with `400 INVALID_ROUTE_CONFIGURATION`; `retry: false` is accepted anywhere, which is what lets you send a retrieved routing back unchanged.
+- `retry: true` on a `DECLINE_GROUP` entry that references a Merchant Advice Code group is accepted only when the stored routing already retries that group on the same step, so a retrieved routing round trips but an update cannot start retrying on Merchant Advice Codes. Otherwise it is rejected with `400 INVALID_ROUTE_CONFIGURATION`. This also applies when the retry would be kept from the stored entry because the request omits `retry`: send `retry: false`.
 - Responses always return `retry` on every entry (`false` when not set), so you can see which branches retry.
 - On [Update a Routing](/reference/organizations/routing/update-routing), an entry sent **without** `retry` keeps the value already stored for that position; send `retry: false` explicitly to turn a retry off.
 
