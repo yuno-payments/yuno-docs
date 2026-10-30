@@ -13,7 +13,7 @@ In the following workflow, you can find the different subscription statuses and 
   <img src="/images/reference/status-subscriptions/subscription-lifecycle.svg" alt="Subscription lifecycle: CREATED to TRIALING or ACTIVE, with PAUSED, PAST_DUE, COMPLETED and CANCELED, plus a transversal ERROR state" />
 </Frame>
 
-A subscription in the trial phase behaves like an active one: it can be paused, it enters `PAST_DUE` on a failed charge and returns to `TRIALING` when a later charge succeeds. Any non-terminal status can be canceled, and a subscription created with `initial_payment_validation: true` goes straight from `CREATED` to `CANCELED` if the first payment fails.
+A subscription in the trial phase behaves like an active one: it can be paused, it enters `PAST_DUE` on a failed charge and returns to `TRIALING` when a later charge succeeds. Any non-terminal status can be canceled. A subscription created with `initial_payment_validation: true` stays in `CREATED` while its first payment is declined and retried (when `retries.retry_on_decline` is `true`). It moves to `CANCELED` once the last retry fails, or right away when retries are off. Hard declines and shortened retry schedules can end the retries earlier; see [Retries](/docs/payment-features/subscriptions/retries#canceling-a-subscription-when-retries-run-out).
 
 ## Subscription status
 
@@ -21,7 +21,7 @@ Subscriptions can have the status described in the table below.
 
 | Status      | Description                                                                                                                                                                                                        |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `CREATED`   | Transitory status while the initial payment hasn't been processed yet. Only occurs when the subscription is created with `initial_payment_validation: true`.                                                       |
+| `CREATED`   | Transitory status while the initial payment hasn't been processed yet. Only occurs when the subscription is created with `initial_payment_validation: true`. It also covers a declined first payment that is being retried: the subscription does not enter `PAST_DUE` from here, and `retries.attempts_made`, `retries.next_retry_at` and `unpaid_cycle` report the retries while they run. |
 | `ACTIVE`    | The subscription has been created with an associated customer and is already active.                                                                                                                               |
 | `TRIALING`  | The subscription is inside a plan's leading trial phase. Transitions to `ACTIVE` automatically once the trial ends.                                                                                                |
 | `PAST_DUE`  | A recurring charge failed and the subscription is awaiting recovery. It keeps billing: the next successful charge returns it to `ACTIVE`, or to `TRIALING` if the trial phase is still running. See [Retries](/docs/payment-features/subscriptions/retries), or [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder) for the fixed ladder a `PIX_AUTOMATIC` subscription recovers on instead. |
@@ -33,7 +33,8 @@ Subscriptions can have the status described in the table below.
 <Note>
   If your subscriptions never enter `PAST_DUE`, the status is not enabled for your account yet: a
   failed recurring charge leaves the subscription in `ACTIVE` while the retries run. Contact your
-  Yuno representative to have it enabled.
+  Yuno representative to have it enabled. This does not apply to `CREATED`: a declined first payment
+  is retried in `CREATED` whether or not `PAST_DUE` is enabled.
 </Note>
 
 ## Status transition matrix
@@ -42,7 +43,7 @@ Each cell shows what moves a subscription from the status in the row to the stat
 
 |  From \ To   | `TRIALING` | `ACTIVE` | `PAST_DUE` | `PAUSED` | `COMPLETED` | `CANCELED` |
 | ------------ | ---------- | -------- | ---------- | -------- | ----------- | ---------- |
-| `CREATED`    | First payment confirmed and the plan starts with a trial phase | First payment confirmed | N/A | N/A | N/A | First payment fails under `initial_payment_validation`, or the subscription is canceled |
+| `CREATED`    | First payment confirmed and the plan starts with a trial phase, including on a retry | First payment confirmed, including on a retry | N/A | N/A | N/A | The first payment fails under `initial_payment_validation` and retries are off or exhausted, or the subscription is canceled |
 | `TRIALING`   | N/A | The trial phase ends | A recurring charge fails¹ | The subscription is paused | `billing_cycles.total` is reached or the availability window ends | Canceled by you, by a plan cancellation, or by `retries.cancel_on_exhausted_retries` |
 | `ACTIVE`     | A [plan change](/reference/subscriptions/change-subscription-plan) lands inside a trial phase | N/A | A recurring charge fails¹ | The subscription is paused | `billing_cycles.total` is reached or the availability window ends | Canceled by you, by a plan cancellation, or by `retries.cancel_on_exhausted_retries` |
 | `PAST_DUE`   | A later charge succeeds while the trial phase is still running | A later charge succeeds | N/A | N/A | The availability window ends | Canceled by you, or retries end without a successful payment and `retries.cancel_on_exhausted_retries` is `true` |
@@ -50,7 +51,7 @@ Each cell shows what moves a subscription from the status in the row to the stat
 | `COMPLETED`  | [Reactivated](/reference/subscriptions/reactivate-subscription) while a trial phase covers the cycle | [Reactivated](/reference/subscriptions/reactivate-subscription), while billing cycles remain | N/A | N/A | N/A | N/A |
 | `CANCELED`   | [Reactivated](/reference/subscriptions/reactivate-subscription) while a trial phase covers the cycle | [Reactivated](/reference/subscriptions/reactivate-subscription) | N/A | N/A | N/A | N/A |
 
-¹ Only where `PAST_DUE` is enabled for the account; otherwise the subscription stays in its current status while the retries run.
+¹ Only where `PAST_DUE` is enabled for the account; otherwise the subscription stays in its current status while the retries run. This does not apply to `CREATED`: a declined first payment is retried in `CREATED` whether or not `PAST_DUE` is enabled.
 
 <Note>
   `ERROR` sits outside this flow: it is reserved for processing failures and is not part of the
