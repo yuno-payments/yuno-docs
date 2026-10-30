@@ -40,7 +40,7 @@ Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` 
           ISO 4217 currency code, e.g. `USD`.
         </ParamField>
         <ParamField body="value" type="number" required>
-          Transaction amount. Must be `≥ 0`.
+          Transaction amount. Must be `≥ 0` and at most `9999999999`.
         </ParamField>
       </Expandable>
     </ParamField>
@@ -50,7 +50,7 @@ Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` 
     <ParamField body="payment_method" type="object" required>
       <Expandable title="properties">
         <ParamField body="type" type="string" required>
-          E.g. `CARD`, `PIX`, `WALLET`. Selects the statistics segment.
+          E.g. `CARD`, `PIX`, `WALLET`, up to 64 characters. Selects the statistics segment.
         </ParamField>
         <ParamField body="details" type="object">
           Optional. `card.bin` — the card's BIN, exactly **6 or 8 digits**. When that BIN has enough reported history, the ranking is scored on its own statistics (see [BIN-level statistics](#bin-level-statistics)); otherwise, or for any other value, the statistics fall back to country and payment method.
@@ -115,7 +115,7 @@ Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` 
 
 - **`recommended` is always present** — even without enough history. You never need a special branch: `decision_source` tells you how much to trust it.
 - **`decision_source: MERCHANT_HISTORY`** — at least one candidate reached the minimum sample; the ranking reflects real statistics over your reported payments.
-- **`decision_source: INSUFFICIENT_DATA`** — no candidate reached the minimum sample of recent reported events. The full ranking still comes back, and the recommendation falls back to the best available data, or to request order as a last resort. Read each candidate's `sample_size` to see how much history backs it before relying on the order.
+- **`decision_source: INSUFFICIENT_DATA`** — no candidate reached the minimum sample of recent reported events, or `optimize_for` is `LATENCY` and no candidate has reported latency to rank on. The full ranking still comes back, and the recommendation falls back to the best available data, or to request order as a last resort. Read each candidate's `sample_size` to see how much history backs it before relying on the order.
 - **`sample_size`** is the honesty of the recommendation. A high approval rate over 12 events is not the same signal as one over 12,000.
 - **The full `ranking` always comes back**, ordered by your objective. If the recommended candidate declines, take the next entry — cascade retry without a second call.
 
@@ -140,7 +140,7 @@ Events you reported without an initiation count only in the non-initiation (whol
 
 `optimize_for` orders the ranking: `APPROVAL_RATE` (default), `LATENCY`, or `BALANCED` (a weighted blend of both). There is no cost objective yet — the Reporting API does not collect fees, and Yuno does not rank on data it does not have.
 
-`LATENCY` and `BALANCED` rank on the `latency_ms` you report on each event. If your reported events do not carry `latency_ms`, there is no latency to rank on: `LATENCY` returns the candidates in request order, and `BALANCED` weighs approval rate only. Report `latency_ms` (the provider round trip as you measured it) to use either objective.
+`LATENCY` and `BALANCED` rank on the `latency_ms` you report on each event. If your reported events do not carry `latency_ms`, there is no latency to rank on: `LATENCY` returns `decision_source: INSUFFICIENT_DATA` with the candidates that have reported history first and the rest in request order, and `BALANCED` weighs approval rate only. Report `latency_ms` (the provider round trip as you measured it) to use either objective.
 
 ## Candidates are your constraint layer
 
@@ -220,7 +220,7 @@ Errors return a `code` and a `messages` array.
 
 | HTTP | `code` | When |
 | --- | --- | --- |
-| `400` | `INVALID_PARAMETERS` | Malformed body, a missing required field, fewer than 2 or more than 20 candidates, a non-ISO `country`/`currency`, or an invalid enum (`optimize_for`, `initiation`). |
+| `400` | `INVALID_PARAMETERS` | Malformed body, a missing required field, fewer than 2 or more than 20 candidates, a non-ISO `country`/`currency`, an invalid enum (`optimize_for`, `initiation`), a `payment_method.type` longer than 64 characters, or an `amount.value` above `9999999999`. |
 | `400` | `INVALID_ACCOUNT_ID` | `account_id` is malformed or does not belong to your organization. |
 | `401` | `INVALID_CREDENTIALS` | Missing or invalid `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` headers. |
 | `403` | `PRODUCT_NOT_ENABLED` | The Routing Recommendations API is not enabled for your organization. Contact your KAM. |
