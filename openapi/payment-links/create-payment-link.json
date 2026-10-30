@@ -193,6 +193,73 @@
                       }
                     }
                   },
+                  "local_pricing": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Set to `true` to show and charge the buyer's local currency on the hosted checkout. Default `false`. Cannot be sent with `external_invoice` (400 `INVALID_REQUEST`). On an update, a request without this field turns it off."
+                  },
+                  "tax_collection": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Set to `true` to quote and charge taxes for the buyer's address on the hosted checkout. Default `false`. It needs `external_subscription` with `customer_id` and `items` (and no `id`), and `customer_payer.id`. The link `amount.value` must equal the subtotal of the subscription prices, in the currency of those prices. If it does not, the payment is refused when the buyer pays. Cannot be sent with `external_invoice`. Returns 403 `PRODUCT_NOT_ENABLED` when your organization does not have tax collection enabled. On an update, a request without this field turns it off."
+                  },
+                  "external_subscription": {
+                    "type": "object",
+                    "description": "The billing-platform subscription that the link sells after the customer pays. Send either `items` to create a new subscription, or `id` to use an existing one. It needs `customer_payer.id` and `one_time_use` set to `true`. Cannot be sent with `subscription` or `external_invoice` (400 `INVALID_REQUEST`). `trial_period_days` and item metadata are not supported yet.",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "default": "STRIPE_BILLING",
+                        "enum": [
+                          "STRIPE_BILLING"
+                        ],
+                        "description": "The billing platform. Default `STRIPE_BILLING`."
+                      },
+                      "customer_id": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 255,
+                        "description": "The customer's identifier in the billing platform. Needed with `items`. (MIN 3; MAX 255)"
+                      },
+                      "items": {
+                        "type": "array",
+                        "description": "The prices to subscribe the customer to. Cannot be sent with `id`.",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "price"
+                          ],
+                          "properties": {
+                            "price": {
+                              "type": "string",
+                              "description": "The price identifier in the billing platform."
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "default": 1,
+                              "description": "How many units. Minimum 1. Default 1."
+                            }
+                          }
+                        }
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Optional. When you send it, it must equal `amount.currency`."
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "description": "Optional. A map of text keys and text values to save with the subscription."
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "The identifier of an existing subscription. Cannot be sent with `items` or with `tax_collection`."
+                      }
+                    }
+                  },
                   "customer_payer": {
                     "type": "object",
                     "description": "Specifies customer object for payments.",
@@ -804,6 +871,34 @@
                       "finish_at": "2027-12-29T14:00:12Z"
                     }
                   }
+                },
+                "CREATE PAYMENT LINK WITH SUBSCRIPTION AND TAX COLLECTION": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "description": "Monthly plan",
+                    "country": "US",
+                    "merchant_order_id": "AA02",
+                    "amount": {
+                      "value": 29.0,
+                      "currency": "USD"
+                    },
+                    "one_time_use": true,
+                    "customer_payer": {
+                      "id": "9d1f3a7e-5c2b-4e8a-9b6d-1a2b3c4d5e6f"
+                    },
+                    "local_pricing": false,
+                    "tax_collection": true,
+                    "external_subscription": {
+                      "provider": "STRIPE_BILLING",
+                      "customer_id": "cus_RplXYZ",
+                      "items": [
+                        {
+                          "price": "price_1QwAbc",
+                          "quantity": 1
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -846,6 +941,8 @@
                         "id": "in_1QwZzz",
                         "customer_id": "cus_RplXYZ"
                       },
+                      "local_pricing": false,
+                      "tax_collection": false,
                       "additional_data": {
                         "airline": null,
                         "order": null,
@@ -959,6 +1056,65 @@
                         }
                       }
                     },
+                    "local_pricing": {
+                      "type": "boolean",
+                      "example": false,
+                      "description": "`true` when the hosted checkout shows and charges the buyer's local currency."
+                    },
+                    "tax_collection": {
+                      "type": "boolean",
+                      "example": false,
+                      "description": "`true` when the hosted checkout quotes and charges taxes for the buyer's address."
+                    },
+                    "external_subscription": {
+                      "type": "object",
+                      "description": "The billing-platform subscription the link sells after payment, as it was sent when the link was created. The key is absent on links created without it.",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "example": "STRIPE_BILLING",
+                          "description": "The billing platform."
+                        },
+                        "customer_id": {
+                          "type": "string",
+                          "example": "cus_RplXYZ",
+                          "description": "The customer's identifier in the billing platform."
+                        },
+                        "items": {
+                          "type": "array",
+                          "description": "The prices of the subscription.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "price": {
+                                "type": "string",
+                                "example": "price_1QwAbc"
+                              },
+                              "quantity": {
+                                "type": "integer",
+                                "example": 1
+                              }
+                            }
+                          }
+                        },
+                        "currency": {
+                          "type": "string",
+                          "example": "USD",
+                          "description": "The currency of the subscription prices."
+                        },
+                        "metadata": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "description": "The text map sent when the link was created."
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "The identifier of the existing subscription, when one was sent."
+                        }
+                      }
+                    },
                     "additional_data": {
                       "type": "object",
                       "properties": {
@@ -1044,6 +1200,28 @@
                       ]
                     },
                     "summary": "Invalid Request"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Product not enabled": {
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "Tax collection is not enabled for this organization. Please contact your Key Account Manager."
+                      ]
+                    },
+                    "summary": "Product not enabled"
                   }
                 },
                 "schema": {
