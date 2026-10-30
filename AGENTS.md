@@ -75,8 +75,7 @@ Environments and base URLs. The Dashboard calls Sandbox "Test Mode" and Producti
 | Environment | Dashboard mode | Base URL |
 | --- | --- | --- |
 | Sandbox | Test Mode | `https://api-sandbox.y.uno` |
-| Production (US) | Live Mode | `https://api.y.uno` |
-| Production (EMEA) | Live Mode | `https://api.eu.y.uno` |
+| Production | Live Mode | `https://api.y.uno` |
 
 Credentials. Every API request carries two headers. Get both from the Dashboard at https://dashboard.y.uno/developers (Developers > Credentials). Sandbox and Production use different key pairs; the keys shown depend on the mode selected in the Dashboard.
 
