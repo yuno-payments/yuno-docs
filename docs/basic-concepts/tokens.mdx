@@ -66,6 +66,23 @@ Unlike vaulted tokens, network tokens are managed by the card network and **auto
 For a full overview of network tokens, lifecycle statuses, and integration options, see [Network Tokens](/docs/security-and-compliance/network-tokens).
 </Note>
 
+### Provider token
+
+Some payment methods are authorized at the provider: a Pix Automático authorization, a UPI Autopay mandate, a PayPal billing agreement. The provider identifies that authorization with its own reference, the **provider token**. Yuno stores it inside the customer's vaulted payment method, so your integration never handles it: you charge with the `vaulted_token` and Yuno sends the provider token to the provider that owns it.
+
+### Saving a payment method while paying
+
+For payment methods that are authorized during the first payment, send `vault_on_success: true` on that payment. When the payment succeeds, Yuno stores the provider token and the payment method is saved for the customer:
+
+1. **First payment (customer-initiated):** create the payment with the customer (`customer_payer.id`) and `payment_method.vault_on_success: true`. The customer approves it as usual.
+2. **The vaulted token:** once the payment reaches `SUCCEEDED`, `transactions[].payment_method.vaulted_token` carries the saved payment method. Read it from the payment webhook or [Retrieve Payment](/reference/payments/retrieve-payment-by-id). For payment methods the customer approves outside your page, such as Pix, the token appears when the customer completes the approval, not in the create response.
+3. **Later payments (merchant-initiated):** send `payment_method.vaulted_token`. Yuno charges the stored authorization without a new customer approval.
+4. **Checkout:** returning customers see the saved payment method in the SDK checkout and can pay with one click.
+
+If you already hold provider tokens created outside Yuno, enroll each one once with `provider_data.token_source: "PROVIDER_TOKEN"` and the provider reference in `provider_data.payment_method_token`. Yuno returns a `vaulted_token` you use the same way.
+
+For a complete example, see [Pix with vault on success](/docs/payment-features/subscriptions/pix-automatico#pix-with-vault-on-success).
+
 ## Token comparison
 
 |                         | One-time use token              | Vaulted token                      | Network token                                  |
