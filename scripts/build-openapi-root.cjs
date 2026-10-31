@@ -42,8 +42,8 @@ const path = require("path");
 
 const MIN_PATHS = 100;
 const METHOD_ORDER = ["get", "post", "put", "patch", "delete"];
-const REQUIRED_SERVERS = ["api-sandbox.y.uno", "api.y.uno", "api.eu.y.uno"];
-const BASE_HOSTS = ["https://api-sandbox.y.uno", "https://api.y.uno", "https://api.eu.y.uno"];
+const REQUIRED_SERVERS = ["api-sandbox.y.uno", "api.y.uno"];
+const BASE_HOSTS = ["https://api-sandbox.y.uno", "https://api.y.uno"];
 
 // Same endpoint documented on more than one nav-visible page: pick one.
 const PREFER = {
