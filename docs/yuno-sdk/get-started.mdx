@@ -129,6 +129,35 @@ class MyApplication : Application() {
 ````
 
   </Tab>
+
+  <Tab title="React Native">
+
+Requires React Native 0.72 or higher, Android `minSdkVersion` 23 and iOS 14.0. The package runs on the native Yuno SDK 3.0.0 of each platform.
+
+````bash
+npm install @yuno-payments/yuno-sdk-react-native
+cd ios && pod install
+````
+
+On Android, add the Yuno Maven repository to `android/build.gradle`. Your `MainActivity` must be a `ReactActivity`, the default, which is the `ComponentActivity` the SDK presents its screens from:
+
+````groovy
+allprojects {
+    repositories {
+        maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+    }
+}
+````
+
+Then initialize once, before you create a transaction:
+
+````typescript
+import { SdkPayments } from '@yuno-payments/yuno-sdk-react-native';
+
+await SdkPayments.initialize('your-public-api-key');
+````
+
+  </Tab>
 </Tabs>
 
 <Note>
@@ -177,7 +206,7 @@ Create the session with `workflow: "SDK_SEAMLESS"`, a field on the session-creat
 
 ### Put the methods on screen
 
-The shopper's choice reaches the SDK as a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected): only `paymentMethodType` (`type` on Web and Android) is required; `vaultedToken` and `transactionData` (`data` on Web) are optional. Two ways to get it:
+The shopper's choice reaches the SDK as a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected): only `paymentMethodType` (`type` on Web, Android and React Native) is required; `vaultedToken` and `transactionData` (`data` on Web) are optional. Two ways to get it:
 
 - **Use the SDK's pre-built methods list.** Call `getPaymentMethodsViews` to render a list of methods. When the user picks one, your `onPaymentSelected` controller receives a `PaymentMethodSelected` you can pass to `start()`. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list).
 - **Build your own list.** Fetch the available payment methods from Yuno's API and construct `PaymentMethodSelected` yourself based on the user's choice. See [`GET /v1/checkout/sessions/{checkout_session}/payment-methods`](https://docs.y.uno/reference/checkout-sessions/retrieve-payment-methods-for-checkout).
@@ -291,6 +320,35 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
         Transaction(config)
             .start(activity = this, paymentSelected = paymentSelected)
     }
+}
+````
+
+  </Tab>
+
+  <Tab title="React Native">
+
+On React Native, the controller is a plain object passed in the config. Call `startCheckout` from your payment button. Keep the transaction it returns, for example in a `useRef`, and call `transaction.dispose()` when the screen that owns it goes away.
+
+````typescript
+import { Transaction } from '@yuno-payments/yuno-sdk-react-native';
+
+async function startCheckout(): Promise<Transaction> {
+    // Create the checkout session on your backend, then pass it here.
+    const transaction = new Transaction({
+        checkoutSession: 'session-from-backend',
+        countryCode: 'US',
+        language: 'en', // optional, falls back to device language
+        controller: {
+            onStatus: (status) => {
+                console.log('Final status:', status.status);
+            },
+        },
+    });
+
+    // Tell the SDK which method to use ("CARD", "PIX", ...).
+    // See "Put the methods on screen" above.
+    await transaction.start({ type: 'CARD' });
+    return transaction;
 }
 ````
 

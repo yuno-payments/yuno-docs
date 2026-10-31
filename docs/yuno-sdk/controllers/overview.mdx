@@ -11,7 +11,7 @@ Controllers are how your code receives the SDK's events and, when needed, overri
 | Controller | Not overridden | Overridden |
 |---|---|---|
 | [`onStatus`](/docs/yuno-sdk/controllers/on-status) | You don't receive the final status. | Receives the transaction status (`status`, `substatus`, `message`) once the transaction reaches a final state. On Web it also receives a few retryable outcomes that keep the form mounted. See [`onStatus`](/docs/yuno-sdk/controllers/on-status). |
-| [`showView`](/docs/yuno-sdk/controllers/show-view) (iOS, Android) | SDK presents forms and action views (e.g. 3DS) full-screen. | SDK hands you the view and a `TransactionProcess`; embed it and call `process.onSubmit()`. |
+| [`showView`](/docs/yuno-sdk/controllers/show-view) (iOS, Android, React Native) | SDK presents forms and action views (e.g. 3DS) full-screen. | SDK hands you the view and a `TransactionProcess`; embed it and call `process.onSubmit()`. |
 | [`showLoading`](/docs/yuno-sdk/controllers/show-loading) | SDK shows its own loader. | SDK suppresses its loader and emits `isLoading: true/false`. |
 | [`createPayment`](/docs/yuno-sdk/controllers/create-payment) | SDK creates the payment after tokenization. | SDK delivers the One-Time Token; you create the payment from your backend and resolve. |
 | [`onInstallmentSelected`](/docs/yuno-sdk/controllers/on-installment-selected) | Nothing happens — the selection still travels with the payment. | Receives the installment option the buyer picks in the card form, and `null` when that selection stops being valid. |
@@ -26,13 +26,14 @@ Web has no `showView`: the SDK renders the form inside your `elementSelector`. T
 
 - **Web.** Each event is a plain function set on the transaction config. `onStatus`, `showLoading`, `createPayment` and `onChange` are top-level fields. `onInstallmentSelected` goes inside `card` (`card: { onInstallmentSelected }`) and `onShippingAddressChanged` inside `externalButtons` (`externalButtons: { onShippingAddressChanged }`).
 - **iOS, Android.** Implement `TransactionController` on the object that should react to events (your view model, activity, or a dedicated class) and pass it through the `controller` field of `TransactionConfig`. Each event maps to a method on that object. `showView` is available on mobile only.
+- **React Native.** Pass a plain object as the `controller` field of `TransactionConfig`. Each event maps to a method of that object, and the methods you leave out keep the SDK default. To hand one call back to the SDK from a method you implement, call `SdkPayments.defaultShowView`, `SdkPayments.defaultShowLoading` or `SdkPayments.defaultCreatePayment` with the arguments it received.
 
 ## Threading
 
-On iOS and Android, every controller method is invoked on the main thread. You can update UI directly from inside it. Move any blocking work (e.g. backend calls inside `createPayment`) off the main thread yourself.
+On iOS and Android, every controller method is invoked on the main thread. You can update UI directly from inside it. Move any blocking work (e.g. backend calls inside `createPayment`) off the main thread yourself. On React Native, controller methods run on the JavaScript thread.
 
 ## Per-controller pages
 
 - [`onStatus`](/docs/yuno-sdk/controllers/on-status). Required. The final outcome of the transaction.
-- [Take over the SDK](/docs/yuno-sdk/controllers/take-over-the-sdk): [`showView`](/docs/yuno-sdk/controllers/show-view) (iOS, Android), [`showLoading`](/docs/yuno-sdk/controllers/show-loading), [`createPayment`](/docs/yuno-sdk/controllers/create-payment). Override one and the SDK stops doing that step itself.
+- [Take over the SDK](/docs/yuno-sdk/controllers/take-over-the-sdk): [`showView`](/docs/yuno-sdk/controllers/show-view) (iOS, Android, React Native), [`showLoading`](/docs/yuno-sdk/controllers/show-loading), [`createPayment`](/docs/yuno-sdk/controllers/create-payment). Override one and the SDK stops doing that step itself.
 - [Listen to events](/docs/yuno-sdk/controllers/listen-to-events): [`onInstallmentSelected`](/docs/yuno-sdk/controllers/on-installment-selected), [`onShippingAddressChanged`](/docs/yuno-sdk/controllers/on-shipping-address-changed), `onChange` (Web). Informational; the SDK behaves the same with or without them.

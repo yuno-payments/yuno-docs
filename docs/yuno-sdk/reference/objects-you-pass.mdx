@@ -103,6 +103,26 @@ Android exposes `TransactionConfig` through **two constructors** — the same ob
 `autoContinuePayment` and `onShippingAddressChanged` are payment-only — the enrollment constructor doesn't take them.
 
 </Tab>
+<Tab title="React Native">
+
+| Field | Type | Required | Default |
+|---|---|---|---|
+| [`checkoutSession`](#checkoutsession) | string | One of two |  |
+| [`customerSession`](#customersession) | string | One of two |  |
+| [`countryCode`](#countrycode) | string | Yes |  |
+| [`language`](#language) | string | No | Device language |
+| [`controller`](#controller-ios-android) | TransactionController | Yes |  |
+| [`showStatusScreen`](#showstatusscreen) | boolean | No | `false` |
+| [`autoContinuePayment`](#autocontinuepayment) | boolean | No | `true` |
+| [`saveCardEnabled`](#savecardenabled-ios) | boolean | No | `false` |
+| `savePaymentMethodEnabled` | boolean | No | `false` |
+| [`appearance`](#appearance-ios-android) | Appearance | No |  |
+
+`TransactionConfig` is a plain object passed to `new Transaction(config)`. `autoContinuePayment`, `saveCardEnabled` and `savePaymentMethodEnabled` are payment-only. `savePaymentMethodEnabled` shows the save option on non-card methods on Android; the iOS SDK does not support it, and in development the wrapper warns when you set it on iOS.
+
+Shipping callbacks are not a config field on React Native: implement [`onShippingAddressChanged`](/docs/yuno-sdk/controllers/on-shipping-address-changed) on the `controller`.
+
+</Tab>
 </Tabs>
 
 You must pass either `checkoutSession` or `customerSession`, but not both. See [Validation](#validation).
@@ -129,7 +149,7 @@ See [Sessions](/docs/basic-concepts/sessions) for more.
 
 ISO country code for the payment (for example, `US`, `CO`).
 
-On iOS and Android the SDK does not validate the value. On Web a payment `start()` that mounts a form or runs headless checks the value against the SDK's country list. A value outside that list makes `start()` reject with `countryCode=<value> is not valid`. An enrollment `start()` checks only that the value is a non-empty string. See [Country coverage](/docs/sdks/resources/country-coverage) for the list of supported countries.
+On iOS, Android and React Native the SDK does not validate the value. On Web a payment `start()` that mounts a form or runs headless checks the value against the SDK's country list. A value outside that list makes `start()` reject with `countryCode=<value> is not valid`. An enrollment `start()` checks only that the value is a non-empty string. See [Country coverage](/docs/sdks/resources/country-coverage) for the list of supported countries.
 
 ## `language`
 
@@ -143,6 +163,8 @@ Object that implements the `TransactionController` interface. Used to receive tr
 
 On iOS and Android, `controller` is **required**: `onStatus` is the only mechanism for receiving the transaction outcome, so a config without a controller would deliver every result nowhere. On iOS the SDK holds the reference weakly, so keep the instance alive for the duration of the transaction.
 
+On React Native, `controller` is a plain object with the methods you need. Only `onStatus` is required: `new Transaction(config)` throws `TransactionConfig.controller must implement onStatus` without it.
+
 On Web, controllers are wired directly as fields on the config (`onStatus`, `showLoading`, `createPayment`). On iOS and Android, you pass a single controller object through the `controller` field.
 
 See [Controllers](/docs/yuno-sdk/controllers/overview).
@@ -151,7 +173,7 @@ See [Controllers](/docs/yuno-sdk/controllers/overview).
 
 Flag that controls whether the SDK presents its built-in result screen after the transaction finishes.
 
-- `false` (default on iOS and Android). The SDK does not show a result screen. You receive the final status through `onStatus` and render your own UI.
+- `false` (default on iOS, Android and React Native). The SDK does not show a result screen. You receive the final status through `onStatus` and render your own UI.
 - `true` (default on Web). The SDK presents its result screen. On iOS the screen is not shown for `USER_CANCEL`.
 
 `onStatus` is always invoked, regardless of this flag.
@@ -174,6 +196,8 @@ Flag that controls whether the card form offers the save-card checkbox on paymen
 - `true`. The card form shows the checkbox, unchecked. If the user ticks it, the card is stored on a successful payment.
 
 Payment flows only. The enrollment initializer does not take it.
+
+React Native takes the same flag on both platforms.
 
 On Web the flag lives inside the `card` object. See [`card`](#card-web-only).
 
@@ -205,7 +229,7 @@ Button options per wallet (`googlePay`, `applePay`, `samsungPay`, `paypal`, `pay
 
 ## `appearance` (iOS, Android)
 
-Visual customization object for the SDK's built-in views: font family and colors. Not available on Web.
+Visual customization object for the SDK's built-in views: font family and colors. Not available on Web. On React Native the colors are hex strings.
 
 See [Styling](/docs/yuno-sdk/features/styling) for the full set of options.
 
@@ -230,6 +254,7 @@ The config rejects both `checkoutSession` and `customerSession` being set, or ne
 | iOS | Compile-time. `TransactionConfig` has two non-throwing initializers (`init(checkoutSession:...)` and `init(customerSession:...)`), so a config with both or neither sessions cannot be constructed. No `try` is needed. |
 | Android | Compile-time. `TransactionConfig` has two constructors (`TransactionConfig(checkoutSession = …)` and `TransactionConfig(customerSession = …)`), so a config with both or neither session cannot be constructed. |
 | Web | Runtime. Throws a Yuno SDK error |
+| React Native | Runtime. `new Transaction(config)` throws `Exactly one of checkoutSession or customerSession must be provided`. |
 
 On Web, the constructor also throws if `countryCode` is missing or if `createPayment` is set to anything other than a function. If `onStatus` is missing the constructor does not throw. It logs a console warning and the transaction result is never delivered.
 
@@ -276,9 +301,21 @@ The object the payment methods list hands to `onPaymentSelected` also carries `s
 | [`transactionData`](#transactiondata) | TransactionData | No |
 
 </Tab>
+<Tab title="React Native">
+
+| Field | Type | Required |
+|---|---|---|
+| [`type`](#paymentmethodtype) | string | Yes |
+| [`vaultedToken`](#vaultedtoken) | string | No |
+| [`transactionData`](#transactiondata) | TransactionData | No |
+| `metadata` | object | No |
+
+`metadata` reaches the Android SDK only; the iOS SDK ignores it. The object the payment methods list hands to `onPaymentSelected` also carries `selectionSource` (`'AUTO'` when the SDK preselected the method, `'USER'` when the shopper picked it). You can pass it to `start()` as it is.
+
+</Tab>
 </Tabs>
 
-Only `paymentMethodType` (iOS) or `type` (Web and Android) is required. On iOS and Android the SDK does not validate this object.
+Only `paymentMethodType` (iOS) or `type` (Web, Android and React Native) is required. On iOS, Android and React Native the SDK does not validate this object.
 
 On Web `start()` validates it. For a payment, `type` must be a non-empty string. For a headless enrollment that passes `data`, `type` is required too. With secure fields mounted, `data.card` must not contain `number`, `securityCode`, `expirationMonth` or `expirationYear`. In manual mode, a form `start()` rejects express wallet types such as `GOOGLE_PAY` and `APPLE_PAY`, because their buttons mount through `getPaymentMethodsViews()`. Beyond that the SDK does not check the values.
 
@@ -313,7 +350,7 @@ See [TransactionData](/docs/yuno-sdk/reference/objects-you-pass#transaction-data
 
 ## Shape
 
-The full shape of `TransactionData` is the following. This JSON is illustrative, on each platform you build an object (JavaScript on Web, Swift on iOS, Kotlin on Android) that produces this structure. All field names are camelCase in the SDK. Every field is optional, fill only what applies to your scenario.
+The full shape of `TransactionData` is the following. This JSON is illustrative, on each platform you build an object (JavaScript on Web, Swift on iOS, Kotlin on Android, TypeScript on React Native) that produces this structure. All field names are camelCase in the SDK. Every field is optional, fill only what applies to your scenario.
 
 ```json
 {
@@ -390,6 +427,8 @@ On Web and iOS, `bankTransfer` also takes `accountType` and `accountHolderType`.
 On iOS the shape differs in four places. There is no `otp`. `bankTransfer` names the account fields `accountNumber` and `routingId`. `wallet` carries the fields of a wallet checkout you ran yourself, not `cardData`. And `customer` sends only part of what it accepts. See [iOS types](#ios-types).
 
 On Android there is no `otp`, no `card.brand` and no `customer.merchantCustomerId`.
+
+On React Native, `TransactionData` takes the union of the iOS and Android fields, with the iOS names for `bankTransfer` (`accountNumber`, `routingId`) and no `otp`. Each native SDK uses the fields it supports and ignores the rest: on Android `card.brand`, the iOS `wallet` fields and `customer.id`, `merchantCustomerId`, `gender`, `dateOfBirth`, `nationality`, `country` and `neighborhood`; on iOS the Android `wallet` fields (`token`, `integrationCode`, `providerResponse`). In development the wrapper logs a warning naming each ignored field.
 
 With secure fields mounted, the SDK reads only `card.holderName`, `card.type`, `vaultOnSuccess`, `installment` and `customer` from `data`. The other objects apply to headless `start()` only.
 
