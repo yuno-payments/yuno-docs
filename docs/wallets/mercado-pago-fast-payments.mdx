@@ -189,12 +189,13 @@ await yuno.startPayment();
 
 ### Lite checkout with several payment methods
 
-In Lite checkout your page owns the payment method list and the SDK renders one method at a time. To offer Fast Payments next to cards and other methods, mount the method the shopper selects and keep one Pay button on your page. Four rules decide the integration:
+In Lite checkout your page owns the payment method list and the SDK renders one method at a time. To offer Fast Payments next to cards and other methods, mount the method the shopper selects and keep one Pay button on your page. Five rules decide the integration:
 
 * **One mounted method at a time.** `mountCheckoutLite` renders the chosen method's form into `renderMode.elementSelector.apmForm` (element mode) or into a modal. Calling it again with another `paymentMethodType` replaces the previous form, so typed data and validation state never carry over from one method to the next.
 * **Your Pay button.** With `showPayButton: false` the card and other-method forms render no button of their own. `onChange` tells you when the mounted form is complete, and `yuno.submitOneTimeTokenForm()` submits it.
 * **Mercado Pago confirms inside its own component.** The Fast Payments component keeps its *Continue* and *Pay* buttons, and `showPayButton` and `submitOneTimeTokenForm()` do not apply to it. In element mode, hide your Pay button while Mercado Pago is selected.
-* **A method with nothing to ask pays on mount.** When a method renders no form, the SDK creates the one-time token and calls `createPayment` as soon as the method mounts. Mount those methods when the shopper presses Pay, not when they select the method.
+* **Form-less methods pay on mount.** When a method asks for nothing (for example, Pix when customer document/CPF is already present on the checkout session), the SDK generates the one-time token and calls `createPayment` as soon as the method mounts. Mount those methods when the shopper presses Pay. If the session lacks customer document details, Pix renders a document input form first.
+* **Session rotation and retries.** A checkout session processes one payment attempt. If a card payment is declined, the SDK initiates payment retry on a cloned checkout session delivered via `onLoading` (`type === 'PAYMENT_RETRY'`), so update your stored checkout session ID with `data.newCheckoutSession`. If a non-card payment (such as Mercado Pago or Pix) fails, the session is already consumed: create a fresh checkout session on your server before letting the shopper try another method.
 
 <Tabs>
 <Tab title="Element render mode">
@@ -219,9 +220,10 @@ const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
 const payButton = document.querySelector('#pay-button');
 let selectedType = null;
 let formIsValid = false;
+let currentCheckoutSession = 'CHECKOUT_SESSION_ID';
 
 await yuno.startCheckout({
-  checkoutSession: 'CHECKOUT_SESSION_ID',
+  checkoutSession: currentCheckoutSession,
   elementSelector: '#yuno-root',
   countryCode: 'BR',
   renderMode: {
@@ -237,10 +239,29 @@ await yuno.startCheckout({
     formIsValid = form.isValid;
     refreshPayButton();
   },
+  onLoading: ({ type, data }) => {
+    // When a card is declined, the SDK clones the session for retry
+    if (type === 'PAYMENT_RETRY') {
+      currentCheckoutSession = data.newCheckoutSession;
+    }
+  },
   async createPayment(oneTimeToken, tokenWithInformation) {
-    // Create the payment from your backend with the one-time token
-    await createPaymentOnYourServer({ oneTimeToken, checkoutSession: 'CHECKOUT_SESSION_ID' });
-    await yuno.continuePayment();
+    const payment = await createPaymentOnYourServer({
+      oneTimeToken,
+      checkoutSession: currentCheckoutSession,
+    });
+
+    const isCard = payment.payment_method?.type === 'CARD';
+    const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+
+    // Only call continuePayment when an action or retry is required
+    if (isCard && failed) {
+      await yuno.continuePayment();
+    } else if (payment.checkout?.sdk_action_required) {
+      await yuno.continuePayment({ showPaymentStatus: true });
+    } else {
+      await yuno.unmountSdk();
+    }
   },
   paymentResult(status) {
     console.log('Payment result:', status);
@@ -251,8 +272,8 @@ await yuno.startCheckout({
 });
 
 // Methods that render a form: mount on selection, submit from your Pay button.
-// A method that asks nothing (Pix on this connection) creates the token as soon
-// as it mounts, so it is mounted from the Pay button instead.
+// If Pix has no missing customer details, it asks nothing and creates the token on mount,
+// so it is mounted when the shopper presses Pay.
 const MOUNT_ON_SELECTION = ['MERCADO_PAGO_SUPERTOKEN', 'CARD'];
 
 async function selectMethod(type) {
@@ -302,15 +323,34 @@ In modal render mode (the default) the SDK opens the method's modal as soon as i
 const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
 
 let selectedType = null;
+let currentCheckoutSession = 'CHECKOUT_SESSION_ID';
 
 await yuno.startCheckout({
-  checkoutSession: 'CHECKOUT_SESSION_ID',
+  checkoutSession: currentCheckoutSession,
   elementSelector: '#yuno-root',
   countryCode: 'BR',
   // renderMode defaults to { type: 'modal' }
+  onLoading: ({ type, data }) => {
+    if (type === 'PAYMENT_RETRY') {
+      currentCheckoutSession = data.newCheckoutSession;
+    }
+  },
   async createPayment(oneTimeToken, tokenWithInformation) {
-    await createPaymentOnYourServer({ oneTimeToken, checkoutSession: 'CHECKOUT_SESSION_ID' });
-    await yuno.continuePayment();
+    const payment = await createPaymentOnYourServer({
+      oneTimeToken,
+      checkoutSession: currentCheckoutSession,
+    });
+
+    const isCard = payment.payment_method?.type === 'CARD';
+    const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+
+    if (isCard && failed) {
+      await yuno.continuePayment();
+    } else if (payment.checkout?.sdk_action_required) {
+      await yuno.continuePayment({ showPaymentStatus: true });
+    } else {
+      await yuno.unmountSdk();
+    }
   },
   paymentResult(status) {
     console.log('Payment result:', status);
