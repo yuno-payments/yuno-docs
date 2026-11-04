@@ -9,24 +9,25 @@ description: "Where In-Person Payments works, which acquirers, POS terminals and
 
 |  |  |
 | --- | --- |
-| **Regions** | Latin America and Europe. |
+| **Regions** | Mexico first, then the rest of Latin America and Europe. Each country is its own certification with its own acquirers and local schemes. |
 | **Acquirers** | The acquirers you already work with. Yuno integrates and certifies the Yuno Payment App with each new acquirer on demand, following the acquirer's specification. |
 | **Card brands** | Visa and Mastercard; other card schemes on demand. |
-| **POS terminals** | Android POS terminals that accept external payment applications, from vendors such as Verifone and Ingenico; Linux-based terminals next. New vendors are added as adapters to the same app. |
-| **Payment methods** | Chip and PIN, contactless, instalments. Local methods such as QR payments and wallets are integrated on demand, following each provider's API specification. |
-| **Integration types** | Local, cloud, standalone and reconciliation first. |
-| **Beyond the sale** | Subscriptions started in store, one customer view across in-store and online, reconciliation per store and acquirer. |
+| **POS terminals** | Android POS terminals that accept external payment applications. Ingenico first, Verifone next. New vendors are added as adapters to the same app. |
+| **Payment methods** | Chip and PIN, contactless and instalments in the first certified release. Local methods such as QR payments and wallets are added per market, each following its provider's API specification and each with its own certification. |
+| **Integration types** | Local, cloud, standalone and reconciliation first. Local ships first; the other three are designed around the same payment and the same certified app. |
+| **Beyond the sale** | Reconciliation per store and acquirer from the first release. Subscriptions started in store and one customer view across in-store and online follow it; the message fields they need are certified from the start, so turning them on is never a recertification. |
 
 ## Certification and compliance
 
 |  | What it is | Where Yuno stands |
 | --- | --- | --- |
 | **EMV Level 1 and 2** | The terminal hardware and kernel, approved by EMVCo | The vendor's, unchanged: the Yuno Payment App uses the kernel through the vendor's SDK and never modifies it |
-| **Level 3 / card-brand certification** | The full chain terminal, app and acquirer, tested end to end per acquirer and brand (Mastercard M-TIP, Visa) | The Yuno Payment App is certified with each acquirer, which signs the certification. Adding an acquirer is a new certification; adding a merchant is not |
+| **Level 3 / card-brand certification** | The full chain terminal, app, Yuno Cloud and acquirer, tested end to end per acquirer and brand (Mastercard M-TIP, Visa) | Yuno certifies the chain with each acquirer, which signs the certification. Adding an acquirer is a new host certification; adding a merchant is not, and the terminal app is not rebuilt |
 | **Service provider registration** | Each acquirer registers the providers in its chain with Visa and Mastercard | Done by each acquirer for Yuno |
 | **PCI PTS** | The PIN pad hardware | The vendor's, unchanged |
-| **PCI DSS** | How Yuno handles card data | In-person payments run inside Yuno's PCI DSS programme |
-| **PCI PIN** | Transmitting, decrypting or translating PINs | The PIN travels encrypted from the PIN pad to the acquirer; Yuno does not decrypt or translate it in this design, so Yuno is outside PCI PIN scope. PIN translation inside Yuno, which would let the acquirer be chosen after the PIN, is a later option and would bring Yuno into that scope |
+| **PCI DSS** | How Yuno handles card data | In-person payments run inside Yuno's PCI DSS programme, extended to card-present data |
+| **PCI PIN** | Transmitting, decrypting or translating PINs | Yuno is in scope and is certifying. The terminal encrypts the PIN under Yuno's key; Yuno translates it to the chosen acquirer's key inside a hardware security module, so the PIN is never in the clear anywhere. This is what lets the acquirer be chosen after the card is read, and it gates the pilot |
+| **PCI Secure Software** | How the payment application is built and released | The Yuno Payment App is certified under the PCI Software Security Framework |
 
 What restarts certification and what doesn't is on [POS terminals and fleet](/docs/in-person/terminals).
 
@@ -57,26 +58,26 @@ What restarts certification and what doesn't is on [POS terminals and fleet](/do
 </AccordionGroup>
 
 <AccordionGroup>
-  <Accordion title="If the Yuno Payment App chooses the acquirer, what does Yuno Cloud do?">
-    The app makes the decision on the terminal, but with the rules you publish in Yuno Cloud and the acquirer health that Yuno Cloud computes from every terminal of every store. Yuno Cloud also records every payment, sends your webhooks, runs reconciliation, keeps customers and subscriptions, and manages the fleet. It is never in the authorisation, so the store keeps selling if it can't reach Yuno.
+  <Accordion title="Why is the sale authorised through Yuno Cloud and not from the terminal?">
+    Because that is what lets one fleet reach several acquirers without a key, an integration and a certification per acquirer on every terminal. The terminal holds one key, Yuno's, and sends one message; Yuno Cloud chooses the acquirer for that sale, translates the PIN in a hardware security module and speaks each acquirer's dialect. Adding an acquirer is then a change in Yuno Cloud, not a new app in the field. The trade is real and deliberate: a card sale through Yuno needs the link to Yuno Cloud.
   </Accordion>
 </AccordionGroup>
 
 <AccordionGroup>
   <Accordion title="Does Yuno touch the card data or the PIN?">
-    The card is read and the PIN is entered on the terminal's certified hardware, encrypted to the acquirer. Yuno never sees the PIN. Card data only leaves the terminal encrypted, and it is kept only as a token when the customer agrees to a subscription.
+    The card is read and the PIN is entered on the terminal's certified hardware and encrypted under Yuno's key. Yuno translates the PIN to the chosen acquirer's key inside a hardware security module: it is never in the clear, inside Yuno or anywhere else, and no person at Yuno can see it. This is why Yuno is in PCI PIN scope and certifies for it. Card data only leaves the terminal encrypted, and it is kept only as a token when the customer agrees to a subscription.
   </Accordion>
 </AccordionGroup>
 
 <AccordionGroup>
   <Accordion title="What happens if the store loses its connection to Yuno?">
-    The POS terminal keeps the latest routing rules and continues to authorise directly with the acquirer. Sales are reported to Yuno when the connection returns, with their original time and ID.
+    A card sale through Yuno cannot be authorised, so the terminal declines cleanly, before the card is read where it can, and nothing is charged. There is no store-and-forward: a sale is never taken on the promise of authorising it later, because that promise is the merchant's loss when the card turns out to be bad. Yuno Cloud runs in two regions and the terminal keeps the link open, so a drop is known before a sale starts and the cashier can take cash or another tender.
   </Accordion>
 </AccordionGroup>
 
 <AccordionGroup>
   <Accordion title="Can a declined payment be retried with another acquirer?">
-    Not in store. The PIN is encrypted for the acquirer chosen before the customer typed it, and an authorisation only ever goes to one acquirer, so the result of that sale is final. Routing across sales is where the benefit is: cost, instalment programmes and staying up when an acquirer is down.
+    Not in store. One sale is one authorisation, and an issuer decline is final: the customer is standing there and a second attempt is theirs to make. A sale is resent to a second acquirer in one case only, when the first acquirer's host failed before the issuer ever saw it. Routing across sales is where the benefit is: cost, instalment programmes and staying up when an acquirer is down.
   </Accordion>
 </AccordionGroup>
 
@@ -88,7 +89,7 @@ What restarts certification and what doesn't is on [POS terminals and fleet](/do
 
 <AccordionGroup>
   <Accordion title="Can we see the same customer in store and online?">
-    Yes. Yuno links in-store and online payments made with the same card to the same customer, through the card's payment account reference, without the card number reaching your systems. See [Payments and events](/docs/in-person/payments-and-events).
+    That is the design: in-store and online payments made with the same card link to the same customer through the card's payment account reference, without the card number reaching your systems. The reference is carried from the first release, and the unified customer view follows it. See [Payments and events](/docs/in-person/payments-and-events).
   </Accordion>
 </AccordionGroup>
 

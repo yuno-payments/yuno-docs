@@ -35,25 +35,25 @@ Every in-store sale is a Yuno `payment`, with the same identifier, statuses, eve
 
 <CardGroup cols={3}>
   <Card title="Multi-acquirer routing">
-    Per sale, by store, amount, method and acquirer health. If an acquirer fails, the sale in progress is reversed with that acquirer and the next sale goes to the next one.
+    Per sale, by store, amount, method, card range and acquirer health. A declined sale is never sent to another acquirer; one that times out is reversed with the same one.
   </Card>
   <Card title="Instalments">
-    Instalment plans from the catalogue of the acquirer that takes the sale, chosen on the POS terminal before the PIN.
+    Instalment plans from the catalogue of the acquirer that takes the sale. The plan can be chosen at your checkout system, on the terminal before the PIN, or just before the sale is authorised.
   </Card>
   <Card title="Subscriptions">
-    Start a subscription at the counter: the first charge on the POS terminal, the following ones online, on the same Yuno subscription.
+    Start a subscription at the counter: the first charge on the POS terminal, the following ones online, on the same Yuno subscription. The message fields this needs are certified in the first release, so turning it on later never means recertifying.
   </Card>
   <Card title="Customer visibility across channels">
     The same card is recognised in store and online, so you know who pays in each channel and can bring store purchases into loyalty, analytics and service.
   </Card>
   <Card title="Payment methods on demand">
-    Cards on chip and contactless, plus the local methods your market uses, such as QR and wallets, integrated on demand.
+    Cards on chip and contactless in the first certified release. Local methods such as QR and wallets are added per market, each with its own certification.
   </Card>
   <Card title="White label">
     Your brand on every screen and receipt, by configuration, never by code and never with a new certification.
   </Card>
   <Card title="Fleet management">
-    Every POS terminal by store: online or offline, app version, acquirer IDs and keys, last sale. Updates staged by group.
+    Every POS terminal by store: online or offline, app version, acquirer IDs, key status, last sale. Updates staged by group.
   </Card>
   <Card title="Reconciliation">
     Authorised, settled and deposited per store and acquirer, matched automatically. It can start before the app is on a single terminal.
@@ -65,26 +65,26 @@ Every in-store sale is a Yuno `payment`, with the same identifier, statuses, eve
 
 ## How it works
 
-<Frame caption="The authorisation goes from the POS terminal straight to the acquirer. Yuno Cloud publishes the rules the terminal applies, records every sale and reconciles it.">
-  <img src="/images/in-person/how-it-works.svg" alt="The authorisation goes from the POS terminal straight to the acquirer. Yuno Cloud publishes the rules the terminal applies, records every sale and reconciles it." />
+<Frame caption="Every sale is authorised through Yuno Cloud, which chooses the acquirer for that sale and translates the PIN. The terminal holds only Yuno's key.">
+  <img src="/images/in-person/how-it-works.svg" alt="Every sale is authorised through Yuno Cloud, which chooses the acquirer for that sale and translates the PIN. The terminal holds only Yuno's key." />
 </Frame>
 
 - **The sale starts at your checkout system**, as it does today, or on the POS terminal itself. Your checkout system talks to the terminal inside the store; Yuno never connects to your checkout system, your store network or your central systems.
-- **The Yuno Payment App picks the acquirer** for each sale with the rules you set in Yuno: store, amount, payment method and the live health of each acquirer. Rules are published to the terminal as versions, so a sale completes even if the store's connection to Yuno is down.
-- **The card and the PIN never leave the terminal unencrypted.** The PIN is encrypted on the secure keypad with the chosen acquirer's key and travels to that acquirer. Yuno never sees or handles it.
-- **The terminal answers your checkout system, then reports the sale to Yuno.** Yuno records the payment, sends your webhooks, and later matches the acquirer's settlement file against it.
+- **The POS terminal sends one authorisation to Yuno Cloud.** It holds a single key, Yuno's, and never talks to an acquirer itself.
+- **Yuno Cloud chooses the acquirer for that sale** with the rules you set: store, amount, payment method, card range and the live health of each acquirer. The PIN is translated inside a hardware security module to the key of whichever acquirer takes the sale, and is never in the clear anywhere.
+- **The terminal answers your checkout system** with the result and the receipt data. Yuno records the payment, sends your webhooks, and later matches the acquirer's settlement file against it.
 
 ## What runs where
 
 | On the POS terminal (Yuno Payment App) | In Yuno Cloud |
 | --- | --- |
-| Reads the card with the vendor's certified kernel | Where you write and publish the routing rules, as versions |
-| Picks the acquirer with the published rules | Acquirer health, computed from every terminal of every store |
-| Takes the PIN and authorises directly with the acquirer | The payment record, webhooks, reports and dashboard |
-| Reverses a timed-out sale with the same acquirer | Reconciliation against settlement files and deposits |
-| Keeps the batch per acquirer and prints receipts through your checkout system | Customers, subscriptions, fleet configuration and app updates |
+| Reads the card with the vendor's certified kernel | Chooses the acquirer for each sale, from the rules you publish |
+| Shows the instalment plans pushed from Yuno Cloud | Translates the PIN in a hardware security module to that acquirer's key |
+| Takes the PIN on the secure keypad, under Yuno's key | Sends the authorisation over its own link to each acquirer |
+| Sends one authorisation, then hands over the receipt lines | Records the payment, sends webhooks, reports and the dashboard |
+| Holds no acquirer key and never talks to an acquirer | Reconciles settlement files, and manages customers, fleet and updates |
 
-The terminal never waits for Yuno Cloud to sell. Yuno Cloud is what makes the terminals a fleet: one set of rules, one health signal, one record of every sale, in the same place as your online payments.
+Yuno Cloud is in every sale, which is what lets one sale go to a different acquirer than the last without touching the terminal. It is also what makes the terminals a fleet: one set of rules, one health signal, one record of every sale, in the same place as your online payments. The host runs in two regions; if it cannot be reached the terminal cannot take a card, and the store falls back to its other tender.
 
 ## How a sale flows
 
@@ -92,11 +92,11 @@ The terminal never waits for Yuno Cloud to sell. Yuno Cloud is what makes the te
   <Step title="The sale starts">
     Your checkout system sends the amount and your reference to the POS terminal.
   </Step>
-  <Step title="The terminal chooses the acquirer">
-    From your rules for that store: amount, method, acquirer health. Before the PIN, because the PIN is encrypted with that acquirer's key.
-  </Step>
   <Step title="The customer pays">
-    Chip or contactless, instalments where they apply, PIN on the secure keypad. The terminal authorises directly with the acquirer.
+    Chip or contactless, instalments where they apply, PIN on the secure keypad under Yuno's key. The terminal sends the sale to Yuno Cloud once.
+  </Step>
+  <Step title="Yuno Cloud chooses the acquirer and authorises">
+    From your rules for that store: amount, method, card range and acquirer health. A hardware security module translates the PIN to that acquirer's key, and Yuno sends one authorisation.
   </Step>
   <Step title="You get the result twice">
     On the checkout system for the receipt, and as a Yuno payment with `channel: IN_PERSON`, with the same webhooks as online.
@@ -110,12 +110,12 @@ The full sequence, with contactless, instalments, voids, refunds and what happen
 
 ## Integration types
 
-|  | Where the sale starts |
-| --- | --- |
-| **Local** | Your checkout system, over the store network or a cable |
-| **Cloud** | Your server, through the Payments API |
-| **Standalone** | On the POS terminal, no integration |
-| **Reconciliation first** | Your current terminals and acquirers, reconciled by Yuno |
+|  | Where the sale starts | Availability |
+| --- | --- | --- |
+| **Local** | Your checkout system, over the store network or a cable | First to ship |
+| **Cloud** | Your server, through the Payments API | Planned |
+| **Standalone** | On the POS terminal, no integration | Planned |
+| **Reconciliation first** | Your current terminals and acquirers, reconciled by Yuno | Planned |
 
 How to choose is on [Integration types](/docs/in-person/ways-to-integrate). How your checkout system talks to the POS terminal is on [Connect your checkout system](/docs/in-person/connect-your-checkout-system).
 
@@ -127,10 +127,10 @@ No POS terminal? The merchant's Android phone or iPhone can take contactless pay
 
 |  |  |
 | --- | --- |
-| **Regions** | Latin America and Europe |
+| **Regions** | Mexico first, then the rest of Latin America and Europe. Each country is its own certification |
 | **Acquirers** | The acquirers you work with; Yuno integrates and certifies new acquirers on demand |
-| **POS terminals** | Android POS terminals that accept external payment applications, from vendors such as Verifone and Ingenico |
-| **Payment methods** | Chip and PIN, contactless, instalments; local methods such as QR and wallets integrated on demand |
+| **POS terminals** | Android POS terminals that accept external payment applications. Ingenico first, Verifone next |
+| **Payment methods** | Chip and PIN, contactless and instalments in the first certified release; local methods such as QR and wallets per market |
 
 Details and compliance: [Coverage and FAQ](/docs/in-person/coverage-and-faq).
 
