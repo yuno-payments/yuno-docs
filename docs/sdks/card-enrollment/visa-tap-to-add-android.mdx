@@ -39,7 +39,7 @@ sequenceDiagram
     TapSDK->>TapSDK: Encrypt card payload on device
     TapSDK->>Yuno: Submit encrypted card payload
     Yuno-->>TapSDK: Enrollment response
-    TapSDK-->>MerchantApp: TapOutcome.Added(paymentMethodCode, paymentAccountReference)
+    TapSDK-->>MerchantApp: TapOutcome.Added(paymentMethodCode, paymentAccountReference, merchantCardAlias)
     MerchantApp->>Customer: Display enrollment success
 ```
 
@@ -249,6 +249,7 @@ class EnrollmentActivity : AppCompatActivity() {
                 // Card successfully enrolled
                 val paymentMethodCode = outcome.paymentMethodCode
                 val par = outcome.paymentAccountReference // Note: PAR may be null depending on issuer support
+                val alias = outcome.merchantCardAlias // From yuno-tap 0.4.0; pass it to your fraud engine with paymentMethodCode
                 Toast.makeText(this, "Card enrolled: $paymentMethodCode", Toast.LENGTH_SHORT).show()
             }
             is TapOutcome.Canceled -> {
@@ -322,7 +323,7 @@ The callback returns a sealed `TapOutcome` object:
 
 | Outcome | Properties | Description |
 | :--- | :--- | :--- |
-| `TapOutcome.Added` | `paymentMethodCode: String`<br />`paymentAccountReference: String?` | Contactless card successfully enrolled. `paymentAccountReference` (PAR) uniquely identifies the underlying account across tokens, but can be `null` depending on the issuing bank. |
+| `TapOutcome.Added` | `paymentMethodCode: String`<br />`paymentAccountReference: String?`<br />`last4: String?`<br />`issuerName: String?`<br />`merchantCardAlias: String?` | Contactless card successfully enrolled. `paymentAccountReference` (PAR) uniquely identifies the underlying account across tokens, but can be `null` depending on the issuing bank. `last4` and `issuerName` describe the tapped card as reported by Yuno, and are `null` when unknown. `merchantCardAlias` is the alias your own endpoint returned for this card when Yuno called it during the enrollment. This outcome is the only place where it arrives together with `paymentMethodCode`, because the code does not exist yet when your endpoint is called, so hand both to your fraud engine here. It is `null` when Yuno could not obtain an alias, which is still a successful enrollment. `last4`, `issuerName` and `merchantCardAlias` are available from yuno-tap 0.4.0. |
 | `TapOutcome.Canceled` | None | The user dismissed the tap prompt or closed the NFC sheet before completing the read. |
 | `TapOutcome.Error` | `code: String`<br />`message: String`<br />`cause: Throwable?` | The tap operation failed (e.g., NFC timeout, unsupported scheme, or network error). |
 
