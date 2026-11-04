@@ -111,14 +111,20 @@ want to offer. Here your system decides when to charge (`frequency.execution` `M
 **1. First payment.** Send `payment_method.vault_on_success: true` and a `subscription` block that
 describes what the customer authorizes:
 
-* `frequency.type` `MONTH` with `frequency.value` `1`, `3`, `6` or `12` (monthly, quarterly,
-  half-yearly or yearly), and `frequency.execution` `MERCHANT`.
-* `availability` and `amount`, with `amount.type`. A missing field is rejected with `HTTP 400`
-  before any charge.
+* `frequency.type` and `frequency.value`: `WEEK` `1`, `MONTH` `1`, `3`, `6` or `12`, or `YEAR` `1`
+  (weekly, monthly, quarterly, half-yearly or yearly).
+* `frequency.execution` `MERCHANT`: your system decides when to charge.
+* `availability` and `amount`, with `amount.type`. A request without one of them is rejected with
+  `HTTP 400` before any charge. With `amount.type` `FIXED`, `subscription.amount.value` must equal
+  the payment `amount.value`; use `VARIABLE` to authorize later charges larger than the first one.
 
-The authorization's maximum per-charge amount is the larger of the payment `amount` and
-`subscription.amount`. The customer must carry a CPF or CNPJ in `customer_payer.document`: Yuno
-sends it, with the customer's name and email, to EBANX to create the authorization.
+Yuno sends EBANX the larger of the payment `amount` and `subscription.amount` as the authorization's
+minimum limit. When approving, the customer sets the maximum per-charge amount in their bank app,
+and it cannot be lower than that value.
+
+The customer referenced by `customer_payer.id` must have a first and last name, an email and a CPF
+or CNPJ in `document`. Yuno sends them to EBANX to create the authorization and on every later
+charge; it does not validate them first, and EBANX declines the payment if they are missing.
 
 ```json Create the first Pix payment
 {
@@ -156,24 +162,31 @@ sends it, with the customer's name and email, to EBANX to create the authorizati
 }
 ```
 
-Without the `subscription` block, or with a `MONTH` value other than the ones above, the payment is
-created as `DECLINED` and the provider is not called; the transaction's `response_message` reads
-`vault_on_success on PIX requires a subscription to enroll the recurring authorization`.
+Without the `subscription` block, or with a frequency other than the ones above (for example
+`QUARTER` or `MONTH` `2`), the payment is created as `DECLINED` and the provider is not called. The
+transaction's `response_message` starts with
+`vault_on_success on PIX requires a subscription to enroll the recurring authorization` and lists
+the accepted frequencies.
 
 The response is `READY_TO_PAY` (`sub_status` `CREATED`) with a redirect: send the customer to
 `payment_method.payment_method_detail.bank_transfer.redirect_url`, the EBANX page that shows the
 Pix QR code. The response has no QR code field for you to render. The customer pays once in their
 bank app, which settles this payment and approves the recurring authorization.
 
-The `subscription` block also creates a Yuno subscription, returned as `subscription_code`, with
-`execution` `MERCHANT`: Yuno never bills it. Charge with the vaulted token as shown below, not with
-`subscription.id`, which is rejected with `400` `Invalid subscription status.`
+The `subscription` block also creates a Yuno subscription, returned as `subscription_code`. Charge
+the authorization with the vaulted token as shown below, not with `subscription.id`.
 
-**2. The vaulted token.** When the payment reaches `SUCCEEDED`, read
-`transactions.payment_method.vaulted_token` from the payment webhook, or
-`transactions[].payment_method.vaulted_token` from
-[Retrieve Payment](/reference/payments/retrieve-payment-by-id). The create response does not carry
-it yet. The customer's Pix payment method is saved with that token.
+**2. The vaulted token.** Yuno saves the customer's Pix payment method when this payment is
+created, before the customer approves it. Its token is in
+[Retrieve Enrolled Payment Methods](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api)
+right away, and in `transactions[].payment_method.vaulted_token` from
+[Retrieve Payment](/reference/payments/retrieve-payment-by-id-v2) once the payment reaches
+`SUCCEEDED`. Charge it only after this payment is `SUCCEEDED`: until the customer approves, a charge
+with the token is declined.
+
+Each customer has one saved Pix payment method. A new first payment with `vault_on_success`
+replaces its authorization with the new one and keeps the same `vaulted_token`, so charges with
+that token are declined until the customer approves the new payment.
 
 **3. Later charges.** Charge the stored authorization with the vaulted token. No QR code and no
 customer approval are needed:
@@ -200,16 +213,18 @@ customer approval are needed:
 ```
 
 A Pix Automático charge is a scheduled debit: the create response returns `PENDING` with
-`sub_status` `PENDING_PROVIDER_CONFIRMATION`, and the provider debits the customer two days after
-the request. The final status arrives by webhook: `SUCCEEDED` when the debit settles, otherwise
-`DECLINED` or `EXPIRED`. The provider does not retry a failed debit, and accepts one charge per
-billing cycle of the authorization. A charge against an authorization that is unknown or was
-canceled by the customer is declined in the create response itself and no money moves.
+`sub_status` `PENDING_PROVIDER_CONFIRMATION`, and Yuno asks EBANX to debit the customer on a due
+date two days after the request. The final status arrives by webhook: `SUCCEEDED` when the debit
+settles, otherwise `DECLINED` or `EXPIRED`. EBANX does not retry a failed debit on authorizations
+created through Yuno. If EBANX rejects the charge when it is created, for example because the
+customer has not approved the authorization, the payment is `DECLINED` in the create response and
+no money moves.
 
-**In the checkout.** The saved Pix appears as its own option, labeled with the last four digits of
-the customer's document (for example `Pix ****6893`), next to the regular Pix option that shows a
-new QR code. Paying with the saved option needs no QR code; the SDK shows the payment as in
-progress until the provider settles the debit.
+**In the checkout.** When you create the checkout session with the customer's `customer_id` and Pix
+is enabled in your checkout, the saved Pix appears as its own option, labeled with the last four
+digits of the customer's document (for example `Pix ****6893`), next to the regular Pix option that
+shows a new QR code. Paying with the saved option needs no QR code: the SDK shows the payment as in
+progress, and the final status arrives by webhook.
 
 **Authorizations created before Yuno.** If you already hold Pix Automático authorizations created
 with EBANX, contact your Yuno representative before charging them through Yuno.
