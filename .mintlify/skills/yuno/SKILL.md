@@ -196,7 +196,12 @@ app.post("/webhooks/yuno", express.raw({ type: "application/json" }), async (req
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.sendStatus(401);
 
   const event = JSON.parse(req.body.toString("utf8"));
-  const key = event.data?.idempotency_key;          // stable across retries
+  // The key location depends on the event (stable across retries of the same event).
+  const key = event.type_event === "payment.split_update"
+    ? event.data?.split_update?.idempotency_key    // one key per split update operation
+    : event.type_event.startsWith("payment.")
+      ? event.data?.payment?.idempotency_key
+      : event.data?.idempotency_key;               // subscription events
   if (await alreadyProcessed(event.type_event, key)) return res.sendStatus(200);
 
   if (event.type_event === "payment.purchase" && event.data.payment.status === "SUCCEEDED") {
@@ -209,8 +214,9 @@ app.post("/webhooks/yuno", express.raw({ type: "application/json" }), async (req
 
 - Verify over the **raw body**. Re-serialized JSON changes the bytes and the signature fails.
 - Reject a bad signature with 401 and do nothing else.
-- Yuno retries up to 7 times when it does not get HTTP 200. De-duplicate on `data.idempotency_key` (plus `type_event` for `subscription.*` events). The top-level `retry` field counts attempts.
-- Payload shape: `type`, `type_event` (`payment.purchase`, `payment.refund`, ...), `retry`, `data.payment.id`, `data.payment.status`, `data.payment.sub_status`, `data.idempotency_key`.
+- Yuno retries a delivery that fails, on the schedule in [Delivery and retries](https://docs.y.uno/docs/webhooks#delivery-and-retries). De-duplicate payment events on `type_event` plus `data.payment.idempotency_key`, `payment.split_update` on `data.split_update.idempotency_key`, and subscription events on `type_event` plus `data.idempotency_key`. The top-level `retry` field counts attempts.
+- Payload shape: `type`, `type_event` (`payment.purchase`, `payment.refund`, ...), `retry`, `data.payment.id`, `data.payment.status`, `data.payment.sub_status`, `data.payment.idempotency_key`.
+- Yuno sends the `x-hmac-signature` header only when the webhook has an HMAC secret configured. Always configure one, and reject any request without a valid signature.
 - Return 200 fast and process slow work asynchronously.
 
 ### 6. Configure payment routing
@@ -227,7 +233,7 @@ app.post("/webhooks/yuno", express.raw({ type: "application/json" }), async (req
 - **vaulted_token with token.** Send one or the other. The vaulted token overrides the token and its device fingerprint.
 - **Parallel refunds.** Wait for a refund to reach a final status before starting another on the same transaction.
 - **Cancelling during 3DS.** A payment that is `PENDING` for 3DS cannot be cancelled. It resolves on its own.
-- **Routing on metadata.** Metadata that drives routing must be set on the checkout session, not only on the payment.
+- **Routing on metadata.** Set metadata that drives routing on the payment or the customer. Routing reads the payment's metadata merged with the customer's; metadata set only on the checkout session does not reach routing.
 - **Fallback with provider installments.** Do not add a fallback provider to a route that uses provider installments.
 - **Polling as the primary signal.** Use webhooks. Polling adds latency and load.
 - **Wrong sandbox test card.** For the Yuno Test Payment Gateway, the Visa card that returns SUCCEEDED is `4507990000000002` (exp `11/28`, CVV `123`). Stripe-style `4242…` and `4111…` are not Gateway cards. Full matrix: [Yuno Testing Gateway](https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway).
@@ -241,7 +247,7 @@ app.post("/webhooks/yuno", express.raw({ type: "application/json" }), async (req
 - [ ] Checkout session created server-side at `POST /v1/checkout/sessions` before the SDK starts
 - [ ] Payment `status` and `sub_status` read at payment level; any 2xx accepted
 - [ ] Webhook verified with `x-hmac-signature` over the raw body, timing-safe compare, 401 on mismatch
-- [ ] Webhook retries de-duplicated on `data.idempotency_key`
+- [ ] Webhook retries de-duplicated on `data.payment.idempotency_key` (subscriptions: `type_event` plus `data.idempotency_key`)
 - [ ] Refunds use the transaction-scoped path with `merchant_reference`, one at a time
 - [ ] Recurring charges carry `stored_credentials` with a valid `reason`, `usage: USED` and the `network_transaction_id`
 
