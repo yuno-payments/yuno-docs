@@ -196,10 +196,12 @@ app.post("/webhooks/yuno", express.raw({ type: "application/json" }), async (req
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.sendStatus(401);
 
   const event = JSON.parse(req.body.toString("utf8"));
-  // Payment events carry the key under data.payment; subscription events under data.
-  const key = event.type_event.startsWith("payment.")
-    ? event.data?.payment?.idempotency_key
-    : event.data?.idempotency_key;                 // stable across retries
+  // The key location depends on the event (stable across retries of the same event).
+  const key = event.type_event === "payment.split_update"
+    ? event.data?.split_update?.idempotency_key    // one key per split update operation
+    : event.type_event.startsWith("payment.")
+      ? event.data?.payment?.idempotency_key
+      : event.data?.idempotency_key;               // subscription events
   if (await alreadyProcessed(event.type_event, key)) return res.sendStatus(200);
 
   if (event.type_event === "payment.purchase" && event.data.payment.status === "SUCCEEDED") {
@@ -212,9 +214,9 @@ app.post("/webhooks/yuno", express.raw({ type: "application/json" }), async (req
 
 - Verify over the **raw body**. Re-serialized JSON changes the bytes and the signature fails.
 - Reject a bad signature with 401 and do nothing else.
-- Yuno retries a delivery that fails, on the schedule in [Delivery and retries](https://docs.y.uno/docs/webhooks#delivery-and-retries). De-duplicate payment events on `type_event` plus `data.payment.idempotency_key`, and subscription events on `type_event` plus `data.idempotency_key`. The top-level `retry` field counts attempts.
+- Yuno retries a delivery that fails, on the schedule in [Delivery and retries](https://docs.y.uno/docs/webhooks#delivery-and-retries). De-duplicate payment events on `type_event` plus `data.payment.idempotency_key`, `payment.split_update` on `data.split_update.idempotency_key`, and subscription events on `type_event` plus `data.idempotency_key`. The top-level `retry` field counts attempts.
 - Payload shape: `type`, `type_event` (`payment.purchase`, `payment.refund`, ...), `retry`, `data.payment.id`, `data.payment.status`, `data.payment.sub_status`, `data.payment.idempotency_key`.
-- The `x-hmac-signature` header is sent only when the webhook has an HMAC secret configured.
+- Yuno sends the `x-hmac-signature` header only when the webhook has an HMAC secret configured. Always configure one, and reject any request without a valid signature.
 - Return 200 fast and process slow work asynchronously.
 
 ### 6. Configure payment routing

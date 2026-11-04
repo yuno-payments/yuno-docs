@@ -123,7 +123,6 @@ curl --request POST \
        "merchant_order_id": "1717681150",
        "payment_description": "Test Cards",
        "country": "US",
-       "customer_id": "<CUSTOMER_ID>",
        "amount": { "currency": "USD", "value": 100 }
      }'
 ```
@@ -144,10 +143,11 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
     "country": "US",
     "amount": { "currency": "USD", "value": 100 },
     "checkout": { "session": "<CHECKOUT_SESSION>" },
-    "customer_payer": { "id": "<CUSTOMER_ID>" },
     "payment_method": { "token": "<ONE_TIME_TOKEN>" }
 }'
 ```
+
+Both samples are a one-off card payment without a customer. If you created a customer in step 1, add `"customer_id": "<CUSTOMER_ID>"` to the checkout session and `"customer_payer": { "id": "<CUSTOMER_ID>" }` to the payment.
 
 If the payment response has `checkout.sdk_action_required: true`, call the SDK method `continuePayment()` to finish 3DS, PIX, or bank redirects. For direct (server-to-server) card tests in sandbox, enable the Yuno Test Payment Gateway connection first: https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway
 
@@ -186,7 +186,7 @@ To audit a repository that already integrates Yuno, fetch the validator that mat
 - Start in Sandbox (Test Mode) with sandbox keys. A new organization has access only to Test Mode; Live Mode requires an activation request and separate keys.
 - Retry an unclear failure (timeout, connection error, `500`) with the same `X-Idempotency-Key`. On `400 REQUEST_IN_PROCESS`, wait a few seconds and retry with the same key. Use a new key only for a new order, a new attempt after a decline, or after `IDEMPOTENCY_DUPLICATED`.
 - If metadata drives routing rules, set it on the payment or the customer. Routing reads the payment's metadata merged with the customer's; metadata set only on the checkout session does not reach routing.
-- Treat webhook deliveries as at-least-once: Yuno retries a delivery that fails, on the schedule in https://docs.y.uno/docs/webhooks#delivery-and-retries. Dedupe payment events on `data.payment.idempotency_key` (subscription events: `type_event` plus `data.idempotency_key`). When the webhook has an HMAC secret configured, verify the `x-hmac-signature` header (HMAC SHA256) before trusting a payload.
+- Treat webhook deliveries as at-least-once: Yuno retries a delivery that fails, on the schedule in https://docs.y.uno/docs/webhooks#delivery-and-retries. Dedupe payment events on `data.payment.idempotency_key` (subscription events: `type_event` plus `data.idempotency_key`). Configure an HMAC secret on the webhook, verify the `x-hmac-signature` header (HMAC SHA256) before trusting a payload, and reject any request without a valid signature. Yuno sends the header only when a secret is configured.
 - After creating a payment through an SDK, check `checkout.sdk_action_required` and call `continuePayment()` when it is `true`.
 
 ## Sitemap
