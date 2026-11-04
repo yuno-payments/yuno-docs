@@ -3,7 +3,7 @@ title: "AI Agent Instructions"
 description: "Instructions for coding agents integrating the Yuno Payments API and SDKs: install, configure, first payment, resources."
 ---
 
-Yuno is a payment orchestration platform. The REST API returns JSON and uses GET, POST, and PATCH. This page gives an agent the minimum to install an SDK, configure credentials, and create a first payment in sandbox.
+Yuno is a payment orchestration platform. The REST API returns JSON and uses GET, POST, PATCH, PUT, and DELETE. This page gives an agent the minimum to install an SDK, configure credentials, and create a first payment in sandbox.
 
 ## When to use Yuno
 
@@ -19,46 +19,52 @@ Yuno is not the right fit for: a single fixed payment processor integration with
 
 ## Installation
 
-Web SDK (npm, recommended):
+Web SDK v1 (npm, recommended). Pin the major version: `@yuno-payments/sdk-web` 9.x loads Web SDK 1.11, which the Usage section below describes. The `latest` tag (10.x) loads Web SDK v2, which has no `continuePayment()`; for v2, follow the [Web SDK v2 validator](https://docs.y.uno/docs/sdks/validators/web-sdk-v2.md) instead.
 
 ```bash
-npm install @yuno-payments/sdk-web
+npm install @yuno-payments/sdk-web@^9
 ```
 
-Web SDK (CDN script tag):
+Web SDK v1 (CDN script tag):
 
 ```html
-<script src="https://sdk-web.y.uno/v1.10/main.js"></script>
+<script src="https://sdk-web.y.uno/v1.11/main.js"></script>
 ```
 
 iOS (CocoaPods):
 
 ```ruby
-pod 'YunoSDK', '~> 2.27.0'
+pod 'YunoSDK', '~> 2.29'
 ```
 
 iOS (Swift Package Manager):
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.27.0")
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.29.0")
 ]
 ```
 
-Android (Gradle, add the repository and the dependency):
+Android (Gradle Kotlin DSL, add the repository and the dependency):
 
 ```kotlin
-maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        maven { url = uri("https://yunopayments.jfrog.io/artifactory/snapshots-libs-release") }
+    }
+}
 
+// app/build.gradle.kts
 dependencies {
-    implementation 'com.yuno.payments:android-sdk:2.26.0'
+    implementation("com.yuno.payments:android-sdk:2.28.0")
 }
 ```
 
-React Native:
+React Native. Pin the major version: 1.x matches the Usage section below. The `latest` tag (2.x) runs on native SDK 3.0.0, which has no `continuePayment()`.
 
 ```bash
-npm install @yuno-payments/yuno-sdk-react-native
+npm install @yuno-payments/yuno-sdk-react-native@^1
 cd ios && pod install
 ```
 
@@ -70,20 +76,21 @@ flutter pub add yuno
 
 ## Configuration
 
-Environments and base URLs. The Dashboard calls Sandbox "Test Mode" and Production "Live Mode"; one account serves both, and a toggle switches between them.
+Environments and base URLs. The Dashboard calls Sandbox "Test Mode" and Production "Live Mode"; one account serves both, and you switch between them in the Dashboard.
 
 | Environment | Dashboard mode | Base URL |
 | --- | --- | --- |
 | Sandbox | Test Mode | `https://api-sandbox.y.uno` |
 | Production | Live Mode | `https://api.y.uno` |
 
-Credentials. Every API request carries two headers. Get both from the Dashboard at https://dashboard.y.uno/developers (Developers > Credentials). Sandbox and Production use different key pairs; the keys shown depend on the mode selected in the Dashboard.
+Credentials. Every API request carries the two key headers below. Get both from the Dashboard at https://dashboard.y.uno/developers (Developers > Credentials). Sandbox and Production use different key pairs; the keys shown depend on the mode selected in the Dashboard.
 
 | Header | Value | Use |
 | --- | --- | --- |
 | `public-api-key` | Public API key | Required on every request; also initializes the SDK on the client side |
 | `private-secret-key` | Private secret key | Required on every request; server side only |
-| `X-Idempotency-Key` | UUID, unique per request | Safe retries; Yuno stores the key and outcome for 24 hours |
+| `X-Idempotency-Key` | UUID, unique per operation | Safe retries on payments, refunds and cancels. A repeated key returns the original result instead of creating a new transaction. Create Checkout Session ignores this header: the same key creates a new session each time |
+| `X-Account-Code` | Account ID | Required on some endpoints that take no `account_id` in the body, for example `DELETE /v1/customers/{id}`. Without it they return `400 MISSING_HEADER` |
 
 Other facts:
 
@@ -97,17 +104,16 @@ Other facts:
 
 The payment flow has four steps, in this order:
 
-1. Create a customer. Yuno returns a customer ID used in every later step.
-2. Create a checkout session (SDK and Checkout integrations). It links the customer to the payment and loads the payment methods enabled on your account. Direct server-to-server integrations skip this step.
+1. Create a customer. Yuno returns a customer ID. This step is optional for a one-off card payment; it is required to enroll or vault a payment method.
+2. Create a checkout session (SDK and Checkout integrations). It links the payment to the customer, when there is one, and loads the payment methods enabled on your account. Direct server-to-server integrations skip this step and send `"workflow": "DIRECT"` on the payment instead. Without `workflow: "DIRECT"`, Create Payment requires `checkout` and returns `400 INVALID_PARAMETERS` ("The field 'checkout' is required.").
 3. Collect payment details. The SDK captures card data and returns a one-time token (OTT). Direct integrations send the details themselves and require PCI compliance.
-4. Create the payment with the customer ID, the checkout session, and the token. Yuno reports later status changes through webhooks.
+4. Create the payment with the checkout session, the token, and the customer ID when there is one. Yuno reports later status changes through webhooks.
 
 Create a checkout session (sandbox):
 
 ```bash
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/checkout/sessions \
-     --header 'X-Idempotency-Key: <UUID>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
      --header 'public-api-key: <PUBLIC_API_KEY>' \
@@ -143,7 +149,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
 }'
 ```
 
-If the payment response has `sdk_action_required: true`, call the SDK method `continuePayment()` to finish 3DS, PIX, or bank redirects. For direct (server-to-server) card tests in sandbox, enable the Yuno Test Payment Gateway connection first: https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway
+If the payment response has `checkout.sdk_action_required: true`, call the SDK method `continuePayment()` to finish 3DS, PIX, or bank redirects. For direct (server-to-server) card tests in sandbox, enable the Yuno Test Payment Gateway connection first: https://docs.y.uno/docs/direct-integration-use-cases/yuno-testing-gateway
 
 ## Validate an existing integration
 
@@ -178,10 +184,10 @@ To audit a repository that already integrates Yuno, fetch the validator that mat
 
 - Keep `private-secret-key` on the server. Never embed it in client-side code, and never commit it to public repositories such as GitHub or Bitbucket. The public API key is the one used for client-side SDK initialization.
 - Start in Sandbox (Test Mode) with sandbox keys. A new organization has access only to Test Mode; Live Mode requires an activation request and separate keys.
-- Retry an unclear failure (timeout, connection error, `500`) with the same `X-Idempotency-Key`. Use a new key only for a new order or a new attempt after a decline or `IDEMPOTENCY_DUPLICATED`.
-- If metadata drives routing rules, set it on the checkout session, not only on the payment.
-- Treat webhook deliveries as at-least-once: Yuno retries up to seven times, so dedupe on `data.idempotency_key` and verify the HMAC SHA256 signature before trusting a payload.
-- After creating a payment through an SDK, check `sdk_action_required` and call `continuePayment()` when it is `true`.
+- Retry an unclear failure (timeout, connection error, `500`) with the same `X-Idempotency-Key`. On `400 REQUEST_IN_PROCESS`, wait a few seconds and retry with the same key. Use a new key only for a new order, a new attempt after a decline, or after `IDEMPOTENCY_DUPLICATED`.
+- If metadata drives routing rules, set it on the payment or the customer. Routing reads the payment's metadata merged with the customer's; metadata set only on the checkout session does not reach routing.
+- Treat webhook deliveries as at-least-once: Yuno retries a delivery that fails, on the schedule in https://docs.y.uno/docs/webhooks#delivery-and-retries. Dedupe payment events on `data.payment.idempotency_key` (subscription events: `type_event` plus `data.idempotency_key`). When the webhook has an HMAC secret configured, verify the `x-hmac-signature` header (HMAC SHA256) before trusting a payload.
+- After creating a payment through an SDK, check `checkout.sdk_action_required` and call `continuePayment()` when it is `true`.
 
 ## Sitemap
 
