@@ -24,7 +24,7 @@ Sandbox data is simulated and does not affect live accounting or metrics. See [A
 
 ## Idempotency
 
-Send an `X-Idempotency-Key` header (UUID) on requests that support it to safely retry after a connection issue without duplicating the operation. Yuno stores the key and the transaction outcome for 24 hours. A repeated key within that window returns the original response instead of creating a new transaction.
+Send an `X-Idempotency-Key` header (UUID) on requests that support it to safely retry after a connection issue without duplicating the operation. A repeated key returns the original response instead of creating a new transaction. Create Checkout Session ignores the header: each call creates a new session.
 
 See [Authentication](/reference/getting-started/authentication#idempotency) for retry and error-handling behavior.
 
