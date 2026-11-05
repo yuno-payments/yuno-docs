@@ -5,3 +5,44 @@ description: "Publishes configuration and/or styling for a checkout by its check
 ---
 
 <Note>This API is in **Beta**. Endpoints and schemas may change without prior notice.</Note>
+
+## Prefilled customer fields
+
+When the checkout session already has the shopper's data (a `customer_id` or a customer sent inline), the checkout does not need to ask for it again. Use `display` on each item of `required_fields_to_override.fields` (payment) and `enrollment_fields` (enrollment) to choose how an active customer field is shown when its value is already there:
+
+| `display` | The session has a valid value | No value, or the value is not valid |
+| --- | --- | --- |
+| `HIDDEN` (default) | Not shown. The value is sent with the payment. | Shown empty or with the error, editable |
+| `READ_ONLY` | Shown with the value, locked | Shown empty or with the error, editable |
+| `EDITABLE` | Shown with the value, the shopper can change it | Shown empty or with the error, editable |
+
+- `is_active` still decides if the field is asked. `display` only changes how an active field is shown.
+- `display` is accepted only on customer fields: `first_name`, `last_name`, `email`, `document`, `phone`, `billing_address`, `shipping_address`, `zip_code`, `neighborhood`, `nationality`, `gender`, `date_of_birth`. Card and payment method fields (card number, CVV, cardholder name, installments, bank...) never take it. Any other field or value returns `400 INVALID_PARAMETERS`.
+- Field conditions run first: a field that its conditions remove is not asked, whatever its `display`.
+- A value the shopper edits is used for that payment only. It does not update the stored customer.
+- If you omit `display`, the value stored before is kept. With nothing stored, `HIDDEN` applies on the SDK versions that support `display`; older SDK versions keep their current behaviour unless you set `display` explicitly.
+
+```json
+{
+  "config": {
+    "payment_methods": [
+      {
+        "payment_method_type": "PIX",
+        "order_to_show": 0,
+        "is_active": true,
+        "required_fields_to_override": {
+          "is_active": true,
+          "fields": [
+            { "field_name": "first_name", "is_active": true },
+            { "field_name": "email", "is_active": true, "display": "READ_ONLY" },
+            { "field_name": "phone", "is_active": true, "display": "HIDDEN" }
+          ],
+          "enrollment_fields": [
+            { "field_name": "email", "is_active": true, "display": "READ_ONLY" }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
