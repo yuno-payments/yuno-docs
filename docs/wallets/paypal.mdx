@@ -1,6 +1,6 @@
 ---
 title: "PayPal & Venmo"
-description: "Integrate PayPal and Venmo on Yuno through the Web SDK and Checkout flows."
+description: "Integrate PayPal and Venmo on Yuno through the Web SDK and Checkout flows, or server to server with a Braintree nonce."
 ---
 
 PayPal is a global digital wallet that allows customers to pay using their PayPal balance, linked bank accounts, or stored credit and debit cards. In supported regions (such as the United States), shoppers can also complete purchases using **Venmo**.
@@ -43,6 +43,41 @@ For custom Braintree integrations using PayPal, configure `externalButtons.paypa
 ### Enrollment flow
 
 For recurring payments or tokenization, mount the PayPal button in enrollment mode using `mountEnrollmentLite()`. See [PayPal enrollment with element render mode](/docs/sdks/lite-web/enrollment#paypal-enrollment-with-element-render-mode).
+
+## Direct integration with a Braintree nonce
+
+If you collect PayPal in your own checkout with the Braintree JS SDK and call Yuno server to server, send the single-use Braintree nonce on a `DIRECT` payment. Yuno forwards it to the Braintree connection, which charges it and, with `vault_on_success`, vaults the PayPal account.
+
+1. Collect the PayPal approval with the Braintree JS SDK and get the nonce.
+2. Create the payment with [Create Payment](/reference/payments/create-payment): `workflow` `DIRECT`, `payment_method.type` `PAYPAL_BRAINTREE`, the nonce in `payment_method.detail.wallet.provider_payment_token` and, to save the account, `payment_method.vault_on_success` `true`.
+3. On success, the payment returns `payment_method.vaulted_token`. Charge later payments with that `vaulted_token`.
+4. When you need the Braintree payment method id (for example, to share the PayPal account with a partner through the Braintree Grant API), read it from [Retrieve Payment Method](/reference/payment-methods-checkout/retrieve-payment-method-by-id-checkout) with the `vaulted_token`, in `provider.token`. The payment response does not include it.
+
+```json
+{
+  "account_id": "<ACCOUNT_ID>",
+  "merchant_order_id": "order-1234",
+  "country": "US",
+  "amount": { "currency": "USD", "value": 50 },
+  "workflow": "DIRECT",
+  "customer_payer": { "id": "<CUSTOMER_ID>" },
+  "payment_method": {
+    "type": "PAYPAL_BRAINTREE",
+    "vault_on_success": true,
+    "detail": {
+      "wallet": {
+        "provider_payment_token": "<BRAINTREE_NONCE>"
+      }
+    }
+  }
+}
+```
+
+Rules for `provider_payment_token`:
+
+* Accepted only on the `DIRECT` workflow; `REDIRECT` and `SDK_CHECKOUT` return `400 INVALID_REQUEST`.
+* Must not be blank and must not be combined with `wallet.payment_token`, `wallet.cryptogram`, `payment_method.token` or `payment_method.vaulted_token`.
+* The nonce is single use: send a new one on every payment that uses it. Yuno does not store it.
 
 ## Mobile browser presentation
 
