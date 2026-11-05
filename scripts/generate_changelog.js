@@ -160,9 +160,18 @@ function renderRelease(release) {
   return lines;
 }
 
+// The Yuno SDK releases share these sources but are published in changelog/yuno-sdk/, not on the legacy pages.
+const YUNO_SDK_FIRST_MAJOR = { ios: 3, android: 3, web: 2 };
+
+function legacyReleases(data) {
+  const firstMajor = YUNO_SDK_FIRST_MAJOR[data.sdk];
+  if (firstMajor === undefined) return data.releases;
+  return data.releases.filter(release => parseInt(release.version, 10) < firstMajor);
+}
+
 function generateBody(data) {
   const lines = [];
-  for (const release of data.releases) {
+  for (const release of legacyReleases(data)) {
     lines.push(...renderRelease(release));
   }
 
