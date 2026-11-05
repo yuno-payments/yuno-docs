@@ -83,11 +83,13 @@ test("the Stripe Billing guide explains a succeeded payment without a subscripti
 
 test("every internal link on the changed pages resolves to a nav page and an existing heading", () => {
   const nav = navPages();
+  const redirects = new Set(JSON.parse(read("redirects.json")).map((r) => r.source));
   for (const page of changedPages) {
     assert.ok(nav.has(page), `${page} in docs.json`);
     for (const [, target] of read(`${page}.mdx`).matchAll(/\]\((\/(?:docs|reference)\/[^)\s]*|#[^)\s]+)\)/g)) {
       const [p, hash] = target.startsWith("#") ? [page, target.slice(1)] : target.slice(1).split("#");
-      assert.ok(nav.has(p) && fs.existsSync(path.join(root, `${p}.mdx`)), `${page}: ${target} page exists`);
+      const resolved = [p, `${p}/index`].find((c) => nav.has(c) && fs.existsSync(path.join(root, `${c}.mdx`)));
+      assert.ok(resolved || redirects.has(`/${p}`), `${page}: ${target} page exists`);
       if (hash && changedPages.includes(p)) assert.ok(anchors(p).has(hash), `${page}: ${target} anchor exists`);
     }
   }
