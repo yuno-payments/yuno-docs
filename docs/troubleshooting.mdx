@@ -2,7 +2,7 @@
 title: "Troubleshooting"
 sidebarTitle: "Troubleshooting"
 description: "The response, its cause, and the fix for common Yuno integration errors: keys, workflow, routes, test cards, webhooks, retries, and amounts."
-keywords: ["troubleshooting", "errors", "401", "INVALID_CREDENTIALS", "INTERNAL_ERROR", "routing", "test cards", "x-hmac-signature", "X-Idempotency-Key", "REQUEST_IN_PROCESS", "IDEMPOTENCY_DUPLICATED"]
+keywords: ["troubleshooting", "errors", "401", "INVALID_CREDENTIALS", "INTERNAL_ERROR", "routing", "test cards", "x-hmac-signature", "X-Idempotency-Key", "REQUEST_IN_PROCESS", "IDEMPOTENCY_DUPLICATED", "INVALID_PARAMETERS", "invalid amount", "zero-decimal"]
 ---
 
 <div className="yd-page">
@@ -33,6 +33,7 @@ keywords: ["troubleshooting", "errors", "401", "INVALID_CREDENTIALS", "INTERNAL_
 | The `x-hmac-signature` does not match | Your code parsed or re-serialized the body before it computed the signature, or it uses another secret. | Compute the HMAC over the raw request body with the secret configured for that webhook. See [Verify webhook signatures](/docs/webhooks/verify-webhook-signatures-hmac). |
 | Your endpoint processes a webhook twice | Yuno retries a delivery that does not get HTTP 200, so the same event can arrive more than once. | Record each processed event under its `account_id`, `type_event`, and idempotency key together, and skip an event that is already recorded. The key alone drops real events, because refund and chargeback events carry the same `data.payment.idempotency_key` as their payment. See [De-duplication](/docs/webhooks/index#de-duplication). |
 | The amount is 100 times the order total | The amount was sent in minor units (cents). `amount.value` is in major units. | Send `25` for USD 25.00. Validate the amount against your stored order. |
+| `400` `INVALID_PARAMETERS` with `The field 'amount.value' has an invalid amount.` | The currency has no minor units (for example `KRW`, `JPY`, or `CLP`) and `value` has a fractional part. Yuno does not round the value. The same check runs on refunds, `cardholder_amount`, and split amounts. | Send a whole number. Round once when you build the order and use the same value on the session, the payment, and each refund. See [Amounts and currencies](/docs/basic-concepts/amounts-and-currencies). |
 
 {/* Cut from the seed: "Checkout session request returns 404" (wrong path). 404 is not in reference/getting-started/response-codes, so the row has no verified response. */}
 

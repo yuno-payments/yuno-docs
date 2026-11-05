@@ -1,0 +1,160 @@
+---
+title: "Amounts and currencies"
+sidebarTitle: "Amounts and currencies"
+description: "How to send amount.value: major units, ISO 4217 currency codes, and the whole-number rule for zero-decimal currencies such as KRW, JPY, and CLP."
+keywords: ["amount", "currency", "zero-decimal", "KRW", "JPY", "CLP", "PYG", "VND", "INVALID_PARAMETERS", "invalid amount", "rounding", "minor units"]
+---
+
+Every amount you send to the Yuno API is an object with a `currency` and a `value`. `currency` is an ISO 4217 alpha-3 code. `value` is the amount in major units of that currency: send `25` for USD 25.00, not `2500`.
+
+Sixteen currencies have no minor units. For these currencies, `value` must be a whole number. Yuno does not round or truncate the value for you: a request with a fractional `value` returns `400 INVALID_PARAMETERS` before Yuno creates anything.
+
+```json Request
+"amount": {
+  "currency": "KRW",
+  "value": 11833
+}
+```
+
+## Zero-decimal currencies
+
+| Code  | Currency                  |
+| :---- | :------------------------ |
+| `BIF` | Burundian franc           |
+| `CLP` | Chilean peso              |
+| `DJF` | Djiboutian franc          |
+| `GNF` | Guinean franc             |
+| `ISK` | Icelandic króna           |
+| `JPY` | Japanese yen              |
+| `KMF` | Comorian franc            |
+| `KRW` | South Korean won          |
+| `PYG` | Paraguayan guaraní        |
+| `RWF` | Rwandan franc             |
+| `UGX` | Ugandan shilling          |
+| `VND` | Vietnamese dong           |
+| `VUV` | Vanuatu vatu              |
+| `XAF` | Central African CFA franc |
+| `XOF` | West African CFA franc    |
+| `XPF` | CFP franc                 |
+
+Every other currency accepts a decimal `value`. `COP` is not on the list, because ISO 4217 gives the Colombian peso two decimal digits, so `COP 11833.2` is accepted while `KRW 11833.2` is not. The decimal digits of each country's currency are listed in the [Country reference](/reference/country-reference).
+
+Trailing zeros do not fail the check: `11833.00` is accepted for `KRW`, `11833.2` is rejected.
+
+## Where the rule applies
+
+Yuno checks every field that carries a `value` next to a currency code, on the request that creates the operation and on the request that updates it:
+
+* `amount` on [checkout sessions](/reference/checkout-sessions/create-checkout-session), on [payments](/reference/payments/create-payment), and on [payment links](/reference/payment-links/create-payment-link).
+* `amount` on refunds: [Refund payment](/reference/payments/refund-payment), [Cancel or refund a payment](/reference/payments/cancel-or-refund-a-payment), and [Cancel or refund a payment with transaction](/reference/payments/cancel-or-refund-payment-with-transaction). The check runs before Yuno looks up the payment, so a fractional partial refund of a `KRW` payment fails with the same error.
+* `currency_conversion.cardholder_amount` against `cardholder_currency`, and `merchant_amount` against `merchant_currency`.
+* Split payment amounts and the `fixed_amount` of a recipient's split configuration.
+* Subscription, plan, meter, shipping method, and payout amounts.
+
+## The error
+
+```json Response
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "The field 'amount.value' has an invalid amount."
+  ]
+}
+```
+
+The message names the field that failed. A fractional `cardholder_amount` returns `The field 'currency_conversion.cardholder_amount' has an invalid amount.`
+
+## Round once, when you build the order
+
+If your catalog prices items in two decimals, round each line to a whole unit when you build the order, with the rounding rule your pricing requires, and store the rounded values. Send those same whole numbers on the checkout session, the payment, and every refund.
+
+Do not round at each API call from the two-decimal values. A total rounded once and a set of line items rounded one by one can differ by a unit, which makes a partial refund fail or the sum of the refunds exceed the charged amount.
+
+For a partial refund, compute the refund `value` from the stored whole-unit line amounts and check that the sum of all refunds of the payment does not exceed its charged `amount.value`.
+
+## Example
+
+The first request is rejected because `value` has a fractional part. The second request is the same order with the value rounded to the won.
+
+```bash Rejected
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/checkout/sessions \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>' \
+     --data '
+{
+  "account_id": "{{account-code}}",
+  "customer_id": "{{customer-id}}",
+  "merchant_order_id": "order-kr-0001",
+  "payment_description": "Tickets",
+  "country": "KR",
+  "amount": {
+    "currency": "KRW",
+    "value": 11833.2
+  }
+}
+'
+```
+
+```json Response
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "The field 'amount.value' has an invalid amount."
+  ]
+}
+```
+
+```bash Accepted
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/checkout/sessions \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>' \
+     --data '
+{
+  "account_id": "{{account-code}}",
+  "customer_id": "{{customer-id}}",
+  "merchant_order_id": "order-kr-0001",
+  "payment_description": "Tickets",
+  "country": "KR",
+  "amount": {
+    "currency": "KRW",
+    "value": 11833
+  }
+}
+'
+```
+
+A partial refund of the same payment follows the same rule:
+
+```bash Partial refund
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/payments/{{payment-id}}/cancel-or-refund \
+     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>' \
+     --data '
+{
+  "description": "One ticket refunded",
+  "reason": "REQUESTED_BY_CUSTOMER",
+  "merchant_reference": "order-kr-0001-refund-1",
+  "amount": {
+    "currency": "KRW",
+    "value": 1183
+  }
+}
+'
+```
+
+## Related
+
+* **Reference:** [Troubleshooting](/docs/troubleshooting) lists this error with the other common responses.
+* **Reference:** [Country reference](/reference/country-reference) gives the currency and its decimal digits for each country.
+* **Guide:** [Refund payments](/docs/direct-integration-use-cases/refund-payments) covers complete and partial refunds.
+* **Reference:** [Payment details](/docs/payment-features/payment-amount-details) breaks a total into fees, shipping, tips, taxes, and discounts.
