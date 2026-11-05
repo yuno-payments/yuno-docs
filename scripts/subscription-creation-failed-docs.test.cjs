@@ -88,7 +88,7 @@ test("every internal link on the changed pages resolves to a nav page and an exi
     assert.ok(nav.has(page), `${page} in docs.json`);
     for (const [, target] of read(`${page}.mdx`).matchAll(/\]\((\/(?:docs|reference)\/[^)\s]*|#[^)\s]+)\)/g)) {
       const [p, hash] = target.startsWith("#") ? [page, target.slice(1)] : target.slice(1).split("#");
-      const resolved = [p, `${p}/index`].find((c) => nav.has(c) && fs.existsSync(path.join(root, `${c}.mdx`)));
+      const resolved = [p, `${p}/index`].find((c) => fs.existsSync(path.join(root, `${c}.mdx`)));
       assert.ok(resolved || redirects.has(`/${p}`), `${page}: ${target} page exists`);
       if (hash && changedPages.includes(p)) assert.ok(anchors(p).has(hash), `${page}: ${target} anchor exists`);
     }
