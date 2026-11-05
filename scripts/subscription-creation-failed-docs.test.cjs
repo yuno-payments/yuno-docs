@@ -81,7 +81,7 @@ test("the Stripe Billing guide explains a succeeded payment without a subscripti
   assert.ok(sec.includes("(/reference/payments/refund-payment)"));
 });
 
-test("every internal link on the changed pages resolves to a nav page and an existing heading", () => {
+test("every internal link on the changed pages resolves to an existing page or redirect and an existing heading", () => {
   const nav = navPages();
   const redirects = new Set(JSON.parse(read("redirects.json")).map((r) => r.source));
   for (const page of changedPages) {
