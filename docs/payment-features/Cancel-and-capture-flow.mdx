@@ -77,6 +77,28 @@ Manual captures provide maximum flexibility since they give you full control of 
 If you need to capture a different amount than originally authorized, you must use manual capture. The real-time and delayed capture modes will always capture the initially authorized amount.
 </Warning>
 
+### Pre-authorization holds (`authorization_type`)
+
+When you authorize a payment with `capture: false`, you can set `payment_method.detail.card.authorization_type` to declare the kind of hold you want. `STANDARD` (the default, also used when the field is omitted) creates a regular authorization. `PRE_AUTHORIZATION` requests an extended pre-authorization hold, which some providers require before you can later raise the held amount with [incremental authorizations](/reference/increment-authorization).
+
+```json
+{
+  "payment_method": {
+    "type": "CARD",
+    "detail": {
+      "card": {
+        "capture": false,
+        "authorization_type": "PRE_AUTHORIZATION"
+      }
+    }
+  }
+}
+```
+
+- `authorization_type` only applies when `capture` is `false`. Sending `PRE_AUTHORIZATION` together with `capture: true` returns a `400` error.
+- Providers without a pre-authorization equivalent process the payment as a standard authorization (best effort).
+- The value is echoed back in the payment retrieval responses under the transaction's `payment_method.detail.card.authorization_type`.
+
 ### Delayed capture
 
 Configure `capture: false` along with `delayed_capture_settings` to schedule the capture of the payment for a later time, specified in the `delay` field.
@@ -463,6 +485,7 @@ The customer is never charged for a payment you reject, and no refund is needed.
 | Field                                      | Type      | Description                                                                                                                                                                                                                                          |
 | ------------------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `capture`                                  | `boolean` | Determines whether the card payment is captured immediately (`true`, purchase) or only authorized (`false`, requires capture or cancel).                                                                                                             |
+| `authorization_type`                       | `string`  | Optional, applies only when `capture` is `false`. `STANDARD` (default) creates a regular authorization; `PRE_AUTHORIZATION` requests an extended pre-authorization hold for later [incremental authorizations](/reference/increment-authorization). `PRE_AUTHORIZATION` with `capture: true` returns a `400`. |
 | `delayed_capture_settings.delay`           | `string`  | Delay before Yuno captures the payment. Must follow <a label="ISO 8601 duration format" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 duration format</a> (e.g., "P7D" for 7 days, "PT3H" for 3 hours). |
 | `delayed_capture_settings.simplified_mode` | `boolean` | If `true`, Yuno retries the capture if it fails.                                                                                                                                                                                                     |
 | `delayed_cancel_settings.delay`            | `string`  | Delay before Yuno cancels the authorization. Must follow <a label="ISO 8601 duration format" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 duration format</a> (e.g., "P30D" for 30 days).              |
