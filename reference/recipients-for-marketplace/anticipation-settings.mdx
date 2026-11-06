@@ -1,0 +1,124 @@
+---
+title: "Anticipation settings"
+description: "Select one recipient onboarding and track whether its anticipation settings were applied"
+---
+
+<Warning>
+Preview. Anticipation is disabled by default and requires explicit enablement for the provider connection. Contact Yuno before using it. The models below describe the API contract, not a promise of availability from every provider.
+</Warning>
+
+Anticipation settings belong to one onboarding of a recipient. Put both `recipient_id` and `onboarding_id` in the path. A query parameter cannot select or override the onboarding. The previous recipient-level settings route is removed, with no alias or redirect. Include your API credentials and the authorized `X-Account-Code` header. Writes also require a nonblank `X-Idempotency-Key` of at most 64 characters.
+
+| Operation | Endpoint | Purpose |
+| --- | --- | --- |
+| POST | `/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/anticipation-settings` | Create settings for an eligible existing onboarding. |
+| GET | Same nested path | Read the current local application and operation status. |
+| PATCH | Same nested path | Update settings that already exist. |
+
+GET validates that the recipient and onboarding exist and belong to the authenticated account. Missing, deleted, mismatched or inaccessible targets return `404 RECIPIENT_NOT_FOUND`. Write eligibility is not required to read: GET remains available when anticipation admission is disabled, the onboarding is not successful, or it has no native provider identity.
+
+When no settings resource exists, GET returns `200` with exactly these three fields and creates no resource:
+
+```json
+{
+  "recipient_id": "00000000-0000-4000-8000-000000000001",
+  "onboarding_id": "00000000-0000-4000-8000-000000000002",
+  "enabled": false
+}
+```
+
+Disabled and never-configured both return `enabled: false` without top-level `type`, `delay` or `volume_percentage`. Existing resources retain `revision` and operational metadata, including status, dates, requested settings and history when present. For a new write, use PATCH when `revision` is present and POST when it is absent. This does not change retries: keep the original write method and idempotency key when retrying an earlier request.
+
+Writes still require an eligible onboarding. PATCH with no stored settings returns `404 ANTICIPATION_SETTINGS_NOT_FOUND`; it does not create the resource. Once a write is admitted, its settings resource remains even if the result is `REJECTED`. A new POST then returns `409 ANTICIPATION_SETTINGS_ALREADY_EXIST`. Use PATCH for a new attempt; send a complete configuration when there is no confirmed base.
+
+## Choose a model
+
+POST requires `enabled` and `type`. Only send fields supported by the selected model; null, unknown and duplicate fields are rejected.
+
+| Type | Delay | Volume percentage |
+| --- | --- | --- |
+| `FULL` | Must be omitted, including when disabled. | Must be omitted. |
+| `1025` | Optional integer from 1 to 365; defaults to 15 for a complete configuration. | Must be omitted. |
+| `DAILY` | Required integer from 1 to 365 for a complete configuration. | Must be omitted. |
+| `1025_PERCENTAGE` | Same as `1025`. | Required and must equal 100. |
+
+`1025_PERCENTAGE` is a 100-percent alias of `1025`; confirmed responses use the canonical `1025` model. Provider-connection policy may reject an otherwise valid model with `409 ANTICIPATION_UNSUPPORTED`.
+
+An explicit delay must be between 1 and 365, including when `enabled` is `false`. Zero returns `400 INVALID_PARAMETERS`.
+
+For example, this complete configuration uses the minimum delay:
+
+```json
+{
+  "enabled": true,
+  "type": "1025",
+  "delay": 1
+}
+```
+
+## Update confirmed settings
+
+PATCH merges omitted fields only into the last confirmed configuration and validates the merged settings. An explicit `false` disables anticipation, but does not bypass delay validation. Any change to the `type` string discards inherited `delay` and `volume_percentage`, even when changing from `1025` to its `1025_PERCENTAGE` alias. Send the delay again to preserve it: changing confirmed `1025` with delay 30 to `{"type":"1025_PERCENTAGE","volume_percentage":100}` resets the delay to 15. Changing to `FULL` removes an inherited delay, but explicitly sending a delay with `FULL` is invalid.
+
+When no confirmed configuration is available, send a complete configuration with `enabled`, `type` and all required model fields. This includes updates during an uncertain operation and re-enabling a sparse disabled configuration. An incomplete body can return `400 INVALID_PARAMETERS` before the operation-conflict check. A complete body targeting a held operation returns `409 ANTICIPATION_OPERATION_IN_PROGRESS`, or `409 ANTICIPATION_OPERATION_QUARANTINED` when that operation is quarantined.
+
+## Distinguish intent from confirmation
+
+| Field | Meaning |
+| --- | --- |
+| `application_status` | Whether the requested settings are waiting, applied, rejected, not applied or uncertain. |
+| `operation_status` | The state of the operation that attempted the change. Read this separately from application status. |
+| `requested_settings` | Requested intent; it does not prove application. |
+| Top-level `enabled`, `type`, `delay` | Confirmed settings when available. When disabled, GET omits the top-level model fields while retaining resource metadata. |
+| `historical_settings` | A previous confirmation that must not be treated as the current configuration. |
+| `confirmed_at` | Time of the confirming observation, not a guarantee that no later external change occurred. |
+
+GET returns Yuno's stored state and does not query the provider. It is not provider readback. A `200` GET can report `UNKNOWN`, `REJECTED`, a pending operation or quarantine; missing confirmation does not become `enabled: false`. Requested and historical settings and operation diagnostics remain available. Read the status fields before using the settings. Database or service read failures remain errors, never a disabled fallback.
+
+## Retry an uncertain result
+
+A write can return `202` when the result or completion is uncertain. A connection failure does not establish that the provider rejected the change. Retry the same logical request with the same method, target, body and idempotency key; changing the body under that key returns `409 ANTICIPATION_IDEMPOTENCY_CONFLICT`.
+
+Same-key replies are frozen. A retry can still return the original `202 UNKNOWN` after reconciliation has confirmed application. Use GET to learn the current outcome. A new key does not bypass an unresolved operation's hold.
+
+Typed provider rejections use the public error envelope and may include `provider_http_status`. Raw provider responses and credentials are not part of the settings response.
+
+## Read the error code before retrying
+
+HTTP status alone does not distinguish a recorded rejection from an uncertain result. In particular, `ANTICIPATION_PROVIDER_REJECTED` can return 502 or 503 and is final for that idempotency key. Repeating the same request returns the recorded rejection. After resolving its cause, make a new attempt with a new key and PATCH; use a complete configuration if GET has no confirmed base.
+
+| Code | HTTP | Meaning and next action |
+| --- | --- | --- |
+| `INVALID_PARAMETERS` | 400 | Correct the selector, headers or settings body before submitting a valid request. Also returned and recorded when disabling without `type` while the provider still has anticipation enabled. Send `type` with `enabled: false`; after a recorded rejection, use PATCH with a new key. |
+| `ONBOARDING_OPERATION_IN_PROGRESS` | 409 | Another onboarding operation, such as a bank account update, holds the onboarding. Retry shortly. An admission refusal is not recorded. If the operation is recorded as `REJECTED` in GET, the reply is final for that key: use PATCH with a new key. |
+| `REQUEST_CANNOT_BE_PROCESSED` | 400 | Admission was temporarily unavailable and no provider request was sent. Retry the same request later. |
+| `RECIPIENT_NOT_FOUND` | 404 | The selected recipient or onboarding is missing or inaccessible to this account. Check both IDs and account access. |
+| `ANTICIPATION_SETTINGS_NOT_FOUND` | 404 | PATCH has no settings resource to update. Use POST on an eligible target. GET returns the three-field disabled state for an existing authorized target. |
+| `ANTICIPATION_SETTINGS_ALREADY_EXIST` | 409 | A resource exists, including after an admitted rejection. Read it with GET, then use PATCH. |
+| `ANTICIPATION_UNSUPPORTED` | 409 | The target or requested model is not enabled. Contact Yuno. An admission refusal creates no settings resource; a refusal after admission can be recorded. GET distinguishes these cases. |
+| `ANTICIPATION_TARGET_INELIGIBLE` | 409 | Onboarding is not successful, has no native identity, or is being transferred. Resolve eligibility before another attempt. |
+| `ANTICIPATION_TARGET_SHARED` | 409 | Multiple active onboardings share the native target. Contact Yuno to resolve the shared target. |
+| `ANTICIPATION_TARGET_CHANGED` | 409 | The provider, connection or native target changed. Existing settings are historical; contact Yuno. |
+| `ANTICIPATION_IDEMPOTENCY_CONFLICT` | 409 | The key was already used with a different body. Recover the original request; use a new key only for a new attempt. |
+| `ANTICIPATION_OPERATION_IN_PROGRESS` | 409 | An unresolved operation holds the target. Read GET; a new key cannot bypass the hold. |
+| `ANTICIPATION_OPERATION_QUARANTINED` | 409 | Operator recovery is required. Contact Yuno; changing the key cannot release the target. |
+| `ANTICIPATION_PROVIDER_REJECTED` | 400, 422, 502, 503 | Recorded rejection with no mutation effect. Includes invalid configuration, unavailable preflight readback and a local timeout before mutation dispatch, as well as typed provider rejections. Resolve the cause, then use PATCH with a new key. |
+| `ANTICIPATION_SERVICE_UNAVAILABLE` | 502, 503 | The API could not establish the result. Retry the same logical write with the same key, or use GET. |
+| `ANTICIPATION_INVALID_RESPONSE` | 502 | The API received an unusable response. The write outcome is uncertain; retry with the same key, or use GET. |
+| `ANTICIPATION_UPSTREAM_AUTH_ERROR` | 502 | An internal authentication failure prevented a usable result. Contact Yuno and retain the same key for a retry; use GET to check the current state. |
+
+For example, this 503 is a recorded rejection, not an instruction to retry indefinitely with the same key:
+
+```json
+{
+  "code": "ANTICIPATION_PROVIDER_REJECTED",
+  "messages": ["The anticipation operation was not applied."],
+  "provider_http_status": 503
+}
+```
+
+## Create the recipient before configuring anticipation
+
+Do not include `anticipation_settings` in a recipient-creation request, either at the top level or inside `onboardings`. Its presence returns `400 INVALID_PARAMETERS` before a recipient is created, including when its value is `null`. Omitting the field preserves ordinary recipient creation.
+
+Dedicated onboarding create, continue and update requests also reject `anticipation_settings`, including `null`. Create the recipient and complete onboarding first, then use the dedicated nested settings endpoints when the target is eligible and the provider connection is enabled.
