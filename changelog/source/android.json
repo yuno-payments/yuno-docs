@@ -2,6 +2,162 @@
   "sdk": "android",
   "releases": [
     {
+      "version": "3.1.0",
+      "release_date": "2026-11-06",
+      "upgrade": {
+        "snippet": "implementation 'com.yuno.payments:android-sdk:3.1.0'",
+        "language": "groovy"
+      },
+      "entries": [
+        {
+          "type": "ADDED",
+          "title": "Split payments across two cards in headless",
+          "description": "Transaction.start(activity, paymentsSelected) charges one order across two or more cards. Each item is a regular PaymentMethodSelected, either a vaultedToken for a saved card or transactionData.card for a new one, and must set the new transactionData.amount (PaymentAmount(currency, value)). The list order is the payment order: the first card is charged and authenticated first. The SDK creates one composite token, hands it to TransactionController.createPayment, then runs 3DS card by card and reports the overall payment status in onStatus. With autoContinuePayment = false it stops after createPayment, as with a single card. Before any request, it fails with INVALID_SPLIT_PAYMENT and names the card when the list has fewer than two items, an item has no amount, an amount is not greater than 0 or has no currency, the currencies differ between items, or the same card or vaultedToken appears twice. Transaction.start(activity, paymentSelected) does not change.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://crew.anyforge.ai/work-item/SPP4-020"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "PayPal via Braintree",
+          "description": "Shoppers can pay with PayPal processed by Braintree (PAYPAL_BRAINTREE) from the payment method list. The SDK opens PayPal's approval page in a Chrome Custom Tab, sends the approved account in the one-time token and collects Braintree device data for later payments with the saved account. It needs the new optional module com.yuno.payments:yuno-sdk-paypal-braintree:1.0.0; because PayPal's device-data classes ship both in the core and in Braintree, also add configurations.all { exclude group: 'com.paypal.android', module: 'fraud-protection' } to the app. The same exclude applies to any app that already includes Braintree. It shows up in the payment method list, so Transaction.start() and getPaymentMethodsViews() need no changes.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18093"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "Clearer error when an optional payment module is missing",
+          "description": "When a payment method needs an optional module that the app does not include (Revolut Pay, PayPal via Braintree), the transaction still ends with INTERNAL_ERROR, and the error message now names the Gradle dependency to add.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18093"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "PayPal device data no longer closes the app when fraud-protection is excluded",
+          "description": "Apps that exclude com.paypal.android:fraud-protection without having Braintree no longer close when paying with a method that collects PayPal device data or when opening a saved PayPal account; the payment continues without that device data.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18093"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "Form fields follow the Checkout Builder field color",
+          "description": "When the Checkout Builder field color is set to a color other than white, the form fields, dropdowns and their option lists, the card brand selector for co-badged cards, the card type selector, the OTP and PIN code boxes and the help tooltips now use that field color, with the accent color on the focused field and cursor, so typed and prefilled values stay readable on dark backgrounds. The shipping address section title and the slimmer form section titles also take the Checkout Builder text color. Error colors do not change. With a white or unset field color, when the app passes its own Appearance, or when the SDK dark theme is in use, the fields look exactly as before. To use it, set the field color in the Checkout Builder; no code changes are needed.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-20917"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "Field border and highlighted row follow the colors served with the checkout",
+          "description": "The border of the form fields, the dividers and the highlighted row of the lists they open now use the colors that come with the checkout settings. When those colors are not provided, the fields keep their usual border and highlight. No code changes are needed.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-21246"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "A new card as the only payment method opens its form when the list loads",
+          "description": "When the payment method list contains only a new card, the card is selected when the list loads, with no tap needed, and `onPaymentSelected` receives it with `selectionSource` `AUTO`; the row cannot be tapped and the card form appears open, whether or not the unfolded display is on. The method header is hidden by default and shown as a non-interactive title with the name and logo when the checkout configuration asks for it. The behavior is on by default and can be turned off per merchant in the checkout configuration, which brings back the previous list. Lists with two or more methods, saved cards or a single non-card method are unchanged.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-20239"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "A user cancellation reaches onStatus as USER_CANCEL",
+          "description": "Closing the payment form, the 3DS, redirect or payment method view, or the enrollment, or starting a new transaction over one in progress, now delivers `status` `USER_CANCEL` with no substatus, as documented and as on iOS, instead of `CANCELED` / `CANCELED_BY_USER`.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "Payments that went through 3DS, a redirect or a payment method view report the backend status",
+          "description": "After the additional action, `onStatus` receives the payment `status` and `substatus` exactly as the backend returns them, so `REJECTED`, `CANCELED` and `EXPIRED` no longer arrive as `DECLINED`, and `ERROR` and `PENDING` keep their backend substatus.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "Enrollments report the backend status",
+          "description": "Enrollments through the SDK form, a redirect, an OTP or 3DS deliver the backend `status` and `substatus` (for example `ENROLLED`) instead of `SUCCEEDED`, `PROCESSING`, `REJECT` or `FAIL`, and the SDK status screen shows the matching result.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "A status outside the documented list reports UNSUPPORTED_STATUS",
+          "description": "Payments and enrollments pass through the statuses listed in the Status reference; any other value arrives as `INTERNAL_ERROR` with `message.code` `UNSUPPORTED_STATUS` and `message.reason` `unsupported status: <value>`, as on iOS and Web. `REFUNDED` is now passed through.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "A rejected createPayment reports MERCHANT_CREATE_PAYMENT_FAILED",
+          "description": "When your `createPayment` throws, `onStatus` receives `INTERNAL_ERROR` with `message.code` `MERCHANT_CREATE_PAYMENT_FAILED` and the SDK closes its view without showing its status screen, so your app shows the error.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Card info callback while the shopper types",
+          "description": "Chain the optional `TransactionConfig.onCardInfoChanged { }` callback to receive the card brand, type, issuer and country while the shopper types the card number, in payments and enrollments. It receives `null` when the number is cleared below 6 digits or the card lookup fails.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-21260"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "Card brand logo from the first digits",
+          "description": "When it is enabled for the account, the card number field shows the card brand logo from the first digits, before the card lookup answers. The logo is visual only: validation, lengths, installments, the network selector and the payment keep using the brand from the card lookup, whose logo replaces the early one as soon as it answers with a brand. Brands without a logo show nothing until then. Accounts without it keep today's behavior.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-20346"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "Apps that shrink code with R8 in full mode reach the Yuno API",
+          "description": "In release builds with R8 in full mode (the default since Android Gradle Plugin 8) and without Retrofit 2.10 or newer in the app, every SDK request failed with a network error. The SDK's consumer ProGuard rules now keep what Retrofit needs, so your app needs no rules for it.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "CHANGED",
+          "title": "Screens the SDK draws after the payment come through showView",
+          "description": "When you override `showView`, the screens the SDK draws after creating the payment, such as the Pix QR, vouchers, instructions, OTP and PIN, now reach it with `step` `ACTION`, so you can show them in your own screen. Without an override they stay full-screen. 3DS challenges and redirects are still always full-screen.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": []
+        }
+      ]
+    },
+    {
       "version": "3.0.0",
       "release_date": "2026-10-16",
       "upgrade": {
