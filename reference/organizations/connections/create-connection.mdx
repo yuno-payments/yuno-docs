@@ -8,8 +8,8 @@ Creates a connection in `ACTIVE` status from credentials and configuration you f
 
 ### Headers
 
-<ParamField header="X-account-code" type="string" required>
-  Code of the account under which the connection is created. The account comes from this header, not from the request body.
+<ParamField header="X-account-code" type="string">
+  Code of the account under which the connection is created. The account comes from this header, not from the request body. Required for an account connection (`scope: "ACCOUNT"`). Omit it for an organization connection (`scope: "ORGANIZATION"`): that connection belongs to the organization, not to an account.
 </ParamField>
 
 <ParamField header="X-Idempotency-Key" type="string" required>
@@ -17,6 +17,24 @@ Creates a connection in `ACTIVE` status from credentials and configuration you f
 </ParamField>
 
 ### Body
+
+<ParamField body="scope" type="enum">
+  Optional. Who the connection belongs to. Defaults to `"ACCOUNT"`.
+
+  - `"ACCOUNT"`: the connection belongs to the account in `X-account-code`.
+  - `"ORGANIZATION"`: one wallet connection for the whole organization, used by every account, including accounts created later. Supported only for Apple Pay with your own certificates and for Google Pay (Yuno or partner gateway mode). See [Apple Pay and Google Pay for all accounts](/docs/wallets/apple-pay-and-google-pay-for-all-accounts).
+</ParamField>
+
+<ParamField body="organization_connection_confirmation" type="boolean">
+  Required as `true` when `scope` is `"ORGANIZATION"`. Confirms that you understand the connection reaches every account in the organization, including accounts created later. Not used on account connections.
+</ParamField>
+
+<ParamField body="checkout_activation" type="enum">
+  Required when `scope` is `"ORGANIZATION"`. Not used on account connections.
+
+  - `"AVAILABLE"`: the wallet is available to every account, and each account turns it on in its own checkout.
+  - `"ENABLED"`: the wallet is switched on in every account's checkout at once.
+</ParamField>
 
 <ParamField body="merchant_connection_id" type="string" required>
   Your label for this connection. Must be unique within the account. Free-form (e.g., `"adyen-us-prod-001"`, `"stripe-eu-test"`).
@@ -82,6 +100,12 @@ Creates a connection in `ACTIVE` status from credentials and configuration you f
 
 <ResponseField name="connection_id" type="string">
   Unique identifier for the connection. **Save this value** to reference it from routing rules.
+</ResponseField>
+<ResponseField name="scope" type="string">
+  `ACCOUNT` or `ORGANIZATION`.
+</ResponseField>
+<ResponseField name="checkout_activation" type="string">
+  `AVAILABLE` or `ENABLED`. Present only on organization connections.
 </ResponseField>
 <ResponseField name="merchant_connection_id" type="string">
   Your internal label for this connection.
@@ -213,6 +237,41 @@ curl -X POST 'https://api.y.uno/v1/connections' \
   "details": { "merchant_connection_id": "stripe-us-prod-001" }
 }
 ```
+
+```bash cURL — organization connection (Google Pay)
+curl -X POST 'https://api.y.uno/v1/connections' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Idempotency-Key: <UUID>' \
+  -d '{
+    "scope": "ORGANIZATION",
+    "organization_connection_confirmation": true,
+    "checkout_activation": "AVAILABLE",
+    "merchant_connection_id": "google-pay-org-001",
+    "provider_id": "<GOOGLE_PAY_PROVIDER_ID_FROM_CATALOG>",
+    "payment_methods": ["GOOGLE_PAY"],
+    "params": [
+      { "param_id": "<PARAM_ID_FROM_CATALOG>", "value": "<VALUE>" }
+    ]
+  }'
+```
+
+```json 400 — Confirmation Required
+{
+  "type": "validation_error",
+  "code": "ORGANIZATION_CONNECTION_CONFIRMATION_REQUIRED",
+  "message": "organization_connection_confirmation must be true to create an organization connection"
+}
+```
+
+```json 503 — Accounts Unavailable
+{
+  "type": "internal_error",
+  "code": "ORGANIZATION_ACCOUNTS_UNAVAILABLE",
+  "message": "The organization's accounts could not be read. Try again."
+}
+```
 </CodeGroup>
 
 <Note>
@@ -235,7 +294,12 @@ Yuno validates `param_id` values, required params and `costs[].currency` against
 | `400` | `NO_SUPPORTED_PAYMENT_METHODS`<br />`payment_methods` was omitted and the provider has no payment method available for the connection's integration type. |
 | `400` | `VALIDATION_ERROR`<br />The body failed validation, for example `payment_methods` sent as an empty array. `details` names the field. |
 | `400` | `UNSUPPORTED_CURRENCY`<br />A `costs[].currency` isn't in the provider's supported list. |
+| `400` | `ORGANIZATION_CONNECTION_CONFIRMATION_REQUIRED`<br />`scope` is `ORGANIZATION` and `organization_connection_confirmation` is missing or not `true`. |
+| `400` | `ORGANIZATION_SCOPE_NOT_SUPPORTED_FOR_PROVIDER`<br />`scope` is `ORGANIZATION` and the provider or payment method is not Apple Pay or Google Pay. |
+| `400` | `ORGANIZATION_APPLE_PAY_REQUIRES_OWN_CERTIFICATES`<br />An organization Apple Pay connection must use your own certificates. |
+| `400` | `ORGANIZATION_CHECKOUT_ACTIVATION_REQUIRED`<br />`scope` is `ORGANIZATION` and `checkout_activation` is missing. |
 | `401` | `NOT_AUTHENTICATED`<br />Missing or invalid API key. |
 | `409` | `CONNECTION_MERCHANT_ID_CONFLICT`<br />`merchant_connection_id` already exists in this account. |
+| `503` | `ORGANIZATION_ACCOUNTS_UNAVAILABLE`<br />The organization's accounts could not be read while creating an organization connection. Nothing changes; retry the request. |
 
 </div>
