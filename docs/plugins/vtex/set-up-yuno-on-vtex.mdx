@@ -1,0 +1,145 @@
+---
+title: "Set up Yuno on VTEX"
+description: "Start accepting payments with Yuno on your VTEX store by following this end-to-end configuration guide."
+---
+
+This page walks you through every step needed to start accepting payments with Yuno on your VTEX store. The setup happens in two places. Your **VTEX dashboard** is where you register Yuno as a payment provider, install the Payment App, and activate payment methods. Your **Yuno dashboard** is where you configure the webhook that keeps order status in sync.
+
+### Before you start
+
+Have the following ready:
+*   A user with administrator access to your VTEX dashboard.
+*   Your Yuno credentials, which you can find in your Yuno dashboard under **Developers → API Credentials**: **Account ID**, **Public API Key**, and **Private Secret Key**.
+
+---
+
+<Steps>
+  <Step title="Configure Yuno as a payment provider">
+    1.  In the **VTEX dashboard**, open the left-hand menu and go to **Store Settings → Payment → Providers**, then click **New Provider** at the top right.
+
+    <Frame>
+      <img src="/images/plugins/vtex/image-065c1400.png" alt="New Provider in VTEX" />
+    </Frame>
+
+    2.  In the **Select a provider** dialog, type `Yuno` in the search box and select **Yuno** from the results.
+
+    <Frame>
+      <img src="/images/plugins/vtex/image-d4b7cb65.png" alt="Search for Yuno provider" />
+    </Frame>
+
+    3.  Fill in the provider configuration form and save. Once saved, the provider is registered, but no payment methods are active yet.
+
+    <Accordion title="Field reference">
+      Each field is explained in full, with examples, in the [Affiliation field reference](/docs/plugins/vtex/affiliation-fields).
+
+      | Field | Required | What it does |
+      | :--- | :--- | :--- |
+      | **Application Key / Application Token** | Yes | VTEX admin credentials the plugin uses to act on your behalf. See VTEX's guide on [generating Application Keys](https://help.vtex.com/docs/tutorials/api-keys#generating-internal-application-keys). |
+      | **Automatic Settlement** | Yes | When card and wallet payments are captured. See **Settlement Options** below. |
+      | **Affiliation Name** | Yes | A name for this Yuno integration. [Details](/docs/plugins/vtex/affiliation-fields#affiliation-name) |
+      | **Account ID** | Yes | Your Yuno Account ID. [Details](/docs/plugins/vtex/affiliation-fields#account-id) |
+      | **Public API Key** | Yes | Your Yuno Public API Key; its prefix sets the environment. [Details](/docs/plugins/vtex/affiliation-fields#public-api-key) |
+      | **Private Secret Key** | Yes | Your Yuno Private Secret Key. [Details](/docs/plugins/vtex/affiliation-fields#private-secret-key) |
+      | **Main Account Name** | Optional | The VTEX account that owns the orders in multi-account setups. [Details](/docs/plugins/vtex/affiliation-fields#main-account-name) |
+      | **Main Account App key** | Optional | Application Key of the main VTEX account. [Details](/docs/plugins/vtex/affiliation-fields#main-account-app-key) |
+      | **Main Account App token** | Optional | Application Token of the main VTEX account. [Details](/docs/plugins/vtex/affiliation-fields#main-account-app-token) |
+      | **Soft Descriptor** | Optional | Text shown on the shopper's card statement. [Details](/docs/plugins/vtex/affiliation-fields#soft-descriptor) |
+      | **Create Customer** | Optional | Creates a customer record in Yuno for each shopper. [Details](/docs/plugins/vtex/affiliation-fields#create-customer) |
+      | **VTEX IO orderPlaced page URL** | Optional | Where shoppers are redirected after payment. [Details](/docs/plugins/vtex/affiliation-fields#vtex-io-orderplaced-page-url) |
+      | **Payment Mode** | Optional | Payment App inside the checkout, or Legacy redirect. [Details](/docs/plugins/vtex/affiliation-fields#payment-mode) |
+      | **Transaction Identification From** | Optional | Shows the Yuno or the provider transaction ID. [Details](/docs/plugins/vtex/affiliation-fields#transaction-identification-from) |
+      | **Antifraud Providers for Split Orders** | Optional | Antifraud providers that receive the shared session on split orders. [Details](/docs/plugins/vtex/affiliation-fields#antifraud-providers-for-split-orders) |
+      | **Vault Card for Order Modification** | Optional | Charges the difference when an order total increases. [Details](/docs/plugins/vtex/affiliation-fields#vault-card-for-order-modification) |
+      | **Enable Network Tokens** | Optional | Stores cards so repeat purchases can use a network token. [Details](/docs/plugins/vtex/affiliation-fields#enable-network-tokens) |
+      | **Use Corporate Buyer Data** | Optional | Pays company orders under the company's name and CNPJ (Brazil). [Details](/docs/plugins/vtex/affiliation-fields#use-corporate-buyer-data) |
+      | **Headless Payment Handoff** | Optional | For marketplaces whose own headless checkout creates the payment. [Details](/docs/plugins/vtex/affiliation-fields#headless-payment-handoff) |
+      | **Store Base Path** | Optional | URL path prefix of a store not served from the domain root. [Details](/docs/plugins/vtex/affiliation-fields#store-base-path) |
+      | **Send Order Sequence as Merchant Reference** | Optional | Sends the VTEX order sequence as the payment reference. [Details](/docs/plugins/vtex/affiliation-fields#send-order-sequence-as-merchant-reference) |
+      | **Sales Channel Domains** | Optional | Maps each sales channel to its storefront domain. [Details](/docs/plugins/vtex/affiliation-fields#sales-channel-domains) |
+      | **Delay To Cancel** | Optional | How long VTEX waits for a pending payment, per method. [Details](/docs/plugins/vtex/affiliation-fields#delay-to-cancel) |
+    </Accordion>
+
+    <Accordion title="Settlement Options">
+      The **Automatic Settlement** field determines the timing of the capture for card and wallet payments. 
+
+      | Option | Practical Behavior |
+      | :--- | :--- |
+      | **Use behavior recommended by payment processor** | **Immediate Capture**: The transaction is captured immediately after authorization. (Default) |
+      | **Automatic capture immediately after payment authorization** | **Immediate Capture**: The transaction is captured immediately after authorization. Same as default. |
+      | **Automatic capture immediately after anti-fraud analysis** | **Immediate Capture**: The transaction is captured immediately after authorization. |
+      | **Disabled** | **Authorize Only**: The transaction is only authorized. Capture happens later when the order is **invoiced**. |
+    </Accordion>
+
+    <Note>
+      **Environments**: The Yuno environment is determined by the prefix of your **Public API Key**: `dev_`, `staging_`, `sandbox_`, or `prod_`.
+    </Note>
+
+    <Tip>
+      We suggest using **Use behavior recommended by payment processor** unless your business specifically requires capture after invoicing.
+    </Tip>
+  </Step>
+
+  <Step title="Install the Yuno Payment App">
+    After saving the provider configuration, install the Yuno Payment App from your VTEX dashboard.
+
+    1.  In the **VTEX dashboard**, go to **Apps → App Management**.
+    2.  Search for **Yuno** and select the **Yuno Payment App** in the list of available apps and open its **Settings**.
+
+    <Frame>
+      <img src="/images/plugins/vtex/image-c64bef9b.png" alt="Install Yuno Payment App" />
+    </Frame>
+
+    3.  Click **Install** to complete the setup.
+
+    Once installed, the Payment App takes care of rendering the Yuno checkout experience inside your VTEX checkout.
+  </Step>
+
+  <Step title="Activate payment methods">
+    Now choose which payment methods you want to offer to your shoppers and route them through Yuno.
+
+    1.  In the **VTEX dashboard**, go to **Store Settings → Payment → Settings → Payment Conditions**. Click the **+** button to add a payment condition.
+
+    <Frame>
+      <img src="/images/plugins/vtex/image-68c9e7f2.png" alt="Add Payment Condition" />
+    </Frame>
+
+    2.  Select the payment method you want to activate (for example, Visa, Mastercard, Pix, Apple Pay, Samsung Pay, or any of the generic **Yuno** methods, such as Yuno Card or Yuno Wallet).
+
+    <Frame>
+      <img src="/images/plugins/vtex/image-309cec4b.png" alt="Select Payment Method" />
+    </Frame>
+
+    3.  In the **Process with provider** field, select the Yuno affiliation you configured in Step 1. Set the **Status** to **Active** and save.
+
+    <Frame>
+      <img src="/images/plugins/vtex/image-73d8fe62.png" alt="Configure Payment Affiliation" />
+    </Frame>
+
+    <Note>
+      Repeat for every method you want to offer. You can review the full list of available methods in the [Overview](/docs/plugins/vtex) page.
+    </Note>
+  </Step>
+
+  <Step title="Configure the webhook in your Yuno dashboard">
+    The webhook keeps your VTEX orders in sync with Yuno's payment status updates. 
+
+    1.  In the **Yuno dashboard**, open **Developers → Webhooks** and click **Add webhook**.
+    2.  Fill in the form:
+        *   **Name**: For example `VTEX webhook`.
+        *   **Endpoint URL**: `https://{store_name}.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook`, replacing `{store_name}` with your VTEX account name.
+        *   **x-api-key** and **x-secret**: Enter any placeholder value (for example, `VTEX`).
+    3.  Select all events and click **Add**.
+  </Step>
+</Steps>
+
+---
+
+## Advanced Scenarios
+
+The scenarios that go beyond the basic setup — multi-affiliation, multi-account, split orders, antifraud sessions, order modifications, network tokens, and corporate purchases — are covered on their own page.
+
+<CardGroup cols={1}>
+  <Card title="Advanced Features" icon="list" href="/docs/plugins/vtex/advanced-features">
+    Multi-affiliation, multi-account, split orders, antifraud sessions, order modifications, network tokens, and corporate purchases.
+  </Card>
+</CardGroup>

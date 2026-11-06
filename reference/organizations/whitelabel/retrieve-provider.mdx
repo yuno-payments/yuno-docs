@@ -1,0 +1,90 @@
+---
+title: "Retrieve a Provider Overlay"
+description: "Returns your organization's overlay on a single provider: whether you offer it, and any custom name, instructions, documentation link and logo."
+openapi: "/openapi/organizations/whitelabel/retrieve-provider.json GET /whitelabel/providers/{provider_id}"
+---
+
+Returns your organization's overlay on a single provider: whether you offer it, and any custom name, instructions, documentation link and logo.
+
+<Note>
+**This endpoint never returns `404`.** A provider you have never touched answers `200` with `allowed` and no override fields — exactly what an editor needs to render an empty form. Use [Retrieve a Provider's Instruction Override](/reference/organizations/whitelabel/retrieve-provider-instructions) instead when you specifically need to know whether an override exists.
+</Note>
+
+A field that is **absent** means "keep the Yuno catalogue's value for it". An override replaces a field wholesale and never merges into it.
+
+### Path Parameters
+
+<ParamField path="provider_id" type="string" required>
+  Yuno catalogue provider id in UPPER_SNAKE_CASE (`STRIPE`, `ADYEN`, `YUNO_3DS`, …). Case-insensitive — it is normalized to upper case.
+</ParamField>
+
+### Response
+
+<ResponseField name="provider_id" type="string">
+  Yuno catalogue provider id, normalized to upper case.
+</ResponseField>
+<ResponseField name="allowed" type="boolean">
+  Whether your organization offers this provider.
+</ResponseField>
+<ResponseField name="name" type="string">
+  Display name replacing the catalogue's, when overridden.
+</ResponseField>
+<ResponseField name="instructions" type="object[]">
+  Connection steps replacing the catalogue's, when overridden.
+</ResponseField>
+<ResponseField name="setup_instructions" type="object[]">
+  Grouped setup steps replacing the catalogue's, when overridden.
+</ResponseField>
+<ResponseField name="more_info_url" type="string">
+  Documentation link replacing the catalogue's, when overridden. Always https.
+</ResponseField>
+<ResponseField name="logo_url" type="string">
+  Presigned on this read, valid only for a short window, and never the same twice.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/whitelabel/providers/STRIPE' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK — never touched
+{
+  "provider_id": "STRIPE",
+  "allowed": false
+}
+```
+
+```json 200 OK — customized
+{
+  "provider_id": "YUNO_3DS",
+  "allowed": true,
+  "name": "Acme Risk",
+  "more_info_url": "https://docs.example.com/acme-risk",
+  "logo_url": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+}
+```
+
+```json 400 Bad Request
+{
+  "code": "VALIDATION_ERROR",
+  "messages": ["provider_id is invalid"]
+}
+```
+</CodeGroup>
+
+<Warning>
+`logo_url` is presigned on every read and expires shortly after. Render it immediately; never persist or cache it.
+</Warning>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | `provider_id` is not a valid catalogue id (`[A-Z0-9_]`, at most 100 characters). |
+| `401` | `NOT_AUTHENTICATED` | Missing or invalid API keys. |
+
+</div>

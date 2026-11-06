@@ -1,0 +1,94 @@
+---
+title: "Upload a Provider Logo"
+description: "Uploads your own logo for a Yuno-owned provider. The image travels base64 in JSON, not multipart."
+openapi: "/openapi/organizations/whitelabel/upload-provider-logo.json PUT /whitelabel/providers/{provider_id}/logo"
+---
+
+Uploads your own logo for this provider. The image travels **base64 inside JSON**, not multipart.
+
+<Warning>
+A logo is the provider's identity rather than its wording, so it follows the same rule as `name`: it is accepted **only for Yuno-owned providers** — a catalogue id containing `YUNO`, such as `YUNO_3DS` or `YUNO_FRAUD_SCREENING`. Uploading a logo for anyone else's provider is rejected with `400`.
+</Warning>
+
+Writing a logo does not touch the instruction override, and does not add the provider to your allowlist.
+
+### Image requirements
+
+| Rule | Detail |
+|---|---|
+| Format | PNG or JPEG, decided by the **file's own bytes** — an SVG renamed `.png` is refused. |
+| Shape | Square. It is drawn into the same fixed box as the catalogue's own icons. |
+| Minimum size | 200x200 pixels. |
+| Maximum size | 64 KB decoded. |
+| Request body | At most 256 KB, base64 included. Larger bodies are rejected with `413`. |
+
+### Path Parameters
+
+<ParamField path="provider_id" type="string" required>
+  Yuno catalogue provider id in UPPER_SNAKE_CASE, and it must be a Yuno-owned provider (the id contains `YUNO`). Case-insensitive — normalized to upper case.
+</ParamField>
+
+### Body
+
+<ParamField body="file_name" type="string" required>
+  Original file name, at most 255 characters. Stored for display only — the format is decided by the bytes, never by this extension.
+</ParamField>
+
+<ParamField body="base64_data" type="string" required>
+  The image itself, base64-encoded.
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  Always `stored` on success.
+</ResponseField>
+
+The stored key is not returned. Read the provider again with [Retrieve a Provider Overlay](/reference/organizations/whitelabel/retrieve-provider) to get a fresh presigned `logo_url`, which is the only kind of URL that exists for it.
+
+<CodeGroup>
+```bash cURL
+curl -X PUT 'https://api.y.uno/v1/whitelabel/providers/YUNO_3DS/logo' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "file_name": "acme.png",
+    "base64_data": "<BASE64_ENCODED_IMAGE>"
+  }'
+```
+
+```json 200 OK
+{
+  "status": "stored"
+}
+```
+
+```json 400 — image too small
+{
+  "title": "Invalid provider logo",
+  "status": 400,
+  "detail": "The logo was rejected",
+  "violations": [
+    "The logo must be at least 200x200 pixels. This image is 1x1."
+  ]
+}
+```
+</CodeGroup>
+
+<Note>
+`violations` lists **every** problem with the image at once — size, shape and format together — rather than one per round trip.
+</Note>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | Envelope | When |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | `provider_id` is not a valid catalogue id. |
+| `400` | problem+json | The logo was rejected: not PNG/JPEG, not square, smaller than 200x200, larger than 64 KB decoded, a missing field, or the provider is not Yuno-owned. |
+| `401` | `NOT_AUTHENTICATED` | Missing or invalid API keys. |
+| `413` | — | Request body larger than 256 KB. |
+
+</div>

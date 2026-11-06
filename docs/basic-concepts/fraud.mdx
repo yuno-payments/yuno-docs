@@ -1,0 +1,55 @@
+---
+title: "Fraud prevention"
+description: "Configure pre and post authorization fraud screening with external providers through Yuno's payment routing."
+---
+
+Yuno integrates with external fraud detection services to help prevent fraud in your payment process. You can configure both **pre-authorization** and **post-authorization** fraud screening through your preferred **fraud detection provider**.
+
+### Fraud prevention with Yuno
+
+When using Yuno's SDK, no additional development is required. Simply add the fraud detection provider to the payment route, and Yuno will handle the rest.
+
+<Frame>![Fraud prevention illustration: magnifying glass inspecting a user profile among several flagged user profiles](/images/reference/fraud/image1.png)</Frame>
+
+When a payment is created, Yuno generates different transactions based on the payment method route. If fraud verification is enabled in the route, Yuno creates a `FRAUD_SCREENING` transaction and associates it with the payment. This transaction contains details about the fraud verification outcome, which you can also view in the [payment details](/docs/transactions#transaction-types-and-statuses) on your Yuno dashboard.
+
+<Note>
+**Session ID collection is route-specific**
+
+The SDK only collects a device fingerprint or `session_id` for fraud providers configured in the merchant's active fraud route. If you need to collect a `session_id` for a specific provider, make sure that provider is added to the route for that payment method on your Yuno dashboard.
+</Note>
+
+### Forter Session Token Capture
+
+If you are using **Forter** for fraud detection, the Yuno SDK provides a reliable way to capture the session token.
+
+To ensure the token is correctly captured and associated with the transaction, you should listen for the `ftr:tokenReady` event. This event is triggered when the Forter session token is generated and ready to be used.
+
+```javascript
+window.addEventListener('ftr:tokenReady', (event) => {
+  const forterToken = event.detail;
+  console.log('Forter Session Token ready:', forterToken);
+});
+```
+
+Using this listener prevents issues with stale or missing tokens by ensuring you always capture the token at the right moment during the initialization or unmounting of the Forter component.
+### Checkout.com Risk.js device session
+
+If you route card payments to **Checkout.com**, its risk engine can score each payment with device data collected on your checkout page by Checkout.com's Risk.js library. The Yuno Web SDK collects that device session for you and Yuno sends it to Checkout.com with the payment as `risk.device_session_id`.
+
+To turn it on, open your Checkout.com connection in the Yuno dashboard (**Connections**) and fill in three fields:
+
+| Field | Value |
+| --- | --- |
+| **Enable Risk.js device session** | Check it. |
+| **Public key (Risk.js)** | Your Checkout.com public API key (`pk_…`). It is a publishable key: the SDK shares it with the shopper's browser. |
+| **Merchant-specific sub-domain (Risk.js)** | The first eight characters of your Checkout.com client ID, without the `cli_` prefix (for `cli_vkuhvk4vjn2e…` enter `vkuhvk4v`). Risk.js refuses to start without it. |
+
+No code change is needed on your side. From Web SDK 1.11.43, when a payment method routed to that connection mounts, the SDK loads Risk.js in the background from `risk.checkout.com` (`risk.sandbox.checkout.com` for sandbox keys), publishes the device data and attaches the returned device session ID to the one-time token and the payment. It applies to every payment method routed to the connection (cards, wallets and alternative payment methods) on the Full, Lite and Seamless checkouts, Secure Fields and the wallet buttons.
+
+<Note>
+- Risk.js is requested directly from Checkout.com, not through your white-label proxy. If your page sets a Content Security Policy, allow those two hosts in `script-src`.
+- Collection never blocks the checkout: if the script fails to load or Checkout.com does not answer in time, the payment goes through without a device session and the SDK logs the failure.
+- Checkout.com keeps a device session for 20 minutes. The SDK collects it when the payment method mounts, so a checkout that stays open longer than that pays without it.
+- The mobile SDKs do not collect the Risk.js device session.
+</Note>

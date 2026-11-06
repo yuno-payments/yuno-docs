@@ -1,0 +1,351 @@
+---
+title: "Wallet enhanced experience"
+description: "Enable a direct wallet experience on VTEX checkout and unlock Apple Pay, Google Pay, and Samsung Pay installments."
+---
+
+The wallet enhanced experience is an optional add-on for stores already using the Yuno VTEX plugin. It improves the checkout experience for shoppers by removing an intermediate screen between the VTEX checkout and the device's native wallet sheet, which is known to reduce conversion on wallet payments.
+
+<div className="grid grid-cols-2 gap-4">
+  <Frame caption="Default experience (with intermediate screen)">
+    <img src="/images/plugins/vtex/image-20260422-170119.png" alt="Default wallet experience" />
+  </Frame>
+  <Frame caption="Enhanced experience (direct native sheet)">
+    <img src="/images/plugins/vtex/image-20260422-170132.png" alt="Enhanced wallet experience" />
+  </Frame>
+</div>
+
+## What it is
+
+By default, when a shopper selects a wallet payment (Apple Pay, Google Pay, or Samsung Pay), the Yuno Payment App opens an intermediate screen inside the VTEX checkout before the device's native confirmation sheet (Face ID, fingerprint, or PIN) appears.
+
+The **enhanced experience** removes that intermediate screen: the wallet buttons appear **directly inside the VTEX checkout payment step**, and tapping a button opens the device's native sheet immediately.
+
+This integration also unlocks optional **installments for Apple Pay, Google Pay, and Samsung Pay**.
+
+## How it works
+
+When a shopper reaches the checkout, the Yuno SDK quietly prepares a payment session in the background. By the time they reach the payment step, the wallet buttons appear instantly.
+
+*   **Fast confirmation**: Tapping a button opens the native wallet sheet immediately.
+*   **Auto-recalculation**: If the shopper changes their cart (adds an item, applies a coupon, changes shipping), the SDK recalculates the session automatically.
+*   **Error handling**: If a payment fails, the shopper can try again without reloading the page.
+
+---
+
+## Integration guide
+
+Setting up the enhanced experience involves adding a small JavaScript snippet to your VTEX checkout and finding the values to fill into it.
+
+<Steps>
+  <Step title="Add the snippet to your VTEX checkout">
+    The snippet is added to your store's `checkout6-custom.js` file from the VTEX dashboard.
+
+    1.  In the **VTEX dashboard**, search for **Checkout** in the top bar.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-snippet-1.png" alt="VTEX Checkout settings" />
+    </Frame>
+
+    2.  Select the website your store uses (usually **Default**).
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-snippet-2.png" alt="Select website" />
+    </Frame>
+
+    3.  Open the **Code** tab and select `checkout6-custom.js` from the file list on the right.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-snippet-3.png" alt="Open checkout6-custom.js" />
+    </Frame>
+
+    4.  Add the snippet below at the end of the file, then click **Save**.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-snippet-4.png" alt="Save snippet" />
+    </Frame>
+
+    ```javascript
+    (function () {
+      window.addEventListener('yuno-sdk-vtex-io-ready', function (event) {
+        var YunoVTEXIO = event.detail.YunoVTEXIO;
+        YunoVTEXIO.initialConfiguration({
+          paymentMethods: ['Apple Pay', 'Google Pay', 'Samsung Pay'],
+          affiliationName: 'YOUR_AFFILIATION_NAME'
+        });
+      });
+
+      var script = document.createElement('script');
+      script.src = 'https://sdk-web-vtex-io.y.uno/v1/main.js';
+      document.head.appendChild(script);
+    })();
+    ```
+
+    <Note>
+      Replace `YOUR_AFFILIATION_NAME` with the affiliation name from your Yuno provider configuration. In `paymentMethods`, list the wallets you want to enable: `'Apple Pay'`, `'Google Pay'`, `'Samsung Pay'`, or any combination.
+    </Note>
+  </Step>
+
+  <Step title="Find the affiliation name">
+    The `affiliationName` value is the same one you set when configuring Yuno as a payment provider.
+
+    1.  In the **VTEX dashboard** search bar, type `providers` and select the **Providers** result.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-affiliation-1.png" alt="VTEX Providers" />
+    </Frame>
+
+    2.  Find the Yuno provider configured for this store and open it.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-affiliation-2.png" alt="Select Yuno provider" />
+    </Frame>
+
+    3.  In the provider's detail view, copy the value from the **Affiliation Name** field and use it in the snippet.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-affiliation-3.png" alt="Copy affiliation name" />
+    </Frame>
+  </Step>
+</Steps>
+
+After saving the snippet, the enhanced experience is live. The wallet buttons you configured will
+appear directly inside the VTEX checkout payment step.
+
+---
+
+## Apple Pay installments
+
+Apple Pay installments is an optional feature within the enhanced experience that lets shoppers split their purchase into installments.
+
+### What shoppers see
+
+Once enabled, an **Installments** selector appears above the Apple Pay button. Tapping it opens a panel listing every installment option.
+
+<div className="grid grid-cols-2 gap-4">
+  <Frame caption="Installment selector">
+    <img src="/images/plugins/vtex/image-20260422-175803.png" alt="Installments selector" />
+  </Frame>
+  <Frame caption="Installment options panel">
+    <img src="/images/plugins/vtex/image-20260422-175811.png" alt="Options panel" />
+  </Frame>
+</div>
+
+If the plan includes interest, a **Payment details** panel appears below showing the breakdown (number of installments, financing cost, etc.).
+
+<Frame width="300">
+  <img src="/images/plugins/vtex/image-20260422-175858.png" alt="Financing details" />
+</Frame>
+
+### How to enable
+
+Apple Pay installments are enabled from the Yuno dashboard, by creating installment plans for the
+Apple Pay payment method. **The snippet doesn't change**: a store running the enhanced experience with
+`'Apple Pay'` in `paymentMethods` already asks Yuno for the available plans on every order.
+
+<Steps>
+  <Step title="Create an Apple Pay installment plan">
+    1.  In the **Yuno dashboard**, go to **Installments** and click **Create installment**.
+    2.  In **Payment method type**, select **Apple Pay**.
+    3.  Set the number of installments, the rate, the amount range, and the availability window.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-installments-plan-apple-pay.png" alt="Create installment with Payment method type set to Apple Pay" />
+    </Frame>
+
+    <Warning>
+      Card plans are not reused. Apple Pay only sees plans created for the Apple Pay payment method, so
+      a store with installment plans already set up for cards still needs its own Apple Pay plans.
+    </Warning>
+  </Step>
+  <Step title="Check the plan in the list">
+    The plan appears with **Apple Pay** in the **Payment method** column. Create one plan per amount
+    band if you want different options for different cart sizes.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-installments-plans-list-apple-pay.png" alt="Installments list showing Apple Pay plans per amount band" />
+    </Frame>
+  </Step>
+  <Step title="Confirm it in your checkout">
+    Open the payment step with a cart inside the plan's amount range and select Apple Pay. The
+    **Installments** selector appears above the button.
+  </Step>
+</Steps>
+
+You can also create plans with the [Create Installments Plan](/reference/installments/create-installments-plan)
+endpoint, sending `payment_method_type: APPLE_PAY`.
+
+### Eligibility rules
+
+Yuno resolves the plan for each order from the cart total, so the shopper always sees the options that
+apply to what's in their cart. If the cart changes, the options are recalculated.
+
+Each plan you create defines:
+
+*   **Payment method type**: must be Apple Pay.
+*   **Currency and country**: must match the order.
+*   **Amount range**: minimum and maximum order total the plan covers.
+*   **Availability window**: start and end date for the plan.
+
+The selector shows one entry per number of installments. If two plans cover the same order and both
+offer the same count, only one of them is used, so keep the amount ranges apart if you want a
+predictable result.
+
+If no plan covers the order, the selector is hidden and Apple Pay renders as a plain button — the
+payment still goes through, at one installment.
+
+<Warning>
+  Check the minimum amount of your lowest plan against your typical order total. If the plan starts
+  above it, most shoppers never see the selector, and the feature looks broken when it's only out of
+  range.
+</Warning>
+
+---
+
+## Google Pay installments
+
+Google Pay installments work the same way as Apple Pay installments: shoppers split their purchase
+into installments directly from the Google Pay payment option. Each wallet resolves its own plans,
+so you can offer installments on one wallet, the other, or both.
+
+### What shoppers see
+
+Once enabled, an **Installments** selector appears above the Google Pay button. Tapping it opens a
+panel listing every installment option.
+
+<div className="grid grid-cols-2 gap-4">
+  <Frame caption="Installment selector">
+    <img src="/images/plugins/vtex/vtex-google-pay-installments-selector.png" alt="Installments selector above the Google Pay button" />
+  </Frame>
+  <Frame caption="Installment options panel">
+    <img src="/images/plugins/vtex/vtex-google-pay-installments-options.png" alt="Google Pay installment options panel" />
+  </Frame>
+</div>
+
+If the plan includes interest, a **Payment details** panel appears below showing the breakdown
+(number of installments, financing cost, etc.), exactly as for Apple Pay.
+
+### How to enable
+
+Google Pay installments are enabled from the Yuno dashboard, by creating installment plans for the
+Google Pay payment method. **The snippet doesn't change**: a store running the enhanced experience
+with `'Google Pay'` in `paymentMethods` already asks Yuno for the available plans on every order.
+
+<Steps>
+  <Step title="Create a Google Pay installment plan">
+    1.  In the **Yuno dashboard**, go to **Installments** and click **Create installment**.
+    2.  In **Payment method type**, select **Google Pay**.
+    3.  Set the number of installments, the rate, the amount range, and the availability window.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-installments-plan-google-pay.png" alt="Create installment with Payment method type set to Google Pay" />
+    </Frame>
+
+    <Warning>
+      Plans are strictly per payment method. Google Pay only sees plans created for the Google Pay
+      payment method — neither card plans nor Apple Pay plans are reused. A store offering
+      installments on two or more wallets needs one set of plans per wallet.
+    </Warning>
+  </Step>
+  <Step title="Check the plan in the list">
+    The plan appears with **Google Pay** in the **Payment method** column. Create one plan per amount
+    band if you want different options for different cart sizes.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-installments-plans-list-google-pay.png" alt="Installments list showing Google Pay plans per amount band" />
+    </Frame>
+  </Step>
+  <Step title="Confirm it in your checkout">
+    Open the payment step with a cart inside the plan's amount range and select Google Pay. The
+    **Installments** selector appears above the button.
+  </Step>
+</Steps>
+
+You can also create plans with the [Create Installments Plan](/reference/installments/create-installments-plan)
+endpoint, sending `payment_method_type: GOOGLE_PAY`.
+
+### Eligibility rules
+
+Google Pay follows the same [eligibility rules as Apple Pay](#eligibility-rules): Yuno resolves the
+plan for each order from the cart total, recalculates when the cart changes, and matches plans on
+currency, country, amount range, and availability window. The only difference is the payment method
+type — a plan only applies to Google Pay when its **Payment method type** is **Google Pay**.
+
+If no plan covers the order, the selector is hidden and Google Pay renders as a plain button — the
+payment still goes through, at one installment.
+
+---
+
+## Samsung Pay installments
+
+Samsung Pay installments work the same way as Apple Pay and Google Pay installments: shoppers split
+their purchase into installments directly from the Samsung Pay payment option.
+
+### What shoppers see
+
+Once enabled, an **Installments** selector appears above the Samsung Pay button. Tapping it opens a panel listing every installment option, with a full financing breakdown below.
+
+<Frame caption="Samsung Pay checkout with installments">
+  <img src="/images/plugins/vtex/vtex-samsung-pay-checkout-staging.png" alt="Samsung Pay checkout page showing biometric confirmation, installments selector, and payment details" />
+</Frame>
+
+### How to enable
+
+Samsung Pay installments are enabled from the Yuno dashboard, by creating installment plans for the
+Samsung Pay payment method. **The snippet doesn't change**: a store running the enhanced experience
+with `'Samsung Pay'` in `paymentMethods` already asks Yuno for the available plans on every order.
+
+<Steps>
+  <Step title="Create a Samsung Pay installment plan">
+    1.  In the **Yuno dashboard**, go to **Installments** and click **Create installment**.
+    2.  In **Payment method type**, select **Samsung Pay**.
+    3.  Set the number of installments, the rate, the amount range, and the availability window.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-installments-plan-samsung-pay.png" alt="Create installment with Payment method type set to Samsung Pay" />
+    </Frame>
+
+    <Warning>
+      Plans are strictly per payment method. Samsung Pay only sees plans created for the Samsung Pay
+      payment method — neither card plans nor Apple Pay or Google Pay plans are reused. A store offering
+      installments on multiple wallets needs one set of plans per wallet.
+    </Warning>
+  </Step>
+  <Step title="Check the plan in the list">
+    The plan appears with **Samsung Pay** in the **Payment method** column. Create one plan per amount
+    band if you want different options for different cart sizes.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-installments-plans-list-samsung-pay.png" alt="Installments list showing Samsung Pay plans per amount band" />
+    </Frame>
+  </Step>
+  <Step title="Confirm it in your checkout">
+    Open the payment step with a cart inside the plan's amount range and select Samsung Pay. The
+    **Installments** selector appears above the button.
+  </Step>
+</Steps>
+
+You can also create plans with the [Create Installments Plan](/reference/installments/create-installments-plan)
+endpoint, sending `payment_method_type: SAMSUNG_PAY`.
+
+### Eligibility rules
+
+Samsung Pay follows the same [eligibility rules as Apple Pay](#eligibility-rules): Yuno resolves the
+plan for each order from the cart total, recalculates when the cart changes, and matches plans on
+currency, country, amount range, and availability window. The only difference is the payment method
+type — a plan only applies to Samsung Pay when its **Payment method type** is **Samsung Pay**.
+
+If no plan covers the order, the selector is hidden and Samsung Pay renders as a plain button — the
+payment still goes through, at one installment.
+
+### VTEX order display
+
+<Warning>
+  VTEX currently shows Samsung Pay orders as a **full single payment** in the order summary and admin
+  panels. A native Samsung Pay installments setup does not yet exist in VTEX — VTEX ticket 1453437
+  tracks this as a future improvement.
+
+  *Yuno is the source of truth* for the installment breakdown: the correct number of installments,
+  the per-installment amount, and any interest are visible in the Yuno dashboard and in the
+  transaction details. The VTEX display is cosmetic and does not affect how the payment is processed
+  or settled.
+</Warning>

@@ -1,0 +1,171 @@
+---
+title: "Receive Yuno events at your endpoint"
+sidebarTitle: "Webhooks"
+description: "Receive payment, subscription and payout events at your HTTPS endpoint, verify each delivery and handle retries and duplicates."
+keywords: ["webhooks", "events", "triggers", "HMAC", "retries", "idempotency"]
+---
+
+import { ExplainerVideo } from "/snippets/ExplainerVideo.jsx";
+
+<div className="yd-page"><div className="yd-hub">
+
+<div className="yd-eyebrow">
+  <span className="yd-eyebrow-accent">Guide hub</span>
+  <span className="yd-eyebrow-rule" />
+  <span className="yd-eyebrow-muted">4 pages</span>
+</div>
+
+<p className="yd-lead">A webhook is an HTTP POST request that Yuno sends to your URL as soon as an event happens, such as a payment authorized, a subscription renewed or a payout completed, so your backend does not poll. Your endpoint must be a public HTTPS URL that accepts the request and returns HTTP 200, and you check that each delivery came from Yuno with HMAC or OAuth2 authentication.</p>
+
+<div className="yd-hub-start">
+  <Card title="Start here: Configure webhooks" href="/docs/webhooks/configure-webhooks">
+    <span className="yd-kind">Guide</span> Set a webhook's endpoint, triggers and delivery authentication from the dashboard or the API.
+  </Card>
+</div>
+
+<ExplainerVideo src="/videos/explainers/webhooks.mp4" poster="/videos/explainers/webhooks.jpg" title="Webhooks: setup, signatures, retries, duplicates" duration="80 s" />
+
+## <span className="yd-hub-num">01</span> Build
+
+<CardGroup cols={2}>
+  <Card title="Events and triggers" href="/docs/webhooks/events"><span className="yd-kind">Reference</span> Every event a webhook can subscribe to, by domain, and the trigger field that selects it.</Card>
+  <Card title="Payloads and examples" href="/docs/webhooks/object-and-examples"><span className="yd-kind">Reference</span> Payload attributes with example JSON for payments, chargebacks, enrollments, payouts and subscriptions.</Card>
+  <Card title="Verify webhook signatures (HMAC)" href="/docs/webhooks/verify-webhook-signatures-hmac"><span className="yd-kind">Guide</span> Validate the HMAC SHA256 signature header before you act on a delivery.</Card>
+</CardGroup>
+
+## <span className="yd-hub-num">02</span> Operate
+
+<CardGroup cols={2}>
+  <Card title="Delivery and retries" href="#delivery-and-retries"><span className="yd-kind">Reference</span> The retry schedule Yuno follows when your endpoint does not return HTTP 200.</Card>
+  <Card title="De-duplication" href="#de-duplication"><span className="yd-kind">Guide</span> The idempotency key per event type and the code that skips duplicate deliveries.</Card>
+  <Card title="Split update notifications" href="#split-update-notifications"><span className="yd-kind">Reference</span> When a payment.split_update event fires and which fields to reconcile on.</Card>
+</CardGroup>
+
+## Related API
+
+<p className="yd-hub-api"><span className="yd-kind">Reference</span> <a className="yd-pill" href="/reference/webhooks/create-webhook">Create webhook</a> <a className="yd-pill" href="/reference/webhooks/list-webhooks">List webhooks</a> <a className="yd-pill" href="/reference/webhooks/update-webhook">Update webhook</a></p>
+
+</div></div>
+
+## Delivery and retries
+
+Yuno expects an **HTTP 200 OK** response to confirm a notification was received. No response body is required. `201 Created` and `204 No Content` also count as delivered.
+
+Error responses such as `400`, `401`, `429` and `5xx`, a timeout, or a connection error start the retry schedule below, so a brief outage on your end doesn't lose an event. Each retry delay counts from the previous attempt, and the elapsed time is approximate and counts from the first send.
+
+| Attempt | Delay after the previous attempt | Approximate time since the first send |
+| :------ | :------------------------------- | :------------------------------------ |
+| Initial send | N/A | 0 |
+| Retry 1 | Immediately | ~0 |
+| Retry 2 | 5 minutes | ~5 minutes |
+| Retry 3 | 50 minutes | ~55 minutes |
+| Retry 4 | 6 hours | ~6 hours 55 minutes |
+| Retry 5 | 24 hours | ~30 hours 55 minutes |
+| Retry 6 | 48 hours | ~78 hours 55 minutes |
+
+With this default schedule, Yuno makes up to 7 attempts per event, and the payload's `retry` field goes from `0` on the initial send to `6` on the last retry. Some webhook configurations use a longer schedule with more retries, so don't treat `retry: 6` as the final attempt.
+
+<Warning>
+Yuno does not retry a `404 Not Found`. If your webhook URL has a wrong path, or your framework returns 404 for an unknown route, the event is dropped after the first attempt. Check the URL in Dashboard → Developers → Webhooks and make sure the route returns 200.
+</Warning>
+
+## De-duplication
+
+Because Yuno retries delivery when it doesn't receive a confirmation, your endpoint can receive the same event more than once. This is expected behavior, not a bug: your integration should be able to identify and skip duplicates.
+
+### The identifier
+
+For ordinary v2 payment events, the key is `data.payment.idempotency_key`; for subscription events, it is `data.idempotency_key`. It stays stable across every retry of the same event, so you can use it to tell a duplicate delivery apart from a genuinely new event.
+
+For `payment.split_update`, use `data.split_update.idempotency_key` instead: it identifies the split update operation. The payment's existing `data.payment.idempotency_key` can be shared by several different split updates. Scope your de-duplication record by account, event type, and operation key. In legacy v1 payloads, use the top-level `split_update.idempotency_key`.
+
+### Coverage
+
+The key location depends on the event:
+
+- Ordinary payment events, including refund and chargeback: `data.payment.idempotency_key`
+- Split update events: `data.split_update.idempotency_key`
+- Subscription events: `data.idempotency_key`
+
+<Warning>
+For `subscription.*` events the key identifies the **subscription**, not the event: it is the `X-Idempotency-Key` sent when the subscription was created, and it is repeated identically on every lifecycle event for that subscription. De-duplicate `subscription.*` events on `type_event` **plus** `data.idempotency_key` — matching on the key alone collapses every event for a subscription into one and silently drops `subscription.active`, `subscription.cancel` and the rest.
+</Warning>
+
+<Note>
+Support for `enrollment` events is planned but not yet available. Until then, enrollment payloads do not include `data.idempotency_key`.
+</Note>
+
+### Why you might see the same event twice
+
+Each v2 payload also includes a top-level `retry` field with the number of delivery attempts made for that event (`0` on the first attempt). If your endpoint doesn't return an HTTP 200 OK in time, Yuno resends the same event (same event-specific idempotency key, incremented `retry`) following the schedule described in [Delivery and retries](#delivery-and-retries) above. Treat any event whose `type_event` and idempotency key you've already processed as a duplicate, regardless of its `retry` value.
+
+### Recommended handling
+
+For v2 payloads, store the event-specific key you've successfully processed together with the account and event's `type_event`, and check incoming events against that store before acting on them:
+
+```js
+async function handleWebhookEvent(event) {
+  // Scope the key by event type: a subscription's key is the same on every
+  // one of its lifecycle events.
+  const operationKey = event.type_event === "payment.split_update"
+    ? event.data.split_update.idempotency_key
+    : event.type_event.startsWith("payment.")
+      ? event.data.payment?.idempotency_key
+      : event.data.idempotency_key;
+  if (!operationKey) {
+    throw new Error("Missing event key: use an event-specific fallback");
+  }
+  const key = `${event.account_id}:${event.type_event}:${operationKey}`;
+
+  if (await store.has(key)) {
+    // Already processed, acknowledge and skip.
+    return;
+  }
+
+  await processEvent(event);
+  await store.add(key);
+}
+```
+
+Keep in mind that not every event type carries an idempotency key yet (see Coverage above). For event types without it, fall back to your own de-duplication key, such as the combination of resource ID and event type.
+
+## Configure a webhook
+
+Webhooks are configured the same way whether you use the dashboard or the API. Both set the same `url`, triggers, and delivery authentication.
+
+<Card title="Configure a Webhook" icon="gear" href="/docs/webhooks/configure-webhooks">
+  Set up a webhook's endpoint, triggers, and delivery authentication, from the dashboard or the API.
+</Card>
+
+## Split update notifications
+
+<Note>
+`payment.split_update` requires the split-update trigger to be available in your account's webhook catalog. Production subscription availability is pending; this event is not enabled by a purchase or refund subscription.
+</Note>
+
+Subscribe explicitly to `SPLIT_UPDATE` in `payment_triggers` when the catalog makes it available. Existing `PURCHASE` and `REFUND` subscriptions and their payloads do not change.
+
+A notification is initiated after the split update is recorded as applied. It is also initiated after a manual resolution commits `APPLY_REQUESTED` (apply the requested split) or `SET_EMPTY` (clear the split). `KEEP_PREVIOUS`, failed or unresolved updates, same-key request replays, and repeated resolutions do not initiate another notification.
+
+The payload includes `split_update.idempotency_key`, the original split update request key, and `split_update.updated_at`, the recorded completion timestamp of that operation. This timestamp is not the webhook send time or the payment's general update time. See the [v1 and v2 examples](/docs/webhooks/object-and-examples#split-update-webhooks).
+
+The event's `payment.transactions.split_marketplace` is the split recorded for that operation. It remains that operation's split even if a later update completes before delivery. Other payment fields are read when the notification is prepared, so the body is **not a complete historical payment snapshot**. For the latest state, retrieve the payment with `GET /v1/payments/{payment_id}`. Do not overwrite a newer split with an older event; use the operation timestamp when reconciling, and retrieve the payment when the order is ambiguous.
+
+Delivery is not exactly once and events may arrive out of order. The split update can succeed even if notification dispatch fails. Once a notification is accepted for webhook delivery, normal webhook retries can produce duplicate deliveries. De-duplicate by the split operation key, acknowledge receipt, and retrieve the payment when you need its current state.
+
+## What's next
+
+<CardGroup cols={2}>
+  <Card title="Events and Triggers" icon="bolt" href="/docs/webhooks/events">
+    The full catalog of events you can subscribe to, by domain.
+  </Card>
+  <Card title="Payloads and Examples" icon="brackets-curly" href="/docs/webhooks/object-and-examples">
+    Example JSON payloads for each event.
+  </Card>
+  <Card title="Verify Webhook Signatures (HMAC)" icon="shield-check" href="/docs/webhooks/verify-webhook-signatures-hmac">
+    Confirm a notification genuinely came from Yuno and wasn't tampered with.
+  </Card>
+  <Card title="Webhooks API Reference" icon="code" href="/reference/webhooks">
+    Every field, endpoint, and error response for managing webhooks programmatically.
+  </Card>
+</CardGroup>

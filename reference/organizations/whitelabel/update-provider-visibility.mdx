@@ -1,0 +1,89 @@
+---
+title: "Update a Provider's Visibility"
+description: "Turns a single provider on or off in your white-label Providers tab."
+openapi: "/openapi/organizations/whitelabel/update-provider-visibility.json PATCH /whitelabel/providers/{provider_id}"
+---
+
+Turns a single provider on or off. Idempotent, and turning it off **keeps** its instruction override, so your wording survives the toggle.
+
+The response is the provider's refreshed overlay, with `allowed` reflecting the `visible` you sent.
+
+<Warning>
+Your allowlist is opt-in: a white-label organization with no allowlist entries offers no provider at all. Sending `visible: true` on such an organization **starts** the allowlist with that single provider — the rest stay unoffered until you add them one by one, or in bulk with [Update Visibility for Several Providers](/reference/organizations/whitelabel/update-providers-visibility) or [Replace the Provider Allowlist](/reference/organizations/whitelabel/replace-provider-allowlist).
+</Warning>
+
+### Path Parameters
+
+<ParamField path="provider_id" type="string" required>
+  Yuno catalogue provider id in UPPER_SNAKE_CASE. Case-insensitive — it is normalized to upper case, so `stripe` and `STRIPE` address the same provider.
+</ParamField>
+
+### Body
+
+<ParamField body="visible" type="boolean" required>
+  Whether your organization offers this provider. `true` adds it to the allowlist, `false` removes it.
+
+  Required. A body that omits it, or sends an explicit `null`, is a `400` — it is never treated as `false`.
+</ParamField>
+
+### Response
+
+The provider's refreshed overlay, in the same shape as [Retrieve a Provider Overlay](/reference/organizations/whitelabel/retrieve-provider).
+
+<ResponseField name="provider_id" type="string">
+  Yuno catalogue provider id, normalized to upper case.
+</ResponseField>
+<ResponseField name="allowed" type="boolean">
+  Whether your organization offers this provider, after this change.
+</ResponseField>
+<ResponseField name="name" type="string">
+  Display name replacing the catalogue's, when overridden.
+</ResponseField>
+<ResponseField name="instructions" type="object[]">
+  Connection steps replacing the catalogue's, when overridden.
+</ResponseField>
+<ResponseField name="setup_instructions" type="object[]">
+  Grouped setup steps replacing the catalogue's, when overridden.
+</ResponseField>
+<ResponseField name="more_info_url" type="string">
+  Documentation link replacing the catalogue's, when overridden.
+</ResponseField>
+<ResponseField name="logo_url" type="string">
+  Presigned on this read and short-lived.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH 'https://api.y.uno/v1/whitelabel/providers/ADYEN' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{ "visible": true }'
+```
+
+```json 200 OK
+{
+  "provider_id": "ADYEN",
+  "allowed": true
+}
+```
+
+```json 400 Bad Request
+{
+  "code": "VALIDATION_ERROR",
+  "messages": ["provider_id is invalid"]
+}
+```
+</CodeGroup>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | Invalid `provider_id`, or a body with a missing or null `visible`. |
+| `401` | `NOT_AUTHENTICATED` | Missing or invalid API keys. |
+| `413` | — | Request body larger than 256 KB. |
+
+</div>

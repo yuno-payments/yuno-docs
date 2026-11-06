@@ -1,0 +1,45 @@
+name: Ingest Flutter Changelog
+
+on:
+  repository_dispatch:
+    types: [flutter-sdk-changelog]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Prepend release to flutter.json
+        run: node scripts/prepend_release.js changelog/source/flutter.json
+
+      - name: Regenerate flutter.mdx
+        run: node scripts/generate_changelog.js changelog/source/flutter.json changelog/flutter.mdx
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: changelog/flutter-${{ github.event.client_payload.version }}
+          base: main
+          commit-message: "chore(changelog): flutter v${{ github.event.client_payload.version }}"
+          title: "chore(changelog): flutter v${{ github.event.client_payload.version }}"
+          body: |
+            Automated changelog update for the **Flutter SDK v${{ github.event.client_payload.version }}**.
+
+            **Release date:** ${{ github.event.client_payload.release_date }}
+
+            Triggered by `repository_dispatch` event `flutter-sdk-changelog`.
+
+            Please review `changelog/source/flutter.json` and `changelog/flutter.mdx` before merging.
+          reviewers: Arcapas,htessaro

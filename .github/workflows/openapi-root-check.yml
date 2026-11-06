@@ -1,0 +1,33 @@
+name: OpenAPI root check
+
+# Guards the aggregated spec published at the site root:
+# /openapi.json and /openapi.yaml must stay in sync with
+# openapi/yuno-api-v1.yaml and must never regress to a 0-path shell.
+
+on:
+  pull_request:
+    paths:
+      - "openapi.json"
+      - "openapi.yaml"
+      - "openapi/**"
+      - "reference/**"
+      - "docs.json"
+      - "scripts/build-openapi-root.cjs"
+      - ".github/workflows/openapi-root-check.yml"
+  push:
+    branches: [main]
+
+jobs:
+  check-openapi-root:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install js-yaml
+        # pinned: --check byte-compares yaml.dump output against the committed
+        # openapi.yaml, so the version must match the one used to generate it
+        run: npm install --no-save js-yaml@5.4.0
+      - name: Verify root spec files match source and have paths
+        run: node scripts/build-openapi-root.cjs --check

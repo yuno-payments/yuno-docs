@@ -1,0 +1,110 @@
+---
+title: "Seamless Lite mode"
+description: "Migrate Web Seamless Lite integrations (yuno.startSeamlessCheckout + yuno.mountSeamlessCheckoutLite) to the unified Transaction API."
+---
+
+Seamless Lite combined two legacy traits: **Seamless** (the SDK created the payment internally, with no `yunoCreatePayment` callback exposed) and **Lite** (the payment method was pre-selected by the merchant; the SDK only rendered the form for that one method).
+
+In the unified API `transaction.start({ paymentMethod })` mounts the form for the pre-selected method and `transaction.submit()` pays from your button. No `createPayment` on the config (Seamless was always managed).
+
+## Before you start
+
+- Load the unified SDK bundle instead of the legacy one and initialize it as the side-by-side shows: `window.Yuno.initialize(...)` becomes `SdkPayments.initialize(...)`. Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide who creates the payment. The checkout session's `workflow` must match that decision:
+
+| Who creates the payment | In Seamless Lite you had | In the unified API | Session `workflow` |
+|---|---|---|---|
+| Your backend | No equivalent: Seamless never let you create it | Override `createPayment` | Default (`SDK_CHECKOUT`) |
+| The SDK | Always | No override | `SDK_SEAMLESS` |
+
+<Warning>
+A default-workflow session with no `createPayment` override ends in `INTERNAL_ERROR`: the backend rejects the SDK's payment creation. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Side-by-side
+
+<CodeGroup>
+
+```typescript Before. Seamless Lite
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+await yuno.startSeamlessCheckout({
+    checkoutSession: 'session-from-backend',
+    elementSelector: '#root',
+    countryCode: 'CO',
+    language: 'en',
+    yunoPaymentResult: (status) => console.log('done:', status),
+})
+
+await yuno.mountSeamlessCheckoutLite({
+    paymentMethodType: 'PIX',
+    vaultedToken: null,
+})
+
+// Merchant's pay button triggers. SDK does everything else
+document.getElementById('pay').addEventListener('click', () => {
+    yuno.startPayment()
+})
+```
+
+```typescript After. Unified Transaction (managed + pre-selected)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    elementSelector: '#root',
+    showPayButton: false,
+    // managed mode: no createPayment wired
+    onStatus: (result) => console.log('done:', result.status),
+})
+
+// Mount the form for the pre-selected method
+await transaction.start({
+    paymentMethod: { type: 'PIX' },
+})
+
+// Merchant's pay button submits it. SDK does everything else
+document.getElementById('pay').addEventListener('click', () => {
+    transaction.submit()
+})
+```
+
+</CodeGroup>
+
+## What changes
+
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
+
+### Initialization and config
+
+| Seamless Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renamed | The global is `window.SdkPayments`. As before, `await` it: it resolves to the `SdkPayments` instance you create transactions from. |
+| `checkoutSession`, `countryCode`, `language` on the `startSeamlessCheckout` config | The same fields on the transaction config | Moved | Same values, single factory. |
+| `elementSelector` on the `startSeamlessCheckout` config | `elementSelector` on the transaction config | Moved | Required. `start({ paymentMethod })` renders the form inside that element and throws without it. Headless flows ignore it. |
+| `showPayButton` on the `startSeamlessCheckout` config | `showPayButton` on the transaction config | Moved | Same meaning. Payment flows only. |
+
+### Callbacks
+
+| Seamless Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renamed | Still the single outcome callback, now a field on the transaction config. It receives one `TransactionStatus` object (`status`, `substatus`, `message`). See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `yunoError(message, data?)` | *(removed)* | Removed | Errors flow through `onStatus`, or a rejected `start()` Promise. |
+| `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Renamed | Optional. Boolean signal only. See [`showLoading`](/docs/yuno-sdk/controllers/show-loading). |
+| *(none: payment creation was always managed)* | `createPayment` | New | Don't wire it. Its absence keeps the SDK in managed mode, the same model Seamless had. |
+
+### Entry points
+
+| Seamless Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `yuno.startSeamlessCheckout(config)` | `sdkPayments.transaction(config)` | Renamed | The `Seamless` factory is gone: use the regular factory, without `createPayment` (see Callbacks). |
+| `yuno.mountSeamlessCheckoutLite({ paymentMethodType, vaultedToken })` + `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod: { type, vaultedToken } })` + `transaction.submit()` | Renamed | Same two steps. `start()` mounts the form inside the `elementSelector` set on the transaction config, and the pre-selection becomes its `paymentMethod` argument. `submit()` is your pay trigger. Set `showPayButton: false` to hide the SDK's button. `Lite` vs `Full` is gone as a method split: it's now whether you pass `paymentMethod` to `start()` directly (pre-selected) or get it from `onPaymentSelected` inside `getPaymentMethodsViews` (user picks from the list). |
+| `yuno.submitOneTimeTokenForm()` | `transaction.submit()` | Renamed | Submits the form `start()` mounted, from your own button. Use it with `showPayButton: false`. See [Web: submit from your own button](/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button). |
+
+## Related
+
+- [`TransactionConfig`](/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Complete field reference.
+- [Seamless mode](/docs/yuno-sdk/migration/web/seamless). For Seamless Full and Seamless External Buttons.
+- [Lite mode](/docs/yuno-sdk/migration/web/lite). For non-Seamless Lite (which supports `yunoCreatePayment` for manual mode).

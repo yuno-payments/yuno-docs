@@ -1,0 +1,204 @@
+---
+title: "Updates for November, 2024"
+---
+
+Discover Yuno's latest updates, including card expiration details, enhanced split payments, refund receipts, subscription items, and payouts with vaulted tokens. Check out the updates below.
+
+There have been some updates on Yuno. Please check the updates below.
+
+* Card expiration details
+* Recipients for Split Payments Marketplace
+* Receipts for Cancel transactions
+* Items for Subscriptions
+* Payouts with vaulted tokens
+
+## Card expiration details
+
+We've added two more fields to the Payment response called `expiration_year` and `expiration_month`. The fields (inside every transaction.card\_data) specify the expiration details of the card used to make the payment, giving you the information without having to do a get to the payment method.
+
+```json
+[...]
+"card_data": {
+                    "holder_name": "Paco",
+                    "iin": "48710499",
+                    "lfd": "9910",
+                    "number_length": 16,
+                    "security_code_length": 3,
+                    "brand": "VISA",
+                    "issuer_name": "BNP PARIBAS FORTIS",
+                    "issuer_code": null,
+                    "country_code": "BE",
+                    "category": "CLASSIC",
+                    "type": "DEBIT",
+                    "three_d_secure": {
+                        "version": null,
+                        "electronic_commerce_indicator": null,
+                        "cryptogram": null,
+                        "transaction_id": null,
+                        "directory_server_transaction_id": null,
+                        "pares_status": null,
+                        "acs_id": null
+                    },
+                    "fingerprint": "71000db4-f8e7-4ea0-a2cc-9d9ebb76a955",
+                    "expiration_month": 3,
+                    "expiration_year": 30
+[...]
+```
+
+## Recipients for Split Marketplace
+
+We've added a new capability to the [split payments marketplace](/docs/payment-features/split-payments-marketplace) requests called Recipients. In case you use more than one payment provider for the split payments, we recommend using the [recipients object](/reference/recipients-for-marketplace/create-recipient-1), as it lets you define more than one provider for each recipient.
+
+### Recipient creation
+
+```json
+{
+    "account_id": "{{account-code}}",
+    "providers": [{
+        "id": "PAGARME",
+        "recipient_id": "XXXXXXXX"
+    }],
+    "external_id": "AAAA05",
+    "national_entity": "INDIVIDUAL",
+    "first_name": "John",
+    "last_name": "Doe",
+    "legal_name": "Arcos dorados S.A.",
+    "email": "john.doe@email.com",
+    "country": "CO",
+    "document": {
+        "document_number": "1093333333",
+        "document_type": "CC"
+    },
+    "phone": {
+        "country_code": "57",
+        "number": "3132450765"
+    },
+    "address": {
+        "address_line_1": "Calle 34 # 56 - 78",
+        "address_line_2": "Apartamento 502, Torre I",
+        "city": "Bogota",
+        "country": "CO",
+        "state": "Cundinamarca",
+        "zip_code": "111111"
+    }
+}
+```
+
+### Sending a Payment
+
+```json
+[...],
+"amount": {
+        "currency": "BRL",
+        "value": 1000
+    },
+"split_marketplace": [
+                {
+                    "amount": {
+                        "currency": "BRL",
+                        "value": 500
+                    },
+                    "recipient_id": "09d8bad7-4efe-47e2-b9ee-f4028460bab1",
+                    "type": "PURCHASE"
+                },
+                {
+                    "amount": {
+                        "currency": "BRL",
+                        "value": 500
+                    },
+                    "recipient_id": "d94e02c1-cc47-4e60-a20a-2b17fe58992d",
+                    "type": "PURCHASE"
+                }
+            ],
+[...]
+```
+
+For more information, please refer to the [split payments marketplace](/docs/payment-features/split-payments-marketplace) request in the API guides section.
+
+## Receipts for Refund Transactions
+
+We've added a new capability to the refund requests called Receipts. This capability lets you obtain a receipt for every refund transaction made in Yuno. As Yuno does not actually executes the refund to the acquirers, this receipt represents the execution of the request to the provider in order to refund the previously made purchase.
+
+```json
+{
+  "description": "Duplicate",
+  "reason": "REQUESTED_BY_CUSTOMER",
+  "merchant_reference": "AAB01-432245",
+  "response_additional_data": 
+    	{
+          "receipt": true,
+          "receipt_language": "ES"
+        }
+}
+```
+
+Once the REFUND is created, you can do a [get of the payment](/reference/retrieve-payment-by-id) to find the receipt created in the "receipt\_url" field in the `payment.transaction` object.
+
+For more information, please refer to the [refund](/reference/refund-payment) request in the API reference section.
+
+## Items for Subscriptions
+
+We've added a new capability to the [Subscription](/docs/payment-features/subscriptions/index) feature called Additional data. Now Yuno lets you specify information about the items related to the subscription so we can send that information to the providers.
+
+```json
+{
+  "name": "Test Subscription",
+  "description": "Subscription Test",
+  "merchant_reference": "subscription-ref-merchant-AA01",
+  "account_id": "{{account-code}}",
+  "country": "BR",
+  "additional_data": {
+    "order": {
+      "items": [
+        {
+          "category": "art",
+          "id": "AA01",
+          "name": "Test item",
+          "quantity": 1,
+          "unit_amount": 10
+        }
+      ]
+    }
+  },
+  "amount": {
+    "currency": "BRL",
+    "value": 1500
+  },
+  "frequency": {
+    "type": "MONTH",
+    "value": 1
+  },
+  "billing_cycles": {
+    "total": 12
+  },
+  "customer_payer": {
+    "id": "a1d3b664-e32a-4508-9da1-9ede3e62a60c"
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "d4aa3586-def2-4705-b7cd-fe064bb764e6"
+  },
+}
+'
+```
+
+For more information, please refer to the [Subscriptions API](/reference/create-subscription) reference section.
+
+## Payouts with vaulted tokens
+
+We've added a new capability to the [Payouts product](/reference/create-payout), which allows you to create requests directly to an enrolled credit/debit card in Yuno if supported by the provider.
+
+```json
+[...],
+"withdrawal_method": {
+    "type": "CARD",
+    "provider_id": "UNLIMINT",
+    "vaulted_token":"[the payment method vaulted token]"
+  }
+[...]
+```
+
+For more information, please refer to the:
+
+* [Enrollment guide](/docs/payment-features/enrollment/enroll-payment-methods) section for the enrollment process.
+* [Payouts API](/reference/create-payout) reference section for payouts creation.

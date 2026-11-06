@@ -1,0 +1,78 @@
+---
+title: "List Decline Groups"
+description: "Lists the decline groups and Merchant Advice Code groups of an account, to reference by group_id from routing outputs."
+openapi: "/openapi/organizations/routing/list-decline-groups.json GET /routing/decline-groups"
+---
+
+Lists the decline groups saved on an account: the groups of decline sub-statuses you reference with `status: "DECLINE_GROUP"` and the groups of Merchant Advice Codes you reference with `status: "MAC_CODE_GROUP"`. Use the `id` of a group as `group_id` in a routing output — see [Outcome groups](/reference/organizations/routing/routing-resource-shape#outcome-groups).
+
+The endpoint is read only. Groups are created in the dashboard, or automatically when a `DECLINE_GROUP` output is saved with `decline_types` and no `group_id` (those are named `auto_…`).
+
+### Query Parameters
+
+<ParamField query="account_id" type="string" required>
+  The account to list groups for. Must belong to the organization your API credentials are scoped to.
+</ParamField>
+
+### Response
+
+An array with the groups of the account, or an empty array if it has none. Each group contains:
+
+<ResponseField name="id" type="integer">
+  The value to send as `group_id`.
+</ResponseField>
+<ResponseField name="name" type="string">
+  The group's name, as shown in the dashboard and returned as `group_name` on routing outputs.
+</ResponseField>
+<ResponseField name="type" type="enum">
+  The output `status` the group is used with: `DECLINE_GROUP` for a group of decline sub-statuses, `MAC_CODE_GROUP` for a group of Merchant Advice Codes.
+</ResponseField>
+<ResponseField name="decline_types" type="string[]">
+  The group's members, in the same vocabulary routing outputs use: decline sub-statuses such as `DECLINED_BY_BANK` for `DECLINE_GROUP`, normalized Merchant Advice Codes such as `NO_RETRY_POLICY` for `MAC_CODE_GROUP`. See [Transaction codes](/reference/payments/status-and-response-codes/transaction#declined-status).
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/routing/decline-groups?account_id=7825fc5e-e50a-4248-9ae8-5d3786afb0be' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK
+[
+  {
+    "id": 1044,
+    "name": "Soft declines",
+    "type": "DECLINE_GROUP",
+    "decline_types": ["DECLINED_BY_BANK", "RESTRICTED_BY_BANK"]
+  },
+  {
+    "id": 4542,
+    "name": "Do not retry",
+    "type": "MAC_CODE_GROUP",
+    "decline_types": ["NO_RETRY_POLICY", "NO_RETRY_SECURITY"]
+  }
+]
+```
+
+```json 400 Bad Request — Missing account_id
+{
+  "code": "ROUTING_VALIDATION_FAILED",
+  "messages": ["account_id is required."]
+}
+```
+</CodeGroup>
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `ROUTING_VALIDATION_FAILED` | Missing `account_id` query parameter. |
+| `400` | `INVALID_ACCOUNT_ID` | `account_id` belongs to an organization your API key doesn't own. |
+| `401` | `NOT_AUTHENTICATED` | Missing `public-api-key` or `private-secret-key` header. |
+| `401` | `INVALID_CREDENTIALS` | Wrong key pair, or a Dashboard **Customized API key** was used. Use an account key or organization key instead. |
+| `502` | `ROUTING_UPSTREAM_ERROR` | The routing service could not be reached. Retry the request. |
+
+</div>

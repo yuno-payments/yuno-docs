@@ -1,0 +1,151 @@
+---
+hidden: true
+noindex: true
+title: "Tap to Pay integration types"
+description: "Three ways to offer Tap to Pay: the Yuno Tap to Pay app on its own, opened from your app, or the embedded SDK. The app is certified by Yuno; with the SDK, your app is certified."
+---
+
+There are three ways to offer Tap to Pay. They differ in one thing: **which app reads the card**.
+
+- **Tap to Pay app** and **Open from your app** (recommended). The card is read by the Yuno Tap to Pay app, which Yuno certifies and maintains, and which shows your brand once the seller signs in. Sellers use it on its own, or your app opens it for the tap and gets the result back. You don't certify anything.
+- **Embedded SDK**. The card is read inside your own app, with the Yuno Tap to Pay SDK. The seller never switches apps, but because your app now reads cards, your app is certified before going live.
+
+All three share the same payment object, routing, webhooks, dashboard and reconciliation, so you can start with the app and add the SDK later.
+
+<CardGroup cols={3}>
+  <Card title="Tap to Pay app" icon="mobile-screen">
+    **Recommended.** Sellers take payments in the Yuno Tap to Pay app, with your brand after they sign in. Nothing to build, nothing to certify.
+  </Card>
+  <Card title="Open from your app" icon="arrow-right-arrow-left">
+    **Recommended if sellers already use an app of yours.** It opens the Tap to Pay app for the tap and gets the result back. Nothing to certify; a brief switch between apps.
+  </Card>
+  <Card title="Embedded SDK" icon="code">
+    **Option.** The card is read inside your app, with no switch. Your app is certified and ships SDK updates.
+  </Card>
+</CardGroup>
+
+<Frame caption="The card is read by the Yuno Tap to Pay app, or inside your app with the SDK.">
+  <img src="/images/in-person/tap-to-pay/integration-types.png" alt="Three ways to integrate: the Tap to Pay app, opening it from your app, and the embedded SDK, with what each needs from you" />
+</Frame>
+
+## Compare
+
+|  | Tap to Pay app | Open from your app | Embedded SDK |
+| --- | --- | --- | --- |
+| **How the seller works** | Keys the amount in the Tap to Pay app | Rings up the sale in your app as usual; the Tap to Pay app opens for the tap | Rings up and takes the tap in your app |
+| **Apps on the seller's phone** | The Tap to Pay app | Yours and the Tap to Pay app | Yours |
+| **What you build** | Nothing | A hand-off of the amount and order ID, and handling the result | The SDK integration and the screens around the tap |
+| **Certification** | None for you: the Tap to Pay app is certified by Yuno | None for you: the Tap to Pay app is certified by Yuno | Your app: PCI MPoC on Android, Apple's Tap to Pay approval on iPhone |
+| **Updates** | Yuno | Yuno | You ship SDK updates on Yuno's schedule |
+| **Switching apps** | No | Yes, briefly, for the tap | No |
+| **Best for** | Banks, acquirers and platforms offering Tap to Pay to many sellers; sellers with no app | Merchants and platforms whose sellers already use their app, going live fast | Merchants who want the whole experience in their app and can certify it |
+
+<Info>
+  **Which one for you?** Start with the **Tap to Pay app**: sellers take payments with no certification work on your side. If your sellers already ring up sales in your app, use **Open from your app** so they never type the amount twice. Choose the **Embedded SDK** when a single-app experience is worth certifying your app and keeping the SDK up to date.
+</Info>
+
+## Each type in detail
+
+<Tabs>
+  <Tab title="Tap to Pay app" icon="mobile-screen">
+    The seller signs in to the Yuno Tap to Pay app, keys the amount and hands the phone to the customer. Nothing to integrate.
+
+    <Steps>
+      <Step title="You set up the app" icon="sliders">
+        Brand (logo, colours, name), enabled acquirers, routing rules, instalment plans and receipt text, from the Yuno dashboard.
+      </Step>
+      <Step title="Sellers download it" icon="download">
+        The Yuno Tap to Pay app, from the App Store or Google Play. The store listing is neutral; your brand appears when the seller signs in. Each seller is invited from the dashboard or created through the API, with their merchant and acquirer IDs.
+      </Step>
+      <Step title="Sellers take payments" icon="hand-pointer">
+        Amount, optional description and instalments, tap. The receipt goes by email, SMS or QR.
+      </Step>
+      <Step title="You see every sale" icon="chart-line">
+        In the dashboard and through webhooks, with the seller and the device that took it.
+      </Step>
+    </Steps>
+
+    <Frame caption="Set up the app from the dashboard. Sellers get the changes in minutes.">
+      <img src="/images/in-person/tap-to-pay/dashboard-app-setup.png" alt="Yuno dashboard, Tap to Pay, app setup with brand, payments, receipts, acquirers and a phone preview" />
+    </Frame>
+
+    **Good to know:** the app also lists the seller's sales of the day, and lets them refund a sale.
+
+  </Tab>
+  <Tab title="Open from your app" icon="arrow-right-arrow-left">
+    Your app hands the sale to the Yuno Tap to Pay app with the amount and your order reference. The customer taps, and the Yuno Tap to Pay app returns the result to your app. Your app never touches card data, so there is nothing to certify on your side.
+
+    <Steps>
+      <Step title="Your app sends the sale" icon="paper-plane">
+        Amount, currency, your order reference and where to return the result.
+      </Step>
+      <Step title="The Yuno Tap to Pay app takes the payment" icon="hand-pointer">
+        It chooses the acquirer with your rules, shows the tap screen and, when required, the PIN keypad.
+      </Step>
+      <Step title="Your app gets the result" icon="reply">
+        Status, payment ID, authorisation code and masked card, on the return address you sent. The seller is back in your app.
+      </Step>
+      <Step title="Yuno records the sale" icon="database">
+        Same payment and webhooks, with your order reference, so your backend can confirm the result server to server.
+      </Step>
+    </Steps>
+
+    <Frame caption="Your app hands the sale over and gets the result back.">
+      <img src="/images/in-person/tap-to-pay/app-to-app-flow.png" alt="Your app sends the amount and order ID to the Yuno Tap to Pay app, the customer taps, and the result comes back to your app" />
+    </Frame>
+
+    | Direction | Fields |
+    | --- | --- |
+    | Your app to the Yuno Tap to Pay app | `amount`, `currency`, `merchant_order_id`, `return_url`, `installments` (optional), `customer_email` (optional, for the receipt) |
+    | The Yuno Tap to Pay app to your app | `status`, `sub_status`, `payment_id`, `merchant_order_id`, `authorization_code`, `card_brand`, `card_lfd`, `entry_mode` |
+
+    <CodeGroup>
+
+    ```kotlin Android
+    val intent = Intent("com.yuno.taptopay.action.PAY").apply {
+        setPackage(TAP_TO_PAY_PACKAGE) // package name of the Yuno Tap to Pay app you use
+        putExtra("amount", "125.00")
+        putExtra("currency", "MXN")
+        putExtra("merchant_order_id", "ORD-48213")
+    }
+    taptopayLauncher.launch(intent) // result in the ActivityResult extras
+    ```
+
+    ```swift iOS
+    var components = URLComponents(string: "\(tapToPayScheme)://pay")!
+    components.queryItems = [
+        URLQueryItem(name: "amount", value: "125.00"),
+        URLQueryItem(name: "currency", value: "MXN"),
+        URLQueryItem(name: "merchant_order_id", value: "ORD-48213"),
+        URLQueryItem(name: "return_url", value: "myapp://taptopay/result")
+    ]
+    UIApplication.shared.open(components.url!)
+    ```
+
+    </CodeGroup>
+
+    Your Yuno contact gives you the package name and URL scheme to use. **Always confirm the result from your backend** with the payment ID or the webhook before you release the goods: the return to your app can be lost if the seller closes it.
+
+  </Tab>
+  <Tab title="Embedded SDK" icon="code">
+    The Yuno Tap to Pay SDK runs inside your Android or iOS app. You design the screens around the tap, and the seller never leaves your app.
+
+    <Steps>
+      <Step title="Integrate the SDK" icon="code">
+        Add the Yuno Tap to Pay SDK to your app and call it with the amount and your order reference. The SDK shows the tap screen and, when required, the secure PIN keypad, and returns the result.
+      </Step>
+      <Step title="Certify your app" icon="shield-check">
+        On Android, your app is assessed for PCI MPoC by an accredited lab before going live. Yuno gives you the documentation and supports the assessment. On iPhone, your app needs Apple's Tap to Pay on iPhone approval.
+      </Step>
+      <Step title="Certify with the acquirer" icon="certificate">
+        Yuno runs the acquirer certification for your app, as for the Yuno Tap to Pay app.
+      </Step>
+      <Step title="Keep the SDK current" icon="arrows-rotate">
+        Ship SDK updates in your app on Yuno's release schedule. Updates and new features in your app keep the certification; a significant change in how the SDK is used may need a new assessment.
+      </Step>
+    </Steps>
+
+    **Good to know:** the certification covers your app, not each of your sellers, so adding sellers or stores does not trigger a new one.
+
+  </Tab>
+</Tabs>

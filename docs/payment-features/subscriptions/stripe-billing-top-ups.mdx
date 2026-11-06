@@ -1,0 +1,216 @@
+---
+title: "Pay a Stripe invoice (top-ups)"
+description: "Collect the payment of a specific Stripe invoice with Yuno, such as a balance top-up, and let Yuno report the result to the invoice"
+---
+
+Some charges are not part of a subscription: a customer tops up a balance, or pays an invoice you created by hand. Create the invoice in Stripe and collect the payment with Yuno, through your own providers and routing rules. Yuno reports the result to the invoice, so Stripe marks it paid.
+
+You link the payment to the invoice with the `external_invoice` object on [Create payment](/reference/payments/create-payment). It works for one-off invoices and for the invoices of Stripe Billing subscriptions. The [amount rules](#amount-rules) differ between the two.
+
+<Warning>
+**Paying a Stripe invoice is enabled per account**
+
+Paying a Stripe invoice is off by default. Yuno turns it on for each Yuno account that is onboarded for Stripe Billing, and it checks the `account_id` of the payment: another account of the same organization is not enabled until it is onboarded too. Ask your Technical Account Manager or Key Account Manager to enable it, in sandbox first and then in production.
+
+Send `external_invoice` only from an account that is enabled. Yuno doesn't refuse it from other accounts, but it can't check the invoice before the charge or report the payment to Stripe, so the customer can be charged while the invoice stays open.
+</Warning>
+
+## How it works
+
+1. **Create the invoice in Stripe.** Create and finalize the invoice so that it is open. Keep the invoice id (`in_...`) and the customer id (`cus_...`).
+2. **Collect the payment with Yuno.** Create the payment from your backend with the `external_invoice` object (see [Create the payment](#create-the-payment)). Before it charges, Yuno checks the invoice in Stripe. Then Yuno charges through your providers and routing.
+3. **Yuno reports the outcome.** Shortly after the payment succeeds, Yuno reports it to the invoice in Stripe. When it covers the amount remaining, Stripe marks the invoice **paid**. A declined payment is recorded as a failed attempt, and the invoice stays **open**, so you can try again.
+
+## Prerequisites
+
+* A Yuno account with your providers connected and routing published.
+* The same onboarding as [Stripe Billing subscriptions](/docs/payment-features/subscriptions/stripe-billing#prerequisites): Yuno holds a restricted Stripe key that can read invoices, report payments and refunds, attach payments to invoices and create credit notes, and your Yuno account is enabled for this feature (see the note above).
+
+## Create the payment
+
+Create the payment as usual and add the `external_invoice` object:
+
+```json
+{
+  "account_id": "<your_account_id>",
+  "merchant_order_id": "<your_order_id>",
+  "description": "Balance top-up",
+  "country": "US",
+  "amount": { "currency": "USD", "value": 50.00 },
+  "checkout": { "session": "<checkout_session_id>" },
+  "customer_payer": { "id": "<yuno_customer_id>" },
+  "payment_method": {
+    "type": "CARD",
+    "token": "<one_time_token_from_sdk>"
+  },
+  "external_invoice": {
+    "id": "in_1QwZzz",
+    "customer_id": "cus_RplXYZ"
+  }
+}
+```
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `external_invoice.id` | Yes, when the object is sent | The invoice id in Stripe (`in_...`). 3 to 255 characters after trimming spaces. |
+| `external_invoice.customer_id` | No | The Stripe customer id (`cus_...`) that owns the invoice. 3 to 255 characters after trimming spaces. When you send it, it must be the invoice's customer. Sending it lets Yuno refuse a payment for another customer before it charges. |
+
+Things to know:
+
+* Send the amount in **major units** (50.00, not 5000).
+* Send an `X-Idempotency-Key` with the request. If you retry the same request with the same key, Yuno returns the same payment and does not charge twice.
+* A payment can carry at most **one** of `external_subscription`, `external_invoice` and `subscription`. Sending `external_invoice` together with one of the others returns `400 INVALID_REQUEST`.
+* The account in `account_id` must be enabled for this feature (see the note at the top of the page).
+
+When the payment is created, the response carries the object back:
+
+```json
+{
+  "id": "<yuno_payment_id>",
+  "account_id": "<your_account_id>",
+  "description": "Balance top-up",
+  "country": "US",
+  "status": "SUCCEEDED",
+  "sub_status": "APPROVED",
+  "merchant_order_id": "<your_order_id>",
+  "amount": { "currency": "USD", "value": 50 },
+  "...": "...",
+  "external_invoice": {
+    "id": "in_1QwZzz",
+    "customer_id": "cus_RplXYZ"
+  }
+}
+```
+
+[Retrieve payment](/reference/payments/retrieve-payment-by-id) returns the same object, and the payment [webhooks](/docs/webhooks/object-and-examples#payment-webhook-v2) carry it too. A payment created without `external_invoice` has no such key.
+
+## Amount rules
+
+What Yuno accepts depends on the invoice and on the amount you send, compared with the **amount remaining** on the invoice.
+
+| Invoice | Smaller amount | Equal amount | Larger amount |
+| --- | --- | --- | --- |
+| A one-off invoice, or an invoice of a subscription collected by invoice (`send_invoice`) | Accepted. The invoice stays open for the rest. | Accepted. The invoice is paid. | `400 EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING` |
+| An invoice of a subscription that Stripe charges automatically (`charge_automatically`): the first invoice, a later invoice or a renewal invoice | `400 EXTERNAL_INVOICE_REJECTED` | Accepted. The invoice is paid. | `400 EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING` |
+
+A **larger** amount than the amount remaining is refused before the charge whenever Yuno can check the invoice (see [What Yuno checks before it charges](#what-yuno-checks-before-it-charges)).
+
+### One-off invoices and invoices collected by invoice
+
+A smaller amount is accepted and the invoice stays open for the rest, with the amount remaining lowered by what was paid.
+
+**You collect the rest.** Yuno never charges the rest by itself. To collect it, send another payment with the same `external_invoice` for the amount remaining. You can repeat this as many times as needed, until the invoice is paid. Each successful payment gets its own payment record in Stripe, and the invoice becomes paid when nothing remains.
+
+If what is left is below Stripe's minimum charge for the currency (USD 0.50 for US dollars), Stripe marks the invoice paid, lowers its amount due, and adds the remainder to the customer's Stripe balance, to be charged with the customer's next invoice.
+
+### Invoices of subscriptions that Stripe charges automatically
+
+The first invoice, any later invoice and every renewal invoice of a subscription whose collection method is `charge_automatically` need the **exact** amount remaining, because Stripe does not accept a payment for a different amount on these invoices.
+
+* A smaller amount returns `400 EXTERNAL_INVOICE_REJECTED`.
+* A larger amount returns `400 EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING`.
+* The exact amount is accepted and the invoice is paid. When it was the subscription's first invoice, the subscription becomes active.
+
+A renewal invoice that Stripe creates as a draft cannot be paid until Stripe finalizes it. Until then the answer is `EXTERNAL_INVOICE_NOT_OPEN`.
+
+## What Yuno checks before it charges
+
+Before any card is touched, Yuno checks the invoice in Stripe. When the check refuses the payment, nothing is charged and no payment is created. The answer is an HTTP 400 with this body:
+
+```json
+{
+  "code": "EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING",
+  "messages": [
+    "Invalid Request. The amount can not be greater than the amount remaining on the invoice (12.00 USD)."
+  ]
+}
+```
+
+| Status and code | When | Message |
+| --- | --- | --- |
+| `400 EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING` | The amount is above what remains on the invoice | Invalid Request. The amount can not be greater than the amount remaining on the invoice (12.00 USD). The remaining amount and currency are included when known. |
+| `400 EXTERNAL_INVOICE_NOT_OPEN` | The invoice is paid, void, draft or uncollectible | Invalid Request. The invoice is not open and can not be paid. |
+| `400 EXTERNAL_INVOICE_CUSTOMER_MISMATCH` | The `customer_id` you sent is not the invoice's customer | Invalid Request. The customer of the external_invoice does not match the customer of the invoice. |
+| `400 EXTERNAL_INVOICE_CURRENCY_MISMATCH` | The payment currency is not the invoice currency | Invalid Request. The payment currency does not match the invoice currency. |
+| `400 EXTERNAL_INVOICE_NOT_FOUND` | Stripe has no such invoice | Invalid Request. The invoice does not exist. |
+| `400 EXTERNAL_INVOICE_REJECTED` | Any other refusal, including a smaller amount on an invoice of a subscription that Stripe charges automatically | Invalid Request. The invoice can not be paid with this payment. |
+
+Yuno also validates the object itself, before it checks the invoice:
+
+| Status and code | When | Message |
+| --- | --- | --- |
+| `400 INVALID_REQUEST` | `external_invoice` is sent together with `external_subscription` | Invalid Request. external_invoice and external_subscription can not be sent together. Please send only one of them. |
+| `400 INVALID_REQUEST` | `external_invoice` is sent together with `subscription` | Invalid Request. external_invoice and subscription can not be sent together. Please send only one of them. |
+| `400 INVALID_REQUEST` | `id` is missing or blank, or `id` or `customer_id` is shorter than 3 or longer than 255 characters | Invalid Request. The message names the field, for example `external_invoice.id`. |
+
+If Yuno can't check the invoice at that moment, for example because Stripe doesn't answer in time, the payment goes ahead without the check and Yuno reports it to the invoice afterwards. If the invoice can't take it then, for example because the amount is above what remains or the invoice is already paid, the customer is charged but the payment is not applied to the invoice, and Yuno doesn't refund it automatically. Contact your Technical Account Manager in that case.
+
+## Retries and duplicates
+
+* **Retry the same request.** A retry with the same `X-Idempotency-Key` returns the same payment and is not charged twice.
+* **Try again after a decline.** A declined payment leaves the invoice open. To try again, create a new payment for the invoice with a new `X-Idempotency-Key`.
+* **Don't pay an invoice twice.** Once Stripe shows the invoice as paid, a new payment for it is refused with `EXTERNAL_INVOICE_NOT_OPEN`. Yuno reports a payment to Stripe shortly after it succeeds, not at the moment of the API response, so a second payment sent before then is not refused. Send one payment at a time for each invoice, and wait until Stripe shows it on the invoice before you send another. If a customer is charged twice, contact your Technical Account Manager.
+
+## Refunds
+
+Refund a payment made with `external_invoice` through the Yuno API or dashboard, as with any payment. Yuno reports the refund to Stripe on the payment's record. What else it does depends on the invoice:
+
+* **The invoice is paid.** Yuno reports the refund on the payment's record and adds a **credit note** for the refunded amount to the invoice, so your Stripe books stay consistent. Partial refunds are supported, each with its own credit note, and the refunds of a payment never add up to more than the payment.
+* **The invoice is still open (paid in part).** Yuno reports the refund on the payment's record and adds **no credit note**. In Stripe, the invoice keeps counting that payment as paid, and any credit note you add there also reduces what the customer still owes, so how to settle the rest of the invoice is your decision in Stripe.
+
+## Pay a Stripe invoice with a payment link
+
+[`POST /v1/payment-links`](/reference/payment-links/create-payment-link) accepts an optional `external_invoice` object. `id` is required and must be 3 to 255 characters after trimming spaces. `customer_id` is optional and must be 3 to 255 characters. The link response echoes the object back.
+
+* `external_invoice` can't be combined with the `subscription` block, or with a non-empty `taxes` list. Either one returns `400`.
+* Your account must be enabled for external invoices (see the note at the top of the page). Yuno doesn't refuse a link from an account that is not enabled, but it can't check the invoice when the customer pays or report the payment to Stripe.
+* If you send an `X-Account-Code` header, it must be the account in `account_id`. Otherwise the API returns `400 INVALID_REQUEST`: "Invalid Request. The account-code header does not match account_id. With external_invoice, send the same account in both or omit the header."
+* `external_invoice` can't be changed after the link is created. An update that carries it returns `400`.
+
+When the customer pays the link, Yuno first checks the Stripe invoice: it must be open, the link amount must equal the amount remaining on the invoice, in the same currency, and when you sent `customer_id`, it must be the invoice's customer. If the check refuses the payment, nothing is charged, Yuno cancels the link, and the payment attempt is refused with `400` and one of these codes. Create a new link once the invoice can be paid. Creating a link doesn't check the invoice, and if Yuno can't check it when the customer pays (for example, Stripe doesn't answer in time), the payment goes ahead without the check.
+
+| Status and code | When |
+| --- | --- |
+| `400 EXTERNAL_INVOICE_AMOUNT_NOT_EQUAL` | The link amount is not the amount remaining on the invoice, smaller or larger. |
+| `400 EXTERNAL_INVOICE_NOT_OPEN` | The invoice is not open, so it can't be paid. |
+| `400 EXTERNAL_INVOICE_CURRENCY_MISMATCH` | The payment currency is not the invoice currency. |
+| `400 EXTERNAL_INVOICE_CUSTOMER_MISMATCH` | The `customer_id` you sent is not the invoice's customer. |
+| `400 EXTERNAL_INVOICE_NOT_FOUND` | Stripe has no such invoice. |
+| `400 EXTERNAL_INVOICE_REJECTED` | Any other refusal by the invoice check. |
+
+When the payment succeeds, Yuno reports it to the invoice in Stripe and attaches it, and Stripe marks the invoice paid. If an earlier automatic attempt on the invoice failed and left a payment record for the same amount and currency, the payment is added to that record. Otherwise Yuno creates a new one.
+
+For an invoice of a subscription whose payments Yuno handles, the card used becomes the subscription's default payment method for the next renewals when you created the link with `vault_on_success: true` (this needs `customer_payer.id` and `one_time_use: true`) and the payer is the subscription's customer. Otherwise the payment is still reported and the subscription keeps its payment method.
+
+For an invoice that belongs to a subscription, Yuno holds Stripe's next automatic retry of the invoice while a payment on the link is in progress, so the customer isn't charged twice. The hold ends when the payment succeeds, is declined or fails, or the link expires or is cancelled, and in any case after 24 hours.
+
+## Your payment metadata on the Stripe payment record
+
+Yuno can copy the `metadata` you send on a payment onto the Stripe payment record. This is enabled per organization, for all its accounts: ask your Technical Account Manager or Key Account Manager. It covers:
+
+* the first payment of a subscription, and every renewal, retry and closure of that subscription, including a renewal whose result arrives late;
+* the refund of a payment and its credit note, which carry the `metadata` of the refunded payment (a renewal payment has no `metadata` of its own, so the refund of a renewal carries none);
+* top-up payments.
+
+A renewal carries the `metadata` of the payment that started the subscription. Subscriptions that started before this was enabled for your organization, and subscriptions that start with a free trial (no first payment), carry no `metadata` on their renewals.
+
+`metadata` is a list of `{key, value}` objects. An object instead of a list returns `400`. The metadata is sent on the first report of a payment and on every later attempt, so the record always carries the full set.
+
+Create payment accepts up to 120 entries, with keys up to 48 characters and values up to 512. Stripe accepts less, so each payment record takes at most 47 entries from you:
+
+* keys up to 40 characters, and values up to 500 characters, counted in characters (Unicode code points);
+* a value longer than 500 characters is cut to 500 characters;
+* keys longer than 40 characters, and keys that contain `[` or `]`, are skipped;
+* if a key appears more than once, only one of its values is kept;
+* if you send more than 47 valid entries, the first 47 are kept and the rest are dropped.
+
+On top-up payment records, Yuno always adds `yuno_payment_id` and `external_invoice_id`, and `merchant_order_id` when the payment has one. They take precedence over entries of yours with the same name and don't count toward the 47.
+
+Copying the metadata to Stripe never makes a payment or its Stripe record fail: entries beyond Stripe's limits are cut or skipped.
+
+## Not supported
+
+* **`external_invoice` together with `external_subscription` or `subscription`.** Each of these objects tells Yuno where to report the payment: `external_invoice` to one Stripe invoice, `external_subscription` to a Stripe Billing subscription, and `subscription` to a Yuno subscription. A payment can be reported to only one place, so Yuno refuses the combination with `400 INVALID_REQUEST`. To pay an invoice of a Stripe subscription, send only `external_invoice`: Stripe already links the invoice to its subscription.
+* **`external_invoice` on `POST /v2/payments` (multi-method payments).** Only `POST /v1/payments` reads `external_invoice`. The multi-method route has no such field and ignores it without an error: the payment is charged, but it is not linked to the invoice and Stripe is not updated. Use `POST /v1/payments`.
+* **A Yuno promotion quote on a payment with `external_invoice`.** Promotions don't apply to the payment of a Stripe invoice. The amount of that payment is set by the invoice in Stripe, so Yuno refuses the quote with `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED` instead of charging a discounted amount that the invoice doesn't expect. To give a discount, apply it to the invoice in Stripe before you collect the payment.
+* **Payments that are only authorized, or partially captured.** Yuno reports a payment to the invoice only once it is captured in full, because only then is its amount final. An authorization can still be released or captured for less, so reporting it could mark the invoice paid with money that is never collected. Capture the full amount.
