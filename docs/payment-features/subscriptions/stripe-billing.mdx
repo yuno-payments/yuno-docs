@@ -186,6 +186,17 @@ Yuno reports a first payment to Stripe only once it is approved. While it is pen
 
 A renewal that comes back pending is reported to Stripe right away, as an attempt without a result. When the payment is approved, Yuno reports it as paid. If the pending renewal ends declined, expired or canceled instead, Yuno does not report that result, and it does not charge the later requests Stripe sends for that invoice. If an invoice stays open with a pending attempt, contact your Yuno contact.
 
+### If the subscription cannot be created
+
+A first payment can end `SUCCEEDED` without a Stripe subscription behind it. Yuno has captured the money, but it could not create or activate the subscription in Stripe. This happens, for example, when the payment lacks data the subscription needs, when the tax quote expired or tax was not calculated, or when a Stripe object the subscription needs no longer exists. Yuno does not refund the payment on its own.
+
+Yuno reports each of these cases once, with the [`subscription.creation_failed`](/docs/webhooks/object-and-examples#subscription-creation_failed) webhook. Its `data` carries the `payment_id`, the `external_subscription` you sent, a `dead_letter_kind` that names the cause, a human-readable `reason`, and `occurred_at`. To receive it, add `CREATION_FAILED` to the `subscription_triggers` of your webhook. See [Webhook events](/docs/webhooks/events#subscription).
+
+When the event arrives, do one of these:
+
+* **Fix the cause and retry.** Use `dead_letter_kind` to find what failed, correct it (for example, request a new tax quote or recreate the missing Stripe object), and run the signup again with a new payment. Refund the original payment so the customer is not charged twice.
+* **Refund.** If you won't retry, [refund](/reference/payments/refund-payment) the payment so the customer is not charged for a subscription they don't have.
+
 ## Free trials
 
 When signup starts a **trial**, there is no first charge. The trigger is the **$0 card verification** of the enrollment flow instead. Create the Stripe subscription with `trial_end` as usual, then enroll the card through the [Enroll payment method](/reference/payment-methods-direct-workflow/enroll-payment-method-api) endpoint with the `external_subscription` object nested inside `verify`:
@@ -352,6 +363,7 @@ Stripe counts the volume Yuno processes toward your total Stripe Billing volume 
 | Renewals appear in Stripe but not in Yuno | The customer switched to a Stripe-supported payment method in the customer portal | Turn off payment method updates in the portal and collect a new card through Yuno |
 | A `Canceled` payment sits next to each reported payment | Stripe cancels its own PaymentIntent once Yuno reports the payment | Expected behavior, no action needed |
 | Payment approved in Yuno, invoice still open in Stripe | Yuno could not report the payment: the restricted key was revoked or lacks a permission, Stripe was unavailable, or the first payment's amount is not the invoice's `amount_due` | Contact your Yuno contact. See [If the report to Stripe fails](#if-the-report-to-stripe-fails) |
+| A `subscription.creation_failed` webhook arrives for an approved payment | Yuno captured the payment but could not create the Stripe subscription; `dead_letter_kind` names the cause | Fix the cause and retry with a new payment, refunding the original, or refund it. See [If the subscription cannot be created](#if-the-subscription-cannot-be-created) |
 
 ## PayPal
 

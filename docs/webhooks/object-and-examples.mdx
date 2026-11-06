@@ -2284,6 +2284,46 @@ No live capture of this event exists yet. The example below reuses a captured `P
 
 `auto_resume_failed` is not itself a status — the subscription is, and stays, `PAUSED`. Call [Resume Subscription](/reference/subscriptions/resume-subscription) to end the pause manually once this event arrives.
 
+### subscription.creation_failed
+
+Sent for [Stripe Billing](/docs/payment-features/subscriptions/stripe-billing) payments when a `SUCCEEDED` payment carrying `external_subscription` could not create its Stripe subscription. The money is captured, and no Stripe subscription was created or activated. Sent once per failure. Not sent when the payment is already refunded or partially refunded. Subscribe with the `CREATION_FAILED` value in `subscription_triggers`.
+
+Unlike the other subscription events, `data` doesn't carry a Yuno subscription object, because none exists:
+
+| Field | Type | Description |
+| :---- | :--- | :---------- |
+| `payment_id` | string (UUID) | The Yuno payment that was captured. |
+| `external_subscription` | object | The `external_subscription` object exactly as you sent it in the payment. |
+| `dead_letter_kind` | string | Why the subscription was not created, for example `incomplete_payload`, `tax_quote_expired`, `tax_not_calculated` or `stripe_resource_missing`. Treat it as open-ended: new values can be added. |
+| `reason` | string | A short, human-readable description of `dead_letter_kind`. Don't parse it. |
+| `occurred_at` | string (ISO 8601, UTC) | When Yuno gave up creating the subscription. |
+
+<Note>
+No live capture of this event exists yet. The example below is built from the event's contract; identifiers are illustrative.
+</Note>
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.creation_failed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment_id": "4f2b8a3e-6d1c-4b7a-9e2f-8c5d3a1b7e60",
+    "external_subscription": {
+      "id": "sub_1QwZzz",
+      "customer_id": "cus_RplXYZ"
+    },
+    "dead_letter_kind": "tax_quote_expired",
+    "reason": "The tax quote expired",
+    "occurred_at": "2026-11-05T14:32:07.512Z"
+  }
+}
+```
+
+The payment stays `SUCCEEDED`: Yuno doesn't refund it. Fix the cause and retry the signup with a new payment, refunding the original, or refund it. See [If the subscription cannot be created](/docs/payment-features/subscriptions/stripe-billing#if-the-subscription-cannot-be-created).
+
 ### subscription.cancel
 
 Sent when a subscription is canceled. A canceled subscription can be brought back with [Reactivate Subscription](/reference/subscriptions/reactivate-subscription), which keeps the same subscription and its payment history.
