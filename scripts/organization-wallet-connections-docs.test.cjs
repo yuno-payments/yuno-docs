@@ -13,7 +13,6 @@ const conn = (name) => read(`reference/organizations/connections/${name}.mdx`);
 const routing = (name) => read(`reference/organizations/routing/${name}.mdx`);
 
 const newBadRequests = [
-  "ORGANIZATION_SCOPE_NOT_SUPPORTED",
   "ORGANIZATION_CONNECTION_CONFIRMATION_REQUIRED",
   "ORGANIZATION_SCOPE_NOT_SUPPORTED_FOR_PROVIDER",
   "ORGANIZATION_APPLE_PAY_REQUIRES_OWN_CERTIFICATES",
@@ -65,7 +64,7 @@ test("params are masked when an account reads an organization connection", () =>
   assert.match(conn("retrieve-connection"), /When an account reads an organization connection, every param value is masked as `\*\*\*`/);
 });
 
-test("the five new 400 errors are listed on create connection and in its OpenAPI fragment", () => {
+test("the four new 400 errors of create are listed on create connection and in its OpenAPI fragment", () => {
   const page = conn("create-connection");
   const spec = read("openapi/organizations/connections/create-connection.json");
   for (const code of newBadRequests) {
@@ -74,18 +73,36 @@ test("the five new 400 errors are listed on create connection and in its OpenAPI
   }
 });
 
+test("ORGANIZATION_SCOPE_NOT_SUPPORTED is not documented on create", () => {
+  const code = /ORGANIZATION_SCOPE_NOT_SUPPORTED(?!_)/;
+  assert.doesNotMatch(conn("create-connection"), code);
+  assert.doesNotMatch(read("openapi/organizations/connections/create-connection.json"), code);
+  const createSection = guide.slice(guide.indexOf("## Create the organization connection"), guide.indexOf("## How accounts use it"));
+  assert.doesNotMatch(createSection, code);
+});
+
 test("503 ORGANIZATION_ACCOUNTS_UNAVAILABLE is documented for create, edit and delete", () => {
   for (const name of ["create-connection", "update-connection", "delete-connection"]) {
     assert.match(conn(name), /\| `503` \| `ORGANIZATION_ACCOUNTS_UNAVAILABLE`<br \/>[^\n]*Nothing changes/, name);
     const spec = json(`openapi/organizations/connections/${name}.json`);
     const op = Object.values(Object.values(spec.paths)[0])[0];
     assert.match(op.responses["503"].description, /ORGANIZATION_ACCOUNTS_UNAVAILABLE/, name);
+    const example = op.responses["503"].content["application/json"].schema.properties;
+    assert.equal(example.type.example, "internal_error", name);
+    assert.equal(example.message.example, "The organization's accounts could not be read. Try again.", name);
   }
-  assert.match(guide, /\| `ORGANIZATION_ACCOUNTS_UNAVAILABLE` \(`503`\) \| The organization's accounts could not be listed\. Nothing changed; retry the request\. \|/);
+  for (const name of ["create-connection", "delete-connection"]) {
+    assert.match(conn(name), /"type": "internal_error",\n  "code": "ORGANIZATION_ACCOUNTS_UNAVAILABLE",\n  "message": "The organization's accounts could not be read\. Try again\."/, name);
+  }
+  const pages = changedPages.map(read).join("\n");
+  const fragments = ["create-connection", "update-connection", "delete-connection"].map((n) => read(`openapi/organizations/connections/${n}.json`)).join("\n");
+  assert.doesNotMatch(pages + fragments, /service_unavailable|could not be listed/);
+  assert.match(guide, /\| `ORGANIZATION_ACCOUNTS_UNAVAILABLE` \(`503`\) \| The organization's accounts could not be read\. Nothing changed; try again\. \|/);
 });
 
-test("pause and unpause are documented as Dashboard actions, not as an API call", () => {
-  assert.match(guide, /Pause and unpause the organization connection from the Dashboard/);
+test("pause and unpause are not an API call, and the guide promises no Dashboard screen", () => {
+  assert.match(guide, /Pausing and unpausing the organization connection is not available through the API\. It is handled from the Dashboard once available, or by contacting support\./);
+  assert.doesNotMatch(guide, /from the Dashboard(?! once available)/);
   for (const name of ["update-connection", "delete-connection"]) assert.doesNotMatch(conn(name), /paus/i, name);
   for (const name of ["create-connection", "update-connection", "delete-connection"]) {
     assert.doesNotMatch(read(`openapi/organizations/connections/${name}.json`), /paus/i, name);
@@ -153,7 +170,9 @@ test("the guide covers create, implicit use with the card-route condition, move,
   assert.match(guide, /`"ENABLED"`/);
   assert.match(guide, /uses the organization connection automatically/);
   assert.match(guide, /An account without a published card route is not offered the wallet until it publishes one/);
-  assert.match(guide, /## Move an account to the organization connection[\s\S]*publish a route for that account whose `APPLE_PAY` or `GOOGLE_PAY` step uses the organization connection/);
+  const moveSection = guide.slice(guide.indexOf("## Move an account to the organization connection"), guide.indexOf("## Stop one account from using it"));
+  assert.match(moveSection, /publish a new version of the account's `APPLE_PAY` or `GOOGLE_PAY` route whose step uses the organization connection's `connection_id`, with \[Create a Routing\]/);
+  assert.doesNotMatch(moveSection, /Dashboard/);
   assert.match(guide, /## Stop one account from using it[\s\S]*create an account connection[\s\S]*archive the account's wallet route/);
   assert.match(guide, /\*\*It uses it automatically\*\* \(it has no wallet route of its own\): the automatic use stops once the account has its own wallet route, published or archived\./);
   assert.match(guide, /## Stop it reaching accounts created later[\s\S]*Create an account connection for Apple Pay or Google Pay in each current account[\s\S]*Delete the organization connection/);
