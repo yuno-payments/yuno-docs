@@ -52,7 +52,6 @@ If the request is rejected, check the error code:
 
 | Code | What to do |
 | --- | --- |
-| `ORGANIZATION_SCOPE_NOT_SUPPORTED` | Organization connections are not available for your organization or request. Create an account connection instead. |
 | `ORGANIZATION_CONNECTION_CONFIRMATION_REQUIRED` | Send `organization_connection_confirmation: true`. |
 | `ORGANIZATION_SCOPE_NOT_SUPPORTED_FOR_PROVIDER` | Only Apple Pay and Google Pay can be organization connections. |
 | `ORGANIZATION_APPLE_PAY_REQUIRES_OWN_CERTIFICATES` | Configure the Apple Pay connection with your own certificates. |
@@ -71,10 +70,10 @@ To move an account that has its own wallet route to the organization connection,
 
 ## Stop one account from using it
 
-Choose one of the following for that account:
+How an account stops depends on how it uses the organization connection.
 
-- **Use its own wallet connection:** create an account connection for Apple Pay or Google Pay, then publish a wallet route whose step uses it.
-- **Stop offering the wallet:** archive the account's wallet route that points to the organization connection.
+- **It uses it automatically** (it has no wallet route of its own): the automatic use stops once the account has its own wallet route, published or archived. To keep offering the wallet with the account's own connection, create an account connection for Apple Pay or Google Pay and publish a wallet route whose step uses it. To stop offering the wallet, archive the account's wallet route.
+- **Its wallet route names the organization connection:** change the route's step to an account connection of its own and publish it, or archive the route to stop offering the wallet.
 
 The other accounts keep using the organization connection.
 
@@ -89,6 +88,15 @@ If a route still references the organization connection, the delete fails with `
 
 ## Edit, pause and delete
 
-You edit, pause, unpause and delete the organization connection like any other connection. A change applies to every account that uses it.
+Edit the organization connection with [Update a Connection](/reference/organizations/connections/update-connection) and delete it with [Delete a Connection](/reference/organizations/connections/delete-connection). Send these requests without `X-account-code` and without `account_id`: an organization connection belongs to no account. A change applies to every account that uses it.
 
-If the organization's accounts cannot be listed while you create, edit, unpause or delete it, the request fails with `503 ORGANIZATION_ACCOUNTS_UNAVAILABLE` and nothing changes; retry the request. A pause always commits, so you can stop the wallet in every account at once even then.
+On an update you can also change `checkout_activation`. The new value applies only to accounts where the wallet is added to the checkout after the change; accounts that already show the wallet keep their current setting.
+
+Pause and unpause the organization connection from the Dashboard. A pause always goes through, so you can stop the wallet in every account at once.
+
+If an update or delete is rejected, check the error code:
+
+| Code | What to do |
+| --- | --- |
+| `ORGANIZATION_SCOPE_NOT_SUPPORTED` | The request was sent with an account (`X-account-code` or `account_id`). Send it again without the account. |
+| `ORGANIZATION_ACCOUNTS_UNAVAILABLE` (`503`) | The organization's accounts could not be listed. Nothing changed; retry the request. |

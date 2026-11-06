@@ -74,13 +74,61 @@ test("the five new 400 errors are listed on create connection and in its OpenAPI
   }
 });
 
-test("503 ORGANIZATION_ACCOUNTS_UNAVAILABLE is documented for create, edit, unpause and delete, and a pause still commits", () => {
+test("503 ORGANIZATION_ACCOUNTS_UNAVAILABLE is documented for create, edit and delete", () => {
   for (const name of ["create-connection", "update-connection", "delete-connection"]) {
     assert.match(conn(name), /\| `503` \| `ORGANIZATION_ACCOUNTS_UNAVAILABLE`<br \/>[^\n]*Nothing changes/, name);
+    const spec = json(`openapi/organizations/connections/${name}.json`);
+    const op = Object.values(Object.values(spec.paths)[0])[0];
+    assert.match(op.responses["503"].description, /ORGANIZATION_ACCOUNTS_UNAVAILABLE/, name);
   }
-  assert.match(conn("update-connection"), /editing or unpausing it[^\n]*Pausing an organization connection still commits/);
-  assert.match(guide, /create, edit, unpause or delete it, the request fails with `503 ORGANIZATION_ACCOUNTS_UNAVAILABLE` and nothing changes/);
-  assert.match(guide, /A pause always commits/);
+  assert.match(guide, /\| `ORGANIZATION_ACCOUNTS_UNAVAILABLE` \(`503`\) \| The organization's accounts could not be listed\. Nothing changed; retry the request\. \|/);
+});
+
+test("pause and unpause are documented as Dashboard actions, not as an API call", () => {
+  assert.match(guide, /Pause and unpause the organization connection from the Dashboard/);
+  for (const name of ["update-connection", "delete-connection"]) assert.doesNotMatch(conn(name), /paus/i, name);
+  for (const name of ["create-connection", "update-connection", "delete-connection"]) {
+    assert.doesNotMatch(read(`openapi/organizations/connections/${name}.json`), /paus/i, name);
+  }
+});
+
+test("create, retrieve and update responses carry scope and checkout_activation", () => {
+  for (const [name, status] of [["create-connection", "201"], ["retrieve-connection", "200"], ["update-connection", "200"]]) {
+    const spec = json(`openapi/organizations/connections/${name}.json`);
+    const op = Object.values(Object.values(spec.paths)[0])[0];
+    const props = op.responses[status].content["application/json"].schema.properties;
+    assert.deepEqual(props.scope?.enum, ["ACCOUNT", "ORGANIZATION"], name);
+    assert.deepEqual(props.checkout_activation?.enum, ["AVAILABLE", "ENABLED"], name);
+    assert.match(props.checkout_activation.description, /only on organization connections/, name);
+    assert.match(conn(name), /<ResponseField name="checkout_activation" type="string">\n[^\n]*Present only on organization connections/, name);
+  }
+});
+
+test("update documents checkout_activation for organization connections", () => {
+  const spec = json("openapi/organizations/connections/update-connection.json");
+  const body = spec.paths["/connections/{connection_id}"].patch.requestBody.content["application/json"].schema;
+  assert.deepEqual(body.properties.checkout_activation?.enum, ["AVAILABLE", "ENABLED"]);
+  assert.match(conn("update-connection"), /<ParamField body="checkout_activation" type="enum">\n  Organization connections only/);
+  assert.match(conn("update-connection"), /applies only to accounts where the wallet is added to the checkout after the change/);
+  assert.match(guide, /On an update you can also change `checkout_activation`/);
+});
+
+test("ORGANIZATION_SCOPE_NOT_SUPPORTED is documented on update and delete as a request sent with an account", () => {
+  assert.match(conn("update-connection"), /\| `400` \| `ORGANIZATION_SCOPE_NOT_SUPPORTED`<br \/>The connection is an organization connection and the update was sent with an account/);
+  assert.match(conn("delete-connection"), /\| `400` \| `ORGANIZATION_SCOPE_NOT_SUPPORTED`<br \/>The connection is an organization connection and the request was sent with `X-Account-Code`/);
+  const update = json("openapi/organizations/connections/update-connection.json").paths["/connections/{connection_id}"].patch;
+  const del = json("openapi/organizations/connections/delete-connection.json").paths["/connections/{connection_id}"].delete;
+  assert.match(update.responses["400"].description, /ORGANIZATION_SCOPE_NOT_SUPPORTED: the connection is an organization connection/);
+  assert.match(del.responses["400"].description, /ORGANIZATION_SCOPE_NOT_SUPPORTED: the connection is an organization connection/);
+  assert.match(guide, /\| `ORGANIZATION_SCOPE_NOT_SUPPORTED` \| The request was sent with an account/);
+  assert.doesNotMatch(guide, /not available for your organization/);
+});
+
+test("update and delete accept the organization connection of the organization, as retrieve does", () => {
+  for (const name of ["update-connection", "delete-connection"]) {
+    assert.match(conn(name), /Must belong to the account your API key is scoped to, or be an organization connection of your organization\./, name);
+    assert.match(conn(name), /\| `404` \| `CONNECTION_NOT_FOUND`<br \/>Unknown `connection_id`, or the id is neither a connection of your account nor an organization connection of your organization\. \|/, name);
+  }
 });
 
 test("409 CONNECTION_IN_USE documents details.accounts for organization connections", () => {
@@ -107,6 +155,7 @@ test("the guide covers create, implicit use with the card-route condition, move,
   assert.match(guide, /An account without a published card route is not offered the wallet until it publishes one/);
   assert.match(guide, /## Move an account to the organization connection[\s\S]*publish a route for that account whose `APPLE_PAY` or `GOOGLE_PAY` step uses the organization connection/);
   assert.match(guide, /## Stop one account from using it[\s\S]*create an account connection[\s\S]*archive the account's wallet route/);
+  assert.match(guide, /\*\*It uses it automatically\*\* \(it has no wallet route of its own\): the automatic use stops once the account has its own wallet route, published or archived\./);
   assert.match(guide, /## Stop it reaching accounts created later[\s\S]*Create an account connection for Apple Pay or Google Pay in each current account[\s\S]*Delete the organization connection/);
 });
 

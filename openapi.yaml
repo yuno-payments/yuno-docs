@@ -8486,7 +8486,9 @@ paths:
         - name: X-account-code
           in: header
           required: false
-          description: Required for an account connection. Omit it for an organization connection (scope ORGANIZATION).
+          description: >-
+            The account that owns the connection. Required for an account connection. Omit it for an organization
+            connection (scope ORGANIZATION).
           schema:
             type: string
         - name: X-Idempotency-Key
@@ -8616,6 +8618,19 @@ paths:
                   connection_id:
                     type: string
                     example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
+                  scope:
+                    type: string
+                    enum:
+                      - ACCOUNT
+                      - ORGANIZATION
+                    example: ACCOUNT
+                  checkout_activation:
+                    type: string
+                    enum:
+                      - AVAILABLE
+                      - ENABLED
+                    description: Present only on organization connections (scope ORGANIZATION). Omitted on account connections.
+                    example: ENABLED
                   merchant_connection_id:
                     type: string
                     example: stripe-us-prod-001
@@ -8706,8 +8721,8 @@ paths:
                     example: A connection with this merchant_connection_id already exists
         '503':
           description: >-
-            The organization connection's accounts could not be listed. Nothing changes; retry the request. A pause
-            still commits.
+            Service Unavailable. ORGANIZATION_ACCOUNTS_UNAVAILABLE: the organization's accounts could not be listed
+            while creating an organization connection. Nothing changes; retry the request.
           content:
             application/json:
               schema:
@@ -8715,11 +8730,13 @@ paths:
                 properties:
                   type:
                     type: string
+                    example: service_unavailable
                   code:
                     type: string
                     example: ORGANIZATION_ACCOUNTS_UNAVAILABLE
                   message:
                     type: string
+                    example: The organization's accounts could not be listed. Nothing was changed; retry the request
       tags:
         - Organizations
   /connections/catalog/{provider_id}:
@@ -8845,6 +8862,19 @@ paths:
                   connection_id:
                     type: string
                     example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
+                  scope:
+                    type: string
+                    enum:
+                      - ACCOUNT
+                      - ORGANIZATION
+                    example: ACCOUNT
+                  checkout_activation:
+                    type: string
+                    enum:
+                      - AVAILABLE
+                      - ENABLED
+                    description: Present only on organization connections (scope ORGANIZATION). Omitted on account connections.
+                    example: ENABLED
                   merchant_connection_id:
                     type: string
                     example: stripe-us-prod-001
@@ -8953,12 +8983,22 @@ paths:
                 account_id:
                   type: string
                   format: uuid
-                  example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
                   description: Required for an account connection. Omit it for an organization connection.
+                  example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
                 merchant_connection_id:
                   type: string
                   maxLength: 255
                   example: stripe-us-prod-002
+                checkout_activation:
+                  type: string
+                  enum:
+                    - AVAILABLE
+                    - ENABLED
+                  description: >-
+                    Organization connections only; not used on account connections. AVAILABLE: each account turns the
+                    wallet on in its checkout. ENABLED: switched on in every account's checkout. The new value applies
+                    only to accounts where the wallet is added to the checkout after the change; accounts that already
+                    show it keep their current setting.
                 params:
                   type: array
                   items:
@@ -9016,6 +9056,19 @@ paths:
                   connection_id:
                     type: string
                     example: f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e
+                  scope:
+                    type: string
+                    enum:
+                      - ACCOUNT
+                      - ORGANIZATION
+                    example: ACCOUNT
+                  checkout_activation:
+                    type: string
+                    enum:
+                      - AVAILABLE
+                      - ENABLED
+                    description: Present only on organization connections (scope ORGANIZATION). Omitted on account connections.
+                    example: ENABLED
                   merchant_connection_id:
                     type: string
                     example: stripe-us-prod-002
@@ -9068,7 +9121,9 @@ paths:
                     format: date-time
                     example: '2026-05-12T11:02:17Z'
         '400':
-          description: Bad Request
+          description: >-
+            Bad Request. Also ORGANIZATION_SCOPE_NOT_SUPPORTED: the connection is an organization connection and the
+            update was sent with an account (X-account-code or account_id). Send it without the account.
           content:
             application/json:
               schema:
@@ -9133,8 +9188,8 @@ paths:
                     example: A connection with merchant_connection_id 'stripe-us-prod-002' already exists in this account
         '503':
           description: >-
-            The organization connection's accounts could not be listed. Nothing changes; retry the request. A pause
-            still commits.
+            Service Unavailable. ORGANIZATION_ACCOUNTS_UNAVAILABLE: the organization's accounts could not be listed
+            while updating an organization connection. Nothing changes; retry the request.
           content:
             application/json:
               schema:
@@ -9142,11 +9197,13 @@ paths:
                 properties:
                   type:
                     type: string
+                    example: service_unavailable
                   code:
                     type: string
                     example: ORGANIZATION_ACCOUNTS_UNAVAILABLE
                   message:
                     type: string
+                    example: The organization's accounts could not be listed. Nothing was changed; retry the request
       tags:
         - Organizations
     delete:
@@ -9165,13 +9222,31 @@ paths:
         - name: X-Account-Code
           in: header
           required: false
+          description: Required for an account connection. Omit it for an organization connection.
           schema:
             type: string
             format: uuid
-          description: Required for an account connection. Omit it for an organization connection.
       responses:
         '204':
           description: No Content
+        '400':
+          description: >-
+            Bad Request. ORGANIZATION_SCOPE_NOT_SUPPORTED: the connection is an organization connection and the delete
+            was sent with an account (X-Account-Code). Send it without the account.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: bad_request
+                  code:
+                    type: string
+                    example: ORGANIZATION_SCOPE_NOT_SUPPORTED
+                  message:
+                    type: string
+                    example: Organization connections cannot be changed from an account
         '401':
           description: Unauthorized
           content:
@@ -9206,7 +9281,7 @@ paths:
                     example: Connection '...' was not found
         '409':
           description: >-
-            Conflict For an organization connection, details.accounts lists the accounts whose routes still reference
+            Conflict. For an organization connection, details.accounts lists the accounts whose routes still reference
             it.
           content:
             application/json:
@@ -9222,10 +9297,22 @@ paths:
                   message:
                     type: string
                     example: Connection '...' is still referenced by an active routing rule
+                  details:
+                    type: object
+                    properties:
+                      connection_id:
+                        type: string
+                        format: uuid
+                      accounts:
+                        type: array
+                        items:
+                          type: string
+                          format: uuid
+                        description: 'Organization connections only: the accounts whose routes still reference it.'
         '503':
           description: >-
-            The organization connection's accounts could not be listed. Nothing changes; retry the request. A pause
-            still commits.
+            Service Unavailable. ORGANIZATION_ACCOUNTS_UNAVAILABLE: the organization's accounts could not be listed
+            while deleting an organization connection. Nothing changes; retry the request.
           content:
             application/json:
               schema:
@@ -9233,11 +9320,13 @@ paths:
                 properties:
                   type:
                     type: string
+                    example: service_unavailable
                   code:
                     type: string
                     example: ORGANIZATION_ACCOUNTS_UNAVAILABLE
                   message:
                     type: string
+                    example: The organization's accounts could not be listed. Nothing was changed; retry the request
       tags:
         - Organizations
   /currency-conversion:
