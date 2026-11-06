@@ -112,12 +112,21 @@ test("the retrieve-by-id pages document verify.moto in the response and the list
   assert.doesNotMatch(read("openapi/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api.json"), /"moto"/);
 });
 
-test("the payment object page documents moto after verify in every card block", () => {
-  const page = read("reference/payments/the-payment-object.mdx");
-  const verifyBlocks = page.match(/<ParamField body="verify" type="boolean">[\s\S]*?<\/ParamField>\s*<ParamField body="([^"]+)"/g) || [];
-  assert.equal(verifyBlocks.length, 9);
-  for (const block of verifyBlocks) assert.match(block, /<ParamField body="moto"$/);
-  assert.equal((page.match(/<ParamField body="moto" type="boolean">/g) || []).length, 9);
+test("the payment object page documents moto only in card blocks, after verify", () => {
+  const lines = read("reference/payments/the-payment-object.mdx").split("\n");
+  const indent = (line) => line.length - line.trimStart().length;
+  const parentObject = (i) => {
+    for (let j = i - 1; j >= 0; j--) {
+      const m = lines[j].match(/^(\s*)<ParamField body="(\w+)" type="object">/);
+      if (m && m[1].length < indent(lines[i])) return m[2];
+    }
+    return null;
+  };
+  const motoLines = lines.flatMap((l, i) => (l.includes('<ParamField body="moto" type="boolean">') ? [i] : []));
+  const verifyInCard = lines.flatMap((l, i) => (l.includes('<ParamField body="verify" type="boolean">') && parentObject(i) === "card" ? [i] : []));
+  assert.ok(verifyInCard.length > 0);
+  assert.deepEqual(motoLines.map(parentObject), motoLines.map(() => "card"));
+  assert.equal(motoLines.length, verifyInCard.length);
 });
 
 test("the Payment Webhook V2 example shows moto and says it appears only when sent", () => {
