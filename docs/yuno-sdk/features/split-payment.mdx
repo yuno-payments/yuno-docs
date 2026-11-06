@@ -1,25 +1,25 @@
 ---
 title: "Split one payment across two cards"
 sidebarTitle: "Split payments"
-description: "Build the object that splits one payment across two cards, start it, create the payment and read the result on Web, iOS, Android and React Native."
+description: "Build the object that splits one payment across two cards, start it, create the payment and read the result on Web, iOS and Android."
 ---
 
 A split payment lets the shopper fund one order with two cards. Each card pays its own part of the total, you create one payment, and you receive one result.
 
-You pass an array to `start()` instead of a single payment method. The SDK creates one composite token, hands it to [`createPayment`](/docs/yuno-sdk/controllers/create-payment), runs the 3DS of each card and reports the outcome in [`onStatus`](/docs/yuno-sdk/controllers/on-status).
+The method is `start` on every platform. For a split payment it receives an array of payment methods instead of one. The SDK creates one composite token, hands it to [`createPayment`](/docs/yuno-sdk/controllers/create-payment), runs the 3DS of each card and reports the outcome in [`onStatus`](/docs/yuno-sdk/controllers/on-status).
 
-In this phase, split payment applies to cards only. To divide a payment among marketplace recipients, see [Split payments marketplace](/docs/payment-features/split-payments-marketplace) instead.
+To divide a payment among marketplace recipients, see [Split payments marketplace](/docs/payment-features/split-payments-marketplace) instead.
 
 ## Availability
 
-{/* TODO SPP4-021: confirm the versions on release day. iOS 3.1.0 comes from the yuno-ios CHANGELOG on release-v3.1.0 (PR #1786) and Android 3.1.0 from changelog/3.1.0.json on release/3.1.0 (PR #2017). The Web PR #3269 has no version bump yet. */}
+{/* TODO SPP4-021: confirm the versions on release day. iOS 3.1.0 comes from the yuno-ios CHANGELOG on release-v3.1.0 (PR #1786) and Android 3.1.0 from changelog/3.1.0.json on release/3.1.0 (PR #2017). Web 2.6.0 is the version Vivi set on 2026-11-06; the Web PR #3269 has no version bump yet. */}
 
 | Platform | Minimum version | Entry point |
 |---|---|---|
-| Web | `WEB_SDK_VERSION_TBD` | `transaction.start([...])` |
+| Web | `2.6.0` | `transaction.start([...])` |
 | iOS | `3.1.0` | `transaction.start(paymentsSelected:)` |
 | Android | `3.1.0` | `transaction.start(activity, paymentsSelected)` |
-| React Native | Not available yet | See the React Native tab in [Build the object](#build-the-object). |
+| React Native | Not available yet | The React Native SDK does not have a split payment API yet. |
 
 ## Before you start
 
@@ -27,16 +27,18 @@ In this phase, split payment applies to cards only. To divide a payment among ma
 - **Create the checkout session with the full amount.** Use the total of the order and the default `SDK_CHECKOUT` workflow.
 - **Override `createPayment`.** You create the payment from your backend. See [Create the payment](#create-the-payment).
 - **Collect the card data in your own UI.** Pass it in the object. The flow does not mount an SDK form or a payment methods list for the cards.
-- **Pass each amount with the decimals of its currency.** The SDK sends the value as you give it. See [Amount precision](#amount-precision).
+- **Pass each amount with the decimals of its currency.** The SDK sends `value` as you give it, and the backend rejects extra decimals with `AMOUNT_PRECISION`.
 
 ## Build the object
 
-Each item of the array is the same object you pass for one payment method in `start()`, plus the `amount` that card pays.
+You build the same payment method object a one-card payment uses, once per card, and pass the two of them to `start` as an array. Each one adds the `amount` that card pays.
 
 <Tabs>
   <Tab title="Web">
 
-The array holds one `{ paymentMethod }` per card.
+```typescript
+start([{ paymentMethod }])
+```
 
 | Field | Type | Description |
 |---|---|---|
@@ -47,7 +49,7 @@ The array holds one `{ paymentMethod }` per card.
 | `paymentMethod.vaultedToken` | String | The vaulted token of an enrolled card. Send it or `data.card`. |
 
 ```typescript
-[
+await transaction.start([
   {
     paymentMethod: {
       type: 'CARD',
@@ -58,7 +60,7 @@ The array holds one `{ paymentMethod }` per card.
           securityCode: '123',
           expirationMonth: 11,
           expirationYear: 29,
-          holderName: 'VIVI AMEZQUITA',
+          holderName: 'John Doe',
         },
       },
     },
@@ -72,13 +74,15 @@ The array holds one `{ paymentMethod }` per card.
       },
     },
   },
-]
+])
 ```
 
   </Tab>
   <Tab title="iOS">
 
-The array holds one `SdkPayments.PaymentMethodSelected` per card.
+```swift
+start(paymentsSelected: [SdkPayments.PaymentMethodSelected])
+```
 
 | Field | Type | Description |
 |---|---|---|
@@ -88,7 +92,7 @@ The array holds one `SdkPayments.PaymentMethodSelected` per card.
 | `vaultedToken` | `String?` | The vaulted token of an enrolled card. Send it or `transactionData.card`. |
 
 ```swift
-let paymentsSelected = [
+transaction.start(paymentsSelected: [
     SdkPayments.PaymentMethodSelected(
         paymentMethodType: "CARD",
         transactionData: SdkPayments.TransactionData(
@@ -97,7 +101,7 @@ let paymentsSelected = [
                 securityCode: "123",
                 expirationMonth: 11,
                 expirationYear: 29,
-                holderName: "VIVI AMEZQUITA"
+                holderName: "John Doe"
             ),
             amount: SdkPayments.AmountTransactionData(currency: "BRL", value: 200)
         )
@@ -109,13 +113,15 @@ let paymentsSelected = [
             amount: SdkPayments.AmountTransactionData(currency: "BRL", value: 100)
         )
     )
-]
+])
 ```
 
   </Tab>
   <Tab title="Android">
 
-The list holds one `PaymentMethodSelected` per card.
+```kotlin
+start(activity, paymentsSelected: List<PaymentMethodSelected>)
+```
 
 | Field | Type | Description |
 |---|---|---|
@@ -125,38 +131,32 @@ The list holds one `PaymentMethodSelected` per card.
 | `vaultedToken` | `String?` | The vaulted token of an enrolled card. Send it or `transactionData.card`. |
 
 ```kotlin
-val paymentsSelected = listOf(
-    PaymentMethodSelected(
-        type = "CARD",
-        transactionData = TransactionData(
-            card = CardData(
-                number = "4111111111111111",
-                securityCode = "123",
-                expirationMonth = 11,
-                expirationYear = 29,
-                holderName = "VIVI AMEZQUITA",
+transaction.start(
+    activity = this,
+    paymentsSelected = listOf(
+        PaymentMethodSelected(
+            type = "CARD",
+            transactionData = TransactionData(
+                card = CardData(
+                    number = "4111111111111111",
+                    securityCode = "123",
+                    expirationMonth = 11,
+                    expirationYear = 29,
+                    holderName = "John Doe",
+                ),
+                amount = PaymentAmount(currency = "BRL", value = 200.0),
             ),
-            amount = PaymentAmount(currency = "BRL", value = 200.0),
         ),
-    ),
-    PaymentMethodSelected(
-        type = "CARD",
-        vaultedToken = "aad8578e-ac2f-40a0-8065-25b5957f6555",
-        transactionData = TransactionData(
-            amount = PaymentAmount(currency = "BRL", value = 100.0),
+        PaymentMethodSelected(
+            type = "CARD",
+            vaultedToken = "aad8578e-ac2f-40a0-8065-25b5957f6555",
+            transactionData = TransactionData(
+                amount = PaymentAmount(currency = "BRL", value = 100.0),
+            ),
         ),
     ),
 )
 ```
-
-  </Tab>
-  <Tab title="React Native">
-
-<Warning>
-**Not available yet.** The React Native SDK does not have a split payment API. Its `transaction.start()` takes one `PaymentMethodSelected`, and its `TransactionData` has no `amount`. This section will show the object when the API is released.
-</Warning>
-
-The backend side does not change: [Create the payment](#create-the-payment) and the [backend errors](#backend-errors) apply to every platform.
 
   </Tab>
 </Tabs>
@@ -170,14 +170,6 @@ The backend side does not change: [Create the payment](#create-the-payment) and 
 - **Same card twice:** not allowed. The SDK compares the card numbers and the vaulted tokens.
 - **Currency:** the same on every item, and the currency of the checkout session. The SDK checks the items against each other and the backend checks them against the session.
 - **Sum of the amounts:** must equal the amount of the checkout session. The backend validates it.
-- **Payment method type:** only cards in this phase. The backend validates it.
-- **Other card fields:** each item accepts the installment plan and the save-card option of a one-card [`TransactionData`](/docs/yuno-sdk/reference/objects-you-pass#transaction-data). They apply to that card only.
-
-### Amount precision
-
-The SDK sends `value` exactly as you pass it. It does not round. The backend rejects a value with more decimals than the currency has with `AMOUNT_PRECISION`, so pass each amount with the decimals of its currency, for example two for `BRL`.
-
-Floating-point arithmetic can add decimals you did not write. `259.9 - 100` is `159.89999999999998` on every platform, and the SDK sends it like that. Compute the parts in minor units as integers and convert at the end, or round each `value` to the decimals of the currency before you build the object.
 
 ## Complete example
 
@@ -217,7 +209,7 @@ try {
             securityCode: '123',
             expirationMonth: 11,
             expirationYear: 29,
-            holderName: 'VIVI AMEZQUITA',
+            holderName: 'John Doe',
           },
         },
       },
@@ -278,7 +270,7 @@ final class Checkout: SdkPayments.TransactionController {
                         securityCode: "123",
                         expirationMonth: 11,
                         expirationYear: 29,
-                        holderName: "VIVI AMEZQUITA"
+                        holderName: "John Doe"
                     ),
                     amount: SdkPayments.AmountTransactionData(currency: "BRL", value: 200)
                 )
@@ -342,7 +334,7 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
                             securityCode = "123",
                             expirationMonth = 11,
                             expirationYear = 29,
-                            holderName = "VIVI AMEZQUITA",
+                            holderName = "John Doe",
                         ),
                         amount = PaymentAmount(currency = "BRL", value = 200.0),
                     ),
@@ -363,56 +355,23 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 Call `SdkPayments.initialize(applicationContext, apiKey = "<PUBLIC_API_KEY>")` once at app startup.
 
   </Tab>
-  <Tab title="React Native">
-
-There is no example yet: the API is not available. See the React Native tab in [Build the object](#build-the-object).
-
-  </Tab>
 </Tabs>
 
 ## Create the payment
 
-The token you receive in `createPayment` is one composite token for both cards. It carries `token`, `checkout_session` and `expires_at`, and no card data. Read it from the `token` key. From your backend, send it to `POST /v2/payments` with `workflow: "SDK_CHECKOUT"`, and return from `createPayment` when the request is done. The SDK then continues with the 3DS of each card.
+The token you receive in `createPayment` is one composite token for both cards. It carries `token`, `checkout_session` and `expires_at`. Read it from the `token` key. From your backend, send it to `POST /v2/payments` with `workflow: "SDK_CHECKOUT"`, as `payment_method.token`.
 
 <Warning>
 `POST /v1/payments` rejects a composite token. Use `POST /v2/payments`.
 </Warning>
 
-```bash
-curl --request POST \
-  --url https://api-sandbox.y.uno/v2/payments \
-  --header 'X-Idempotency-Key: <UUID>' \
-  --header 'public-api-key: <PUBLIC_API_KEY>' \
-  --header 'private-secret-key: <PRIVATE_SECRET_KEY>' \
-  --header 'content-type: application/json' \
-  --data '{
-    "account_id": "<ACCOUNT_ID>",
-    "merchant_order_id": "order-10047",
-    "description": "Order paid with two cards",
-    "country": "BR",
-    "amount": { "currency": "BRL", "value": 300 },
-    "workflow": "SDK_CHECKOUT",
-    "checkout": { "session": "<CHECKOUT_SESSION>" },
-    "customer_payer": { "id": "<CUSTOMER_ID>" },
-    "payment_method": { "token": "<COMPOSITE_TOKEN>" }
-  }'
-```
-
-| Field | Description |
-|---|---|
-| `amount` | The total of the payment: the sum of the card amounts. |
-| `workflow` | `SDK_CHECKOUT`. |
-| `checkout.session` | The checkout session you passed to the transaction. |
-| `customer_payer` | The payer, shared by both cards. |
-| `payment_method.token` | The composite token. Do not send the cards again: the token carries them. |
-
-See [Create Payment (two cards)](/reference/payments/create-payment-v2) for the full request, and [Pay with two cards](/docs/payment-features/pay-with-two-cards) for the response and the operations on each card.
+The request, its fields and the response are in [Pay with two cards](/docs/payment-features/pay-with-two-cards#create-the-payment), under the `SDK_CHECKOUT` example, and in the [Create Payment (two cards)](/reference/payments/create-payment-v2) reference.
 
 ## Receive the result
 
 You receive the result in `onStatus`, at payment level. There is no callback per card.
 
-The SDK runs card 1 and then card 2. If card 1 fails, card 2 does not start and `onStatus` reports the status of the payment. If the shopper closes the challenge of card 1, card 2 does not start either: `onStatus` receives `USER_CANCEL` on iOS and Android, and `PENDING` with `substatus` `USER_CANCEL` on Web, as for any 3DS challenge.
+The SDK runs card 1 and then card 2. If card 1 fails, card 2 does not start and `onStatus` reports the status of the payment.
 
 If card 2 fails after card 1 was authorized, what happens to card 1 is handled on the backend. The payment response on your server shows the final state of each card: see [Pay with two cards](/docs/payment-features/pay-with-two-cards).
 
@@ -422,68 +381,36 @@ On iOS, `onStatus` can report a non-final `PENDING` first, as for any payment. S
 
 ### SDK validations
 
-The SDK checks the shape of the array before it requests the token, so an invalid array sends no request. The code is `INVALID_SPLIT_PAYMENT`, the message is in English and cards are numbered from 1. The message is for your developers: do not show it to the shopper.
+The SDK checks the shape of the array before it requests the token, so an invalid array sends no request. The code is `INVALID_SPLIT_PAYMENT` and the message is in English. The message is for your developers: do not show it to the shopper.
 
 | Platform | How you receive it |
 |---|---|
 | Web | `start()` rejects with an error that carries `code` and `message`. `onStatus` is not called. |
 | iOS, Android | `onStatus` receives `status: "INTERNAL_ERROR"`, with `INVALID_SPLIT_PAYMENT` in `message.code` and the text in `message.reason`. |
 
-The three SDKs run the same checks, in this order, and stop at the first one that fails:
+The SDK checks, in this order, that:
 
-| Check | iOS and Android message | Web message |
-|---|---|---|
-| One item | `paymentsSelected needs at least 2 items, got 1` | `payment_method needs at least 2 items, got 1` |
-| An item without `amount` | `paymentsSelected[2].transactionData.amount is required` | `payment_method[2].amount is required` |
-| `amount.value` not greater than 0 | `paymentsSelected[2].transactionData.amount.value must be greater than 0` | `payment_method[2].amount.value must be greater than 0` |
-| An item without `amount.currency` | `paymentsSelected[2].transactionData.amount.currency is required` | `payment_method[2].amount.currency is required` |
-| A currency different from the first item | `paymentsSelected[2].transactionData.amount.currency must match paymentsSelected[1]` | `payment_method[2].amount.currency must match payment_method[1]` |
-| The same card or vaulted token twice | `paymentsSelected[2] uses the same card as paymentsSelected[1]` | `payment_method[2] uses the same card as payment_method[1]` |
+- The array has two items.
+- Every item has an `amount` with a `value` greater than 0 and a `currency`.
+- Every item has the same currency as the first one.
+- No card or vaulted token appears twice.
+
+The message names the item that failed.
 
 Everything else, such as the payment method type, an item with neither a card nor a vaulted token, the sum of the amounts and the currency of the session, is validated by the backend with the codes in [Backend errors](#backend-errors).
 
 ### Where the array is not available
 
-<Tabs>
-  <Tab title="Web">
+The array is for payment transactions. On an enrollment transaction (`customerSession`):
 
-`start()` rejects with one of these errors, without a `code`:
-
-| Case | Message |
+| Platform | How you receive it |
 |---|---|
-| Enrollment transaction | ``An array of `paymentMethod` is not available for enrollment transactions.`` |
-| No `createPayment` in the config | ``An array of `paymentMethod` requires `createPayment` in the transaction config.`` |
-| `autoContinuePayment: false` | ``An array of `paymentMethod` does not support `autoContinuePayment: false`: the SDK runs 3DS card by card.`` |
-| Secure fields active | ``An array of `paymentMethod` needs the card data in `data`. It is not available with secure fields.`` |
-| An inline form mounted from the payment methods list | ``An array of `paymentMethod` is not available while an inline form is mounted for the payment method selected in the list.`` |
-
-  </Tab>
-  <Tab title="iOS">
-
-`onStatus` receives `INTERNAL_ERROR` with `message.code` `INVALID_SPLIT_PAYMENT`:
-
-| Case | `message.reason` |
-|---|---|
-| Enrollment transaction (`customerSession`) | `paymentsSelected is not available for enrollment` |
-| `getPaymentMethodsViews` already called on the same transaction | `paymentsSelected is not available after getPaymentMethodsViews` |
-
-  </Tab>
-  <Tab title="Android">
-
-`onStatus` receives `INTERNAL_ERROR` with `message.code` `INVALID_SPLIT_PAYMENT`:
-
-| Case | `message.reason` |
-|---|---|
-| Enrollment transaction (`customerSession`) | `paymentsSelected is not available for enrollment` |
-
-  </Tab>
-</Tabs>
+| Web | `start()` rejects with ``An array of `paymentMethod` is not available for enrollment transactions.`` |
+| iOS, Android | `onStatus` receives `INTERNAL_ERROR` with `message.code` `INVALID_SPLIT_PAYMENT` and `message.reason` `paymentsSelected is not available for enrollment`. |
 
 ### Backend errors
 
 The backend validates the composite token request. When it rejects the request, `onStatus` receives `status: "INTERNAL_ERROR"` with `message.source` `backend` and no token reaches `createPayment`.
-
-On Web, `start()` also rejects with the same error. On Web and iOS, `message.code` is the backend code below. On Android, `message.code` is the HTTP status and the backend code is inside `message.raw`.
 
 | Code | Meaning |
 |---|---|
@@ -493,7 +420,7 @@ On Web, `start()` also rejects with the same error. On Web and iOS, `message.cod
 | `AMOUNT_SUM_MISMATCH` | The sum of the amounts differs from the checkout session amount. |
 | `CURRENCY_MISMATCH` | A currency differs from the checkout session currency. |
 | `AMOUNT_NOT_POSITIVE` | An amount is not greater than 0. |
-| `AMOUNT_PRECISION` | An amount has more decimals than the currency allows. See [Amount precision](#amount-precision). |
+| `AMOUNT_PRECISION` | An amount has more decimals than the currency allows. |
 | `DUPLICATE_INSTRUMENT` | The same card or vaulted token appears in two items. |
 | `CARD_TOKEN_INVALID` | An item has neither a card nor a vaulted token, has both, or uses a vaulted token that does not belong to the customer. |
 | `INSTALLMENT_PLAN_UNAVAILABLE` | The installment plan of an item is not available. |
