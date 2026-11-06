@@ -1,0 +1,82 @@
+---
+title: "Hosted Checkout Errors"
+description: "Errors of the tax quote and the payment of a hosted payment link, with the field and message to show"
+---
+
+A payment link with `tax_collection` or `local_pricing` is paid on the hosted checkout. The page quotes the tax for the buyer's address and tax ID, and then pays with the quotes stored on the checkout session. This page lists the errors of those two steps and how the page shows each one.
+
+## Error shape
+
+Every error carries four keys:
+
+| Key | Type | Description |
+| --- | --- | --- |
+| `code` | string | One code per case. A code never changes its meaning. |
+| `field` | string or `null` | The field the buyer has to fix, by its name inside its `ui.required_fields` group: `country`, `zip_code`, `business_name`, `tax_id_type` or `tax_id`. `null` when the error is not about one field. |
+| `message_id` | string or `null` | The id of the `error_messages` entry of that field that the page shows: `invalid`, `unsupported` or `country_mismatch`. `null` when `field` is `null`. |
+| `messages` | array of strings | Technical detail for logs. It is not shown to the buyer. |
+
+```json
+{
+  "code": "TAX_LOCATION_INVALID",
+  "field": "zip_code",
+  "message_id": "invalid",
+  "messages": ["postal_code 1414142412 is not a valid US postal code."]
+}
+```
+
+The page shows a field error next to the field, with the text of `error_messages[message_id]` of that field in the buyer's language. It shows any other error as a notice.
+
+## Tax quote: field errors
+
+All of them answer `422`.
+
+| `code` | `field` | `message_id` | When |
+| --- | --- | --- | --- |
+| `TAX_COUNTRY_UNSUPPORTED` | `country` | `unsupported` | The billing country is not a two-letter ISO code, or the tax cannot be calculated for that country. |
+| `TAX_LOCATION_INVALID` | `zip_code` | `invalid` | The country needs a postal code (US and CA) and it is missing or does not match the country format: US `12345` or `12345-6789`, CA `A1A 1A1`. |
+| `BUSINESS_NAME_INVALID` | `business_name` | `invalid` | The buyer purchases as a business and the business name is blank or longer than 255 characters. |
+| `TAX_ID_INVALID` | `tax_id` | `invalid` | A tax ID type without a tax ID (or the reverse), a tax ID that is too long, or a tax ID the tax provider rejects. |
+| `TAX_ID_TYPE_INVALID` | `tax_id_type` | `invalid` | The tax ID type is not a known type. |
+| `TAX_ID_COUNTRY_MISMATCH` | `tax_id_type` | `country_mismatch` | The tax ID type is not a type of the billing country, for example `us_ein` with a German address. |
+
+## Tax quote: other errors
+
+`field` and `message_id` are `null`.
+
+| HTTP | `code` | When |
+| --- | --- | --- |
+| 400 | `TAX_QUOTE_INVALID_REQUEST` | The tax provider rejected the request for a reason that is not one of the fields above. |
+| 400 | `TAX_COLLECTION_NOT_ENABLED` | The payment link does not collect taxes. |
+| 400 | `TAX_QUOTE_NOT_APPLICABLE` | The checkout session has nothing to quote. |
+| 400 | `INVALID_CHECKOUT_SESSION` | The checkout session was used or expired. |
+| 400 | `INVALID_ACCOUNT_CODE` | The checkout session belongs to another account. |
+| 400 | `MERCHANT_NOT_FOUND` | The account has no tax provider configured. |
+| 429 | `TOO_MANY_REQUESTS` | More than 20 quotes in a minute for the same checkout session. |
+| 502 | `TAX_QUOTE_UNAVAILABLE` | The tax provider failed or did not answer in time. Retry. |
+| 502 | `SESSION_UPDATE_FAILED` | The quote could not be stored on the checkout session. Retry. |
+
+## Payment errors
+
+All of them answer `422` with `field` and `message_id` `null`. The page quotes again and asks the buyer to confirm.
+
+| `code` | When |
+| --- | --- |
+| `TAX_QUOTE_EXPIRED` | The tax quote of the checkout session expired. No payment is created. |
+| `FX_QUOTE_EXPIRED` | The local currency quote of the checkout session expired while the buyer pays in the local currency. No payment is created. |
+| `TAX_QUOTE_INVALID` | The checkout session has no tax quote, or it does not match the payment link. |
+| `FX_QUOTE_INVALID` | The checkout session has no complete local currency quote, or it does not match the payment link. |
+
+```json
+{
+  "code": "TAX_QUOTE_EXPIRED",
+  "field": null,
+  "message_id": null,
+  "messages": ["The tax quote of the checkout session expired at 2026-11-06T22:02:02Z. Request a new tax quote."]
+}
+```
+
+## See also
+
+- [The payment link object](/reference/payment-links/the-payment-link-object)
+- [Create payment link](/reference/payment-links/create-payment-link)
