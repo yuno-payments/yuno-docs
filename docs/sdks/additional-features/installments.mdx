@@ -100,7 +100,12 @@ await yuno.startCheckout({
   elementSelector: '#payment-form',
   countryCode: 'BR',
   card: {
-    onInstallmentSelected: ({ installment, label, amount, isMerchantInstallment }) => {
+    onInstallmentSelected: (selection) => {
+      if (!selection) {
+        // The previous selection no longer applies: restore your base total
+        return
+      }
+      const { installment, label, amount, isMerchantInstallment } = selection
       // Update your cart total, e.g. with amount?.total_value
       console.log('Installment selected:', { installment, label, amount, isMerchantInstallment })
     },
@@ -109,7 +114,7 @@ await yuno.startCheckout({
 })
 ```
 
-The callback receives a single object argument:
+The callback receives a single object argument, or `null` when the previous selection is no longer valid:
 
 ```typescript
 type OnInstallmentSelected = (args: {
@@ -120,9 +125,13 @@ type OnInstallmentSelected = (args: {
     value: string
     total_value: string
   }
+  installmentId?: string   // 1.11.28+
+  type?: string            // 1.11.28+
+  rate?: number            // 1.11.28+
+  financialCosts?: Array<{ type, rate, formattedValue }>  // 1.11.28+
   additionalData?: Record<string, unknown>
   isMerchantInstallment: boolean
-}) => void
+} | null) => void
 ```
 
 | Field                   | Type      | Description                                                                                                                                    |
@@ -130,15 +139,21 @@ type OnInstallmentSelected = (args: {
 | `installment`           | `number`  | Number of installments selected (e.g. `3`).                                                                                                    |
 | `label`                 | `string`  | The exact installment label rendered in the form, localized (e.g. `3x de R$875.00 - Total R$2,625.00`).                                        |
 | `amount`                | `object`  | Optional. `currency`, `value`, and `total_value` as raw strings, exactly as reported by the installments plan.                                 |
+| `installmentId`         | `string`  | Optional, from SDK `1.11.28`. ID of the installment plan the option belongs to. Options of the same plan share it, so combine it with `installment` to identify the option. Sent with the one-time token. |
+| `type`                  | `string`  | Optional, from SDK `1.11.28`. The installment plan type. |
+| `rate`                  | `number`  | Optional, from SDK `1.11.28`. APR of the option, taken from the `APR` entry of `financialCosts`. `undefined` when there is none. |
+| `financialCosts`        | `array`   | Optional, from SDK `1.11.28`. Breakdown of financial costs for the installment option, containing `type`, `rate`, and `formattedValue`. |
 | `additionalData`        | `object`  | Reserved for future use. Currently always `undefined`.                                                                                         |
 | `isMerchantInstallment` | `boolean` | `true` when the selected option was supplied by your own `onGetInstallments` callback (merchant installments); `false` for Yuno-provided plans. |
+
+When the selected option comes from your `onGetInstallments` callback (`isMerchantInstallment: true`), `installmentId`, `type`, `rate`, and `financialCosts` are `undefined`, and the one-time token is created with `installment: null`.
 
 Firing semantics:
 
 * Fires with the current selection as soon as the plan renders and a default installment is pre-selected, so your total is correct from first paint.
 * Fires on every selection the shopper makes.
 * Re-fires the current selection when the available options change (for example, a BIN change recalculates the plan).
-* Does not fire when installments stop being available. There is no clear notification on Web.
+* Fires with `null` when previously notified options stop being available, for example when the shopper switches to a card without installments (from SDK `1.10.3`). It fires only if a selection was notified before, so forms that never had installments stay silent.
 * Works across all card flows, including secure fields and Click to Pay.
 
 </Tab>
