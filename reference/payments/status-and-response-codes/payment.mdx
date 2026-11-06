@@ -293,6 +293,16 @@ The payments can have the following status and sub status.
 
 A payment funded by two cards (`POST /v2/payments`) has one `status` and `sub_status` that sum up both cards; a card has no status of its own. The first rule that matches wins: a fraud decline on any card gives `DECLINED` / `FRAUD_DECLINED`; both cards rejected give `REJECTED`; any card declined gives `DECLINED`; then `ERROR`, `EXPIRED`, `PENDING` (`PENDING_FRAUD_REVIEW`, `WAITING_ADDITIONAL_STEP`, `AUTHORIZED`) and `SUCCEEDED` (`APPROVED`, `CAPTURED`, `PARTIALLY_CAPTURED`, `PARTIALLY_REFUNDED`). Both cards refunded give `REFUNDED`, and an open chargeback on a card gives `IN_DISPUTE`. When one card fails and the reversal of the other card fails, the payment stays `DECLINED` with `REFUND_RETRY_IN_PROCESS` or `CANCEL_RETRY_IN_PROCESS` while Yuno retries. See [Pay with two cards](/docs/payment-features/pay-with-two-cards#statuses).
 
+### Capture failure after a successful purchase
+
+With some payment methods, such as ACH Direct Debit, the provider collects the funds after it approves the purchase, so the payment is `SUCCEEDED` before the money is collected. If the provider then reports a final failure to collect the funds, Yuno records a `CAPTURE` transaction with status `DECLINED` and moves the payment to `DECLINED` / `DECLINED`. This can happen shortly after the payment succeeded or days later.
+
+Yuno sends `payment.capture` with the updated payment. The purchase transaction keeps its `SUCCEEDED` status, and the capture transaction's `provider_data.response_code` and `provider_data.response_message` contain the provider's reason. The payment can no longer be refunded.
+
+<Note>
+This currently applies to ACH Direct Debit payments processed through Adyen, for payments with a single payment method that aren't part of a subscription and haven't been refunded.
+</Note>
+
 ### Possible states for sync and async flows
 
 Use the diagram that matches your integration type to understand which payment states and transitions to expect.
