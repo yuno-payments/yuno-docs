@@ -24,23 +24,25 @@
     "/external-subscriptions/{external_subscription_id}/payment-method": {
       "post": {
         "summary": "Change External Subscription Payment Method",
-        "description": "Moves a Stripe Billing subscription to another vaulted payment method of the same customer.\n\nNo payment is made: Yuno does not charge the customer and does not run a $0 verification or 3DS. Yuno sets the new payment method as the subscription's default in Stripe, and the next renewals charge it.\n\nSending the payment method the subscription already uses returns `200` and changes nothing.",
+        "description": "Moves an external subscription (a Stripe Billing subscription linked through the billing bridge) to another payment method the customer already enrolled in Yuno, without a payment.\n\nNo payment is made: Yuno does not charge the customer and does not run a $0 verification or 3DS. The next renewals charge the new payment method.\n\n`customer_payer.id` is the Yuno customer ID, not the Stripe customer ID (`cus_...`). Sending the payment method the subscription already charges returns `200` and changes nothing.\n\nThis API is enabled per account: contact your Key Account Manager to request access.",
         "operationId": "change-external-subscription-payment-method",
         "parameters": [
           {
             "name": "external_subscription_id",
             "in": "path",
-            "description": "The ID of the subscription in the external billing platform, for example a Stripe subscription ID (`sub_...`).",
+            "description": "The ID of the subscription in the billing platform, for example the Stripe subscription ID (`sub_...`). Between 3 and 255 characters.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 255
             },
             "required": true,
-            "example": "sub_1QF2abCDefGhIjKl"
+            "example": "sub_1QF2abc"
           },
           {
             "name": "X-Idempotency-Key",
             "in": "header",
-            "description": "Unique key for this change, for example a UUID. Required. Replaying the same key with the same request returns the result of the first request instead of running the change again. To retry after a failure, send a new key.",
+            "description": "Unique key for this change, for example a UUID. Required: a request without it returns `400` `INVALID_PARAMETERS`. Replaying the same key with the same request returns the result of the first request. Reusing a key for another subscription or payment method returns `400` `INVALID_PARAMETERS`. To retry after a `502`, send a new key.",
             "schema": {
               "type": "string"
             },
@@ -63,9 +65,9 @@
                   "account_id": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "The unique identifier of the Yuno account that processes the subscription's payments.",
+                    "description": "The unique identifier (UUID) of the Yuno account onboarded to the billing bridge.",
                     "examples": [
-                      "2404911d-5df9-429e-8488-ad41abea1a4b"
+                      "9104911d-5df9-429e-8488-ad41abea1a4b"
                     ]
                   },
                   "customer_payer": {
@@ -78,9 +80,9 @@
                       "id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "The Yuno customer ID. This is not the Stripe customer ID (`cus_...`).",
+                        "description": "The Yuno customer ID (UUID) that owns the subscription. This is not the Stripe customer ID (`cus_...`).",
                         "examples": [
-                          "3e04911d-5df9-429e-8488-ad41abea1a2c"
+                          "cfae0941-7234-427a-a739-ef4fce966c79"
                         ]
                       }
                     }
@@ -88,9 +90,9 @@
                   "vaulted_token": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "The vaulted token of the payment method to use from now on. It must be one of the customer's enrolled payment methods.",
+                    "description": "The vaulted token (UUID) of one of the customer's enrolled payment methods. The subscription charges it from now on.",
                     "examples": [
-                      "6104911d-5df9-429e-8488-ad41abea1a4b"
+                      "2deff5c9-da62-4888-8f05-df76ab2967a5"
                     ]
                   }
                 }
@@ -98,11 +100,11 @@
               "examples": {
                 "Change the payment method": {
                   "value": {
-                    "account_id": "2404911d-5df9-429e-8488-ad41abea1a4b",
+                    "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
                     "customer_payer": {
-                      "id": "3e04911d-5df9-429e-8488-ad41abea1a2c"
+                      "id": "cfae0941-7234-427a-a739-ef4fce966c79"
                     },
-                    "vaulted_token": "6104911d-5df9-429e-8488-ad41abea1a4b"
+                    "vaulted_token": "2deff5c9-da62-4888-8f05-df76ab2967a5"
                   }
                 }
               }
@@ -139,19 +141,19 @@
                     "vaulted_token": {
                       "type": "string",
                       "format": "uuid",
-                      "description": "The vaulted token the subscription now uses."
+                      "description": "The vaulted token the subscription charges from now on."
                     }
                   }
                 },
                 "examples": {
                   "Payment method changed": {
                     "value": {
-                      "external_subscription_id": "sub_1QF2abCDefGhIjKl",
-                      "account_id": "2404911d-5df9-429e-8488-ad41abea1a4b",
+                      "external_subscription_id": "sub_1QF2abc",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
                       "customer_payer": {
-                        "id": "3e04911d-5df9-429e-8488-ad41abea1a2c"
+                        "id": "cfae0941-7234-427a-a739-ef4fce966c79"
                       },
-                      "vaulted_token": "6104911d-5df9-429e-8488-ad41abea1a4b"
+                      "vaulted_token": "2deff5c9-da62-4888-8f05-df76ab2967a5"
                     }
                   }
                 }
@@ -159,7 +161,7 @@
             }
           },
           "400": {
-            "description": "The request is invalid, or the customer, the payment method or the subscription was not found or do not match.",
+            "description": "The request is invalid, or the customer, the payment method or the subscription was not found or does not match.",
             "content": {
               "application/json": {
                 "schema": {
@@ -170,7 +172,7 @@
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "Invalid request parameters"
+                        "The field 'customer_payer.id' is required and must be a UUID."
                       ]
                     }
                   },
@@ -178,7 +180,7 @@
                     "value": {
                       "code": "CUSTOMER_NOT_FOUND",
                       "messages": [
-                        "Customer not found"
+                        "The customer does not exist in the account."
                       ]
                     }
                   },
@@ -186,7 +188,7 @@
                     "value": {
                       "code": "VAULTED_TOKEN_NOT_FOUND",
                       "messages": [
-                        "Vaulted token not found"
+                        "The vaulted_token is not one of the customer's payment methods."
                       ]
                     }
                   },
@@ -194,7 +196,7 @@
                     "value": {
                       "code": "EXTERNAL_SUBSCRIPTION_NOT_FOUND",
                       "messages": [
-                        "External subscription not found"
+                        "No active external subscription with this id for the account."
                       ]
                     }
                   },
@@ -202,7 +204,7 @@
                     "value": {
                       "code": "CUSTOMER_MISMATCH",
                       "messages": [
-                        "The customer does not match the subscription"
+                        "The external subscription belongs to another customer."
                       ]
                     }
                   }
@@ -211,7 +213,7 @@
             }
           },
           "403": {
-            "description": "The account is not enabled for the Stripe Billing bridge. Contact your Key Account Manager.",
+            "description": "PRODUCT_NOT_ENABLED: the account is not enabled for the billing bridge. Contact your Key Account Manager.",
             "content": {
               "application/json": {
                 "schema": {
@@ -222,7 +224,7 @@
                     "value": {
                       "code": "PRODUCT_NOT_ENABLED",
                       "messages": [
-                        "Product not enabled"
+                        "External subscriptions are not enabled for this account. Please contact your Key Account Manager."
                       ]
                     }
                   }
@@ -231,7 +233,7 @@
             }
           },
           "409": {
-            "description": "Another change to the same subscription is in progress. Wait and retry.",
+            "description": "CONCURRENT_CHANGE: another payment method change for this subscription completed first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -242,7 +244,7 @@
                     "value": {
                       "code": "CONCURRENT_CHANGE",
                       "messages": [
-                        "Another change to this subscription is in progress"
+                        "Another payment method change for this subscription completed first."
                       ]
                     }
                   }
@@ -251,7 +253,7 @@
             }
           },
           "502": {
-            "description": "The billing platform did not accept the change. The subscription keeps its previous payment method. Retry with a new idempotency key.",
+            "description": "BILLING_PLATFORM_ERROR: the billing platform could not confirm the change. The previous payment method stays. Retry with a new idempotency key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -262,7 +264,7 @@
                     "value": {
                       "code": "BILLING_PLATFORM_ERROR",
                       "messages": [
-                        "The billing platform could not update the subscription"
+                        "The billing platform could not confirm the change. The previous payment method stays. Retry with a new idempotency key."
                       ]
                     }
                   }

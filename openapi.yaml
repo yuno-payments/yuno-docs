@@ -15919,6 +15919,208 @@ paths:
           description: Rate limit exceeded
       tags:
         - Dry Run
+  /external-subscriptions/{external_subscription_id}/payment-method:
+    post:
+      summary: Change External Subscription Payment Method
+      description: >-
+        Moves an external subscription (a Stripe Billing subscription linked through the billing bridge) to another
+        payment method the customer already enrolled in Yuno, without a payment.
+
+
+        No payment is made: Yuno does not charge the customer and does not run a $0 verification or 3DS. The next
+        renewals charge the new payment method.
+
+
+        `customer_payer.id` is the Yuno customer ID, not the Stripe customer ID (`cus_...`). Sending the payment method
+        the subscription already charges returns `200` and changes nothing.
+
+
+        This API is enabled per account: contact your Key Account Manager to request access.
+      operationId: change-external-subscription-payment-method
+      parameters:
+        - name: external_subscription_id
+          in: path
+          description: >-
+            The ID of the subscription in the billing platform, for example the Stripe subscription ID (`sub_...`).
+            Between 3 and 255 characters.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 255
+          required: true
+          example: sub_1QF2abc
+        - name: X-Idempotency-Key
+          in: header
+          description: >-
+            Unique key for this change, for example a UUID. Required: a request without it returns `400`
+            `INVALID_PARAMETERS`. Replaying the same key with the same request returns the result of the first request.
+            Reusing a key for another subscription or payment method returns `400` `INVALID_PARAMETERS`. To retry after
+            a `502`, send a new key.
+          schema:
+            type: string
+          required: true
+          example: 7c2e0a4b-3f5d-4c1e-9b8a-6d2f1e0c9a77
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account_id
+                - customer_payer
+                - vaulted_token
+              properties:
+                account_id:
+                  type: string
+                  format: uuid
+                  description: The unique identifier (UUID) of the Yuno account onboarded to the billing bridge.
+                  examples:
+                    - 9104911d-5df9-429e-8488-ad41abea1a4b
+                customer_payer:
+                  type: object
+                  required:
+                    - id
+                  description: The customer who owns the subscription and the payment method.
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      description: >-
+                        The Yuno customer ID (UUID) that owns the subscription. This is not the Stripe customer ID
+                        (`cus_...`).
+                      examples:
+                        - cfae0941-7234-427a-a739-ef4fce966c79
+                vaulted_token:
+                  type: string
+                  format: uuid
+                  description: >-
+                    The vaulted token (UUID) of one of the customer's enrolled payment methods. The subscription charges
+                    it from now on.
+                  examples:
+                    - 2deff5c9-da62-4888-8f05-df76ab2967a5
+            examples:
+              Change the payment method:
+                value:
+                  account_id: 9104911d-5df9-429e-8488-ad41abea1a4b
+                  customer_payer:
+                    id: cfae0941-7234-427a-a739-ef4fce966c79
+                  vaulted_token: 2deff5c9-da62-4888-8f05-df76ab2967a5
+      responses:
+        '200':
+          description: >-
+            The subscription now uses the payment method in `vaulted_token`. Also returned, with no change, when that
+            payment method is the one the subscription already uses.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  external_subscription_id:
+                    type: string
+                    description: The ID of the subscription in the external billing platform.
+                  account_id:
+                    type: string
+                    format: uuid
+                    description: The Yuno account ID from the request.
+                  customer_payer:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: The Yuno customer ID from the request.
+                  vaulted_token:
+                    type: string
+                    format: uuid
+                    description: The vaulted token the subscription charges from now on.
+              examples:
+                Payment method changed:
+                  value:
+                    external_subscription_id: sub_1QF2abc
+                    account_id: 9104911d-5df9-429e-8488-ad41abea1a4b
+                    customer_payer:
+                      id: cfae0941-7234-427a-a739-ef4fce966c79
+                    vaulted_token: 2deff5c9-da62-4888-8f05-df76ab2967a5
+        '400':
+          description: >-
+            The request is invalid, or the customer, the payment method or the subscription was not found or does not
+            match.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_2'
+              examples:
+                INVALID_PARAMETERS:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - The field 'customer_payer.id' is required and must be a UUID.
+                CUSTOMER_NOT_FOUND:
+                  value:
+                    code: CUSTOMER_NOT_FOUND
+                    messages:
+                      - The customer does not exist in the account.
+                VAULTED_TOKEN_NOT_FOUND:
+                  value:
+                    code: VAULTED_TOKEN_NOT_FOUND
+                    messages:
+                      - The vaulted_token is not one of the customer's payment methods.
+                EXTERNAL_SUBSCRIPTION_NOT_FOUND:
+                  value:
+                    code: EXTERNAL_SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - No active external subscription with this id for the account.
+                CUSTOMER_MISMATCH:
+                  value:
+                    code: CUSTOMER_MISMATCH
+                    messages:
+                      - The external subscription belongs to another customer.
+        '403':
+          description: 'PRODUCT_NOT_ENABLED: the account is not enabled for the billing bridge. Contact your Key Account Manager.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_2'
+              examples:
+                PRODUCT_NOT_ENABLED:
+                  value:
+                    code: PRODUCT_NOT_ENABLED
+                    messages:
+                      - >-
+                        External subscriptions are not enabled for this account. Please contact your Key Account
+                        Manager.
+        '409':
+          description: 'CONCURRENT_CHANGE: another payment method change for this subscription completed first.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_2'
+              examples:
+                CONCURRENT_CHANGE:
+                  value:
+                    code: CONCURRENT_CHANGE
+                    messages:
+                      - Another payment method change for this subscription completed first.
+        '502':
+          description: >-
+            BILLING_PLATFORM_ERROR: the billing platform could not confirm the change. The previous payment method
+            stays. Retry with a new idempotency key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_2'
+              examples:
+                BILLING_PLATFORM_ERROR:
+                  value:
+                    code: BILLING_PLATFORM_ERROR
+                    messages:
+                      - >-
+                        The billing platform could not confirm the change. The previous payment method stays. Retry with
+                        a new idempotency key.
+      deprecated: false
+      tags:
+        - Subscriptions
   /fx-rates:
     get:
       summary: Get FX rates
@@ -112060,6 +112262,17 @@ components:
           items:
             type: string
             example: Invalid request
+    Error_2:
+      type: object
+      properties:
+        code:
+          type: string
+          description: The error code.
+        messages:
+          type: array
+          items:
+            type: string
+          description: Human-readable details about the error.
     Event:
       type: object
       required:
