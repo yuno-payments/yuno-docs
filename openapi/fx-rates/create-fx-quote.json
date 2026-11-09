@@ -1,0 +1,362 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Yuno FX Quote API",
+    "version": "1.0"
+  },
+  "servers": [
+    { "url": "https://api-sandbox.y.uno/v1", "description": "Sandbox" },
+    { "url": "https://api.y.uno/v1", "description": "Production (US)" },
+    { "url": "https://api.eu.y.uno/v1", "description": "Production (EMEA)" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    { "sec0": [], "sec1": [] },
+    { "sec0": [] }
+  ],
+  "paths": {
+    "/fx-rates/quote": {
+      "post": {
+        "summary": "Create FX quote",
+        "description": "Converts an amount priced in USD into `target_currency`. Yuno takes the latest published reference rate, applies your organization's markup to it, and returns the local amount together with an `fx_quote_id`. Send the `fx_quote_id` on the payment as `amount.fx_quote_id` with `amount.source: YUNO_FX_QUOTE` before `expires_at`. With the public key send `checkout_session`; with the secret key send `account_id`, which must match the authenticated account. This API is enabled per organization: contact your Key Account Manager (KAM) to activate it.",
+        "operationId": "createFxQuote",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "target_currency"],
+                "oneOf": [
+                  { "required": ["account_id"] },
+                  { "required": ["checkout_session"] }
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "The account that will create the payment (UUID). Secret key only, and it must equal the authenticated account. Never send it with the public key."
+                  },
+                  "checkout_session": {
+                    "type": "string",
+                    "description": "Checkout session id (UUID). Public key only: send it instead of `account_id`. Never send it with the secret key."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "required": ["currency", "value"],
+                    "description": "The price to convert.",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "Always `USD` in this version.",
+                        "minLength": 3,
+                        "maxLength": 3,
+                        "example": "USD"
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "The amount in major units, for example 20.00. Range: 0.0001 – 9,999,999,999.",
+                        "example": 20.0
+                      }
+                    }
+                  },
+                  "target_currency": {
+                    "type": "string",
+                    "description": "The currency the customer pays in, as a 3-letter [ISO 4217](/reference/country-reference) code. Must differ from `amount.currency`.",
+                    "minLength": 3,
+                    "maxLength": 3,
+                    "example": "COP"
+                  }
+                }
+              },
+              "examples": {
+                "Secret key (server)": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "amount": { "currency": "USD", "value": 20.0 },
+                    "target_currency": "COP"
+                  }
+                },
+                "Public key (checkout)": {
+                  "value": {
+                    "checkout_session": "3f0c2b1e-7d5a-4b1c-9e2f-8a6d4c1b0e77",
+                    "amount": { "currency": "USD", "value": 20.0 },
+                    "target_currency": "COP"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK — the quote.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "fx_quote_id",
+                    "amount",
+                    "local_amount",
+                    "reference_rate",
+                    "markup_percentage",
+                    "rate",
+                    "fx_date",
+                    "expires_at"
+                  ],
+                  "properties": {
+                    "fx_quote_id": {
+                      "type": "string",
+                      "description": "The quote. Send it on the payment as `amount.fx_quote_id`, with `amount.source: YUNO_FX_QUOTE`.",
+                      "example": "fxq_01JB7Q2M8XK3"
+                    },
+                    "amount": {
+                      "type": "object",
+                      "description": "The amount you sent.",
+                      "properties": {
+                        "currency": { "type": "string", "example": "USD" },
+                        "value": { "type": "number", "example": 20.0 }
+                      }
+                    },
+                    "local_amount": {
+                      "type": "object",
+                      "description": "What the customer pays: `amount.value` × `rate`, rounded to the decimals of `target_currency` (zero-decimal currencies round to whole units). No psychological rounding is applied. Send exactly this `currency` and `value` as the payment's `amount`.",
+                      "properties": {
+                        "currency": { "type": "string", "example": "COP" },
+                        "value": { "type": "number", "example": 67459.74 }
+                      }
+                    },
+                    "reference_rate": {
+                      "type": "number",
+                      "description": "Units of `target_currency` per 1 unit of `amount.currency`, as published by Yuno for `fx_date`. The same rate [Get FX Rates](/reference/fx-rates/get-fx-rates) serves.",
+                      "example": 3306.85
+                    },
+                    "markup_percentage": {
+                      "type": "number",
+                      "description": "Your organization's markup, as a percentage, applied over `reference_rate`.",
+                      "example": 2.0
+                    },
+                    "rate": {
+                      "type": "number",
+                      "description": "`reference_rate` with your markup applied: `reference_rate` × (1 + `markup_percentage` / 100). Not rounded. Parse it with a decimal type: a double silently rounds it.",
+                      "example": 3372.987
+                    },
+                    "fx_date": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Day the reference rate was published for: the latest published day.",
+                      "example": "2026-10-11"
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "After this instant the quote cannot open a new payment, 24 hours after it was issued. The quote ends sooner when a newer rate day is published: a payment rejects a quote whose `fx_date` is no longer the latest available day.",
+                      "example": "2026-10-13T15:15:00Z"
+                    }
+                  }
+                },
+                "examples": {
+                  "USD to COP with a 2% markup": {
+                    "value": {
+                      "fx_quote_id": "fxq_01JB7Q2M8XK3",
+                      "amount": { "currency": "USD", "value": 20.0 },
+                      "local_amount": { "currency": "COP", "value": 67459.74 },
+                      "reference_rate": 3306.85,
+                      "markup_percentage": 2.0,
+                      "rate": 3372.987,
+                      "fx_date": "2026-10-11",
+                      "expires_at": "2026-10-13T15:15:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — `INVALID_PARAMETERS` (malformed body, the identifier of the other credential, an `account_id` that does not match the authenticated account, an unknown `target_currency`, or a `checkout_session` that has expired or has already been used) or `CHECKOUT_SESSION_NOT_EXISTS` (unknown `checkout_session`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "account_id with a public key": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": ["The field 'account_id' is not allowed with a public key, send 'checkout_session'."]
+                    }
+                  },
+                  "checkout_session with a secret key": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": ["The field 'checkout_session' is not allowed with a secret key, send 'account_id'."]
+                    }
+                  },
+                  "account_id does not match": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": ["The field 'account_id' must match the authenticated account."]
+                    }
+                  },
+                  "amount.currency is not USD": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": ["The field 'amount.currency' must be USD."]
+                    }
+                  },
+                  "The session has expired": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": ["The checkout session has expired."]
+                    }
+                  },
+                  "The session was already paid": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": ["The checkout session has already been used."]
+                    }
+                  },
+                  "The session does not exist": {
+                    "value": {
+                      "code": "CHECKOUT_SESSION_NOT_EXISTS",
+                      "messages": ["session with code 907886bf-d887-4d9c-aaf9-ee5a7b7cc8eb not found"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — `NOT_AUTHENTICATED` / `INVALID_CREDENTIALS` (missing or invalid credentials).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "invalid_credentials": {
+                    "value": { "code": "INVALID_CREDENTIALS", "messages": ["Invalid Credentials"] }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — `PRODUCT_NOT_ENABLED` (the product is not enabled for your organization).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "product_not_enabled": {
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": ["The FX Quote API is enabled per organization. Contact your Key Account Manager (KAM) to activate it."]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — `FX_QUOTE_NOT_AVAILABLE` (no published rate for `target_currency` on the latest available day).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "fx_quote_not_available": {
+                    "value": {
+                      "code": "FX_QUOTE_NOT_AVAILABLE",
+                      "messages": ["No published rate for COP on the latest available day."]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is larger than 16 KiB."
+          },
+          "502": {
+            "description": "Bad gateway — `BAD_GATEWAY` (the rate source failed). Retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "bad_gateway": {
+                    "value": {
+                      "code": "BAD_GATEWAY",
+                      "messages": ["The FX rate source is unavailable, please retry."]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout — `GATEWAY_TIMEOUT` (the rate source timed out). Retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "gateway_timeout": {
+                    "value": {
+                      "code": "GATEWAY_TIMEOUT",
+                      "messages": ["The FX rate source timed out, please retry."]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
