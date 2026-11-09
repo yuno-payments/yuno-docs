@@ -1,6 +1,6 @@
 ---
 title: "3D Secure"
-description: "Explains 3D Secure 2 authentication flows, configuration requirements, and integration options for card payments."
+description: "Explains 3D Secure 2 flows and the three ways to run it on Yuno (Yuno, provider and external 3DS): what to configure and what to send."
 ---
 
 ## What is 3D Secure?
@@ -133,6 +133,116 @@ If you are using an external MPI to perform the authentication, the following pa
 * MCC
 </Note>
 
+## Choose a 3DS mode
+
+Yuno can authenticate a card payment in three ways. Use one mode per payment: the mode decides what you configure and what you send.
+
+| Mode | Who authenticates the cardholder | How you turn it on | What you send on the payment |
+| :--- | :--- | :--- | :--- |
+| **Yuno 3DS** | Yuno's 3DS server | A 3DS step in your CARD route, or a [3DS Standalone](/docs/payment-features/3ds-standalone) connection | With the SDK, nothing extra. With `workflow: "DIRECT"`, follow the [Direct integration](#yuno-3d-secure-2-integration) steps below. |
+| **Provider 3DS** | Your payment provider. This page covers Checkout.com and Fiserv Commerce Hub | **Enable 3DS** on the provider connection | `customer_payer.browser_info`, `customer_payer.ip_address`, `customer_payer.email` and `callback_url`. No `three_d_secure` object. |
+| **External 3DS** | Your own 3DS server (MPI) | Nothing in Yuno | The authentication result in `payment_method.detail.card.three_d_secure`. |
+
+### Provider 3DS
+
+With provider 3DS, your payment provider authenticates the cardholder with its own 3DS service. Yuno sends the authentication request and hands the challenge back to you.
+
+This section describes **Checkout.com** and **Fiserv Commerce Hub**. Other provider connections can also show **Enable 3DS**; ask your Yuno contact what they need.
+
+**Turn it on.** In **Connections**, edit the Checkout.com or Fiserv Commerce Hub connection and check **Enable 3DS**. Customer-initiated card payments and card verifications on that connection then ask the provider to authenticate the cardholder. Merchant-initiated payments never run 3DS on these two providers: these are payments with `stored_credentials.reason` set to `SUBSCRIPTION` or `UNSCHEDULED_CARD_ON_FILE` and `stored_credentials.usage` set to `USED`.
+
+Don't add a Yuno 3DS step in front of this connection in your CARD route.
+
+**What to send.** The Yuno SDK fills the shopper data for you. In a server-to-server integration, send it yourself:
+
+| Field | Why |
+| :--- | :--- |
+| `customer_payer.browser_info` | The provider needs the shopper's browser data to authenticate. Send every field: `user_agent`, `accept_header`, `language`, `color_depth`, `screen_height`, `screen_width`, `browser_time_difference`, `java_enabled` and `javascript_enabled`. |
+| `customer_payer.browser_info.platform` | `IOS` or `ANDROID` for in-app payments, so the challenge comes back as a redirect instead of an iframe. Any other value is treated as web. |
+| `customer_payer.ip_address` | The shopper's IP address. |
+| `customer_payer.email` | Sent to the provider with the authentication request. |
+| `callback_url` | Needed so the shopper comes back to your site after a challenge. On Checkout.com, a card verification without it runs without 3DS. |
+
+<Warning>
+**Don't send `three_d_secure` with provider 3DS**
+
+Leave out `payment_method.detail.card.three_d_secure`. A `three_d_secure` object that carries only `strong_customer_authentication_exemptions`, or only one result field such as `version` or `transaction_id`, still reaches the provider integration:
+
+* **Checkout.com:** Yuno builds the 3DS request it sends to Checkout.com from that object (`enabled: true` plus a flow type) and doesn't send the challenge indicator configured with **Enable 3DS**.
+* **Fiserv Commerce Hub:** Yuno doesn't send the object to Fiserv Commerce Hub. Provider 3DS runs anyway.
+</Warning>
+
+```bash Provider 3DS payment
+curl --location 'https://api-sandbox.y.uno/v1/payments' \
+--header 'X-Idempotency-Key: <UUID>' \
+--header 'public-api-key: <PUBLIC_API_KEY>' \
+--header 'private-secret-key: <PRIVATE_SECRET_KEY>' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account_id": "<ACCOUNT_ID>",
+    "description": "Provider 3DS",
+    "country": "US",
+    "merchant_order_id": "order-0001",
+    "merchant_reference": "reference-0001",
+    "workflow": "DIRECT",
+    "callback_url": "https://merchant.example/checkout/return",
+    "amount": { "currency": "USD", "value": 100 },
+    "customer_payer": {
+        "id": "<CUSTOMER_ID>",
+        "email": "john.doe@example.com",
+        "ip_address": "203.0.113.10",
+        "browser_info": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "accept_header": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "language": "en-US",
+            "color_depth": "24",
+            "screen_height": "1080",
+            "screen_width": "1920",
+            "browser_time_difference": "300",
+            "java_enabled": false,
+            "javascript_enabled": true,
+            "platform": "WEB"
+        }
+    },
+    "payment_method": {
+        "type": "CARD",
+        "detail": {
+            "card": {
+                "card_data": {
+                    "holder_name": "John Doe",
+                    "number": "<CARD_NUMBER>",
+                    "expiration_month": 12,
+                    "expiration_year": 2030,
+                    "security_code": "123"
+                }
+            }
+        }
+    }
+}'
+```
+
+**Handle the challenge.** When the issuer asks for a challenge, the payment comes back `PENDING` and its transaction has the response code `CHALLENGE_REQUIRED`:
+
+* **SDK integrations:** the response has `checkout.sdk_action_required: true`. Call `continuePayment()` and the SDK shows the challenge: an iframe on web, a redirect in iOS and Android apps.
+* **`workflow: "DIRECT"`:** redirect the shopper to the challenge as described in the [Direct flow](/docs/direct-integration-use-cases/direct-flow) guide. After the challenge, the shopper returns to your `callback_url`.
+
+`PENDING` with `CHALLENGE_REQUIRED` is not final. Yuno sends the result by [webhook](/docs/webhooks/configure-webhooks), and you can [retrieve the payment](/reference/payments/retrieve-payment-by-id) at any time. The payment then moves to its final status, for example `SUCCEEDED`, `PENDING` / `AUTHORIZED` for an authorize-only payment, `SUCCEEDED` / `VERIFIED` for a card verification, `DECLINED`, or `ERROR`.
+
+#### Checkout.com
+
+* **3DS challenge indicator** on the connection sets the challenge preference sent to Checkout.com. The default is `no_preference`.
+* These payments finish by webhook. The Checkout.com workflow used by the connection must subscribe to the `authentication_expired` and `payment_declined` events.
+* A card verification runs 3DS only when it has a `callback_url`. Without one, the verification runs without 3DS.
+
+#### Fiserv Commerce Hub
+
+* A failed authentication ends `DECLINED` / `AUTHENTICATION_FAILED_THREE_D_SECURE`.
+* A card verification without `browser_info` fails with `ERROR` / `MISSING_PARAMETERS` before Fiserv is called.
+* Payments with a network token don't run provider 3DS.
+* A frictionless card verification authorizes 1.00 in the verification currency with the authentication result and then voids it.
+* Yuno doesn't send a `three_d_secure` result from your own 3DS server or from a Yuno 3DS step to Fiserv Commerce Hub. Use provider 3DS with this provider.
+* **Test cards:** in the Fiserv Commerce Hub test environment, generic test card numbers and Fiserv IPG 3DS test cards may not be set up for Commerce Hub 3DS, and then come back `DECLINED` / `AUTHENTICATION_FAILED_THREE_D_SECURE`. Use the Commerce Hub 3DS test cards that Fiserv provides for your merchant ID.
+
 ## Yuno 3D Secure 2 integration
 
 There are different ways of integrating 3DS in Yuno, depending on your needs.
@@ -142,7 +252,7 @@ In general terms, a 3DS integration requires a `setup_id`/`device_fingerprint` f
 Therefore, depending on your Yuno integration, you have three different options:
 
 1. **Checkout integration**: The Checkout workflow is part of the [Checkout](/docs/sdks/overview/quickstart) solution provided by Yuno. Use our SDKs so we can handle all the logic regarding external provider requirements and executions for 3DS. If you want to define specific cases for 3DS analysis, you can define that in the CARD route of your Yuno dashboard.
-2. **External integration**: Use your own 3DS and then send the corresponding authorization fields in the [payment creation](/reference/payments/create-payment) (card\_data - eci, cryptogram, etc). Only available for PCI-compliant merchants.
+2. **External integration**: Use your own 3DS and then send the corresponding authorization fields in the [payment creation](/reference/payments/create-payment) (card\_data - eci, cryptogram, etc). Only available for PCI-compliant merchants. Send `three_d_secure` only when you have an authentication result, and not to a connection that uses [provider 3DS](#provider-3ds).
 3. **Direct integration**: The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](/docs/direct-integration-use-cases/direct-flow) and provide the required information as instructed. For each payment you'll have a:
    1. `PENDING/WAITING_ADDITIONAL_STEP` status/sub status.
    2. `sdk_action_required` set as `true`.
