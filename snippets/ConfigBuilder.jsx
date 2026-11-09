@@ -11,7 +11,7 @@ export const ConfigBuilder = () => {
     { id: 'transaction-data', step: 3, name: 'You collect the payment data', off: 'SDK forms', on: 'Yours', href: '/docs/yuno-sdk/reference/objects-you-pass#transaction-data', label: 'transactionData' },
     { id: 'show-view', step: 4, name: 'You embed the form in your layout', off: 'Full-screen', on: 'Yours', href: '/docs/yuno-sdk/controllers/show-view', label: 'showView', platforms: ['ios', 'android', 'react-native'] },
     { id: 'show-loading', step: 5, name: 'You show your own loader', off: 'SDK', on: 'Yours', href: '/docs/yuno-sdk/controllers/show-loading', label: 'showLoading' },
-    { id: 'status-screen', step: 6, name: 'The SDK shows a result screen', off: 'No', on: 'Yes', href: '/docs/yuno-sdk/reference/objects-you-pass#transaction-config', label: 'showStatusScreen' },
+    { id: 'status-screen', step: 6, name: 'The SDK shows a result screen', off: 'No', on: 'Yes', href: '/docs/yuno-sdk/reference/objects-you-pass#showstatusscreen', label: 'showStatusScreen' },
   ];
   const ANCHORS = {
     ios: { config: (l) => /^\s*controller: self/.test(l), selected: (l) => /let paymentSelected =/.test(l), configStart: (l) => /let config =/.test(l), blockEnd: (l) => /^ {8}\)\s*$/.test(l) },
