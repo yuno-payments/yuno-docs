@@ -161,6 +161,12 @@ test("the Payment Webhook V2 example shows moto and says it appears only when se
   JSON.parse(example.slice(0, example.indexOf("\n" + fence)));
 });
 
+test("the enrollment webhook section says when detail.card.moto appears", () => {
+  const page = read("docs/webhooks/object-and-examples.mdx");
+  const section = page.slice(page.indexOf("## Enrollment"));
+  assert.match(section.slice(0, 400), /`detail\.card`[^\n]*`moto`[^\n]*only when it was set on the enrollment/);
+});
+
 test("the root openapi.json publishes the moto fields", () => {
   const rootSpec = json("openapi.json");
   const card =
