@@ -1,7 +1,7 @@
 ---
 title: "Split one payment across two cards"
 sidebarTitle: "Split payments"
-description: "Build the object that splits one payment across two cards, start it, create the payment and read the result on Web, iOS and Android."
+description: "Build the object that splits one payment across two cards, start it, create the payment and read the result on Web, iOS, Android and React Native."
 ---
 
 A split payment lets the shopper fund one order with two cards. Each card pays its own part of the total, you create one payment, and you receive one result.
@@ -12,14 +12,14 @@ To divide a payment among marketplace recipients, see [Split payments marketplac
 
 ## Availability
 
-{/* TODO SPP4-021: confirm the versions on release day. iOS 3.1.0 comes from the yuno-ios CHANGELOG on release-v3.1.0 (PR #1786) and Android 3.1.0 from changelog/3.1.0.json on release/3.1.0 (PR #2017). Web 2.6.0 is the version Vivi set on 2026-11-06; the Web PR #3269 has no version bump yet. */}
+{/* TODO SPP4-021: confirm the versions on release day. iOS 3.1.0 comes from the yuno-ios CHANGELOG on release-v3.1.0 (PR #1786) and Android 3.1.0 from changelog/3.1.0.json on release/3.1.0 (PR #2017). Web 2.6.0 is the version Vivi set on 2026-11-06; the Web PR #3269 has no version bump yet. React Native 2.1.0 is on npm since 2026-11-09. */}
 
 | Platform | Minimum version | Entry point |
 |---|---|---|
 | Web | `2.6.0` | `transaction.start([...])` |
 | iOS | `3.1.0` | `transaction.start(paymentsSelected:)` |
 | Android | `3.1.0` | `transaction.start(activity, paymentsSelected)` |
-| React Native | Not available yet | The React Native SDK does not have a split payment API yet. |
+| React Native | `2.1.0` | `transaction.start([...])` |
 
 ## Before you start
 
@@ -156,6 +156,45 @@ transaction.start(
         ),
     ),
 )
+```
+
+  </Tab>
+  <Tab title="React Native">
+
+```typescript
+start(selection: PaymentMethodSelected | PaymentMethodSelected[]): Promise<void>
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `type` | `string` | `'CARD'`. |
+| `transactionData.amount` | `PaymentAmount` (`{ currency: string, value: number }`) | Required. Currency and amount this card pays, with a value greater than 0 and the decimals of the currency. |
+| `transactionData.card` | `CardData` | The card data. Send it or `vaultedToken`. |
+| `vaultedToken` | `string` | The vaulted token of an enrolled card. Send it or `transactionData.card`. |
+
+```typescript
+await transaction.start([
+  {
+    type: 'CARD',
+    transactionData: {
+      card: {
+        number: '4111111111111111',
+        securityCode: '123',
+        expirationMonth: 11,
+        expirationYear: 29,
+        holderName: 'John Doe',
+      },
+      amount: { currency: 'BRL', value: 200 },
+    },
+  },
+  {
+    type: 'CARD',
+    vaultedToken: 'aad8578e-ac2f-40a0-8065-25b5957f6555',
+    transactionData: {
+      amount: { currency: 'BRL', value: 100 },
+    },
+  },
+])
 ```
 
   </Tab>
@@ -355,6 +394,58 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 Call `SdkPayments.initialize(applicationContext, apiKey = "<PUBLIC_API_KEY>")` once at app startup.
 
   </Tab>
+  <Tab title="React Native">
+
+```typescript
+import { SdkPayments, Transaction } from '@yuno-payments/yuno-sdk-react-native'
+
+await SdkPayments.initialize('<PUBLIC_API_KEY>')
+
+const transaction = new Transaction({
+  checkoutSession: '<CHECKOUT_SESSION>',
+  countryCode: 'BR',
+  controller: {
+    createPayment: async (token) => {
+      // Your backend calls POST /v2/payments with the composite token
+      await myBackend.createSplitPayment({
+        token: token.token,
+        checkout_session: token.checkout_session,
+      })
+    },
+    onStatus: (status) => {
+      // One result for the whole payment
+      console.log(status.status, status.substatus, status.message?.code)
+    },
+  },
+})
+
+await transaction.start([
+  {
+    type: 'CARD',
+    transactionData: {
+      card: {
+        number: '4111111111111111',
+        securityCode: '123',
+        expirationMonth: 11,
+        expirationYear: 29,
+        holderName: 'John Doe',
+      },
+      amount: { currency: 'BRL', value: 200 },
+    },
+  },
+  {
+    type: 'CARD',
+    vaultedToken: 'aad8578e-ac2f-40a0-8065-25b5957f6555',
+    transactionData: {
+      amount: { currency: 'BRL', value: 100 },
+    },
+  },
+])
+```
+
+Call `SdkPayments.initialize` once at app startup. React Native passes the array to the native SDK of each platform, so validations and results are the same as on iOS and Android.
+
+  </Tab>
 </Tabs>
 
 ## Create the payment
@@ -375,7 +466,7 @@ The SDK runs card 1 and then card 2. If card 1 fails, card 2 does not start and 
 
 If card 2 fails after card 1 was authorized, what happens to card 1 is handled on the backend. The payment response on your server shows the final state of each card: see [Pay with two cards](/docs/payment-features/pay-with-two-cards).
 
-On iOS, `onStatus` can report a non-final `PENDING` first, as for any payment. See [`onStatus`](/docs/yuno-sdk/controllers/on-status), and confirm the outcome on your server before you fulfill the order.
+On iOS, also from React Native, `onStatus` can report a non-final `PENDING` first, as for any payment. See [`onStatus`](/docs/yuno-sdk/controllers/on-status), and confirm the outcome on your server before you fulfill the order.
 
 ## Errors
 
@@ -386,7 +477,7 @@ The SDK checks the shape of the array before it requests the token, so an invali
 | Platform | How you receive it |
 |---|---|
 | Web | `start()` rejects with an error that carries `code` and `message`. `onStatus` is not called. |
-| iOS, Android | `onStatus` receives `status: "INTERNAL_ERROR"`, with `INVALID_SPLIT_PAYMENT` in `message.code` and the text in `message.reason`. |
+| iOS, Android, React Native | `onStatus` receives `status: "INTERNAL_ERROR"`, with `INVALID_SPLIT_PAYMENT` in `message.code` and the text in `message.reason`. |
 
 The SDK checks, in this order, that:
 
@@ -406,7 +497,7 @@ The array is for payment transactions. On an enrollment transaction (`customerSe
 | Platform | How you receive it |
 |---|---|
 | Web | `start()` rejects with ``An array of `paymentMethod` is not available for enrollment transactions.`` |
-| iOS, Android | `onStatus` receives `INTERNAL_ERROR` with `message.code` `INVALID_SPLIT_PAYMENT` and `message.reason` `paymentsSelected is not available for enrollment`. |
+| iOS, Android, React Native | `onStatus` receives `INTERNAL_ERROR` with `message.code` `INVALID_SPLIT_PAYMENT` and `message.reason` `paymentsSelected is not available for enrollment`. |
 
 ### Backend errors
 
