@@ -101,8 +101,8 @@ test("503 ORGANIZATION_ACCOUNTS_UNAVAILABLE is documented for create, edit and d
 });
 
 test("pause and unpause are not an API call, and the guide promises no Dashboard screen", () => {
-  assert.match(guide, /Pausing and unpausing the organization connection is not available through the API\. It is handled from the Dashboard once available, or by contacting support\./);
-  assert.doesNotMatch(guide, /from the Dashboard(?! once available)/);
+  assert.match(guide, /Pausing and unpausing the organization connection is not available through the API\.\n/);
+  assert.doesNotMatch(guide, /Dashboard|contacting support/i);
   for (const name of ["update-connection", "delete-connection"]) assert.doesNotMatch(conn(name), /paus/i, name);
   for (const name of ["create-connection", "update-connection", "delete-connection"]) {
     assert.doesNotMatch(read(`openapi/organizations/connections/${name}.json`), /paus/i, name);
