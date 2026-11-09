@@ -9,9 +9,9 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 const json = (rel) => JSON.parse(read(rel));
 
 const CARD_MOTO_DESCRIPTION =
-  "Mail order / telephone order: the card was taken by an agent and the cardholder is not present. Passed through to the provider, which applies its own MOTO handling where supported. If the field is not sent, we will take it as false. It applies only to the payment where it is sent and is not taken from a stored card, so send it on every MOTO payment, including recurring charges on a saved card.";
-const VERIFY_MOTO_DESCRIPTION =
-  "Mail order / telephone order for the card verification of this enrollment: the card was taken by an agent and the cardholder is not present. It applies only to that verification; later payments with the stored card are MOTO only when they send `payment_method.detail.card.moto`.";
+  "Mail order / telephone order: the card was taken by an agent and the cardholder is not present. Passed through to the provider, which applies its own MOTO handling where supported. If the field is not sent, a payment with an enrolled card uses the value set when the card was enrolled, and any other payment is taken as false. Send `false` on a payment where the cardholder is present with a card enrolled with `true`.";
+const ENROLLMENT_MOTO_DESCRIPTION =
+  "Mail order / telephone order: the card is enrolled by an agent and the cardholder is not present. Used for the card verification of this enrollment, if there is one, and inherited by later payments with this payment method, unless a payment sends its own value.";
 
 function collect(node, match, at = [], out = []) {
   if (!node || typeof node !== "object") return out;
@@ -42,7 +42,7 @@ test("Create payment documents the request field payment_method.detail.card.moto
   const spec = json("openapi/payments/create-payment.json");
   const card =
     spec.paths["/payments"].post.requestBody.content["application/json"].schema.properties.payment_method.properties.detail.properties.card;
-  assert.deepEqual(card.properties.moto, { type: "boolean", description: CARD_MOTO_DESCRIPTION, default: false });
+  assert.deepEqual(card.properties.moto, { type: "boolean", description: CARD_MOTO_DESCRIPTION });
   const keys = Object.keys(card.properties);
   assert.equal(keys[keys.indexOf("verify") + 1], "moto", "moto sits right after verify");
 });
@@ -81,35 +81,57 @@ const retrieveByIdFiles = [
   ["openapi/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-pci-api.json", "/customers/{customer_id}/payment-methods/{payment_method_id}"],
 ];
 
-test("both enrollment pages document verify.moto in the request and in the response verify", () => {
+const enrollmentRequestCard = (file, route) =>
+  json(file).paths[route].post.requestBody.content["application/json"].schema.properties.payment_method.properties.detail.properties.card;
+
+const assertResponseDetailCardMoto = (file, schemas) => {
+  assert.ok(schemas.length > 0, `${file} response verify`);
+  for (const { path: p, parent } of schemas) {
+    assert.ok(!isRequest({ path: p }), `${file} ${p}`);
+    const moto = parent.detail.properties.card.properties.moto;
+    assert.equal(moto.type, "boolean", `${file} ${p}`);
+    assert.equal(moto.example, true, `${file} ${p}`);
+    assert.match(moto.description, /only when it was set on the enrollment/, `${file} ${p}`);
+  }
+};
+
+const responseVerifyParents = (spec) =>
+  collect(spec, (k, v) => k === "properties" && v && v.verify && v.verify.properties && v.verify.properties.vault_on_success)
+    .filter((e) => !isRequest(e))
+    .map((e) => ({ path: e.path, parent: e.node }));
+
+test("both enrollment pages document payment_method.detail.card.moto in the request and detail.card.moto in the response", () => {
+  const routes = {
+    "openapi/payment-methods-direct-workflow/enroll-payment-method-api.json": "/customers/{customer_id}/payment-methods",
+    "openapi/payment-methods-checkout/enroll-payment-method-checkout.json": "/customers/sessions/{customer_session}/payment-methods",
+  };
   for (const file of enrollmentFiles) {
-    const nodes = verifySchemas(json(file));
-    const requests = nodes.filter(isRequest);
-    const responses = nodes.filter((e) => !isRequest(e));
-    assert.equal(requests.length, 1, `${file} request verify`);
-    assert.deepEqual(requests[0].node.properties.moto, { type: "boolean", description: VERIFY_MOTO_DESCRIPTION }, file);
-    assert.ok(responses.length > 0, `${file} response verify`);
-    for (const { path: p, node } of responses) {
-      assert.equal(node.properties.moto.type, "boolean", `${file} ${p}`);
-      assert.match(node.properties.moto.description, /only when it was sent/, `${file} ${p}`);
+    assert.deepEqual(enrollmentRequestCard(file, routes[file]).properties.moto, { type: "boolean", description: ENROLLMENT_MOTO_DESCRIPTION }, file);
+    assertResponseDetailCardMoto(file, responseVerifyParents(json(file)));
+  }
+});
+
+test("no enrollment page documents moto under verify", () => {
+  for (const file of [...enrollmentFiles, ...retrieveByIdFiles.map(([f]) => f)]) {
+    for (const { path: p, node } of verifySchemas(json(file))) {
+      assert.ok(!node.properties.moto, `${file} ${p}`);
     }
   }
 });
 
-test("the retrieve-by-id pages document verify.moto in the response and the list page is unchanged", () => {
+test("the retrieve-by-id pages document detail.card.moto in the response and the list page is unchanged", () => {
   for (const [file, route] of retrieveByIdFiles) {
     const spec = json(file);
     assert.ok(spec.paths[route] && spec.paths[route].get, `${file} GET ${route}`);
-    const nodes = verifySchemas(spec);
-    assert.ok(nodes.length > 0, `${file} response verify`);
-    for (const { path: p, node } of nodes) {
-      assert.ok(!isRequest({ path: p }), `${file} ${p}`);
-      assert.equal(node.properties.moto.type, "boolean", `${file} ${p}`);
-      assert.equal(node.properties.moto.example, true, `${file} ${p}`);
-      assert.match(node.properties.moto.description, /only when it was sent/, `${file} ${p}`);
-    }
+    assertResponseDetailCardMoto(file, responseVerifyParents(spec));
   }
   assert.doesNotMatch(read("openapi/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api.json"), /"moto"/);
+});
+
+test("no page says moto is not taken from a stored card", () => {
+  for (const file of ["openapi/payments/create-payment.json", "reference/payments/the-payment-object.mdx", "openapi.json"]) {
+    assert.doesNotMatch(read(file), /not taken from a stored card/, file);
+  }
 });
 
 test("the payment object page documents moto only in card blocks, after verify", () => {
@@ -143,7 +165,7 @@ test("the root openapi.json publishes the moto fields", () => {
   const rootSpec = json("openapi.json");
   const card =
     rootSpec.paths["/payments"].post.requestBody.content["application/json"].schema.properties.payment_method.properties.detail.properties.card;
-  assert.equal(card.properties.moto.default, false);
+  assert.equal(card.properties.moto.description, CARD_MOTO_DESCRIPTION);
   assert.match(read("openapi.yaml"), /moto:/);
 });
 
