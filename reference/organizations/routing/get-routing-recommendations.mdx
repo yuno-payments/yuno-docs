@@ -91,13 +91,14 @@ Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` 
   The objective applied to the ranking.
 </ResponseField>
 <ResponseField name="decision_source" type="enum">
-  How the ranking was decided — `MERCHANT_HISTORY` or `INSUFFICIENT_DATA` (see below).
+  How the ranking was decided — `MERCHANT_HISTORY`, `INSUFFICIENT_DATA` or `ML_MODEL` (see below).
 </ResponseField>
 <ResponseField name="recommended" type="object">
   The top of the ranking. Always present.
   <Expandable title="properties">
     <ResponseField name="provider_id" type="string">The recommended provider code.</ResponseField>
     <ResponseField name="merchant_connection_id" type="string">The candidate's `merchant_connection_id`, when it was supplied.</ResponseField>
+    <ResponseField name="recommended_instrument" type="enum">Optional. The card credential the model recommends for this provider: `FPAN`, `DPAN` or `PROVIDER_TOKEN`. Only present with `decision_source: ML_MODEL`, and only when the model returns one.</ResponseField>
   </Expandable>
 </ResponseField>
 <ResponseField name="ranking" type="object[]">
@@ -116,6 +117,7 @@ Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` 
 - **`recommended` is always present** — even without enough history. You never need a special branch: `decision_source` tells you how much to trust it.
 - **`decision_source: MERCHANT_HISTORY`** — at least one candidate reached the minimum sample; the ranking reflects real statistics over your reported payments.
 - **`decision_source: INSUFFICIENT_DATA`** — no candidate reached the minimum sample of recent reported events, or `optimize_for` is `LATENCY` and no candidate has reported latency to rank on. The full ranking still comes back, and the recommendation falls back to the best available data, or to request order as a last resort. Read each candidate's `sample_size` to see how much history backs it before relying on the order.
+- **`decision_source: ML_MODEL`** — Yuno's ranking model set the order (see [Model-based ranking](#model-based-ranking)).
 - **`sample_size`** is the honesty of the recommendation. A high approval rate over 12 events is not the same signal as one over 12,000.
 - **The full `ranking` always comes back**, ordered by your objective. If the recommended candidate declines, take the next entry — cascade retry without a second call.
 
@@ -135,6 +137,19 @@ A BIN with no reported history simply falls through to the country and payment-m
 If you report `initiation` (`CIT` or `MIT`) on your events (in the [Transaction Reporting API](/reference/reporting/report-transactions)), send the same `payment.initiation` here. CIT and MIT approve very differently per provider, so — at each segment level above — the ranking first tries the history with the **same initiation**, and only if that does not reach the minimum sample does it use the whole level. The effective order is: BIN8 + initiation → BIN8 → BIN6 + initiation → BIN6 → country + initiation → country → payment method + initiation → payment method.
 
 Events you reported without an initiation count only in the non-initiation (whole-level) statistics. A request **without** `payment.initiation` is scored on the whole segment, exactly as before this field was used — the response is unchanged. `approval_rate`, `avg_latency_ms` and `sample_size` always reflect the segment actually used.
+
+## Model-based ranking
+
+For accounts enabled for it, Yuno's ranking model orders the candidates of a payment that meets all of these conditions:
+
+- `payment.payment_method.type` is `CARD`.
+- `optimize_for` is `APPROVAL_RATE`, which is the default.
+- `payment.initiation` is present.
+- `payment.payment_method.details.card.bin` has exactly 6 or 8 digits.
+
+The response then carries `decision_source: ML_MODEL`, and `recommended` and `ranking` follow the model's order. `approval_rate`, `avg_latency_ms` and `sample_size` still describe your reported history, so the ranking may not be sorted by approval rate.
+
+If a condition is not met, or the model does not return a usable answer in time, the request still succeeds: Yuno ranks the candidates on your reported history and `decision_source` is `MERCHANT_HISTORY` or `INSUFFICIENT_DATA`.
 
 ## Choosing an objective
 
@@ -200,6 +215,20 @@ curl -X POST 'https://api-sandbox.y.uno/v1/routing/recommendations' \
   "ranking": [
     { "provider_id": "ADYEN",  "merchant_connection_id": null, "approval_rate": null, "avg_latency_ms": null, "sample_size": 0 },
     { "provider_id": "STRIPE", "merchant_connection_id": null, "approval_rate": null, "avg_latency_ms": null, "sample_size": 0 }
+  ]
+}
+```
+
+```json 200 — ML_MODEL
+{
+  "recommendation_id": "b1f6a2de-4c37-4e0b-9a55-6d2f7c1e8a40",
+  "merchant_order_id": "order_45678",
+  "optimized_for": "APPROVAL_RATE",
+  "decision_source": "ML_MODEL",
+  "recommended": { "provider_id": "STRIPE", "merchant_connection_id": null, "recommended_instrument": "DPAN" },
+  "ranking": [
+    { "provider_id": "STRIPE", "merchant_connection_id": null, "approval_rate": 0.9167, "avg_latency_ms": 150, "sample_size": 60 },
+    { "provider_id": "ADYEN",  "merchant_connection_id": "acct-adyen-us-1", "approval_rate": 0.9987, "avg_latency_ms": 180, "sample_size": 767 }
   ]
 }
 ```
