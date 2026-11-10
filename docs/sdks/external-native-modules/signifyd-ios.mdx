@@ -1,0 +1,106 @@
+---
+title: "Signifyd Antifraud (iOS)"
+sidebarTitle: "Signifyd antifraud (iOS)"
+description: "Add Signifyd device profiling to Yuno iOS checkouts with the YunoAntifraudSignifyd module."
+robots: index
+---
+The `YunoAntifraudSignifyd` module adds **Signifyd device profiling** to the Yuno iOS SDK. When Signifyd is a fraud screening provider in your Yuno payment route, the Yuno SDK profiles the device during checkout with Signifyd's Profiling SDK and sends the session ID with the payment. Yuno then forwards it to Signifyd with the order.
+
+<Note>
+  The module is **opt-in**: add it only if your Yuno account uses Signifyd for fraud screening. Installing it does not change your payment or enrollment code.
+</Note>
+
+Unlike the other modules, Signifyd ships in **its own Swift Package Manager package**, and Signifyd's Profiling SDK is downloaded from Signifyd's private repository with **your own Signifyd token**. Yuno does not bundle or redistribute Signifyd's SDK. Activation follows the same rules as every other module, see [External Native Modules (iOS)](/docs/sdks/external-native-modules/ios-overview).
+
+## Requirements
+
+- iOS **14.0** or higher.
+- Xcode **26.2** or higher.
+- **YunoSDK 2.30.0 or higher**, installed through **Swift Package Manager**.
+- A **Signifyd SDK download token**, issued by your Signifyd solution engineer.
+- Signifyd enabled as a **fraud screening provider** in your Yuno payment route.
+
+<Warning>
+  The module is available through **Swift Package Manager only**. There is no CocoaPods pod. The Yuno SDK must also come from Swift Package Manager: if your app installs `YunoSDK` with CocoaPods and this module with Swift Package Manager, the app loads two copies of the Yuno SDK and checkout does not use Signifyd.
+</Warning>
+
+## Installation
+
+<Steps>
+  <Step title="Add your Signifyd token">
+    The token lets Swift Package Manager download Signifyd's Profiling SDK from Signifyd's private repository. It is only used when your build resolves packages, never at runtime.
+
+    - **Xcode 26:** go to **Xcode > Settings > Source Control**, click **+**, choose **GitHub**, and enter the GitHub account and the token that Signifyd gave you. On earlier Xcode versions the same option is under **Settings > Accounts**.
+    - **CI:** write the token to `~/.netrc` before the build, and remove the file when the build finishes:
+
+      ```
+      machine github.com
+        login x-access-token
+        password <your-signifyd-token>
+      ```
+  </Step>
+
+  <Step title="Add the package">
+    In Xcode go to **File > Add Package Dependencies...**, add:
+
+    ```
+    https://github.com/yuno-payments/yuno-sdk-ios-signifyd
+    ```
+
+    choose **Up to Next Major Version** from `1.0.0`, and add the `YunoAntifraudSignifyd` product to your app target. Xcode resolves the Yuno SDK and Signifyd's Profiling SDK automatically.
+
+    If your app uses a `Package.swift`, add the dependency there instead:
+
+    ```swift
+    dependencies: [
+        .package(url: "https://github.com/yuno-payments/yuno-sdk-ios-signifyd.git", from: "1.0.0")
+    ],
+    targets: [
+        .target(
+            name: "YourApp",
+            dependencies: [
+                .product(name: "YunoAntifraudSignifyd", package: "yuno-sdk-ios-signifyd")
+            ]
+        )
+    ]
+    ```
+  </Step>
+
+  <Step title="Enable Signifyd in Yuno">
+    Ask your Yuno account team to add Signifyd as a fraud screening provider in your payment route. Without it, the module is installed but the Yuno SDK never runs it.
+  </Step>
+</Steps>
+
+## Activating the module
+
+The module **registers itself** when the app launches. No code is required beyond adding the `YunoAntifraudSignifyd` product to your app target.
+
+<Tip>
+  Once the module is installed and Signifyd is in your payment route, the Yuno SDK uses it automatically in every checkout. You do not need to change any payment or enrollment code.
+</Tip>
+
+## How it works
+
+1. When the app launches, the module registers the Signifyd provider with the Yuno SDK.
+2. During checkout, if Signifyd is a fraud screening provider for the transaction, the Yuno SDK runs the module.
+3. The module profiles the device with Signifyd's Profiling SDK and returns the session ID it profiled under.
+4. The Yuno SDK sends that session ID with the payment, and Yuno forwards it to Signifyd with the order.
+
+If profiling fails or takes longer than the checkout allows, the payment continues without the Signifyd fingerprint.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Package resolution fails for ios-sdk-dist (401 or repository not found)">
+    Swift Package Manager could not download Signifyd's Profiling SDK. Check that your Signifyd token is added in **Xcode > Settings > Source Control** (or in `~/.netrc` on CI) and that it is still valid. If the token expired or was revoked, ask your Signifyd solution engineer for a new one. Apps you already released keep working, because the token is only used at build time.
+  </Accordion>
+  <Accordion title="The module is installed but payments carry no Signifyd fingerprint">
+    Check that the `YunoAntifraudSignifyd` product is added to your **app target**, not only to the project, and that Signifyd is a fraud screening provider in your Yuno payment route.
+  </Accordion>
+  <Accordion title="My app installs YunoSDK with CocoaPods">
+    The module depends on the Yuno SDK from Swift Package Manager. Move `YunoSDK` to Swift Package Manager (version 2.30.0 or higher) before adding this module.
+  </Accordion>
+  <Accordion title="Duplicate SignifydProfilingSdk framework">
+    The `YunoAntifraudSignifyd` package already brings Signifyd's Profiling SDK. If your app also embeds `SignifydProfilingSdk.xcframework` manually, remove it and keep only the package dependency.
+  </Accordion>
+</AccordionGroup>
