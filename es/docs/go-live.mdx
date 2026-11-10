@@ -1,0 +1,107 @@
+---
+title: "Salir a producción"
+sidebarTitle: "Salir a producción"
+description: "Llevar una integración de sandbox funcional a producción: claves de producción, una ruta publicada, webhooks verificados, 3DS, alcance PCI y un primer pago real."
+keywords: ["salir a producción", "producción", "Live Mode", "activación", "claves prod_", "webhooks", "HMAC", "idempotencia", "3DS", "PCI DSS", "reembolso"]
+---
+
+<div className="yd-page">
+
+<div className="yd-eyebrow">
+  <span className="yd-eyebrow-accent">Primeros pasos</span>
+  <span className="yd-eyebrow-rule" />
+  <span className="yd-eyebrow-muted">Guía</span>
+</div>
+
+<p className="yd-lead" style={{marginTop: '18px', maxWidth: 'none'}}>Un pago de sandbox exitoso es el punto de partida. Antes de enviar transacciones reales, es necesario trabajar estos cinco pasos junto a los equipos de ingeniería y operaciones.</p>
+
+<div className="yd-chips" style={{margin: '20px 0 8px'}}>
+  <span className="yd-chip">Activar Live Mode</span>
+  <span className="yd-chip">Publicar una ruta en producción</span>
+  <span className="yd-chip">Verificar webhooks</span>
+  <span className="yd-chip">Ejecutar un pago real y un reembolso</span>
+</div>
+
+<Steps>
+
+<Step titleSize="h3" title="Activar Live Mode y pasar a las claves de producción">
+
+La organización comienza con acceso solo a Test Mode. Para obtener Live Mode, se debe enviar una solicitud de activación desde la página principal del dashboard. El estado de la organización cambia de "Inactive" a "Under Verification", y Test Mode sigue disponible mientras Yuno verifica la cuenta. Ver [Entornos](/docs/using-yuno/environments).
+
+Cuando Live Mode está habilitado:
+
+* Copiar las claves de producción (Live) desde **Developers**. Yuno mantiene claves separadas para Test y Live. Ver [Credenciales de Developers](/docs/using-yuno/settings/developers-credentials).
+* Verificar el prefijo de la clave. Las claves de sandbox empiezan con `sandbox_` y las de producción con `prod_`. El SDK de Yuno determina el entorno a partir de este prefijo. Ver [Primeros pasos con el SDK de Yuno](/docs/yuno-sdk/get-started).
+* Apuntar el servidor a la URL base de producción, publicada en [Developers](/docs/developers).
+* Mantener `private-secret-key` en el servidor y fuera de lugares públicos como un repositorio de GitHub. Ver [Autenticación](/reference/getting-started/authentication).
+
+</Step>
+
+<Step titleSize="h3" title="Conectar un proveedor en vivo y publicar la ruta">
+
+El Yuno Test Payment Gateway funciona solo en sandbox, así que los pagos en producción necesitan una conexión con un proveedor real.
+
+1. Con el selector de contexto en **Live**, abrir [Connections](/docs/using-yuno/dashboard-overview/connections) y conectar cada proveedor con el que se vaya a lanzar.
+2. Abrir **Routing** y revisar la pestaña **Not published**. Ahí aparece cada método de pago que tiene conexión pero no tiene ruta.
+3. Crear la ruta, agregar el paso del proveedor y hacer clic en **Publish**. Ver [Routing](/docs/using-yuno/dashboard-overview/routing).
+4. Abrir **Checkout builder**, activar los métodos de pago que ya tienen una ruta publicada, y hacer clic en **Publish settings**. Los cambios quedan como **Not published** hasta que se publican.
+
+</Step>
+
+<Step titleSize="h3" title="Configurar el webhook de producción y los reintentos seguros">
+
+Antes de entregar el pedido, hay que confirmar el resultado de cada pago en el servidor, ya sea desde un webhook o desde la API de pagos.
+
+* [Configurar un webhook de producción](/docs/webhooks/configure-webhooks) con una URL pública HTTPS que responda HTTP 200. Yuno reintenta una entrega que no recibe HTTP 200, así que el mismo evento puede llegar más de una vez. Los eventos de reembolso y contracargo llevan el mismo `data.payment.idempotency_key` que su pago, así que cada evento procesado debe registrarse junto con su `account_id`, `type_event` y clave de idempotencia, y debe omitirse un evento que ya esté registrado. Ver [Deduplicación](/docs/webhooks/index#de-duplication).
+* Activar **Use HMAC Authentication** y verificar el header `x-hmac-signature` contra el cuerpo crudo de la solicitud, antes de parsear el JSON, con el secreto configurado para ese webhook. Ver [Verificar firmas de webhook](/docs/webhooks/verify-webhook-signatures-hmac).
+* Enviar un `X-Idempotency-Key` al crear un pago. Si el resultado no es claro (un timeout, un error de conexión o un `500`), reintentar con la misma clave. Un `400 REQUEST_IN_PROCESS` significa que la primera solicitud todavía se está ejecutando, así que hay que reintentar con la misma clave después de unos segundos. Un `400 IDEMPOTENCY_DUPLICATED` significa que no existe ningún pago para esa clave, así que hay que corregir la solicitud y enviarla con una clave nueva. Ver [Idempotencia](/reference/getting-started/authentication#idempotency).
+* Usar [Retrieve payment](/reference/payments/retrieve-payment-by-id-v2) para recuperar el estado de un pago cuando el resultado de un webhook o de una solicitud no sea claro.
+
+</Step>
+
+<Step titleSize="h3" title="Decidir sobre 3DS y el alcance PCI">
+
+**3D Secure.** Es una decisión del comercio si los pagos con tarjeta usan 3DS2. El paso de 3DS se agrega a una ruta de Card antes del paso del proveedor, en **Routing** > **Card Routes** > **3DS Step**. 3DS DIRECT también necesita datos del adquirente: un BIN de adquirente por marca de tarjeta, el ID de comercio, el MCC, el nombre y la URL del comercio, y el código de país. Ver [3D Secure](/docs/security-and-compliance/3d-secure).
+
+**PCI DSS.** Con el SDK de Yuno (o los SDKs legados Full, Lite o Secure Fields), los datos de la tarjeta van del navegador o la app del cliente hacia Yuno, y los servidores del comercio solo reciben tokens, por lo que la mayoría de los comercios califican para SAQ A. Si el servidor envía los números de tarjeta sin procesar, como hace el workflow `DIRECT` del Quickstart, los sistemas del comercio quedan dentro del alcance PCI DSS. Ver [Cumplimiento PCI](/docs/security-and-compliance/pci-compliance).
+
+</Step>
+
+<Step titleSize="h3" title="Ejecutar un pago real y un reembolso, y luego monitorear los primeros pagos">
+
+Las tarjetas de prueba son exclusivas del sandbox. En Live Mode, hay que ejecutar un pago de bajo valor con una tarjeta real a través de cada proveedor y método de pago con el que se vaya a lanzar, y luego reembolsarlo.
+
+* Reembolsar con [Refund payments](/docs/direct-integration-use-cases/refund-payments). Cada llamada de reembolso necesita un `X-Idempotency-Key` con un valor nuevo por intento. Hay que esperar a que un reembolso llegue a `SUCCEEDED`, `DECLINED` o `ERROR` antes de iniciar otro sobre la misma transacción.
+* Que un reembolso se confirme de inmediato o quede en `PENDING`, y si se permiten reembolsos parciales, depende del proveedor. Hay que revisar el comportamiento de cada proveedor con el que se lance.
+* Abrir **Payments** en el dashboard en Live Mode para ver todos los pagos y transacciones, filtrarlos y exportar reportes. Ver [Payments](/docs/using-yuno/dashboard-overview/payments).
+* Revisar el [estado del servicio](https://status.y.uno) ante incidentes, y escribir a [support@y.uno](mailto:support@y.uno) con el ID del pago cuando un resultado no coincida con lo esperado.
+
+</Step>
+
+</Steps>
+
+## Probar más allá del camino feliz
+
+Antes del lanzamiento, hay que demostrar que la aplicación maneja cada uno de estos casos. Usá el [Yuno Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway) en sandbox y las instrucciones de prueba de cada proveedor. Los resultados en sandbox no demuestran cómo se comporta cada proveedor en producción.
+
+| Escenario | Qué debe mostrar la aplicación |
+| --- | --- |
+| Pago aprobado | El backend confirma el resultado y entrega el pedido una sola vez. |
+| Rechazo | El pedido queda sin pagar y el cliente puede volver a intentarlo. |
+| Autenticación o redirección | El cliente completa la acción y el servidor confirma el estado resultante. |
+| Pago asíncrono pendiente | El pedido espera la confirmación de un webhook o de la API de pagos. |
+| Timeout al enviar una solicitud | Un reintento con el mismo `X-Idempotency-Key` no crea un segundo pago. |
+| Webhook duplicado o demorado | El evento no entrega el pedido dos veces ni sobrescribe un estado más nuevo. |
+| El navegador se cierra antes de completar | El webhook o una consulta de pago en el servidor igual determinan el resultado. |
+| Reembolso o cancelación | El resultado del proveedor coincide con el registro del pedido o el libro contable del comercio. |
+
+## Siguientes pasos
+
+<ol className="yd-next">
+  <li><div><a href="/docs/troubleshooting">Solución de problemas</a><span className="yd-card-body"><span className="yd-kind">Referencia</span> La respuesta, su causa y la solución para los errores que una integración nueva encuentra primero.</span></div></li>
+  <li><div><a href="/docs/webhooks/index">Webhooks</a><span className="yd-card-body"><span className="yd-kind">Guía</span> Entrega, reintentos, deduplicación y las páginas para configurar y verificar un webhook.</span></div></li>
+  <li><div><a href="/docs/how-yuno-works/how-yuno-payment-flow-works">Flujo de pago</a><span className="yd-card-body"><span className="yd-kind">Concepto</span> Cada paso de un pago, campo por campo.</span></div></li>
+  <li><div><a href="/reference/payments/create-payment">Create payment</a><span className="yd-card-body"><span className="yd-kind">Referencia</span> El esquema de solicitud y respuesta para la llamada que crea un pago.</span></div></li>
+</ol>
+
+</div>

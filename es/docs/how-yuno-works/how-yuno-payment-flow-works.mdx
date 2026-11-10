@@ -1,0 +1,50 @@
+---
+title: "Flujo de pago"
+description: "Recorre los pasos de cliente, sesión de checkout, detalle del pago y creación del pago en una transacción de Yuno"
+---
+
+Aunque Yuno ofrece distintas opciones de pago, el proceso básico siempre sigue la misma secuencia. Esta guía desglosa el proceso paso a paso y los elementos clave involucrados, y aclara cómo fluyen los pagos al usar los SDKs o la API de Yuno.
+
+## El proceso de pago de Yuno
+
+El proceso de pago consta de los siguientes pasos:
+
+
+<Steps>
+  <Step title="Crear un cliente">
+    Los pagos en Yuno normalmente se vinculan a un [cliente](/docs/basic-concepts/customers). El sistema almacena datos del cliente como nombre, dirección y número de teléfono. Yuno usa esta información para procesar pagos en distintos [métodos de pago](/docs/basic-concepts/payment-methods) y procesadores.
+    Al crear un cliente, Yuno genera un identificador único para usar en los pasos siguientes.
+    <Note>
+      Se puede crear un pago sin un cliente. Si la sesión de checkout se crea con un `customer_id`, debe enviarse el mismo cliente en `customer_payer.id` al crear el pago.
+    </Note>
+  </Step>
+  <Step title="Crear una sesión de checkout">
+    Para procesar un pago con el SDK o el Checkout de Yuno, se crea una [sesión de checkout](/docs/basic-concepts/sessions#checkout-session). Esta sesión conecta al cliente con el pago y almacena los datos clave de la transacción. Yuno carga todos los [métodos de pago](/docs/basic-concepts/payment-methods) habilitados para la cuenta.
+    <Note>
+      Las integraciones directas (servidor a servidor) omiten este paso y envían los datos de la transacción directamente al crear el pago. Debe configurarse `workflow` como `DIRECT` (o `REDIRECT`) en la solicitud de pago. Sin esto, la API solicita el objeto `checkout`.
+    </Note>
+
+  </Step>
+  <Step title="Recopilar los datos del pago">
+    Para procesar un pago es necesario recopilar la información de pago del cliente.
+    * **Integración con SDK**: los SDKs de Yuno capturan los datos sensibles de forma segura y generan un token de un solo uso (OTT).
+    * **Integración directa**: los datos de pago se recopilan directamente en los servidores del comercio (lo que requiere cumplimiento PCI) y se envían al endpoint de pago.
+    <Note>
+      Un OTT es un código temporal de un solo uso que usan los SDKs de Yuno para reforzar la seguridad de los comercios.
+    </Note>
+  </Step>
+
+
+  <Step title="Crear el pago">
+    Un [pago](/docs/basic-concepts/payments-1) representa la transacción final. Se usan los datos recopilados en los pasos anteriores (ID del cliente e información de pago) para procesar la transacción final.
+
+    <Note>
+      Ciertos campos son opcionales, pero pueden mejorar la experiencia del usuario. Se recomienda incluir esta información aunque no sea obligatoria.
+    </Note>
+    <Note>
+      La solicitud de creación de pago requiere el header `X-Idempotency-Key`. Debe enviarse un valor único (por ejemplo, un UUID) para poder reintentar la solicitud de forma segura. Ver [Idempotencia](/reference/getting-started/authentication#idempotency).
+    </Note>
+  </Step>
+</Steps>
+
+Después de crear el pago, Yuno mantiene al comercio informado sobre las actualizaciones mediante [webhooks](/docs/basic-concepts/webhooks-1). Además, Yuno ofrece soluciones de [prevención de fraude](/docs/basic-concepts/fraud) que pueden integrarse en el proceso de pago.
