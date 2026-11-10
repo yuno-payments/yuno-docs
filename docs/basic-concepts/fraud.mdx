@@ -19,6 +19,54 @@ When a payment is created, Yuno generates different transactions based on the pa
 The SDK only collects a device fingerprint or `session_id` for fraud providers configured in the merchant's active fraud route. If you need to collect a `session_id` for a specific provider, make sure that provider is added to the route for that payment method on your Yuno dashboard.
 </Note>
 
+### Send device fingerprints yourself
+
+Fraud screening providers identify the customer's device with a fingerprint or session ID that their own SDK or script generates. When the Yuno SDK runs the checkout and the provider's module or script, it collects these values and sends them with the one-time token: you do not need to send anything.
+
+Send them yourself, in `customer_payer.device_fingerprints` of the [payment](/reference/payments/create-payment), when the Yuno SDK cannot collect them:
+
+* **Native app with a web card form**: your iOS or Android app shows the card form in a WebView (for example, Secure Fields), so no native antifraud module runs.
+* **Hybrid app**: React Native, Flutter, Capacitor or a similar framework, where the provider's native SDK runs outside the Yuno SDK.
+* **Direct API integration**: you collect card data with your own form and call the Yuno API directly.
+
+In all three cases:
+
+1. Collect the fingerprint once per checkout session with each provider's own SDK or script.
+2. Send one entry per provider in `customer_payer.device_fingerprints`, with the provider ID and the value the provider returned.
+3. If the payment comes from a native app, set `customer_payer.browser_info.platform` to `IOS` or `ANDROID`.
+
+An entry you send for a provider replaces the one carried by the one-time token for that provider, and `browser_info.platform` replaces the platform carried by the token.
+
+Valid `provider_id` values: `CLEAR_SALE`, `CYBERSOURCE`, `KOIN_FRAUD`, `RISKIFIED`, `SIGNIFYD`, `VESTA`, `KONDUTO`, `BAYONET`, `MERCADO_PAGO` and `OPEN_PAY`.
+
+```json
+[...]
+"customer_payer": {
+    "merchant_customer_id": "1690161049",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "device_fingerprints": [
+        {
+            "provider_id": "SIGNIFYD",
+            "id": "20a6c463-dd0c-4323-9115-03668d178856"
+        },
+        {
+            "provider_id": "CLEAR_SALE",
+            "id": "92d2ea4b-4bf7-494b-aaea-c48276135941"
+        }
+    ],
+    "browser_info": {
+        "platform": "IOS"
+    }
+},
+[...]
+```
+
+<Note>
+  Some providers need more payment data to score a transaction. For example, Koin rejects a payment that does not include `additional_data.order.items`.
+</Note>
+
 ### Forter Session Token Capture
 
 If you are using **Forter** for fraud detection, the Yuno SDK provides a reliable way to capture the session token.
