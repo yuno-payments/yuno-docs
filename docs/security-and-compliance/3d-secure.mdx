@@ -224,7 +224,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
 **Handle the challenge.** When the issuer asks for a challenge, the payment comes back `PENDING` and its transaction has the response code `CHALLENGE_REQUIRED`:
 
 * **SDK integrations:** the response has `checkout.sdk_action_required: true`. Call `continuePayment()` and the SDK shows the challenge: an iframe on web, a redirect in iOS and Android apps.
-* **`workflow: "DIRECT"`:** redirect the shopper to the challenge as described in the [Direct flow](/docs/direct-integration-use-cases/direct-flow) guide. After the challenge, the shopper returns to your `callback_url`.
+* **`workflow: "DIRECT"`:** send the shopper to the challenge as described in the [Direct flow](/docs/direct-integration-use-cases/direct-flow) guide. When the response asks you to render an iframe (`RENDER_IFRAME`, which Fiserv Commerce Hub returns for web payments), render it instead of redirecting. After a redirect challenge, the shopper returns to your `callback_url`.
 
 `PENDING` with `CHALLENGE_REQUIRED` is not final. Yuno sends the result by [webhook](/docs/webhooks/configure-webhooks), and you can [retrieve the payment](/reference/payments/retrieve-payment-by-id) at any time. The payment then moves to its final status, for example `SUCCEEDED`, `PENDING` / `AUTHORIZED` for an authorize-only payment, `SUCCEEDED` / `VERIFIED` for a card verification, `DECLINED`, or `ERROR`.
 
@@ -237,11 +237,13 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
 #### Fiserv Commerce Hub
 
 * A failed authentication ends `DECLINED` / `AUTHENTICATION_FAILED_THREE_D_SECURE`.
-* A card verification without `browser_info` fails with `ERROR` / `MISSING_PARAMETERS` before Fiserv is called.
+* A card verification with no `browser_info` at all fails with `ERROR` / `MISSING_PARAMETERS` before Fiserv is called.
 * Payments with a network token don't run provider 3DS.
 * A frictionless card verification authorizes 1.00 in the verification currency with the authentication result and then voids it.
 * Yuno doesn't send a `three_d_secure` result from your own 3DS server or from a Yuno 3DS step to Fiserv Commerce Hub. Use provider 3DS with this provider.
-* **Test cards:** in the Fiserv Commerce Hub test environment, generic test card numbers and Fiserv IPG 3DS test cards may not be set up for Commerce Hub 3DS, and then come back `DECLINED` / `AUTHENTICATION_FAILED_THREE_D_SECURE`. Use the Commerce Hub 3DS test cards that Fiserv provides for your merchant ID.
+* **Server-to-server requests:** a request without `stored_credentials` counts as customer-initiated and runs provider 3DS. This includes card verifications created with the customer payment methods endpoint. Yuno forwards the `browser_info` and `ip_address` it receives to Fiserv Commerce Hub and doesn't replace placeholder values. A card verification is sent for authentication when `browser_info` has at least one field, such as `user_agent` alone. Fiserv's documentation lists the browser fields in the table above and the IP address as required, so send the shopper's real data.
+* **Declined authentications:** Fiserv Commerce Hub's response code for a declined authentication is `362` (3-D Secure: Declined). The response may not say why. Fiserv's documentation says its support team can find a request by its `apiTraceId`. Contact Yuno support with the payment ID to get the `apiTraceId` of the declined request.
+* **Test environment:** Fiserv's documentation says its test simulator supports card and token payments only, and that other features need a certification merchant ID. Before you test provider 3DS, ask Fiserv to confirm that 3-D Secure is set up for your merchant ID and which test cards to use.
 
 ## Yuno 3D Secure 2 integration
 
