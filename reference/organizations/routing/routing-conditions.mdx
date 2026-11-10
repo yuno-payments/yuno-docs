@@ -13,7 +13,7 @@ A condition matches against an attribute of the incoming payment.
 
   // Required only on specific condition_types — see "Special cases" below
   "key":      "<string>",   // METADATA and ADDITIONAL_FIELD only
-  "currency": "<ISO 4217>", // AMOUNT, and VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME
+  "currency": "<ISO 4217>", // AMOUNT, and VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME; not sent on CURRENCY
 
   // TIME_PERIOD and VOLUME_PAYMENTS_LIMIT only — see "Schedules" and "Volume and count limits" below
   "time_period_repeat_amount":    1,
@@ -35,7 +35,8 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 |---|---|---|---|---|
 | `COUNTRY` | Transaction country — the top-level `country` field you submit in `POST /v1/payments` (never the card) | ISO 3166-1 alpha-2 (e.g. `"US"`, `"BR"`) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
 | `CARD_ISSUER_COUNTRY` | Card-issuing bank's country, resolved by Yuno's BIN lookup at processing time | ISO 3166-1 alpha-2 | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
-| `AMOUNT` | Transaction amount. Sent as `AMOUNT` with a sibling `currency` field; Yuno stores it internally as `CURRENCY_AND_AMOUNT`. With `currency` and an **empty** `values` it matches any amount in that currency (see [Special cases](#special-cases)) | Decimal as **string** (e.g. `"100.00"`); requires sibling `currency` | `EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`; only `EQUAL` when `values` is empty | no |
+| `AMOUNT` | Transaction amount. Sent as `AMOUNT` with a sibling `currency` field; Yuno stores it internally as `CURRENCY_AND_AMOUNT`. With `currency` and an **empty** `values` it matches any amount in that currency (see [Special cases](#special-cases)); to match a currency with another operator or several currencies, use `CURRENCY` | Decimal as **string** (e.g. `"100.00"`); requires sibling `currency` | `EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`; only `EQUAL` when `values` is empty | no |
+| `CURRENCY` | Transaction currency, whatever the amount (see [Special cases](#special-cases)) | Uppercase ISO 4217 codes (e.g. `"USD"`, `"EUR"`); no sibling `currency` | `EQUAL`, `NOT_EQUAL` (exactly 1 value), `ONE_OF`, `NOT_ONE_OF` (1 or more values) | no |
 | `CARD_TYPE` | Card funding source | `CREDIT`, `DEBIT`, `PREPAID` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `CARD_BRAND` | Card scheme | One of the values in [Card brands](#card-brands) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | yes |
 | `CARD_BIN` | First 6–8 digits of the PAN | 6–8 digit numeric string | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `BETWEEN` (see [Special cases](#special-cases)) | yes |
@@ -48,7 +49,7 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 | `SUBSCRIPTION_RETRY_COUNT` | Position of the attempt in the subscription retry ladder: `0` on the first attempt of a billing cycle, `1..n` on each scheduled retry | Non-negative integer as **string** (e.g. `"3"`) | `EQUAL`, `GREATER_THAN`, `GREATER_OR_EQUAL_THAN`, `LESS_THAN`, `LESS_OR_EQUAL_THAN`, `BETWEEN`, `ONE_OF` | no |
 
 <Warning>
-`CURRENCY` and `INSTALLMENTS` are **not** valid standalone `condition_type` values. Sending either one rejects the whole routing with `400 INVALID_ROUTE_CONFIGURATION`. To filter by currency, use `AMOUNT` with the sibling `currency` field — with an amount comparison, or with an empty `values` list to match the currency alone.
+`INSTALLMENTS` is **not** a valid standalone `condition_type` value. Sending it rejects the whole routing with `400 INVALID_ROUTE_CONFIGURATION`.
 </Warning>
 
 #### `conditional` operators
@@ -260,7 +261,8 @@ All values are compared as strings; `email` is compared case-insensitively. On a
 #### Special cases
 
 - **`AMOUNT` requires `currency`.** Comparisons are FX-naive; only payments whose currency matches the rule's `currency` are evaluated.
-- **`AMOUNT` with an empty `values` list is a currency-only condition**: `{ "condition_type": "AMOUNT", "conditional": "EQUAL", "values": [], "currency": "BRL" }` matches every payment in BRL, whatever the amount. Only `EQUAL` is accepted in that form; another operator is rejected with `400 INVALID_ROUTE_CONFIGURATION`. Responses return it in this same shape.
+- **`AMOUNT` with an empty `values` list is a currency-only condition**: `{ "condition_type": "AMOUNT", "conditional": "EQUAL", "values": [], "currency": "BRL" }` matches every payment in BRL, whatever the amount. Only `EQUAL` is accepted in that form; another operator is rejected with `400 INVALID_ROUTE_CONFIGURATION`. Responses return it in this same shape. To exclude a currency or match several, use `CURRENCY`.
+- **`CURRENCY` matches the payment currency alone**: `{ "condition_type": "CURRENCY", "conditional": "NOT_EQUAL", "values": ["USD"] }` matches every payment not in USD, and `{ "condition_type": "CURRENCY", "conditional": "ONE_OF", "values": ["EUR", "GBP"] }` every payment in EUR or GBP. The currencies go in `values`: `EQUAL` and `NOT_EQUAL` take exactly 1, `ONE_OF` and `NOT_ONE_OF` 1 or more. Each value is an uppercase ISO 4217 code other than `XXX`, and no code may repeat; do not send `currency` or `key` on this type. Like `AMOUNT`, it is valid for every payment method. Anything else is rejected with `400 INVALID_ROUTE_CONFIGURATION`. Responses return `NOT_EQUAL`, `ONE_OF` and `NOT_ONE_OF` exactly as sent, so the retrieved condition can be sent back on update unchanged. `CURRENCY` with `EQUAL` is stored as the currency-only `AMOUNT` above and comes back in that form, `{ "condition_type": "AMOUNT", "conditional": "EQUAL", "values": [], "currency": "USD" }`; both forms are accepted on create and update.
 - **`METADATA` requires `key`.** Compares `payment.metadata[key]`. If the key is absent on the payment (or the payment has no `metadata`), the condition does **not** match, whatever the operator. This includes the negative operators: a payment without the key does **not** match `NOT_EQUAL` or `NOT_ONE_OF` either. See the note below for how to route payments that don't carry the key.
 - **`ADDITIONAL_FIELD` requires `key`** from the [supported list](#additional-fields-additional_field); `METADATA` keys are free-form, `ADDITIONAL_FIELD` keys are not.
 - **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
