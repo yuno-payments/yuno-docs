@@ -27,6 +27,7 @@ The Yuno Android SDK stays small on purpose: every third-party native SDK ships 
 | ClearSale antifraud | Collects the ClearSale device fingerprint and attaches it to the payment | 6.0 (API 23) |
 | Koin antifraud | Collects the Koin device fingerprint and attaches it to the payment | 6.0 (API 23) |
 | Riskified antifraud | Starts the Riskified beacon with the checkout session and attaches that session to the payment | 6.0 (API 23) |
+| Signifyd antifraud | Runs Signifyd's device profiling and attaches the Signifyd session to the payment | 6.0 (API 23) |
 | Netcetera 3DS | Runs 3D Secure challenges natively in your app, for payments and enrollment | 6.0 (API 23) |
 | Revolut Pay | Runs the Revolut Pay checkout natively, on top of Revolut's official SDK | 6.0 (API 23) |
 
@@ -37,6 +38,7 @@ Maven coordinates and compatibility:
 | ClearSale antifraud | `com.yuno.payments:yuno-sdk-antifraud-clearsale` | `1.0.1` | `2.25.0` or higher |
 | Koin antifraud | `com.yuno.payments:yuno-sdk-antifraud-koin` | `1.0.0` | `2.25.0` or higher |
 | Riskified antifraud | `com.yuno.payments:yuno-sdk-antifraud-riskified` | `1.0.0` | `2.27.0` or higher |
+| Signifyd antifraud | `com.yuno.payments:yuno-sdk-antifraud-signifyd` | `1.0.0` | `2.27.0` or higher |
 | Netcetera 3DS | `com.yuno.payments:yuno-sdk-3ds-netcetera` | `1.0.1` | `2.16.0` or higher |
 | Revolut Pay | `com.yuno.payments:yuno-sdk-revolut-pay` | `1.0.0` | `2.24.0` or higher |
 
@@ -58,6 +60,7 @@ Add the modules you need to your app module's build file, next to the Yuno SDK d
         implementation "com.yuno.payments:yuno-sdk-antifraud-clearsale:1.0.1"
         implementation "com.yuno.payments:yuno-sdk-antifraud-koin:1.0.0"
         implementation "com.yuno.payments:yuno-sdk-antifraud-riskified:1.0.0"
+        implementation "com.yuno.payments:yuno-sdk-antifraud-signifyd:1.0.0"
         implementation "com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1"
         implementation "com.yuno.payments:yuno-sdk-revolut-pay:1.0.0"
     }
@@ -75,6 +78,7 @@ Add the modules you need to your app module's build file, next to the Yuno SDK d
         implementation("com.yuno.payments:yuno-sdk-antifraud-clearsale:1.0.1")
         implementation("com.yuno.payments:yuno-sdk-antifraud-koin:1.0.0")
         implementation("com.yuno.payments:yuno-sdk-antifraud-riskified:1.0.0")
+        implementation("com.yuno.payments:yuno-sdk-antifraud-signifyd:1.0.0")
         implementation("com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1")
         implementation("com.yuno.payments:yuno-sdk-revolut-pay:1.0.0")
     }
@@ -83,7 +87,7 @@ Add the modules you need to your app module's build file, next to the Yuno SDK d
 </Tabs>
 
 <Note>
-  The Netcetera module also needs Netcetera's Maven repository declared in your project, because its 3DS SDK is not hosted on Maven Central. The exact lines are in [Netcetera 3DS (Android)](/docs/sdks/external-native-modules/netcetera-3ds-android#step-1-declare-the-netcetera-maven-repository). The other modules need no extra repository: Riskified and Revolut Pay pull their vendor SDKs from Maven Central.
+  The Netcetera module also needs Netcetera's Maven repository declared in your project, because its 3DS SDK is not hosted on Maven Central. The exact lines are in [Netcetera 3DS (Android)](/docs/sdks/external-native-modules/netcetera-3ds-android#step-1-declare-the-netcetera-maven-repository). The Signifyd module needs Signifyd's private registry and a download token from Signifyd, as shown in [Signifyd antifraud](#signifyd-antifraud). The other modules need no extra repository: Riskified and Revolut Pay pull their vendor SDKs from Maven Central.
 </Note>
 
 ## Activating a module
@@ -109,6 +113,7 @@ To confirm a module loaded, filter Logcat by its tag right after the app starts.
 adb logcat -s KoinAntifraud
 adb logcat -s ClearSaleAntifraud
 adb logcat -s RiskifiedAntifraud
+adb logcat -s SignifydAntifraud
 ```
 
 Revolut Pay registers silently; it only logs under the `YunoRevolutPay` tag when your `android-sdk` is older than 2.24.0 and the module could not register.
@@ -121,6 +126,7 @@ Revolut Pay registers silently; it only logs under the `YunoRevolutPay` tag when
   import com.yuno.antifraud.clearsale.ClearSaleAntifraudInitializer
   import com.yuno.antifraud.koin.KoinAntifraudInitializer
   import com.yuno.antifraud.riskified.RiskifiedAntifraudInitializer
+  import com.yuno.antifraud.signifyd.SignifydAntifraudInitializer
   import com.yuno.revolut.RevolutPayInitializer
   import com.yuno.threedsecure.netcetera.Netcetera3DSInitializer
 
@@ -128,6 +134,7 @@ Revolut Pay registers silently; it only logs under the `YunoRevolutPay` tag when
   initializer.initializeComponent(ClearSaleAntifraudInitializer::class.java)
   initializer.initializeComponent(KoinAntifraudInitializer::class.java)
   initializer.initializeComponent(RiskifiedAntifraudInitializer::class.java)
+  initializer.initializeComponent(SignifydAntifraudInitializer::class.java)
   initializer.initializeComponent(Netcetera3DSInitializer::class.java)
   initializer.initializeComponent(RevolutPayInitializer::class.java)
   ```
@@ -168,6 +175,42 @@ Revolut Pay registers silently; it only logs under the `YunoRevolutPay` tag when
 - Brings Riskified's Android SDK (`nogoogle` variant) from Maven Central: no Google Play services dependency and no location tracking.
 - Declares `INTERNET`; it is merged into your manifest automatically. The module removes the `READ_PHONE_STATE` permission declared by Riskified's SDK, so it never reaches your app.
 
+### Signifyd antifraud
+
+- Runs Signifyd's device profiling whenever your checkout configuration enables Signifyd, and sends the Signifyd session id to Yuno as the payment's `customer.device_fingerprint`, for any payment method. Nothing changes in the data you send.
+- Uses the Signifyd SDK key that Yuno serves for your account during checkout. You do not set any key in your app.
+- Brings Signifyd's Android SDK (`com.signifyd:profiling:5.1.4`), which is only available from Signifyd's private registry. Your build downloads it with your own token: get it from your Signifyd solution engineer.
+- Signifyd's SDK requires `kotlin-stdlib` 1.9.22 or higher and brings `kotlinx-coroutines` 1.8.1 and `kotlinx-serialization-json` 1.6.3, so your app resolves at least those versions.
+- Declares `INTERNET`, and Signifyd's SDK adds the normal permission `com.google.android.providers.gsf.permission.READ_GSERVICES`. Both are merged into your manifest automatically and neither prompts the user.
+- Never requests location. If your app already holds location permission, Signifyd's SDK reads the last known location. Reflect this device data collection in your Google Play Data safety form.
+
+Add Signifyd's registry to `settings.gradle`:
+
+```groovy
+dependencyResolutionManagement {
+    repositories {
+        exclusiveContent {
+            forRepository {
+                maven {
+                    url "https://maven.pkg.github.com/Signifyd-sdks/android-sdk-dist"
+                    credentials {
+                        username = ""
+                        password = providers.gradleProperty("signifydGithubToken").orNull
+                    }
+                }
+            }
+            filter { includeGroup "com.signifyd" }
+        }
+    }
+}
+```
+
+`exclusiveContent` makes Gradle look for `com.signifyd` artifacts only in that registry and sends your token only there. Store the token as `signifydGithubToken` in `~/.gradle/gradle.properties`, and in your CI as the environment variable `ORG_GRADLE_PROJECT_signifydGithubToken`. Never commit it. The token is only used at build time: if it expires, new builds fail and apps already released keep working.
+
+<Accordion title="Migrating from the legacy com.yuno.fraud-signifyd:yunosignifyd dependency">
+  If your app integrated Signifyd through the former `com.yuno.fraud-signifyd:yunosignifyd` dependency, remove it and add `yuno-sdk-antifraud-signifyd` instead. Do not run Signifyd's profiling yourself when you use this module.
+</Accordion>
+
 ### Netcetera 3DS
 
 - Runs the 3D Secure challenge inside your app, for payments and card enrollment, instead of the WebView-based challenge. If your app customizes the Yuno SDK styles, they propagate to the challenge screen.
@@ -187,7 +230,7 @@ Revolut Pay registers silently; it only logs under the `YunoRevolutPay` tag when
     Check, in this order:
 
     1. The provider is enabled for your Yuno account. Modules only run when the backend asks for that provider on the transaction; ask your Yuno TAM if you are not sure.
-    2. The module registered at startup: filter Logcat by `KoinAntifraud`, `ClearSaleAntifraud` or `RiskifiedAntifraud` and look for the `registered` line.
+    2. The module registered at startup: filter Logcat by `KoinAntifraud`, `ClearSaleAntifraud`, `RiskifiedAntifraud` or `SignifydAntifraud` and look for the `registered` line.
     3. Your app is not removing the App Startup provider from the manifest. If it is, run the module initializers manually as described in [Activating a module](#activating-a-module).
   </Accordion>
   <Accordion title="Crash at runtime with NoSuchMethodError or NoSuchFieldError mentioning com.yuno">
@@ -195,6 +238,12 @@ Revolut Pay registers silently; it only logs under the `YunoRevolutPay` tag when
   </Accordion>
   <Accordion title="Gradle: could not find com.netcetera.threeds…">
     Netcetera's SDK is not on Maven Central. Declare Netcetera's Maven repository as shown in [Netcetera 3DS (Android)](/docs/sdks/external-native-modules/netcetera-3ds-android#step-1-declare-the-netcetera-maven-repository).
+  </Accordion>
+  <Accordion title="Gradle: 401 Unauthorized or could not find com.signifyd:profiling">
+    Your build could not download Signifyd's SDK. Check that Signifyd's registry is declared as shown in [Signifyd antifraud](#signifyd-antifraud) and that `signifydGithubToken` holds a valid token from Signifyd, on your machine and in your CI.
+  </Accordion>
+  <Accordion title="Logcat: Missing API_KEY param; skipping Signifyd profiling">
+    Signifyd is enabled for the checkout session, but no Signifyd SDK key is served for your account, so the payment continues without a Signifyd fingerprint. Contact your Yuno TAM.
   </Accordion>
   <Accordion title="Logcat: NoClassDefFoundError com.google.android.gms.location.LocationServices (ClearSale)">
     Printed only by version `1.0.0` when your app does not include `play-services-location`. It is caught inside the ClearSale SDK and the fingerprint is still collected. Version `1.0.1` no longer looks for the location library: update to it and the trace goes away.
