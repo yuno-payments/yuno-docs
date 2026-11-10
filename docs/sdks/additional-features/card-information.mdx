@@ -1,0 +1,250 @@
+---
+title: Card information while typing
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Get the card brand, type, category, issuer and country while the shopper types the card number in the card form on iOS and Android"
+---
+import LegacySdkNotice from '/snippets/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Register the optional `onCardInfoChanged` callback to receive the card's brand, type, category, issuer and country while the shopper types the card number in the card form. You get these details before the shopper submits the form, so you can adapt your checkout in real time: show the card brand or issuing bank in your order summary, explain a promotion that applies only to credit cards, or adapt a message to the country of the issuing bank.
+
+The callback is informational and optional: if you don't register it, the SDK behavior is unchanged. The SDK already looks up the card details from the sixth digit to show the brand and load installments, and the callback hands you the result of that same lookup. It makes no extra network call and never includes the full card number, the security code, the expiry date or the cardholder name.
+
+| Platform | Available from | Where to register |
+| -------- | -------------- | ----------------- |
+| iOS      | SDK `2.30.0`   | `onCardInfoChanged(_:)` on `YunoPaymentDelegate` or `YunoEnrollmentDelegate`. For Seamless, `SeamlessParams.onCardInfoChanged` |
+| Android  | SDK `2.29.0`   | `setOnCardInfoChanged { }`, called before you start the checkout or the enrollment |
+
+<Note>
+Android SDK `2.29.0` is the next Android release and is not published yet. The Android section below applies once it is available.
+</Note>
+
+The callback fires in every card form the SDK shows for a new card, in payments and in enrollments. It is not called for saved (enrolled) cards, because the shopper does not type a number, or in headless integrations, because the SDK shows no card form there.
+
+## What you receive
+
+A card info object, or `null` (`nil` on iOS) as described in [When it is called](#when-it-is-called).
+
+| Property      | Key            | Description                                                                                             |
+| ------------- | -------------- | ------------------------------------------------------------------------------------------------------- |
+| `iin`         | `iin`          | First digits of the card number, between 6 and 8. Never the full number.                                |
+| `brand`       | `brand`        | Card brand, for example `VISA` or `MASTERCARD`.                                                         |
+| `scheme`      | `scheme`       | Card scheme.                                                                                            |
+| `type`        | `type`         | Card type, typically `CREDIT` or `DEBIT`.                                                               |
+| `category`    | `category`     | Card category or level, for example `GOLD` or `PREPAID`. Prepaid cards are flagged here, not in `type`. |
+| `issuerName`  | `issuer_name`  | Name of the issuing bank.                                                                               |
+| `issuerCode`  | `issuer_code`  | Code of the issuing bank.                                                                               |
+| `countryCode` | `country_code` | ISO country code of the issuing bank, for example `BR`.                                                 |
+| `countryName` | `country_name` | Country name of the issuing bank.                                                                       |
+
+* Values are passed exactly as the card lookup returns them. The SDK does not translate or normalize them.
+* A value the lookup does not return is `null` (`nil` on iOS). Some fields, such as `issuerCode`, are often empty, so do not make them required in your logic.
+* On iOS, `iin` is always present. Every other field is optional on both platforms.
+* The length of `iin` varies between 6 and 8 digits. Do not rely on it.
+* Each value is also available by key: `rawData` on iOS and `toMap()` on Android always return the nine keys above, with the same names on both platforms. On iOS, a missing value in `rawData` is `NSNull`.
+
+## When it is called
+
+* After the card lookup answers, once the shopper has typed at least 6 digits.
+* Again only when the result changes. Typing more digits of the same card does not call it again unless the lookup returns different details. On iOS, a new call can also arrive when the lookup matches a longer prefix of the same card, with only `iin` changed.
+* With `null` (`nil` on iOS) when a card you already received no longer applies: the number drops below 6 digits, the field is cleared, or the lookup fails. The first call is never `null`.
+* On the main thread, so you can update your UI directly.
+
+If the shopper keeps typing or edits the number while a lookup is in progress, outdated answers are discarded, so you never receive the details of a number the shopper already changed.
+
+Nothing is sent when the card form closes, when the shopper pays, or when the shopper picks another payment method: the last value you received stands. If your UI needs to reset it in those cases, do it on your side.
+
+Each card form starts fresh. If the shopper closes the form and opens it again, the first result in the new form is delivered even if it is the same card as before.
+
+| What the shopper does                            | What you receive                                           |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| Types the first 5 digits                         | Nothing.                                                   |
+| Types the 6th digit                              | The card details, as soon as the lookup answers.           |
+| Keeps typing the same card                       | Nothing, unless the lookup returns different details.      |
+| Deletes digits until fewer than 6 remain         | `null` (`nil` on iOS).                                     |
+| Types the number of a different card             | The details of the new card.                               |
+| The lookup fails, for example without connection | `null` (`nil` on iOS), if you had received a card before.  |
+| Pays, closes the form or picks another method    | Nothing more. The last value stands.                       |
+
+## Implementation
+
+<Tabs>
+<Tab title="iOS">
+
+Implement the optional `onCardInfoChanged(_:)` method on the delegate you pass to the SDK: `YunoPaymentDelegate` for payments (Full, Lite and Render) and `YunoEnrollmentDelegate` for enrollments. The method is the same in both.
+
+```swift
+class CheckoutViewController: UIViewController, YunoPaymentDelegate {
+
+    // ... required YunoPaymentDelegate implementation ...
+
+    func onCardInfoChanged(_ cardInfo: YunoCardInfo?) {
+        guard let cardInfo else {
+            // The card you received no longer applies
+            orderSummary.clearCardDetails()
+            return
+        }
+        orderSummary.showCardDetails(
+            brand: cardInfo.brand,
+            type: cardInfo.type,
+            issuer: cardInfo.issuerName,
+            country: cardInfo.countryCode
+        )
+    }
+}
+```
+
+The method receives a `YunoCardInfo?` payload, also available from Objective-C:
+
+```swift
+@objc public final class YunoCardInfo: NSObject {
+    @objc public let iin: String
+    @objc public let brand: String?
+    @objc public let scheme: String?
+    @objc public let type: String?
+    @objc public let category: String?
+    @objc public let issuerName: String?
+    @objc public let issuerCode: String?
+    @objc public let countryCode: String?
+    @objc public let countryName: String?
+    @objc public let rawData: [String: Any]
+}
+```
+
+To read the values by key, use `rawData`:
+
+```swift
+func onCardInfoChanged(_ cardInfo: YunoCardInfo?) {
+    guard let values = cardInfo?.rawData else { return }
+    let category = values["category"] as? String
+    if category == "PREPAID" {
+        orderSummary.showPrepaidNotice()
+    }
+}
+```
+
+For Seamless, set `SeamlessParams.onCardInfoChanged` instead, because Seamless does not take a delegate. Set the closure before you call `startPaymentSeamlessLite`: it is read once, when the payment starts.
+
+```swift
+let params = SeamlessParams(
+    checkoutSession: checkoutSession,
+    countryCode: "CO",
+    language: "en",
+    viewController: self
+)
+params.onCardInfoChanged = { [weak self] cardInfo in
+    self?.orderSummary.update(with: cardInfo)
+}
+let result = await Yuno.startPaymentSeamlessLite(with: params, paymentSelected: paymentSelected)
+```
+
+In Objective-C:
+
+```objectivec
+- (void)onCardInfoChanged:(YunoCardInfo * _Nullable)cardInfo {
+    if (cardInfo == nil) {
+        [self.orderSummary clearCardDetails];
+        return;
+    }
+    [self.orderSummary showBrand:cardInfo.brand type:cardInfo.type];
+}
+```
+
+</Tab>
+
+<Tab title="Android">
+
+Call `setOnCardInfoChanged` once, before you start the checkout, the payment or the enrollment. One registration covers every card form (`startPayment`, `startPaymentLite`, `startPaymentSeamlessLite`, `startPaymentRender`, `startEnrollment` and `startEnrollmentRender`) until you replace it.
+
+```kotlin
+import com.yuno.sdk.payments.CardInfo
+import com.yuno.sdk.payments.setOnCardInfoChanged
+
+class CheckoutActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setOnCardInfoChanged { cardInfo -> renderCardDetails(cardInfo) }
+        startCheckout(
+            checkoutSession = "checkout_session",
+            countryCode = "country_code_iso",
+            callbackPaymentState = { state, subState, message -> /* ... */ },
+        )
+    }
+
+    override fun onDestroy() {
+        setOnCardInfoChanged(null)
+        super.onDestroy()
+    }
+
+    private fun renderCardDetails(cardInfo: CardInfo?) {
+        if (cardInfo == null) {
+            orderSummary.clearCardDetails()
+            return
+        }
+        orderSummary.showCardDetails(cardInfo.brand, cardInfo.type, cardInfo.issuerName, cardInfo.countryCode)
+    }
+}
+```
+
+Call `setOnCardInfoChanged(null)` when you no longer need it, for example in `onDestroy`. The SDK keeps the callback until you replace it or pass `null`, so a lambda that captures an `Activity` would otherwise keep it in memory.
+
+If you register the callback after the card form is open, you receive the next change, not the card already on screen.
+
+To read the values by key, use `toMap()`:
+
+```kotlin
+setOnCardInfoChanged { cardInfo ->
+    val values: Map<String, String?> = cardInfo?.toMap() ?: return@setOnCardInfoChanged
+    if (values["category"] == "PREPAID") {
+        orderSummary.showPrepaidNotice()
+    }
+}
+```
+
+In Java:
+
+```java
+import com.yuno.sdk.payments.PaymentsFlowKt;
+import kotlin.Unit;
+
+PaymentsFlowKt.setOnCardInfoChanged(cardInfo -> {
+    if (cardInfo == null) {
+        orderSummary.clearCardDetails();
+    } else {
+        orderSummary.showCardDetails(cardInfo.getBrand(), cardInfo.getType());
+    }
+    return Unit.INSTANCE;
+});
+```
+
+An exception thrown inside your callback is caught and logged by the SDK, so it cannot break the card form. Handle your own errors anyway, because the SDK does not retry the call.
+
+</Tab>
+</Tabs>
+
+## Best practices
+
+* Keep the handler light. It runs on the main thread while the shopper is typing, so move any slow work, such as a call to your backend, off the main thread.
+* Handle `null` (`nil` on iOS): clear or hide whatever you showed for the previous card.
+* Treat each call as the current state of the form, not a final value. The shopper can still change the number before paying.
+* Do not block or delay the payment based on these values. The SDK validates the card on its own.
+
+## Testing
+
+1. In sandbox, open a card form from your app with the callback registered.
+2. Type a test card number. After the sixth digit you receive the card details.
+3. Delete digits until fewer than 6 remain. You receive `null` (`nil` on iOS).
+4. Type the number of a card from another brand. You receive the new details.
+5. Pay with a saved card. The callback is not called.
+
+The values come from the card lookup of the environment you use, so test cards in sandbox can return generic issuer data.
+
+## Related
+
+* [Installments](/docs/sdks/additional-features/installments). A similar callback for the installment option the shopper picks.
+* [`onCardInfoChanged` in the Yuno SDK](/docs/yuno-sdk/controllers/on-card-info-changed). The same information in the Yuno SDK (iOS and Android v3.x).
