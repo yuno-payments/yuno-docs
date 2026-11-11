@@ -93,6 +93,7 @@ Follow the steps below based on your desired configuration:
 2. Add the **Click to Pay connection** in the Yuno dashboard using the DPA ID.
 3. Add the **card connection** that will process these cards.
 4. Define the payment method route in **Routing** and enable Click to Pay in the **Checkout Builder**.
+5. On the native Android and iOS SDKs, send a `callback_url` in every checkout session and ask the Yuno team to enable the browser flow. See [SDK integration](#sdk-integration-click-to-pay-passkey).
 
 ### Option 2: Click to Pay + Passkey
 *Supported on web and on the native Android and iOS SDKs. On mobile, the SDK opens the Click to Pay passkey experience in the system browser and returns through a deep-link callback URL, which must be configured in your Click to Pay settings. Passkeys are not available inside embedded WebViews; without a callback URL the SDK falls back to the standard Click to Pay flow without passkeys.*
@@ -129,7 +130,7 @@ Click to Pay relies on a customer record existing in Yuno. When using the VTEX p
 <Info>
 **Important**
 
-Standard Click to Pay card flows use the existing SDK callbacks, but Passkey users must include a `callback_url` that matches the app’s deeplink scheme so the shopper returns to the app after authentication (on Android this must match the scheme configured in `AndroidManifest.xml`). For example:
+On the native Android and iOS SDKs, include a `callback_url` in every Click to Pay checkout session, with or without Passkey. It must match the app’s deeplink scheme so the shopper returns to the app after Click to Pay (on Android this must match the scheme configured in `AndroidManifest.xml`). For example:
 
 ```json
 {
@@ -137,14 +138,16 @@ Standard Click to Pay card flows use the existing SDK callbacks, but Passkey use
 }
 ```
 
-For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
+With `callback_url`, and with the browser flow enabled for your account by the Yuno team, the SDK opens Click to Pay in the system browser (Android Custom Tabs, iOS `SFSafariViewController`). This is the only in-app setup the card networks support. Some Visa issuers ask for an extra verification step that opens a new window; inside the embedded WebView, which the SDK uses when `callback_url` is missing, that window cannot open and the checkout stops responding.
+
+In the browser flow, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
 </Info>
 
 ### Mobile: handling the response (OTT and deeplink)
 
-The integration flow for Click to Pay Passkey has a specific response handling that differs from the standard payment flow.
+On mobile, Click to Pay in the system browser (with or without Passkey) has a specific response handling that differs from the standard payment flow.
 
-When a shopper completes a payment using CTP Passkey, the one-time token (OTT) is **not** delivered through the usual delegate/listener methods. Instead, the transaction result — both success and failure — is communicated to your app through the **deeplink URL**.
+When a shopper completes a Click to Pay payment in the system browser, the one-time token (OTT) is **not** delivered through the usual delegate/listener methods. Instead, the transaction result — both success and failure — is communicated to your app through the **deeplink URL**.
 
 This is the same on **iOS, Android, and Flutter**: the merchant reads the result from the deeplink URL and acts on it. Only *where* the deeplink arrives changes per platform.
 
@@ -162,7 +165,7 @@ This is the same on **iOS, Android, and Flutter**: the merchant reads the result
 
 - **iOS** — in `application(_:open:options:)`. Call `Yuno.receiveDeeplink(url)` to close the Passkey browser, then read the parameters from `url`.
 - **Flutter** — in your deeplink handler. `await Yuno.receiveDeeplink(url: uri)` to close the Passkey browser, then read the parameters from `uri`.
-- **Android** — the deeplink relaunches your `Activity` (there is no SDK close call). Read the parameters from `intent.data` in `onCreate`/`onNewIntent`. The receiving activity must declare an `intent-filter` in `AndroidManifest.xml` matching the scheme/host/path of your `callback_url`.
+- **Android** — the deeplink opens the `Activity` that declares an `intent-filter` in `AndroidManifest.xml` matching the scheme/host/path of your `callback_url` (there is no SDK close call). Set `android:launchMode="singleTask"` (or `singleTop`) on that activity so the deeplink returns to the same instance in `onNewIntent` instead of creating a new one. Read the parameters from `intent.data` in `onNewIntent`, and in `onCreate` if the app was closed.
 
 <CodeGroup>
 ```swift iOS
