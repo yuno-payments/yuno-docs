@@ -1,0 +1,572 @@
+---
+title: "Quickstart: tu primer pago en sandbox"
+sidebarTitle: "Quickstart"
+description: "Crea una conexión, envía un pago con una tarjeta de prueba en el sandbox de Yuno y míralo en el dashboard."
+keywords: ["quickstart", "primer pago", "sandbox", "tarjeta de prueba", "Yuno Test Payment Gateway", "DIRECT", "SDK_CHECKOUT"]
+---
+
+import { ExplainerVideo } from "/snippets/ExplainerVideo.jsx";
+
+<div className="yd-page"><div className="yd-qs">
+
+<div className="yd-eyebrow">
+  <span className="yd-eyebrow-accent">Primeros pasos</span>
+  <span className="yd-eyebrow-rule" />
+  <span className="yd-eyebrow-muted">Tutorial · unos 10 minutos</span>
+</div>
+
+<p className="yd-lead" style={{marginTop: '18px', maxWidth: 'none'}}>Yuno es el sistema operativo de IA para pagos, y un pago es lo primero que ejecutas en él. Envías tu primer pago en sandbox en unos 10 minutos, una vez que tienes las credenciales de sandbox.</p>
+
+<div className="yd-chips" style={{margin: '20px 0 8px'}}>
+  <span className="yd-chip">Crea una conexión</span>
+  <span className="yd-chip">Envía un pago con una tarjeta de prueba</span>
+  <span className="yd-chip">Míralo en el dashboard</span>
+</div>
+
+<ExplainerVideo src="/videos/explainers/first-payment.mp4" poster="/videos/explainers/first-payment.jpg" title="Tu primer pago" duration="66 s" />
+
+{/* TODO: the "about 10 minutes" promise is the spec's target. The dry run on a proof org (spec section 8) has not happened, so no time is measured. */}
+
+## Antes de empezar {#before-you-start}
+
+Necesitas estos datos para cada llamada de esta página.
+
+| Dato | Valor |
+|---|---|
+| Código de cuenta | `account_id` en el dashboard, en **Developers** |
+| Claves | `public-api-key` y `private-secret-key`, las dos empiezan con `sandbox_` |
+| URL base | `https://api-sandbox.y.uno/v1` (mantén el `/v1`) |
+| Montos | `amount.value` es un número junto a una `currency`. Esta página envía `25` con `USD` |
+| Herramientas | Node 18 o posterior, o `curl` |
+
+{/* TODO unverified: amount unit. docs/yuno-sdk/get-started says value 25 is USD 25.00 (major units). The Create Payment reference examples use 5000 and 520 for USD, which reads as minor units. The brief for this page asked for "minor units with one example". Confirm with the API team, then state the unit and one example here. */}
+
+<Steps>
+
+<Step titleSize="h3" title="Obtén tus credenciales de sandbox">
+
+Inicia sesión en el [dashboard de Yuno](https://dashboard.y.uno/) y abre **Developers** para encontrar tres valores:
+
+* **Código de cuenta**, que aparece como `account_id` en el dashboard
+* **`public-api-key`**
+* **`private-secret-key`**
+
+Las claves de sandbox empiezan con `sandbox_`. Las claves de producción son distintas y empiezan con `prod_`.
+
+<Frame>![Página de inicio de sesión del dashboard de Yuno](/images/reference/step-1-set-up-your-account/image1.png)</Frame>
+
+Si todavía no tienes una cuenta, pídela a tu contacto en Yuno o escribe a [sales@y.uno](mailto:sales@y.uno). Por ahora no hay registro autogestionado.
+
+{/* TODO: a screenshot of Developers > Authentication showing the account code and the two keys. Reuse /images/reference/developers-credentials/image1.png (it shows the Account key table) or capture a new one on the proof org. */}
+
+Define tus credenciales como variables de entorno:
+
+```bash Shell
+export YUNO_PUBLIC_API_KEY="sandbox_..."
+export YUNO_PRIVATE_SECRET_KEY="sandbox_..."
+export YUNO_ACCOUNT_ID="your-account-code"
+```
+
+Comprueba las claves creando un cliente. La URL base es `https://api-sandbox.y.uno/v1`.
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url https://api-sandbox.y.uno/v1/customers \
+  --header "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  --header "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \
+  --header "content-type: application/json" \
+  --data '{
+    "merchant_customer_id": "customer-0001",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com"
+  }'
+```
+
+```javascript Node.js
+const res = await fetch("https://api-sandbox.y.uno/v1/customers", {
+  method: "POST",
+  headers: {
+    "public-api-key": process.env.YUNO_PUBLIC_API_KEY,
+    "private-secret-key": process.env.YUNO_PRIVATE_SECRET_KEY,
+    "content-type": "application/json",
+  },
+  body: JSON.stringify({
+    merchant_customer_id: "customer-0001",
+    first_name: "John",
+    last_name: "Doe",
+    email: "john.doe@example.com",
+  }),
+});
+const customer = await res.json();
+console.log(customer.id);
+```
+
+```python Python
+import os
+import requests
+
+res = requests.post(
+    "https://api-sandbox.y.uno/v1/customers",
+    headers={
+        "public-api-key": os.environ["YUNO_PUBLIC_API_KEY"],
+        "private-secret-key": os.environ["YUNO_PRIVATE_SECRET_KEY"],
+    },
+    json={
+        "merchant_customer_id": "customer-0001",
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john.doe@example.com",
+    },
+)
+print(res.json()["id"])
+```
+
+</CodeGroup>
+
+La respuesta incluye un `id`. Guárdalo como `YUNO_CUSTOMER_ID`: los pasos de pago lo usan.
+
+<Check>
+**Paso completado cuando** `POST /v1/customers` responde `201`.
+
+* `401` significa que el par de claves es incorrecto. Vuelve a copiar las dos claves de sandbox desde **Developers**.
+* `404` con el cuerpo vacío significa que falta `/v1` en la URL base.
+</Check>
+
+
+
+</Step>
+
+<Step titleSize="h3" title="Conecta el Yuno Test Payment Gateway y publica una ruta">
+
+El Yuno Test Payment Gateway simula un proveedor de tarjetas. Funciona solo en sandbox y no necesita credenciales.
+
+1. Abre [Connections](https://dashboard.y.uno/connections), busca **Yuno Test Payment Gateway**, haz clic en **Connect**, ponle un nombre a la conexión y haz clic en **Save**.
+2. Abre [Routing](https://dashboard.y.uno/routing), abre la pestaña **Not published**, busca **Card** y haz clic en **Set Up**.
+3. Haz clic en **+ Create new route**, ponle un nombre y haz clic en **Save**.
+4. Haz clic en la flecha, elige **Add step**, selecciona **Yuno Test Payment Gateway** y haz clic en **Publish**.
+5. Abre [Checkout builder](https://dashboard.y.uno/checkout-builder), activa **Card** y publica la configuración.
+
+{/* TODO: screenshot 1 of 3, the connection. Add the file under /images/getting-started/ and uncomment:
+<Frame><img src="/images/getting-started/connect-gateway.png" alt="Connections page with Yuno Test Payment Gateway selected and the Connect button visible" /></Frame> */}
+
+{/* TODO: screenshot 2 of 3, the routing step. Uncomment when the file exists:
+<Frame><img src="/images/getting-started/routing-add-step.png" alt="Routing page with a Card route that has Yuno Test Payment Gateway as its step" /></Frame> */}
+
+{/* TODO: screenshot 3 of 3, the published route. Uncomment when the file exists:
+<Frame><img src="/images/getting-started/route-published.png" alt="Routing page with the Card route listed under the Published tab" /></Frame> */}
+
+{/* TODO: this step replaces four third-party videos. The dashboard click path is copied from the old Set Up Your Account page and the Yuno Test Payment Gateway page. Re-walk it on the proof org (spec section 8). */}
+
+<Check>
+**Paso completado cuando** una nueva sesión de checkout incluye `CARD`. Crea una sesión como en el paso 4 y guarda su `checkout_session` como `YUNO_CHECKOUT_SESSION`. Luego llama a [`GET /v1/checkout/sessions/{checkout_session}/payment-methods`](/reference/checkout-sessions/retrieve-payment-methods-for-checkout) y busca `"type": "CARD"` en la lista.
+
+Si falta `CARD`, revisa las tres configuraciones: el Test Payment Gateway está conectado, la ruta de Card está en **Published** y Card está activado en el Checkout builder.
+</Check>
+
+{/* TODO: [Proof call to confirm on the proof org]. The call above is documented, but no run has shown that it lists CARD for a fresh session on a sandbox with this setup. Confirm the response on the proof org. */}
+
+
+
+</Step>
+
+<Step titleSize="h3" title="Elige cómo se crea el pago">
+
+El campo `workflow` le indica a Yuno quién crea el pago. Elige uno y usa la pestaña correspondiente en el paso 4.
+
+| Workflow | Quién crea el pago | Cuándo usarlo |
+|---|---|---|
+| `SDK_SEAMLESS` | El SDK crea el pago | Quieres la menor cantidad de piezas posible. Recomendado |
+| `SDK_CHECKOUT` más un callback `createPayment` | Tu backend lo crea, a partir del token de un solo uso que te entrega el SDK | Agregas datos del pedido, controles de fraude o idempotencia en tu servidor |
+| `DIRECT` | Tu backend envía los datos de la tarjeta sin procesar | Tienes alcance PCI DSS. Si no, úsalo solo para pruebas en sandbox |
+
+Una sesión y una integración que no coinciden terminan en `INTERNAL_ERROR`. Consulta [Primeros pasos con el Yuno SDK](/docs/yuno-sdk/get-started) y [Flujo directo](/docs/direct-integration-use-cases/direct-flow) para ver cada camino completo.
+
+<Check>
+**Paso completado cuando** puedes decir qué workflow vas a enviar: `SDK_SEAMLESS`, `SDK_CHECKOUT` o `DIRECT`. La sesión de checkout (caminos con SDK) o el pago (`DIRECT`) lo lleva en el campo `workflow`.
+</Check>
+
+</Step>
+
+<Step titleSize="h3" title="Envía el pago">
+
+<Tabs>
+<Tab title="DIRECT">
+
+<Warning>
+Enviar números de tarjeta sin procesar desde tu servidor es para pruebas en sandbox. En producción requiere alcance PCI DSS. Si no lo tienes, usa el Yuno SDK o Secure Fields para recopilar los datos de la tarjeta.
+</Warning>
+
+El workflow `DIRECT` es un pago directo en el que tu servidor envía los datos de la tarjeta. Usa el `id` del cliente que guardaste como `YUNO_CUSTOMER_ID` en el paso 1.
+
+Crea el pago con una tarjeta de prueba. Envía un `X-Idempotency-Key` nuevo con cada pago.
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url https://api-sandbox.y.uno/v1/payments \
+  --header "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  --header "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \
+  --header "X-Idempotency-Key: $(uuidgen)" \
+  --header "content-type: application/json" \
+  --data '{
+    "account_id": "'"$YUNO_ACCOUNT_ID"'",
+    "merchant_order_id": "order-0001",
+    "description": "First test payment",
+    "country": "US",
+    "amount": { "currency": "USD", "value": 25 },
+    "workflow": "DIRECT",
+    "customer_payer": { "id": "'"$YUNO_CUSTOMER_ID"'" },
+    "payment_method": {
+      "type": "CARD",
+      "detail": { "card": { "card_data": {
+        "number": "4507990000000002",
+        "expiration_month": 11,
+        "expiration_year": 28,
+        "security_code": "123",
+        "holder_name": "John Doe"
+      } } }
+    }
+  }'
+```
+
+```javascript Node.js
+const res = await fetch("https://api-sandbox.y.uno/v1/payments", {
+  method: "POST",
+  headers: {
+    "public-api-key": process.env.YUNO_PUBLIC_API_KEY,
+    "private-secret-key": process.env.YUNO_PRIVATE_SECRET_KEY,
+    "X-Idempotency-Key": crypto.randomUUID(),
+    "content-type": "application/json",
+  },
+  body: JSON.stringify({
+    account_id: process.env.YUNO_ACCOUNT_ID,
+    merchant_order_id: "order-0001",
+    description: "First test payment",
+    country: "US",
+    amount: { currency: "USD", value: 25 },
+    workflow: "DIRECT",
+    customer_payer: { id: process.env.YUNO_CUSTOMER_ID },
+    payment_method: {
+      type: "CARD",
+      detail: { card: { card_data: {
+        number: "4507990000000002",
+        expiration_month: 11,
+        expiration_year: 28,
+        security_code: "123",
+        holder_name: "John Doe",
+      } } },
+    },
+  }),
+});
+const payment = await res.json();
+console.log(payment.status, payment.sub_status);
+```
+
+```python Python
+import os
+import uuid
+import requests
+
+res = requests.post(
+    "https://api-sandbox.y.uno/v1/payments",
+    headers={
+        "public-api-key": os.environ["YUNO_PUBLIC_API_KEY"],
+        "private-secret-key": os.environ["YUNO_PRIVATE_SECRET_KEY"],
+        "X-Idempotency-Key": str(uuid.uuid4()),
+    },
+    json={
+        "account_id": os.environ["YUNO_ACCOUNT_ID"],
+        "merchant_order_id": "order-0001",
+        "description": "First test payment",
+        "country": "US",
+        "amount": {"currency": "USD", "value": 25},
+        "workflow": "DIRECT",
+        "customer_payer": {"id": os.environ["YUNO_CUSTOMER_ID"]},
+        "payment_method": {
+            "type": "CARD",
+            "detail": {"card": {"card_data": {
+                "number": "4507990000000002",
+                "expiration_month": 11,
+                "expiration_year": 28,
+                "security_code": "123",
+                "holder_name": "John Doe",
+            }}},
+        },
+    },
+)
+payment = res.json()
+print(payment["status"], payment["sub_status"])
+```
+
+</CodeGroup>
+
+{/* TODO: verify on proof org. The test card 4507 9900 0000 0002 (11/28, CVV 123, John Doe, result SUCCEEDED) comes from docs/direct-integration-use-cases/yuno-testing-gateway.mdx. Confirm the proof org accepts it and that expiry 11/28 still passes validation. */}
+
+El pago es exitoso cuando la respuesta se ve así:
+
+```json Response (trimmed)
+{
+  "id": "6c44ed29-cc51-4479-a5eb-108afdaadd50",
+  "status": "SUCCEEDED",
+  "sub_status": "APPROVED",
+  "amount": { "currency": "USD", "value": 25 }
+}
+```
+
+{/* TODO: the response above is trimmed from the Create Payment reference example (openapi/payments/create-payment.json). Replace it with the real response and payment id from the proof org run. */}
+
+{/* TODO: amount.value 25 is treated as USD 25.00 (major units), as stated in docs/yuno-sdk/get-started. The Create Payment reference examples use values such as 5000 without saying the unit. Confirm with the API team. */}
+
+</Tab>
+<Tab title="SDK_SEAMLESS">
+
+La pestaña `SDK_SEAMLESS` divide el trabajo. Tu servidor crea una sesión de checkout, y el navegador carga el SDK e inicia la transacción.
+
+**En tu servidor**, crea la sesión de checkout. Usa `workflow: "SDK_SEAMLESS"` para que el SDK cree el pago por ti. Sin ese valor, la transacción termina en `INTERNAL_ERROR`.
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url https://api-sandbox.y.uno/v1/checkout/sessions \
+  --header "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  --header "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \
+  --header "content-type: application/json" \
+  --data '{
+    "account_id": "'"$YUNO_ACCOUNT_ID"'",
+    "merchant_order_id": "order-0001",
+    "payment_description": "First test payment",
+    "country": "US",
+    "amount": { "currency": "USD", "value": 25 },
+    "workflow": "SDK_SEAMLESS"
+  }'
+```
+
+```javascript Node.js
+const res = await fetch("https://api-sandbox.y.uno/v1/checkout/sessions", {
+  method: "POST",
+  headers: {
+    "public-api-key": process.env.YUNO_PUBLIC_API_KEY,
+    "private-secret-key": process.env.YUNO_PRIVATE_SECRET_KEY,
+    "content-type": "application/json",
+  },
+  body: JSON.stringify({
+    account_id: process.env.YUNO_ACCOUNT_ID,
+    merchant_order_id: "order-0001",
+    payment_description: "First test payment",
+    country: "US",
+    amount: { currency: "USD", value: 25 },
+    workflow: "SDK_SEAMLESS",
+  }),
+});
+const session = await res.json();
+console.log(session.checkout_session);
+```
+
+```python Python
+import os
+import requests
+
+res = requests.post(
+    "https://api-sandbox.y.uno/v1/checkout/sessions",
+    headers={
+        "public-api-key": os.environ["YUNO_PUBLIC_API_KEY"],
+        "private-secret-key": os.environ["YUNO_PRIVATE_SECRET_KEY"],
+    },
+    json={
+        "account_id": os.environ["YUNO_ACCOUNT_ID"],
+        "merchant_order_id": "order-0001",
+        "payment_description": "First test payment",
+        "country": "US",
+        "amount": {"currency": "USD", "value": 25},
+        "workflow": "SDK_SEAMLESS",
+    },
+)
+print(res.json()["checkout_session"])
+```
+
+</CodeGroup>
+
+{/* TODO: the brief and spec name the SDK workflow SDK_CHECKOUT. docs/yuno-sdk/get-started says the new SDK needs SDK_SEAMLESS on the checkout session and warns of INTERNAL_ERROR otherwise, so this tab uses SDK_SEAMLESS. SDK team to confirm which value the Quickstart should show. */}
+
+**En el navegador**, carga el SDK desde el CDN y luego inicia una transacción con el valor `checkout_session` que te devuelve tu servidor.
+
+```html Browser
+<div id="payment-form"></div>
+<script src="https://sdk-web.y.uno/v2.5.1/main.js"></script>
+<script>
+  async function startYuno() {
+    const sdkPayments = await SdkPayments.initialize("your-public-api-key");
+    const transaction = sdkPayments.transaction({
+      checkoutSession: "checkout-session-from-your-server",
+      countryCode: "US",
+      elementSelector: "#payment-form",
+      onStatus: (result) => console.log("Final status:", result.status),
+    });
+    await transaction.start({ paymentMethod: { type: "CARD" } });
+  }
+
+  if (window.SdkPayments) {
+    startYuno();
+  } else {
+    window.addEventListener("sdk-payments-ready", startYuno);
+  }
+</script>
+```
+
+El formulario se muestra en `#payment-form`. Ingresa la tarjeta de prueba **4507 9900 0000 0002**, vencimiento **11/28**, CVV **123**, nombre **John Doe**, y haz clic en Pay. El resultado llega en `onStatus` con el estado `SUCCEEDED`.
+
+Para iOS, Android y todas las opciones, consulta [Primeros pasos con el SDK](/docs/yuno-sdk/get-started).
+
+{/* TODO: verify on proof org. Same test card as the API tab. */}
+
+</Tab>
+<Tab title="SDK_CHECKOUT">
+
+Tu servidor crea la sesión de checkout con `workflow: "SDK_CHECKOUT"`. El navegador inicia la transacción y pasa un callback `createPayment`. El SDK le entrega al callback un token de un solo uso, y tu backend crea el pago a partir de ese token.
+
+**En tu servidor**, crea la sesión de checkout con el cliente del paso 1:
+
+```bash cURL
+curl --request POST \
+  --url https://api-sandbox.y.uno/v1/checkout/sessions \
+  --header "public-api-key: $YUNO_PUBLIC_API_KEY" \
+  --header "private-secret-key: $YUNO_PRIVATE_SECRET_KEY" \
+  --header "content-type: application/json" \
+  --data '{
+    "account_id": "'"$YUNO_ACCOUNT_ID"'",
+    "merchant_order_id": "order-0001",
+    "payment_description": "First test payment",
+    "country": "US",
+    "customer_id": "'"$YUNO_CUSTOMER_ID"'",
+    "amount": { "currency": "USD", "value": 25 },
+    "workflow": "SDK_CHECKOUT"
+  }'
+```
+
+**En el navegador**, inicia la transacción y sobrescribe `createPayment`. Envía `token.token` y `token.checkout_session` a tu backend:
+
+```html Browser
+<div id="payment-form"></div>
+<script src="https://sdk-web.y.uno/v2.5.1/main.js"></script>
+<script>
+  async function startYuno() {
+    const sdkPayments = await SdkPayments.initialize("your-public-api-key");
+    const transaction = sdkPayments.transaction({
+      checkoutSession: "checkout-session-from-your-server",
+      countryCode: "US",
+      elementSelector: "#payment-form",
+      createPayment: async (token) => {
+        await fetch("/api/pay", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            token: token.token,
+            checkout_session: token.checkout_session,
+          }),
+        });
+      },
+      onStatus: (result) => console.log("Final status:", result.status),
+    });
+    await transaction.start({ paymentMethod: { type: "CARD" } });
+  }
+
+  if (window.SdkPayments) {
+    startYuno();
+  } else {
+    window.addEventListener("sdk-payments-ready", startYuno);
+  }
+</script>
+```
+
+Resuelve la promesa en todos los casos, incluida una falla de red, o la transacción se queda en curso. Consulta [`createPayment`](/docs/yuno-sdk/controllers/create-payment).
+
+**De nuevo en tu servidor**, tu handler `/api/pay` crea el pago con `POST /v1/payments`. Envía el token en `payment_method.token` y la sesión en `checkout.session`:
+
+```javascript Node.js
+// token and checkoutSession come from the browser request body
+async function createPayment({ token, checkoutSession }) {
+  const res = await fetch("https://api-sandbox.y.uno/v1/payments", {
+    method: "POST",
+    headers: {
+      "public-api-key": process.env.YUNO_PUBLIC_API_KEY,
+      "private-secret-key": process.env.YUNO_PRIVATE_SECRET_KEY,
+      "X-Idempotency-Key": crypto.randomUUID(),
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      account_id: process.env.YUNO_ACCOUNT_ID,
+      merchant_order_id: "order-0001",
+      description: "First test payment",
+      country: "US",
+      amount: { currency: "USD", value: 25 },
+      customer_payer: { id: process.env.YUNO_CUSTOMER_ID },
+      payment_method: { token },
+      checkout: { session: checkoutSession },
+    }),
+  });
+  return res.json();
+}
+```
+
+Ingresa la tarjeta de prueba **4507 9900 0000 0002**, vencimiento **11/28**, CVV **123**, nombre **John Doe**, y haz clic en Pay. La respuesta tiene la misma forma que la respuesta de `DIRECT` de arriba.
+
+</Tab>
+</Tabs>
+
+<Check>
+**Paso completado cuando** el `status` del pago es `SUCCEEDED` con la tarjeta de prueba **4507 9900 0000 0002** (11/28, CVV 123, John Doe).
+</Check>
+
+</Step>
+
+<Step titleSize="h3" title="Mira el resultado">
+
+* Revisa `status` y `sub_status` en la respuesta. `SUCCEEDED` con `APPROVED` significa que el gateway aprobó el pago.
+* Abre [Payments](https://dashboard.y.uno/payments) en el dashboard, busca tu pago y ábrelo para ver sus detalles.
+* Para recibir el resultado en tu servidor, [configura un webhook](/docs/webhooks/configure-webhooks) y [verifica su firma](/docs/webhooks/verify-webhook-signatures-hmac) (HMAC).
+
+Los estados de pago aparecen en [Estados de pago](/reference/payments/status-and-response-codes/payment).
+
+<Check>
+**Paso completado cuando** el pago aparece como `SUCCEEDED` en la lista **Payments** del dashboard y en el campo `status` de tu respuesta.
+</Check>
+
+</Step>
+</Steps>
+
+## Siguientes pasos {#next}
+
+<Columns cols={1}>
+  <Card title="Salir a producción" href="/es/docs/go-live" icon="rocket">
+    <span className="yd-kind">Guía</span>
+    <span className="yd-card-body">Claves de producción, una ruta publicada, webhooks verificados y un primer pago real.</span>
+  </Card>
+</Columns>
+
+## Solución de problemas {#troubleshooting}
+
+<AccordionGroup>
+<Accordion title="La API devuelve 401">
+Falta el header `public-api-key` o `private-secret-key`, o es incorrecto. Sandbox y producción usan claves distintas, así que verifica que copiaste las claves de sandbox desde el dashboard en Test Mode. Consulta [Autenticación](/reference/getting-started/authentication).
+</Accordion>
+<Accordion title="El pago termina en INTERNAL_ERROR">
+El `workflow` no coincide con tu integración. Usa `DIRECT` cuando tu servidor envía la tarjeta, y `SDK_SEAMLESS` en la sesión de checkout cuando el Web SDK crea el pago.
+</Accordion>
+<Accordion title="Ningún proveedor procesa el pago">
+Card no tiene una ruta publicada. Abre [Routing](https://dashboard.y.uno/routing) y verifica que la ruta de Card con el Yuno Test Payment Gateway esté en la pestaña **Published**, y que Card esté activado en el [Checkout builder](https://dashboard.y.uno/checkout-builder).
+</Accordion>
+<Accordion title="La tarjeta es rechazada">
+Las tarjetas de prueba son específicas de cada proveedor. Las tarjetas de este Quickstart solo funcionan cuando tu sandbox enruta Card al Yuno Test Payment Gateway. Los otros resultados aparecen en la página del [Yuno Test Payment Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway).
+</Accordion>
+</AccordionGroup>
+
+{/* TODO: the spec asks the troubleshooting list to be checked against real failures on the proof org. "No route published" has no verified error code, so the answer describes the check only. */}
+
+<p className="yd-foot">¿Un término no está claro? Consulta el <a href="/docs/glossary">Glosario</a>. Para URLs, claves y specs, consulta <a href="/docs/developers">Developers</a>.</p>
+
+</div></div>

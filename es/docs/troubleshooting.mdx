@@ -1,0 +1,84 @@
+---
+title: "Solución de problemas"
+sidebarTitle: "Solución de problemas"
+description: "La respuesta, su causa y la solución para los errores comunes de una integración con Yuno: claves, workflow, rutas, tarjetas de prueba, webhooks, reintentos y montos."
+keywords: ["solución de problemas", "errores", "401", "INVALID_CREDENTIALS", "INTERNAL_ERROR", "enrutamiento", "tarjetas de prueba", "x-hmac-signature", "X-Idempotency-Key", "REQUEST_IN_PROCESS", "IDEMPOTENCY_DUPLICATED", "INVALID_PARAMETERS", "monto inválido", "sin decimales"]
+---
+
+<div className="yd-page">
+
+<div className="yd-eyebrow">
+  <span className="yd-eyebrow-accent">Primeros pasos</span>
+  <span className="yd-eyebrow-rule" />
+  <span className="yd-eyebrow-muted">Referencia</span>
+</div>
+
+<p className="yd-lead" style={{marginTop: '18px', maxWidth: 'none'}}>Busca en la primera columna la respuesta que recibiste y aplica la solución. Antes de volver a enviar una solicitud de pago, averigua si la primera solicitud creó un pago.</p>
+
+## Encuentra tu respuesta {#find-your-response}
+
+{/* TODO: spec section 6 asks for each Response below to be reproduced on the Montmartre sandbox before the PR. Not done in this commit, deferred to the PR stage (Task 10). */}
+
+| Respuesta | Causa | Solución |
+| --- | --- | --- |
+| `401` `INVALID_CREDENTIALS` | Falta el header `public-api-key` o `private-secret-key`, o es incorrecto. Sandbox y producción usan claves distintas. | Envía las claves del entorno al que llamas. En sandbox, cópialas desde el dashboard en Test Mode. Consulta [Autenticación](/reference/getting-started/authentication) y [Credenciales de Developers](/docs/using-yuno/settings/developers-credentials). |
+| La transacción termina en `INTERNAL_ERROR` | El `workflow` no coincide con tu integración. | Usa `DIRECT` cuando tu servidor envía la tarjeta. Usa `SDK_SEAMLESS` en la sesión de checkout cuando el Web SDK crea el pago. |
+| No hay proveedor en la respuesta | Card no tiene una ruta publicada. | Abre [Routing](/docs/using-yuno/dashboard-overview/routing) y verifica que la ruta de Card esté en la pestaña **Published**. Verifica que Card esté activado en el Checkout builder. |
+| La tarjeta es rechazada | Las tarjetas de prueba son específicas de cada proveedor. Las tarjetas del Quickstart solo funcionan cuando tu sandbox enruta Card al Yuno Test Payment Gateway. | Enruta Card al gateway, o usa las tarjetas de prueba del proveedor al que enrutas. Consulta [Yuno Test Payment Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway). |
+| No hay métodos de pago en el checkout | El Checkout builder solo muestra los métodos de pago que tienen una ruta publicada y están activados. Una condición de visualización (país, monto, moneda o metadata) también puede ocultar un método. | Publica la ruta, activa el método y haz clic en **Publish settings** en el Checkout builder. Luego revisa las condiciones de visualización del método. |
+| `400` `INVALID_CUSTOMER_FOR_TOKEN` | El token del pago está asociado a otro objeto de cliente. | Envía el cliente al que pertenece el token. Si creaste la sesión de checkout con un `customer_id`, envía el mismo cliente en `customer_payer.id`. Consulta [Flujo de pago](/es/docs/how-yuno-works/how-yuno-payment-flow-works). |
+| `checkout.sdk_action_required` es `true` y el checkout no termina | El pago necesita otra acción del cliente, como 3DS o una redirección, y el SDK no la ejecutó. | Llama al método `continuePayment` del SDK después de crear el pago. |
+| El pago queda en `PENDING` después de la redirección | El método de pago es asíncrono, así que el pago pasa por `PENDING` antes de llegar a un estado final. | Confirma el estado final en tu servidor con un [webhook](/docs/webhooks/index) o con [Retrieve payment](/reference/payments/retrieve-payment-by-id-v2) antes de entregar el pedido. |
+| Una condición de enrutamiento `METADATA` nunca coincide | La clave no está en `payment.metadata`. Una clave ausente nunca coincide, sea cual sea el operador, incluidos `NOT_EQUAL` y `NOT_ONE_OF`. | Envía la clave en el `metadata` del pago. Para dividir el tráfico según si una clave está presente, consulta [Condiciones de enrutamiento](/reference/organizations/routing/routing-conditions). |
+| El `x-hmac-signature` no coincide | Tu código parseó o volvió a serializar el cuerpo antes de calcular la firma, o usa otro secreto. | Calcula el HMAC sobre el cuerpo sin procesar de la solicitud con el secreto configurado para ese webhook. Consulta [Verificar firmas de webhook](/docs/webhooks/verify-webhook-signatures-hmac). |
+| Tu endpoint procesa un webhook dos veces | Yuno reintenta una entrega que no recibe HTTP 200, así que el mismo evento puede llegar más de una vez. | Registra cada evento procesado con su `account_id`, su `type_event` y su clave de idempotencia juntos, y omite un evento que ya esté registrado. Usar solo la clave descarta eventos reales, porque los eventos de reembolso y de contracargo llevan el mismo `data.payment.idempotency_key` que su pago. Consulta [Deduplicación](/docs/webhooks/index#de-duplication). |
+| El monto es 100 veces el total del pedido | El monto se envió en unidades menores (centavos). `amount.value` está en unidades mayores. | Envía `25` para USD 25.00. Valida el monto contra el pedido que guardaste. |
+| `400` `INVALID_PARAMETERS` con `The field 'amount.value' has an invalid amount.` | La moneda no tiene unidades menores (por ejemplo `KRW`, `JPY` o `CLP`) y `value` tiene parte decimal. Yuno no redondea el valor. La misma validación se aplica a los reembolsos, a `cardholder_amount` y a los montos divididos. | Envía un número entero. Redondea una sola vez al armar el pedido y usa el mismo valor en la sesión, en el pago y en cada reembolso. Consulta [Montos y monedas](/docs/basic-concepts/amounts-and-currencies). |
+
+{/* Cut from the seed: "Checkout session request returns 404" (wrong path). 404 is not in reference/getting-started/response-codes, so the row has no verified response. */}
+
+## Maneja una solicitud con resultado incierto {#handle-an-uncertain-request-outcome}
+
+Si una solicitud supera el tiempo de espera, pierde la conexión, devuelve un `500` o devuelve una respuesta que no puedes interpretar, reinténtala con el mismo `X-Idempotency-Key`. Un reintento con una clave nueva crea una operación duplicada si la primera solicitud fue exitosa.
+
+El reintento devuelve uno de estos resultados:
+
+* **El pago original.** La primera solicitud creó un pago, así que maneja el estado actual de ese pago. Yuno ignora el cuerpo del reintento.
+* **`400 REQUEST_IN_PROCESS`.** La primera solicitud todavía se está procesando. Reintenta con la misma clave después de unos segundos.
+* **`400 IDEMPOTENCY_DUPLICATED`.** La primera solicitud falló antes de crear un pago. No existe ningún pago para esta clave y no puedes reutilizarla. Corrige la solicitud y envíala con una clave nueva.
+* **Procesamiento normal.** La primera solicitud fue rechazada antes de empezar a procesarse, así que la clave no se usó y el reintento se ejecuta como una solicitud nueva.
+
+Las reglas completas están en [Idempotencia](/reference/getting-started/authentication#idempotency). Para cada estado HTTP y código de error, consulta [Códigos de respuesta](/reference/getting-started/response-codes).
+
+## Verifica el entorno correcto {#check-the-right-environment}
+
+Sandbox y producción tienen claves distintas. Antes de comparar registros, verifica tres valores:
+
+* **Host de la API.** Sandbox y producción usan URLs base distintas. Consulta [Developers](/docs/developers).
+* **Modo del dashboard.** El indicador de contexto en la barra superior muestra **Test** o **Live**.
+* **Claves.** Cada cuenta tiene un conjunto de claves distinto para cada modo.
+
+Consulta [Entornos](/docs/using-yuno/environments) y [Credenciales de Developers](/docs/using-yuno/settings/developers-credentials).
+
+## Pide ayuda con información útil {#ask-for-help-with-useful-evidence}
+
+Escribe a [support@y.uno](mailto:support@y.uno) e incluye:
+
+* El entorno, y la hora de la solicitud con su zona horaria.
+* El endpoint, el método HTTP, el estado HTTP y el `code` del error.
+* El ID del pago o de la sesión de checkout, y tu referencia del pedido.
+* La plataforma y la versión del SDK, lo que esperabas y lo que pasó.
+* Los pasos para reproducirlo, con los campos de la solicitud y de la respuesta que importan.
+
+Quita las claves privadas, las credenciales, los números de tarjeta sin procesar y los datos personales que no necesitas enviar. Consulta el [estado del servicio](https://status.y.uno) para ver incidentes en curso, y [Developers](/docs/developers) para las versiones y los changelogs de los SDKs.
+
+## Siguientes pasos {#next}
+
+<ol className="yd-next">
+  <li><div><a href="/es/docs/go-live">Salir a producción</a><span className="yd-card-body"><span className="yd-kind">Guía</span> Claves de producción, una ruta publicada, webhooks verificados y un primer pago real.</span></div></li>
+  <li><div><a href="/reference/getting-started/response-codes">Códigos de respuesta</a><span className="yd-card-body"><span className="yd-kind">Referencia</span> Los estados HTTP y los códigos de error que devuelve la API de Yuno.</span></div></li>
+  <li><div><a href="/docs/webhooks/index">Webhooks</a><span className="yd-card-body"><span className="yd-kind">Guía</span> Entrega, reintentos, deduplicación y verificación de firmas.</span></div></li>
+  <li><div><a href="/es/docs/quickstart">Quickstart</a><span className="yd-card-body"><span className="yd-kind">Tutorial</span> Conecta el gateway de pruebas y envía un pago en sandbox.</span></div></li>
+</ol>
+
+</div>
