@@ -17,6 +17,8 @@ Give the duration one of two ways, never both:
 
 `billing_cycle_behavior` is optional and decides the billing date when the subscription resumes, with the same `KEEP`/`RESTART` meanings as on [Resume Subscription](/reference/subscriptions/resume-subscription#keep-and-restart-compared): `KEEP` (the default) holds the original billing date, `RESTART` re-anchors from the resume. Sending it without `pause_cycles` or `pause_until` is accepted — an open-ended pause that just records the behaviour for whenever the subscription is later resumed.
 
+A third value, `RESUME_AT_PAUSE_UNTIL`, exists only on pause: the automatic resume charges on `pause_until` and the cadence continues from there. Use it for "skip one period, then renew on the resume date". On a monthly subscription with no `frequency.monthly_billing_day`, the day of `pause_until` becomes the billing day; a configured billing day is kept. It needs `pause_cycles` or `pause_until`, and a manual resume before that instant behaves as `KEEP`.
+
 `reason` is an optional free-form string, at most 255 characters, stored on the subscription's `reason` field. A later `GET` on the subscription echoes it back, and it stays until something else overwrites it — a resume that sends its own `reason`, for example.
 
 <CodeGroup>
@@ -32,6 +34,10 @@ Give the duration one of two ways, never both:
 { "pause_cycles": 1, "billing_cycle_behavior": "RESTART" }
 ```
 
+```json Pause and charge on the resume date
+{ "pause_until": "2026-12-15T12:00:00Z", "billing_cycle_behavior": "RESUME_AT_PAUSE_UNTIL" }
+```
+
 ```json Pause with a reason
 { "pause_cycles": 1, "reason": "customer requested a break" }
 ```
@@ -41,7 +47,7 @@ Give the duration one of two ways, never both:
 
 ### What happens while it is paused, and when it returns
 
-No cycle is charged during the pause. While a duration is running, the subscription carries `pause_until` on every read; it returns to the status it was billing under on its own, within about a minute of that instant, and a `subscription.resume` webhook arrives carrying `resume_reason: SCHEDULED`. A manual resume before that instant cancels the schedule — call [Resume Subscription](/reference/subscriptions/resume-subscription) yourself at any time to end the pause early. If the automatic resume cannot be completed after its retries, the subscription stays `PAUSED` and a [`subscription.auto_resume_failed`](/docs/webhooks/object-and-examples#subscription-auto_resume_failed) event is sent instead.
+No cycle is charged during the pause. While a duration is running, the subscription carries `pause_until` on every read, and `billing_cycles.next_at` shows the date billing will actually resume under the chosen `billing_cycle_behavior`: `pause_until` itself for `RESUME_AT_PAUSE_UNTIL`, the first original billing date after `pause_until` for `KEEP`, and `pause_until` plus one period for `RESTART`; it returns to the status it was billing under on its own, within about a minute of that instant, and a `subscription.resume` webhook arrives carrying `resume_reason: SCHEDULED`. A manual resume before that instant cancels the schedule — call [Resume Subscription](/reference/subscriptions/resume-subscription) yourself at any time to end the pause early. If the automatic resume cannot be completed after its retries, the subscription stays `PAUSED` and a [`subscription.auto_resume_failed`](/docs/webhooks/object-and-examples#subscription-auto_resume_failed) event is sent instead.
 
 <Note>
 **Availability**
@@ -60,8 +66,9 @@ Pausing for a set time, and the `reason` field, are available to organizations e
 | `400` | `BAD_REQUEST` | `pause_until` falls on or after `availability.finish_at` — the message names both instants. |
 | `400` | `BAD_REQUEST` | `pause_cycles` is sent on a subscription with no recurring billing cadence. |
 | `400` | `BAD_REQUEST` | The organization is not enabled for `pause_cycles`/`pause_until` and one is sent — the message names the field. |
+| `400` | `BAD_REQUEST` | `billing_cycle_behavior` is `RESUME_AT_PAUSE_UNTIL` without `pause_cycles` or `pause_until` — `"billing_cycle_behavior RESUME_AT_PAUSE_UNTIL needs pause_until or pause_cycles."` |
 | `400` | `BAD_REQUEST` | An unrecognized field is sent, refused at the gateway — `"Bad request"` |
-| `400` | `INVALID_PARAMETERS` | `billing_cycle_behavior` is not `KEEP` or `RESTART` — `"The field 'billing_cycle_behavior' has an invalid value."` |
+| `400` | `INVALID_PARAMETERS` | `billing_cycle_behavior` is not `KEEP`, `RESTART` or `RESUME_AT_PAUSE_UNTIL` — `"The field 'billing_cycle_behavior' has an invalid value."` |
 | `400` | `INVALID_PARAMETERS` | `pause_cycles` is outside 1–3 — `"The field 'pause_cycles' has a value greater than allowed."` |
 | `400` | `BAD_REQUEST` | The request body is malformed JSON, refused at the gateway — `"The field '' wrong data type."` |
 | `400` | `INVALID_STATE` | The subscription's status does not support pausing. |
