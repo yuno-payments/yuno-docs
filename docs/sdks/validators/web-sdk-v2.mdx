@@ -15,9 +15,9 @@ Drop this file in the root of your project and ask your coding agent:
 It works as `CLAUDE.md`, `AGENTS.md` or a pasted prompt. It only reads code and changes nothing unless you ask.
 
 It covers the sdk-web v2 line ("Yuno SDK 2.x"): `window.SdkPayments`, `SdkPayments.initialize(...)`, then
-`sdk.transaction({...})`. Check the [Web SDK changelog](https://docs.y.uno/changelog/yuno-sdk/web) for the current version. Each release is served at a full
-version URL such as `https://sdk-web.y.uno/v2.x.y/main.js`, documented in the docs.y.uno "SDK" tab (`docs/yuno-sdk/*`;
-the "SDKs" tab is 1.x). The public docs samples pin v2.5.1.
+`sdk.transaction({...})`. Check the [Web SDK changelog](https://docs.y.uno/changelog/yuno-sdk/web) for the current version.
+`https://sdk-web.y.uno/v2/main.js` stays on the current 2.x release. It serves the entry file, and the SDK loads the rest of that build from the exact version path baked into it. A full version URL such as `https://sdk-web.y.uno/v2.7.1/main.js` pins one release. Documented in the docs.y.uno "SDK" tab (`docs/yuno-sdk/*`;
+the "SDKs" tab is 1.x).
 
 ## How to use
 
@@ -27,7 +27,7 @@ First confirm the repository is on v2. Search source, HTML templates, server tem
 grep -rn "SdkPayments\|sdk-payments-ready\|window\.Yuno\|yuno-sdk-ready\|YunoSDK\|sdk-web\.[a-z.]*y\.uno\|sdk-static-bundles-ms/sdk-web\|loadScript(\|@yuno-payments/sdk-web\|\.transaction(\|startCheckout\|startSeamlessCheckout\|mountCheckout" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
 ```
 
-- **v2:** a `/v2.<minor>.<patch>/main.js` URL, `sdk.transaction(...)`, `transaction.start(...)`,
+- **v2:** a `/v2/main.js` URL or a `/v2.<minor>.<patch>/main.js` URL, `sdk.transaction(...)`, `transaction.start(...)`,
   `getPaymentMethodsViews(...)`.
 - **v1 (1.x):** `/v1.11/main.js`, `window.Yuno`, `Yuno.initialize`, `startCheckout`, `startSeamlessCheckout`,
   `mountCheckoutLite`, `yunoPaymentResult`. Stop and use the v1 or migration validator instead.
@@ -40,7 +40,7 @@ blocking, payment fails or the result is wrong; **(W)** degraded or fragile; **(
 ## The flow being validated
 
 ```
-<script src="https://sdk-web.y.uno/v2.<m>.<p>/main.js">   sets window.SdkPayments, fires 'sdk-payments-ready' once
+<script src="https://sdk-web.y.uno/v2/main.js">   sets window.SdkPayments, fires 'sdk-payments-ready' once
 await SdkPayments.initialize(publicApiKey, applicationSession?, options?)   // once per page, stable arguments
   -> sdk.transaction(config)               // sync; validates config; throws on invalid config
        -> transaction.start({ paymentMethod: { type, vaultedToken?, data? } })   // form, or headless with data
@@ -60,15 +60,12 @@ session `workflow: "SDK_SEAMLESS"`). Enrollment is always managed. There is no `
 
 ### Loading and bootstrap
 
-**1. The script is v2 and pinned to a full version (V1, B)**
+**1. The script is v2 (V1, B)**
 - Grep `sdk-web\.(y\.uno|sandbox\.y\.uno|staging\.y\.uno|prod\.eu\.y\.uno)/[^"' ]*main\.js`,
   `sdk-static-bundles-ms/sdk-web/`, `loadScript(` and `@yuno-payments/sdk-web`.
-- PASS: the URL matches `/v2\.\d+\.\d+/main.js`, or the SRI URL `.../sdk-web/v2.<m>.<p>/main.js`.
-- FAIL on `/v1.11/`, `/v2/`, `/v2.2/`, `latest`; on `loadScript()` without `baseUrl` (it loads `/v1.11/`); on
-  `loadScript({ sri: true })` (a hard-coded v1.11.x SRI URL, the 1.11 build pinned by the npm package). For npm,
-  pass `baseUrl: 'https://sdk-web.y.uno/v2.x.y'`. Older v2 pins like `v2.0.0` are valid if the integration was tested with that version.
-- Why: a v1 bundle gives `sdk.transaction is not a function`; rolling folders `/v2/`, `/v2.0/`, `/v2.2/`
-  return 404. There is no rolling v2 folder: bumps are manual.
+- PASS: the URL is `/v2/main.js` (the current 2.x entry), or it matches `/v2\.\d+\.\d+/main.js`, or the SRI URL `.../sdk-web/v2.<m>.<p>/main.js`. The same `/v2/main.js` path is on the EU host.
+- FAIL on `/v1.11/`, a minor-only path such as `/v2.0/` or `/v2.2/`, and `latest`. FAIL `loadScript()` from `@yuno-payments/sdk-web` 9.x without `baseUrl` (it loads `/v1.11/`), and `loadScript({ sri: true })` on that 9.x package (a hard-coded v1.11 SRI URL). Package 10.x loads one exact 2.x build. It does not follow `/v2/main.js`. Older v2 pins like `v2.0.0` are valid if the integration was tested with that version.
+- Why: a v1 bundle gives `sdk.transaction is not a function`. `/v2/main.js` is the current 2.x entry file and changes when a new 2.x release ships. Minor-only folders such as `/v2.0/` and `/v2.2/` are not published. Subresource Integrity needs a full version, because the rolling file changes.
 
 **2. No v1 globals or events (V2, B)**
 - Grep `window\.Yuno|\bYuno\.initialize|new Yuno|yuno-sdk-ready|YunoSDK`. FAIL on any hit in v2 code.
@@ -306,10 +303,10 @@ payment). A new `Transaction` resets shared instance state, so with two live tra
 ## Report format
 
 ```
-CHECK  1  Script v2, full version     PASS  public/index.html:14 https://sdk-web.y.uno/v2.5.1/main.js
+CHECK  1  Script v2                   PASS  public/index.html:14 https://sdk-web.y.uno/v2/main.js
 CHECK  8  Mode vs workflow            FAIL  api/session.ts:31 no workflow, front end has no createPayment
                                             (managed on SDK_CHECKOUT -> INTERNAL_ERROR)
-SDK: v2.5.1 (script tag). Framework: Next.js 14, React StrictMode on.
+SDK: v2 (script tag, /v2/main.js). Framework: Next.js 14, React StrictMode on.
 ```
 
 Finish with the failures ordered by impact, (B) then (W) then (I), each with a one-line fix.
@@ -322,4 +319,4 @@ Finish with the failures ordered by impact, (B) then (W) then (I), each with a o
 4. The Create Payment request and response (no card data), framework, StrictMode, route change or re-render.
 
 Sources: the Web SDK 2.2.0 release and the v2 source code, the v2 API report and the public Yuno docs
-(the "SDK" tab and its changelog); CDN probes on 2026-10-29. Research date 2026-10-29.
+(the "SDK" tab and its changelog); CDN probes on 2026-10-29. Rolling entry `https://sdk-web.y.uno/v2/main.js` checked 2026-11-11. Research date 2026-10-29.
