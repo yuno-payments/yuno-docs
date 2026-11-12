@@ -1605,6 +1605,181 @@ The next JSON object presents an example of a data structure related to an enrol
   When an enrollment is created with `verify.external_subscription` (see [Enroll payment method](/reference/payment-methods-direct-workflow/enroll-payment-method-api)), the object is echoed in the **enrollment response** and persisted on the **verification payment** — it is not part of the enrollment webhook payload. To correlate later, use the verification payment: its id comes back in the enrollment response (`verify.payment.id`) and the object is returned by [Retrieve payment](/reference/payments/retrieve-payment-by-id) and in payment webhooks.
 </Info>
 
+### Enrollment Card Updated
+
+Sent when the account updater updates or closes a vaulted payment method. Yuno delivers one webhook per updated payment method. The vaulted token (`data.payment_method.id`) remains unchanged.
+
+The event delivers a `card_update` object:
+* `id`: Deterministic UUID generated from the update details; stable across redeliveries for deduplication.
+* `source`: `ACCOUNT_UPDATER`.
+* `reason`: One of `NEW_CARD_NUMBER`, `NEW_EXPIRY`, or `ACCOUNT_CLOSED`.
+* `received_at`: Timestamp (UTC) when Yuno received the update from the updater service.
+* `current`: Card details (`iin`, `lfd`, `expiration_month`, `expiration_year`) after the update. When `reason` is `ACCOUNT_CLOSED`, `current` is `null`.
+
+<Note>
+**V1 vs. V2 format:** In Webhook V2 (shown below), `payment_method` and `card_update` are nested under `data`. In Webhook V1, payment method fields sit directly at the root of `data`, with `card_update` alongside them.
+</Note>
+
+<Tabs>
+  <Tab title="New Card Number (V2)">
+```json
+{
+  "type": "enrollment",
+  "type_event": "enrollment.card_updated",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment_method": {
+      "id": "03c3aae1-ed42-4be6-bc24-de5487f58491",
+      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+      "name": "VISA ****4821",
+      "description": "VISA ****4821",
+      "type": "CARD",
+      "category": "CARD",
+      "country": "CO",
+      "status": "ENROLLED",
+      "customer_id": "2f38972e-2427-43b7-95be-ee4cf21cef1b",
+      "created_at": "2024-09-10T15:04:10.453741Z",
+      "updated_at": "2026-11-04T10:00:00.000000Z",
+      "detail": {
+        "card": {
+          "holder_name": "Pepito Perez",
+          "expiration_month": 12,
+          "expiration_year": 2030,
+          "iin": "41111111",
+          "lfd": "4821",
+          "security_code_length": 3,
+          "number_length": 16,
+          "brand": "VISA",
+          "type": "CREDIT",
+          "category": "CREDIT",
+          "country_code": "US",
+          "country_name": "United States of America"
+        }
+      }
+    },
+    "card_update": {
+      "id": "e6a0d3bf-8594-35ef-bc21-72da9a19fb54",
+      "source": "ACCOUNT_UPDATER",
+      "reason": "NEW_CARD_NUMBER",
+      "received_at": "2026-11-04T10:00:00Z",
+      "current": {
+        "iin": "41111111",
+        "lfd": "4821",
+        "expiration_month": 12,
+        "expiration_year": 2030
+      }
+    }
+  }
+}
+```
+  </Tab>
+  <Tab title="New Expiry (V2)">
+```json
+{
+  "type": "enrollment",
+  "type_event": "enrollment.card_updated",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment_method": {
+      "id": "03c3aae1-ed42-4be6-bc24-de5487f58491",
+      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+      "name": "VISA ****1111",
+      "description": "VISA ****1111",
+      "type": "CARD",
+      "category": "CARD",
+      "country": "CO",
+      "status": "ENROLLED",
+      "customer_id": "2f38972e-2427-43b7-95be-ee4cf21cef1b",
+      "created_at": "2024-09-10T15:04:10.453741Z",
+      "updated_at": "2026-11-04T10:00:00.000000Z",
+      "detail": {
+        "card": {
+          "holder_name": "Pepito Perez",
+          "expiration_month": 8,
+          "expiration_year": 2033,
+          "iin": "41111111",
+          "lfd": "1111",
+          "security_code_length": 3,
+          "number_length": 16,
+          "brand": "VISA",
+          "type": "CREDIT",
+          "category": "CREDIT",
+          "country_code": "US",
+          "country_name": "United States of America"
+        }
+      }
+    },
+    "card_update": {
+      "id": "4cb39972-23c2-3e75-9989-13833d7b8d4f",
+      "source": "ACCOUNT_UPDATER",
+      "reason": "NEW_EXPIRY",
+      "received_at": "2026-11-04T10:00:00Z",
+      "current": {
+        "iin": "41111111",
+        "lfd": "1111",
+        "expiration_month": 8,
+        "expiration_year": 2033
+      }
+    }
+  }
+}
+```
+  </Tab>
+  <Tab title="Account Closed (V2)">
+```json
+{
+  "type": "enrollment",
+  "type_event": "enrollment.card_updated",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment_method": {
+      "id": "03c3aae1-ed42-4be6-bc24-de5487f58491",
+      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+      "name": "VISA ****1111",
+      "description": "VISA ****1111",
+      "type": "CARD",
+      "category": "CARD",
+      "country": "CO",
+      "status": "ENROLLED",
+      "customer_id": "2f38972e-2427-43b7-95be-ee4cf21cef1b",
+      "created_at": "2024-09-10T15:04:10.453741Z",
+      "updated_at": "2026-11-04T10:00:00.000000Z",
+      "detail": {
+        "card": {
+          "holder_name": "Pepito Perez",
+          "expiration_month": 3,
+          "expiration_year": 26,
+          "iin": "41111111",
+          "lfd": "1111",
+          "security_code_length": 3,
+          "number_length": 16,
+          "brand": "VISA",
+          "type": "CREDIT",
+          "category": "CREDIT",
+          "country_code": "US",
+          "country_name": "United States of America"
+        }
+      }
+    },
+    "card_update": {
+      "id": "7f098c1a-8c72-358c-851c-43f1190bcce7",
+      "source": "ACCOUNT_UPDATER",
+      "reason": "ACCOUNT_CLOSED",
+      "received_at": "2026-11-04T10:00:00Z",
+      "current": null
+    }
+  }
+}
+```
+  </Tab>
+</Tabs>
+
 ## Payouts
 
 The next JSON object presents an example of a data structure related to a payout event.
