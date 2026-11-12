@@ -9,9 +9,7 @@
 (() => {
   if (typeof window === 'undefined' || window.__yunoWebMcpRegistered) return;
 
-  const modelContext =
-    (typeof document !== 'undefined' && document.modelContext) ||
-    (typeof navigator !== 'undefined' && navigator.modelContext);
+  const modelContext = globalThis.document?.modelContext ?? globalThis.navigator?.modelContext;
   if (!modelContext) return;
   window.__yunoWebMcpRegistered = true;
 
@@ -80,9 +78,9 @@
   };
 
   const searchDocs = async (args) => {
-    const query = String((args && args.query) || '');
+    const query = String(args?.query ?? '');
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-    const limit = Math.min(Math.max(Number.parseInt((args && args.limit) || 8, 10) || 8, 1), 20);
+    const limit = Math.min(Math.max(Number.parseInt(args?.limit ?? 8, 10) || 8, 1), 20);
     if (!terms.length) return toolResult('Give at least one keyword.');
 
     const { entries } = await loadIndex();
@@ -113,7 +111,7 @@
   const getDocPage = async (args) => {
     let path;
     try {
-      path = toMarkdownPath(args && args.page);
+      path = toMarkdownPath(args?.page);
     } catch (err) {
       return toolResult(err.message);
     }
