@@ -1,0 +1,56 @@
+---
+title: "Search Payments"
+openapi: "/openapi/payments/search-payments.json GET /payments/search"
+description: "Lists the account's payments created in a window of at most 7 days, with filters and cursor pagination."
+---
+
+This request lists the payments of the account sent in the `X-Account-Code` header. Use it to sync payments to a data warehouse or to build an admin panel. To look up a single payment, use [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id-v2) or [Retrieve Payment by Merchant Order ID](/reference/payments/retrieve-payment-by-merchant-order-id) instead.
+
+## Creation window
+
+`created_at_from` and `created_at_to` are required, and the window between them is at most 7 days. A wider window answers `400 DATE_RANGE_TOO_WIDE`. To cover a longer period, send one request per 7-day window.
+
+## Filters
+
+All filters are optional and combine with AND:
+
+| Parameter | Matches |
+| --- | --- |
+| `updated_at_from`, `updated_at_to` | Payments last updated inside this range |
+| `status` | Any of the statuses sent, comma-separated (`status=SUCCEEDED,DECLINED`) or repeated (`status=SUCCEEDED&status=DECLINED`) |
+| `customer_id` | Payments of this customer |
+| `payment_method_type` | Payments made with this payment method type, for example `CARD` |
+| `country` | Payments of this country |
+| `currency` | Payments in this currency |
+| `merchant_order_id` | Payments with this merchant order ID |
+
+## Pagination
+
+Rows are ordered by `created_at` ascending and then by `id`. `limit` sets the page size, from 1 to 100, and defaults to 50.
+
+The response is an object with three fields:
+
+| Field | Description |
+| --- | --- |
+| `payments` | The rows of the page |
+| `next_cursor` | Cursor for the next page, or `null` on the last page |
+| `has_more` | `true` when another page exists, `false` on the last page |
+
+To read the next page, send `cursor` with the `next_cursor` value and the same filters as the request that returned it. Keep paging until `has_more` is `false`. Pages have no gaps or duplicates, even while new payments are created. A malformed cursor, or one sent with different filters, answers `400 INVALID_CURSOR`. Pagination moves forward only.
+
+## Rows
+
+Each row is a summary of the payment: `id`, `account_id`, `merchant_order_id`, `description`, `country`, `status`, `sub_status`, `amount.value`, `amount.currency`, `payment_method.type`, `customer_payer.id`, `created_at` and `updated_at`.
+
+<Info>
+  Rows carry no `transactions` array. Retrieve a payment by its `id` to get the full payment object.
+</Info>
+
+## Errors
+
+Errors use the `code` and `messages` envelope.
+
+| Status | Code | Cause |
+| --- | --- | --- |
+| 400 | `DATE_RANGE_TOO_WIDE` | The window between `created_at_from` and `created_at_to` is longer than 7 days |
+| 400 | `INVALID_CURSOR` | The cursor is malformed, or was sent with filters different from the request that returned it |
