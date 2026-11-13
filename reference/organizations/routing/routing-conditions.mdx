@@ -12,8 +12,9 @@ A condition matches against an attribute of the incoming payment.
   "values":         ["..."],
 
   // Required only on specific condition_types — see "Special cases" below
-  "key":      "<string>",   // METADATA and ADDITIONAL_FIELD only
-  "currency": "<ISO 4217>", // AMOUNT, and VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME; not sent on CURRENCY
+  "key":      "<string>",   // METADATA, ADDITIONAL_FIELD and ORDER_ITEMS_AMOUNT only
+  "currency": "<ISO 4217>", // AMOUNT, ORDER_ITEMS_AMOUNT, and VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME; not sent on CURRENCY
+  "item_values": ["..."],   // ORDER_ITEMS_AMOUNT only
 
   // TIME_PERIOD and VOLUME_PAYMENTS_LIMIT only — see "Schedules" and "Volume and count limits" below
   "time_period_repeat_amount":    1,
@@ -43,6 +44,7 @@ Conditions inside the same `condition_sets[].conditions[]` are combined with **l
 | `TRANSACTION_TYPE` | Payment intent type | `PURCHASE`, `AUTHORIZATION`, `RECURRING`, `MIT`, `CIT` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
 | `METADATA` | `payment.metadata[<key>]` | Any string the merchant sets; requires sibling `key` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `IS`, `IS_NOT`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `CONTAINS` | no |
 | `ADDITIONAL_FIELD` | A field of the payment request named by `key` — customer, address, order, airline or card data. See [Additional fields](#additional-fields-additional_field) | Any string; requires sibling `key` from the supported list | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `CONTAINS` | no |
+| `ORDER_ITEMS_AMOUNT` | Sum of `quantity × unit_amount` of the order items whose `key` field is in `item_values`. See [Order items amount](#order-items-amount-order_items_amount) | Decimal as **string**: one threshold, two for `BETWEEN`; requires siblings `currency` and `item_values` | `GREATER_THAN`, `LESS_THAN`, `GREATER_OR_EQUAL_THAN`, `BETWEEN` | no |
 | `TIME_PERIOD` | The moment the payment is created, against a schedule. See [Schedules](#schedules-time_period) | One or two ISO-8601 date-times **with offset**: the start and, optionally, the end | `EQUAL` | no |
 | `VOLUME_PAYMENTS_LIMIT` | The account's accumulated volume or payment count in the current period, including this payment. See [Volume and count limits](#volume-and-count-limits-volume_payments_limit) | Exactly one positive number as **string**: the limit | `LESS_OR_EQUAL_THAN` | no |
 | `SUBSCRIPTION_RETRY` | Whether the payment is a scheduled auto-retry of a Yuno-managed subscription (`subscription_context.retry_count > 0`); set by Yuno on each attempt, never sent by you | `"true"` or `"false"` | `EQUAL` | no |
@@ -259,6 +261,41 @@ Place the limit set before the route that should take the overflow. Once the lim
 
 All values are compared as strings; `email` is compared case-insensitively. On a multi-valued field (order items, airline legs, passengers) every item must satisfy the operator, except `CONTAINS`, which matches when any item equals `values[0]`. A field absent from the payment never matches, with one exception: the numeric keys (`installments`, the amounts and quantities) resolve to the string `"null"` when absent, so a `NOT_EQUAL` or `NOT_ONE_OF` on them matches payments that do not carry the field.
 
+#### Order items amount: `ORDER_ITEMS_AMOUNT`
+
+`ORDER_ITEMS_AMOUNT` adds up `quantity × unit_amount` of the items in `additional_data.order.items[]` whose `key` field is in `item_values`, and compares the total with `values` in `currency`. Use it to route by how much of the basket belongs to a list of products:
+
+```json
+{
+  "condition_type": "ORDER_ITEMS_AMOUNT",
+  "key": "sku_code",
+  "item_values": ["GC-50", "GC-100", "GC-200"],
+  "currency": "BRL",
+  "conditional": "GREATER_THAN",
+  "values": ["500"]
+}
+```
+
+This condition matches a BRL payment whose items with SKU `GC-50`, `GC-100` or `GC-200` add up to more than 500. A basket of `GC-50` ×1 (50), `GC-100` ×1 (100), `GC-200` ×2 (unit amount 200) and a 1,950 item with another SKU totals 550 and matches; a basket of that 1,950 item and `GC-50` totals 50 and does not.
+
+<div className="code-nowrap-table dense-table">
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `key` | string | no | The item field compared with `item_values`: `sku_code` (default), `category` or `brand`. Another value is rejected. |
+| `item_values` | string[] | yes | One or more values of that field. Matching is exact and case-sensitive. Sending `item_values` on any other `condition_type` is rejected. |
+| `currency` | ISO 4217 | yes | Currency of the threshold. A payment in another currency, or without a currency, never matches. |
+| `conditional` | enum | yes | `GREATER_THAN`, `LESS_THAN`, `GREATER_OR_EQUAL_THAN` or `BETWEEN`. |
+| `values` | string[] | yes | The numeric threshold: exactly one value, two for `BETWEEN`. |
+
+</div>
+
+`unit_amount` is read as the price of one unit in the payment currency; the total is rounded to 2 decimals. A payment with no order items, with no item in the list, or whose items do not carry the `key` field totals `0`, so `LESS_THAN` and `GREATER_OR_EQUAL_THAN 0` match such a payment. Responses return the condition in the same shape, with `key` always set, so it can be sent back on update unchanged.
+
+Rules checked at save time, each a `400 INVALID_ROUTE_CONFIGURATION`: a missing `currency` or one that is not ISO 4217, a missing or empty `item_values`, an unsupported `key`, another operator, a value count other than the one above, a non-numeric value, and schedule or limit fields.
+
+The condition is evaluated at payment time only: order items are not known when the checkout lists payment methods, so that listing and the installments listing ignore it, and the payment evaluates it.
+
 #### Special cases
 
 - **`AMOUNT` requires `currency`.** Comparisons are FX-naive; only payments whose currency matches the rule's `currency` are evaluated.
@@ -266,6 +303,7 @@ All values are compared as strings; `email` is compared case-insensitively. On a
 - **`CURRENCY` matches the payment currency alone**: `{ "condition_type": "CURRENCY", "conditional": "NOT_EQUAL", "values": ["USD"] }` matches every payment not in USD, and `{ "condition_type": "CURRENCY", "conditional": "ONE_OF", "values": ["EUR", "GBP"] }` every payment in EUR or GBP. The currencies go in `values`: `EQUAL` and `NOT_EQUAL` take exactly 1, `ONE_OF` and `NOT_ONE_OF` 1 or more. Each value is an uppercase ISO 4217 code other than `XXX`, and no code may repeat; do not send `currency` or `key` on this type. Like `AMOUNT`, it is valid for every payment method. Anything else is rejected with `400 INVALID_ROUTE_CONFIGURATION`. Responses return `NOT_EQUAL`, `ONE_OF` and `NOT_ONE_OF` exactly as sent, so the retrieved condition can be sent back on update unchanged. `CURRENCY` with `EQUAL` is stored as the currency-only `AMOUNT` above and comes back in that form, `{ "condition_type": "AMOUNT", "conditional": "EQUAL", "values": [], "currency": "USD" }`; both forms are accepted on create and update.
 - **`METADATA` requires `key`.** Compares `payment.metadata[key]`. If the key is absent on the payment (or the payment has no `metadata`), the condition does **not** match, whatever the operator. This includes the negative operators: a payment without the key does **not** match `NOT_EQUAL` or `NOT_ONE_OF` either. See the note below for how to route payments that don't carry the key.
 - **`ADDITIONAL_FIELD` requires `key`** from the [supported list](#additional-fields-additional_field); `METADATA` keys are free-form, `ADDITIONAL_FIELD` keys are not.
+- **`ORDER_ITEMS_AMOUNT` requires `currency` and a non-empty `item_values`**, and `item_values` is accepted on no other `condition_type`. See [Order items amount](#order-items-amount-order_items_amount).
 - **Card-only condition types** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) are only valid when `payment_method = "CARD"`.
 - **`COUNTRY` vs `CARD_ISSUER_COUNTRY`.** The two are sourced independently: `COUNTRY` matches the transaction country your backend submits in the payment request, while `CARD_ISSUER_COUNTRY` matches the issuer country Yuno's own BIN lookup derives from the card number. The same payment can be `COUNTRY = US` and `CARD_ISSUER_COUNTRY = GB` at once. The BIN lookup runs before a provider is selected, is identical in sandbox and production, and reflects real-world BIN-registry data — never the processor's view of the card.
 - **Not to be confused with Communications Campaigns.** That product has its own rule engine, where `AMOUNT_AND_CURRENCY` with `BETWEEN` takes three values `["min", "max", "currency"]`. Routing's `AMOUNT` takes **two** values plus a sibling `currency`, and a third value is rejected.
