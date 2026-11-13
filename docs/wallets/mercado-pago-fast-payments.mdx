@@ -18,6 +18,7 @@ Legacy SDKs remain supported side by side during the transition and are schedule
 Fast Payments is available on:
 
 * **Yuno SDK 2.0 payment methods list** (`getPaymentMethodsViews`), with the checkout session created with `workflow: 'SDK_SEAMLESS'`
+* **Yuno SDK headless `start()`** on Web, from version 2.7.1, when your page runs the Mercado Pago SDK and builds the shopper experience itself. See [Headless integration](#headless-integration).
 * **Web SDK v1.11 Full checkout** (`mountCheckout`)
 * **Web SDK v1.11 Lite checkout** (`mountCheckoutLite`) with `paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN'`, supporting both `element` and `modal` render modes (Mercado Pago recommends `element`).
 
@@ -106,6 +107,7 @@ Set `workflow` on the checkout session (`POST /v1/checkout/sessions`) to match t
 | SDK and experience | `workflow` value | Fast Payments | Notes |
 | --- | --- | --- | --- |
 | **Yuno SDK 2.0** (payment methods list) | `SDK_SEAMLESS` | Yes | Required by Yuno SDK 2.0: it lets the SDK create the payment. Without it the transaction ends in `INTERNAL_ERROR`. |
+| **Yuno SDK headless `start()`** | `SDK_SEAMLESS` | Yes | Your page runs the Mercado Pago SDK. Create one checkout session per payment. |
 | **Web SDK v1.11 Full checkout** | `SDK_CHECKOUT` | Yes | The Mercado Pago section renders at the top of the payment method list. |
 | **Web SDK v1.11 Lite checkout** (`element` or `modal`) | `SDK_CHECKOUT` | Yes | Mercado Pago recommends `element`. |
 | **Web SDK v1.11 Seamless checkout** | `SDK_SEAMLESS` | No | Fast Payments is not available on the v1 Seamless checkout. |
@@ -337,9 +339,87 @@ Mercado Pago opens as a modal with the shopper's saved methods, or with the unav
 </Tab>
 </Tabs>
 
+### Headless integration
+
+In a headless integration your page runs the Mercado Pago SDK, shows the shopper's saved methods in your own UI and gets the shopper's authorization. You then hand Yuno the authorized token and the method the shopper chose with `transaction.start()`. The Yuno SDK renders nothing and builds the same one-time token as the payment methods list.
+
+Headless Fast Payments is available on the Yuno SDK for Web from version 2.7.1. The Web SDK v1 headless integration does not send the Mercado Pago fields.
+
+**1. Create a checkout session for the payment.** Create it from your backend with `workflow: 'SDK_SEAMLESS'`. Create a new session for every payment: once a payment is created on a session, Yuno rejects another payment on it.
+
+**2. Load the shopper's Mercado Pago methods.** Load the Mercado Pago SDK and initialize it with the public key of the same Mercado Pago application you connected to Yuno, for the checkout's country. Pass the amount of the checkout session and the e-mail of the shopper's Mercado Pago account:
+
+```html
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+```
+
+```javascript
+const mp = new MercadoPago('YOUR_MERCADO_PAGO_PUBLIC_KEY', { locale: 'es-MX' });
+
+const wallet = await mp.wallet({
+  amount: '150.00',
+  payer: { email: 'shopper@example.com' },
+});
+
+if (!wallet.available) {
+  // Mercado Pago cannot be used for this shopper: offer your other payment methods
+}
+
+// Each method has id, type, name, lastFourDigits, token, securityCode and installments
+const methods = wallet.paymentMethods;
+```
+
+With an e-mail Mercado Pago does not know, `wallet()` returns `available: false` and no methods. When the method the shopper picks has `securityCode.required`, mount Mercado Pago's security code field with `wallet.mountSecurityCode(containerId, { token: method.token })` before you submit.
+
+**3. Get the shopper's authorization.** Submit the chosen method. The shopper confirms with Mercado Pago, and the result carries the authorized token:
+
+```javascript
+const result = await wallet.submit({ token: method.token });
+const thirdPartyToken = result?.payment_method?.token ?? method.token;
+```
+
+**4. Start the transaction with the wallet data.**
+
+```javascript
+const sdkPayments = await SdkPayments.initialize('YOUR_PUBLIC_API_KEY');
+
+const transaction = sdkPayments.transaction({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  countryCode: 'MX',
+  onStatus: (result) => {
+    console.log('Final status:', result.status);
+  },
+});
+
+await transaction.start({
+  paymentMethod: {
+    type: 'MERCADO_PAGO_SUPERTOKEN',
+    data: {
+      wallet: {
+        thirdPartyToken,
+        providerMethodId: method.id,
+        providerMethodType: method.type,
+      },
+      installment: { value: 3 }, // cards only: the installments the shopper chose
+    },
+  },
+});
+```
+
+| Field | Value |
+| --- | --- |
+| `wallet.thirdPartyToken` | The token returned by `wallet.submit()`. Required. |
+| `wallet.providerMethodId` | The `id` of the chosen method, for example `visa`, `master` or `account_money`. Required. |
+| `wallet.providerMethodType` | The `type` of the chosen method: `credit_card`, `debit_card` or `account_money`. Required. |
+| `installment.value` | The number of installments the shopper chose from the method's `installments`. Optional. Without it the SDK sends 1. The SDK sends no installments for `account_money`. |
+
+When any of the three `wallet` fields is missing, the SDK creates no token and `onStatus` receives `INTERNAL_ERROR` with `message.code` `WALLET_DATA_MISSING`. `message.reason` names the missing fields.
+
+Both modes work. Without `createPayment` the SDK creates the payment. With `createPayment` you create it from your backend with the one-time token, as for any other method.
+
 ### One-time token and payment creation
 
-When the shopper confirms, the SDK's one-time token carries the Mercado Pago details for you:
+When the shopper confirms, in the payment methods list or through a headless `start()`, the SDK's one-time token carries the Mercado Pago details for you:
 
 ```json
 {

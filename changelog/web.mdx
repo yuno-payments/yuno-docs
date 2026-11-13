@@ -5,6 +5,72 @@ description: "Latest updates and version history for the legacy Yuno Web SDK (v1
 
 import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
+## v1.11.57
+*November 12, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Container Presence Logged On Mount**  
+  When the element passed to the SDK is not in the page at mount time, or left the page and was drawn again, the SDK now records whether the element was there when it started and how many milliseconds later it left. No change for the shopper.
+
+## v1.11.56
+*November 10, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="added" /> **onBillingAddressChanged callback for checkouts with taxes**  
+  When the checkout session has `tax_collection`, pass `onBillingAddressChanged` to `startCheckout`. The SDK calls it every time the billing country or postal code of the selected payment method changes, waits for the price with taxes, and keeps the pay button disabled until it answers: the button reads "Adding tax…" meanwhile, and "Try again to continue" with a notice and a retry button above it when the quote fails. A host that draws its own pay button reads `form.taxQuoteStatus` (`pending`, `ready` or `error`) from `onChange`. Without the callback the SDK does not mount and reports `TAX_COLLECTION_CALLBACK_REQUIRED`. With `tax_collection`, Apple Pay is the only express button: Google Pay, PayPal, Revolut Pay and Samsung Pay move into the list as rows with their own billing block, and their button stays disabled until the billing is valid and the price was answered; a new price mounts only that button again.
+
+- <ChangelogBadge type="fixed" /> **Saved-card CVV shows its own label and the merchant font**  
+  In the saved-card form, the security code field showed the card section title (for example "Información de la tarjeta") instead of "CVV" when the form was not in the slim variant. It now uses the same copy as the new-card form. The security code and card PIN fields of the saved-card form also load the fonts passed in `card.fonts`, so they no longer fall back to the browser default font.
+
+## v1.11.54
+*November 10, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Click to Pay enrolment works again when the shopper ticks the consent box**  
+  In the Golden Flow card form, ticking "Save my information with Mastercard Click to Pay" showed a tick but the SDK received it as unticked, so the card was paid as a regular card and never enrolled in Click to Pay. "Remember me in this browser" and the mandate consent checkbox had the same problem. All three now report what the shopper sees.
+
+- <ChangelogBadge type="fixed" /> **Mercado Pago Sandbox Bundle**  
+  Sandbox public API keys now load Mercado Pago's beta bundle on every SDK build. Production keys keep the production bundle.
+
+- <ChangelogBadge type="changed" /> **Apple Pay Merchant Session And PayPal Enrollment On Demand**  
+  When the configuration marks the Apple Pay merchant session or the PayPal enrollment as on demand, the SDK requests it from the sdk-provider endpoint when the shopper taps the button instead of reading it from the configuration, so no PayPal setup token is created for shoppers who never click PayPal. The PayPal button stays visible without a setup token in the configuration. If the request fails, the Apple Pay sheet or the PayPal window closes and the shopper can tap again while the rest of the checkout keeps working.
+
+**Lite Web SDK**
+
+- <ChangelogBadge type="added" /> **Uplift Flex Pay confirms or releases the loan after the payment**  
+  After the Flex Pay one-time token is handed to the merchant, the SDK polls the payment result for about 3 minutes. On SUCCEEDED it confirms the Uplift loan with the id chosen by `CONFIRMATION_ID_SOURCE` and emits the normal Lite payment result. On DECLINED, REJECTED, ERROR or EXPIRED it calls Uplift `error()` and emits `FLEXPAY_FAILED` with reason `PAYMENT_DECLINED`. A missing confirmation id emits `FLEXPAY_FAILED` with reason `CONFIRM_ID_MISSING`, and a timeout emits `FLEXPAY_FAILED` with reason `OBSERVER_TIMEOUT`. Per Uplift order in a tab, confirm is sent at most once and error at most once; nothing is sent after a confirm, and a later successful charge of the same order may still confirm after an error. If Uplift `confirm()` or `error()` throws, the SDK polls once more and retries it once, and each action has its own retry. The merchant receives one result per payment.
+
+- <ChangelogBadge type="changed" /> **Uplift Flex Pay options move to startCheckout and Flex Pay is Lite only**  
+  Pass the Flex Pay options to `startCheckout({..., flexpay: { orderInfo, onAvailabilityChange } })` and mount it with `mountCheckoutLite({ paymentMethodType: 'FLEXPAY' })`; `mountCheckoutLite` does not take `flexpay`. Flex Pay is hidden from the Full and Seamless Full payment list, and `mountSeamlessCheckoutLite({ paymentMethodType: 'FLEXPAY' })` throws a "not compatible" error. The Flex Pay options are never sent to Monitoring. A missing or invalid `orderInfo` and an unsupported currency are logged as errors. When Uplift `confirm()` or `error()` throws, the merchant result is held until the one retry ends, so the retry also runs in a real Lite mount, and the known result is sent if the observer times out first.
+
+- <ChangelogBadge type="added" /> **Mercado Pago Wallet Without Its Own Buttons**  
+  `submitOneTimeTokenForm()` now drives the Mercado Pago wallet form from the merchant's button: it confirms the e-mail, asks the shopper to choose a payment method when none is selected, and starts the payment. With `showPayButton: false`, in a modal or a merchant element, the Pay and Back buttons no longer show once a method is selected; the Continue button of the e-mail step stays, and shoppers can still change the method in the list. A method opened from the payment list keeps its buttons.
+
+- <ChangelogBadge type="added" /> **Uplift Flex Pay in Checkout Lite**  
+  Pass the Flex Pay options to `startCheckout({..., flexpay: { orderInfo, onAvailabilityChange } })` and mount Uplift Flex Pay with `mountCheckoutLite({ paymentMethodType: 'FLEXPAY' })`. The SDK reuses the Uplift runtime already on the page, tokenizes the Uplift virtual card as a one-time token and hands it to `yunoCreatePayment`.
+
+## v1.11.53
+*November 6, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Show Only The Venmo Button**  
+  When a PayPal connection lists paypal under Disable Funding Sources and venmo under Enable Funding Sources, checkout shows the Venmo button and hides the PayPal button. Merchants who do not set that combination keep the buttons they have today.
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Performance logs include time since SDK call**  
+  Performance logs now include the time elapsed since the merchant's SDK call that started the flow, so slow starts can be traced from the merchant's first call.
+
+- <ChangelogBadge type="changed" /> **SDK chunk download timings are reported as network metrics**  
+  The SDK's own lazy JS and CSS chunks now report their download timing as network metrics, with cache hits marked, so slow chunk loads show up in monitoring. Loading behaviour and timing are unchanged.
+
+- <ChangelogBadge type="changed" /> **Unfinished chunk and wallet loads are logged when the page is hidden**  
+  When the page is hidden while a chunk download or a wallet button is still loading, the SDK logs which loads were still open and for how long.
+
 ## v1.11.52
 *November 6, 2026*
 
@@ -567,6 +633,14 @@ import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
 - <ChangelogBadge type="fixed" /> **Regional static hosts: chunks and card iframes follow the host the SDK was loaded from**  
   Until now the bundle served from `sdk-web.<region>.y.uno` (EU: `sdk-web.prod.eu.y.uno`, MENA: `sdk-web.mena.staging.y.uno`) still fetched every lazy chunk from the US host it was built for and both card iframes from `sdk-web-card.prod.y.uno`. The SDK now records the host `main.js` was actually loaded from and, when it is a Yuno static host other than the built one, serves lazy chunks from that same directory and loads the card form and secure-field iframes from the matching `sdk-web-card.<region>` host. The same build works on every regional bucket, so no build variants or infra changes are needed. Merchant `apiUrl` / `assetUrl` overrides keep precedence, and a bundle self-hosted on a non-Yuno domain behaves as before. No merchant integration changes are required.
+
+## v1.10.37
+*November 10, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **Saved-card CVV shows its own label and the merchant font**  
+  In the saved-card form, the security code field showed the card section title (for example "Información de la tarjeta") instead of "CVV" when the form was not in the slim variant. It now uses the same copy as the new-card form. The security code and card PIN fields of the saved-card form also load the fonts passed in `card.fonts`, so they no longer fall back to the browser default font.
 
 ## v1.10.36
 *October 21, 2026*

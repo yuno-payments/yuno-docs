@@ -28,6 +28,7 @@ Installing a module does not make the SDK use it. A module runs only when the pr
 | PayPal Magnes antifraud | Collects PayPal's Magnes device data and attaches it to the payment | Coming with SdkPayments 3.1.0 | Not available |
 | Koin antifraud | Collects the Koin device fingerprint and sends it as `customer.device_fingerprint` | Coming with SdkPayments 3.1.0 | `yuno-sdk-antifraud-koin` |
 | Riskified antifraud | Starts the Riskified beacon with the checkout session and sends that session as `customer.device_fingerprint` | Not available | `yuno-sdk-antifraud-riskified` |
+| Signifyd antifraud | Runs Signifyd's device profiling and sends the Signifyd session as `customer.device_fingerprint` | Not available | `yuno-sdk-antifraud-signifyd` |
 | Netcetera 3DS | Runs 3D Secure challenges natively in your app, for payments and enrollment | Coming with SdkPayments 3.1.0 | `yuno-sdk-3ds-netcetera` |
 | Revolut Pay | Runs the Revolut Pay checkout natively, on top of Revolut's official SDK | Coming with SdkPayments 3.1.0 | Not available |
 
@@ -60,12 +61,15 @@ dependencies {
     implementation("com.yuno.payments:yuno-sdk-antifraud-clearsale:1.0.0")
     implementation("com.yuno.payments:yuno-sdk-antifraud-koin:1.0.0")
     implementation("com.yuno.payments:yuno-sdk-antifraud-riskified:1.0.0")
+    implementation("com.yuno.payments:yuno-sdk-antifraud-signifyd:1.0.0")
     implementation("com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1")
 }
 ```
 
 <Note>
 The Netcetera module also needs Netcetera's Maven repository declared in your project, because its 3DS SDK is not on Maven Central. See [Netcetera 3DS on Android](/docs/sdks/external-native-modules/netcetera-3ds-android#step-1-declare-the-netcetera-maven-repository).
+
+The Signifyd module needs Signifyd's private registry and a download token from Signifyd. See [Signifyd antifraud (Android)](/docs/sdks/external-native-modules/signifyd-android).
 </Note>
 
   </Tab>
@@ -103,7 +107,7 @@ class MyApplication : Application() {
 }
 ```
 
-To confirm a module loaded, filter Logcat by its tag right after the app starts: `adb logcat -s ClearSaleAntifraud`, `adb logcat -s KoinAntifraud`.
+To confirm a module loaded, filter Logcat by its tag right after the app starts: `adb logcat -s ClearSaleAntifraud`, `adb logcat -s KoinAntifraud`, `adb logcat -s SignifydAntifraud`.
 
 <Accordion title="If your app disables App Startup">
 
@@ -113,11 +117,13 @@ Some apps remove the App Startup content provider from their manifest to control
 import androidx.startup.AppInitializer
 import com.yuno.antifraud.clearsale.ClearSaleAntifraudInitializer
 import com.yuno.antifraud.koin.KoinAntifraudInitializer
+import com.yuno.antifraud.signifyd.SignifydAntifraudInitializer
 import com.yuno.threedsecure.netcetera.Netcetera3DSInitializer
 
 val initializer = AppInitializer.getInstance(applicationContext)
 initializer.initializeComponent(ClearSaleAntifraudInitializer::class.java)
 initializer.initializeComponent(KoinAntifraudInitializer::class.java)
+initializer.initializeComponent(SignifydAntifraudInitializer::class.java)
 initializer.initializeComponent(Netcetera3DSInitializer::class.java)
 ```
 
@@ -142,6 +148,7 @@ Once a module is registered the SDK uses it automatically. You do not change any
 - The fingerprint travels as the payment's `customer.device_fingerprint`. Nothing changes in the data you send.
 - Collection runs when the shopper confirms the payment, and the shopper waits for it. On Android collection is bounded by the `timeout` configured for the provider in your Yuno account (5 seconds by default). Keep it short.
 - None of them requests location. On Android, do not add `play-services-location` version 21 or higher next to the ClearSale module: those versions are incompatible with the bundled ClearSale SDK.
+- Signifyd on Android: the module uses the Signifyd SDK key that Yuno serves for your account, so you do not set any key in your app. Signifyd's SDK comes from Signifyd's private registry, and your build downloads it with your own token. The registry snippet, the token setup and the permissions are in [Signifyd antifraud (Android)](/docs/sdks/external-native-modules/signifyd-android).
 
 ### Netcetera 3DS
 
