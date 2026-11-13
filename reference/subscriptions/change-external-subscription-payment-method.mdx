@@ -1,0 +1,39 @@
+---
+title: "Change External Subscription Payment Method"
+openapi: "/openapi/subscriptions/change-external-subscription-payment-method.json POST /external-subscriptions/{external_subscription_id}/payment-method"
+description: "Moves a Stripe Billing subscription to another payment method the customer already enrolled in Yuno, without a payment."
+---
+
+Use this endpoint with [Stripe Billing subscriptions](/docs/payment-features/subscriptions/stripe-billing) to switch a subscription to another vaulted payment method of the same customer.
+
+<Note>
+**No payment is made**
+
+Yuno does not charge the customer and does not run a $0 verification or 3DS. Yuno sets the new payment method as the subscription's default in Stripe, and the next renewals charge it.
+</Note>
+
+## Request
+
+| Field | Description |
+|---|---|
+| `external_subscription_id` (path) | The Stripe subscription ID (`sub_...`), between 3 and 255 characters. |
+| `account_id` | The Yuno account onboarded to the billing bridge (UUID). |
+| `customer_payer.id` | The **Yuno customer ID** (UUID) that owns the subscription. It is not the Stripe customer ID (`cus_...`). |
+| `vaulted_token` | The vaulted token (UUID) of one of that customer's enrolled payment methods. |
+
+The `X-Idempotency-Key` header is required. Replaying the same key with the same request returns the first result. Sending the payment method the subscription already charges returns `200` and changes nothing.
+
+This API is enabled per account. Contact your Key Account Manager to request access.
+
+## Errors
+
+| Status | Code | Meaning | What to do |
+|---|---|---|---|
+| `400` | `INVALID_PARAMETERS` | A field or the `X-Idempotency-Key` header is missing or malformed, or the key was already used for another subscription or payment method. | Fix the request. Use a new key for a different change. |
+| `400` | `CUSTOMER_NOT_FOUND` | The customer does not exist in the account. | Check that `customer_payer.id` is the Yuno customer ID, not the Stripe `cus_` ID. |
+| `400` | `VAULTED_TOKEN_NOT_FOUND` | The `vaulted_token` is not one of the customer's payment methods. | Use a token from the customer's [enrolled payment methods](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api). |
+| `400` | `EXTERNAL_SUBSCRIPTION_NOT_FOUND` | No active external subscription with this ID for the account. | Check the Stripe subscription ID and the account. |
+| `400` | `CUSTOMER_MISMATCH` | The subscription belongs to another customer. | Send the customer that owns the subscription. |
+| `403` | `PRODUCT_NOT_ENABLED` | The account is not enabled for the billing bridge. | Contact your Key Account Manager. |
+| `409` | `CONCURRENT_CHANGE` | Another payment method change for this subscription completed first. | Check the subscription in Stripe before sending another change. |
+| `502` | `BILLING_PLATFORM_ERROR` | The billing platform could not confirm the change. The previous payment method stays. | Retry with a new `X-Idempotency-Key`. |
