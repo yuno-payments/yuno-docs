@@ -11583,8 +11583,8 @@
           {
             "name": "X-account-code",
             "in": "header",
-            "required": true,
-            "description": "The account that owns the connection.",
+            "required": false,
+            "description": "The account that owns the connection. Required for an account connection. Omit it for an organization connection (scope ORGANIZATION).",
             "schema": {
               "type": "string"
             }
@@ -11611,6 +11611,27 @@
                   "params"
                 ],
                 "properties": {
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "ACCOUNT",
+                      "ORGANIZATION"
+                    ],
+                    "default": "ACCOUNT",
+                    "description": "ACCOUNT: the connection belongs to the account in X-account-code. ORGANIZATION: one Apple Pay (own certificates) or Google Pay (Yuno or partner gateway mode) connection used by every account in the organization, including accounts created later."
+                  },
+                  "organization_connection_confirmation": {
+                    "type": "boolean",
+                    "description": "Required as true when scope is ORGANIZATION. Not used on account connections."
+                  },
+                  "checkout_activation": {
+                    "type": "string",
+                    "enum": [
+                      "AVAILABLE",
+                      "ENABLED"
+                    ],
+                    "description": "Required when scope is ORGANIZATION; not used on account connections. AVAILABLE: each account turns the wallet on in its checkout. ENABLED: switched on in every account's checkout at once."
+                  },
                   "merchant_connection_id": {
                     "type": "string",
                     "example": "stripe-us-prod-001"
@@ -11743,6 +11764,23 @@
                       "type": "string",
                       "example": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e"
                     },
+                    "scope": {
+                      "type": "string",
+                      "enum": [
+                        "ACCOUNT",
+                        "ORGANIZATION"
+                      ],
+                      "example": "ACCOUNT"
+                    },
+                    "checkout_activation": {
+                      "type": "string",
+                      "enum": [
+                        "AVAILABLE",
+                        "ENABLED"
+                      ],
+                      "description": "Present only on organization connections (scope ORGANIZATION). Omitted on account connections.",
+                      "example": "ENABLED"
+                    },
                     "merchant_connection_id": {
                       "type": "string",
                       "example": "stripe-us-prod-001"
@@ -11796,7 +11834,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "Bad Request. For an organization connection (scope ORGANIZATION), code can also be ORGANIZATION_CONNECTION_CONFIRMATION_REQUIRED, ORGANIZATION_SCOPE_NOT_SUPPORTED_FOR_PROVIDER, ORGANIZATION_APPLE_PAY_REQUIRES_OWN_CERTIFICATES or ORGANIZATION_CHECKOUT_ACTIVATION_REQUIRED.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11864,6 +11902,30 @@
                     "message": {
                       "type": "string",
                       "example": "A connection with this merchant_connection_id already exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable. ORGANIZATION_ACCOUNTS_UNAVAILABLE: the organization's accounts could not be read while creating an organization connection. Nothing changes; retry the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "internal_error"
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "ORGANIZATION_ACCOUNTS_UNAVAILABLE"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The organization's accounts could not be read. Try again."
                     }
                   }
                 }
@@ -12019,7 +12081,7 @@
       "get": {
         "summary": "Retrieve a Connection",
         "operationId": "retrieve-connection",
-        "description": "Returns a connection you previously created.",
+        "description": "Returns a connection you previously created.\n\nWhen an account reads an organization connection, every param value is masked as ***.",
         "parameters": [
           {
             "name": "connection_id",
@@ -12042,6 +12104,23 @@
                     "connection_id": {
                       "type": "string",
                       "example": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e"
+                    },
+                    "scope": {
+                      "type": "string",
+                      "enum": [
+                        "ACCOUNT",
+                        "ORGANIZATION"
+                      ],
+                      "example": "ACCOUNT"
+                    },
+                    "checkout_activation": {
+                      "type": "string",
+                      "enum": [
+                        "AVAILABLE",
+                        "ENABLED"
+                      ],
+                      "description": "Present only on organization connections (scope ORGANIZATION). Omitted on account connections.",
+                      "example": "ENABLED"
                     },
                     "merchant_connection_id": {
                       "type": "string",
@@ -12195,19 +12274,25 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "account_id"
-                ],
                 "properties": {
                   "account_id": {
                     "type": "string",
                     "format": "uuid",
+                    "description": "Required for an account connection. Omit it for an organization connection.",
                     "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
                   },
                   "merchant_connection_id": {
                     "type": "string",
                     "maxLength": 255,
                     "example": "stripe-us-prod-002"
+                  },
+                  "checkout_activation": {
+                    "type": "string",
+                    "enum": [
+                      "AVAILABLE",
+                      "ENABLED"
+                    ],
+                    "description": "Organization connections only; not used on account connections. AVAILABLE: each account turns the wallet on in its checkout. ENABLED: switched on in every account's checkout. The new value applies only to accounts where the wallet is added to the checkout after the change; accounts that already show it keep their current setting."
                   },
                   "params": {
                     "type": "array",
@@ -12293,6 +12378,23 @@
                       "type": "string",
                       "example": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e"
                     },
+                    "scope": {
+                      "type": "string",
+                      "enum": [
+                        "ACCOUNT",
+                        "ORGANIZATION"
+                      ],
+                      "example": "ACCOUNT"
+                    },
+                    "checkout_activation": {
+                      "type": "string",
+                      "enum": [
+                        "AVAILABLE",
+                        "ENABLED"
+                      ],
+                      "description": "Present only on organization connections (scope ORGANIZATION). Omitted on account connections.",
+                      "example": "ENABLED"
+                    },
                     "merchant_connection_id": {
                       "type": "string",
                       "example": "stripe-us-prod-002"
@@ -12370,7 +12472,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "Bad Request. Also ORGANIZATION_SCOPE_NOT_SUPPORTED: the connection is an organization connection and the update was sent with an account (X-account-code or account_id). Send it without the account.",
             "content": {
               "application/json": {
                 "schema": {
@@ -12464,6 +12566,30 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service Unavailable. ORGANIZATION_ACCOUNTS_UNAVAILABLE: the organization's accounts could not be read while updating an organization connection. Nothing changes; retry the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "internal_error"
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "ORGANIZATION_ACCOUNTS_UNAVAILABLE"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The organization's accounts could not be read. Try again."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -12487,7 +12613,8 @@
           {
             "name": "X-Account-Code",
             "in": "header",
-            "required": true,
+            "required": false,
+            "description": "Required for an account connection. Omit it for an organization connection.",
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -12497,6 +12624,30 @@
         "responses": {
           "204": {
             "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request. ORGANIZATION_SCOPE_NOT_SUPPORTED: the connection is an organization connection and the delete was sent with an account (X-Account-Code). Send it without the account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "bad_request"
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "ORGANIZATION_SCOPE_NOT_SUPPORTED"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Organization connections cannot be changed from an account"
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
@@ -12547,7 +12698,7 @@
             }
           },
           "409": {
-            "description": "Conflict",
+            "description": "Conflict. For an organization connection, details.accounts lists the accounts whose routes still reference it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -12564,6 +12715,47 @@
                     "message": {
                       "type": "string",
                       "example": "Connection '...' is still referenced by an active routing rule"
+                    },
+                    "details": {
+                      "type": "object",
+                      "properties": {
+                        "connection_id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "accounts": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "description": "Organization connections only: the accounts whose routes still reference it."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable. ORGANIZATION_ACCOUNTS_UNAVAILABLE: the organization's accounts could not be read while deleting an organization connection. Nothing changes; retry the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "internal_error"
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "ORGANIZATION_ACCOUNTS_UNAVAILABLE"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The organization's accounts could not be read. Try again."
                     }
                   }
                 }

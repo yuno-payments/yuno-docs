@@ -13,17 +13,26 @@ Partially updates a connection you previously created. Only the fields present i
 ### Path Parameters
 
 <ParamField path="connection_id" type="string" required>
-  The id returned by [Create a Connection](/reference/organizations/connections/create-connection). Must belong to the account your API key is scoped to.
+  The id returned by [Create a Connection](/reference/organizations/connections/create-connection). Must belong to the account your API key is scoped to, or be an organization connection of your organization.
 </ParamField>
 
 ### Body
 
-<ParamField body="account_id" type="string" required>
-  UUID of the account the connection belongs to.
+<ParamField body="account_id" type="string">
+  UUID of the account the connection belongs to. Required for an account connection. Omit it for an organization connection, which belongs to no account.
 </ParamField>
 
 <ParamField body="merchant_connection_id" type="string">
   New label for this connection. Max 255 characters, and must still be unique within the account. Omit it to keep the current label.
+</ParamField>
+
+<ParamField body="checkout_activation" type="enum">
+  Organization connections only. Not used on account connections. Changes how the wallet starts in each account's checkout:
+
+  - `"AVAILABLE"`: the wallet is available to every account, and each account turns it on in its own checkout.
+  - `"ENABLED"`: the wallet is switched on in every account's checkout.
+
+  The new value applies only to accounts where the wallet is added to the checkout after the change. Accounts that already show the wallet keep their current setting.
 </ParamField>
 
 <ParamField body="params" type="object[]">
@@ -72,6 +81,12 @@ Returns the refreshed connection, in the same shape as [Retrieve a Connection](/
 
 <ResponseField name="connection_id" type="string">
   Unique identifier for the connection. Unchanged by an update.
+</ResponseField>
+<ResponseField name="scope" type="string">
+  `ACCOUNT` or `ORGANIZATION`.
+</ResponseField>
+<ResponseField name="checkout_activation" type="string">
+  `AVAILABLE` or `ENABLED`. Present only on organization connections.
 </ResponseField>
 <ResponseField name="merchant_connection_id" type="string">
   Your internal label for this connection.
@@ -192,8 +207,10 @@ curl -X PATCH 'https://api.y.uno/v1/connections/f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c
 | `400` | `UNSUPPORTED_CURRENCY`<br />A `costs[].currency` isn't in the provider's supported list. |
 | `400` | `VALIDATION_ERROR`<br />`connection_id` isn't a valid UUID, or `merchant_connection_id` exceeds 255 characters. |
 | `400` | `MALFORMED_BODY`<br />The body isn't valid JSON. |
+| `400` | `ORGANIZATION_SCOPE_NOT_SUPPORTED`<br />The connection is an organization connection and the update was sent with an account (`X-account-code` or `account_id`). Send it without the account. |
 | `401` | `NOT_AUTHENTICATED`<br />Missing or invalid API key. |
-| `404` | `CONNECTION_NOT_FOUND`<br />Unknown `connection_id`, or the id belongs to a different account. |
+| `404` | `CONNECTION_NOT_FOUND`<br />Unknown `connection_id`, or the id is neither a connection of your account nor an organization connection of your organization. |
 | `409` | `CONNECTION_MERCHANT_ID_CONFLICT`<br />`merchant_connection_id` already exists in this account. |
+| `503` | `ORGANIZATION_ACCOUNTS_UNAVAILABLE`<br />The connection is an organization connection and its accounts could not be read while editing it. Nothing changes; retry the request. |
 
 </div>
