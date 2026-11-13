@@ -28,13 +28,23 @@ Yuno updates card details in the following scenarios:
 
 When the card's expiration date has passed, Yuno can update all the card information or only the expiration date. The option used will depend on the card issuer's approach to card replacement.
 
-Once a card has been updated, Yuno will send a webhook to notify you of the change. **The`vaulted_token` and `fingerprint` for the enrolled card will remain the same, so you don't need to change anything in your integration**. This webhook will contain the following:
+Once a card has been updated or closed, Yuno notifies you via webhook. **The `vaulted_token` and `fingerprint` for the enrolled card remain the same, so you don't need to change anything in your integration**.
 
-* The latest expiry date, last four digits, and Issuer Identification Number (IIN).
-* The reason for the update.
-* Details of the card being replaced.
+## Handling card updates
 
-The following code block presents a notification example:
+For enabled organizations, Yuno sends the dedicated [`enrollment.card_updated`](/docs/webhooks/events#enrollment) event once per updated payment method:
+
+* **Event notification:** Sent when account updater replaces card details (such as a new card number or new expiry date) or closes an account. For organizations where this feature is activated, it replaces the generic enrollment webhook previously received for account updates.
+* **Stable vaulted tokens:** The payment method ID (`vaulted_token`) and fingerprint do not change.
+* **Deduplication:** The same update can be redelivered with the same `card_update.id`, so merchants should deduplicate incoming events using this identifier.
+* **Account closures:** When a card account is closed (`reason: "ACCOUNT_CLOSED"`), the payment method status remains `ENROLLED`. The `current` card object is delivered as `null`.
+* **No `previous` card block:** The payload delivers the updated card state in `current`. Yuno does not transmit a `previous` card block; if you track historic card numbers or expiration dates, retain them in your own database before applying updates.
+* **Current state alignment:** The `current` object reflects the stored card state after processing and can match data you already store.
+* **Activation:** Card update webhooks are enabled per organization by Yuno. The `CARD_UPDATED` trigger is pending addition to the self-service Dashboard catalog; contact [support@y.uno](mailto:support@y.uno) to activate delivery for your organization.
+
+See the full event structure and payload samples in [Enrollment Card Updated Payloads](/docs/webhooks/object-and-examples#enrollment-card-updated).
+
+The legacy notification format for organizations not yet enabled for `enrollment.card_updated` is shown below:
 
 ```json
 {
