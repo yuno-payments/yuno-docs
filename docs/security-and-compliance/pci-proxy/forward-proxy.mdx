@@ -106,7 +106,7 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
       }'
     ```
 
-    The HTTP method you use is the method the destination receives. Headers you set for the destination (like `Authorization` above) pass through; Yuno's own credential headers and all `yuno-*` headers are stripped before forwarding.
+    The HTTP method you use is the method the destination receives. Headers you set for the destination (like `Authorization` above) pass through; Yuno's own credential headers, all `yuno-*` headers, and Yuno's internal, gateway, and hop-by-hop headers are stripped before forwarding (see [Authenticating to the destination](#authenticating-to-the-destination)).
 
     The `yuno-account-id` header is optional: include it when you need to scope the request to a specific account. Like all `yuno-*` headers it is removed before forwarding and never reaches the destination. It narrows **which allowlisted destinations** are permitted for the request; it does not affect token resolution — vaulted tokens are always scoped to your organization.
 
@@ -258,7 +258,11 @@ Send whatever authentication header your destination requires — it is **not li
 | `Content-Type` | Yes |
 | `public-api-key`, `private-secret-key` | Removed by Yuno |
 | Any `yuno-*` header (e.g. `yuno-proxy-destination-url`, `yuno-account-id`) | Removed by Yuno |
-| Internal tracing/infrastructure headers (`traceparent`, `x-datadog-*`, `x-envoy-*`, `x-forwarded-*`, …) | Removed by Yuno |
+| Internal tracing/infrastructure headers (`traceparent`, `x-datadog-*`, `X-Envoy-*`, `X-Forwarded-*`, `Forwarded`, `X-Real-IP`, `X-IP-Address`, …) | Removed by Yuno |
+| Yuno-internal headers (`x-organization-code`, `x-account-code`, `X-Trace-Id`, Yuno's provider-mock headers, …) | Removed by Yuno |
+| Hop-by-hop headers (`Connection`, `Keep-Alive`, `Upgrade`, `TE`, `Trailer`, `Proxy-Authorization`, `Proxy-Connection`) | Removed by Yuno |
+
+Do not rely on sending any of the removed header names to your destination: they are dropped even when your destination expects them. Provider-defined headers such as `X-Provider-Api-Key` are not affected and pass through like any other destination header.
 
 **Common authentication header names by provider** (examples — always check the destination's docs):
 
