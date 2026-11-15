@@ -6,7 +6,17 @@ description: "Receives the final status of the transaction."
 
 `onStatus` is invoked when the transaction reaches its final state. It is the only way to know how the transaction ended.
 
-On iOS, `onStatus` can run more than once for one transaction. Asynchronous methods (PIX, boleto, OXXO, bank transfers and similar) report `status` `PENDING` as soon as the payment exists and the shopper has the payment instructions, with the backend `substatus` when there is one. The final status arrives in a later call, once Yuno confirms the payment. If the shopper closes the instructions screen, the SDK reports `PENDING` with `substatus` `CLOSED_BY_USER`. Treat `PENDING` as not final: keep your screen in a waiting state and confirm the outcome on your server. React Native apps running on iOS receive the same deliveries.
+On iOS and Android, `onStatus` can run more than once for one transaction. Asynchronous methods (PIX, boleto, OXXO, bank transfers and similar) report `status` `PENDING` as soon as the payment exists and the shopper has the payment instructions, with the backend `substatus` when there is one. The final status arrives in a later call, once Yuno confirms the payment.
+
+### Closing payment screens and instructions
+
+When a shopper dismisses or closes a payment screen, webview, or instructions window:
+
+- **Pix Parcelado exception:** If the shopper closes the Pix Parcelado provider screen or back-presses out of it, the SDK reports `PENDING` with substatus `CLOSED_BY_USER` (iOS `ready` / `closedByUser`, Android `PENDING` / `CLOSED_BY_USER`).
+- **Other payment methods and redirects:** Dismissing the screen (such as closing a webview, tapping the close button, or pressing back) reports a user cancellation (`CANCELED` with substatus `CANCELED_BY_USER` or `null`).
+- **Merchant verification:** A user cancellation event represents the shopper's UI gesture or screen dismissal, not the terminal payment status. For asynchronous methods or external redirects (such as bank transfers, cash vouchers, or web redirects), always confirm the definitive transaction outcome via webhook or your backend (`GET /v1/payments/{payment_id}`) before showing a final cancellation screen or voiding an order.
+
+Treat `PENDING` as not final: keep your screen in a waiting state and confirm the outcome on your server. React Native apps running on mobile receive the same deliveries.
 
 On Web, these deliveries are not final. The form stays mounted after them, so the shopper can try again:
 
