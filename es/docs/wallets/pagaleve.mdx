@@ -1,0 +1,192 @@
+---
+title: "PagaLeve"
+description: "Acepta Pix Parcelado (Pix en cuotas) y pagos Pix únicos con PagaLeve, usando los flujos del SDK de Yuno o de la API directa."
+---
+
+Esta guía explica cómo integrar PagaLeve, un proveedor de pagos basado en Pix para Brasil, en tu checkout. Yuno admite tanto el **SDK de Yuno** (recomendado) como los flujos de **API directa**. Aprenderás a:
+
+* Realizar pagos Pix únicos con PagaLeve
+* Realizar pagos con Pix Parcelado (Pix en cuotas) con PagaLeve
+
+## Requisitos {#requirements}
+
+Antes de comenzar, necesitas:
+
+* Una cuenta de Yuno con acceso al Dashboard
+* Claves de API y un `account_id` (que se encuentra en el dashboard)
+* Una conexión de PagaLeve configurada en tu cuenta de Yuno (consulta [Connections](/es/docs/using-yuno/dashboard-overview/connections))
+
+## Crear y gestionar clientes {#create-and-manage-customers}
+
+Crea el cliente una sola vez usando tu `merchant_customer_id` externo y luego consúltalo por el `id` de Yuno o por `merchant_customer_id`, según necesites.
+
+1. Usa el endpoint [Create Customer](/reference/customers/create-customer) y proporciona tu propio `merchant_customer_id` (el identificador único del cliente en tu sistema). La respuesta devuelve `id`, que es el identificador de cliente de Yuno.
+2. Usa [Retrieve Customer](/reference/customers/retrieve-customer) con el `id` de Yuno.
+3. Usa [Retrieve Customer by External Id](/reference/customers/retrieve-customer-by-external-id) con el parámetro de consulta `merchant_customer_id`.
+
+<Tip>
+Crear primero un registro de cliente en Yuno no es obligatorio. PagaLeve acepta la información del cliente (CPF, email, nombre, teléfono, fecha de nacimiento, dirección) directamente en la llamada Create Payment, igual que con Pix simple. Aun así, se recomienda crear el cliente de antemano para mantener la coherencia con tus otros métodos de pago.
+</Tip>
+
+## Pago Pix único {#one-time-pix-payment}
+
+Usa PagaLeve para aceptar un pago Pix estándar de una sola vez.
+
+<Tabs>
+  <Tab title="SDK de Yuno">
+    ### Paso 1: crear una sesión de checkout
+    Comienza creando una sesión de checkout con el endpoint [Create Checkout Session](/es/reference/checkout-sessions/create-checkout-session).
+
+    ```json
+    {
+      "account_id": "{{account_id}}",
+      "country": "BR",
+      "customer_id": "{{customer_id}}",
+      "merchant_order_id": "order-0000024",
+      "payment_description": "One-time Pix Payment with PagaLeve",
+      "amount": {
+        "currency": "BRL",
+        "value": 15000
+      }
+    }
+    ```
+
+    La respuesta devuelve un ID de `checkout_session`.
+
+    ### Paso 2: inicializar el SDK
+    Inicializa el SDK de Yuno (Web, Android o iOS) con el ID de `checkout_session`. PagaLeve aparece como una opción de pago disponible en la interfaz del SDK, usando el tipo de método de pago `"PIX"` para un pago único.
+
+    <Tip>
+    El cliente completa el pago en la página de checkout alojada de PagaLeve. Si tu conexión de PagaLeve tiene `TRANSPARENT_CHECKOUT` habilitado, el cliente lo completa dentro del SDK, mediante una URL de checkout. En cualquier caso, PagaLeve confirma el resultado a Yuno mediante un webhook. Consulta [Transiciones de estado](#status-transitions) más abajo.
+    </Tip>
+  </Tab>
+
+  <Tab title="API directa">
+    ### Paso 1: crear un pago
+    Usa [Create payment](/es/reference/payments/create-payment) con el flujo directo.
+
+    ```json
+    {
+      "description": "One-time Pix Payment with PagaLeve",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000024",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 150
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "callback_url": "https://your-callback.com",
+      "workflow": "DIRECT",
+      "payment_method": {
+        "type": "PIX"
+      }
+    }
+    ```
+
+    <Tip>
+    La respuesta devuelve el `redirect_url` del checkout en el detalle del método de pago. Redirige al cliente allí para completar el pago; PagaLeve confirma el resultado a Yuno mediante un webhook. Consulta [Transiciones de estado](#status-transitions) más abajo para ver cómo se corresponden los estados de PagaLeve con los de Yuno.
+    </Tip>
+
+    ### Paso 2: confirmar el pago
+    Usa [Retrieve payment by id](/reference/payments/retrieve-payment-by-id) para confirmar el estado final.
+  </Tab>
+</Tabs>
+
+## Pago con Pix Parcelado (en cuotas) {#pix-parcelado-installment-payment}
+
+PagaLeve admite Pix Parcelado, que permite a los clientes dividir un pago Pix en cuotas. El cliente elige el plan de cuotas en la propia página de checkout de PagaLeve: Yuno no devuelve los planes disponibles por adelantado y en la llamada Create Payment no se envía ningún dato del plan ni de las cuotas.
+
+<Tabs>
+  <Tab title="SDK de Yuno">
+    ### Paso 1: crear el pago
+    Crea el pago con `payment_method.type` `"PIX_PARCELADO"`. Pasa los artículos del pedido en `additional_data.order.items` para que PagaLeve pueda armar la oferta de cuotas.
+
+    ```json
+    {
+      "description": "Pix Parcelado Payment with PagaLeve",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000023",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 250
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "SDK_CHECKOUT",
+      "checkout": {
+        "session": "{{checkout_session_id}}"
+      },
+      "payment_method": {
+        "type": "PIX_PARCELADO"
+      },
+      "additional_data": {
+        "order": {
+          "items": [
+            {
+              "id": "{{sku}}",
+              "name": "{{item_name}}",
+              "quantity": 1,
+              "unit_amount": 250,
+              "category": "{{item_category}}"
+            }
+          ]
+        }
+      }
+    }
+    ```
+
+    <Tip>
+    La respuesta devuelve la redirección en `payment_method.payment_method_detail.bank_transfer.redirect_url`: Pix Parcelado se categoriza internamente como `BANK_TRANSFER`, por lo que usa el mismo objeto de detalle que otros métodos de transferencia bancaria. `installments` e `installments_plan_id` regresan vacíos al crear el pago; el cliente elige la cantidad de cuotas en la página de checkout alojada de PagaLeve después de la redirección. El pago comienza en estado `Created` y el estado final `Successful` o rechazado llega mediante el webhook. Consulta [Transiciones de estado](#status-transitions) más abajo.
+    </Tip>
+  </Tab>
+
+  <Tab title="API directa">
+    ### Paso 1: crear el pago
+    Usa [Create payment](/es/reference/payments/create-payment) con el flujo directo y `payment_method.type` `"PIX_PARCELADO"`. Pasa los artículos del pedido en `additional_data.order.items`, con la misma estructura que se muestra en la pestaña del SDK anterior.
+
+    <Tip>
+    Consulta [Transiciones de estado](#status-transitions) más abajo para ver cómo informa PagaLeve los cambios de estado, y la pestaña del SDK anterior para saber dónde regresa la URL de redirección en la respuesta y dónde elige el cliente el plan de cuotas.
+    </Tip>
+
+    ### Paso 2: consultar el pago
+    Usa [Retrieve payment by id](/reference/payments/retrieve-payment-by-id) para confirmar el estado final.
+  </Tab>
+</Tabs>
+
+<Info>
+**Limitaciones**
+
+* La moneda se limita a BRL.
+* Pix y Pix Parcelado comparten el mismo flujo de reembolso, ambos se reembolsan de la misma manera, incluidos los motivos `DUPLICATE`, `FRAUDULENT` y `REQUESTED_BY_CUSTOMER`.
+* PagaLeve no usa un patrón de inscripción o almacenamiento, a diferencia de NuPay. Cada pago es un checkout único.
+</Info>
+
+## Transiciones de estado {#status-transitions}
+
+PagaLeve informa el estado del pago mediante webhooks, que se procesan de forma asíncrona. Para `CANCELED` y `EXPIRED`, el webhook publica el estado directamente. Para los demás estados de éxito, primero captura el pago mediante el endpoint `ProcessPayment`.
+
+| Estado de PagaLeve | Estado de Yuno |
+| --- | --- |
+| `NEW` | Creado |
+| `ACCEPTED` | Pendiente de confirmación del proveedor |
+| `AUTHORIZED` | Exitoso |
+| `COMPLETED` | Exitoso |
+| `RELEASED` | Exitoso |
+| `CAPTURED` | Exitoso |
+| `CANCELED` | Cancelado por el usuario |
+| `EXPIRED` | Expirado por el proveedor |
+| `PAYMENT_DECLINED` | Rechazado por el proveedor |
+
+## Endpoints {#endpoints}
+
+* [Crear cliente](/reference/customers/create-customer)
+* [Consultar cliente](/reference/customers/retrieve-customer)
+* [Consultar cliente por ID externo](/reference/customers/retrieve-customer-by-external-id)
+* [Crear sesión de checkout](/es/reference/checkout-sessions/create-checkout-session)
+* [Crear pago](/es/reference/payments/create-payment)
+* [Consultar pago por ID](/reference/payments/retrieve-payment-by-id)
