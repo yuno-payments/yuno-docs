@@ -1,0 +1,49 @@
+---
+title: "Crear pago"
+description: "Crea un pago con Yuno. Admite distintos métodos de pago, el guardado de tarjetas en vault y configuraciones de 3DS."
+keywords: ["browser_info", "payment_method", "vault", "checkout"]
+openapi: "/openapi/es/payments/create-payment.json POST /payments"
+---
+
+Esta solicitud crea un pago. Se necesita una sesión de checkout cuando el workflow es `SDK_CHECKOUT` (el predeterminado), así que créala primero. No se necesita para los workflows `DIRECT` o `REDIRECT`.
+
+<Danger>
+**Importante**
+
+Aunque algunos objetos no son obligatorios al crear un **pago**, la experiencia de pago del usuario puede mejorar si envías esta información.
+</Danger>
+
+<Note>
+**Pagos con 3DS**
+
+Consulta la página [3D Secure](/docs/security-and-compliance/3d-secure) para saber cómo crear pagos con 3DS en Yuno.
+
+</Note>
+
+<Note>
+**Promociones**
+
+Para cobrar el precio de una promoción, envía el `amount` original y una línea de descuento en `additional_data.order.discounts` con `type: YUNO_PROMOTION` y el `quote_id` de una cotización de promoción. Yuno cobra el precio con descuento, mantiene el `amount` tal como lo enviaste y devuelve `discount_amount`. Consulta [Promociones](/docs/payment-features/promotions). El ejemplo de cotización de promoción necesita que Promotions esté habilitado para tu organización: hasta que Yuno lo habilite, [Create Promotion Quote](/reference/promotions/create-promotion-quote) responde 204 y no existe ningún `quote_id`.
+</Note>
+
+Para autorizar un pago sin capturarlo de inmediato (no se le cobra al cliente), envía `capture: false` dentro del detalle del método de pago, en el objeto que corresponde al tipo de método de pago: `payment_method.detail.card.capture` para tarjetas y `payment_method.detail.wallet.capture` para billeteras que admiten autorización (por ejemplo, PayPal con un billing agreement guardado en vault). Yuno solo lee el indicador en el objeto que corresponde al tipo de método de pago, así que `capture: false` dentro de `card` se ignora en un pago con billetera y el pago se captura de inmediato.
+
+Si quieres procesar pagos en un solo paso (autorización y captura al mismo tiempo), envía `capture` como `true` en ese mismo objeto.
+
+Para probar en **Sandbox** todos los resultados posibles de una transacción en Yuno, consulta la [documentación de datos de prueba](/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway).
+
+<Warning>
+**Metadata y lógica de enrutamiento**
+
+Las reglas de enrutamiento leen la metadata del pago, combinada con la metadata de su [cliente](/reference/customers/create-customer). Si usas metadata para definir la lógica de enrutamiento, defínela en el pago o en el cliente. La metadata que se define solo en la [sesión de checkout](/es/reference/checkout-sessions/create-checkout-session) no llega al enrutamiento del pago. La metadata de la sesión de checkout solo decide qué métodos de pago y qué cuotas muestra la sesión cuando una regla de enrutamiento tiene una condición de metadata, así que define la misma metadata en ambos si necesitas las dos cosas.
+</Warning>
+
+<Warning>
+**`vaulted_token` reemplaza el fingerprint del dispositivo**
+
+Si envías `payment_method.vaulted_token` junto con `payment_method.token`, el `vaulted_token` reemplaza todos los datos de pago, incluido el fingerprint del dispositivo (`third_party_session_id`). Si necesitas un análisis antifraude con el fingerprint del dispositivo, no envíes los dos campos juntos.
+</Warning>
+
+Para pagos en dos pasos (autorización y luego captura), envía `capture` como `false` como se describe arriba, y luego usa el endpoint [Capture Authorization](/reference/payments/capture-authorization).
+
+Esta solicitud requiere un `X-Idempotency-Key`. Consulta [Autenticación](/reference/getting-started/authentication#idempotency) para más detalles.
