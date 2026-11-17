@@ -206,9 +206,11 @@ The discount line follows these rules. A line that breaks one is refused with `4
 | `code` has 3 to 32 characters: letters, digits, `-` and `_`. Yuno trims the spaces around it. | `The field 'additional_data.order.discounts[0].code' must have 3 to 32 characters, letters, digits, hyphens and underscores only.` |
 | `code` is not blank. | `The field 'additional_data.order.discounts[0].code' must not be blank.` |
 | The line has no `quote_id`. A line carries a code or a quote id, never both. | `The fields 'additional_data.order.discounts[0].code' and 'additional_data.order.discounts[0].quote_id' must not be sent together.` |
-| `type` is left out or is `YUNO_PROMOTION`. A line with a `code` and no `type` is read as `YUNO_PROMOTION`. | On a `MERCHANT` line: `The field 'additional_data.order.discounts[0].code' must not be sent on a MERCHANT discount line.` |
-| The line has no `id`, `name` or `unit_amount`. Yuno fills them after it applies the promotion. | `The field 'additional_data.order.discounts[0].id' must not be sent on a YUNO_PROMOTION discount line.` (the same for `name` and `unit_amount`) |
+| `type` is left out or is `YUNO_PROMOTION`. A line with a `code`, no `type`, and no `id` or `name` is read as `YUNO_PROMOTION`. | A code on a `MERCHANT` line is ignored, with no error. See the note after this table. |
+| The line has no `unit_amount`, and a line with `type: YUNO_PROMOTION` has no `id` or `name`. Yuno fills them after it applies the promotion. | `The field 'additional_data.order.discounts[0].id' must not be sent on a YUNO_PROMOTION discount line.` (the same for `name` and `unit_amount`) |
 | The payment has one promotion line in all: one code, or one quote id. | `Only one YUNO_PROMOTION discount line is permitted per payment.` |
+
+**A code on a `MERCHANT` line is ignored.** Yuno reads a line as `MERCHANT` when its `type` is `MERCHANT`, or when it has no `type` and carries an `id` or a `name`. Yuno drops the `code` of such a line without an error: no promotion is applied, and the payment goes on without that discount. To redeem a code, send it on a line with no `id`, `name` or `unit_amount`, and with `type` left out or set to `YUNO_PROMOTION`.
 
 No answer repeats your code. Where the promotions service quotes it back in a message, Yuno replaces it with `***`.
 
@@ -220,7 +222,7 @@ Yuno handles the line before it creates the payment and before it tokenizes the 
 2. It checks that Promotions is enabled for your organization, and that the payment can carry a code. See [Payments that can't carry a code](#payments-that-cant-carry-a-code).
 3. It asks the promotions service for a quote with your account, the payment `amount`, the `country` and the code. It sends the `X-Idempotency-Key` of your payment, so the service counts one use for the payment.
 4. When the service gives a quote, Yuno replaces the code with the quote on the discount line, and the payment goes on as a [payment with a quote](/docs/payment-features/promotions#create-the-payment-with-the-quote). Yuno does not send the code on with the payment.
-5. When the service gives no quote, Yuno refuses the payment, and the answer says why (see [Answers](#answers)). No payment is created. Yuno never charges the full price for a payment that carries a code.
+5. When the service gives no quote, Yuno refuses the payment, and the answer says why (see [Answers](#answers)). No payment is created. Yuno never charges the full price for a payment whose `YUNO_PROMOTION` line carries a code. A code on a `MERCHANT` line is ignored (see the note after the rules table).
 
 Other facts about the line:
 
@@ -230,7 +232,7 @@ Other facts about the line:
 
 ### Dry run
 
-A dry run takes no promotion code. A payment with the header `X-Dry-Run: true` that carries a `code` on a discount line is refused with `400 INVALID_PARAMETERS`, and no payment is created:
+A dry run takes no promotion code. A payment with the header `X-Dry-Run: true` that carries a `code` on a `YUNO_PROMOTION` line is refused with `400 INVALID_PARAMETERS`, and no payment is created:
 
 ```json Dry run with a code (400)
 {
