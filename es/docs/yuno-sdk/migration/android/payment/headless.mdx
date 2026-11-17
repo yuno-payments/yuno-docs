@@ -1,0 +1,253 @@
+---
+title: "Modo Headless"
+description: "Migra las integraciones Headless de Android (Yuno.apiClientPayment + generateToken) a la API de Transaction unificada."
+---
+
+Headless era un cliente de tokenización pura: el comercio recopilaba los datos de la tarjeta en su propia interfaz, llamaba a `apiClient.generateToken(collectedData, context)`, recibía un token y luego hacía su propia llamada al backend para crear el pago (y, cuando el backend devolvía un estado que requería 3DS, continuaba el pago mediante `apiClient.continueCardPayment(…)`).
+
+En la API unificada, el mismo escenario corresponde al modo **headless no seamless**: pasa los datos recopilados previamente dentro de `transactionData` en el `PaymentMethodSelected`, sobrescribe [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment) para crear el pago desde tu backend, y deja que el SDK orqueste automáticamente la tokenización, 3DS y la consulta del estado. El comercio ya no tiene que llamar a un endpoint 3DS aparte.
+
+## Uso de la lista de métodos de pago con Headless {#using-payment-methods-list-with-headless}
+
+Headless no significa que no puedas usar los componentes del SDK. Puedes combinar [`getPaymentMethodsViews`](/es/docs/yuno-sdk/features/payment-methods-list) para la selección del método con un `start()` headless para la ejecución del pago.
+
+* **División de responsabilidades:**
+  - **Yuno se encarga de:** mostrar la lista de métodos de pago, mostrar los métodos de pago guardados del cliente, los botones de billeteras express (Google Pay), los desafíos 3DS, las redirecciones y los traspasos.
+  - **El comercio se encarga de:** mostrar los campos personalizados para recopilar la tarjeta y tu propio botón de pago.
+
+```kotlin
+var selectedPayment: PaymentMethodSelected? = null
+
+// Request the views. The list reports the shopper's choice to your PaymentListController
+val views = transaction.getPaymentMethodsViews(
+    host = this,
+    types = listOf(PaymentMethodType.GooglePay(), PaymentMethodType.PaymentMethodList),
+    controller = this
+)
+
+// In your PaymentListController:
+override fun onPaymentSelected(paymentSelected: PaymentMethodSelected) {
+    selectedPayment = paymentSelected
+}
+
+// When the customer taps your own Pay button:
+selectedPayment?.let { selected ->
+    val paymentSelected = when {
+        selected.vaultedToken != null -> {
+            // Saved card: keep the token from the list and add the CVV from your own input
+            PaymentMethodSelected(
+                type = selected.type,
+                vaultedToken = selected.vaultedToken,
+                transactionData = TransactionData(
+                    card = CardData(securityCode = cvv),
+                ),
+            )
+        }
+        selected.type == "CARD" -> {
+            // New card: send the data collected in your own inputs
+            PaymentMethodSelected(
+                type = "CARD",
+                transactionData = TransactionData(
+                    card = CardData(
+                        number = cardNumber,
+                        securityCode = cvv,
+                        expirationMonth = expMonth,
+                        expirationYear = expYear,
+                        holderName = cardHolder,
+                    ),
+                ),
+            )
+        }
+        // Non-card method (e.g. APM or redirect): pass the selection as it is
+        else -> selected
+    }
+    transaction.start(activity = this, paymentSelected = paymentSelected)
+}
+```
+
+<Warning>
+**La vista Unfolded display no se puede usar con la recopilación headless de tarjetas.** Cuando **Unfolded display** está habilitado en **Checkout Builder → Styling**, al seleccionar un método se incrusta y envía el formulario prediseñado de Yuno directamente dentro de la fila de la lista. Para recopilar los datos de la tarjeta en tus propios campos, asegúrate de que Unfolded display esté deshabilitado, de modo que la lista actúe estrictamente como selector.
+</Warning>
+
+## Antes de empezar {#before-you-start}
+
+- Reemplaza los imports `com.yuno.sdk.*` por sus equivalentes `com.yuno.payments.sdk.api.*` (la comparación lado a lado los enumera). Tu clave de API pública y las sesiones de checkout que crea tu backend no cambian ([Antes de comenzar](/es/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide quién crea el pago. El `workflow` de la sesión de checkout debe coincidir con esa decisión:
+
+| Quién crea el pago | En Headless tenías | En la API unificada | `workflow` de la sesión |
+|---|---|---|---|
+| Tu backend | Siempre: `generateToken`, y luego tu propia llamada al backend | Sobrescribir `createPayment` | Predeterminado (`SDK_CHECKOUT`) |
+| El SDK | Sin equivalente: Headless nunca creaba el pago | Sin sobrescritura | `SDK_SEAMLESS` |
+
+<Warning>
+Una sesión con el workflow predeterminado y sin sobrescritura de `createPayment` termina en `INTERNAL_ERROR`: el backend rechaza la creación del pago por parte del SDK. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Comparación lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```kotlin Before. Headless mode
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.ApiClientPayment
+import com.yuno.sdk.ApiClientPayment.Companion.generateToken
+import com.yuno.sdk.ApiClientPayment.Companion.continueCardPayment
+import com.yuno.sdk.payments.TokenCollectedData
+import com.yuno.sdk.payments.PaymentMethod
+import com.yuno.sdk.payments.CardData
+import com.yuno.sdk.payments.Detail
+
+class CheckoutActivity : ComponentActivity() {
+
+    private lateinit var apiClient: ApiClientPayment
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1. Initialize once at app startup
+        Yuno.initialize(applicationContext, apiKey = "your-public-api-key")
+
+        // 2. Create the headless client
+        apiClient = Yuno.apiClientPayment(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            context = this,
+        )
+    }
+
+    // 3. Tokenize from your own form, then create the payment on your backend yourself
+    suspend fun pay(number: String, cvv: String, expMonth: Int, expYear: Int, holder: String) {
+        val data = TokenCollectedData(
+            checkoutSession = "session-from-backend",
+            paymentMethod = PaymentMethod(
+                type = "CARD",
+                vaultedToken = null,
+                card = CardData(
+                    save = false,
+                    detail = Detail(
+                        number = number,
+                        securityCode = cvv,
+                        expirationMonth = expMonth,
+                        expirationYear = expYear,
+                        holderName = holder,
+                    ),
+                ),
+            ),
+        )
+
+        val result = apiClient.generateToken(data, context = this)
+        val token = result["token"] as? String ?: return
+
+        createPaymentOnBackend(token)   // your code
+    }
+
+    // 4. Optional: continue the payment if your backend returned a 3DS-required status
+    fun continue3ds() {
+        apiClient.continueCardPayment(
+            activity = this,
+            showPaymentStatus = false,
+        ) { state, subState ->
+            // handle the final state
+        }
+    }
+}
+```
+
+```kotlin After. Non-seamless headless
+import com.yuno.payments.sdk.api.SdkPayments
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
+import com.yuno.payments.sdk.api.models.TransactionData
+import com.yuno.payments.sdk.api.models.CardData
+
+class CheckoutActivity : ComponentActivity(), TransactionController {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1. Initialize once at app startup
+        SdkPayments.initialize(applicationContext, apiKey = "your-public-api-key")
+    }
+
+    // 2. Override createPayment. The SDK will wait for this suspend fun to return before
+    //    querying status. Returning normally signals "payment created, please continue."
+    //    Throwing stops the flow (the SDK will not invoke onStatus).
+    override suspend fun createPayment(token: Map<String, Any>) {
+        createPaymentOnBackend(token["token"] as? String ?: "")
+    }
+
+    override fun onStatus(status: TransactionStatus) {
+        // status.status: "SUCCEEDED" / "REJECTED" / ...
+    }
+
+    // 3. Build TransactionData from your own form, then start
+    fun pay(number: String, cvv: String, expMonth: Int, expYear: Int, holder: String) {
+        val paymentSelected = PaymentMethodSelected(
+            type = "CARD",
+            transactionData = TransactionData(
+                card = CardData(
+                    number = number,
+                    securityCode = cvv,
+                    expirationMonth = expMonth,
+                    expirationYear = expYear,
+                    holderName = holder,
+                ),
+            ),
+        )
+
+        val config = TransactionConfig(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            controller = this,
+        )
+
+        Transaction(config = config)
+            .start(activity = this, paymentSelected = paymentSelected)
+    }
+}
+```
+
+</CodeGroup>
+
+## Qué cambia {#what-changes}
+
+Agrupado en el orden en que editas el código. **Renombrado**: mismo rol, nuevo nombre. **Movido**: mismo valor, nuevo propietario. **Eliminado**: no hay nada que llamar. **Nuevo**: sin equivalente anterior. La última columna es lo único que tienes que hacer además del cambio de nombre.
+
+### Inicialización y configuración {#initialization-and-config}
+
+| Headless | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `import com.yuno.sdk.*` | `import com.yuno.payments.sdk.api.*` | Renombrado | |
+| `Yuno.initialize(context, apiKey)` | `SdkPayments.initialize(context, apiKey)` | Renombrado | |
+| `TokenCollectedData.checkoutSession` | `TransactionConfig.checkoutSession` | Movido | Defínelo una sola vez en la configuración, junto con el `countryCode` que le diste a `apiClientPayment`. |
+| `PaymentMethod.type` | `PaymentMethodSelected.type` | Movido | Pasa al objeto padre. Consulta [`PaymentMethodSelected`](/es/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected). |
+| `PaymentMethod.vaultedToken` | `PaymentMethodSelected.vaultedToken` | Movido | Pasa al objeto padre. |
+| `PaymentMethod.card` (`CardData` con `Detail` anidado) | `TransactionData.card` (`CardData`) | Movido | Mismos campos, dentro del espacio de nombres de `transactionData` y en un solo nivel: sin el contenedor `detail`. Consulta [`TransactionData`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-data). |
+| `PaymentMethod.customer` | `TransactionData.customer` | Movido | Dentro del espacio de nombres de `transactionData`. |
+
+### Controlador {#controller}
+
+| Headless | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| *(callbacks libres, sin controlador)* | `TransactionController` | Nuevo | Impleméntalo en una clase con `createPayment` y `onStatus` (no se necesita nada más) y pásala como `TransactionConfig.controller`. El SDK no la retiene: mantenla activa durante toda la transacción. |
+| Tu propia llamada al backend después de `generateToken` | `createPayment(token: Map<String, Any>)` | Movido | Sobrescríbelo: el SDK invoca tu manejador con `token`, el token de un solo uso completo como mapa. Crea el pago en tu backend y regresa. El manejador es una `suspend fun`, y regresar es la forma de indicar "pago creado, continúa": el SDK entonces consulta el estado del pago y termina el flujo. Si lanza un error, el flujo se detiene y no se llama a `onStatus`, así que muestra el error tú mismo. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). |
+| *(sin controlador de resultado)* | `onStatus(status: TransactionStatus)` | Nuevo | El SDK ahora gestiona todo el ciclo de vida e informa aquí el estado final, una vez por transacción. `status` y `substatus` provienen del backend; el SDK solo emite `INTERNAL_ERROR` y `USER_CANCEL`. Consulta [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Puntos de entrada {#entry-points}
+
+| Headless | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `Yuno.apiClientPayment(checkoutSession, countryCode, context)` | `Transaction(config)` | Renombrado | El objeto de transacción reemplaza al cliente headless: ya no hay objetos `apiClient*`, un único `Transaction` cubre todo el ciclo de vida. Su `checkoutSession` y `countryCode` van en la configuración. El argumento `Context` ya no existe en ninguna llamada: `SdkPayments.initialize` conserva el contexto de la aplicación, y `Transaction` / `TransactionConfig` no requieren uno. |
+| `apiClient.generateToken(data, context)` (suspend, devuelve `Map<String, Any?>`) | `Transaction(config).start(activity, paymentSelected)` | Renombrado | Ya no tokenizas tú. De las tres cosas que Headless hacía explícitamente (tokenizar, crear el pago en tu backend y activar 3DS), solo la creación del pago sigue de tu lado, a través de `createPayment`. Construye el `PaymentMethodSelected` con tu `transactionData` recopilado previamente y luego llama a `start`: el SDK tokeniza y llama a `createPayment` con el token. |
+| Resultado de `generateToken` (`Map<String, Any?>`) | argumento `token` de `createPayment` (`Map<String, Any>`) | Movido | Conceptualmente el *OneTimeToken*, el mismo payload en todas las plataformas. Consulta [`OneTimeToken`](/es/docs/yuno-sdk/reference/objects-you-receive#one-time-token). |
+| `apiClient.continueCardPayment(activity, showPaymentStatus, callbackPaymentState)` | *(eliminado)* | Eliminado | Elimina la llamada: el SDK ejecuta 3DS automáticamente como parte de la transacción y presenta el WebView a pantalla completa; observas el progreso mediante `showLoading` / `onStatus`. Esto es fijo: sobrescribir [`showView`](/es/docs/yuno-sdk/controllers/show-view) no lo cambia, ya que `showView` solo se activa para vistas de acción que no son WebView, como un código QR, no para los desafíos 3DS ni las redirecciones. |
+
+## Relacionado {#related}
+
+- [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). El controlador que recibe el token.
+- [`TransactionData`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-data). La estructura de los datos recopilados previamente.
+- [`PaymentMethodSelected`](/es/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected). Donde reside `transactionData`.
+- [Migración / Lite](/es/docs/yuno-sdk/migration/android/payment/lite). Para el caso más simple en el que "el SDK muestra el formulario".

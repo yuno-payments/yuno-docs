@@ -1,0 +1,185 @@
+---
+title: "Módulos nativos"
+sidebarTitle: "Agregar módulos nativos"
+description: "Agrega un SDK nativo de terceros, antifraude, 3DS o Revolut Pay, al Yuno SDK como módulo opcional, sin cambiar tu código de transacción."
+---
+
+El Yuno SDK se mantiene pequeño a propósito: cada SDK nativo de terceros se distribuye como un módulo independiente y opcional. Agregas solo los módulos que usa tu cuenta, el SDK los detecta cuando la app inicia y tu código de `Transaction` no cambia.
+
+<Note>
+Los módulos nativos aplican solo a iOS y Android. Una app de React Native los agrega a sus proyectos nativos (`android/` y `ios/`) exactamente como una app nativa, y su código JavaScript no cambia. En Web no hay nada que instalar. El SDK carga en tiempo de ejecución los scripts de los proveedores de antifraude habilitados para tu cuenta y recopila los fingerprints durante la transacción. Para recopilarlos antes de la transacción, llama a `sdkPayments.antifraud()`.
+</Note>
+
+<Note>
+Instalar un módulo no hace que el SDK lo use. Un módulo se ejecuta solo cuando el proveedor está habilitado para tu cuenta de Yuno y el backend lo solicita para la transacción en curso.
+</Note>
+
+## Cómo funciona {#how-it-works}
+
+1. Agregas el módulo a tu app junto al SDK, como producto de paquete o dependencia de Gradle.
+2. Cuando la app inicia, el módulo se registra en el SDK.
+3. Durante una transacción, el SDK consulta a Yuno qué proveedores aplican y usa el módulo correspondiente: recopila una huella digital del dispositivo y la adjunta al pago, ejecuta el desafío 3DS de forma nativa en lugar de en un WebView, o abre el checkout de Revolut Pay.
+
+## Módulos disponibles {#available-modules}
+
+| Módulo | Qué agrega | iOS | Android |
+|---|---|---|---|
+| Antifraude ClearSale | Recopila el fingerprint del dispositivo de ClearSale y lo envía como `customer.device_fingerprint` del pago | Llegará con SdkPayments 3.1.0 | `yuno-sdk-antifraud-clearsale` |
+| Antifraude PayPal Magnes | Recopila los datos de dispositivo de Magnes de PayPal y los adjunta al pago | Llegará con SdkPayments 3.1.0 | No disponible |
+| Antifraude Koin | Recopila el fingerprint del dispositivo de Koin y lo envía como `customer.device_fingerprint` | Llegará con SdkPayments 3.1.0 | `yuno-sdk-antifraud-koin` |
+| Antifraude Riskified | Inicia el beacon de Riskified con la sesión de checkout y envía esa sesión como `customer.device_fingerprint` | No disponible | `yuno-sdk-antifraud-riskified` |
+| Antifraude Signifyd | Ejecuta el perfilado de dispositivo de Signifyd y envía la sesión de Signifyd como `customer.device_fingerprint` | No disponible | `yuno-sdk-antifraud-signifyd` |
+| Netcetera 3DS | Ejecuta los desafíos de 3D Secure de forma nativa en tu app, para pagos e inscripción | Aún no disponible | `yuno-sdk-3ds-netcetera` |
+| Revolut Pay | Ejecuta el checkout de Revolut Pay de forma nativa, sobre el SDK oficial de Revolut | Llegará con SdkPayments 3.1.0 | No disponible |
+
+Plataforma mínima: iOS 14.0, Android 6.0 (API 23). Cada módulo requiere la misma versión del SDK que instalas desde [Get Started](/es/docs/yuno-sdk/get-started#install).
+
+## Instalación {#install}
+
+<Tabs>
+  <Tab title="iOS">
+
+<Note>
+**Los módulos nativos de iOS se están publicando para el Yuno SDK.** Se documentarán aquí cuando estén disponibles. Mientras tanto, los desafíos 3DS se ejecutan en el WebView del SDK y los fingerprints antifraude nativos no se recopilan en iOS 3.x.
+
+Los módulos del SDK Legacy (2.x) documentados en [iOS Overview](/es/docs/sdks/external-native-modules/ios-overview) son solo para el SDK Legacy y no se pueden usar con el Yuno SDK (3.x).
+</Note>
+
+  </Tab>
+  <Tab title="Android">
+
+Agrega los módulos que necesites al archivo de compilación del módulo de tu app, junto al SDK. Cada módulo trae su SDK del proveedor y sus propias dependencias.
+
+```kotlin
+repositories {
+    maven { url = uri("https://yunopayments.jfrog.io/artifactory/snapshots-libs-release") }
+}
+
+dependencies {
+    implementation("com.yuno.payments:android-sdk:3.0.0")
+    // Add only the modules your account uses
+    implementation("com.yuno.payments:yuno-sdk-antifraud-clearsale:1.0.0")
+    implementation("com.yuno.payments:yuno-sdk-antifraud-koin:1.0.0")
+    implementation("com.yuno.payments:yuno-sdk-antifraud-riskified:1.0.0")
+    implementation("com.yuno.payments:yuno-sdk-antifraud-signifyd:1.0.0")
+    implementation("com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1")
+}
+```
+
+<Note>
+El módulo de Netcetera también necesita que declares el repositorio Maven de Netcetera en tu proyecto, porque su SDK de 3DS no está en Maven Central. Consulta [Netcetera 3DS on Android](/es/docs/sdks/external-native-modules/netcetera-3ds-android#step-1-declare-the-netcetera-maven-repository).
+
+El módulo de Signifyd necesita el registro privado de Signifyd y un token de descarga que proporciona Signifyd. Consulta [Signifyd antifraud (Android)](/es/docs/sdks/external-native-modules/signifyd-android).
+</Note>
+
+  </Tab>
+  <Tab title="React Native">
+
+Agrega los módulos de Android a `android/app/build.gradle` como muestra la pestaña de Android, y los módulos de iOS a `ios/Podfile` como muestra la parte de CocoaPods de la pestaña de iOS, y luego ejecuta `pod install`. Las apps de React Native instalan las dependencias de iOS solo mediante CocoaPods.
+
+  </Tab>
+</Tabs>
+
+## Activación {#activate}
+
+<Tabs>
+  <Tab title="iOS">
+
+<Note>
+**Los módulos nativos de iOS se están publicando para el Yuno SDK.** Se documentarán aquí cuando estén disponibles. Mientras tanto, los desafíos 3DS se ejecutan en el WebView del SDK y los fingerprints antifraude nativos no se recopilan en iOS 3.x.
+
+Los módulos del SDK Legacy (2.x) documentados en [iOS Overview](/es/docs/sdks/external-native-modules/ios-overview) son solo para el SDK Legacy y no se pueden usar con el Yuno SDK (3.x).
+</Note>
+
+  </Tab>
+  <Tab title="Android">
+
+Cada módulo se registra solo cuando inicia el proceso de tu app, mediante [Jetpack App Startup](https://developer.android.com/topic/libraries/app-startup). Mantén tu inicialización habitual:
+
+```kotlin
+import com.yuno.payments.sdk.api.SdkPayments
+
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        SdkPayments.initialize(this, apiKey = "your-public-api-key")
+    }
+}
+```
+
+Para confirmar que un módulo se cargó, filtra Logcat por su etiqueta justo después de que la app inicie: `adb logcat -s ClearSaleAntifraud`, `adb logcat -s KoinAntifraud`, `adb logcat -s SignifydAntifraud`.
+
+<Accordion title="Si tu app desactiva App Startup">
+
+Algunas apps eliminan el content provider de App Startup de su manifiesto para controlar por sí mismas el trabajo de arranque. En ese caso, ejecuta tú mismo los inicializadores, antes de cualquier transacción:
+
+```kotlin
+import androidx.startup.AppInitializer
+import com.yuno.antifraud.clearsale.ClearSaleAntifraudInitializer
+import com.yuno.antifraud.koin.KoinAntifraudInitializer
+import com.yuno.antifraud.signifyd.SignifydAntifraudInitializer
+import com.yuno.threedsecure.netcetera.Netcetera3DSInitializer
+
+val initializer = AppInitializer.getInstance(applicationContext)
+initializer.initializeComponent(ClearSaleAntifraudInitializer::class.java)
+initializer.initializeComponent(KoinAntifraudInitializer::class.java)
+initializer.initializeComponent(SignifydAntifraudInitializer::class.java)
+initializer.initializeComponent(Netcetera3DSInitializer::class.java)
+```
+
+</Accordion>
+
+  </Tab>
+  <Tab title="React Native">
+
+En Android los módulos se registran solos mediante App Startup, como en la pestaña de Android. En iOS los pods son frameworks estáticos: llama al `register()` de cada módulo desde tu `AppDelegate` antes de la primera transacción, como en la pestaña de iOS. Mantén `SdkPayments.initialize` en tu código JavaScript.
+
+  </Tab>
+</Tabs>
+
+<Tip>
+Una vez que un módulo está registrado, el SDK lo usa automáticamente. No cambias ningún código de pago, inscripción ni 3DS.
+</Tip>
+
+## Qué necesita cada módulo de tu app {#what-each-module-needs-from-your-app}
+
+### Módulos de antifraude {#antifraud-modules}
+
+- El fingerprint viaja como `customer.device_fingerprint` del pago. No cambia nada en los datos que envías.
+- La recopilación se ejecuta cuando el comprador confirma el pago, y el comprador espera a que termine. En Android la recopilación está limitada por el `timeout` configurado para el proveedor en tu cuenta de Yuno (5 segundos por defecto). Mantenlo corto.
+- Ninguno solicita la ubicación. En Android, no agregues `play-services-location` versión 21 o superior junto al módulo de ClearSale: esas versiones son incompatibles con el SDK de ClearSale incluido.
+- Signifyd en Android: el módulo usa la clave del SDK de Signifyd que Yuno entrega para tu cuenta, por lo que no configuras ninguna clave en tu app. El SDK de Signifyd viene del registro privado de Signifyd, y tu compilación lo descarga con tu propio token. El fragmento del registro, la configuración del token y los permisos están en [Signifyd antifraud (Android)](/es/docs/sdks/external-native-modules/signifyd-android).
+
+### Netcetera 3DS {#netcetera-3ds}
+
+<Note>
+**iOS:** Los módulos nativos de 3DS aún no están disponibles para el Yuno SDK (3.x). Hasta que se publiquen, los desafíos 3DS se ejecutan en el WebView del SDK en iOS.
+</Note>
+
+**Android:**
+- Ejecuta el desafío de 3D Secure dentro de tu app, para pagos e inscripción, en lugar del desafío en WebView. Si personalizas los estilos del SDK, se propagan a la pantalla del desafío.
+- El SDK sigue presentando el desafío a pantalla completa: no pasa por `showView`.
+- Solo en sandbox: el SDK de Netcetera necesita un certificado raíz de prueba de Visa (`acq-root-certeq-prev-environment.crt`) en el paquete de tu app. Pídelo a tu TAM de Yuno, no se distribuye públicamente. Las compilaciones de producción no lo usan.
+
+### Revolut Pay {#revolut-pay}
+
+<Note>
+**iOS:** El módulo de Revolut Pay llegará con SdkPayments 3.1.0. Las instrucciones de integración se documentarán aquí cuando estén disponibles.
+</Note>
+
+## Solución de problemas {#troubleshooting}
+
+<AccordionGroup>
+  <Accordion title="El módulo está instalado pero nada cambia (Android)">
+    Revisa, en este orden: que el proveedor esté habilitado para tu cuenta de Yuno (consulta a tu TAM); que la línea del módulo aparezca en Logcat al iniciar; y que tu app no esté eliminando el proveedor de App Startup del manifiesto.
+  </Accordion>
+  <Accordion title="Android: NoClassDefFoundError que menciona LocationServices en cada recopilación">
+    Es lo esperado con el módulo de ClearSale: la biblioteca de ubicación está ausente a propósito. El SDK captura el error internamente y la recopilación se completa igualmente.
+  </Accordion>
+</AccordionGroup>
+
+## Relacionado {#related}
+
+- [Get Started](/es/docs/yuno-sdk/get-started). Instala e inicializa el SDK.
+- [Handle deeplinks](/es/docs/yuno-sdk/features/handle-deeplinks). Regresa a tu app después de un paso externo.
+- [Netcetera 3DS on Android](/es/docs/sdks/external-native-modules/netcetera-3ds-android). Repositorio Maven y permisos.

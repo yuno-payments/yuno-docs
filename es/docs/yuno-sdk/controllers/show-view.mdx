@@ -1,0 +1,154 @@
+---
+title: "showView"
+sidebarTitle: "Tus propias vistas (showView)"
+description: "Se invoca cuando el SDK tiene una vista para presentar (formulario o acción)."
+---
+
+`showView` se invoca cuando el SDK tiene una vista lista para presentar: un formulario para recopilar datos del usuario o una vista de acción, como un código QR. Sobrescribe este controlador para insertar la vista en tu propio diseño en lugar de dejar que el SDK la presente a pantalla completa.
+
+<Note>
+Las WebViews, por ejemplo los desafíos 3DS o las redirecciones que requieren algunos métodos de pago, siempre las presenta el SDK a pantalla completa. No pasan por `showView`, por lo que sobrescribirlo no cambia ese comportamiento. En iOS 3.x, el 3DS nativo aún no está disponible, así que todos los desafíos 3DS se ejecutan en una WebView.
+</Note>
+
+`showView` está disponible en iOS, Android y React Native. En Web, el SDK muestra el formulario dentro del elemento que pasas como `elementSelector`, por lo que no hay ninguna vista que entregar. Para enviar ese formulario desde tu propio botón, consulta [Web: enviar desde tu propio botón](#web-submit-from-your-own-button).
+
+## Comportamiento {#behavior}
+
+Si no sobrescribes este controlador, el SDK presenta la vista a pantalla completa con su propio encabezado y su botón de envío.
+
+Cuando lo sobrescribes, el SDK entrega la vista a tu manejador junto con un objeto de control `TransactionProcess`. Colocas la vista donde quieras en tu diseño y llamas a `process.onSubmit()` para indicarle al SDK que el usuario activó el envío.
+
+Eres responsable de quitar la vista de tu diseño una vez que la transacción haya pasado de ese paso.
+
+El controlador puede invocarse más de una vez por transacción. El parámetro `step` indica a qué paso pertenece la vista. Por ejemplo, `FORM` para el formulario de captura de datos y `ACTION` para una vista de acción, como un código QR. Úsalo para diferenciar cómo insertas cada vista, si lo necesitas.
+
+En iOS, `FORM` contiene el formulario de pago o de inscripción, y `ACTION` contiene las pantallas que el SDK muestra para un método después del formulario: instrucciones de pago, como un QR o un código de pago, e ingreso de OTP. `view` es `nil` cuando el SDK no pudo construir una pantalla `ACTION`; en ese caso no hay nada que insertar y la transacción reporta su resultado a través de `onStatus`.
+
+Para devolver un paso al SDK desde tu sobrescritura, llama a `SdkPayments.defaultShowView(view:process:step:)`. Por ejemplo, inserta el formulario y deja que el SDK presente las vistas de acción:
+
+```swift
+func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep) {
+    guard step == .FORM, let view else {
+        SdkPayments.defaultShowView(view: view, process: process, step: step)
+        return
+    }
+    // Place `view` in your layout and call process.onSubmit() from your own button.
+}
+```
+
+En React Native, llama a `SdkPayments.defaultShowView(view, process, step)` desde tu sobrescritura con los argumentos que recibió:
+
+```tsx
+showView: (view, process, step) => {
+  if (step !== 'FORM' || !view) {
+    SdkPayments.defaultShowView(view, process, step);
+    return;
+  }
+  setEmbeddedForm({ view, process }); // render <YunoView view={view} /> and call process.onSubmit() from your own button
+},
+```
+
+En React Native, los pasos que recibes siguen el SDK nativo subyacente: en iOS tanto las vistas `FORM` como `ACTION` llegan a `showView`; en Android solo llega `FORM`, porque el SDK de Android presenta las vistas de acción por sí mismo.
+
+## Firma {#signature}
+
+<Tabs>
+  <Tab title="iOS">
+
+```swift
+func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep)
+```
+
+  </Tab>
+
+  <Tab title="Android">
+
+```kotlin
+fun showView(view: Fragment, process: TransactionProcess, step: TransactionViewStep)
+```
+
+  </Tab>
+
+  <Tab title="React Native">
+
+```typescript
+showView?(view: YunoViewHandle | null, process: TransactionProcess, step: TransactionViewStep): void
+```
+
+Renderiza la vista con `<YunoView view={view} />` desde `@yuno-payments/yuno-sdk-react-native`. Se ajusta por sí sola al tamaño del contenido nativo.
+
+  </Tab>
+</Tabs>
+
+## TransactionProcess {#transactionprocess}
+
+`TransactionProcess` es el objeto de control que el SDK pasa junto con la vista. Expone un único método:
+
+```
+onSubmit()
+```
+
+Llama a `process.onSubmit()` cuando el usuario active el envío desde tu propia interfaz (por ejemplo, cuando toque tu botón de envío personalizado). El SDK valida el formulario y, si es válido, continúa la transacción.
+
+No necesitas gestionar aquí el éxito ni el fallo. El resultado del envío fluye a través de [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment) (si lo sobrescribes) y [`onStatus`](/es/docs/yuno-sdk/controllers/on-status).
+
+## TransactionViewStep {#transactionviewstep}
+
+`TransactionViewStep` indica a qué paso corresponde la vista.
+
+| Valor | Significado |
+|---|---|
+| `FORM` | Formulario de captura de datos (formulario de tarjeta, datos de APM, etc.). |
+| `ACTION` | Vista de acción adicional, como un código QR. |
+
+## Hilos de ejecución {#threading}
+
+En iOS y Android, `showView` se invoca en el hilo principal. Puedes actualizar la interfaz directamente desde este manejador. En React Native se ejecuta en el hilo de JavaScript: actualiza el estado de tu componente desde él.
+
+## Web: enviar desde tu propio botón {#web-submit-from-your-own-button}
+
+En Web, oculta el botón de pago del SDK con [`showPayButton: false`](/es/docs/yuno-sdk/reference/objects-you-pass#showpaybutton-web-only) y llama a `transaction.submit()` desde tu propio botón. Es el equivalente en Web de `process.onSubmit()`.
+
+```javascript
+const transaction = sdkPayments.transaction({
+    checkoutSession,
+    countryCode: 'CO',
+    elementSelector: '#payment-form',
+    showPayButton: false,
+    onStatus: (result) => {
+        if (result.message?.code === 'FORM_INVALID') {
+            // Not final: the form stays mounted with its field errors. The user can try again.
+            return
+        }
+        // Final status of the transaction.
+    },
+})
+
+await transaction.start({ paymentMethod: { type: 'CARD' } })
+
+document.querySelector('#my-pay-button').addEventListener('click', () => {
+    transaction.submit()
+})
+```
+
+`submit()` valida el formulario y, si es válido, continúa la transacción. Si el formulario no es válido, `onStatus` recibe `INTERNAL_ERROR` con el código `FORM_INVALID`. Ese estado no es final: el formulario sigue montado. El resultado de un envío válido fluye a través de [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment) (si lo sobrescribes) y [`onStatus`](/es/docs/yuno-sdk/controllers/on-status), igual que cuando el usuario hace clic en el botón de pago del SDK.
+
+| Cuándo llamas a `submit()` | Qué ocurre |
+|---|---|
+| El formulario es válido | Se envía el formulario. |
+| El formulario no es válido | El formulario muestra los errores de sus campos y `onStatus` recibe `INTERNAL_ERROR` con el código `FORM_INVALID`. El usuario puede corregir el formulario y puedes volver a llamar a `submit()`. |
+| Ya hay un pago en curso | Nada. La llamada se ignora, de modo que un doble clic no crea un segundo pago. |
+| El formulario no terminó de cargar | `onStatus` recibe `INTERNAL_ERROR` con el código `FORM_INVALID`, igual que con un formulario no válido. El usuario puede volver a presionar tu botón. |
+| Antes de llamar a `start()`, o después de `unmount()` | Lanza un error. Llama primero a `start()`. |
+| El formulario que montó `start()` ya no está en la página, porque el SDK lo reemplazó con su pantalla de error o lo desmontó | Lanza un error. Vuelve a llamar a `start({ paymentMethod })` para montar un formulario nuevo. |
+| El pago de esta sesión de checkout ya finalizó | Lanza un error. Crea una nueva sesión de checkout y una nueva transacción para volver a pagar. |
+| Después de un `start()` headless (uno que pasa `data`) | Lanza un error. Un `start()` headless no monta ningún formulario. |
+| El método de pago es una billetera | Lanza un error. El usuario paga tocando el botón de la billetera. |
+| La [lista de métodos de pago](/es/docs/yuno-sdk/features/payment-methods-list) del SDK está montada y `start()` no montó un formulario | Lanza un error. En la lista, tu botón llama a `transaction.start({ paymentMethod })` con el método seleccionado. |
+| La transacción es una inscripción | Lanza un error. `submit()` está disponible solo para transacciones de pago. |
+
+## Relacionado {#related}
+
+- [Transacciones](/es/docs/basic-concepts/transactions). Cómo fluye un pago a través de Yuno.
+- [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). Recibe el token después del envío.
+- [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). Recibe el estado final.
