@@ -1,0 +1,39 @@
+---
+title: "Cambiar el método de pago de una suscripción externa"
+openapi: "/openapi/es/subscriptions/change-external-subscription-payment-method.json POST /external-subscriptions/{external_subscription_id}/payment-method"
+description: "Cambia una suscripción de Stripe Billing a otro método de pago que el cliente ya registró en Yuno, sin realizar un pago."
+---
+
+Usa este endpoint con las [suscripciones de Stripe Billing](/es/docs/payment-features/subscriptions/stripe-billing) para cambiar una suscripción a otro método de pago almacenado del mismo cliente.
+
+<Note>
+**No se realiza ningún pago**
+
+Yuno no cobra al cliente y no ejecuta una verificación de $0 ni 3DS. Yuno establece el nuevo método de pago como el predeterminado de la suscripción en Stripe, y las próximas renovaciones se cobran con él.
+</Note>
+
+## Solicitud {#request}
+
+| Campo | Descripción |
+|---|---|
+| `external_subscription_id` (ruta) | El ID de la suscripción de Stripe (`sub_...`), de entre 3 y 255 caracteres. |
+| `account_id` | La cuenta de Yuno incorporada al puente de facturación (UUID). |
+| `customer_payer.id` | El **ID de cliente de Yuno** (UUID) propietario de la suscripción. No es el ID de cliente de Stripe (`cus_...`). |
+| `vaulted_token` | El token almacenado (UUID) de uno de los métodos de pago registrados de ese cliente. |
+
+El encabezado `X-Idempotency-Key` es obligatorio. Repetir la misma clave con la misma solicitud devuelve el primer resultado. Enviar el método de pago que la suscripción ya cobra devuelve `200` y no cambia nada.
+
+Esta API se habilita por cuenta. Contacta a tu Key Account Manager para solicitar acceso.
+
+## Errores {#errors}
+
+| Estado | Código | Significado | Qué hacer |
+|---|---|---|---|
+| `400` | `INVALID_PARAMETERS` | Falta un campo o el encabezado `X-Idempotency-Key`, o tiene un formato incorrecto, o la clave ya se usó para otra suscripción o método de pago. | Corrige la solicitud. Usa una clave nueva para un cambio diferente. |
+| `400` | `CUSTOMER_NOT_FOUND` | El cliente no existe en la cuenta. | Verifica que `customer_payer.id` sea el ID de cliente de Yuno, no el ID `cus_` de Stripe. |
+| `400` | `VAULTED_TOKEN_NOT_FOUND` | El `vaulted_token` no es uno de los métodos de pago del cliente. | Usa un token de los [métodos de pago registrados](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api) del cliente. |
+| `400` | `EXTERNAL_SUBSCRIPTION_NOT_FOUND` | No hay una suscripción externa activa con este ID para la cuenta. | Verifica el ID de la suscripción de Stripe y la cuenta. |
+| `400` | `CUSTOMER_MISMATCH` | La suscripción pertenece a otro cliente. | Envía el cliente propietario de la suscripción. |
+| `403` | `PRODUCT_NOT_ENABLED` | La cuenta no está habilitada para el puente de facturación. | Contacta a tu Key Account Manager. |
+| `409` | `CONCURRENT_CHANGE` | Otro cambio de método de pago de esta suscripción se completó primero. | Revisa la suscripción en Stripe antes de enviar otro cambio. |
+| `502` | `BILLING_PLATFORM_ERROR` | La plataforma de facturación no pudo confirmar el cambio. Se mantiene el método de pago anterior. | Reintenta con un nuevo `X-Idempotency-Key`. |

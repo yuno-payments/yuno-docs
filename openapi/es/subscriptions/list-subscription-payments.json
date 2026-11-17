@@ -1,0 +1,365 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "subscription",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/subscriptions/{subscription_id}/payments": {
+      "get": {
+        "summary": "List Subscription Payments",
+        "description": "Devuelve el historial de cobros de una suscripción: una fila por intento de facturación, con el contexto de plan o fase cuando la suscripción está vinculada a un plan. Este es un endpoint nuevo (no existía un subrecurso de pagos antes de Plans), por lo que se lanza con una estructura única y limpia, sin campos heredados que arrastrar.",
+        "operationId": "list-subscription-payments",
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "description": "El identificador único de la suscripción.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Máximo de ítems a devolver. 1-100, el valor por defecto es 20.",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Número de ítems que se omitirán. Debe ser un múltiplo no negativo de `limit`, de lo contrario `400 BAD_REQUEST`: un desplazamiento no alineado volvería a entregar filas que ya viste y corrompería `has_more`. El valor por defecto es 0.",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "data": [
+                        {
+                          "id": "00000000-0000-4000-8000-000000000010",
+                          "payment_id": "00000000-0000-4000-8000-000000000011",
+                          "idempotency_key": null,
+                          "status": "SUCCEEDED",
+                          "sub_status": null,
+                          "provider": "PROVIDER_TEST",
+                          "payment_method": {
+                            "id": "00000000-0000-4000-8000-000000000012",
+                            "type": "CARD"
+                          },
+                          "amount": {
+                            "currency": "USD",
+                            "value": 9.99
+                          },
+                          "currency": "USD",
+                          "subtotal": 9.99,
+                          "total": 9.99,
+                          "plan_id": "00000000-0000-4000-8000-000000000001",
+                          "line_items": [
+                            {
+                              "type": "PLAN",
+                              "label": "Intro",
+                              "service_period": {
+                                "start": "2024-04-01T09:00:00Z",
+                                "end": "2024-05-01T09:00:00Z"
+                              },
+                              "amount": {
+                                "currency": "USD",
+                                "value": 9.99
+                              }
+                            }
+                          ],
+                          "phase": {
+                            "index": 1,
+                            "name": "Intro",
+                            "type": "TRIAL"
+                          },
+                          "phase_payment": 1,
+                          "billing_cycle": null,
+                          "retry": {
+                            "count": 0,
+                            "forced": false
+                          },
+                          "trace_id": null,
+                          "created_at": "2024-04-01T09:00:00.000000Z",
+                          "updated_at": "2024-04-01T09:00:00.000000Z"
+                        }
+                      ],
+                      "pagination": {
+                        "total": 1,
+                        "limit": 20,
+                        "offset": 0,
+                        "has_more": false
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "Cada intento de pago de esta suscripción, del más reciente al más antiguo.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "payment_id": {
+                            "type": "string"
+                          },
+                          "idempotency_key": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "status": {
+                            "type": "string",
+                            "description": "Vocabulario de la plataforma: SUCCEEDED, DECLINED, REJECTED, ERROR, PENDING, CREATED, CANCELED; no el EXECUTED interno del motor."
+                          },
+                          "sub_status": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "provider": {
+                            "type": "string",
+                            "description": "null para ciclos de $0, la fila inicial y las filas cobradas antes de que existiera el campo de captura del proveedor."
+                          },
+                          "payment_method": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "currency": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "currency": {
+                            "type": "string"
+                          },
+                          "subtotal": {
+                            "type": "number"
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "plan_id": {
+                            "type": "string",
+                            "description": "null para suscripciones sin plan (raw)."
+                          },
+                          "line_items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                },
+                                "service_period": {
+                                  "type": "object",
+                                  "properties": {
+                                    "start": {
+                                      "type": "string"
+                                    },
+                                    "end": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "amount": {
+                                  "type": "object",
+                                  "properties": {
+                                    "currency": {
+                                      "type": "string"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "phase": {
+                            "type": "object",
+                            "description": "null para la fila inicial y para las filas heredadas (sin plan).",
+                            "properties": {
+                              "index": {
+                                "type": "integer"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "phase_payment": {
+                            "type": "integer",
+                            "description": "1..N dentro de la fase actual. null en la fila inicial."
+                          },
+                          "billing_cycle": {
+                            "type": "integer",
+                            "nullable": true,
+                            "description": "0 = fila inicial, null = filas de la fase TRIAL, 1.. desde el primer pago de la fase REGULAR."
+                          },
+                          "retry": {
+                            "type": "object",
+                            "properties": {
+                              "count": {
+                                "type": "integer"
+                              },
+                              "forced": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          "trace_id": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "offset": {
+                          "type": "integer"
+                        },
+                        "has_more": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitud incorrecta. La suscripción no existe para esta cuenta.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Not Found": {
+                    "value": {
+                      "code": "SUBSCRIPTION_NOT_FOUND",
+                      "messages": [
+                        "Subscription not found."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "SUBSCRIPTION_NOT_FOUND"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Subscription not found."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

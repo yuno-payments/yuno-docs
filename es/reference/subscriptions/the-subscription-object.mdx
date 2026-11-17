@@ -1,0 +1,825 @@
+---
+title: "El objeto de suscripción"
+description: "Describe los atributos del objeto de suscripción, incluidos los ciclos de facturación, la frecuencia y el método de pago."
+---
+
+## Atributos {#attributes}
+
+Este objeto representa una suscripción que se puede asociar a un cliente.
+
+<Note>
+**Campos que calcula Yuno**
+
+`billing_cycles.scheduling_date`, `retries.stopped`, `retries.attempts_made`, `retries.outcome` y `retries.next_retry_at` los calcula Yuno a partir del estado propio de la suscripción. Son de solo lectura: si los envías, se ignoran en [Crear suscripción](/es/reference/subscriptions/create-subscription) y en [Actualizar suscripción](/es/reference/subscriptions/update-subscription), y los valores que lees siempre son los de Yuno.
+</Note>
+
+<ParamField body="id" type="string">
+  El identificador único de la suscripción (MAX 64 ; MIN 36).
+
+  Ejemplo: 7304911d-5df9-429e-8488-ad41abea1a4c
+</ParamField>
+
+<ParamField body="name" type="string">
+  El nombre de la suscripción (MAX 255; MIN 3).
+
+  Ejemplo: sub_001
+</ParamField>
+
+<ParamField body="description" type="string">
+  La descripción de la suscripción (MAX 255; MIN 3).
+
+  Ejemplo: Servicio de streaming
+</ParamField>
+
+<ParamField body="account_id" type="string">
+  El identificador único de la cuenta que tendrá disponible el plan de suscripción para usar (MAX 64 ; MIN 36).
+
+  Ejemplo: 2404911d-5df9-429e-8488-ad41abea1a4b
+</ParamField>
+
+<ParamField body="merchant_reference" type="string">
+  Identificación del plan de suscripción (MAX 255; MIN 3).
+
+  Ejemplo: 001_marzo_23
+</ParamField>
+
+<ParamField body="soft_descriptor" type="string">
+  Descriptor que aparece en el estado de cuenta bancario del titular de la tarjeta (MAX 255). Cuando se define, se propaga a cada pago de recobro que genera el motor de suscripciones. Los límites de longitud y formato varían según el proveedor; consulta [Descriptor en pagos recurrentes](/es/docs/payment-features/subscriptions/soft-descriptor).
+
+  Ejemplo: ACME SUBSCRIPTION
+</ParamField>
+
+<ParamField body="country" type="string">
+  El país de la suscripción.
+
+  Ejemplo: CO
+</ParamField>
+
+<ParamField body="status" type="enum">
+  Estado de la suscripción.
+
+  Valores posibles del enum:
+  - `CREATED` = Estado transitorio mientras el pago inicial aún no se ha procesado. Solo ocurre cuando la suscripción se crea con `initial_payment_validation: true`; pasa a `ACTIVE` cuando el primer pago es exitoso (o a `CANCELED` si falla y se agotan los reintentos).
+  - `ACTIVE` = La suscripción se creó con un cliente asociado y ya está activa.
+  - `TRIALING` = La suscripción está dentro de la fase de prueba inicial de un plan (consulta `plan_id`/`current_phase`). Pasa a `ACTIVE` automáticamente cuando termina la prueba; esto se notifica por webhook como cualquier otro cambio de estado.
+  - `PAST_DUE` = Un cobro recurrente falló y la suscripción espera su recuperación. Sigue facturando y aún se puede cancelar; el siguiente cobro exitoso la devuelve a `ACTIVE`, o a `TRIALING` si la fase de prueba aún está en curso, y cada transición se notifica por webhook. Si el estado no está habilitado para tu cuenta, un cobro fallido deja la suscripción en `ACTIVE` mientras se ejecutan los reintentos. Consulta [Reintentos](/es/docs/payment-features/subscriptions/retries).
+  - `PAUSED` = La suscripción se pausó y se puede reactivar.
+  - `COMPLETED` = La suscripción se completó porque llegó a la fecha y hora de finalización.
+  - `CANCELED` = Suscripción cancelada. Consulta `cancellation_source` para saber qué la originó.
+</ParamField>
+
+<ParamField body="cancellation_source" type="enum">
+  Qué causó la cancelación de la suscripción. Solo se define cuando la suscripción llega a `CANCELED`; en otro caso es `null`.
+
+  Valores posibles del enum:
+  - `MERCHANT` = Tú cancelaste la suscripción, mediante [Cancelar suscripción](/es/reference/subscriptions/cancel-subscription) o el dashboard.
+  - `SYSTEM` = Yuno canceló la suscripción automáticamente. Esto incluye una suscripción creada con `initial_payment_validation: true` cuyo primer pago no fue exitoso.
+  - `PLAN_CHANGE` = La suscripción se reemplazó como parte de un [cambio de plan](/es/reference/subscriptions/change-subscription-plan). Una nueva suscripción continúa la facturación del cliente con el nuevo plan.
+  - `RETRIES_EXHAUSTED` = Los reintentos de un ciclo de facturación terminaron sin un pago exitoso mientras la suscripción tenía `retries.cancel_on_exhausted_retries` en `true`. Consulta [Reintentos](/es/docs/payment-features/subscriptions/retries#canceling-a-subscription-when-retries-run-out).
+
+  <Note>
+  Trata este campo como abierto. Pueden incorporarse valores nuevos a medida que Yuno agregue comportamientos de cancelación, por lo que debes manejar un valor desconocido sin errores en lugar de evaluar de forma exhaustiva la lista anterior. `RETRIES_EXHAUSTED` es la incorporación más reciente.
+  </Note>
+</ParamField>
+
+<ParamField body="plan_id" type="string">
+  El identificador único del [plan](/es/reference/plans/the-plan-object) a partir del cual se creó esta suscripción, si existe (MAX 64; MIN 36). Solo está presente cuando la suscripción está vinculada a un plan, y no aparece (no es `null`) en las suscripciones creadas con un `amount`/`frequency` directos en lugar de un `plan_id`.
+
+  Ejemplo: 00000000-0000-4000-8000-000000000001
+</ParamField>
+
+<ParamField body="plan_assigned_at" type="Timestamp">
+  Cuando la suscripción está vinculada a un plan, el momento en que se asoció el plan: al crearla a partir de un plan, al migrarla a un plan o en un cambio de plan. Solo está presente en suscripciones vinculadas a un plan.
+</ParamField>
+
+<ParamField body="previous_subscription_id" type="string">
+  Cuando esta suscripción se creó mediante un [cambio de plan](/es/reference/subscriptions/change-subscription-plan) (pasar una suscripción existente a un plan distinto), este es el `id` de la suscripción que reemplazó. Solo está presente en ese caso.
+
+  Un `plan_change` programado con [Actualizar suscripción](/es/reference/subscriptions/update-subscription), ya sea que se ejecute más adelante en el siguiente ciclo de facturación o que se aplique de inmediato (`IMMEDIATE`) en la misma llamada, se aplica a esta misma suscripción y nunca define este campo. Reactivar una suscripción `CANCELED` o `COMPLETED` tampoco lo define: al reactivar, se devuelve la misma suscripción a un estado activo en lugar de crear una sucesora.
+</ParamField>
+
+<ParamField body="phases" type="array of objects">
+  Las definiciones de fases del plan vinculado, tal como las declara el plan. Solo está presente en suscripciones vinculadas a un plan que tiene fases.
+
+  Esta es la escala del plan, no la de este suscriptor. A diferencia de `billing_phases`, incluye la fase terminal `REGULAR`, y se lee del plan en lugar de capturarse al crear la suscripción, por lo que refleja el plan tal como está hoy. En la fila `REGULAR`, `duration`, `frequency` y `amount` son todos `null`: esa fase se ejecuta hasta que termina la suscripción y su precio se resuelve desde el plan en cada facturación.
+
+  Usa `billing_phases` para saber lo que realmente se cobrará a esta suscripción, y `phases` para describir el plan en que se basa.
+
+  <Expandable title="propiedades">
+    <ParamField body="order" type="int" />
+    <ParamField body="name" type="string" />
+    <ParamField body="type" type="enum">
+      `TRIAL` o `REGULAR`.
+    </ParamField>
+    <ParamField body="duration" type="object">
+      Cuánto dura la fase, como `type` y `value`. Es `null` en la fase `REGULAR`.
+    </ParamField>
+    <ParamField body="frequency" type="object">
+      Con qué frecuencia factura la fase, como `type` y `value`. Es `null` en la fase `REGULAR`.
+    </ParamField>
+    <ParamField body="amount" type="object">
+      El precio de la fase, como `currency` y `value`. Es `null` en la fase `REGULAR`.
+    </ParamField>
+    <ParamField body="total_payments" type="int">
+      Cuántos cobros cubre la fase. Es `null` en la fase `REGULAR`.
+    </ParamField>
+    <ParamField body="country_prices" type="array of objects">
+      Precios de la fase específicos por país, cada uno con un `country` y un `amount`. Está vacío cuando la fase no tiene ninguno.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="current_phase" type="enum">
+  En qué fase de la escala de prueba del plan vinculado se encuentra actualmente la suscripción. Solo está presente en suscripciones vinculadas a un plan. Tampoco aparece cuando la suscripción se creó mediante un [cambio de plan](/es/reference/subscriptions/change-subscription-plan) con `skip_trial: true`: esa suscripción está vinculada a un plan y su plan tiene fases, pero nunca entra en la escala.
+
+  Valores posibles: `TRIAL`, `REGULAR`.
+</ParamField>
+
+<ParamField body="current_phase_end" type="Timestamp">
+  Cuándo la fase indicada por `current_phase` pasa a la siguiente: para una suscripción en su prueba, el momento en que cambia al precio regular. Es el final del último período de facturación que cubre la fase, por lo que en el último período de una prueba es igual a `current_period_end`.
+
+  Es `null` en suscripciones que no están dentro de una fase: las que no tienen plan y las vinculadas a un plan que ya salieron de la escala y están en el precio regular del plan.
+
+  Ejemplo: 2023-03-16T20:00:00.786342Z
+</ParamField>
+
+<ParamField body="billing_phases" type="array of objects">
+  Las fases TRIAL iniciales del plan, capturadas para el país de este suscriptor en el momento de la creación. Solo está presente en suscripciones vinculadas a un plan que tiene fases. Tampoco aparece cuando la suscripción se creó mediante un [cambio de plan](/es/reference/subscriptions/change-subscription-plan) con `skip_trial: true`: esa suscripción está vinculada a un plan y su plan tiene fases, pero nunca entra en la escala.
+
+  <Warning>**La fase terminal REGULAR nunca se incluye aquí.** Su precio no se fija al crear la suscripción: se resuelve desde el plan en cada facturación, de modo que los cambios de precio del plan llegan a las suscripciones en curso. Cuando `current_phase` es `REGULAR`, la escala está agotada y la suscripción factura el precio regular del plan; no hay una fila correspondiente en este arreglo.</Warning>
+
+  <Expandable title="propiedades">
+    <ParamField body="order" type="int" />
+    <ParamField body="type" type="enum">
+      Siempre `TRIAL`, consulta la nota anterior.
+    </ParamField>
+    <ParamField body="name" type="string">
+      Refleja el `name` obligatorio de la propia fase.
+    </ParamField>
+    <ParamField body="amount" type="object">
+      <Expandable title="propiedades">
+        <ParamField body="currency" type="string" />
+        <ParamField body="value" type="number" />
+      </Expandable>
+    </ParamField>
+    <ParamField body="frequency" type="object">
+      <Expandable title="propiedades">
+        <ParamField body="type" type="enum">
+          `DAY`, `WEEK`, `MONTH` o `YEAR`.
+        </ParamField>
+        <ParamField body="value" type="int" />
+      </Expandable>
+    </ParamField>
+    <ParamField body="start_cycle" type="int" />
+    <ParamField body="end_cycle" type="int" />
+  </Expandable>
+</ParamField>
+
+<ParamField body="amount" type="object">
+  Especifica el objeto de monto de la suscripción, con el valor y la moneda.
+
+  <Expandable title="propiedades">
+    <ParamField body="currency" type="enum">
+      La moneda utilizada para realizar el pago (MAX 3; MIN 3; <a href="/reference/country-reference">ISO 4217</a>).
+
+      Valores posibles del enum: Consulta la <a href="/reference/country-reference">Referencia de países</a>.
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      El monto del pago (múltiplo de 0.0001).
+
+      Ejemplo: 12100.00
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="frequency" type="object">
+  La frecuencia definida para la suscripción de pago. Si no se define, los valores predeterminados son MONTH para el tipo y 1 para el valor.
+
+  <Expandable title="propiedades">
+    <ParamField body="type" type="enum">
+      El tipo de intervalo que tendrá la suscripción en el tiempo. Si no se define, siempre es MONTH de forma predeterminada.
+
+      Valores posibles del enum: `DAY`, `WEEK`, `MONTH` o `YEAR`.
+
+      En una suscripción cuyo `payment_method.type` es `PIX_AUTOMATIC`, solo se aceptan `WEEK`, `MONTH` y `YEAR` con `value` igual a `1`; cualquier otra combinación se rechaza con `400 INVALID_PARAMETERS`. Consulta [Pix Automático](/es/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences).
+    </ParamField>
+
+    <ParamField body="value" type="int">
+      El valor entre cada intervalo que tendrá la suscripción en el tiempo. Si no se define, siempre es 1 de forma predeterminada.
+
+      Ejemplo: 1
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="billing_cycles" type="object">
+  Especifica el objeto billing_cycles.
+
+  <Expandable title="propiedades">
+    <ParamField body="total" type="number">
+      Cantidad total de ciclos de facturación.
+
+      Ejemplo: 10
+    </ParamField>
+
+    <ParamField body="current" type="number">
+      El **siguiente** ciclo de facturación que se cobrará, no el ciclo que está en curso.
+
+      Las suscripciones se facturan por adelantado: el cobro de un ciclo se ejecuta al inicio del período que paga, y el contador avanza en cuanto ese cobro se envía. Mientras el suscriptor está dentro del período pagado por el ciclo N, este campo ya muestra `N + 1`. El ciclo en curso es `current - 1`. Hay una excepción: el contador se detiene en el último ciclo. Cuando `current` llega a `billing_cycles.total`, o pasa `availability.finish_at`, la suscripción se marca como `COMPLETED` y `current` queda fijo en `total` durante todo ese último período, por lo que en ese caso el ciclo en curso es `current`, no `current - 1`.
+
+      Una suscripción creada con una prueba de dos ciclos muestra `current: 2` durante todo el primer período de prueba, y `current: 3` durante el segundo: la prueba sigue en curso aunque `current` haya superado la cantidad de ciclos de la prueba. `current_period_start` y `current_period_end` indican *cuándo* transcurre el período actual; no indican si la suscripción sigue en su prueba. Para ubicar la prueba, compara el ciclo en curso (`current - 1`) con `trial_period.billing_cycles`; las suscripciones `trial_period` heredadas se mantienen en `ACTIVE` y no tienen `current_phase` mientras están en prueba.
+
+      Como el contador avanza cuando se envía un cobro y no cuando es exitoso, un ciclo fallido nunca lo revierte: `current` ya avanzó antes de que se ejecute el primer reintento, y se queda ahí aunque los reintentos terminen cobrando o no.
+
+      El primer ciclo es la otra excepción: cuando `initial_payment_validation` es `true`, su contador avanza solo cuando ese primer cobro es exitoso. Mientras el cobro está pendiente o en reintento, `current` se mantiene en `1`; si nunca se cobra, la suscripción se cancela con `current` todavía en `1`. A partir del segundo ciclo se aplica la regla del momento del envío.
+
+      Ejemplo: 2
+    </ParamField>
+
+    <ParamField body="next_at" type="Timestamp">
+      La fecha del siguiente pago de la suscripción. Siempre está presente. Cuando se devuelve `current_period_end`, es exactamente el mismo instante.
+
+      Ejemplo: 2023-02-16T20:00:00.786342Z
+    </ParamField>
+
+    <ParamField body="scheduling_date" type="Timestamp">
+      Cuándo se entrega la instrucción de débito al riel de Pix: exactamente `next_at` menos cuatro días. Solo está presente en suscripciones `PIX_AUTOMATIC` que ejecuta Yuno, y solo para organizaciones que tienen habilitado el plazo de programación de cuatro días; no aparece (no es `null`) en ningún otro caso. Se devuelve en [Obtener suscripción](/es/reference/subscriptions/retrieve-subscription), en los elementos de [Listar suscripciones](/es/reference/subscriptions/list-subscriptions) y en los payloads de webhook de suscripciones. Consulta [Pix Automático](/es/docs/payment-features/subscriptions/pix-automatico#the-scheduling-date).
+
+      Ejemplo: 2026-11-27T00:00:00Z
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="current_period_start" type="Timestamp">
+  El inicio del período de facturación actualmente en curso: una cadencia de facturación antes de `current_period_end`. Se deriva del calendario, no de los pagos, por lo que una suscripción informa su ventana desde el momento en que se crea, antes de que se haya intentado cualquier cobro.
+
+  La cadencia utilizada es la que programó la ventana. Dentro de una fase de un plan (una prueba, un precio introductorio, cualquier fase de un [plan](/es/reference/plans/the-plan-object)), es el paso propio de la fase, por lo que una prueba de 14 días informa períodos de 14 días aunque el plan facture mensualmente. En el primer ciclo después de que termina una fase, la ventana todavía mide la cadencia de la fase que la programó.
+
+  Nunca queda antes de `availability.start_at`: el primer período de una suscripción comienza cuando comienza la suscripción.
+
+  Se devuelve en [Obtener suscripción](/es/reference/subscriptions/retrieve-subscription), en [Listar suscripciones](/es/reference/subscriptions/list-subscriptions) y en los payloads de webhook de suscripciones.
+
+  Las suscripciones terminales informan su último período de facturación en lugar de pasar a `null`: una suscripción `CANCELED` o `COMPLETED` conserva la última ventana que tuvo, igual que `PAUSED` congela su ventana en lugar de avanzarla. Es `null`, junto con `current_period_end`, solo cuando la suscripción no tiene ninguna cadencia recurrente. En las respuestas REST, las claves pueden omitirse por completo en lugar de enviarse como `null`: trata null y ausente como lo mismo.
+
+  Ejemplo: 2023-01-16T20:00:00.912480Z
+</ParamField>
+
+<ParamField body="current_period_end" type="Timestamp">
+  El final del período de facturación actualmente en curso, que también es cuando se programa el siguiente cobro. Siempre es igual a `billing_cycles.next_at`.
+
+  Este par describe el período en el que la suscripción está **programada**, no uno que necesariamente esté pagado: si el cobro de un ciclo falló y sus reintentos siguen en ejecución, la ventana ya se movió al período que ese cobro debía abrir. Una suscripción `PAUSED` conserva la ventana dentro de la cual se pausó en lugar de avanzarla, y una suscripción `CANCELED` o `COMPLETED` conserva su ventana final en lugar de borrarla; en ambos casos `current_period_end` puede estar muy en el pasado, así que revisa `status` antes de leerlo como una fecha futura.
+
+  Es `null` bajo las mismas condiciones que `current_period_start`; los dos siempre se devuelven juntos.
+
+  Ejemplo: 2023-02-16T20:00:00.786342Z
+</ParamField>
+
+<ParamField body="billing_date" type="object">
+  [Opcional] Especifica el objeto billing_date. Es mutuamente excluyente con el objeto frequency.
+
+  <Expandable title="propiedades">
+    <ParamField body="type" type="string">
+      El tipo de billing_date que tendrá la suscripción en el tiempo. PREPAID, POSTDATE, DAY. Si no se define, se establece de forma predeterminada la fecha de creación del plan.
+
+      Ejemplo: DAY
+    </ParamField>
+
+    <ParamField body="day" type="number">
+      El día del mes en que se cobra la suscripción si el tipo es DAY. Siempre es 1 de forma predeterminada.
+
+      Ejemplo: 2
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="customer_payer" type="object">
+  Especifica el objeto customer_payer.
+
+  <Expandable title="propiedades">
+    <ParamField body="id*" type="string">
+      El identificador único del cliente (MAX 255; MIN 3).
+
+      Ejemplo: 3t04911d-5df9-429e-8488-ad41abea1a2c
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="payment_method" type="object">
+  Especifica el objeto payment_method.
+
+  <Expandable title="propiedades">
+    <ParamField body="type" type="enum">
+      Tipo de método de pago.
+
+      Valores posibles del enum: `CARD`, `PAYPAL_ENROLLMENT`, `PIX_AUTOMATIC`
+
+      `PIX_AUTOMATIC` factura un mandato de Pix Automático de Brasil, se compara sin distinguir mayúsculas de minúsculas y solo acepta las cadencias que el mandato puede expresar; consulta [Pix Automático](/es/docs/payment-features/subscriptions/pix-automatico).
+    </ParamField>
+
+    <ParamField body="token" type="string">
+      El token del método de pago de un solo uso que proporciona el Yuno SDK (MAX 64; MIN 36).
+
+      Ejemplo: 9104911d-5df9-429e-8488-ad41abea1a4b
+    </ParamField>
+
+    <ParamField body="vaulted_token" type="string">
+      El token almacenado del método de pago guardado (MAX: 64; MIN: 36).
+
+      Ejemplo: 6104911d-5df9-429e-8488-ad41abea1a4b
+    </ParamField>
+
+    <ParamField body="card" type="object">
+      Especifica el objeto card.
+
+      <Expandable title="propiedades">
+        <ParamField body="verify" type="boolean">
+          Con amount = 0 y verify = true, puedes verificar la tarjeta del usuario sin autorizar un monto real.
+
+          Valores posibles: `true` o `false`.
+        </ParamField>
+
+        <ParamField body="card_data" type="object">
+          Especifica el objeto card_data.
+
+          <Expandable title="propiedades">
+            <ParamField body="number" type="string">
+              Número de la tarjeta sin separadores (MAX 19; MIN 8), disponible solo para comercios con certificación PCI.
+
+              Ejemplo: 4507990000000010
+            </ParamField>
+
+            <ParamField body="expiration_month" type="number">
+              Mes de vencimiento de la tarjeta, MM (MAX 2; MIN 2), disponible solo para comercios con certificación PCI.
+
+              Ejemplo: 10
+            </ParamField>
+
+            <ParamField body="expiration_year" type="number">
+              Año de vencimiento de la tarjeta, YYYY (MAX 4; MIN 4), disponible solo para comercios con certificación PCI.
+
+              Ejemplo: 2025
+            </ParamField>
+
+            <ParamField body="security_code" type="number">
+              Código de seguridad de la tarjeta (MAX 4; MIN 3), disponible solo para comercios con certificación PCI.
+
+              Ejemplo: 123
+            </ParamField>
+
+            <ParamField body="holder_name" type="string">
+              Nombre completo del titular de la tarjeta tal como aparece en ella (MAX 26; MIN 2), disponible solo para comercios con certificación PCI.
+
+              Ejemplo: JOHN DOE
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="trial_period" type="object">
+  Especifica el objeto trial_period.
+
+  <Expandable title="propiedades">
+    <ParamField body="billing_cycles" type="number">
+      Cantidad total de ciclos de facturación a los que debe aplicarse el free_trial.
+
+      Ejemplo: 1
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      Monto que se descontará durante el período de prueba.
+
+      <Expandable title="propiedades">
+        <ParamField body="currency" type="string">
+          La moneda utilizada para el período de prueba. (ISO 4217 MAX 3; MIN 3).
+
+          Ejemplo: COP
+        </ParamField>
+
+        <ParamField body="value" type="number">
+          El valor del monto del período de prueba (múltiplo de 0.0001).
+
+          Ejemplo: 10
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="availability" type="object">
+  Especifica el objeto availability. Las fechas en que la suscripción estará disponible. Si es null, la fecha de inicio será el día de la creación y no tendrá fecha de finalización.
+
+  <Expandable title="propiedades">
+    <ParamField body="start_at" type="Timestamp">
+      La fecha de inicio desde la que la suscripción estará disponible para usar.
+
+      Ejemplo: 2024-01-16T00:00:00.786342Z
+    </ParamField>
+
+    <ParamField body="finish_at" type="Timestamp">
+      La fecha de finalización hasta la que la suscripción estará disponible para usar.
+
+      Ejemplo: 2024-05-26T20:00:00.786342Z
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="retries" type="object">
+  Especifica el objeto retries. Define si se deben reintentar en Yuno las transacciones rechazadas y la cantidad, si es necesario.
+
+  <Expandable title="propiedades">
+    <ParamField body="retry_on_decline" type="bool">
+      Si se debe reintentar un pago o no después de un primer rechazo. False de forma predeterminada.
+
+      Ejemplo: true
+    </ParamField>
+
+    <ParamField body="amount" type="number">
+      La cantidad de reintentos que tendrá el plan de suscripción hasta completarse. El máximo es igual a la longitud del calendario de reintentos configurado en tu entorno (6 en producción). Un valor por encima del tope se rechaza con `400` (`Max retries attempts exceeded`). Máx.: 6
+
+      Ejemplo: 4
+    </ParamField>
+
+    <ParamField body="strategy" type="string">
+      Cómo se decide el momento de cada reintento. Una de las siguientes:
+
+      - `DEFAULT`: el calendario de reintentos fijo.
+      - `SMART`: momento de reintento basado en aprendizaje automático, aplicado a partir del segundo reintento. Disponible para todas las cuentas.
+      - `CUSTOM_SCHEDULE`: el arreglo `schedule` por intento que tú proporcionas.
+
+      Trata este campo como abierto. Pueden incorporarse valores nuevos a medida que Yuno agregue comportamientos de reintento, por lo que debes manejar un valor desconocido sin errores en lugar de evaluar de forma exhaustiva la lista anterior. `SMART` es la incorporación más reciente.
+
+      Ejemplo: `SMART`
+    </ParamField>
+
+    <ParamField body="stop_on_hard_decline" type="bool">
+      Cuando es true y se detecta un rechazo definitivo, los reintentos se detienen solo para el ciclo de facturación actual. Por sí solo, la suscripción se mantiene ACTIVE y la facturación avanza al siguiente ciclo. Si `cancel_on_exhausted_retries` también es true, la suscripción se cancela.
+
+      Ejemplo: true
+    </ParamField>
+
+    <ParamField body="cancel_on_exhausted_retries" type="bool">
+      Cuando es true, la suscripción se cancela una vez que los reintentos de un ciclo de facturación terminan sin un pago exitoso, en lugar de avanzar al siguiente ciclo. `cancellation_source` se define como `RETRIES_EXHAUSTED` y se emite un único webhook `SUBSCRIPTION.CANCEL`. El valor predeterminado es false. Solo se define al crear: no se puede cambiar después, y [Actualizar suscripción](/es/reference/subscriptions/update-subscription) rechaza con `400` un valor distinto. La cancelación en sí es definitiva; consulta [Reintentos](/es/docs/payment-features/subscriptions/retries#canceling-a-subscription-when-retries-run-out).
+
+      Ejemplo: true
+    </ParamField>
+
+    <ParamField body="stopped" type="bool">
+      Si los reintentos del ciclo actual se han detenido. Solo está presente mientras la suscripción está `PAST_DUE` o tiene una `cancel_scheduled` pendiente; en otro caso se omite.
+
+      <Note>
+        Si este campo (y `attempts_made`, `outcome`, `next_retry_at` más abajo) sigue informando la instantánea de reintentos del último ciclo una vez que la suscripción llega a `CANCELED`, o se omite en ese momento, está pendiente de confirmación del producto; verifica con una respuesta real antes de depender de ello.
+      </Note>
+    </ParamField>
+
+    <ParamField body="attempts_made" type="int">
+      Intentos de reintento realizados hasta ahora en el ciclo actual. Solo está presente mientras la suscripción está `PAST_DUE` o tiene una `cancel_scheduled` pendiente; en otro caso se omite.
+    </ParamField>
+
+    <ParamField body="outcome" type="enum">
+      Cómo se resolvieron los reintentos del ciclo actual. Uno de `RECOVERED`, `EXHAUSTED` o `ABANDONED` (reintentos detenidos por una cancelación antes de agotarse por sí solos). Solo está presente mientras la suscripción está `PAST_DUE` o tiene una `cancel_scheduled` pendiente; en otro caso se omite.
+    </ParamField>
+
+    <ParamField body="next_retry_at" type="Timestamp">
+      Cuándo está programado el siguiente reintento. Solo está presente mientras la suscripción está `PAST_DUE` con reintentos aún en ejecución; en otro caso se omite.
+    </ParamField>
+
+    <ParamField body="profile" type="enum">
+      La escala de reintentos fija que sigue la suscripción en lugar del calendario configurable. Siempre `PIX_AUTOMATIC`. Solo está presente en suscripciones `PIX_AUTOMATIC` que ejecuta Yuno; no aparece (no es `null`) en ningún otro método de pago, junto con `max_attempts`, `min_gap_hours` y `until` más abajo. Consulta [Pix Automático](/es/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).
+    </ParamField>
+
+    <ParamField body="max_attempts" type="int">
+      Cuántos reintentos ejecuta la escala de Pix. Siempre `3`, igual que el `amount` informado para estas suscripciones.
+    </ParamField>
+
+    <ParamField body="min_gap_hours" type="int">
+      Siempre `24`: el intervalo entre las **fechas de débito** de la escala, no entre los intentos de envío. Las fechas de débito de la escala son `D`, `D+1`, `D+2` y `D+3`; cuando un débito se rechaza de forma síncrona, la siguiente instrucción puede enviarse momentos después, por lo que debes comparar las fechas de débito y no los momentos de envío.
+    </ParamField>
+
+    <ParamField body="until" type="Timestamp">
+      Cuándo se detiene la escala: `billing_cycles.next_at` más 7 días. Sigue el ciclo, por lo que se mueve junto con `next_at` en cada renovación.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="cancel_scheduled" type="object">
+  La cancelación programada para esta suscripción, o `null` cuando no hay ninguna pendiente. Programa una con el bloque `schedule` en `POST /v1/subscriptions/{id}/cancel`; deshazla con `"schedule": null`. Consulta [Cancelar suscripción](/es/reference/subscriptions/cancel-subscription).
+
+  <Expandable title="propiedades">
+    <ParamField body="mode" type="enum">
+      `AFTER_CYCLES` o `AT_DATE`, según cuál de `after_cycles`/`at` se envió cuando se creó la programación.
+    </ParamField>
+
+    <ParamField body="after_cycles" type="int">
+      La cantidad de ciclos de facturación que se solicitó, cuando `mode` es `AFTER_CYCLES`. Es `null` cuando `mode` es `AT_DATE`.
+    </ParamField>
+
+    <ParamField body="at" type="Timestamp">
+      La fecha y hora resueltas en que se ejecutará la cancelación.
+    </ParamField>
+
+    <ParamField body="requested_at" type="Timestamp">
+      Cuándo se programó la cancelación.
+    </ParamField>
+
+    <ParamField body="past_due_behavior" type="enum">
+      `EXHAUST_RETRIES` (predeterminado) o `SKIP_RETRIES`: lo que hace la programación si la suscripción está `PAST_DUE` cuando de otro modo se ejecutaría. Consulta [Cancelar suscripción](/es/reference/subscriptions/cancel-subscription#behavior-while-retries-are-running).
+
+      <Note>
+        Este eco está pendiente de confirmación del producto como contrato externo estable; consulta la nota en [Cancelar suscripción](/es/reference/subscriptions/cancel-subscription#behavior-while-retries-are-running).
+      </Note>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="refund_rule" type="object">
+  La regla vigente que se usa para calcular un reembolso `CUSTOM` al cancelar cuando la solicitud de cancelación no incluye `refund_amount`. Se omite (no es `null`) cuando no hay ninguna regla configurada. Defínela en [Crear suscripción](/es/reference/subscriptions/create-subscription#setting-a-refund-rule) o [Actualizar suscripción](/es/reference/subscriptions/update-subscription#setting-a-refund-rule); envía `"refund_rule": null` en la actualización para borrarla. Disponible para las organizaciones que la tienen habilitada; contacta a Yuno. Consulta [Cancelar suscripción](/es/reference/subscriptions/cancel-subscription#custom) para ver cómo se usa.
+
+  <Expandable title="propiedades">
+    <ParamField body="type" type="enum">
+      `PERCENT` o `FIXED`. Los dos son excluyentes: una regla `PERCENT` lleva solo `percent`, y una regla `FIXED` solo `amount`.
+    </ParamField>
+
+    <ParamField body="percent" type="decimal">
+      La parte del monto cobrado que se reembolsa, entre `0` y `100`, cuando `type` es `PERCENT`. Se aplica sobre lo que realmente se cobró en el ciclo, por lo que no necesita una moneda propia.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      El monto fijo que se reembolsa cuando `type` es `FIXED`, como `value` y `currency`. Su moneda debe ser igual a la moneda propia de la suscripción: una solicitud que dejaría a ambas en desacuerdo se rechaza con `REFUND_RULE_CURRENCY_MISMATCH`, incluida una actualización que cambia la moneda de la suscripción mientras todavía hay almacenada una regla `FIXED` en la moneda anterior.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="pause_until" type="Timestamp">
+  Cuándo se reanudará por sí sola una suscripción pausada. Solo está presente mientras `status` es `PAUSED` y se indicó una duración al pausar; se omite (no es `null`) en una pausa sin fecha de fin y en cualquier otro estado. Se define con `pause_cycles` o `pause_until` en [Pausar suscripción](/es/reference/subscriptions/pause-subscription#pause-for-a-set-time); una duración indicada en ciclos se resuelve a un instante una sola vez, en el momento de la pausa, y se informa aquí en cada lectura posterior.
+</ParamField>
+
+<ParamField body="unpaid_cycle" type="object">
+  El ciclo de facturación actual, cuando está `PAST_DUE` y no se ha saldado. Se omite (no es `null`) en cualquier otro estado.
+
+  <Note>
+    Si este campo sigue informando el ciclo sin saldar una vez que la suscripción llega a `CANCELED`, o se omite en ese momento, está pendiente de confirmación del producto; verifica con una respuesta real antes de depender de ello.
+  </Note>
+
+  <Expandable title="propiedades">
+    <ParamField body="cycle_number" type="int">
+      El ciclo de facturación que está sin pagar, igual a `billing_cycles.current` en el momento en que se calculó.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      El monto adeudado del ciclo sin pagar. Tiene la misma estructura que el `amount` a nivel de suscripción.
+    </ParamField>
+
+    <ParamField body="attempts" type="int">
+      Total de intentos de cobro realizados hasta ahora para este ciclo, incluido el intento original.
+    </ParamField>
+
+    <ParamField body="last_failure_code" type="string">
+      El código de rechazo o fallo del intento más reciente. Es `null` si no está disponible.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="refund" type="object">
+  La cotización de reembolso de la última cancelación inmediata, o `null`/se omite cuando nunca se calculó ninguna. Se solicita con el modo `refund` en
+  `POST /v1/subscriptions/{id}/cancel`; consulta
+  [Cancelar suscripción](/es/reference/subscriptions/cancel-subscription#refund-on-immediate-cancel).
+  Una vez calculada, persiste y sigue apareciendo en cada lectura posterior de la suscripción.
+
+  <Expandable title="propiedades">
+    <ParamField body="mode" type="enum">
+      `PRORATED`, `FULL` o `CUSTOM`: refleja lo que se solicitó.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      El monto de reembolso calculado (o reflejado, en `CUSTOM`). Tiene la misma estructura que el
+      `amount` a nivel de suscripción.
+    </ParamField>
+
+    <ParamField body="unused_days" type="int">
+      Días del ciclo de facturación que se consideran sin usar. En `FULL`, es igual a `period_days`: todo el
+      ciclo cuenta como sin usar.
+    </ParamField>
+
+    <ParamField body="period_days" type="int">
+      La duración total del ciclo de facturación en días.
+    </ParamField>
+
+    <ParamField body="basis" type="object">
+      Contra qué se calculó el reembolso.
+
+      <Expandable title="propiedades">
+        <ParamField body="billing_cycle" type="int">
+          El ciclo de facturación contra el que se calculó el reembolso.
+        </ParamField>
+
+        <ParamField body="charged_amount" type="object">
+          El monto realmente cobrado por ese ciclo: el tope del reembolso.
+        </ParamField>
+
+        <ParamField body="payment_id" type="string">
+          El id propio del pago capturado. Es `null` para una cotización de fase de `$0` sin un pago al
+          que hacer referencia.
+        </ParamField>
+
+        <ParamField body="charged_at" type="Timestamp">
+          Cuándo se capturó ese pago. Es `null` para una cotización de fase de `$0` sin un pago al
+          que hacer referencia.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="execution" type="string">
+      Siempre `"MERCHANT"`: Yuno calcula la cotización, tú ejecutas el reembolso.
+    </ParamField>
+
+    <ParamField body="quoted_at" type="Timestamp">
+      Cuándo se calculó esta cotización.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="initial_payment_validation" type="bool">
+  Indicador para identificar si la suscripción debe esperar el primer pago para continuar. False de forma predeterminada.
+
+  Ejemplo: false
+</ParamField>
+
+<ParamField body="pending_plan_change" type="object">
+  El cambio de plan programado para el siguiente ciclo de facturación, o `null` cuando no hay ninguno pendiente. Programa uno con el bloque `plan_change` en `PATCH /v1/subscriptions/{id}`; deshazlo con `"plan_change": null`.
+
+  Un cambio programado se aplica a esta misma suscripción: no se crea ninguna suscripción nueva, y no se define ni `previous_subscription_id` ni `cancellation_source: PLAN_CHANGE`.
+
+  <Expandable title="propiedades">
+    <ParamField body="plan_id" type="string">
+      El identificador del plan de destino.
+    </ParamField>
+
+    <ParamField body="plan_name" type="string">
+      El nombre del plan de destino.
+    </ParamField>
+
+    <ParamField body="direction" type="string">
+      `UPGRADE` o `DOWNGRADE`. Una frecuencia de facturación más larga es un upgrade; con la misma frecuencia, un precio resuelto más alto es un upgrade. Solo informativo.
+    </ParamField>
+
+    <ParamField body="effective" type="string">
+      Cuándo se aplica el cambio. Siempre `NEXT_BILLING_CYCLE`: aquí solo aparecen los cambios programados. Un cambio de plan `IMMEDIATE` (consulta [Actualizar suscripción](/es/reference/subscriptions/update-subscription)) se aplica en el lugar y nunca queda pendiente.
+    </ParamField>
+
+    <ParamField body="phases_behavior" type="string">
+      Qué sucede cuando el plan de destino tiene fases. `START_FROM_REGULAR` (predeterminado) entra directamente en la fase regular; `HONOR_PHASES` entra por el calendario de fases del plan de destino, lo que establece `status` en `TRIALING`, `current_phase` en `TRIAL` y vuelve a poblar `billing_phases`.
+    </ParamField>
+
+    <ParamField body="applies_at" type="Timestamp">
+      El evento de facturación en el que el cambio tendrá efecto: la siguiente fecha de facturación de la suscripción.
+    </ParamField>
+
+    <ParamField body="requested_at" type="Timestamp">
+      Cuándo se programó el cambio.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="metadata" type="array of objects">
+  Especifica el arreglo metadata.
+
+  <Expandable title="propiedades">
+    <ParamField body="key" type="string">
+      Este valor sirve como nombre o identificador de los metadatos. Usa un término descriptivo. (MAX 48; MIN 1).
+
+      Ejemplo: sub_ext_id
+    </ParamField>
+
+    <ParamField body="value" type="string">
+      La información que deseas almacenar en los metadatos. (MAX 512; MIN 1).
+
+      Ejemplo: AA001
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="subscription_agreement_id" type="string">
+  Vincula esta suscripción con el pago inicial creado con el mismo ID de acuerdo. Se usa para seguimiento, conciliación y gestión de contracargos (MAX 255).
+
+  El valor debe coincidir exactamente con el `subscription_agreement_id` enviado en `payment_method.detail.card.stored_credentials.subscription_agreement_id` en el pago de origen (`payment_method.detail.wallet.stored_credentials.subscription_agreement_id` cuando el pago de origen es un CIT de wallet).
+
+  Ejemplo: sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa
+</ParamField>
+
+<ParamField body="payments" type="Array of strings">
+  Especifica el arreglo payments.
+
+  <Note>
+    Actualmente este arreglo siempre está vacío en los payloads de webhook. Suscríbete a los webhooks `payment.*` para dar seguimiento a los cobros. Para el historial completo de cobros de la suscripción (montos, proveedor, contexto de fase), usa [Listar pagos de la suscripción](/es/reference/subscriptions/list-subscription-payments) en lugar de este campo.
+  </Note>
+
+  Ejemplo: ["5104911d-5df9-229e-8468-bd41abea1a4s"]
+</ParamField>
+
+<ParamField body="renewal_notification_days" type="int">
+  Cantidad de días antes de la siguiente fecha de facturación en que se envía el webhook `subscription.close_to_renewal`. `null` significa que no se envía ninguna notificación de renovación para esta suscripción.
+
+  Ejemplo: 3
+</ParamField>
+
+<ParamField body="reason" type="string">
+  Motivo libre del estado actual de la suscripción, cuando se registró uno. Es `null` en suscripciones cuyo estado cambió sin motivo, de máximo 255 caracteres.
+
+  Se define con el campo `reason` propio de la suscripción en [Crear suscripción](/es/reference/subscriptions/create-subscription), [Actualizar suscripción](/es/reference/subscriptions/update-subscription), [Pausar suscripción](/es/reference/subscriptions/pause-subscription) y [Reanudar suscripción](/es/reference/subscriptions/resume-subscription); cada una escribe su propio `reason`, por lo que uno posterior sobrescribe a uno anterior. Reactivar una suscripción `CANCELED` o `COMPLETED` lo devuelve a `null`.
+
+  Ejemplo: "merchant request"
+</ParamField>
+
+<ParamField body="cancellation_time" type="Timestamp">
+  Cuándo se canceló la suscripción (<a href="https://en.wikipedia.org/wiki/ISO_8601" target="_blank">ISO 8601</a>). Solo se define cuando la suscripción llega a `CANCELED`; en otro caso es `null`. Consulta `cancellation_source` para saber qué la originó.
+
+  Ejemplo: 2023-12-16T20:46:54.786342Z
+</ParamField>
+
+<ParamField body="ending_time" type="Timestamp">
+  Cuándo se completó o venció la suscripción (<a href="https://en.wikipedia.org/wiki/ISO_8601" target="_blank">ISO 8601</a>). Solo se define cuando la suscripción llega a `COMPLETED`; en otro caso es `null`.
+
+  Ejemplo: 2024-12-16T20:46:54.786342Z
+</ParamField>
+
+<ParamField body="created_at" type="Timestamp">
+  Fecha y hora de creación de la suscripción (<a href="https://en.wikipedia.org/wiki/ISO_8601" target="_blank">ISO 8601</a> MAX 27; MIN 27).
+
+  Ejemplo: 2023-12-16T20:46:54.786342Z
+</ParamField>
+
+<ParamField body="updated_at" type="Timestamp">
+  Fecha y hora de la última actualización de la suscripción (<a href="https://en.wikipedia.org/wiki/ISO_8601" target="_blank">ISO 8601</a> MAX 27; MIN 27).
+
+  Ejemplo: 2023-12-16T21:00:54.786342Z
+</ParamField>
+
+<ParamField body="additional_data" type="object">
+  Especifica el objeto additional_data. Este objeto no es obligatorio. Sin embargo, si envías esta información, la experiencia de pago de tu usuario mejorará.
+
+  <Expandable title="propiedades">
+    <ParamField body="order" type="object">
+      Especifica el objeto order.
+
+      <Expandable title="propiedades">
+        <ParamField body="items" type="array of object">
+          Especifica el objeto de los ítems.
+
+          <Expandable title="propiedades">
+            <ParamField body="id" type="string">
+              El identificador único del ítem (MAX 255; MIN 3).
+
+              Ejemplo: 3214
+            </ParamField>
+
+            <ParamField body="name" type="string">
+              El nombre del ítem (MAX 255; MIN 3).
+
+              Ejemplo: iPhone 12 Pro Max
+            </ParamField>
+
+            <ParamField body="quantity" type="int">
+              La cantidad del ítem (MAX 999; MIN 1).
+
+              Ejemplo: 1
+            </ParamField>
+
+            <ParamField body="unit_amount" type="float">
+              El monto unitario del ítem (múltiplo de 0.0001).
+
+              Ejemplo: 550
+            </ParamField>
+
+            <ParamField body="category" type="string">
+              La categoría del ítem (MAX 255; MIN 3).
+
+              Valores posibles: Consulta la <a href="/es/reference/items-category-list">Lista de categorías de ítems</a>.
+            </ParamField>
+
+            <ParamField body="brand" type="string">
+              La marca del ítem (MAX 255; MIN 3).
+
+              Ejemplo: Apple
+            </ParamField>
+
+            <ParamField body="sku_code" type="string">
+              La unidad de mantenimiento de stock (SKU) del ítem (MAX 255; MIN 3).
+
+              Ejemplo: A2342
+            </ParamField>
+
+            <ParamField body="manufacture_part_number" type="string">
+              El número de parte del fabricante del ítem (MAX 255; MIN 3).
+
+              Ejemplo: 345621234
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
