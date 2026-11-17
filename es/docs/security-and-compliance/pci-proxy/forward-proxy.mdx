@@ -1,0 +1,355 @@
+---
+title: "Forward Proxy"
+description: "Guía paso a paso para llamar a APIs de terceros con datos reales de tarjeta a través del Yuno PCI Proxy usando expresiones de vaulted token."
+keywords: ["forward proxy", "yuno-proxy-destination-url", "detokenization", "vaulted_token", "expressions"]
+---
+
+Esta guía muestra cómo llamar a una API de terceros con datos reales de tarjeta a través del Yuno PCI Proxy. Si aún no lo has leído, empieza con la [Descripción general de PCI Proxy](/es/docs/security-and-compliance/pci-proxy/overview).
+
+## Requisitos {#requirements}
+
+* Tu `public-api-key` y tu `private-secret-key` del Yuno Dashboard.
+* Una tarjeta almacenada en Yuno y su `vaulted_token`. Consulta [Inscribir método de pago](/reference/payment-methods-direct-workflow/enroll-payment-method-api).
+* La API de destino que quieres llamar, accesible por HTTPS en el puerto 443 y registrada en tu [lista de destinos permitidos](/es/docs/security-and-compliance/pci-proxy/allowlist).
+
+<Warning>
+**Solo del lado del servidor**
+
+Las solicitudes al proxy destokenizan en reversa los datos de tarjeta y solo deben hacerse desde tu backend. Nunca expongas tu `private-secret-key` en código del lado del cliente.
+</Warning>
+
+<Steps>
+  <Step title="Construye la solicitud de destino">
+    Escribe la solicitud exactamente como la espera la API de destino (la misma estructura de cuerpo y los mismos encabezados), pero coloca expresiones de vaulted token donde van los datos de la tarjeta:
+
+    ```json
+    {
+      "amount": 2500,
+      "currency": "USD",
+      "card": {
+        "number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}",
+        "expiration_month": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}",
+        "expiration_year": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}",
+        "holder_name": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}"
+      }
+    }
+    ```
+
+    Los campos de tarjeta que puedes referenciar son `number`, `expiration_month`, `expiration_year` y `holder_name`, y se resuelven a los **datos de la tarjeta (PAN)** almacenados. Si la tarjeta se inscribió con un código de seguridad, también puedes referenciar `security_code`, dentro de una ventana limitada (ver más abajo). Si la tarjeta tiene un **token de red**, también puedes referenciar `network_token_number` (el DPAN), `network_token_expiration_month` y `network_token_expiration_year`. Y `network_transaction_id` se resuelve al NTID de la tarjeta, la referencia del esquema para su transacción original, requerida por muchos procesadores para transacciones iniciadas por el comercio. Todos los campos se pueden combinar en la misma solicitud: envía a tu procesador lo que necesite, ya sea PAN, DPAN + NTID o una combinación. Los tokens de proveedor no se resuelven, y los criptogramas tampoco: un criptograma se genera por transacción, así que si tu destino requiere uno, obtenlo de [Generar criptograma de token de red](/reference/network-tokens/generate-network-token-cryptogram) justo antes del reenvío e incluye el valor directamente en el cuerpo. Solicítalo con `include_network_token: false` si tu organización no está certificada PCI: la respuesta que contiene solo el criptograma no incluye datos equivalentes al PAN, y la expresión `network_token_number` resuelve el DPAN por ti en el momento del reenvío.
+
+    Las expresiones funcionan en el cuerpo de la solicitud y en los valores de los encabezados. Todo lo que no sea una expresión se reenvía sin cambios.
+
+    <Warning>
+    **El código de seguridad expira: por defecto 3 horas después de la inscripción**
+
+    `security_code` es el único campo con una vigencia limitada. El código de seguridad nunca se almacena: se conserva brevemente después de que tu cliente lo ingresa, y Yuno deja de entregarlo cuando esa ventana se cierra. Referéncialo solo para un cobro que ocurra poco después de la inscripción.
+
+    Cuando no está disponible (expiró o nunca se capturó), el reenvío falla con `EXPRESSION_RESOLUTION_FAILED` indicando `security_code`, y **no** se hace ninguna sustitución parcial. Tus expresiones de PAN no se ven afectadas: un código de seguridad expirado te cuesta solo ese campo.
+
+    Si tu destino requiere el CVV fuera de esa ventana, tu cliente debe proporcionarlo y tú lo incluyes directamente en el cuerpo; el proxy lo reenvía sin almacenarlo. Transmitir un código de seguridad sin tokenizar mantiene esa solicitud dentro de tu alcance PCI.
+    </Warning>
+
+    #### Almacenar un código de seguridad
+
+    Una tarjeta solo tiene un código de seguridad para inyectar si se proporcionó cuando se inscribió. Envíalo como `card.security_code` en [Inscribir método de pago](/reference/payment-methods-direct-workflow/enroll-payment-method-api):
+
+    ```json
+    {
+      "customer_id": "...",
+      "card": {
+        "number": "4111111111111111",
+        "expiration_month": 12,
+        "expiration_year": 2030,
+        "holder_name": "JOHN DOE",
+        "security_code": "123"
+      }
+    }
+    ```
+
+    Si inscribes la tarjeta sin él, la tarjeta sigue siendo utilizable para todas las demás expresiones; solo `security_code` no estará disponible.
+
+    #### Comprobar cuánto queda de la ventana
+
+    Lee `card_data.security_code_expires_in` desde [Consultar método de pago inscrito](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api):
+
+    | Valor | Significado |
+    |---|---|
+    | Un número positivo | Segundos restantes antes de que el código de seguridad deje de estar disponible |
+    | `-1` | La ventana se cerró; el código de seguridad ya no se puede inyectar |
+    | Campo ausente | La tarjeta se inscribió sin código de seguridad, o tu organización no tiene el proxy habilitado |
+
+    <Note>
+    La respuesta de inscripción **no** incluye `security_code_expires_in`. Léelo desde el endpoint del método de pago indicado arriba cuando necesites saber en qué punto estás antes de construir un reenvío.
+    </Note>
+  </Step>
+
+  <Step title="Envíala a través del proxy">
+    Envía la solicitud a `https://api.y.uno/v1/pci-proxy/forward` con el destino en el encabezado `yuno-proxy-destination-url`:
+
+    ```sh
+    curl -X POST "https://api.y.uno/v1/pci-proxy/forward" \
+      -H "public-api-key: $PUBLIC_API_KEY" \
+      -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+      -H "yuno-proxy-destination-url: https://api.example-processor.com/charges" \
+      -H "yuno-account-id: acc_123" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $PROCESSOR_API_KEY" \
+      -d '{
+        "amount": 2500,
+        "currency": "USD",
+        "card": {
+          "number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}",
+          "expiration_month": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}",
+          "expiration_year": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}",
+          "holder_name": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}"
+        }
+      }'
+    ```
+
+    El método HTTP que uses es el método que recibe el destino. Los encabezados que establezcas para el destino (como `Authorization` arriba) pasan sin cambios; los encabezados de credenciales propios de Yuno y todos los encabezados `yuno-*` se eliminan antes de reenviar.
+
+    El encabezado `yuno-account-id` es opcional: inclúyelo cuando necesites limitar la solicitud a una cuenta específica. Como todos los encabezados `yuno-*`, se elimina antes de reenviar y nunca llega al destino. Limita **qué destinos de la lista de permitidos** están autorizados para la solicitud; no afecta la resolución de tokens, ya que los vaulted tokens siempre están limitados a tu organización.
+
+    Este es un encabezado distinto de `X-account-code`, que usas para administrar destinos asociados a una cuenta en la [lista de destinos permitidos](/es/docs/security-and-compliance/pci-proxy/allowlist#list-your-destinations); ambos llevan el mismo `account_id`. Un destino registrado con un `account_id` necesita esa cuenta también en el reenvío: incluye `yuno-account-id` o recibirás `403 DESTINATION_NOT_ALLOWED`, igual que con un host no registrado.
+
+    Coloca la URL de destino **completa**, incluyendo su ruta y cualquier query string, en `yuno-proxy-destination-url` (por ejemplo `https://api.example-processor.com/charges/ch_123/capture?expand=true`). No agregues una ruta ni un query string a la solicitud `/v1/pci-proxy/forward` en sí; un query string en la solicitud al proxy se rechaza, para que los datos del comercio nunca se registren en logs.
+  </Step>
+
+  <Step title="Lee la respuesta">
+    El código de estado, los encabezados y el cuerpo del destino se te devuelven sin cambios, salvo que cualquier número de tarjeta que el destino devuelva se redacta primero (consulta [Datos de tarjeta en las respuestas](#card-data-in-responses) más abajo). Las redirecciones **no** se siguen: un `3xx` del destino se te devuelve tal cual, para que tú decidas si seguirlo. El proxy agrega encabezados de diagnóstico:
+
+    | Encabezado | Significado |
+    |---|---|
+    | `yuno-proxy-request-id` | Identificador único de esta invocación del proxy. Inclúyelo en las solicitudes de soporte. |
+    | `yuno-proxy-destination-status` | El estado HTTP devuelto por el destino. **Presente solo cuando se llegó al destino**: si falta, la falla ocurrió dentro de Yuno. |
+    | `yuno-proxy-replacements` | Cuántas expresiones se reemplazaron. `0` en una solicitud que esperabas que se tokenizara en reversa significa que tus expresiones no coincidieron. |
+    | `yuno-proxy-response-redactions` | Cuántos números de tarjeta se redactaron de la respuesta del destino. Un valor distinto de cero significa que el destino devolvió datos de tarjeta. |
+  </Step>
+
+  <Step title="Maneja los errores">
+    Los errores producidos por el propio proxy usan el formato de error estándar de Yuno y nunca incluyen el encabezado `yuno-proxy-destination-status`:
+
+    ```json
+    {
+      "code": "EXPRESSION_RESOLUTION_FAILED",
+      "messages": ["a vaulted_token expression could not be resolved: network_transaction_id"]
+    }
+    ```
+
+    | Estado HTTP | Código | Significado |
+    |---|---|---|
+    | `401` | `NOT_AUTHENTICATED` / `AuthenticationFail` | Credenciales de API ausentes o inválidas |
+    | `400` | `INVALID_REQUEST` | `yuno-proxy-destination-url` ausente o inválido, una expresión o query string en la URL, un `yuno-proxy-timeout` inválido, más de 20 tokens distintos en una solicitud, o una configuración de firma inválida (valor `yuno-proxy-auth` desconocido, `yuno-proxy-auth-secret-key` ausente, o `DLOCAL_HMAC` sin los encabezados `X-Login` o `X-Trans-Key`) |
+    | `400` | `EXPRESSION_RESOLUTION_FAILED` | Un `vaulted_token` no existe, no pertenece a tu organización, o un campo referenciado no está disponible (por ejemplo, un campo de token de red en una tarjeta sin token de red aprovisionado). El mensaje indica el campo que no se pudo resolver; el valor del token nunca se devuelve |
+    | `400` | `INVALID_ACCOUNT_ID` | El encabezado `yuno-account-id` no es una cuenta válida para tu organización |
+    | `403` | `DESTINATION_NOT_ALLOWED` | El destino no es un nombre de host HTTPS público (se rechazan direcciones IP, puertos distintos de 443 y redes internas), o el host no está en tu [lista de destinos permitidos](/es/docs/security-and-compliance/pci-proxy/allowlist) |
+    | `403` | `PRODUCT_NOT_ENABLED` | El PCI Proxy no está activado para tu organización. Esta restricción aplica solo en **producción**: contacta a tu Key Account Manager (KAM) para activarlo. El sandbox está abierto para pruebas |
+    | `413` | `REQUEST_TOO_LARGE` | Cuerpo de la solicitud mayor a 1 MB |
+    | `429` | `TOO_MANY_REQUESTS` | Límite de tasa excedido |
+    | `502` | `DESTINATION_UNREACHABLE` | No se pudo alcanzar el destino o este cerró la conexión |
+    | `502` | `RESPONSE_BLOCKED` | La respuesta del destino contenía datos de tarjeta y Yuno está configurado a nivel de servicio para rechazar esas respuestas en lugar de redactarlas (la redacción es el comportamiento por defecto) |
+    | `504` | `DESTINATION_TIMEOUT` | El destino no respondió dentro del tiempo de espera |
+    | `500` | `PROXY_ERROR` | Un error inesperado dentro del proxy |
+
+    Un `401` se devuelve antes de que tu solicitud llegue al proxy, por lo que no incluye el encabezado `yuno-proxy-request-id`; todas las demás respuestas sí lo incluyen.
+
+    Cualquier `4xx`/`5xx` acompañado de `yuno-proxy-destination-status` es un error propio del destino, que se te pasa para que lo manejes como si lo hubieras llamado directamente.
+  </Step>
+</Steps>
+
+## Tipos de contenido {#content-types}
+
+El proxy es **agnóstico al tipo de contenido**. Reenvía el cuerpo textualmente, sin analizarlo ni convertirlo a JSON. La resolución de expresiones es una sustitución de texto sobre los bytes sin procesar del cuerpo, así que una expresión `vaulted_token` se reemplaza dondequiera que aparezca: JSON, XML, SOAP o pares clave-valor de formulario. Coloca las expresiones dentro de tu payload y envía el `Content-Type` que tu destino espera.
+
+**JSON** se muestra arriba. Los ejemplos siguientes cubren los otros formatos comunes.
+
+**XML**
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/forward" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "yuno-proxy-destination-url: https://api.legacy-processor.com/gateway" \
+  -H "Content-Type: application/xml" \
+  -d '<payment>
+        <amount>2500</amount>
+        <card>
+          <number>{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}</number>
+          <holderName>{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}</holderName>
+          <expiry>{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}/{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}</expiry>
+          <securityCode>123</securityCode>
+        </card>
+      </payment>'
+```
+
+**SOAP**: un envelope XML más el encabezado `SOAPAction` propio del destino, reenviado sin cambios:
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/forward" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "yuno-proxy-destination-url: https://api.legacy-processor.com/soap" \
+  -H "Content-Type: text/xml; charset=utf-8" \
+  -H "SOAPAction: \"ProcessPayment\"" \
+  -d '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pay="http://processor.com/pay">
+        <soapenv:Body>
+          <pay:ProcessPayment>
+            <pay:amount>2500</pay:amount>
+            <pay:card>
+              <pay:number>{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}</pay:number>
+              <pay:holderName>{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}</pay:holderName>
+              <pay:expiry>{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}/{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}</pay:expiry>
+              <pay:securityCode>123</pay:securityCode>
+            </pay:card>
+          </pay:ProcessPayment>
+        </soapenv:Body>
+      </soapenv:Envelope>'
+```
+
+**Pares clave-valor de formulario** (`application/x-www-form-urlencoded`):
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/forward" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "yuno-proxy-destination-url: https://api.legacy-processor.com/charge" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d 'amount=2500&card_number={{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}&card_holder={{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}&exp_month={{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}&exp_year={{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}&cvv=123'
+```
+
+<Warning>
+**Caracteres especiales en `holder_name`**
+
+Como la sustitución es literal, un `holder_name` que contenga marcado o caracteres delimitadores puede romper la estructura del payload en el destino:
+
+* **XML / SOAP:** un nombre con `&`, `<` o `>` (por ejemplo `Doe & Sons`) puede romper el formato correcto del documento. Los campos `number`, `expiration_month` y `expiration_year` son solo dígitos, por lo que no se ven afectados: el riesgo se limita a `holder_name`.
+* **Pares clave-valor de formulario:** un nombre con `&`, `=` o espacios puede romper la estructura clave/valor. Envía `holder_name` codificado como URL, o usa un payload JSON/XML si el nombre del titular puede contener caracteres especiales.
+</Warning>
+
+## Datos de tarjeta en las respuestas {#card-data-in-responses}
+
+Si un destino devuelve un número de tarjeta en su respuesta, el proxy lo redacta antes de devolvértela, conservando solo los últimos cuatro dígitos, para que los números de tarjeta sin procesar nunca lleguen a tus sistemas. El número de redacciones se informa en el encabezado de respuesta `yuno-proxy-response-redactions`:
+
+```http
+HTTP/1.1 200 OK
+yuno-proxy-request-id: 7b3f...
+yuno-proxy-destination-status: 200
+yuno-proxy-response-redactions: 1
+
+{ "status": "approved", "card": { "number": "XXXXXXXXXXXX1111" } }
+```
+
+Un `yuno-proxy-response-redactions` distinto de cero es una señal de que tu destino está devolviendo datos de tarjeta que no deberías recibir. La redacción es el comportamiento por defecto. Yuno se puede configurar opcionalmente, como un ajuste a nivel de servicio y no por cuenta, para **rechazar** en su lugar cualquier respuesta que contenga datos de tarjeta con `502 RESPONSE_BLOCKED`.
+
+## Autenticación en el destino {#authenticating-to-the-destination}
+
+Una solicitud al proxy lleva dos conjuntos independientes de credenciales:
+
+* **Tus credenciales de Yuno** (`public-api-key` / `private-secret-key`) te autentican ante el proxy. Yuno las consume y nunca se reenvían.
+* **Las credenciales propias del destino** son las que esa API de terceros espere. Inclúyelas en la solicitud y se reenvían sin cambios: Yuno solo elimina sus propios encabezados.
+
+Envía el encabezado de autenticación que requiera tu destino: **no se limita a `Authorization`**. El nombre del encabezado lo define la API del proveedor del destino, no Yuno; tómalo de la documentación de ese proveedor.
+
+**Qué reenvía Yuno y qué elimina:**
+
+| Encabezado | ¿Se reenvía al destino? |
+|---|---|
+| `Authorization` (y cualquier otro encabezado del destino) | Sí, sin cambios |
+| `Content-Type` | Sí |
+| `public-api-key`, `private-secret-key` | Eliminados por Yuno |
+| Cualquier encabezado `yuno-*` (p. ej. `yuno-proxy-destination-url`, `yuno-account-id`) | Eliminados por Yuno |
+| Encabezados internos de trazabilidad/infraestructura (`traceparent`, `x-datadog-*`, `x-envoy-*`, `x-forwarded-*`, …) | Eliminados por Yuno |
+
+**Nombres comunes de encabezados de autenticación por proveedor** (ejemplos: revisa siempre la documentación del destino):
+
+| Proveedor (ejemplo) | Encabezado de autenticación |
+|---|---|
+| Stripe y muchas APIs REST | `Authorization: Bearer <token>` |
+| Algunos gateways | `X-Api-Key: <key>` o `apikey: <key>` |
+| Otros | `Api-Token: <token>`, `X-Auth-Token: <token>` |
+| Autenticación básica | `Authorization: Basic base64(user:pass)` |
+
+## Destinos con firma (firma de solicitudes HMAC) {#signed-destinations-hmac-request-signing}
+
+Algunos destinos requieren que cada solicitud esté **firmada (HMAC) sobre el cuerpo de la solicitud**. No puedes calcular esa firma por adelantado: tendría que calcularse sobre el cuerpo **resuelto**, el que contiene el número de tarjeta real, que solo existe dentro del entorno seguro de Yuno. En su lugar, envía tus credenciales de firma en la propia solicitud y el proxy firma por ti, después de resolver tus expresiones:
+
+| Encabezado | Significado |
+|---|---|
+| `yuno-proxy-auth` | El esquema de firma. Compatible: `DLOCAL_HMAC` |
+| `yuno-proxy-auth-secret-key` | Tu secreto de firma para esta solicitud. Como todo encabezado `yuno-*`, se elimina antes de reenviar y se excluye de los logs; el proxy lo usa en memoria y lo descarta: no se almacena nada |
+
+Los demás identificadores del destino son encabezados de destino normales que envías tú mismo, reenviados textualmente como siempre. Para **dLocal** (`DLOCAL_HMAC`):
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/forward" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "yuno-proxy-destination-url: https://api.dlocal.com/secure_payments" \
+  -H "yuno-proxy-auth: DLOCAL_HMAC" \
+  -H "yuno-proxy-auth-secret-key: $DLOCAL_SECRET_KEY" \
+  -H "X-Login: $DLOCAL_X_LOGIN" \
+  -H "X-Trans-Key: $DLOCAL_X_TRANS_KEY" \
+  -H "X-Version: 2.1" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100, "currency": "USD", "country": "CO", "payment_method_id": "CARD",
+        "card": { "number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}",
+                  "holder_name": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}",
+                  "expiration_month": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}",
+                  "expiration_year": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}",
+                  "cvv": "123" } }'
+```
+
+Cada valor de `yuno-proxy-auth` identifica un esquema de firma completo y fijo (qué se firma, cómo y qué encabezados produce el proxy) que coincide con la especificación oficial de autenticación de ese destino. `DLOCAL_HMAC` implementa el [esquema de firma de solicitudes de dLocal](https://docs.dlocal.com/reference/payins-security):
+
+| | `DLOCAL_HMAC` |
+|---|---|
+| Algoritmo | HMAC-SHA256, salida en hexadecimal en minúsculas |
+| Cadena a firmar | Valor de `X-Login` + valor de `X-Date` + el cuerpo de la solicitud **resuelto**, concatenados sin separadores (cuerpo vacío para solicitudes que no lo tienen) |
+| Secreto | Tu clave secreta de dLocal, de `yuno-proxy-auth-secret-key` |
+| `X-Login`, `X-Trans-Key` | Los envías tú como encabezados de destino normales, reenviados textualmente; ambos son obligatorios (`X-Login` también forma parte de la cadena a firmar; `X-Trans-Key` no se firma, pero dLocal rechaza las solicitudes que no lo incluyen) |
+| `X-Date` | Generado por el proxy al momento del envío, ISO8601 UTC con milisegundos (p. ej. `2026-07-29T21:32:48.676Z`) |
+| `Authorization` | `V2-HMAC-SHA256, Signature: <signature>` |
+
+La firma se calcula sobre los bytes exactos del cuerpo que recibe el destino, después de que tus expresiones `{{vaulted_token…}}` se resuelven, que es precisamente la razón por la que el proxy debe calcularla. Lo que recibe el destino:
+
+```http
+X-Login:       <your value, verbatim>
+X-Trans-Key:   <your value, verbatim>
+X-Version:     2.1                                        <- your value, verbatim
+X-Date:        2026-07-29T21:32:48.676Z                   <- generated by Yuno
+Authorization: V2-HMAC-SHA256, Signature: afcad672f89d…   <- computed by Yuno
+```
+
+No envíes `X-Date` ni `Authorization` tú mismo en un destino con firma: los valores del proxy los reemplazan (de todos modos, el destino rechazaría una firma que calculaste sobre un cuerpo que aún contiene los marcadores `{{vaulted_token…}}`). Todos tus demás encabezados pasan sin cambios.
+
+Un valor `yuno-proxy-auth` desconocido, un `yuno-proxy-auth-secret-key` ausente o una solicitud `DLOCAL_HMAC` sin los encabezados `X-Login` o `X-Trans-Key` se rechaza con `400 INVALID_REQUEST` antes de contactar al destino. Un `401` del propio destino (credenciales incorrectas) llega como una respuesta del destino, con `yuno-proxy-destination-status: 401`.
+
+<Note>
+**El TLS mutuo se configura por destino, no en línea**
+
+Los destinos que requieren **TLS mutuo** (un certificado de cliente) no se admiten en línea: el certificado lo presenta Yuno durante el handshake TLS, no se envía en tu solicitud. En su lugar, regístralo una vez en el destino; consulta [Autenticación del destino](/es/docs/security-and-compliance/pci-proxy/destination-authentication).
+</Note>
+
+## Tiempos de espera {#timeouts}
+
+Por defecto, el proxy espera hasta 30 segundos al destino. Modifícalo con el encabezado `yuno-proxy-timeout` (segundos, máximo 120):
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/forward" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "yuno-proxy-destination-url: https://api.slow-supplier.com/bookings" \
+  -H "yuno-proxy-timeout: 90" \
+  -H "Content-Type: application/json" \
+  -d '{ "card_number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}" }'
+```
+
+## Pruebas en sandbox {#testing-in-sandbox}
+
+Usa `https://api-sandbox.y.uno/v1/pci-proxy/forward` con tus credenciales de sandbox y valores de `vaulted_token` de sandbox. Los tokens de sandbox se resuelven a números de tarjeta de prueba, así que puedes apuntar el proxy al sandbox de tu propio destino de forma segura.
+
+<Note>
+**Verifica tu integración**
+
+Revisa `yuno-proxy-replacements` en la respuesta mientras integras: confirma que el proxy encontró y reemplazó tus expresiones antes de reenviar.
+</Note>
