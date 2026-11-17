@@ -73567,7 +73567,7 @@
           {
             "name": "created_at_from",
             "in": "query",
-            "description": "Start of the creation window (ISO 8601). The window between `created_at_from` and `created_at_to` is at most 7 days.",
+            "description": "Start of the creation window, inclusive (ISO 8601). The window between `created_at_from` and `created_at_to` is at most 7 days.",
             "required": true,
             "schema": {
               "type": "string",
@@ -73577,7 +73577,7 @@
           {
             "name": "created_at_to",
             "in": "query",
-            "description": "End of the creation window (ISO 8601). At most 7 days after `created_at_from`.",
+            "description": "End of the creation window, exclusive (ISO 8601). Must be after `created_at_from` and at most 7 days after it.",
             "required": true,
             "schema": {
               "type": "string",
@@ -73596,7 +73596,7 @@
           {
             "name": "updated_at_to",
             "in": "query",
-            "description": "Only payments last updated at or before this date and time (ISO 8601).",
+            "description": "Only payments last updated before this date and time, exclusive (ISO 8601). Must be after `updated_at_from` when both are sent.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -73609,7 +73609,23 @@
             "schema": {
               "type": "array",
               "items": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "CREATED",
+                  "READY_TO_PAY",
+                  "PENDING",
+                  "IN_PROCESS",
+                  "SUCCEEDED",
+                  "VERIFIED",
+                  "DECLINED",
+                  "REJECTED",
+                  "ERROR",
+                  "EXPIRED",
+                  "CANCELED",
+                  "REFUNDED",
+                  "IN_DISPUTE",
+                  "CHARGEBACK"
+                ]
               }
             },
             "style": "form",
@@ -73620,7 +73636,8 @@
             "in": "query",
             "description": "Only payments of this customer.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
@@ -73636,7 +73653,8 @@
             "in": "query",
             "description": "Only payments of this country (ISO 3166-1 alpha-2).",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
             }
           },
           {
@@ -73644,7 +73662,8 @@
             "in": "query",
             "description": "Only payments in this currency (ISO 4217).",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
             }
           },
           {
@@ -73669,7 +73688,7 @@
           {
             "name": "cursor",
             "in": "query",
-            "description": "The `next_cursor` of the previous page. Send it with the same filters as the request that returned it.",
+            "description": "The `next_cursor` of the previous page, unchanged. Send it with the same `X-Account-Code` and filters as the request that returned it.",
             "schema": {
               "type": "string"
             }
@@ -73709,7 +73728,7 @@
                           "updated_at": "2026-11-03T10:25:13.447662Z"
                         }
                       ],
-                      "next_cursor": "eyJjIjoiMjAyNi0xMS0wM1QxMDoyNDo1OC45MDA1NTNaIn0",
+                      "next_cursor": "c2FtcGxlLWN1cnNvcg.c2FtcGxlLXNpZ25hdHVyZQ",
                       "has_more": true
                     }
                   },
@@ -73732,11 +73751,19 @@
                   "$ref": "#/components/schemas/Error_2"
                 },
                 "examples": {
+                  "INVALID_PARAMETERS": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The query parameter 'created_at_from' is required."
+                      ]
+                    }
+                  },
                   "DATE_RANGE_TOO_WIDE": {
                     "value": {
                       "code": "DATE_RANGE_TOO_WIDE",
                       "messages": [
-                        "The window between 'created_at_from' and 'created_at_to' must be at most 7 days."
+                        "The range between 'created_at_from' and 'created_at_to' must be at most 7 days."
                       ]
                     }
                   },
@@ -73744,7 +73771,7 @@
                     "value": {
                       "code": "INVALID_CURSOR",
                       "messages": [
-                        "The cursor is malformed or was issued for different filters."
+                        "The query parameter 'cursor' is invalid or does not match the filters of this search."
                       ]
                     }
                   }
@@ -144929,34 +144956,55 @@
             "description": "The unique identifier of the account that owns the payment."
           },
           "merchant_order_id": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "The unique identifier of the customer's order."
           },
           "description": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "The description of the payment."
           },
           "country": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "The country of the payment (ISO 3166-1 alpha-2)."
           },
           "status": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "The status of the payment. See [Payment status](/reference/payments/status-and-response-codes/payment)."
           },
           "sub_status": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "The sub status of the payment."
           },
           "amount": {
             "type": "object",
             "properties": {
               "value": {
-                "type": "number",
+                "type": [
+                  "number",
+                  "null"
+                ],
                 "description": "The amount of the payment."
               },
               "currency": {
-                "type": "string",
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "The currency of the payment (ISO 4217)."
               }
             }
@@ -144965,7 +145013,10 @@
             "type": "object",
             "properties": {
               "type": {
-                "type": "string",
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "The payment method type, for example `CARD` or `PIX`."
               }
             }

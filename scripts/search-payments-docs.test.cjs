@@ -71,9 +71,9 @@ test("the response carries payments, a nullable next_cursor and has_more with th
   for (const r of ex["Page with more results"].value.payments) assert.deepEqual(Object.keys(r).sort(), Object.keys(row).sort());
 });
 
-test("400 documents DATE_RANGE_TOO_WIDE and INVALID_CURSOR in the code and messages envelope", () => {
+test("400 documents INVALID_PARAMETERS, DATE_RANGE_TOO_WIDE and INVALID_CURSOR in the code and messages envelope", () => {
   const ex = op().responses["400"].content["application/json"].examples;
-  for (const code of ["DATE_RANGE_TOO_WIDE", "INVALID_CURSOR"]) {
+  for (const code of ["INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR"]) {
     assert.equal(ex[code].value.code, code);
     assert.ok(Array.isArray(ex[code].value.messages) && ex[code].value.messages.length > 0, code);
   }
@@ -82,6 +82,6 @@ test("400 documents DATE_RANGE_TOO_WIDE and INVALID_CURSOR in the code and messa
 test("the page explains the window, filters, pagination, rows and errors without prev_cursor or sort", () => {
   const g = read(`${page}.mdx`);
   for (const h of ["## Creation window", "## Filters", "## Pagination", "## Rows", "## Errors"]) assert.ok(g.includes(h), h);
-  for (const s of ["7 days", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "`next_cursor`", "`has_more`", "defaults to 50", "from 1 to 100", "`X-Account-Code`", "`created_at` ascending and then by `id`", "no `transactions` array"]) assert.ok(g.includes(s), s);
+  for (const s of ["7 days", "INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "`next_cursor`", "`has_more`", "defaults to 50", "from 1 to 100", "`X-Account-Code`", "`created_at` ascending and then by `id`", "no `transactions` array"]) assert.ok(g.includes(s), s);
   assert.ok(!g.includes("prev_cursor"));
 });

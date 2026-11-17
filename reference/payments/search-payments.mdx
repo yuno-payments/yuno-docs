@@ -8,7 +8,7 @@ This request lists the payments of the account sent in the `X-Account-Code` head
 
 ## Creation window
 
-`created_at_from` and `created_at_to` are required, and the window between them is at most 7 days. A wider window answers `400 DATE_RANGE_TOO_WIDE`. To cover a longer period, send one request per 7-day window.
+`created_at_from` and `created_at_to` are required ISO 8601 date-times. `created_at_from` is inclusive and `created_at_to` is exclusive, so consecutive windows that share a boundary do not overlap. `created_at_to` must be after `created_at_from`, and the window between them is at most 7 days. A wider window answers `400 DATE_RANGE_TOO_WIDE`. To cover a longer period, send one request per 7-day window.
 
 ## Filters
 
@@ -16,13 +16,15 @@ All filters are optional and combine with AND:
 
 | Parameter | Matches |
 | --- | --- |
-| `updated_at_from`, `updated_at_to` | Payments last updated inside this range |
+| `updated_at_from`, `updated_at_to` | Payments last updated inside this range (`updated_at_from` inclusive, `updated_at_to` exclusive) |
 | `status` | Any of the statuses sent, comma-separated (`status=SUCCEEDED,DECLINED`) or repeated (`status=SUCCEEDED&status=DECLINED`) |
-| `customer_id` | Payments of this customer |
+| `customer_id` | Payments of this customer (UUID) |
 | `payment_method_type` | Payments made with this payment method type, for example `CARD` |
-| `country` | Payments of this country |
-| `currency` | Payments in this currency |
+| `country` | Payments of this country (ISO 3166-1 alpha-2, for example `US`) |
+| `currency` | Payments in this currency (ISO 4217, for example `USD`) |
 | `merchant_order_id` | Payments with this merchant order ID |
+
+Send each parameter once, except `status`. A parameter that is not listed on this page, or a filter with an invalid value, answers `400 INVALID_PARAMETERS`.
 
 ## Pagination
 
@@ -36,7 +38,7 @@ The response is an object with three fields:
 | `next_cursor` | Cursor for the next page, or `null` on the last page |
 | `has_more` | `true` when another page exists, `false` on the last page |
 
-To read the next page, send `cursor` with the `next_cursor` value and the same filters as the request that returned it. Keep paging until `has_more` is `false`. Pages have no gaps or duplicates, even while new payments are created. A malformed cursor, or one sent with different filters, answers `400 INVALID_CURSOR`. Pagination moves forward only.
+To read the next page, send `cursor` with the `next_cursor` value unchanged, and the same `X-Account-Code` and filters as the request that returned it. Keep paging until `has_more` is `false`. A modified cursor, or one sent with a different account or different filters, answers `400 INVALID_CURSOR`. Pagination moves forward only.
 
 ## Rows
 
@@ -52,5 +54,6 @@ Errors use the `code` and `messages` envelope.
 
 | Status | Code | Cause |
 | --- | --- | --- |
+| 400 | `INVALID_PARAMETERS` | A required parameter is missing, a parameter is not supported or is sent more than once, or a value is invalid: a date that is not ISO 8601, `created_at_to` not after `created_at_from`, an unknown `status`, a `customer_id` or `X-Account-Code` that is not a UUID, or a `limit` outside 1 to 100 |
 | 400 | `DATE_RANGE_TOO_WIDE` | The window between `created_at_from` and `created_at_to` is longer than 7 days |
-| 400 | `INVALID_CURSOR` | The cursor is malformed, or was sent with filters different from the request that returned it |
+| 400 | `INVALID_CURSOR` | The cursor was modified, or was sent with an account or filters different from the request that returned it |

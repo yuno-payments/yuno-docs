@@ -57108,15 +57108,17 @@ paths:
         - name: created_at_from
           in: query
           description: >-
-            Start of the creation window (ISO 8601). The window between `created_at_from` and `created_at_to` is at most
-            7 days.
+            Start of the creation window, inclusive (ISO 8601). The window between `created_at_from` and `created_at_to`
+            is at most 7 days.
           required: true
           schema:
             type: string
             format: date-time
         - name: created_at_to
           in: query
-          description: End of the creation window (ISO 8601). At most 7 days after `created_at_from`.
+          description: >-
+            End of the creation window, exclusive (ISO 8601). Must be after `created_at_from` and at most 7 days after
+            it.
           required: true
           schema:
             type: string
@@ -57129,7 +57131,9 @@ paths:
             format: date-time
         - name: updated_at_to
           in: query
-          description: Only payments last updated at or before this date and time (ISO 8601).
+          description: >-
+            Only payments last updated before this date and time, exclusive (ISO 8601). Must be after `updated_at_from`
+            when both are sent.
           schema:
             type: string
             format: date-time
@@ -57142,6 +57146,21 @@ paths:
             type: array
             items:
               type: string
+              enum:
+                - CREATED
+                - READY_TO_PAY
+                - PENDING
+                - IN_PROCESS
+                - SUCCEEDED
+                - VERIFIED
+                - DECLINED
+                - REJECTED
+                - ERROR
+                - EXPIRED
+                - CANCELED
+                - REFUNDED
+                - IN_DISPUTE
+                - CHARGEBACK
           style: form
           explode: true
         - name: customer_id
@@ -57149,6 +57168,7 @@ paths:
           description: Only payments of this customer.
           schema:
             type: string
+            format: uuid
         - name: payment_method_type
           in: query
           description: Only payments made with this payment method type, for example `CARD`.
@@ -57159,11 +57179,13 @@ paths:
           description: Only payments of this country (ISO 3166-1 alpha-2).
           schema:
             type: string
+            pattern: ^[A-Z]{2}$
         - name: currency
           in: query
           description: Only payments in this currency (ISO 4217).
           schema:
             type: string
+            pattern: ^[A-Z]{3}$
         - name: merchant_order_id
           in: query
           description: Only payments with this merchant order ID.
@@ -57179,7 +57201,9 @@ paths:
             default: 50
         - name: cursor
           in: query
-          description: The `next_cursor` of the previous page. Send it with the same filters as the request that returned it.
+          description: >-
+            The `next_cursor` of the previous page, unchanged. Send it with the same `X-Account-Code` and filters as the
+            request that returned it.
           schema:
             type: string
       responses:
@@ -57209,7 +57233,7 @@ paths:
                           id: cfae0941-7234-427a-a739-ef4fce966c79
                         created_at: '2026-11-03T10:24:58.900553Z'
                         updated_at: '2026-11-03T10:25:13.447662Z'
-                    next_cursor: eyJjIjoiMjAyNi0xMS0wM1QxMDoyNDo1OC45MDA1NTNaIn0
+                    next_cursor: c2FtcGxlLWN1cnNvcg.c2FtcGxlLXNpZ25hdHVyZQ
                     has_more: true
                 Last page:
                   value:
@@ -57223,16 +57247,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error_2'
               examples:
+                INVALID_PARAMETERS:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - The query parameter 'created_at_from' is required.
                 DATE_RANGE_TOO_WIDE:
                   value:
                     code: DATE_RANGE_TOO_WIDE
                     messages:
-                      - The window between 'created_at_from' and 'created_at_to' must be at most 7 days.
+                      - The range between 'created_at_from' and 'created_at_to' must be at most 7 days.
                 INVALID_CURSOR:
                   value:
                     code: INVALID_CURSOR
                     messages:
-                      - The cursor is malformed or was issued for different filters.
+                      - The query parameter 'cursor' is invalid or does not match the filters of this search.
       deprecated: false
       tags:
         - Payments
@@ -112819,34 +112848,50 @@ components:
           format: uuid
           description: The unique identifier of the account that owns the payment.
         merchant_order_id:
-          type: string
+          type:
+            - string
+            - 'null'
           description: The unique identifier of the customer's order.
         description:
-          type: string
+          type:
+            - string
+            - 'null'
           description: The description of the payment.
         country:
-          type: string
+          type:
+            - string
+            - 'null'
           description: The country of the payment (ISO 3166-1 alpha-2).
         status:
-          type: string
+          type:
+            - string
+            - 'null'
           description: The status of the payment. See [Payment status](/reference/payments/status-and-response-codes/payment).
         sub_status:
-          type: string
+          type:
+            - string
+            - 'null'
           description: The sub status of the payment.
         amount:
           type: object
           properties:
             value:
-              type: number
+              type:
+                - number
+                - 'null'
               description: The amount of the payment.
             currency:
-              type: string
+              type:
+                - string
+                - 'null'
               description: The currency of the payment (ISO 4217).
         payment_method:
           type: object
           properties:
             type:
-              type: string
+              type:
+                - string
+                - 'null'
               description: The payment method type, for example `CARD` or `PIX`.
         customer_payer:
           type: object
