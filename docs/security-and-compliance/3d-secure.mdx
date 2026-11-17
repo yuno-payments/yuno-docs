@@ -68,7 +68,7 @@ A fallback attempt is a new authorization. The issuer can still decline it. Read
 
 | Integration | Who runs the authentication | When to use it | Guide |
 | :--- | :--- | :--- | :--- |
-| Yuno SDK | Yuno. The SDK collects device data and shows the challenge | You use Yuno Checkout on web or mobile | [SDK quickstart](/docs/sdks/overview/quickstart) |
+| Yuno SDK | Yuno. The SDK collects device data and shows the challenge | You use Yuno Checkout on web or mobile | [Get started with the Yuno SDK](/docs/yuno-sdk/get-started) |
 | Direct API | Yuno. You redirect the customer to the `redirect_url` | You are PCI compliant and create payments from your server | [3DS configuration and testing](/docs/direct-integration-use-cases/3ds-configuration-and-testing) |
 | 3DS Standalone | Yuno. Authentication only, with no provider and no authorization | You want the ECI and cryptogram to authorize elsewhere | [3DS Standalone](/docs/payment-features/3ds-standalone) |
 | External 3DS | Your own 3DS server or MPI | You already authenticate and only send the result to Yuno | [Create payment](/reference/payments/create-payment) |
@@ -89,15 +89,21 @@ The requirements for each option are in [Yuno 3D Secure 2 integration](#yuno-3d-
 ## Configuring 3D Secure for your payments
 
 <Note>
-**SDK v1.1 Enhancement**
+**Yuno SDK: 3DS runs inside the transaction**
 
-With SDK v1.1, 3DS logic is handled automatically using the `continuePayment()` method - no separate 3DS setup is required. For more information, see the [Yuno Web SDK documentation](/docs/sdks/full-checkout/web-payments).
+With the [Yuno SDK](/docs/yuno-sdk/get-started) there is no separate 3DS setup and no extra call to sequence. The SDK creates the payment, runs 3DS when the route or the issuer asks for it, and delivers the final status to [`onStatus`](/docs/yuno-sdk/controllers/on-status). If you create the payment from your own backend with [`createPayment`](/docs/yuno-sdk/controllers/create-payment), the SDK still runs 3DS and reports the result. See [How a transaction flows](/docs/yuno-sdk/how-a-transaction-flows) for the full sequence.
 </Note>
 
 <Note>
-  **Yuno 3DS challenge experience (web SDK)**: on web, when you call `getThreeDSecureChallenge` and open the returned URL with `embedded=true`, the challenge is presented in an iFrame instead of a full-page redirect, on both desktop and mobile web. This reduces drop-off compared to redirecting to a separate URL, and is opt-in: if you omit `embedded=true`, the challenge opens in a new tab instead. See [Step 6](/docs/sdks/headless-web/payment#step-6-get-the-3ds-challenge-url) for the implementation details.
+**Challenge experience in the Yuno SDK**: the SDK presents the challenge itself, so you do not open a challenge URL or handle a redirect. On mobile, the challenge runs in a full-screen WebView by default. On Android, add the Netcetera 3DS module to run it natively in your app, for payments and enrollment. On iOS 3.x the native module is not yet available, so challenges run in the WebView. See [Native modules](/docs/yuno-sdk/features/native-modules) for the setup.
+</Note>
 
-  This applies to Yuno's web 3DS provider only. Native mobile apps already run the challenge in-app using Netcetera's native 3DS SDKs, see the [iOS](/docs/sdks/external-native-modules/netcetera-3ds-ios) and [Android](/docs/sdks/external-native-modules/netcetera-3ds-android) guides.
+<Note>
+**On a legacy SDK?** Legacy SDKs stay supported during the transition, and 3DS works as follows:
+
+- Full, Lite and Seamless: from SDK v1.1, `continuePayment()` handles 3DS with no separate setup. See the [legacy Web SDK guide](/docs/sdks/full-checkout/web-payments).
+- Headless web: call `getThreeDSecureChallenge` and open the returned URL with `embedded=true` to show the challenge in an iFrame instead of a full-page redirect, on desktop and mobile web. Without `embedded=true`, the challenge opens in a new tab. See [Step 6](/docs/sdks/headless-web/payment#step-6-get-the-3ds-challenge-url). This applies to Yuno's web 3DS provider only.
+- Native mobile apps: the challenge runs in-app through Netcetera's native 3DS SDKs. See the [iOS](/docs/sdks/external-native-modules/netcetera-3ds-ios) and [Android](/docs/sdks/external-native-modules/netcetera-3ds-android) guides.
 </Note>
 
 You decide if your system will implement the 3DS2 or not. The 3DS2 verification step is added while defining your cards [dynamic routing](/docs/using-yuno/dashboard-overview/routing#configuring-the-dynamic-routing). When starting your card routes, you can add the 3DS2 step before defining the payment provider. When adding the 3DS2 verification step, when a payment using a card is initialized, the Yuno system will analyze if the card needs an extra challenge. If an extra challenge is necessary, the user will be redirected to the bank environment to complete the authorization. On the other hand, the payment process will proceed normally.
@@ -146,7 +152,7 @@ In general terms, a 3DS integration requires a `setup_id`/`device_fingerprint` f
 
 Therefore, depending on your Yuno integration, you have three different options:
 
-1. **Checkout integration**: The Checkout workflow is part of the [Checkout](/docs/sdks/overview/quickstart) solution provided by Yuno. Use our SDKs so we can handle all the logic regarding external provider requirements and executions for 3DS. If you want to define specific cases for 3DS analysis, you can define that in the CARD route of your Yuno dashboard.
+1. **Checkout integration**: The Checkout workflow is part of the [Checkout](/docs/yuno-sdk/get-started) solution provided by Yuno. Use our SDKs so we can handle all the logic regarding external provider requirements and executions for 3DS. If you want to define specific cases for 3DS analysis, you can define that in the CARD route of your Yuno dashboard.
 2. **External integration**: Use your own 3DS and then send the corresponding authorization fields in the [payment creation](/reference/payments/create-payment) (card\_data - eci, cryptogram, etc). Only available for PCI-compliant merchants.
 3. **Direct integration**: The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](/docs/direct-integration-use-cases/direct-flow) and provide the required information as instructed. For each payment you'll have a:
    1. `PENDING/WAITING_ADDITIONAL_STEP` status/sub status.
