@@ -1,0 +1,123 @@
+---
+title: Lite SDK (inscripción en Android)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Lite SDK (inscripción en Android)
+  description: >-
+    Guía paso a paso para integrar el Lite SDK de Yuno (inscripción en Android)
+    en tu aplicación móvil.
+  robots: index
+description: "Inscribe métodos de pago con el Lite SDK en Android mediante un flujo de inscripción ligero"
+---
+import GenericOrientation from '/snippets/es/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Sigue esta guía paso a paso para implementar y habilitar la función de inscripción del Lite SDK de Yuno para Android en tu app.
+
+## Paso 1: incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+Antes de continuar con la implementación del Lite SDK, consulta la [Guía de inicio rápido](/es/docs/sdks/overview/quickstart) para ver las instrucciones detalladas sobre cómo integrar correctamente el SDK en tu proyecto.
+
+Elige el método de integración que mejor se adapte a tu flujo de desarrollo y a tus requisitos técnicos. Después de completar la integración del SDK, puedes continuar con los siguientes pasos para implementar la funcionalidad de inscripción lite.
+
+## Paso 2: inicializa el SDK {#step-2-initialize-sdk}
+
+Inicializa el Yuno SDK en tu clase `Application` proporcionando un `PUBLIC_API_KEY` válido:
+
+```kotlin
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        Yuno.initialize(
+            this,
+            apiKey = "YOUR_PUBLIC_API_KEY",
+            config = YunoConfig()
+        )
+    }
+}
+```
+
+<Note>
+**Credenciales**
+
+Consulta la página de credenciales para obtener más información: [/reference/getting-started/authentication](/reference/getting-started/authentication)
+</Note>
+
+## Paso 3: crea una sesión de cliente {#step-3-create-a-customer-session}
+
+Para iniciar el proceso de inscripción, debes proporcionar el `customer_session`. Primero, debes crear un cliente. Usa el endpoint [Crear cliente](/reference/customers/create-customer) para crear nuevos clientes. En la respuesta, recibirás el `id` del cliente, que usas para crear la sesión de cliente.
+
+Después de crear el cliente, puedes crear la sesión de cliente. Usa el `id` del cliente y el endpoint [Crear sesión de cliente](/reference/customer-sessions-enrollment/create-customer-session). El `customer_session` se proporcionará en la respuesta. Necesitas un nuevo `customer_session` cada vez que realices la inscripción de un nuevo método de pago.
+
+En tu servidor, crea también un [objeto de método de pago para inscripción](/reference/payment-methods-checkout/enroll-payment-method-checkout) para esa sesión de cliente, a fin de definir qué método de pago puede inscribir el cliente. Mantén tus claves de API privadas en el servidor.
+
+## Paso 4: inicia el proceso de inscripción {#step-4-start-the-enrollment-process}
+
+Para ofrecer una experiencia de inscripción lite, primero debes inicializar el proceso de inscripción y luego lanzar la interfaz.
+
+### 1. Inicializa la inscripción {#1-initialize-enrollment}
+
+Llama a `initEnrollment` en el método `onCreate` de tu activity para preparar el SDK para el flujo de inscripción.
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    
+    initEnrollment { state, message ->
+        Log.d("YunoEnrollment", "Enrollment state: $state, error: ${message?.code}")
+    }
+}
+```
+
+### 2. Lanza la interfaz de inscripción {#2-launch-enrollment-ui}
+
+Llama a `startEnrollment` con las sesiones y los parámetros de configuración para mostrar el formulario de inscripción.
+
+```kotlin
+startEnrollment(
+    customerSession = "CUSTOMER_SESSION",
+    countryCode = "US",
+    showEnrollmentStatus = true,
+)
+```
+
+### Parámetros {#parameters}
+
+Configura la inscripción lite con las siguientes opciones:
+
+| Parámetro              | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`      | Hace referencia a la [sesión de cliente](/reference/customer-sessions-enrollment/create-customer-session) de la inscripción actual.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `countryCode`          | Este parámetro especifica el código de país para el que se configura la inscripción.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `showEnrollmentStatus` | Controla la visibilidad de la página de carga o spinner de Yuno durante el proceso de inscripción. Por defecto es `true`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+
+## Paso 5: estado de la inscripción {#step-5-enrollment-status}
+
+Cuando el proceso de inscripción finaliza, el SDK invoca el callback proporcionado en `initEnrollment` con el estado y, en `INTERNAL_ERROR`, un [`StatusMessage`](/es/docs/sdks/resources/references/android#statusmessage-error-details) que describe el fallo (`null` en cualquier otro estado).
+
+### Valores de estado posibles {#possible-status-values}
+
+* `SUCCEEDED`: la inscripción fue exitosa.
+* `FAIL`: la inscripción falló.
+* `PROCESSING`: la inscripción se está procesando.
+* `REJECT`: la inscripción fue rechazada.
+* `CANCELED`: el usuario canceló la inscripción.
+
+<Note>
+**App de demostración**
+
+Además de los ejemplos de código proporcionados, puedes acceder al [repositorio del Yuno Android SDK](https://github.com/yuno-payments/yuno-sdk-android) para ver una implementación completa de los SDK de Yuno.
+</Note>
+
+## Manejo de errores {#error-handling}
+
+Maneja en tu app los errores devueltos por el SDK, como una inscripción fallida o errores de validación. Para los códigos de estado HTTP y de respuesta, consulta [Códigos de estado y de respuesta](/reference/getting-started/response-codes) en la referencia de la API.
+
+## Mantente al día {#stay-updated}
+
+Visita las [notas de la versión](/changelog/android) para conocer las últimas actualizaciones del SDK y el historial de versiones.
