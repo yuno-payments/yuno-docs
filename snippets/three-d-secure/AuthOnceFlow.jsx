@@ -13,7 +13,7 @@ export const AuthOnceFlow = ({ lanes = [], stepMs = 950, holdMs = 3600, label = 
       const on = (e) => setReduced(e.matches);
       if (m.addEventListener) m.addEventListener('change', on);
       return () => { if (m.removeEventListener) m.removeEventListener('change', on); };
-    } catch (e) {}
+    } catch (e) { /* matchMedia unavailable: keep the animation defaults */ }
   }, []);
 
   useEffect(() => {
@@ -48,8 +48,8 @@ export const AuthOnceFlow = ({ lanes = [], stepMs = 950, holdMs = 3600, label = 
   };
 
   return (
-    <div className="tds-flow" ref={rootRef} role="img" aria-label={label}>
-      <div className="tds-lanes" aria-hidden="true">
+    <div className="tds-flow" ref={rootRef}>
+      <div className="tds-lanes" role="img" aria-label={label}>
         {lanes.map((lane) => {
           const steps = lane.steps || [];
           const laneDone = shown >= steps.length;
