@@ -1,0 +1,273 @@
+---
+title: Inscripción en Web
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Inscribe métodos de pago en Web con full-checkout, montando el formulario de inscripción y gestionando los callbacks"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+El SDK Web facilita la implementación de flujos de inscripción para guardar métodos de pago en la cuenta de un cliente.
+
+Incluye la biblioteca en tu proyecto siguiendo los mismos pasos que en los [flujos de pago](/docs/sdks/full-checkout/web-payments#include-the-library-in-your-project). Así completas el [paso 1](#step-1-include-the-library-in-your-project) y continúas con el flujo de inscripción que se describe a continuación.
+
+## Recursos adicionales {#additional-resources}
+
+* Yuno ofrece una [biblioteca de TypeScript](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) que complementa el SDK.
+
+* Consulta [Elige la integración adecuada para ti](/es/docs/sdks/overview/choose-integration) si no tienes claro qué flujo seguir.
+
+* Consulta la [aplicación de demostración](https://github.com/yuno-payments/yuno-sdk-web) para ver una implementación completa (clónala desde el repositorio).
+
+## Requisitos {#requirements}
+
+* Un [cliente](/reference/customers/create-customer) creado en Yuno, una [sesión de cliente](/reference/customer-sessions-enrollment/create-customer-session) y un [objeto de método de pago de inscripción](/reference/payment-methods-checkout/enroll-payment-method-checkout): consulta cada API al configurar tu backend.
+* Clave de API pública (obtenla en el [Yuno Dashboard](https://dashboard.y.uno/) → **Developers** > **Credentials**)
+
+## Parámetros {#parameters}
+
+Para ver la lista completa de parámetros y callbacks, consulta la [Referencia común del SDK Web](/es/docs/sdks/resources/references/web).
+
+| Parámetro              | Descripción                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| `customerSession`      | ID de la sesión de cliente de tu backend (API Create customer session). Obligatorio. |
+| `countryCode`          | Código de país ISO (por ejemplo, `US`).                                                  |
+| `language`             | Código de idioma de la interfaz (por ejemplo, `en`). Opcional.                                |
+| `showLoading`          | Muestra el indicador de carga. Opcional.                                                |
+| `onLoading`            | Callback: actualizaciones del estado de carga. Opcional.                                     |
+| `elementSelector`      | Selector CSS donde se monta el formulario de inscripción. Opcional. Pásalo dentro de `renderMode: { type: "element", elementSelector }`; a nivel superior el SDK lo ignora. |
+| `card`                 | Opciones del formulario de tarjeta. Opcional.                                                   |
+| `enrollmentStatus` | Callback: la inscripción terminó; recibe `vaultedToken` y `status`.              |
+| `issuersFormEnable`    | Muestra la lista de emisores (bancos). Opcional.                                             |
+| `texts`                | Texto personalizado de botones y etiquetas. Opcional.                                                |
+
+## Inscripción con full-checkout (Web) {#full-checkout-enrollment-web}
+
+Este flujo usa `mountEnrollmentLite`, el método de inscripción del SDK Web actual, que renderiza un formulario de inscripción prediseñado. Implementa la inscripción de la siguiente manera.
+
+### Paso 1: incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+Incluir la biblioteca en tu proyecto se hace de la misma forma que en los [flujos de pago](/docs/sdks/full-checkout/web-payments#include-the-library-in-your-project).
+
+### Paso 2: inicializa el SDK {#step-2-initialize-the-sdk}
+
+Consulta la [guía de inicio rápido](/es/docs/sdks/overview/quickstart#web-sdk-integration) para la inicialización.
+
+### Paso 3: crea una sesión de cliente y un objeto de método de pago de inscripción {#step-3-create-a-customer-session-and-an-enrollment-payment-method-object}
+
+Crea una [sesión de cliente](/reference/customer-sessions-enrollment/create-customer-session) y un [objeto de método de pago de inscripción](/reference/payment-methods-checkout/enroll-payment-method-checkout) en tu **servidor** para mantener seguras tus claves de API privadas. Define qué método de pago puede inscribir el cliente al crear el objeto de método de pago.
+
+#### Ejemplo del lado del servidor {#server-side-example}
+
+Crea una sesión de cliente y un método de pago de inscripción en tu backend. Así mantienes seguras tus claves de API privadas.
+
+```javascript
+// 1. Create customer session
+const customerSession = await fetch(
+  "https://api-sandbox.y.uno/v1/customers/sessions",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "public-api-key": PUBLIC_API_KEY,
+      "private-secret-key": PRIVATE_SECRET_KEY,
+    },
+    body: JSON.stringify({
+      account_id: ACCOUNT_ID,
+      customer_id: "your-customer-id",
+      country: "US",
+    }),
+  }
+).then((res) => res.json());
+
+// 2. Create enrollment payment method
+const enrollment = await fetch(
+  `https://api-sandbox.y.uno/v1/customers/sessions/${customerSession.customer_session}/payment-methods`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "public-api-key": PUBLIC_API_KEY,
+      "private-secret-key": PRIVATE_SECRET_KEY,
+      "X-Idempotency-Key": crypto.randomUUID(),
+    },
+    body: JSON.stringify({
+      account_id: ACCOUNT_ID,
+      payment_method_type: "CARD",
+      country: "US",
+    }),
+  }
+).then((res) => res.json());
+
+// Return the customer session ID to your client
+return customerSession.customer_session;
+```
+
+#### Ejemplo del lado del cliente {#client-side-example}
+
+Después de recibir el `customerSession` de tu servidor, inicializa el Yuno SDK y monta el formulario de inscripción en el lado del cliente.
+
+```javascript
+// Initialize Yuno SDK
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+
+// Mount the enrollment form
+await yuno.mountEnrollmentLite({
+  customerSession, // Received from your server
+  countryCode: "US",
+  language: "en",
+  showLoading: true,
+  onLoading: (args) => {
+    console.log(args);
+  },
+});
+```
+
+Para verificar tarjetas (autorización de valor cero) antes de la inscripción, agrega la estructura `verify` al definir el objeto de método de pago en el servidor.
+
+### Paso 4: monta la inscripción {#step-4-mount-the-enrollment}
+
+Usa `await yuno.mountEnrollmentLite()` con los parámetros siguientes.
+
+| Parámetro                         | Descripción                                                                                                                                                                                                                                       |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`                 | Hace referencia a la [sesión de cliente](/reference/customer-sessions-enrollment/create-customer-session) de la inscripción actual. Ejemplo: `e15648b0-fcd5-4799-a14c-cc463ae8a133`.                                                                                                              |
+| `countryCode`                     | País del proceso de pago. Usa un valor `ENUM`; consulta [Cobertura por país](/es/docs/sdks/resources/country-coverage).                                                                                                                                                   |
+| `language`                        | Idioma de los formularios de pago. Usa cualquier código de la lista de [Idiomas compatibles](/es/docs/sdks/resources/languages-supported). Ejemplo: `en`. Por defecto usa el idioma del navegador cuando está disponible.                                                                                     |
+| `showLoading`                     | Controla la visibilidad de la página de carga o indicador de Yuno durante el proceso de pago.                                                                                                                                                                  |
+| `onLoading`                       | Obligatorio para recibir notificaciones sobre llamadas al servidor o eventos de carga.                                                                                                                                                                           |
+| `elementSelector`                 | Elemento HTML donde se monta el Yuno SDK. Pásalo dentro de `renderMode: { type: "element", elementSelector }`; a nivel superior el SDK lo ignora.                                                                                                                                                                                                       |
+| `card`                            | Define ajustes específicos del formulario de tarjeta de crédito.                                                                                                                                                                                                |
+| `enrollmentStatus`            | Callback que se ejecuta al terminar la inscripción; recibe `vaultedToken` y `status`. Opciones de estado: `CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`. |
+| `issuersFormEnable`               | Habilita el formulario de emisores (lista de bancos).                                                                                                                                                                                                             |
+| `texts`                           | Texto personalizado de los botones del formulario de pago para adaptarlo al idioma o a la marca de tu app.                                                                                                                                                            |
+| `card.isCreditCardProcessingOnly` | Opcional. Obliga a que las transacciones con tarjeta se procesen solo como crédito, lo cual es útil donde las tarjetas funcionan como crédito y débito.                                                                                                                                     |
+
+El siguiente bloque de código presenta un ejemplo de la configuración de los parámetros de inscripción y del montaje.
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: 'e15648b0-fcd5-4799-a14c-cc463ae8a133',
+  /**
+   * The complete list of country codes is available on /docs/sdks/resources/country-coverage
+   */
+  countryCode: country,
+  /**
+  - Language for payment forms (see Supported languages)
+  - Defaults to browser language when available
+  */
+  language: 'en',
+  /**
+   * Hide or show the Yuno loading/spinner page
+   * Default is true
+   * @optional
+   */
+  showLoading: true,
+  /**
+   * Required if you'd like to be informed if there is a server call
+   * @param { isLoading: boolean, type: 'DOCUMENT' | 'ONE_TIME_TOKEN'  } data
+   * @optional
+   */
+  onLoading: (args) => {
+    console.log(args);
+  },
+  /**
+   *  API card
+   *  @optional
+   */
+  card: {
+    /**
+     * Mode render card can be step or extends
+     * Default extends
+     */
+    type: "extends",
+    /**
+     * Write custom CSS to style the card form. Your CSS will be injected into the iframe.
+     * Example:
+     * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+     *  .Yuno-front-side-card__name-label {
+     *    color: red !important;
+     *    font-family: 'Luckiest Guy' !important;
+     *   }`
+     */
+    styles: '',
+    /**
+     * Show checkbox for save/enroll card
+     * Default is false
+     */
+    cardSaveEnable: false,
+    /**
+     * Custom texts in Card forms buttons
+     * Example:
+     *
+     *  texts: {
+     *    cardForm?: {
+     *      enrollmentSubmitButton?: string;
+     *       paymentSubmitButton?: string;
+     *     }
+     *     cardStepper?: {
+     *       numberCardStep?: {
+     *         nextButton?: string;
+     *       },
+     *       cardHolderNameStep?: {
+     *         prevButton?: string;
+     *         nextButton?: string;
+     *       },
+     *       expirationDateStep?: {
+     *         prevButton?: string;
+     *         nextButton?: string;
+     *       },
+     *       cvvStep?: {
+     *         prevButton?: string;
+     *         nextButton?: string;
+     *       }
+     *     }
+     *  }
+     */
+    texts: {},
+    /**
+     * Hide or show the document fields into card form
+     * Default is true
+     * @optional
+     */
+    documentEnable: true,
+  },
+  /**
+   * Call back is called with the following object
+   * @param {{
+   *  status: 'CREATED'
+   *    | 'EXPIRED',
+   *    | 'REJECTED',
+   *    | 'READY_TO_ENROLL',
+   *    | 'ENROLL_IN_PROCESS',
+   *    | 'UNENROLL_IN_PROCESS',
+   *    | 'ENROLLED',
+   *    | 'DECLINED',
+   *    | 'CANCELED',
+   *    | 'ERROR',
+   *    | 'UNENROLLED',
+   *  vaultedToken: string,
+   * }}
+   */
+  enrollmentStatus: ({ status, vaultedToken}) => {
+    console.log('status', { status, vaultedToken})
+  },
+  /**
+   * If this is called the SDK should be mounted again
+   * @param { error: 'CANCELED_BY_USER' | any }
+   * @optional
+   */
+  error: (error) => {
+    console.log('There was an error', error)
+  },
+});
+```
+
+La opción `card.isCreditCardProcessingOnly` descrita arriba se omite de este ejemplo por brevedad; consulta la tabla de parámetros para más detalles.
+
+## Referencia común {#common-reference}
+
+Para ver todos los detalles de parámetros y personalización, consulta la [Referencia común del SDK Web](/es/docs/sdks/resources/references/web).
