@@ -1,85 +1,90 @@
 ---
 title: "3D Secure"
-description: "Explica los flujos de autenticación de 3D Secure 2, los requisitos de configuración y las opciones de integración para pagos con tarjeta."
+description: "Ejecuta 3D Secure 2 una sola vez como un paso de tu ruta de tarjetas y usa la misma autenticación con cualquier proveedor. Flujos, resultados, configuración y opciones de integración."
 ---
 
-## ¿Qué es 3D Secure? {#what-is-3d-secure}
+import { AuthOnceFlow } from '/snippets/three-d-secure/AuthOnceFlow.jsx';
 
-3D Secure, o 3DS, es un protocolo de seguridad para pagos en línea diseñado para prevenir el uso fraudulento de tarjetas de crédito en transacciones con tarjeta no presente (CNP). El protocolo, desarrollado en 1999, exige pasos de verificación adicionales para que los clientes se autentiquen durante el proceso de compra y se reduzca el riesgo de fraude. El siguiente flujo presenta un proceso de pago con 3DS:
+Yuno 3DS ejecuta la autenticación 3D Secure 2 como un paso propio de tu ruta de tarjetas, antes de que el pago llegue a un proveedor de pagos. El resultado de la autenticación (ECI, criptograma e ID de transacción del Directory Server) queda guardado en el pago, por lo que cualquier proveedor de la ruta puede usarlo.
 
-<Frame>![Diagrama del flujo de 3D Secure con pasos numerados entre comprador, comercio, Yuno, adquirente, red de tarjetas, emisor, MPI, DS y ACS](/images/reference/3d-secure/image1.png)</Frame>
+## Autentica una vez, enruta a cualquier proveedor {#authenticate-once-route-to-any-provider}
 
-Donde:
+Cuando un proveedor de pagos ejecuta 3DS por ti, la autenticación normalmente se queda con ese proveedor. Si el proveedor rechaza el pago y reintentas con otro, el segundo proveedor inicia su propia autenticación y tu cliente recibe un segundo desafío.
 
-* **Merchant Plugin Interface (MPI)** inicia el proceso de verificación al facilitar el intercambio seguro de información entre el comercio, el Directory Server de la red y el banco emisor del titular de la tarjeta.
-* **Scheme Directory Server (DS)** actúa como una base de datos centralizada y facilita la identificación del banco emisor correspondiente del titular de la tarjeta y del método de autenticación que se debe usar.
-* **Issuer Access Control Server (ACS)** es responsable de verificar y validar la identidad del titular de la tarjeta durante una transacción 3DS. El Issuer ACS recibe las solicitudes de autenticación y realiza evaluaciones de riesgo y comprobaciones de autenticación según las reglas y políticas predefinidas del banco.
+Con Yuno 3DS, la autenticación va primero y el proveedor después. Si el proveedor A rechaza el pago y tu ruta tiene un fallback, Yuno envía los mismos datos de autenticación al proveedor B. Tu cliente no vuelve a autenticarse.
 
-3D Secure 2, o 3DS2, publicado en 2016, es una versión actualizada del protocolo 3DS original y usa métodos de autenticación dinámicos, como la biometría y la autenticación basada en tokens, mientras que el protocolo 3DS original depende de contraseñas estáticas. 3DS2 busca ofrecer una mejor experiencia de usuario, con un flujo más fluido para los usuarios finales durante la autenticación. EMVCo, una organización propiedad de las principales marcas de tarjetas, desarrolló y administra ambos protocolos. Todas las principales marcas de tarjetas dejaron de admitir la primera versión de 3DS en octubre de 2022. Por lo tanto, integrar el paso de verificación 3DS2 es esencial para garantizar la experiencia y la seguridad de tus clientes. Yuno ya ofrece una integración sencilla de 3DS2 para tu negocio.
+<AuthOnceFlow
+  label="Comparación de dos flujos de pago. Con 3DS integrado en un proveedor: el cliente paga, completa un desafío 3DS ejecutado por el proveedor A, el proveedor A rechaza el pago, el cliente debe completar un segundo desafío 3DS para el proveedor B y luego el proveedor B intenta la autorización. Con Yuno 3DS: el cliente paga, completa un solo desafío 3DS ejecutado por Yuno, el proveedor A rechaza el pago y el proveedor B recibe la misma autenticación y aprueba."
+  lanes={[
+    {
+      eyebrow: 'Sin Yuno',
+      title: '3DS integrado en cada proveedor',
+      count: '2',
+      result: 'desafíos para la misma compra',
+      steps: [
+        { kind: 'customer', title: 'El cliente paga', body: 'Datos de la tarjeta enviados en el checkout' },
+        { kind: 'auth', title: 'Desafío 3DS', body: 'Ejecutado por el proveedor A, válido para el proveedor A' },
+        { kind: 'declined', title: 'Proveedor A', tag: 'Rechazado', body: 'La autenticación no puede pasar a otro proveedor' },
+        { kind: 'repeat', title: 'Desafío 3DS', tag: 'Otra vez', body: 'El proveedor B inicia su propia autenticación' },
+        { kind: 'provider', title: 'Proveedor B', body: 'Intento de autorización, si el cliente sigue ahí' },
+      ],
+    },
+    {
+      eyebrow: 'Con Yuno',
+      title: 'Yuno 3DS como paso de la ruta',
+      highlight: true,
+      count: '1',
+      result: 'desafío, sin importar cuántos proveedores pruebe la ruta',
+      steps: [
+        { kind: 'customer', title: 'El cliente paga', body: 'Datos de la tarjeta enviados en el checkout' },
+        { kind: 'auth', title: 'Desafío 3DS', body: 'Ejecutado por Yuno, antes de cualquier proveedor' },
+        { kind: 'declined', title: 'Proveedor A', tag: 'Rechazado', body: 'La ruta sigue su rama Declined' },
+        { kind: 'approved', title: 'Proveedor B', tag: 'Aprobado', body: 'Recibe el mismo ECI y criptograma' },
+      ],
+    },
+  ]}
+/>
 
-<div className="company_card_wrapper">
-<Columns cols={3}>
-  <Card horizontal title="Visa" icon="https://icons.prod.y.uno/visa_logosimbolo.png" />
+| Paso | 3DS integrado en cada proveedor | Yuno 3DS como paso de la ruta |
+| :--- | :--- | :--- |
+| Autenticación | Ejecutada por el proveedor A, ligada al proveedor A | Ejecutada por Yuno antes de cualquier proveedor |
+| El proveedor A rechaza | La autenticación se pierde | La autenticación se conserva en el pago |
+| Reintento en el proveedor B | El cliente completa un segundo desafío | El proveedor B recibe el mismo ECI y criptograma |
+| Desafíos para una compra | Dos | Uno |
 
-  <Card horizontal title="Mastercard" icon="https://icons.prod.y.uno/mastercard_logosimbolo.png" />
+### Cómo funciona en tu ruta {#how-it-works-in-your-route}
 
-  <Card horizontal title="American Express" icon="https://icons.prod.y.uno/amex_logosimbolo.png" />
+1. Agrega el paso **3DS** a tu ruta CARD, antes del paso del proveedor. Consulta [Configurar 3D Secure para tus pagos](#configuring-3d-secure-for-your-payments).
+2. Yuno autentica al cliente una sola vez. El flujo es frictionless cuando el emisor aprueba en segundo plano, o un desafío cuando el emisor lo solicita.
+3. Yuno envía el pago al primer proveedor con el resultado de la autenticación adjunto.
+4. Si ese proveedor rechaza el pago o devuelve un error, la ruta sigue la rama **Declined** o **Error** que configuraste. Consulta [Intentos de fallback y resultados del pago](/es/docs/using-yuno/dashboard-overview/routing#fallback-attempts-and-payment-outcomes).
+5. El siguiente proveedor recibe el mismo resultado de autenticación. La respuesta del pago lo devuelve en el [objeto `three_d_secure`](#yuno-3d-secure-2-integration).
 
-  <Card horizontal title="JCB" icon="https://icons.prod.y.uno/jcb_logosimbolo.png" />
+<Note>
+Un intento de fallback es una autorización nueva. El emisor todavía puede rechazarla. Lee `liability_shift` en cada pago en lugar de asumirlo a partir del estado del pago.
+</Note>
 
-  <Card horizontal title="Diners Club" icon="https://icons.prod.y.uno/dinnersclub_logosimbolo.png" />
+## Elige tu integración {#choose-your-integration}
 
-  <Card horizontal title="UnionPay" icon="https://icons.prod.y.uno/unionpay_logosimbolo.png" />
+| Integración | Quién ejecuta la autenticación | Cuándo usarla | Guía |
+| :--- | :--- | :--- | :--- |
+| SDK de Yuno | Yuno. El SDK recopila los datos del dispositivo y muestra el desafío | Usas Yuno Checkout en web o móvil | [Quickstart del SDK](/es/docs/sdks/overview/quickstart) |
+| API directa | Yuno. Rediriges al cliente a la `redirect_url` | Cumples con PCI y creas los pagos desde tu servidor | [Configuración y pruebas de 3DS](/es/docs/direct-integration-use-cases/3ds-configuration-and-testing) |
+| 3DS Standalone | Yuno. Solo autenticación, sin proveedor y sin autorización | Quieres el ECI y el criptograma para autorizar en otro lugar | [3DS Standalone](/es/docs/payment-features/3ds-standalone) |
+| 3DS externo | Tu propio servidor 3DS o MPI | Ya autenticas y solo envías el resultado a Yuno | [Crear pago](/es/reference/payments/create-payment) |
 
-  <Card horizontal title="Cartes Bancaires" icon="https://icons.prod.y.uno/cartabancaire_logosimbolo.png" />
-</Columns>
-</div>
+Los requisitos de cada opción están en [Integración de Yuno 3D Secure 2](#yuno-3d-secure-2-integration).
 
-## Beneficios de 3D Secure 2 {#benefits-of-3d-secure-2}
+## Resultados de la autenticación {#authentication-outcomes}
 
-Como se mencionó, 3DS2 se desarrolló para mejorar la experiencia de usuario y adaptar el protocolo 3DS al panorama de pagos moderno.
+| Resultado | Qué ve el cliente | Qué obtienes |
+| :--- | :--- | :--- |
+| Frictionless | Nada. El emisor autentica en segundo plano | ECI y criptograma |
+| Desafío | Una contraseña de un solo uso o una confirmación en la app del banco | ECI y criptograma cuando el cliente supera el desafío |
+| Data only | Nada. Los datos de la transacción se comparten con el emisor y no se solicita un desafío | Un registro de autenticación (`pares_status` `I`, normalmente ECI 04). No hay liability shift: conservas la responsabilidad por fraude |
+| Fallida o rechazada | Un desafío fallido, o nada cuando el emisor rechaza | Un pago `DECLINED` y sin liability shift |
 
-### Preparado para nuevas tecnologías {#prepared-for-new-technologies}
-
-3DS2 se diseñó pensando en el auge de los teléfonos inteligentes y permitió que los bancos ofrezcan experiencias de autenticación innovadoras a través de sus apps de banca móvil, como la autenticación biométrica con huellas dactilares o reconocimiento facial. Por lo tanto, los comercios pueden ofrecer varios métodos de autenticación que se ajustan a las preferencias de los consumidores y a los avances tecnológicos, lo que da como resultado un proceso de autenticación más cómodo y seguro.
-
-### Capacidades de integración {#integration-capabilities}
-
-En cuanto a la integración, 3DS2 incluye un componente SDK que permite la integración nativa en apps móviles. Como resultado, los comercios pueden autenticar transacciones dentro de sus propias apps. Ahora, el flujo de desafío ocurre directamente dentro de los flujos de checkout móviles, lo que elimina la necesidad de redirecciones a página completa y ofrece una experiencia de usuario más fluida.
-
-### Cantidad de datos disponibles para la autenticación {#amount-of-data-available-for-authentication}
-
-3DS2 permite que las empresas intercambien diez veces más datos de cada transacción con el banco del titular de la tarjeta. Esto incluye datos específicos del pago, como la dirección de envío, y datos contextuales, como el ID del dispositivo del cliente o su historial de transacciones anteriores. Esto permite que el banco evalúe el nivel de riesgo de la transacción y, potencialmente, autentique el pago sin datos adicionales del titular de la tarjeta. Por lo tanto, un pago que usa los protocolos de 3DS2 puede tener un **flujo sin fricción** o un **flujo con desafío** para completarse.
-
-#### Flujo sin fricción {#frictionless-flow}
-
-En un flujo sin fricción, los datos del cliente se confirman sin ninguna entrada manual de datos. Ocurre cuando el sistema reconoce y verifica el dispositivo del cliente, y los datos se intercambian en segundo plano. Como el cliente se identifica y se valida con esta información, no son necesarias solicitudes adicionales de los sistemas de pago.
-
-#### Flujo con desafío {#challenge-flow}
-
-El flujo con desafío ocurre cuando la información almacenada no es suficiente para validar al cliente. Como la identidad del cliente no está confirmada, el sistema requiere un paso adicional para validarlo, mediante una contraseña de un solo uso o una verificación biométrica. Según el sistema de validación, es posible que el cliente sea redirigido a la página del emisor de la tarjeta para ingresar la información necesaria.
-
-El uso de 3DS2 da como resultado una experiencia de usuario más fluida y sin fricción. Los flujos de datos mejorados y las capacidades de toma de decisiones que habilita 3DS2 reducen la tasa de abandono del carrito y mejoran las tasas de conversión.
-
-## Pago con 3D Secure 2 {#3d-secure-2-payment}
-
-Agregar el paso de verificación 3DS2 al proceso de checkout cambia el flujo de trabajo habitual. A continuación encontrarás un diagrama de flujo del checkout completo y una descripción de cada paso para ayudarte a comprender mejor el proceso.
-
-<Frame>![Diagrama de flujo del checkout con 3DS2: crear pago, verificación de 3DS habilitado, información del cliente, desafío, autorización, exitoso o rechazado](/images/reference/3d-secure/image2.png)</Frame>
-
-1. El cliente proporciona los datos de su tarjeta para iniciar el proceso de checkout del comercio.
-2. El sistema del comercio verifica si admite 3DS2.
-3. Si el comercio no admite 3DS2, el proceso de checkout continúa con el flujo de pago habitual, sin usar la verificación 3DS2.
-4. Si el comercio admite 3DS2, Yuno envía la información de la transacción al proveedor de servicios 3DS del emisor para evaluar el riesgo de la transacción. Estos datos incluyen información del titular de la tarjeta y del dispositivo, sujeta a las restricciones legales de la región o del mercado, como el ID del dispositivo, la dirección MAC, la geolocalización, las transacciones anteriores y más.
-5. El proveedor de servicios 3DS del emisor determina si la transacción es de alto riesgo y si es necesario un desafío para una verificación adicional.
-6. El pago continúa al paso de autorización si no es necesario un desafío (flujo sin fricción).
-7. Si se requiere un desafío (flujo con desafío), este se presenta al titular de la tarjeta para verificar su identidad. Esta verificación puede usar biometría y/o autenticación de dos factores, como una contraseña de un solo uso o una huella dactilar.
-8. El sistema verifica si el titular de la tarjeta completó el desafío con éxito.
-9. El pago continúa al paso de autorización si el titular de la tarjeta verifica su identidad con éxito.
-10. Si el titular de la tarjeta no logra verificar su identidad, el pago se cancela.
-11. El comercio consulta con el emisor de la tarjeta si la transacción está autorizada.
-12. Si la transacción está autorizada, el pago se procesa con éxito.
-13. Si la transacción no está autorizada, el pago se cancela o se rechaza.
+[3DS Standalone](/es/docs/payment-features/3ds-standalone#authentication-outcomes) muestra la respuesta completa de cada resultado. Para pedir al emisor que omita el desafío en pagos elegibles, consulta [Exenciones de SCA](/es/docs/payment-features/sca-exemptions).
 
 ## Configurar 3D Secure para tus pagos {#configuring-3d-secure-for-your-payments}
 
@@ -238,3 +243,81 @@ Como se mencionó antes, si el pago está en PENDING/WAITING\_ADDITIONAL\_STEP, 
 ### Usar 3DS para escenarios específicos {#using-3ds-for-specific-scenarios}
 
 Al configurar la ruta CARD en el Yuno Dashboard, puedes especificar en qué situaciones se debe ejecutar 3DS mediante las [condiciones disponibles](/es/docs/using-yuno/dashboard-overview/routing#configuring-the-dynamic-routing). Como se mencionó anteriormente, serán necesarios algunos pasos preliminares para ejecutar 3DS, según el método de integración utilizado.
+
+## ¿Qué es 3D Secure? {#what-is-3d-secure}
+
+3D Secure, o 3DS, es un protocolo de seguridad para pagos en línea diseñado para prevenir el uso fraudulento de tarjetas de crédito en transacciones con tarjeta no presente (CNP). El protocolo, desarrollado en 1999, exige pasos de verificación adicionales para que los clientes se autentiquen durante el proceso de compra y se reduzca el riesgo de fraude. El siguiente flujo presenta un proceso de pago con 3DS:
+
+<Frame>![Diagrama del flujo de 3D Secure con pasos numerados entre comprador, comercio, Yuno, adquirente, red de tarjetas, emisor, MPI, DS y ACS](/images/reference/3d-secure/image1.png)</Frame>
+
+Donde:
+
+* **Merchant Plugin Interface (MPI)** inicia el proceso de verificación al facilitar el intercambio seguro de información entre el comercio, el Directory Server de la red y el banco emisor del titular de la tarjeta.
+* **Scheme Directory Server (DS)** actúa como una base de datos centralizada y facilita la identificación del banco emisor correspondiente del titular de la tarjeta y del método de autenticación que se debe usar.
+* **Issuer Access Control Server (ACS)** es responsable de verificar y validar la identidad del titular de la tarjeta durante una transacción 3DS. El Issuer ACS recibe las solicitudes de autenticación y realiza evaluaciones de riesgo y comprobaciones de autenticación según las reglas y políticas predefinidas del banco.
+
+3D Secure 2, o 3DS2, publicado en 2016, es una versión actualizada del protocolo 3DS original y usa métodos de autenticación dinámicos, como la biometría y la autenticación basada en tokens, mientras que el protocolo 3DS original depende de contraseñas estáticas. 3DS2 busca ofrecer una mejor experiencia de usuario, con un flujo más fluido para los usuarios finales durante la autenticación. EMVCo, una organización propiedad de las principales marcas de tarjetas, desarrolló y administra ambos protocolos. Todas las principales marcas de tarjetas dejaron de admitir la primera versión de 3DS en octubre de 2022. Por lo tanto, integrar el paso de verificación 3DS2 es esencial para garantizar la experiencia y la seguridad de tus clientes. Yuno ya ofrece una integración sencilla de 3DS2 para tu negocio.
+
+<div className="company_card_wrapper">
+<Columns cols={3}>
+  <Card horizontal title="Visa" icon="https://icons.prod.y.uno/visa_logosimbolo.png" />
+
+  <Card horizontal title="Mastercard" icon="https://icons.prod.y.uno/mastercard_logosimbolo.png" />
+
+  <Card horizontal title="American Express" icon="https://icons.prod.y.uno/amex_logosimbolo.png" />
+
+  <Card horizontal title="JCB" icon="https://icons.prod.y.uno/jcb_logosimbolo.png" />
+
+  <Card horizontal title="Diners Club" icon="https://icons.prod.y.uno/dinnersclub_logosimbolo.png" />
+
+  <Card horizontal title="UnionPay" icon="https://icons.prod.y.uno/unionpay_logosimbolo.png" />
+
+  <Card horizontal title="Cartes Bancaires" icon="https://icons.prod.y.uno/cartabancaire_logosimbolo.png" />
+</Columns>
+</div>
+
+## Beneficios de 3D Secure 2 {#benefits-of-3d-secure-2}
+
+Como se mencionó, 3DS2 se desarrolló para mejorar la experiencia de usuario y adaptar el protocolo 3DS al panorama de pagos moderno.
+
+### Preparado para nuevas tecnologías {#prepared-for-new-technologies}
+
+3DS2 se diseñó pensando en el auge de los teléfonos inteligentes y permitió que los bancos ofrezcan experiencias de autenticación innovadoras a través de sus apps de banca móvil, como la autenticación biométrica con huellas dactilares o reconocimiento facial. Por lo tanto, los comercios pueden ofrecer varios métodos de autenticación que se ajustan a las preferencias de los consumidores y a los avances tecnológicos, lo que da como resultado un proceso de autenticación más cómodo y seguro.
+
+### Capacidades de integración {#integration-capabilities}
+
+En cuanto a la integración, 3DS2 incluye un componente SDK que permite la integración nativa en apps móviles. Como resultado, los comercios pueden autenticar transacciones dentro de sus propias apps. Ahora, el flujo de desafío ocurre directamente dentro de los flujos de checkout móviles, lo que elimina la necesidad de redirecciones a página completa y ofrece una experiencia de usuario más fluida.
+
+### Cantidad de datos disponibles para la autenticación {#amount-of-data-available-for-authentication}
+
+3DS2 permite que las empresas intercambien diez veces más datos de cada transacción con el banco del titular de la tarjeta. Esto incluye datos específicos del pago, como la dirección de envío, y datos contextuales, como el ID del dispositivo del cliente o su historial de transacciones anteriores. Esto permite que el banco evalúe el nivel de riesgo de la transacción y, potencialmente, autentique el pago sin datos adicionales del titular de la tarjeta. Por lo tanto, un pago que usa los protocolos de 3DS2 puede tener un **flujo sin fricción** o un **flujo con desafío** para completarse.
+
+#### Flujo sin fricción {#frictionless-flow}
+
+En un flujo sin fricción, los datos del cliente se confirman sin ninguna entrada manual de datos. Ocurre cuando el sistema reconoce y verifica el dispositivo del cliente, y los datos se intercambian en segundo plano. Como el cliente se identifica y se valida con esta información, no son necesarias solicitudes adicionales de los sistemas de pago.
+
+#### Flujo con desafío {#challenge-flow}
+
+El flujo con desafío ocurre cuando la información almacenada no es suficiente para validar al cliente. Como la identidad del cliente no está confirmada, el sistema requiere un paso adicional para validarlo, mediante una contraseña de un solo uso o una verificación biométrica. Según el sistema de validación, es posible que el cliente sea redirigido a la página del emisor de la tarjeta para ingresar la información necesaria.
+
+El uso de 3DS2 da como resultado una experiencia de usuario más fluida y sin fricción. Los flujos de datos mejorados y las capacidades de toma de decisiones que habilita 3DS2 reducen la tasa de abandono del carrito y mejoran las tasas de conversión.
+
+## Pago con 3D Secure 2 {#3d-secure-2-payment}
+
+Agregar el paso de verificación 3DS2 al proceso de checkout cambia el flujo de trabajo habitual. A continuación encontrarás un diagrama de flujo del checkout completo y una descripción de cada paso para ayudarte a comprender mejor el proceso.
+
+<Frame>![Diagrama de flujo del checkout con 3DS2: crear pago, verificación de 3DS habilitado, información del cliente, desafío, autorización, exitoso o rechazado](/images/reference/3d-secure/image2.png)</Frame>
+
+1. El cliente proporciona los datos de su tarjeta para iniciar el proceso de checkout del comercio.
+2. El sistema del comercio verifica si admite 3DS2.
+3. Si el comercio no admite 3DS2, el proceso de checkout continúa con el flujo de pago habitual, sin usar la verificación 3DS2.
+4. Si el comercio admite 3DS2, Yuno envía la información de la transacción al proveedor de servicios 3DS del emisor para evaluar el riesgo de la transacción. Estos datos incluyen información del titular de la tarjeta y del dispositivo, sujeta a las restricciones legales de la región o del mercado, como el ID del dispositivo, la dirección MAC, la geolocalización, las transacciones anteriores y más.
+5. El proveedor de servicios 3DS del emisor determina si la transacción es de alto riesgo y si es necesario un desafío para una verificación adicional.
+6. El pago continúa al paso de autorización si no es necesario un desafío (flujo sin fricción).
+7. Si se requiere un desafío (flujo con desafío), este se presenta al titular de la tarjeta para verificar su identidad. Esta verificación puede usar biometría y/o autenticación de dos factores, como una contraseña de un solo uso o una huella dactilar.
+8. El sistema verifica si el titular de la tarjeta completó el desafío con éxito.
+9. El pago continúa al paso de autorización si el titular de la tarjeta verifica su identidad con éxito.
+10. Si el titular de la tarjeta no logra verificar su identidad, el pago se cancela.
+11. El comercio consulta con el emisor de la tarjeta si la transacción está autorizada.
+12. Si la transacción está autorizada, el pago se procesa con éxito.
+13. Si la transacción no está autorizada, el pago se cancela o se rechaza.
