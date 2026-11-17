@@ -1,0 +1,786 @@
+---
+title: Referencia de Web
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Consulta todos los parámetros del Web SDK, la integración de SRI, el reintento de pago y las opciones de inscripción"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Parámetros, personalizaciones y funciones avanzadas para todos los flujos del Web SDK. Consulta la [guía de inicio rápido](/es/docs/sdks/overview/quickstart) y [Elige la integración adecuada para ti](/es/docs/sdks/overview/choose-integration) para obtener información introductoria.
+
+## Compatibilidad con TypeScript {#typescript-support}
+
+TypeScript: Yuno ofrece una [biblioteca de TypeScript](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) para todos los métodos disponibles.
+
+## Subresource Integrity (SRI) {#subresource-integrity-sri}
+
+Esta función de seguridad del navegador te permite asegurar que un script cargado no ha sido manipulado. Proporcionas un hash criptográfico junto con la URL del script. El navegador verifica que los bytes descargados coincidan con el hash declarado antes de ejecutar el código.
+
+* **Integridad**: garantiza que el código exacto que se compiló y publicó es el que se ejecuta en el navegador.
+* **Inmutabilidad**: combinada con URL de versión semántica completa, asegura integraciones estables y reproducibles.
+* **Defensa en profundidad**: reduce los riesgos de un compromiso de la cadena de suministro o de la capa de transporte.
+
+### Formatos de URL {#url-formats}
+
+Al implementar SRI, usa el formato de URL de versión semántica completa para asegurar integraciones inmutables y a prueba de manipulaciones.
+
+* **URL completa (inmutable) con SRI**: ruta de versión semántica completa que se usa para integraciones bloqueadas y a prueba de manipulaciones con un hash de SRI.
+* **URL parcial (mutable)**: versión con mayor y menor (por ejemplo, v1.9). Esta versión recibirá mejoras de parche. Es útil si prefieres evitar actualizaciones en tu base de código.
+
+### Cómo integrar el SDK con SRI {#how-to-integrate-the-sdk-with-sri}
+
+Reemplaza `src` e `integrity` con el entorno y la versión que usas. `crossorigin="anonymous"` permite que el navegador valide el SRI de los scripts de origen cruzado.
+
+Puedes encontrar el hash en [versions-sri.json](https://sdk-web.y.uno/versions-sri.json), en `latest.integrity` o dentro del arreglo `history`.
+
+```html
+<script
+  src="https://sandbox.y.uno/sdk-static-bundles-ms/sdk-web/v1.9.4/main.js"
+  integrity="sha384-<paste-hash-here>"
+  crossorigin="anonymous"></script>
+```
+
+El ejemplo anterior apunta a sandbox. Para producción, usa la `url` publicada junto con el hash en [versions-sri.json](https://sdk-web.y.uno/versions-sri.json): cada entrada asocia una `url` de versión completa con el `integrity` que le corresponde, por ejemplo `https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.10.6/main.js`.
+
+<Note>
+SRI solo funciona con estas URL de versión completa. Las rutas globales, como `https://sdk-web.y.uno/v1.10/main.js`, se vuelven a publicar con cada versión de parche, por lo que ningún hash sigue siendo válido para ellas y no se publica ninguno.
+</Note>
+
+### Uso del paquete de NPM {#using-npm-package}
+
+```javascript
+import { loadScript } from '@yuno-payments/sdk-web'
+
+const yuno = await loadScript({
+  sri: true
+})
+```
+
+### Notas de validación {#validation-notes}
+
+* Abre la pestaña Network de DevTools y confirma que main.js devuelve `200` desde la ruta de versión completa.
+* Verifica que los encabezados de la respuesta permitan solicitudes de origen cruzado para recursos estáticos si se sirven desde un origen distinto (`crossorigin="anonymous"` está definido).
+* Asegúrate de que el atributo integrity coincida exactamente con el hash generado, incluido el prefijo sha384-.
+* Cualquier cambio en main.js cambia el hash. Al cambiar de versión, siempre vuelve a generar u obtén el nuevo valor sha384 y actualiza el atributo integrity.
+
+### Solución de problemas de SRI {#sri-troubleshooting}
+
+* Las discrepancias de hash hacen que el script falle al ejecutarse con un error de integridad (por ejemplo, actualizaste el archivo pero no el hash). Para solucionarlo, vuelve a compilar, obtén el nuevo sha384 de [versions-sri.json](https://sdk-web.y.uno/versions-sri.json) y actualiza integrity.
+
+* El navegador bloquea SRI en una solicitud de origen cruzado cuando falta el atributo crossorigin o CORS es restrictivo. Para solucionarlo, agrega `crossorigin="anonymous"` y configura el alojamiento estático para permitir solicitudes de origen cruzado de los recursos JS.
+
+## Precarga del script del SDK {#preload-the-sdk-script}
+
+Cuando usas el paquete de NPM, el navegador solo empieza a descargar `main.js` cuando tu app llama a `loadScript()`. En una aplicación de una sola página, esa llamada suele ejecutarse varios segundos después de la navegación, una vez que tu propio bundle se descargó y se ejecutó. En una conexión móvil lenta, ese retraso, más la propia descarga, puede añadir varios segundos antes de que el SDK se ejecute.
+
+Informa al navegador sobre el script y los hosts de Yuno desde el `<head>` de tu HTML, para que la descarga y las conexiones comiencen mientras la página aún se está analizando.
+
+### Configuración recomendada {#recommended-setup}
+
+Agrega estas etiquetas como los primeros elementos de `<head>`, antes del bundle de tu app. Este ejemplo es para una cuenta de producción en la región de EE. UU., con `@yuno-payments/sdk-web` 9.x:
+
+```html
+<head>
+  <link rel="preload" as="script" href="https://sdk-web.y.uno/v1.11/main.js">
+  <link rel="preconnect" href="https://api.y.uno" crossorigin>
+  <link rel="preconnect" href="https://sdk-web-card.prod.y.uno">
+  <link rel="dns-prefetch" href="https://sdk.prod.y.uno">
+  <link rel="dns-prefetch" href="https://icons.prod.y.uno">
+</head>
+```
+
+Deja tu llamada a `loadScript()` tal como está:
+
+```javascript
+import { loadScript } from '@yuno-payments/sdk-web';
+
+const Yuno = await loadScript();
+```
+
+`loadScript()` sigue inyectando la etiqueta `<script>`. Como el archivo ya está en la caché de precarga del navegador, este usa esa copia en lugar de descargarla otra vez.
+
+### Haz coincidir la URL de precarga con tus opciones de `loadScript` {#match-the-preload-url-to-your-loadscript-options}
+
+La precarga solo ayuda cuando su `href` es exactamente la URL que solicita `loadScript()`. Esa URL depende de las opciones que pases. Para `@yuno-payments/sdk-web` 9.x (SDK `v1.11`):
+
+| `loadScript(...)` | `href` de precarga | Hosts de preconexión |
+| :--- | :--- | :--- |
+| `loadScript()` | `https://sdk-web.y.uno/v1.11/main.js` | `https://api.y.uno` y `https://sdk-web-card.prod.y.uno` |
+| `loadScript({ env: 'sandbox' })` | `https://sdk-web.sandbox.y.uno/v1.11/main.js` | `https://api-sandbox.y.uno` y `https://sdk-web-card.sandbox.y.uno` |
+| `loadScript({ sri: true })` | `https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, con el valor de `integrity` que usa el paquete y `crossorigin="anonymous"` | Igual que `loadScript()` |
+| `loadScript({ sri: true, env: 'sandbox' })` | `https://sandbox.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js`, con el valor de `integrity` de sandbox que usa el paquete y `crossorigin="anonymous"` | Igual que `loadScript({ env: 'sandbox' })` |
+
+El host de la API sigue el entorno y la región de tu clave de API pública, por lo que es el mismo host al que llama tu backend. El host del formulario de tarjeta sigue el host desde el que se cargó `main.js`.
+
+Con `sri: true`, la etiqueta de precarga se ve así:
+
+```html
+<link
+  rel="preload"
+  as="script"
+  href="https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.11.1/main.js"
+  integrity="sha384-<same-hash-the-package-uses>"
+  crossorigin="anonymous">
+```
+
+<Note>
+Con `sri: true`, el paquete fija una versión específica del SDK y su hash. Usa esa versión en la precarga, no la entrada `latest` de [versions-sri.json](https://sdk-web.y.uno/versions-sri.json), que normalmente es más reciente que la versión que carga tu paquete.
+</Note>
+
+Para encontrar la URL y el hash exactos que solicita tu app, abre DevTools, ve a **Elements** e inspecciona la etiqueta `<script id="sdk-payments-script">` que agrega `loadScript()`. Copia su `src` y, cuando esté presente, su `integrity`.
+
+Reglas:
+
+* **Mantén `crossorigin` en la preconexión de la API.** El SDK abre la misma preconexión cuando se inicializa. Sin el atributo, el navegador abre una conexión que sus solicitudes CORS a la API no pueden reutilizar.
+* **Con `sri: true`, agrega `crossorigin="anonymous"` a la precarga.** El script inyectado usa ese modo. Si la precarga y el script usan modos distintos, el navegador descarga el archivo dos veces.
+* **Una discrepancia no rompe nada.** Si la URL o el modo no coinciden, el navegador descarga `main.js` dos veces y DevTools registra una advertencia de que el recurso precargado no se usó. Pierdes la mejora de velocidad, nada más.
+
+### Mantén actualizada la URL de precarga {#keep-the-preload-url-up-to-date}
+
+La URL de precarga está escrita en tu HTML, por lo que no cambia cuando actualizas el paquete. Actualízala tú mismo:
+
+* **Sin SRI**, la URL contiene solo la versión mayor y menor del SDK (`v1.11`). Las versiones de parche no requieren cambios. Actualízala cuando una versión del paquete pase a una nueva versión menor del SDK (por ejemplo, 7.x carga `v1.9`, 8.x carga `v1.10`, 9.x carga `v1.11`); el README de la versión que instalas indica cuál carga.
+* **Con SRI**, la URL y el hash fijan la versión completa del SDK (por ejemplo, `v1.11.1`). Actualiza ambos en cada actualización del paquete que cambie esa versión.
+
+<Note>
+Cuando actualices `@yuno-payments/sdk-web`, actualiza el `href` de la precarga (y `integrity` si usas SRI) a la URL que carga la nueva versión. El [README del paquete en npm](https://www.npmjs.com/package/@yuno-payments/sdk-web) indica la versión del SDK que carga. Para el hash, usa la entrada de esa versión en la lista `history` de [versions-sri.json](https://sdk-web.y.uno/versions-sri.json) (sandbox: [sdk-web.sandbox.y.uno/versions-sri.json](https://sdk-web.sandbox.y.uno/versions-sri.json)), o copia ambos valores de la etiqueta `<script id="sdk-payments-script">` en DevTools.
+</Note>
+
+### Verifica que funciona {#check-that-it-works}
+
+Abre DevTools, ve al panel **Network** y recarga la página. `main.js` debería aparecer una sola vez, con **Initiator** establecido en la etiqueta de precarga de tu HTML y una hora de inicio cercana al comienzo de la carga de la página. Si `main.js` aparece dos veces, o la **Console** muestra que el recurso precargado no se usó, el `href` de la precarga o el modo `crossorigin` no coincide con lo que solicita `loadScript()`.
+
+<Warning>
+No reemplaces la precarga con tu propia etiqueta `<script id="sdk-payments-script">`. `loadScript()` entonces omite su propia inyección, pero solo comprueba el `id` y nunca la URL, por lo que una versión desactualizada del SDK sigue ejecutándose después de actualizar el paquete. Si ese script no se carga, `loadScript()` tampoco se resuelve ni se rechaza nunca.
+</Warning>
+
+## Parámetros clave (creación de la sesión de checkout) {#key-parameters-checkout-session-creation}
+
+Al crear una sesión de checkout en tu backend, los siguientes parámetros se usan comúnmente en todos los SDK web:
+
+<div className="nowrap-col1-table dense-table">
+
+| Parámetro            | Obligatorio | Descripción                                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Sí       | El objeto principal del monto de la transacción, que contiene `currency` (código ISO 4217) y `value` (monto numérico en esa moneda).                                                                                                                                                                               |
+| `alternative_amount` | No       | Una representación alternativa del monto de la transacción en otra moneda, con la misma estructura que `amount` (`currency` y `value`). Útil en escenarios de varias monedas. Por ejemplo, puedes mostrar los precios a los clientes en su moneda preferida (por ejemplo, USD) mientras procesas el pago en la moneda local (por ejemplo, COP). |
+
+</div>
+
+## Parámetros de pago y checkout (referencia completa) {#payment-and-checkout-parameters-full-reference}
+
+Parámetros para `await yuno.startCheckout()`, `await yuno.mountCheckout()` y los flujos de pago relacionados. Todos los parámetros que se usan en [Flujos de pago (Web)](/docs/sdks/full-checkout/web-payments) se enumeran aquí con todo detalle.
+
+### Parámetros principales {#core-parameters}
+
+<div className="nowrap-col1-table dense-table">
+
+| Parámetro           | Tipo    | Obligatorio | Descripción                                                                                                                                                                                                                                                        |
+| ------------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `checkoutSession`   | string  | Sí       | ID de la sesión de checkout devuelto por tu backend (API Create checkout session). Obligatorio para todos los flujos de pago.                                                                                                                                      |
+| `elementSelector`   | string  | No*      | Selector CSS del elemento donde se monta el SDK (por ejemplo, `#root`). Obsoleto cuando se usa solo; es preferible el objeto `renderMode.elementSelector` para controlar de forma independiente las áreas de APM y de acciones. *Obligatorio cuando `renderMode.type` es `'element'` y se usa la forma de objeto. |
+| `countryCode`       | string  | Sí       | Código de país ISO donde se ejecuta el pago (por ejemplo, `FR`, `US`). Determina los métodos de pago disponibles y el cumplimiento normativo.                                                                                                                      |
+| `language`          | string  | No       | Código de idioma de la interfaz (por ejemplo, `fr-FR`, `en-US`). De forma predeterminada usa el idioma del navegador cuando está disponible. Consulta [Idiomas compatibles](/es/docs/sdks/resources/languages-supported).                                              |
+| `showLoading`       | boolean | No       | Cuando es `true`, muestra el indicador de carga del SDK. El valor predeterminado es `true`. Permanece visible hasta que se llama a `hideLoader()` o a `await yuno.continuePayment()`.                                                                              |
+| `showPaymentStatus` | boolean | No       | Cuando es `true`, muestra la pantalla de resultado del pago cuando termina el flujo. Opcional.                                                                                                                                                                     |
+| `issuersFormEnable` | boolean | No       | Cuando es `true`, muestra el formulario con la lista de emisores (bancos). El valor predeterminado es `true`. Opcional.                                                                                                                                            |
+| `savePaymentMethodEnabled` | boolean | No | Cuando es `true`, muestra una casilla "Guardar método de pago para pagos futuros" en los métodos de pago de débito directo que admiten guardado (los campos obligatorios del método incluyen `save_on_success`) cuando la sesión tiene un cliente. El valor predeterminado es `false`. Cuando el comprador marca la casilla, el token de un solo uso lleva `vault_on_success: true`; la clave se omite cuando se deja sin marcar. No cubre las tarjetas; la tarjeta mantiene su propio `card.cardSaveEnable`. Consulta [Consentimiento de débito directo](#direct-debit-consent) e [Inscripción de métodos de pago](#enrolling-payment-methods). *Disponible desde Web SDK v1.10.12* |
+
+</div>
+
+### Callbacks {#callbacks}
+
+<div className="nowrap-col1-table dense-table">
+
+| Parámetro                         | Tipo     | Obligatorio | Descripción                                                                                                                                                                                               |
+| --------------------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createPayment(oneTimeToken, tokenWithInformation)` | function | Sí       | Callback que se invoca cuando el usuario completa el paso de tarjeta o APM. Recibe el token de un solo uso y el payload opcional `tokenWithInformation` (que coincide con la [respuesta del token de checkout del SDK](/reference/checkout-sessions/create-one-time-use-token-sdk-checkout)); envía el token a tu backend para crear el pago mediante la API; luego usa `await yuno.continuePayment()` para reanudar el flujo. Cuando hay una cotización de promoción vigente, `tokenWithInformation` también incluye `quote` (consulta [Promociones](#promotions)). |
+| `paymentResult(status, subStatus)` | function | No  | Callback que se invoca cuando termina el flujo de pago. Recibe el [estado del pago](/reference/payments/status-and-response-codes/payment) (por ejemplo, `SUCCEEDED`, `DECLINED`, `PENDING`, `REJECTED`, `CANCELED`, `ERROR`) y un `subStatus` opcional que lo califica. Úsalo para actualizar la interfaz o para analítica. Consulta [Pasos cancelados por el comprador](#shopper-cancelled-steps).  |
+| `error(message, data)`        | function | No       | Callback que se invoca cuando ocurre un error durante el flujo. Recibe un mensaje de error y un objeto de datos opcional para depuración.                                                                                  |
+| `onLoading`                       | function | No       | Callback que se invoca cuando cambia el estado de carga (por ejemplo, cuando el SDK obtiene la configuración, procesa el pago o el reintento de pago clona una sesión). Úsalo para mostrar u ocultar tu propio indicador de carga.                                                                          |
+| `onChange`                        | function | No       | Callback que se invoca cuando cambia la completitud del formulario. Recibe `{ form: { isValid } }`. Úsalo con `showPayButton: false` para controlar tu propio botón de pago. Cubre todos los campos obligatorios, incluidos los campos seguros de tarjeta en iframe. > **Disponible desde Web SDK v1.10.11** |
+| `onPromotionQuoteUpdated(offer)`  | function | No       | Callback que se invoca con la promoción que aplica al método de pago que el comprador ha seleccionado, y con `null` cuando no hay ninguna (no aplica ninguna promoción, o el SDK está consultando de nuevo). Úsalo para mostrar el precio con descuento y trata `null` como el precio regular. Consulta [Promociones](#promotions). |
+
+</div>
+
+<Note>
+**Nombres de los callbacks.** Estos callbacks se renombraron con nombres neutros para marca blanca en Web SDK **v1.9.0** (consulta las [notas de la versión](/changelog/web)). Los nombres anteriores con prefijo `yuno` (`yunoCreatePayment`, `yunoPaymentMethodSelected`, `yunoPaymentResult`, `yunoError` y `yunoEnrollmentStatus`) siguen funcionando como alias, por lo que las integraciones existentes no necesitan cambios. Están obsoletos y se eliminarán en una futura versión mayor. En versiones del SDK anteriores a v1.9.0, usa los nombres con prefijo `yuno`.
+</Note>
+
+### Promociones {#promotions}
+
+Cuando [Promociones](/docs/payment-features/promotions) está habilitado para tu organización, el SDK le pide a Yuno una cotización de promoción mientras el comprador completa el pago, le muestra al comprador que hay un descuento disponible y entrega la promoción a tu página. El SDK no cambia el precio: tu página lo muestra y tu servidor envía la cotización con el pago. Consulta la [guía de Promociones](/docs/payment-features/promotions) para ver el flujo completo.
+
+* **Dónde aplica.** Checkout completo (`mountCheckout`) y checkout Lite (`mountCheckoutLite`), solo tarjetas: una tarjeta que el comprador escribe y las tarjetas guardadas del comprador. Seamless no solicita cotizaciones y no aplica promociones. Las billeteras y los botones externos (`mountExternalButtons`) no reciben cotización en esta versión.
+* **Cuándo la solicita.** Tan pronto como el SDK identifica la tarjeta a partir de los primeros dígitos que escribe el comprador, y de nuevo cuando se conoce el tipo de tarjeta. Cada tarjeta guardada se consulta una vez, con su propio token, hasta un máximo de 5 tarjetas guardadas. La solicitud lleva tu clave pública, la sesión de checkout y el `countryCode` que enviaste, y no incluye ningún monto, por lo que `countryCode` debe coincidir con el país de la sesión.
+* **Qué ve el comprador.** Una etiqueta, nunca un precio: una nota en el formulario de tarjeta ("Tu tarjeta tiene un 10% de descuento disponible.") o una etiqueta en el método de pago o la tarjeta guardada a la que aplica ("10% de descuento"). Yuno decide dónde va la etiqueta; no hay nada que configurar.
+* **Cuando no aplica nada.** El SDK no muestra ninguna etiqueta y tu página mantiene el precio regular: no hay promoción (`204`, que también cubre el caso en que Yuno desactiva temporalmente Promociones y el de una promoción que dejaría el cargo en cero), un error, una respuesta que tarda más de 600 ms, o una cotización que ya venció cuando llega. Una cotización nunca bloquea el checkout.
+* **Conversión de moneda.** Un pago con una promoción de Yuno no puede incluir una conversión de moneda: Yuno lo rechaza con `422 PROMOTION_CONTEXT_MISMATCH`, porque una promoción tiene precio en la moneda del propio pago. No uses ambas en el mismo pago.
+
+`onPromotionQuoteUpdated(offer)` recibe la promoción que aplica al método de pago que el comprador ha seleccionado (para una tarjeta guardada, a esa tarjeta). Recibe `null` siempre que no haya ninguna para lo que el comprador tiene ahora: no aplica ninguna promoción, el comprador cambia el número de tarjeta o el método de pago, la cotización vence o el checkout se desmonta. Cuando el SDK consulta de nuevo (más dígitos de la tarjeta, el tipo de tarjeta, una cotización a punto de vencer), sigue una nueva promoción si alguna aplica, por lo que `null` puede llegar justo antes: actualiza tu precio con la última llamada y no animes un cambio en cada callback.
+
+```javascript
+yuno.startCheckout({
+  checkoutSession,
+  countryCode: "AR",
+  onPromotionQuoteUpdated(offer) {
+    if (offer?.computed) {
+      showPrice(offer.computed.total, offer.computed.original, offer.name);
+    } else {
+      showRegularPrice();
+    }
+  },
+  async createPayment(oneTimeToken, tokenWithInformation) {
+    // Send tokenWithInformation.quote (when present) to your server with the token
+  },
+});
+```
+
+La promoción que recibe tu callback:
+
+| Campo | Tipo | Descripción |
+| --- | --- | --- |
+| `quoteId` | string | El ID firmado de la cotización. |
+| `promotionId` | string | El ID de la promoción. |
+| `name` | string | El nombre de la promoción. |
+| `discount` | object | `{ type, value }`, como en [Create Promotion Quote](/reference/promotions/create-promotion-quote). Puede estar ausente. |
+| `paymentMethodTypes` | array | Los métodos de pago a los que aplica, por ejemplo `["CARD"]`. |
+| `expiresAt` | string | Instante ISO 8601 en UTC, 30 minutos después de emitida la cotización. |
+| `computed` | object o `null` | Los montos: `original` (antes del descuento), `discount` y `total` (lo que paga el comprador), cada uno `{ currency, value }`. El total nunca es cero: una promoción que lo dejaría en cero no aplica. |
+
+**Envía la cotización con el pago.** Cuando hay una cotización vigente para el método de pago del token (para una tarjeta, una cotización cuyo BIN coincide con la tarjeta; para una tarjeta guardada, esa tarjeta), `tokenWithInformation.quote` contiene la línea de descuento, lista para enviar: `{ "type": "YUNO_PROMOTION", "quote_id": "…" }`. De lo contrario, está ausente y creas el pago al precio regular. Crea el pago desde tu servidor con el `amount` original y `additional_data.order.discounts: [tokenWithInformation.quote]`. La cotización no viaja con el token: sin la línea, el pago se cobra completo.
+
+**Cuando Yuno rechaza la cotización.** Un pago que lleva una cotización vencida se rechaza con `422 PROMOTION_QUOTE_EXPIRED`, y uno que Yuno no puede verificar a tiempo, o que se envía después de que Yuno desactivó temporalmente Promociones, con `422 PROMOTION_ENGINE_UNAVAILABLE`. Cuando tu servidor recibe el rechazo, el SDK ya cerró el checkout (lo hace justo después de entregarte el token), por lo que no puede pedir una nueva cotización por sí solo. Puedes montar el checkout de nuevo (el SDK cotiza otra vez cuando el comprador vuelve a ingresar la tarjeta, y llega una nueva promoción a través de `onPromotionQuoteUpdated` si aún aplica) o crear el pago de nuevo sin la línea de promoción y con un nuevo `X-Idempotency-Key`, al precio regular.
+
+### Pasos cancelados por el comprador {#shopper-cancelled-steps}
+
+Algunos pasos se muestran en un modal que el comprador puede cerrar: el desafío 3DS (cerrándolo con la **X** o presionando el botón de retroceso del navegador) y las pantallas de instrucciones de pago, como vouchers o códigos de pago. Cuando eso ocurre, el SDK informa:
+
+```javascript
+paymentResult('PENDING', 'CANCELLED_BY_USER')
+```
+
+No se emite ningún `error` para estos pasos. Cerrar el modal cierra la interfaz del SDK, pero **no** cancela el pago. El pago sigue en curso y lo resuelven el proveedor y el backend de Yuno. El backend de Yuno sigue siendo la fuente de verdad del estado final. En particular, un desafío 3DS se ejecuta dentro del propio iframe del emisor, por lo que el SDK no puede determinar si la autenticación ya se completó en el momento en que el comprador cierra el modal. Informar allí una cancelación terminal podría contradecir un pago que luego resulte aprobado.
+
+<Note>
+`CANCELLED_BY_USER` lo produce el SDK para describir el gesto del comprador. **No** es un subestado de pago y no aparece en la [referencia de estados de pago](/reference/payments/status-and-response-codes/payment).
+</Note>
+
+Usa `subStatus` para detectar este caso:
+
+```javascript
+paymentResult(status, subStatus) {
+  if (subStatus === 'CANCELLED_BY_USER') {
+    // The shopper dismissed the step. The payment is still being resolved.
+    // Wait for the webhook or query the payment before showing a final outcome.
+    return;
+  }
+  // ...handle the final status
+}
+```
+
+### Opciones del formulario de tarjeta (`card`) {#card-form-options-card}
+
+<div className="nowrap-col1-table dense-table">
+
+| Parámetro                         | Tipo     | Obligatorio | Descripción                                                                                                                                                                                                 |
+| --------------------------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `card.styles`                     | string   | No       | Cadena CSS personalizada que se inyecta en el iframe para dar estilo al formulario de tarjeta. Úsala para que coincida con tu marca.                                                                        |
+| `card.fonts`                      | array    | No       | Fuentes que se cargan dentro del iframe del formulario de tarjeta: `[{ familyName, files: [{ weight, url }] }]`. Solo carga los archivos; haz referencia a `familyName` desde `font-family` en `card.styles`. El host de la fuente debe permitir solicitudes de origen cruzado. Consulta [Web Styling](/es/docs/sdks/customization/web/styling#custom-fonts). |
+| `card.cardSaveEnable`             | boolean  | No       | Cuando es `true`, muestra una casilla para guardar o inscribir la tarjeta para uso futuro. El valor predeterminado es `false`. Requiere compatibilidad del backend con el almacenamiento seguro (vaulting).    |
+| `card.texts`                      | object   | No       | Texto personalizado para los botones y las etiquetas del formulario de tarjeta. Las claves dependen de la versión del SDK (por ejemplo, placeholders, etiquetas de botones).                                 |
+| `card.onChange`                   | function | No       | Callback cuando cambia el estado del formulario de tarjeta (cargando, completado, red seleccionada, restablecido). Recibe `{ error, data }`; `data` puede incluir IIN/BIN y opciones de cuotas. Usa el BIN para cálculos de impuestos en tiempo real. |
+| `card.isCreditCardProcessingOnly` | boolean  | No       | Cuando es `true`, fuerza que las transacciones con tarjeta se procesen solo como crédito. Útil cuando la tarjeta puede funcionar como crédito y como débito.                                                 |
+
+</div>
+
+### Modo de renderizado {#render-mode}
+
+<div className="nowrap-col1-table dense-table">
+
+| Parámetro                    | Tipo   | Obligatorio | Descripción                                                                                                                                                                           |
+| ---------------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `renderMode`                 | object | No       | Controla cómo se muestran los formularios de pago. Omítelo para usar los valores predeterminados.                                                                                     |
+| `renderMode.type`            | string | No       | `'modal'` (predeterminado) o `'element'`. Modal muestra los formularios en una superposición; element los inserta en el elemento DOM indicado.                                        |
+| `renderMode.elementSelector` | object | No*      | Obligatorio si `type` es `'element'`. Proporciona `apmForm` (selector donde se renderiza la interfaz de APM) y `actionForm` (selector del botón o área que abre los pasos específicos del proveedor, por ejemplo el QR de PIX). |
+
+</div>
+
+### Textos personalizados {#custom-texts}
+
+<div className="nowrap-col1-table dense-table">
+
+| Parámetro | Tipo   | Obligatorio | Descripción                                                                                                                                                         |
+| --------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `texts`   | object | No       | Texto personalizado para los botones y las etiquetas del formulario de pago (por ejemplo, `customerForm.submitButton`, `paymentOtp.sendOtpButton`). Úsalo para adaptarlo al idioma o a la marca de tu app. |
+
+</div>
+
+### Estilo de los botones exprés (`externalButtons`) {#express-button-styling-externalbuttons}
+
+La propiedad `externalButtons` en `startCheckout` y `startSeamlessCheckout` *(SDK 1.6+)* permite a los comercios personalizar la apariencia de los botones exprés de Google Pay, Apple Pay y PayPal. Todas las propiedades son opcionales; se usan valores predeterminados razonables cuando no se proporcionan. También la acepta `mountEnrollmentLite` *(SDK 1.10.13+)* para el botón de inscripción de PayPal; consulta [Inscripción de PayPal con el modo de renderizado element](/es/docs/sdks/lite-web/enrollment#paypal-enrollment-with-element-render-mode), que tiene sus propios valores predeterminados.
+
+```js
+await yuno.startCheckout({
+  // ... other config
+  externalButtons: {
+    googlePay: { /* Google Pay options */ },
+    applePay: { /* Apple Pay options */ },
+    paypal: { /* PayPal options */ },
+  },
+})
+```
+
+<Note>
+La configuración de `externalButtons` aplica a todos los flujos que renderizan botones exprés (incluidos `mountCheckout`, `mountExternalButtons` y `mountSeamlessExternalButtons`), siempre que se haya llamado primero a `startCheckout` o `startSeamlessCheckout` con la configuración. Para el flujo de inscripción, pásala directamente a `mountEnrollmentLite`.
+</Note>
+
+#### Google Pay {#google-pay}
+
+```js
+externalButtons: {
+  googlePay: {
+    buttonColor: 'default',
+    buttonType: 'pay',
+    buttonRadius: 30,
+    buttonLocale: 'en',
+    buttonSizeMode: 'fill',
+    buttonWidth: 240,
+    buttonHeight: 48,
+  }
+}
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Propiedad         | Tipo                                                                                                   | Predeterminado          | Descripción                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------ | ---------------- | ------------------------------------------------------------------ |
+| `buttonColor`    | `'default'` \| `'black'` \| `'white'`                                                                 | Lo decide Google | Color de fondo del botón                                           |
+| `buttonType`     | `'book'` \| `'buy'` \| `'checkout'` \| `'donate'` \| `'order'` \| `'pay'` \| `'plain'` \| `'subscribe'` | `'pay'`         | Texto de la etiqueta del botón                                     |
+| `buttonRadius`   | `number`                                                                                               | `30`             | Radio del borde en px                                              |
+| `buttonLocale`   | `string`                                                                                               | Idioma del SDK   | ISO 639-1 alfa-2 en minúsculas (por ejemplo, `'en'`, `'es'`, `'pt'`)      |
+| `buttonSizeMode` | `'fill'` \| `'static'`                                                                                 | `'fill'`         | Si el botón llena su contenedor o usa un tamaño fijo               |
+| `buttonWidth`    | `number`                                                                                               | `100%`           | Ancho del contenedor en px                                         |
+| `buttonHeight`   | `number`                                                                                               | `40`             | Alto del contenedor en px                                          |
+
+</div>
+
+#### Apple Pay {#apple-pay}
+
+```js
+externalButtons: {
+  applePay: {
+    buttonType: 'buy',
+    buttonStyle: 'black',
+    locale: 'en',
+    buttonWidth: 200,
+    buttonHeight: 48,
+    buttonBorderRadius: 4,
+  }
+}
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Propiedad             | Tipo                                                                                                                                                                                          | Predeterminado      | Descripción                                                |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------- |
+| `buttonType`         | `'plain'` \| `'add-money'` \| `'book'` \| `'buy'` \| `'check-out'` \| `'contribute'` \| `'donate'` \| `'order'` \| `'pay'` \| `'reload'` \| `'rent'` \| `'set-up'` \| `'subscribe'` \| `'support'` \| `'tip'` \| `'top-up'` | `'plain'` | Texto de la etiqueta del botón |
+| `buttonStyle`        | `'black'` \| `'white'` \| `'white-outline'`                                                                                                                                                  | `'black'`    | Estilo de fondo del botón                                  |
+| `locale`             | `string`                                                                                                                                                                                      | Idioma del SDK | ISO 639-1 alfa-2 en minúsculas (por ejemplo, `'en'`, `'es'`, `'pt'`) |
+| `buttonWidth`        | `number`                                                                                                                                                                                      | `100%`       | Ancho del contenedor en px                                 |
+| `buttonHeight`       | `number`                                                                                                                                                                                      | `40`         | Alto del contenedor en px                                  |
+| `buttonBorderRadius` | `number`                                                                                                                                                                                      | `30`         | Radio del borde en px                                      |
+| `topLevelDomain`     | `string` \| `boolean`                                                                                                                                                                         | Detección automática | *(Web SDK 1.11.31+)* En iframes de origen cruzado, reemplaza el dominio detectado de la página principal para la validación de la sesión de Apple Pay. Establécelo en `false` para desactivar la detección. No tiene efecto fuera de un iframe. |
+
+</div>
+
+#### PayPal {#paypal}
+
+```js
+externalButtons: {
+  paypal: {
+    color: 'gold',
+    shape: 'rect',
+    label: 'paypal',
+    layout: 'vertical',
+    height: 45,
+    width: 200,
+    borderRadius: 4,
+  }
+}
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Propiedad       | Tipo                                                                         | Predeterminado                      | Descripción                                   |
+| -------------- | ---------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------- |
+| `color`        | `'gold'` \| `'blue'` \| `'silver'` \| `'white'` \| `'black'`               | Lo decide PayPal             | Color de fondo del botón                      |
+| `shape`        | `'rect'` \| `'pill'` \| `'sharp'`                                           | `'pill'`                     | Forma del botón                               |
+| `label`        | `'paypal'` \| `'checkout'` \| `'buynow'` \| `'pay'` \| `'installment'`     | Lo decide PayPal             | Texto de la etiqueta del botón                |
+| `layout`       | `'vertical'` \| `'horizontal'`                                              | Lo decide PayPal             | Dirección de la disposición del botón         |
+| `height`       | `number`                                                                     | `40`                         | Alto del botón en px (rango válido: 25–55)    |
+| `width`        | `number`                                                                     | `100%`                       | Ancho del contenedor en px                    |
+| `borderRadius` | `number`                                                                     | Lo decide PayPal (según la forma) | Radio del borde en px                    |
+| `locale`       | `string`                                                                     | Lo decide PayPal a partir del navegador del comprador | Idioma del botón, en el formato `language_COUNTRY` de PayPal (por ejemplo `en_US`, `es_ES`, `pt_BR`). Consulta los [locales compatibles](https://developer.paypal.com/sdk/js/configuration/#locale) de PayPal. |
+
+</div>
+
+#### PayPal Braintree {#paypal-braintree}
+
+Para los comercios que usan PayPal procesado a través de Braintree, personaliza el estilo de los botones y los callbacks de envío mediante `externalButtons.paypalBraintree`:
+
+```js
+externalButtons: {
+  paypalBraintree: {
+    style: {
+      type: 'pay', // 'pay' | 'checkout' | 'buynow' | 'subscribe'
+      color: 'gold', // 'gold' | 'blue' | 'white'
+      borderRadius: 4,
+      height: 45,
+    },
+    onShippingAddressChange: async ({ shippingAddress, paypalOrderId }) => {
+      // Return { action: 'UPDATE_PRICE', amount: '120.00' } or { action: 'ACCEPT' } or { action: 'REJECT' }
+      return { action: 'ACCEPT' }
+    },
+  }
+}
+```
+
+`onShippingAddressChange` recibe `{ shippingAddress: { city, state, postalCode, countryCode }, paypalOrderId }` y devuelve una Promise con uno de estos valores:
+
+- `{ action: 'ACCEPT' }`
+- `{ action: 'UPDATE_PRICE', amount, breakdown?: { itemTotal, shipping?, tax? } }`
+- `{ action: 'REJECT', reason?: 'COUNTRY' | 'STATE' | 'POSTAL_CODE' | 'ADDRESS' }`
+
+`paypalBraintree` también acepta `shippingAddressOverride`, una función que devuelve la dirección que se precargará, o `undefined`.
+
+#### Ejemplo completo {#full-example}
+
+```js
+const yuno = await window.Yuno.initialize(publicApiKey)
+
+await yuno.startCheckout({
+  checkoutSession,
+  countryCode: 'CO',
+  language: 'es',
+  renderMode: {
+    type: 'element',
+    elementSelector: {
+      apmForm: '#apm-root',
+      actionForm: '#action-root',
+    },
+  },
+  externalButtons: {
+    googlePay: {
+      buttonColor: 'black',
+      buttonType: 'pay',
+      buttonRadius: 4,
+      buttonSizeMode: 'fill',
+    },
+    applePay: {
+      buttonType: 'buy',
+      buttonStyle: 'black',
+      buttonBorderRadius: 4,
+    },
+    paypal: {
+      color: 'blue',
+      shape: 'rect',
+      label: 'pay',
+      height: 45,
+      borderRadius: 4,
+    },
+  },
+  // ... rest of config
+})
+```
+
+## Reintento de pago {#payment-retry}
+
+El reintento de pago permite que un comprador corrija y vuelva a enviar un pago con **tarjeta** después de que regresa como `DECLINED` o `ERROR`, sin reiniciar el checkout. En lugar de desmontar el formulario de tarjeta, el SDK lo mantiene abierto y muestra el rechazo (errores a nivel de campo y un banner de error en la parte superior). También clona la sesión de checkout para que el siguiente intento reutilice el mismo flujo.
+
+El reintento está **desactivado de forma predeterminada**. Yuno lo habilita por organización, a solicitud, mediante una marca del lado del servidor; no es un interruptor del Dashboard ni del Checkout Builder. Es una configuración controlada por el servidor, no un argumento de `startCheckout()`. Aplica solo a pagos con tarjetas no inscritas. Las tarjetas inscritas, las tarjetas guardadas (vaulted) y los pagos con botones externos quedan excluidos.
+
+El reintento de pago es compatible con las cuatro integraciones Web: **Seamless**, **Full Checkout**, **Lite** y **Secure Fields**.
+
+<Note>El reintento en Lite se lanzó en el SDK v1.9.11.</Note>
+
+### Comportamiento por integración {#behavior-by-integration}
+
+| Integración | Qué debes hacer |
+| ----------- | ------------------- |
+| **Seamless** | Automático. El SDK mantiene abierto el formulario de tarjeta y gestiona el reintento por sí mismo. No se requiere integración adicional. |
+| **Full Checkout** | Manual. Después de crear el pago en tu backend, revisa la respuesta y llama a `continuePayment` (consulta más abajo). |
+| **Lite** | Manual. Igual que Full Checkout. |
+| **Secure Fields** | Manual. Igual que Full Checkout. |
+
+### Cómo activar el reintento en Full Checkout, Lite y Secure Fields {#triggering-retry-in-full-checkout-lite-and-secure-fields}
+
+En estos tres flujos, después de que tu backend cree el pago, debes inspeccionar la respuesta del pago y dirigir el SDK en consecuencia:
+
+- **Pago con tarjeta fallido** (`payment_method.type === 'CARD'` y `status` es `DECLINED` o `ERROR`): llama a `continuePayment` para ejecutar el reintento. El formulario de tarjeta permanece abierto mostrando el rechazo.
+- **Se requiere una acción adicional** (`checkout.sdk_action_required === true`): llama a `continuePayment` para que el SDK pueda mostrar las pantallas necesarias (por ejemplo, 3DS o una redirección).
+- **Al SDK no le queda nada por hacer** (el estado no es `DECLINED`/`ERROR` **y** `checkout.sdk_action_required === false`): el SDK no se desmontará por sí mismo, por lo que debes desmontarlo manualmente con `unmountSdk`.
+
+```javascript
+// In your createPayment callback:
+// For ACH bank transfers, read the bank name if needed: tokenWithInformation.bank_transfer?.bank_name
+const payment = await createPaymentOnYourBackend(oneTimeToken);
+
+const isCard = payment.payment_method?.type === 'CARD';
+const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+const actionRequired = payment.checkout?.sdk_action_required === true;
+
+if (isCard && failed) {
+  // Runs the retry flow: keeps the card form open with the decline shown.
+  await yuno.continuePayment();
+} else if (actionRequired) {
+  // Additional action needed (for example, 3DS or redirect).
+  await yuno.continuePayment({ showPaymentStatus: true });
+} else {
+  // No retry and no action required: clean up the SDK yourself.
+  await yuno.unmountSdk();
+}
+```
+
+<Warning>
+Si el método de pago es `CARD` y el estado es `DECLINED` o `ERROR`, **debes** llamar a `continuePayment`. Si no lo haces, el formulario de tarjeta **no** se cerrará automáticamente. El comprador queda en el formulario abierto sin un paso siguiente.
+
+Cuando el estado es cualquiera distinto de `DECLINED`/`ERROR` **y** `checkout.sdk_action_required` es `false`, llama a `unmountSdk` para quitar el SDK del DOM. En estos flujos no se desmonta por sí solo.
+</Warning>
+
+<Warning>
+**Secure Fields:** define `checkoutSession` en el objeto `secureFields({ ... })` y **no** lo pases a `generateTokenWithInformation({ ... })`.
+
+El reintento se arma cuando el SDK inicializa los campos seguros con un `checkoutSession`. En cada reintento, el SDK intercambia internamente una sesión recién clonada. Si también pasas `checkoutSession` a `generateTokenWithInformation`, ese valor fijo reemplaza al clonado y rompe el intento de reintento.
+
+```javascript
+// ✅ Correct: checkoutSession only on secureFields
+const secureFields = await yuno.secureFields({
+  checkoutSession,
+  // ...other options
+});
+
+const token = await secureFields.generateTokenWithInformation({ /* no checkoutSession */ });
+
+// ❌ Incorrect: checkoutSession passed to generateTokenWithInformation overrides the cloned session on retry
+const token = await secureFields.generateTokenWithInformation({ checkoutSession });
+```
+</Warning>
+
+### Ciclo de vida del reintento y callbacks {#retry-lifecycle-and-callbacks}
+
+En un intento reintentado, el SDK **no** dispara `paymentResult` y **no** monta la página de estado. En su lugar, entrega la sesión de checkout clonada a tu callback `onLoading`:
+
+```javascript
+onLoading: ({ type, data }) => {
+  if (type === 'PAYMENT_RETRY') {
+    // A fresh checkout session has been cloned for the retry.
+    const newCheckoutSession = data.newCheckoutSession;
+    // The SDK will NOT fire paymentResult for this retry step.
+    // The shopper stays on the card form — no additional action needed.
+  }
+}
+```
+
+Cada intento de reintento fluye a través de `createPayment` → tu backend → `continuePayment` (o de forma automática en Seamless) sin un callback `paymentResult` entre intentos. `paymentResult` se dispara solo cuando el flujo termina: el pago es exitoso, el comprador sale, o el pago falla sin poder reintentarse.
+
+## Consentimiento de débito directo {#direct-debit-consent}
+
+*Disponible desde Web SDK v1.10.12.*
+
+En los métodos de pago de débito directo (ACH, SEPA Direct Debit, Bacs, PAD e iDEAL cuando se guarda la cuenta), el checkout muestra el texto de autorización o mandato debajo de los campos del banco, cuando se habilita desde el panel [Authorization text](/es/docs/using-yuno/dashboard-overview/checkout-builder#authorization-text) del Checkout Builder.
+
+* El **texto de pago único** se muestra de forma predeterminada.
+* El **texto recurrente** se muestra en su lugar cuando la cuenta se va a almacenar: o bien el comprador marcó la casilla de guardado `savePaymentMethodEnabled`, o bien el flujo es una inscripción.
+
+SEPA e iDEAL además requieren una casilla de aceptación obligatoria junto al texto de autorización. El envío se bloquea con el error "Accept the mandate to continue" hasta que el comprador la marque.
+
+### Evidencia del mandato en el token de un solo uso {#mandate-evidence-in-the-one-time-token}
+
+Siempre que se muestra el bloque de texto de autorización, el SDK incluye la evidencia de aceptación del comprador en el token de un solo uso, sin importar si se marcó la casilla de guardado. La estructura de abajo refleja lo que se codifica dentro de ese token; tu backend lo sigue reenviando a [Create Payment](/es/reference/payments/create-payment) como la cadena opaca `payment_method.token`, igual que cualquier otro token de un solo uso:
+
+```json
+{
+  "payment_method": {
+    "bank_transfer": {
+      "mandate": {
+        "mandate_template_key": "...",
+        "mandate_type": "ONE_OFF",
+        "accepted_at": "2026-09-02T15:04:00Z",
+        "creditor": "..."
+      }
+    }
+  }
+}
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Campo                   | Descripción                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| `mandate_template_key`   | Identifica la plantilla del texto de autorización o mandato que se mostró al comprador.          |
+| `mandate_type`           | `ONE_OFF` o `RECURRENT`, según la variante del texto que se mostró.                                |
+| `accepted_at`            | Marca de tiempo UTC del momento en que el comprador aceptó el mandato.                             |
+| `creditor`                | Valor del acreedor tal como se muestra en el texto de autorización. Se omite cuando el backend no envía ningún acreedor. |
+
+</div>
+
+## updateCheckoutSession {#updatecheckoutsession}
+
+`updateCheckoutSession(checkoutSession)` reemplaza la sesión de checkout activa sin desmontar el SDK. Úsalo para permitir que el comprador cambie a otro método de pago después de un pago fallido.
+
+```javascript
+// After a failed payment, inject a new session so the shopper can pick another method:
+await yuno.updateCheckoutSession(newCheckoutSession);
+```
+
+El SDK mantiene montada la interfaz actual e intercambia el ID de la sesión de checkout en el estado interno. No se vuelve a obtener nada: la lista de métodos de pago, la configuración, los estilos y los datos del país se obtienen una sola vez al montar y permanecen en la sesión del momento del montaje. Si la nueva sesión expone un conjunto distinto de métodos de pago, estilos o configuración de país, debes desmontar y volver a montar el SDK.
+
+<Note>
+`yuno.updateCheckoutSession()` se propaga automáticamente a la instancia de Secure Fields; no es necesario llamarlo directamente en la instancia SF.
+</Note>
+
+## isPaymentMethodAvailable {#ispaymentmethodavailable}
+
+`isPaymentMethodAvailable({ paymentMethodType, checkoutSession? })` se resuelve en `true` o `false`: indica si el método de pago se mostrará para el comprador y la sesión de checkout actuales. Úsalo cuando dibujes tu propia lista de métodos de pago (Lite, Seamless Lite o botones exprés ubicados dentro de tu propia lista) para mostrar solo los métodos que el SDK puede renderizar.
+
+```javascript
+await yuno.startCheckout({ checkoutSession, elementSelector: '#root', countryCode: 'US' });
+
+const showGooglePay = await yuno.isPaymentMethodAvailable({ paymentMethodType: 'GOOGLE_PAY' });
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Parámetro           | Tipo   | Obligatorio | Descripción |
+| :------------------ | :----- | :------- | :---------- |
+| `paymentMethodType` | string | Sí       | El tipo de método de pago, por ejemplo `'CARD'`, `'PIX'`, `'GOOGLE_PAY'`. |
+| `checkoutSession`   | string | No       | La sesión de checkout que se va a comprobar. De forma predeterminada usa la sesión pasada a `startCheckout`. |
+
+</div>
+
+Cómo se decide la respuesta. Es la misma decisión que toma el SDK cuando renderiza el método:
+
+1. **Habilitado para la sesión de checkout.** El método debe ser uno de los métodos de pago de la sesión y estar habilitado para ella. De lo contrario, la respuesta es `false`.
+2. **Comprobación de dispositivo y navegador, para los métodos que la necesitan.** El SDK ejecuta la misma comprobación que ejecuta antes de mostrar ese método:
+
+<div className="nowrap-col1-table dense-table">
+
+| Método de pago | Comprobación del dispositivo |
+| :------------- | :----------- |
+| `APPLE_PAY`    | Apple Pay existe en el navegador, la sesión tiene un monto y la configuración de Apple Pay de la sesión está completa. Cuando está habilitado para tu cuenta, `applePayCapabilities()` de Apple debe informar una tarjeta en Apple Wallet; de lo contrario, decide `ApplePaySession.canMakePayments()`. Los teléfonos Android se resuelven en `false` (Web SDK 1.11.43 y posteriores). |
+| `GOOGLE_PAY`   | `isReadyToPay()` de Google Pay para la configuración de la sesión. |
+| `PAYPAL`       | La conexión de PayPal de la sesión admite el botón de PayPal (Web SDK 1.11.43 y posteriores; en 1.10, decide si está habilitado para la sesión). |
+| Any other type | Ninguna: decide si está habilitado para la sesión. |
+
+</div>
+
+El método nunca se rechaza: si una solicitud o una comprobación falla, se resuelve en `false`, igual que el SDK, que no renderiza el método en ese caso. El único respaldo es el propio del SDK: cuando falla la llamada a `applePayCapabilities()` de Apple, decide `ApplePaySession.canMakePayments()`. Sin una sesión de checkout (sin `startCheckout` y sin el argumento `checkoutSession`) se resuelve en `false`.
+
+<Note>
+Disponible en Web SDK 1.11.43 y posteriores, y desde 1.10.35. Las líneas 1.9 y anteriores no lo tienen. Los tipos están en `@yuno-payments/sdk-web-types` 5.14.0 y `@yuno-payments/sdk-web` 9.10.0. En el Universal Web SDK, llama a `transaction.isPaymentMethodAvailable({ paymentMethodType })`: usa la sesión de checkout de la transacción y no está disponible en las transacciones de inscripción.
+</Note>
+
+## Parámetros de inscripción (referencia completa) {#enrollment-parameters-full-reference}
+
+Parámetros para `await yuno.mountEnrollmentLite()`. Todos los parámetros que se usan en [Flujos de inscripción (Web)](/es/docs/sdks/card-enrollment/web-enrollment) se enumeran aquí con todo detalle.
+
+<div className="code-nowrap-table dense-table">
+
+| Parámetro              | Tipo     | Obligatorio | Descripción                                                                                                                                                                                                                                     |
+| ---------------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`      | string   | Sí       | ID de la sesión de cliente de tu backend (API Create customer session). Obligatorio. Asocia el método de pago inscrito con un cliente específico.                                                                                               |
+| `countryCode`          | string   | Sí       | Código de país ISO (por ejemplo, `US`, `BR`). Determina las opciones de inscripción disponibles. Consulta [Cobertura por país](/es/docs/sdks/resources/country-coverage).                                                                          |
+| `language`             | string   | No       | Código de idioma de la interfaz (por ejemplo, `en`, `en-US`). De forma predeterminada usa el idioma del navegador cuando está disponible.                                                                                                       |
+| `showLoading`          | boolean  | No       | Cuando es `true`, muestra el indicador de carga durante la inscripción. El valor predeterminado es `true`.                                                                                                                                      |
+| `onLoading`            | function | No       | Callback cuando cambia el estado de carga durante la inscripción.                                                                                                                                                                               |
+| `elementSelector`      | string   | No       | Selector CSS donde se monta el formulario de inscripción. Obligatorio cuando no se usa el comportamiento modal predeterminado.                                                                                                                  |
+| `card`                 | object   | No       | Opciones del formulario de tarjeta (misma estructura que en los flujos de pago: `type`, `styles`, `texts`, `onChange`, `isCreditCardProcessingOnly`, etc.).                                                                                      |
+| `enrollmentStatus` | function | No       | Callback cuando termina la inscripción. Recibe `vaultedToken` y `status`. Valores de estado: `CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`. |
+| `issuersFormEnable`    | boolean  | No       | Cuando es `true`, muestra el formulario con la lista de emisores (bancos). Opcional.                                                                                                                                                            |
+| `texts`                | object   | No       | Texto personalizado para los botones y las etiquetas del formulario de inscripción.                                                                                                                                                             |
+
+</div>
+
+## Montar botones externos {#mount-external-buttons}
+
+Usa el método `mountExternalButtons` para renderizar los botones de PayPal, Google Pay, Apple Pay y Samsung Pay en ubicaciones personalizadas dentro de tu interfaz. Esto te da control sobre dónde se muestran estos botones.
+
+```javascript
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay',
+  },
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay',
+  },
+  {
+    paymentMethodType: 'PAYPAL',
+    elementSelector: '#paypal',
+  },
+  {
+    paymentMethodType: 'SAMSUNG_PAY',
+    elementSelector: '#samsung-pay',
+  },
+]);
+```
+
+<Note>
+Un botón de billetera se renderiza solo cuando el método de pago está habilitado para la sesión de checkout y supera la misma comprobación de dispositivo y navegador descrita en [`isPaymentMethodAvailable`](#ispaymentmethodavailable), por lo que el mismo código puede mostrar un botón de billetera en un dispositivo o navegador y no en otro. En Web SDK 1.11.43 y posteriores, o 1.10.35 y posteriores, llama a `isPaymentMethodAvailable` para cada billetera antes de montarla para saber si su botón se renderizará.
+</Note>
+
+### Parámetros {#parameters}
+
+<div className="nowrap-col1-table dense-table">
+
+| Parámetro           | Descripción                                                                                                    |
+| :------------------ | :------------------------------------------------------------------------------------------------------------- |
+| `paymentMethodType` | El tipo de método de pago. Debe ser `'APPLE_PAY'`, `'GOOGLE_PAY'`, `'PAYPAL'` o `'SAMSUNG_PAY'` *(Web SDK 1.10.0+)*. |
+| `elementSelector`   | El selector CSS del elemento HTML donde se debe renderizar el botón (por ejemplo, `'#apple-pay'`, `'.button'`). |
+
+</div>
+
+### Desmontar botones {#unmounting-buttons}
+
+Puedes desmontar un solo botón externo por tipo de método de pago:
+
+```javascript
+await yuno.unmountExternalButton('APPLE_PAY');
+```
+
+O desmontar todos los botones externos a la vez:
+
+```javascript
+await yuno.unmountAllExternalButtons();
+```
+
+## Inscripción de métodos de pago {#enrolling-payment-methods}
+
+Puedes inscribir métodos de pago (almacenar tarjetas para uso futuro) directamente durante el flujo de pago, configurando `payment_method.vault_on_success = true` en la [creación de la sesión de checkout](/reference/checkout-sessions/the-checkout-session-object).
+
+Cuando `vault_on_success` se establece en `true`:
+
+* El método de pago se inscribirá automáticamente si el estado del pago es `SUCCEEDED`
+* Si el pago no es exitoso, no se almacenará nada
+* La respuesta del pago incluirá un `vaulted_token` que puedes usar para transacciones futuras
+
+**Ejemplo**:
+
+```json
+{
+    "account_id": "...",
+    "payment_method": {
+        "vault_on_success": true
+    }
+}
+```
+
+Para generar y recibir un `vaulted_token` cuando `vault_on_success = true`, el pago debe hacer referencia a un cliente de Yuno existente mediante `customer_payer.id` en la sesión de checkout. Crear o enviar los datos del cliente en línea dentro de la solicitud de pago no crea al cliente de nuestro lado. Como resultado, no se almacenará nada.
+
+Para los flujos de inscripción, consulta [Flujos de inscripción (Web)](/es/docs/sdks/card-enrollment/web-enrollment).

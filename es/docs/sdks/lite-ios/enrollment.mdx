@@ -1,0 +1,133 @@
+---
+title: Lite SDK (inscripción iOS)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Lite SDK (inscripción iOS)
+  description: >-
+    Guía paso a paso para integrar el Lite SDK de Yuno (inscripción iOS) en tu
+    aplicación móvil.
+  robots: index
+description: "Inscribe métodos de pago con el Lite SDK en iOS mediante el flujo del delegate de inscripción"
+---
+import GenericOrientation from '/snippets/es/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Sigue esta guía paso a paso para implementar y habilitar la capacidad de inscripción del Lite SDK de iOS de Yuno en tu app.
+
+## Paso 1: incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+Antes de continuar con la implementación del Lite SDK, consulta la [Guía de inicio rápido](/es/docs/sdks/overview/quickstart) para ver las instrucciones detalladas sobre cómo integrar correctamente el SDK en tu proyecto. Es compatible con CocoaPods y Swift Package Manager.
+
+Elige el método de integración que mejor se adapte a tu flujo de desarrollo y a tus requisitos técnicos. Después de completar la integración del SDK, puedes continuar con los siguientes pasos para implementar la capacidad de inscripción del Lite SDK.
+
+## Paso 2: inicializa el SDK {#step-2-initialize-sdk}
+
+Inicializa el Yuno SDK en tu `AppDelegate` (o en la estructura `App` para SwiftUI) proporcionando una `PUBLIC_API_KEY` válida:
+
+```swift
+import UIKit
+import YunoSDK
+
+@main
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        Yuno.initialize(
+            apiKey: "YOUR_PUBLIC_API_KEY",
+            config: YunoConfig()
+        )
+        return true
+    }
+}
+```
+
+<Note>
+**Credenciales**
+
+Consulta la página de credenciales para obtener más información: [/reference/getting-started/authentication](/reference/getting-started/authentication)
+</Note>
+
+## Paso 3: crea una sesión de cliente {#step-3-create-a-customer-session}
+
+Para iniciar el proceso de inscripción, debes proporcionar el `customer_session`. Primero, debes crear un cliente. Usa el endpoint [Create Customer](/reference/customers/create-customer) para crear nuevos clientes. En la respuesta, recibirás el `id` del cliente, que usas para crear la sesión de cliente.
+
+Después de crear el cliente, puedes crear la sesión de cliente. Usa el `id` del cliente y el endpoint [Create Customer Session](/reference/customer-sessions-enrollment/create-customer-session). El `customer_session` se proporcionará en la respuesta. Necesitas un nuevo `customer_session` cada vez que inscribas un nuevo método de pago.
+
+## Paso 4: adopta YunoEnrollmentDelegate {#step-4-adopt-yunoenrollmentdelegate}
+
+Para gestionar el proceso de inscripción, tu clase (normalmente un `UIViewController`) debe adoptar el protocolo `YunoEnrollmentDelegate`.
+
+<Info>
+**Requisitos de concurrencia de Swift 6**
+
+Si usas Swift 6, deberás implementar el protocolo `YunoEnrollmentDelegate` teniendo en cuenta consideraciones específicas de concurrencia. Consulta la guía [Swift 6 Concurrency](/es/docs/sdks/resources/swift-6-concurrency) para ver las opciones de implementación detalladas y las mejores prácticas.
+</Info>
+
+```swift
+class EnrollmentViewController: UIViewController, @preconcurrency YunoEnrollmentDelegate {
+    // Required delegate properties
+    var customerSession: String { "CUSTOMER_SESSION" }
+    var countryCode: String { "US" }
+    var viewController: UIViewController? { self }
+
+    func yunoEnrollmentResult(_ result: Yuno.Result) {
+        switch result.status {
+        case .succeeded:
+            print("Enrollment succeeded!")
+        case .fail:
+            print("Enrollment failed")
+        case .reject:
+            print("Enrollment rejected")
+        case .processing:
+            print("Enrollment processing")
+        case .internalError:
+            print("Internal error")
+        case .userCancelled:
+            print("User canceled")
+        @unknown default:
+            break
+        }
+    }
+}
+```
+
+### Propiedades del delegate {#delegate-properties}
+
+| Propiedad | Descripción |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession` | Hace referencia a la [sesión de cliente](/reference/customer-sessions-enrollment/create-customer-session) de la inscripción actual. |
+| `countryCode` | Este parámetro especifica el código de país para el que se configura la inscripción. |
+| `viewController` | El view controller desde el cual se presentará la interfaz de inscripción. |
+
+## Paso 5: inicia el flujo de inscripción {#step-5-start-the-enrollment-flow}
+
+Una vez que hayas implementado el delegate, llama a `enrollPayment` para iniciar la interfaz de inscripción:
+
+```swift
+Yuno.enrollPayment(with: self, showPaymentStatus: true)
+```
+
+### Parámetros {#parameters}
+
+| Parámetro | Descripción |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `with` | El objeto que implementa `YunoEnrollmentDelegate`. |
+| `showPaymentStatus` | Controla si el SDK muestra sus propias pantallas de estado después del proceso de inscripción. |
+
+<Note>
+**App de demostración**
+
+Además de los ejemplos de código proporcionados, puedes acceder al [repositorio del SDK de Yuno para iOS](https://github.com/yuno-payments/yuno-sdk-ios) para ver una implementación completa de los Yuno SDK.
+</Note>
+
+## Gestión de errores {#error-handling}
+
+Gestiona en tu app los errores que devuelve el SDK, como errores de inscripción fallida o de validación. Para conocer los códigos de estado HTTP y de respuesta, consulta [Códigos de estado y de respuesta](/reference/getting-started/response-codes) en la referencia de la API.
+
+## Mantente al día {#stay-updated}
+
+Visita las [notas de la versión](/changelog/ios) para ver las últimas actualizaciones del SDK y el historial de versiones.

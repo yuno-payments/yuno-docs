@@ -1,0 +1,511 @@
+---
+title: Guía de inicio rápido
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Implementa el flujo de pago completo de Yuno en Web, iOS y Android con una interfaz de checkout prediseñada"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Te damos la bienvenida a la guía de inicio rápido de los SDK de Yuno. Esta guía te muestra cómo implementar fácilmente el flujo de pago completo de Yuno, su solución más sencilla, con una interfaz prediseñada y la visualización automática de los métodos de pago.
+
+Elige tu plataforma y sigue los pasos para empezar a procesar tus primeros pagos con Yuno.
+
+<Tabs>
+    <Tab title="Integración del Web SDK">
+    ### 1. Instala
+
+    ```bash
+    npm install @yuno-payments/sdk-web
+    ```
+
+    Para iniciar la descarga del SDK mientras carga la página, agrega un preload y preconnects al `<head>` de tu HTML. Consulta [Precarga el script del SDK](/es/docs/sdks/resources/references/web#preload-the-sdk-script).
+
+    O inclúyelo mediante CDN:
+
+    ```html
+    <script src="https://sdk-web.y.uno/v1.11/main.js"></script>
+    ```
+
+    ### 2. Inicializa y procesa el pago
+
+    ```javascript
+    import { loadScript } from '@yuno-payments/sdk-web';
+
+    // Load the SDK script, then initialize it with your public API key
+    // (with the CDN script tag, skip the import and use window.Yuno in place of loadScript())
+    const Yuno = await loadScript();
+    const yuno = await Yuno.initialize('your-public-api-key');
+
+    // Create checkout session on your backend
+    // Your backend calls: POST https://api-sandbox.y.uno/v1/checkout/sessions
+    // Backend adds: account_id, merchant_order_id, payment_description (server-side)
+    const session = await fetch('/api/create-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        customer_id: 'customer-123',
+        amount: { currency: 'USD', value: 1000 },
+        country: 'US'
+    })
+    }).then(r => r.json());
+
+    // Configure checkout
+    await yuno.startCheckout({
+    checkoutSession: session.checkout_session,
+    elementSelector: '#payment-form',
+    countryCode: 'US',
+    language: 'en',
+    async createPayment(oneTimeToken) {
+        // Your backend calls: POST https://api-sandbox.y.uno/v1/payments
+        // with header: X-Idempotency-Key
+        // and body: { account_id, description, country, merchant_order_id, amount,
+        //             checkout: { session }, payment_method: { token: oneTimeToken }, ... }
+        const payment = await fetch('/api/process-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            one_time_token: oneTimeToken,
+            checkout_session: session.checkout_session
+        })
+        }).then(r => r.json());
+        
+        // Required for async payment methods (3DS, PIX, etc.)
+        await yuno.continuePayment();
+    }
+    });
+
+    // Mount payment form
+    await yuno.mountCheckout();
+
+    // Start the payment when the shopper clicks your pay button
+    document.getElementById('pay-button')?.addEventListener('click', async () => {
+        await yuno.startPayment();
+    });
+    ```
+
+    ### 3. Agrega el contenedor HTML y el botón de pago
+
+    ```html
+    <div id="payment-form"></div>
+    <button id="pay-button">Pay Now</button>
+    ```
+
+    Consulta [Tarjetas de prueba](#test-cards) más abajo.
+
+    Para ver una descripción completa de todos los parámetros del Web SDK, consulta [Referencia común del Web SDK](/es/docs/sdks/resources/references/web).
+
+    [Guía completa de Web →](/docs/sdks/full-checkout/web-payments)
+
+    Equivalente en el nuevo SDK: [Migración al modo Full en Web](/docs/yuno-sdk/migration/web/full).
+
+    </Tab>
+    <Tab title="iOS">
+    ### 1. Instala
+
+    **CocoaPods**:
+    ```ruby
+    pod 'YunoSDK', '~> 2.29.0'
+    ```
+
+    **Swift Package Manager**:
+    ```swift
+    dependencies: [
+        .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.29.0")
+    ]
+    ```
+
+    ### 2. Inicializa e implementa el delegate
+
+    ```swift
+    import UIKit
+    import YunoSDK
+
+    // Initialize in AppDelegate or App struct
+    Yuno.initialize(
+        apiKey: "your-public-api-key",
+        config: YunoConfig()
+    )
+
+    // In your view controller - implement YunoPaymentFullDelegate
+    class PaymentViewController: UIViewController, @preconcurrency YunoPaymentFullDelegate {
+    
+        // Required delegate properties
+        var checkoutSession: String { "session-from-backend" }
+        var countryCode: String { "US" }
+        var language: String? { "en" }
+        var viewController: UIViewController? { self }
+    
+        override func viewDidLoad() {
+            super.viewDidLoad()
+            Task { await displayPaymentMethods() }
+        }
+    
+        func displayPaymentMethods() async {
+            // Get payment methods view
+            let paymentView: UIView = await Yuno.getPaymentMethodViewAsync(delegate: self)
+            view.addSubview(paymentView)
+            // Add constraints...
+        }
+    
+        // Required: Create payment with one-time token
+        func yunoCreatePayment(with token: String) {
+            // Call your backend: POST /v1/payments
+            createPaymentOnBackend(token: token) { result in
+                // After payment creation, continue for async methods
+                Yuno.continuePayment()
+            }
+        }
+    
+        // Required: Handle payment result
+        func yunoPaymentResult(_ result: Yuno.Result) {
+            switch result.status {
+            case .succeeded:
+                print("Payment succeeded!")
+            case .fail:
+                print("Payment failed")
+            case .processing:
+                print("Payment processing")
+            default:
+                break
+            }
+        }
+    
+        // Required by YunoPaymentFullDelegate
+        func yunoDidSelect(paymentMethod: PaymentMethodSelected) {
+            // Enable your pay button
+        }
+    
+        func yunoDidUnenrollSuccessfully(_ success: Bool) {}
+    
+        func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) {
+            // Update your payment view height constraint
+        }
+    
+        // Start payment when user taps pay button
+        @IBAction func payButtonTapped(_ sender: UIButton) {
+            Yuno.startPayment(showPaymentStatus: true)
+        }
+    }
+    ```
+
+    Consulta [Tarjetas de prueba](#test-cards) más abajo.
+
+    Para ver una descripción completa de todos los parámetros del iOS SDK, consulta [Referencia común del iOS SDK](/es/docs/sdks/resources/references/ios).
+
+    [Guía completa de iOS →](/docs/sdks/full-checkout/ios-payments)
+
+    Equivalente en el nuevo SDK: [Migración al modo Full en iOS](/docs/yuno-sdk/migration/ios/payment/full).
+
+    </Tab>
+    <Tab title="Android">
+    ### 1. Instala
+
+    **build.gradle**:
+    ```groovy
+    repositories {
+        maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+    }
+
+    dependencies {
+        implementation 'com.yuno.payments:android-sdk:2.27.0'
+    }
+    ```
+
+    ### 2. Inicializa y procesa el pago
+
+    **Inicializa en Application**:
+    ```kotlin
+    import android.app.Application
+    import com.yuno.sdk.Yuno
+    import com.yuno.sdk.YunoConfig
+
+    class MyApplication : Application() {
+        override fun onCreate() {
+            super.onCreate()
+            Yuno.initialize(
+                this,
+                apiKey = "your-public-api-key",
+                config = YunoConfig(
+                    keepLoader = true,
+                )
+            )
+        }
+    }
+    ```
+
+    <Info>
+      Para ver una explicación detallada del parámetro `keepLoader` y del manejo de errores obligatorio, consulta la [Guía de referencia de Android](/es/docs/sdks/resources/references/android#keeploader-parameter).
+    </Info>
+
+    **En Activity/Fragment**:
+    ```kotlin
+    import android.os.Bundle
+    import androidx.activity.ComponentActivity
+    import androidx.activity.compose.setContent
+    import androidx.compose.foundation.layout.Column
+    import androidx.compose.foundation.layout.fillMaxSize
+    import androidx.compose.foundation.rememberScrollState
+    import androidx.compose.foundation.verticalScroll
+    import androidx.compose.material3.Button
+    import androidx.compose.material3.Text
+    import androidx.compose.runtime.getValue
+    import androidx.compose.runtime.mutableStateOf
+    import androidx.compose.runtime.remember
+    import androidx.compose.runtime.setValue
+    import androidx.compose.ui.Modifier
+    import androidx.lifecycle.lifecycleScope
+    import com.yuno.presentation.core.components.PaymentMethodListViewComponent
+    import com.yuno.sdk.payments.continuePayment
+    import com.yuno.sdk.payments.startCheckout
+    import com.yuno.sdk.payments.startPayment
+    import kotlinx.coroutines.launch
+
+    class PaymentActivity : ComponentActivity() {
+        private var checkoutSession: String? = null
+    
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+        
+            // Create checkout session on your backend first
+            // Your backend calls: POST https://api-sandbox.y.uno/v1/checkout/sessions
+            lifecycleScope.launch {
+                val session = createCheckoutSession() // Your backend call
+                checkoutSession = session.id
+            
+                // Start checkout with session
+                startCheckout(
+                    checkoutSession = session.id,
+                    countryCode = "US",
+                    callbackPaymentState = { state, subState, message ->
+                        when (state) {
+                            "SUCCEEDED" -> println("Payment succeeded!")
+                            "FAIL" -> println("Payment failed: ${message?.code}")
+                            "PROCESSING" -> println("Payment processing")
+                            "REJECT" -> println("Payment rejected: ${message?.reason}")
+                            else -> println("Payment state: $state")
+                        }
+                    }
+                )
+            }
+        
+            setContent {
+                var paymentMethodSelected by remember { mutableStateOf(false) }
+            
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    // Display payment methods
+                    PaymentMethodListViewComponent(
+                        activity = this@PaymentActivity,
+                        onPaymentSelected = { isSelected, _ ->
+                            paymentMethodSelected = isSelected
+                        }
+                    )
+                
+                    // Pay button
+                    Button(
+                        onClick = {
+                            startPayment(
+                                showPaymentStatus = true,
+                                callbackOTT = { token ->
+                                    token?.let { ott ->
+                                        lifecycleScope.launch {
+                                            // Call your backend: POST /v1/payments
+                                            // with { payment_method: { token: ott }, checkout_session: ... }
+                                            createPayment(ott, checkoutSession!!)
+                                        
+                                            // Required for async payment methods
+                                            continuePayment()
+                                        }
+                                    }
+                                }
+                            )
+                        },
+                        enabled = paymentMethodSelected
+                    ) {
+                        Text("Pay Now")
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+    Consulta [Tarjetas de prueba](#test-cards) más abajo.
+
+    Para ver una descripción completa de todos los parámetros del Android SDK, consulta [Referencia común del Android SDK](/es/docs/sdks/resources/references/android).
+
+    [Guía completa de Android →](/docs/sdks/full-checkout/android-payments)
+
+    Equivalente en el nuevo SDK: [Migración al modo Full en Android](/docs/yuno-sdk/migration/android/payment/full).
+
+    </Tab>
+</Tabs>
+
+## Manejo de un pago fallido {#handling-a-failed-payment}
+
+Equivalente en el nuevo SDK: el controlador [onStatus](/docs/yuno-sdk/controllers/on-status).
+
+El Web SDK puede recuperarse de un pago fallido sin recargar la página. Dos mecanismos funcionan en conjunto:
+
+* *Reintento de pago*: reintento de tarjeta en línea cuando el pago devuelve `DECLINED` o `ERROR`. En *Seamless*, el SDK gestiona el reintento automáticamente. En *Full Checkout*, *Lite* y *Secure Fields*, llamas a `continuePayment` después de que tu backend confirme el rechazo. Funciona con tarjetas de crédito y débito no inscritas. Consulta [Reintento de pago](/es/docs/sdks/resources/references/web#payment-retry) para ver la referencia completa.
+
+* *Cambio de método de pago*: llama a `updateCheckoutSession(newSession)` para inyectar una nueva sesión de checkout sin desmontar el SDK. Elegir de la lista de métodos de pago ya renderizada funciona después de cambiar la sesión; un conjunto *diferente* de métodos de pago requiere desmontar y volver a montar el SDK, no recargar la página. Consulta [updateCheckoutSession](/es/docs/sdks/resources/references/web#updatecheckoutsession).
+
+```javascript
+// Inside your createPayment callback:
+const payment = await createPaymentOnYourBackend(oneTimeToken);
+
+const isCard = payment.payment_method?.type === 'CARD';
+const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+
+if (isCard && failed) {
+  // Card retry: keeps the card form open with the decline shown.
+  await yuno.continuePayment();
+} else if (payment.checkout?.sdk_action_required) {
+  // Additional action: 3DS, bank redirect, etc.
+  await yuno.continuePayment({ showPaymentStatus: true });
+} else {
+  // No further SDK action — unmount.
+  await yuno.unmountSdk();
+}
+```
+
+<Note>
+En un intento reintentado, el SDK **no** dispara `paymentResult`. Entrega la sesión de checkout clonada a tu callback `onLoading` como `{ type: 'PAYMENT_RETRY', data: { newCheckoutSession } }`. Registra `onLoading` en tu configuración de `startCheckout` para recibirla:
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  // ...
+  onLoading: ({ type, data }) => {
+    if (type === 'PAYMENT_RETRY') {
+      // A fresh session has been cloned for the retry.
+      const newCheckoutSession = data.newCheckoutSession;
+    }
+  }
+});
+```
+</Note>
+
+## Integración del backend {#backend-integration}
+
+Tu backend debe implementar dos endpoints de API para funcionar con Yuno. El nuevo SDK usa la misma sesión de checkout: consulta [Crear la sesión de checkout](/docs/yuno-sdk/get-started#create-the-checkout-session-backend).
+
+### 1. Crear la sesión de checkout {#1-create-checkout-session}
+
+Antes de mostrar la interfaz de pago, tu backend crea una sesión de checkout:
+
+- **Endpoint**: `POST https://api-sandbox.y.uno/v1/checkout/sessions`
+- **Obligatorios (OpenAPI)**: `account_id`, `merchant_order_id`, `payment_description`, `country`
+- **Envía también**: `customer_id` (de Create Customer) y `amount` `{ currency, value }`
+- **Opcionales para el SDK**: `workflow` (`SDK_CHECKOUT` | `SDK_SEAMLESS` | `CHECKOUT`), `callback_url`, `checkout_id`
+- **Devuelve**: el ID de `checkout_session` (se usa en el SDK)
+- **Referencia**: [API Crear sesión de checkout](/es/reference/checkout-sessions/create-checkout-session)
+
+**Ejemplo de solicitud**:
+```json
+{
+  "account_id": "YOUR_ACCOUNT_ID",
+  "merchant_order_id": "order-001",
+  "payment_description": "Sandbox quickstart payment",
+  "country": "US",
+  "customer_id": "YOUR_CUSTOMER_UUID",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  },
+  "workflow": "SDK_CHECKOUT"
+}
+```
+
+### 2. Crear el pago {#2-create-payment}
+
+En el callback del token de un solo uso (OTT), tu backend crea el pago:
+
+- **Endpoint**: `POST https://api-sandbox.y.uno/v1/payments`
+- **Encabezado obligatorio**: `X-Idempotency-Key` (UUID único por intento), consulta [Autenticación](/reference/getting-started/authentication)
+- **Cuerpo obligatorio (OpenAPI)**: `account_id`, `description`, `country`, `merchant_order_id`, `amount`, `payment_method`, `checkout`
+- **`payment_method.token`** = token de un solo uso del callback del SDK
+- **`checkout.session`** = ID de la sesión de checkout del paso 1
+- **Devuelve**: el estado del pago y el campo `sdk_action_required`
+- **Referencia**: [API Crear pago](/es/reference/payments/create-payment)
+
+**Ejemplo de encabezados**:
+```http
+public-api-key: YOUR_PUBLIC_API_KEY
+private-secret-key: YOUR_PRIVATE_SECRET_KEY
+X-Idempotency-Key: YOUR_UUID
+content-type: application/json
+accept: application/json
+```
+
+**Ejemplo de solicitud**:
+```json
+{
+  "account_id": "YOUR_ACCOUNT_ID",
+  "description": "Sandbox quickstart payment",
+  "country": "US",
+  "merchant_order_id": "order-001",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  },
+  "customer_payer": {
+    "id": "YOUR_CUSTOMER_UUID"
+  },
+  "checkout": {
+    "session": "YOUR_CHECKOUT_SESSION_UUID"
+  },
+  "payment_method": {
+    "token": "ONE_TIME_TOKEN_FROM_SDK"
+  }
+}
+```
+
+**Importante**: Si la respuesta de la API tiene `sdk_action_required: true` o `checkout.sdk_action_required: true`, debes llamar al método `continuePayment()` del SDK para completar los métodos de pago asíncronos (autenticación 3DS, PIX, redirecciones bancarias, etc.).
+
+## Parámetros {#parameters}
+
+Parámetros principales que se usan en este inicio rápido:
+
+| Parámetro | Descripción |
+| --------- | ----------- |
+| `publicKey` / `apiKey` | Tu clave de API pública de Yuno (frontend). Desde [Yuno Dashboard](https://dashboard.y.uno/) → **Developers** > **Credentials**. |
+| `checkoutSession` | ID de la sesión de checkout que devuelve tu backend (endpoint de creación de sesión). Obligatorio para iniciar el pago. |
+| `countryCode` | Código de país ISO del pago (por ejemplo, `US`, `CO`). Consulta [Cobertura por país](/es/docs/sdks/resources/country-coverage). |
+| `elementSelector` (Web) | Selector CSS del elemento donde se monta el formulario de pago (por ejemplo, `#payment-form`). |
+
+Referencia completa de parámetros: [Flujos de pago (Web)](/docs/sdks/full-checkout/web-payments), [Flujos de pago (iOS)](/docs/sdks/full-checkout/ios-payments), [Flujos de pago (Android)](/docs/sdks/full-checkout/android-payments).
+
+## Métodos de integración alternativos {#alternative-integration-methods}
+
+Si necesitas más control sobre la interfaz de usuario o sobre flujos de pago específicos, Yuno ofrece métodos de integración alternativos:
+
+### Lite SDK {#lite-sdk}
+Una integración ligera que te da control total sobre la visualización de los métodos de pago, mientras Yuno se encarga del procesamiento seguro del pago.
+- [Implementación en Web](/es/docs/sdks/lite-web/payment)
+- [Implementación en Android](/es/docs/sdks/lite-android/checkout)
+- [Implementación en iOS](/es/docs/sdks/lite-ios/checkout)
+- Equivalente en el nuevo SDK: [Migración al modo Lite en Web](/docs/yuno-sdk/migration/web/lite)
+
+### Secure Fields {#secure-fields}
+Crea tus propios formularios de pago desde cero con los componentes de interfaz de Yuno para lograr la máxima personalización (solo Web).
+- [Guía de Secure Fields](/docs/sdks/customization/secure-fields/index)
+- Equivalente en el nuevo SDK: [Secure Fields](/docs/yuno-sdk/features/secure-fields)
+
+## Tarjetas de prueba {#test-cards}
+
+El nuevo SDK tiene su propia lista: consulta [Tarjetas de prueba](/docs/yuno-sdk/get-started#test-cards).
+
+| Número de tarjeta   | Escenario      |
+| ------------------- | -------------- |
+| 4111 1111 1111 1111 | Éxito          |
+| 4000 0000 0000 0002 | Rechazado      |
+| 4000 0000 0000 3220 | Desafío 3DS    |

@@ -1,0 +1,246 @@
+---
+title: Información de la tarjeta mientras se escribe
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Obtén la marca, el tipo, la categoría, el emisor y el país de la tarjeta mientras el comprador escribe el número en el formulario de tarjeta en iOS y Android"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Registra el callback opcional `onCardInfoChanged` para recibir la marca, el tipo, la categoría, el emisor y el país de la tarjeta mientras el comprador escribe el número en el formulario de tarjeta. Recibes estos datos antes de que el comprador envíe el formulario, así que puedes adaptar tu checkout en tiempo real: mostrar la marca de la tarjeta o el banco emisor en el resumen del pedido, explicar una promoción que aplica solo a tarjetas de crédito o adaptar un mensaje al país del banco emisor.
+
+El callback es informativo y opcional: si no lo registras, el comportamiento del SDK no cambia. El SDK ya consulta los datos de la tarjeta a partir del sexto dígito para mostrar la marca y cargar las cuotas, y el callback te entrega el resultado de esa misma consulta. No hace ninguna llamada de red adicional y nunca incluye el número completo de la tarjeta, el código de seguridad, la fecha de vencimiento ni el nombre del titular de la tarjeta.
+
+| Plataforma | Disponible desde | Dónde registrarlo |
+| -------- | -------------- | ----------------- |
+| iOS      | SDK `2.30.0`   | `onCardInfoChanged(_:)` en `YunoPaymentDelegate` o `YunoEnrollmentDelegate`. Para Seamless, `SeamlessParams.onCardInfoChanged` |
+| Android  | SDK `2.29.0`   | `setOnCardInfoChanged { }`, llamado antes de iniciar el checkout o la inscripción |
+
+El callback se ejecuta en cada formulario de tarjeta que el SDK muestra para una tarjeta nueva, tanto en pagos como en inscripciones. No se llama para tarjetas guardadas (inscritas), porque el comprador no escribe un número, ni en integraciones headless, porque el SDK no muestra ningún formulario de tarjeta en ellas.
+
+## Qué recibes {#what-you-receive}
+
+Un objeto de información de la tarjeta, o `null` (`nil` en iOS) como se describe en [Cuándo se llama](#when-it-is-called).
+
+| Propiedad     | Clave          | Descripción                                                                                             |
+| ------------- | -------------- | ------------------------------------------------------------------------------------------------------- |
+| `iin`         | `iin`          | Primeros dígitos del número de la tarjeta, entre 6 y 8. Nunca el número completo.                       |
+| `brand`       | `brand`        | Marca de la tarjeta, por ejemplo `VISA` o `MASTERCARD`.                                                 |
+| `scheme`      | `scheme`       | Esquema de la tarjeta.                                                                                  |
+| `type`        | `type`         | Tipo de tarjeta, normalmente `CREDIT` o `DEBIT`.                                                        |
+| `category`    | `category`     | Categoría o nivel de la tarjeta, por ejemplo `GOLD` o `PREPAID`. Las tarjetas prepago se marcan aquí, no en `type`. |
+| `issuerName`  | `issuer_name`  | Nombre del banco emisor.                                                                                |
+| `issuerCode`  | `issuer_code`  | Código del banco emisor.                                                                                |
+| `countryCode` | `country_code` | Código de país ISO del banco emisor, por ejemplo `BR`.                                                  |
+| `countryName` | `country_name` | Nombre del país del banco emisor.                                                                       |
+
+* Los valores se pasan exactamente como los devuelve la consulta de la tarjeta. El SDK no los traduce ni los normaliza.
+* Un valor que la consulta no devuelve es `null` (`nil` en iOS). Algunos campos, como `issuerCode`, suelen estar vacíos, así que no los hagas obligatorios en tu lógica.
+* En iOS, `iin` siempre está presente. Todos los demás campos son opcionales en ambas plataformas.
+* La longitud de `iin` varía entre 6 y 8 dígitos. No dependas de ella.
+* Cada valor también está disponible por clave: `rawData` en iOS y `toMap()` en Android siempre devuelven las nueve claves anteriores, con los mismos nombres en ambas plataformas. En iOS, un valor faltante en `rawData` es `NSNull`.
+
+## Cuándo se llama {#when-it-is-called}
+
+* Después de que la consulta de la tarjeta responde, una vez que el comprador ha escrito al menos 6 dígitos.
+* De nuevo solo cuando el resultado cambia. Escribir más dígitos de la misma tarjeta no lo vuelve a llamar, a menos que la consulta devuelva datos distintos. En iOS, también puede llegar una nueva llamada cuando la consulta coincide con un prefijo más largo de la misma tarjeta, con solo `iin` modificado.
+* Con `null` (`nil` en iOS) cuando una tarjeta que ya recibiste deja de aplicar: el número baja de 6 dígitos, se borra el campo o falla la consulta. La primera llamada nunca es `null`.
+* En el hilo principal, así que puedes actualizar tu interfaz directamente.
+
+Si el comprador sigue escribiendo o edita el número mientras una consulta está en curso, las respuestas desactualizadas se descartan, de modo que nunca recibes los datos de un número que el comprador ya cambió.
+
+No se envía nada cuando se cierra el formulario de tarjeta, cuando el comprador paga o cuando elige otro método de pago: prevalece el último valor que recibiste. Si tu interfaz necesita restablecerlo en esos casos, hazlo de tu lado.
+
+Cada formulario de tarjeta comienza desde cero. Si el comprador cierra el formulario y lo abre de nuevo, el primer resultado del nuevo formulario se entrega aunque sea la misma tarjeta de antes.
+
+| Qué hace el comprador                            | Qué recibes                                                |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| Escribe los primeros 5 dígitos                   | Nada.                                                      |
+| Escribe el sexto dígito                          | Los datos de la tarjeta, en cuanto la consulta responde.   |
+| Sigue escribiendo la misma tarjeta               | Nada, a menos que la consulta devuelva datos distintos.    |
+| Borra dígitos hasta que quedan menos de 6        | `null` (`nil` en iOS).                                     |
+| Escribe el número de una tarjeta distinta        | Los datos de la nueva tarjeta.                             |
+| La consulta falla, por ejemplo sin conexión      | `null` (`nil` en iOS), si antes habías recibido una tarjeta. |
+| Paga, cierra el formulario o elige otro método   | Nada más. Prevalece el último valor.                       |
+
+## Implementación {#implementation}
+
+<Tabs>
+<Tab title="iOS">
+
+Implementa el método opcional `onCardInfoChanged(_:)` en el delegado que pasas al SDK: `YunoPaymentDelegate` para pagos (Full, Lite y Render) y `YunoEnrollmentDelegate` para inscripciones. El método es el mismo en ambos.
+
+```swift
+class CheckoutViewController: UIViewController, YunoPaymentDelegate {
+
+    // ... required YunoPaymentDelegate implementation ...
+
+    func onCardInfoChanged(_ cardInfo: YunoCardInfo?) {
+        guard let cardInfo else {
+            // The card you received no longer applies
+            orderSummary.clearCardDetails()
+            return
+        }
+        orderSummary.showCardDetails(
+            brand: cardInfo.brand,
+            type: cardInfo.type,
+            issuer: cardInfo.issuerName,
+            country: cardInfo.countryCode
+        )
+    }
+}
+```
+
+El método recibe un payload `YunoCardInfo?`, también disponible desde Objective-C:
+
+```swift
+@objc public final class YunoCardInfo: NSObject {
+    @objc public let iin: String
+    @objc public let brand: String?
+    @objc public let scheme: String?
+    @objc public let type: String?
+    @objc public let category: String?
+    @objc public let issuerName: String?
+    @objc public let issuerCode: String?
+    @objc public let countryCode: String?
+    @objc public let countryName: String?
+    @objc public let rawData: [String: Any]
+}
+```
+
+Para leer los valores por clave, usa `rawData`:
+
+```swift
+func onCardInfoChanged(_ cardInfo: YunoCardInfo?) {
+    guard let values = cardInfo?.rawData else { return }
+    let category = values["category"] as? String
+    if category == "PREPAID" {
+        orderSummary.showPrepaidNotice()
+    }
+}
+```
+
+Para Seamless, configura `SeamlessParams.onCardInfoChanged` en su lugar, porque Seamless no recibe un delegado. Define el closure antes de llamar a `startPaymentSeamlessLite`: se lee una sola vez, cuando comienza el pago.
+
+```swift
+let params = SeamlessParams(
+    checkoutSession: checkoutSession,
+    countryCode: "CO",
+    language: "en",
+    viewController: self
+)
+params.onCardInfoChanged = { [weak self] cardInfo in
+    self?.orderSummary.update(with: cardInfo)
+}
+let result = await Yuno.startPaymentSeamlessLite(with: params, paymentSelected: paymentSelected)
+```
+
+En Objective-C:
+
+```objectivec
+- (void)onCardInfoChanged:(YunoCardInfo * _Nullable)cardInfo {
+    if (cardInfo == nil) {
+        [self.orderSummary clearCardDetails];
+        return;
+    }
+    [self.orderSummary showBrand:cardInfo.brand type:cardInfo.type];
+}
+```
+
+</Tab>
+
+<Tab title="Android">
+
+Llama a `setOnCardInfoChanged` una vez, antes de iniciar el checkout, el pago o la inscripción. Un solo registro cubre todos los formularios de tarjeta (`startPayment`, `startPaymentLite`, `startPaymentSeamlessLite`, `startPaymentRender`, `startEnrollment` y `startEnrollmentRender`) hasta que lo reemplaces.
+
+```kotlin
+import com.yuno.sdk.payments.CardInfo
+import com.yuno.sdk.payments.setOnCardInfoChanged
+
+class CheckoutActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setOnCardInfoChanged { cardInfo -> renderCardDetails(cardInfo) }
+        startCheckout(
+            checkoutSession = "checkout_session",
+            countryCode = "country_code_iso",
+            callbackPaymentState = { state, subState, message -> /* ... */ },
+        )
+    }
+
+    override fun onDestroy() {
+        setOnCardInfoChanged(null)
+        super.onDestroy()
+    }
+
+    private fun renderCardDetails(cardInfo: CardInfo?) {
+        if (cardInfo == null) {
+            orderSummary.clearCardDetails()
+            return
+        }
+        orderSummary.showCardDetails(cardInfo.brand, cardInfo.type, cardInfo.issuerName, cardInfo.countryCode)
+    }
+}
+```
+
+Llama a `setOnCardInfoChanged(null)` cuando ya no lo necesites, por ejemplo en `onDestroy`. El SDK conserva el callback hasta que lo reemplaces o pases `null`, así que una lambda que capture una `Activity` la mantendría en memoria.
+
+Si registras el callback después de que el formulario de tarjeta está abierto, recibes el siguiente cambio, no la tarjeta que ya está en pantalla.
+
+Para leer los valores por clave, usa `toMap()`:
+
+```kotlin
+setOnCardInfoChanged { cardInfo ->
+    val values: Map<String, String?> = cardInfo?.toMap() ?: return@setOnCardInfoChanged
+    if (values["category"] == "PREPAID") {
+        orderSummary.showPrepaidNotice()
+    }
+}
+```
+
+En Java:
+
+```java
+import com.yuno.sdk.payments.PaymentsFlowKt;
+import kotlin.Unit;
+
+PaymentsFlowKt.setOnCardInfoChanged(cardInfo -> {
+    if (cardInfo == null) {
+        orderSummary.clearCardDetails();
+    } else {
+        orderSummary.showCardDetails(cardInfo.getBrand(), cardInfo.getType());
+    }
+    return Unit.INSTANCE;
+});
+```
+
+Una excepción lanzada dentro de tu callback es capturada y registrada por el SDK, así que no puede romper el formulario de tarjeta. Aun así, maneja tus propios errores, porque el SDK no reintenta la llamada.
+
+</Tab>
+</Tabs>
+
+## Mejores prácticas {#best-practices}
+
+* Mantén el controlador liviano. Se ejecuta en el hilo principal mientras el comprador escribe, así que mueve fuera del hilo principal cualquier trabajo lento, como una llamada a tu backend.
+* Maneja `null` (`nil` en iOS): borra u oculta lo que mostraste para la tarjeta anterior.
+* Trata cada llamada como el estado actual del formulario, no como un valor final. El comprador todavía puede cambiar el número antes de pagar.
+* No bloquees ni retrases el pago según estos valores. El SDK valida la tarjeta por su cuenta.
+
+## Pruebas {#testing}
+
+1. En sandbox, abre un formulario de tarjeta desde tu app con el callback registrado.
+2. Escribe el número de una tarjeta de prueba. Después del sexto dígito recibes los datos de la tarjeta.
+3. Borra dígitos hasta que queden menos de 6. Recibes `null` (`nil` en iOS).
+4. Escribe el número de una tarjeta de otra marca. Recibes los nuevos datos.
+5. Paga con una tarjeta guardada. El callback no se llama.
+
+Los valores provienen de la consulta de tarjeta del entorno que uses, así que las tarjetas de prueba en sandbox pueden devolver datos genéricos del emisor.
+
+## Relacionado {#related}
+
+* [Cuotas](/es/docs/sdks/additional-features/installments). Un callback similar para la opción de cuotas que elige el comprador.
+* [`onCardInfoChanged` en el Yuno SDK](/docs/yuno-sdk/controllers/on-card-info-changed). La misma información en el Yuno SDK (iOS y Android v3.x).

@@ -1,0 +1,264 @@
+---
+title: Cuotas
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Recibe una notificación cuando el comprador selecciona una opción de cuotas en el formulario de tarjeta en Web, iOS y Android"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Registra el callback opcional `onInstallmentSelected` para mantener el total de tu carrito sincronizado con el plan de cuotas que el comprador elige en el formulario de tarjeta. El SDK te notifica cuando se preselecciona una cuota predeterminada y cada vez que el comprador cambia la selección. También te notifica cuando el plan se recalcula (por ejemplo, después de un cambio de BIN).
+
+El callback es opcional en todas las plataformas: si no lo registras, el comportamiento del SDK no cambia. Las excepciones lanzadas dentro de tu callback son capturadas por el SDK y nunca interrumpen el flujo de pago.
+
+| Plataforma | Disponible desde | Dónde registrarlo |
+| -------- | -------------- | ----------------- |
+| Web      | SDK `1.6.7`    | `card.onInstallmentSelected` en `startCheckout` |
+| iOS      | SDK `2.21.0`   | `onInstallmentSelected(_:)` en `YunoPaymentDelegate` |
+| Android  | SDK `2.20.0`   | Parámetro `onInstallmentSelected` de `startCheckout` |
+
+## Implementación {#implementation}
+
+<Tabs>
+<Tab title="Web">
+
+### Proporciona tus propias opciones de cuotas con `onGetInstallments` {#supply-your-own-installment-options-with-ongetinstallments}
+
+Disponible desde el SDK Web **1.6.7**. Pasa `onGetInstallments` dentro de las opciones de `card`; el SDK lo llama cuando conoce el BIN de la tarjeta y muestra en el selector de cuotas lo que devuelvas. El callback tiene un tiempo de espera de 10 segundos; si se agota el tiempo, lanza un error o devuelve un arreglo vacío, `undefined` o nada, el SDK recurre a los planes de cuotas configurados en Yuno.
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  elementSelector: '#payment-form',
+  countryCode: 'BR',
+  card: {
+    onGetInstallments: async ({ bin, brand, cardType, amount, currency }) => {
+      const plans = await fetch(`/api/installments?bin=${bin}&amount=${amount}`).then((r) => r.json())
+      return plans.map((plan) => ({
+        installment: plan.count,
+        label: plan.label,
+        amount: { currency, value: plan.value, total_value: plan.total },
+      }))
+    },
+  },
+  // ...
+})
+```
+
+El callback recibe un único argumento de tipo objeto y puede ser asíncrono:
+
+```typescript
+type OnGetInstallments = (args: {
+  bin: string
+  brand: string
+  cardType: string
+  issuerCode?: string
+  issuerName?: string
+  amount?: string
+  currency?: string
+}) => MerchantInstallmentOption[] | void | Promise<MerchantInstallmentOption[] | void>
+
+type MerchantInstallmentOption = {
+  installment: number
+  label: string
+  amount?: {
+    currency: string
+    value: string
+    total_value: string
+  }
+  additionalData?: Record<string, unknown>
+}
+```
+
+| Argumento | Tipo | Descripción |
+| --- | --- | --- |
+| `bin` | `string` | El BIN de la tarjeta (primeros dígitos), resuelto por Yuno. El callback no se llama hasta que se conoce el BIN. |
+| `brand` | `string` | Marca de la tarjeta, por ejemplo `VISA`, `MASTERCARD`. |
+| `cardType` | `string` | `CREDIT` o `DEBIT`. |
+| `issuerCode`, `issuerName` | `string` | Banco emisor, cuando Yuno puede resolverlo. |
+| `amount`, `currency` | `string` | El monto de la sesión de checkout como cadena de texto y su moneda. |
+
+| Campo de retorno | Tipo | Descripción |
+| --- | --- | --- |
+| `installment` | `number` | Número de cuotas, por ejemplo `3`. Se usa como clave de la opción, así que mantenla única. |
+| `label` | `string` | El texto exacto que se muestra en el selector, en el idioma del comprador. |
+| `amount` | `object` | `currency`, `value` (por cuota) y `total_value` opcionales, como cadenas de texto. Se pasan tal cual a `onInstallmentSelected`. |
+| `additionalData` | `object` | Opcional. El tipo lo acepta, pero actualmente se omite en `onInstallmentSelected` (reservado para uso futuro). |
+
+El SDK vuelve a llamar a `onGetInstallments` cada vez que cambia el BIN o el monto, e ignora una respuesta obsoleta si ya comenzó una llamada más reciente. Las opciones que devuelves se reportan a `onInstallmentSelected` con `isMerchantInstallment: true`.
+
+### Reacciona a la elección del comprador con `onInstallmentSelected` {#react-to-the-shoppers-choice-with-oninstallmentselected}
+
+Pasa el callback dentro de las opciones de `card` de `startCheckout`:
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  elementSelector: '#payment-form',
+  countryCode: 'BR',
+  card: {
+    onInstallmentSelected: (selection) => {
+      if (!selection) {
+        // The previous selection no longer applies: restore your base total
+        return
+      }
+      const { installment, label, amount, isMerchantInstallment } = selection
+      // Update your cart total, e.g. with amount?.total_value
+      console.log('Installment selected:', { installment, label, amount, isMerchantInstallment })
+    },
+  },
+  // ...
+})
+```
+
+El callback recibe un único argumento de tipo objeto, o `null` cuando la selección anterior ya no es válida:
+
+```typescript
+type OnInstallmentSelected = (args: {
+  installment: number
+  label: string
+  amount?: {
+    currency: string
+    value: string
+    total_value: string
+  }
+  installmentId?: string   // 1.11.28+
+  type?: string            // 1.11.28+
+  rate?: number            // 1.11.28+
+  financialCosts?: Array<{ type, rate, formattedValue }>  // 1.11.28+
+  additionalData?: Record<string, unknown>
+  isMerchantInstallment: boolean
+} | null) => void
+```
+
+| Campo                   | Tipo      | Descripción                                                                                                                                    |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installment`           | `number`  | Número de cuotas seleccionadas (p. ej., `3`).                                                                                                  |
+| `label`                 | `string`  | La etiqueta exacta de la cuota que se muestra en el formulario, localizada (p. ej., `3x de R$875.00 - Total R$2,625.00`).                      |
+| `amount`                | `object`  | Opcional. `currency`, `value` y `total_value` como cadenas de texto sin procesar, exactamente como los reporta el plan de cuotas.              |
+| `installmentId`         | `string`  | Opcional, desde el SDK `1.11.28`. ID del plan de cuotas al que pertenece la opción. Las opciones del mismo plan lo comparten, así que combínalo con `installment` para identificar la opción. Se envía con el token de un solo uso. |
+| `type`                  | `string`  | Opcional, desde el SDK `1.11.28`. El tipo de plan de cuotas. |
+| `rate`                  | `number`  | Opcional, desde el SDK `1.11.28`. APR de la opción, tomada de la entrada `APR` de `financialCosts`. `undefined` cuando no hay ninguna. |
+| `financialCosts`        | `array`   | Opcional, desde el SDK `1.11.28`. Desglose de los costos financieros de la opción de cuotas, con `type`, `rate` y `formattedValue`. |
+| `additionalData`        | `object`  | Reservado para uso futuro. Actualmente siempre es `undefined`.                                                                                 |
+| `isMerchantInstallment` | `boolean` | `true` cuando la opción seleccionada fue proporcionada por tu propio callback `onGetInstallments` (cuotas del comercio); `false` para los planes proporcionados por Yuno. |
+
+Cuando la opción seleccionada proviene de tu callback `onGetInstallments` (`isMerchantInstallment: true`), `installmentId`, `type`, `rate` y `financialCosts` son `undefined`, y el token de un solo uso se crea con `installment: null`.
+
+Semántica de ejecución:
+
+* Se ejecuta con la selección actual en cuanto se muestra el plan y se preselecciona una cuota predeterminada, de modo que tu total sea correcto desde el primer renderizado.
+* Se ejecuta en cada selección que hace el comprador.
+* Vuelve a ejecutarse con la selección actual cuando cambian las opciones disponibles (por ejemplo, un cambio de BIN recalcula el plan).
+* Se ejecuta con `null` cuando las opciones notificadas anteriormente dejan de estar disponibles, por ejemplo cuando el comprador cambia a una tarjeta sin cuotas (desde el SDK `1.10.3`). Solo se ejecuta si antes se notificó una selección, por lo que los formularios que nunca tuvieron cuotas permanecen en silencio.
+* Funciona en todos los flujos de tarjeta, incluidos los campos seguros y Click to Pay.
+
+</Tab>
+
+<Tab title="iOS">
+
+Implementa el método opcional `onInstallmentSelected(_:)` de `YunoPaymentDelegate`:
+
+```swift
+class ViewController: UIViewController, YunoPaymentDelegate {
+
+    // ... required YunoPaymentDelegate implementation ...
+
+    func onInstallmentSelected(_ installmentSelected: YunoInstallmentSelected?) {
+        guard let installmentSelected else {
+            // Installments are no longer available — restore your base total
+            return
+        }
+        // Update your cart total, e.g. with installmentSelected.amount?.totalValue
+    }
+}
+```
+
+El método recibe un payload `YunoInstallmentSelected?`:
+
+```swift
+@objc public final class YunoInstallmentSelected: NSObject {
+    @objc public let installment: Int
+    @objc public let label: String
+    @objc public let amount: YunoInstallmentAmount?
+    @objc public let additionalData: [String: Any]?
+}
+
+@objc public final class YunoInstallmentAmount: NSObject {
+    @objc public let currency: String
+    @objc public let value: String
+    @objc public let totalValue: String
+}
+```
+
+| Campo                   | Tipo                     | Descripción                                                                                               |
+| ----------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `installment`           | `Int`                    | Número de cuotas seleccionadas (p. ej., `3`).                                                             |
+| `label`                 | `String`                 | La etiqueta exacta de la cuota que se muestra en el formulario, localizada (p. ej., `3x of R$ 500,31 - Total R$ 1.500,93`). |
+| `amount`                | `YunoInstallmentAmount?` | `currency`, `value` y `totalValue` como cadenas de texto sin procesar, exactamente como los reporta el plan de cuotas.       |
+| `additionalData`        | `[String: Any]?`         | El objeto `additional_data` de la opción seleccionada, cuando el servicio de cuotas lo proporciona.           |
+
+Semántica de ejecución:
+
+* Se ejecuta una vez cuando se preselecciona una cuota predeterminada al cargar el plan, de modo que tu total sea correcto desde el primer renderizado.
+* Se ejecuta en cada selección que hace el comprador, y con la cuota predeterminada recalculada después de que el plan cambia (por ejemplo, un cambio de BIN).
+* Se ejecuta una vez con `nil` cuando una selección reportada anteriormente ya no aplica (por ejemplo, el comprador cambia a una tarjeta sin cuotas). Restablece tu total base. Nunca se llama con `nil` antes de que se reporte la primera selección.
+* Se entrega en el hilo principal. El método es opcional; omitirlo mantiene sin cambios el comportamiento del SDK.
+
+</Tab>
+
+<Tab title="Android">
+
+Pasa el callback al llamar a `startCheckout`:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "country_code_iso",
+  callbackPaymentState = { state, subState, message -> /* ... */ },
+  onInstallmentSelected = { selection ->
+    if (selection != null) {
+      // Update your cart total, e.g. with selection.amount?.totalValue
+    } else {
+      // Installments are no longer available — restore your base total
+    }
+  },
+)
+```
+
+El callback recibe un payload `InstallmentSelected?`:
+
+```kotlin
+data class InstallmentSelected(
+    val installment: Int,
+    val label: String,
+    val amount: InstallmentAmount? = null,
+    val additionalData: Map<String, Any?>? = null,
+)
+
+data class InstallmentAmount(
+    val currency: String,
+    val value: String,
+    val totalValue: String,
+)
+```
+
+| Campo                   | Tipo                 | Descripción                                                                                             |
+| ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `installment`           | `Int`                | Número de cuotas seleccionadas (p. ej., `3`).                                                           |
+| `label`                 | `String`             | La etiqueta exacta de la cuota que se muestra en el formulario, localizada (p. ej., `3x de R$875.00 - Total R$2,625.00`). |
+| `amount`                | `InstallmentAmount?` | `currency`, `value` y `totalValue` como cadenas de texto sin procesar, exactamente como los reporta el plan de cuotas.     |
+| `additionalData`        | `Map<String, Any?>?` | Reservado para uso futuro. Actualmente siempre es `null`.                                               |
+
+Semántica de ejecución:
+
+* Se ejecuta una vez cuando se preselecciona una cuota predeterminada al mostrarse el plan, de modo que tu total sea correcto desde el primer renderizado.
+* Se ejecuta en cada selección que hace el comprador, y con la cuota predeterminada recalculada después de que el plan cambia (por ejemplo, un cambio de BIN).
+* Se ejecuta una vez con `null` cuando las cuotas dejan de estar disponibles después de que ya se reportó una selección (por ejemplo, el comprador cambia a una tarjeta sin cuotas). Restablece tu total base.
+* No se ejecuta cuando el formulario de tarjeta se muestra sin cuotas. El callback se ejecuta en el hilo principal, y no registrar ningún callback mantiene sin cambios el comportamiento del SDK.
+
+</Tab>
+</Tabs>
