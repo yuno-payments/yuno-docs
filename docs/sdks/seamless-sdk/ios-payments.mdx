@@ -30,7 +30,7 @@ You can add the library using CocoaPods or Swift Package Manager.
 To add the Yuno SDK to your iOS project, you need to install the Yuno SDK. If you do not have a Podfile, follow the [CocoaPods guide](https://guides.cocoapods.org/using/using-cocoapods.html) to create one. After creating the Podfile, you will integrate the Yuno SDK with Cocoapods by adding the line below to your Podfile.
 
 ```ruby
-pod 'YunoSDK', '~> 2.27.0'
+pod 'YunoSDK', '~> 2.29.0'
 ```
 
 After, you need to run the installation:
@@ -45,7 +45,7 @@ If you are using the [Swift Package Manager](https://www.swift.org/package-manag
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.27.0"))
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.29.0"))
 ]
 ```
 
@@ -222,14 +222,17 @@ This ensures that the backend payment remains in a pending state and can be prop
 
 #### Async payment methods (PIX and QR-based methods)
 
-For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
+For asynchronous payment methods, when a user closes the payment window before completing the payment:
 
-* **SDK Status**: Returns `PENDING`, optionally with a sub-status such as `CLOSED_BY_USER`
-* **Backend payment status**: Remains `PENDING` and the QR code remains valid until expiry
-* **Checkout session reuse**: Re-opening the same checkout session can display the same valid QR code
-* **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+* **SDK Status**: Returns `userCancelled`\*.
+* **Backend payment status**: Remains `PENDING` and the payment code remains valid until expiry.
+* **Checkout session reuse**: Re-opening the same checkout session can display the same valid payment code.
+* **No automatic cancellation**: The payment is not automatically cancelled on the backend when the user closes the window.
+* **Confirming status**: `userCancelled` means the shopper left the screen, not that the payment failed. Confirm the final state via webhook or `GET /v1/payments/{payment_id}` before you show a cancellation.
 
-This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
+<Note>
+\* Payment methods that show a payment code or voucher (PIX QR code, boleto, OXXO and similar), and Pix Parcelado, return `processing` with sub-status `CLOSED_BY_USER` instead of `userCancelled` when the user closes the screen. The payment stays `PENDING` on the backend and can still be completed.
+</Note>
 
 #### Expired async payments
 

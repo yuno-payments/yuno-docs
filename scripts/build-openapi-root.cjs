@@ -20,10 +20,13 @@
  *   - 3.0-style `nullable: true` converted to 3.1 type arrays
  *   - path-item-level parameters hoisted into each operation
  *   - host-only servers with /v1 embedded in paths → /v1 stripped from paths
- *   - non-default servers (e.g. the v2 report download) kept as op-level servers
+ *   - servers that are all <base host>/v2 → paths published under /v2 with
+ *     host-only op-level servers, so v2 operations never collide with v1
+ *   - other non-default servers kept as op-level servers
  *   - security requirements mapped to canonical scheme names; attached at op
  *     level when they differ from the global public+private pair
- *   - webhook-payload fragments (servers use {merchant_base_URL}) published
+ *   - webhook-payload fragments (servers use {merchant_base_URL}, or a native
+ *     `webhooks` key) published
  *     under the OpenAPI 3.1 `webhooks` key, not as API paths
  *   - component name collisions renamed with the fragment's own refs rewritten
  *   - equivalent templated paths with different parameter spellings unified
@@ -39,8 +42,8 @@ const path = require("path");
 
 const MIN_PATHS = 100;
 const METHOD_ORDER = ["get", "post", "put", "patch", "delete"];
-const REQUIRED_SERVERS = ["api-sandbox.y.uno", "api.y.uno", "api.eu.y.uno"];
-const BASE_HOSTS = ["https://api-sandbox.y.uno", "https://api.y.uno", "https://api.eu.y.uno"];
+const REQUIRED_SERVERS = ["api-sandbox.y.uno", "api.y.uno"];
+const BASE_HOSTS = ["https://api-sandbox.y.uno", "https://api.y.uno"];
 
 // Same endpoint documented on more than one nav-visible page: pick one.
 const PREFER = {
@@ -163,6 +166,11 @@ function classifyServers(doc, fragRel) {
   if (urls.some((u) => u.includes("{merchant_base_URL}"))) return { kind: "webhook" };
   if (urls.length && urls.every((u) => u.endsWith("/v1") && BASE_HOSTS.includes(u.slice(0, -3))))
     return { kind: "default" };
+  if (urls.length && urls.every((u) => u.endsWith("/v2") && BASE_HOSTS.includes(u.slice(0, -3))))
+    return {
+      kind: "prefix-v2",
+      servers: doc.servers.map((s) => ({ ...s, url: s.url.replace(/\/v2\/?$/, "") })),
+    };
   if (urls.length && urls.every((u) => BASE_HOSTS.includes(u))) {
     const paths = Object.keys(doc.paths || {});
     if (paths.length && paths.every((p) => p.startsWith("/v1/"))) return { kind: "strip-v1" };
@@ -270,7 +278,12 @@ function buildSpec() {
     const stem = path.basename(fragRel, ".json");
 
     for (const [rawPath, item] of Object.entries(doc.paths || {})) {
-      const p = serverMode.kind === "strip-v1" ? rawPath.replace(/^\/v1/, "") : rawPath;
+      const p =
+        serverMode.kind === "strip-v1"
+          ? rawPath.replace(/^\/v1/, "")
+          : serverMode.kind === "prefix-v2"
+            ? `/v2${rawPath}`
+            : rawPath;
       const pathParams = Array.isArray(item.parameters) ? item.parameters : [];
       for (const [method, op] of Object.entries(item)) {
         const m = method.toLowerCase();
@@ -300,7 +313,7 @@ function buildSpec() {
 
         if (!op.tags || !op.tags.length) op.tags = [tag];
         op.tags.forEach((t) => tagSet.add(t));
-        if (serverMode.kind === "override") op.servers = serverMode.servers;
+        if (serverMode.kind === "override" || serverMode.kind === "prefix-v2") op.servers = serverMode.servers;
         if (sec.security) op.security = sec.security;
 
         const opKey = `${m} ${normPath(p)}`;
@@ -317,6 +330,20 @@ function buildSpec() {
         const np = normPath(p);
         if (!spellings.has(np)) spellings.set(np, new Map());
         spellings.get(np).set(p, (spellings.get(np).get(p) || 0) + 1);
+      }
+    }
+
+    // native 3.1 webhook fragments: published under their own `webhooks` keys
+    for (const [name, item] of Object.entries(doc.webhooks || {})) {
+      for (const [method, op] of Object.entries(item)) {
+        const m = method.toLowerCase();
+        if (!METHOD_ORDER.includes(m) || !op || typeof op !== "object") continue;
+        for (const k of Object.keys(op)) if (k.startsWith("x-readme")) delete op[k];
+        delete op.security;
+        delete op.servers;
+        delete op.operationId;
+        webhooks[name] = webhooks[name] || {};
+        webhooks[name][m] = op;
       }
     }
   }

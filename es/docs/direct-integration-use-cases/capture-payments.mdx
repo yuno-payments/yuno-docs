@@ -1,0 +1,94 @@
+---
+title: "Captura pagos"
+description: "Muestra cómo capturar manualmente una autorización pendiente con el endpoint Capture Payment."
+---
+
+En esta guía encontrarás instrucciones paso a paso para capturar manualmente un pago creado previamente en Yuno.
+
+<Note>
+**Captura automática diferida**
+
+Si prefieres que Yuno capture automáticamente los pagos después de un tiempo determinado, puedes configurar `delayed_capture_settings` al crear el pago. Obtén más información en la guía [Flujo de cancelación y captura](/es/docs/payment-features/Cancel-and-capture-flow).
+</Note>
+
+<Warning>
+**Qué pagos puedes capturar**
+
+Solo se pueden capturar los pagos con estado **PENDING**. Consulta la página [Estado del pago](/es/docs/basic-concepts/payments-1) para obtener más detalles sobre los posibles estados del pago.
+
+Si el pago ya está en estado **SUCCEEDED**, ya fue capturado y no queda nada por capturar. Este es el caso de las compras (`capture: true`) y de las autorizaciones (`capture: false`) enviadas a un proveedor que solo admite captura inmediata. En este segundo caso, Yuno crea la transacción de captura por ti y devuelve el pago como `SUCCEEDED` con `sub_status = CAPTURED`, por lo que puedes omitir la llamada de captura.
+</Warning>
+
+## Requisitos {#requirements}
+
+Para capturar un pago, debes:
+
+* Acceder a tus [credenciales de API](/es/docs/using-yuno/settings/developers-credentials) en el Dashboard de Yuno, que consisten en:
+  * `public-api-key`
+  * `private-secret-key`
+* Tener los datos de identificación del pago que recibiste después de crearlo con el [endpoint Create Payment](/es/reference/payments/create-payment):
+  * `id`: El identificador único del pago, obtenido del parámetro `id` después de crear el pago.
+  * `transaction_id`: El identificador único de la transacción, obtenido del parámetro `transaction.id` después de crear el pago.
+
+<Note>
+**Explora las colecciones de Postman de Yuno**
+
+Yuno ofrece [colecciones de Postman](/reference/getting-started/postman-collections) que puedes usar para replicar los casos de uso de forma local.
+</Note>
+
+<Info>
+**Opciones de captura**
+
+Esta guía cubre la **captura manual** mediante el endpoint de la API. Para otras opciones de captura, como:
+
+* **Captura en tiempo real** (compra inmediata)
+* **Captura diferida** (captura automática después de un tiempo)
+
+Consulta la guía [Flujo de cancelación y captura](/es/docs/payment-features/Cancel-and-capture-flow).
+</Info>
+
+## Captura un pago {#capture-a-payment}
+
+Solo puedes capturar un pago si tiene el estado PENDING. Usa el [endpoint Capture Payment](/reference/payments/capture-authorization) para capturar el pago. Para identificar el pago que se va a capturar, debes proporcionar su `id` y el `transaction_id`. Además, debes indicar el monto que se va a capturar mediante el objeto `amount` en el cuerpo de la solicitud:
+
+* Captura completa: Deja el monto vacío.
+* Captura parcial: Proporciona el valor que se va a capturar mediante el parámetro `amount`.
+
+<Note>
+**Pagos con una promoción de Yuno**
+
+El monto autorizado es lo que paga el cliente, `amount.value` menos `discount_amount`, por lo que una captura completa toma ese monto. Consulta [Promociones](/docs/payment-features/promotions#refunds-captures-and-cancellations).
+</Note>
+
+Para confirmar que capturaste el pago correctamente, verifica que los parámetros de la respuesta del endpoint [Capture Payment](/reference/payments/capture-authorization) contengan los siguientes valores:
+
+* `type = CAPTURE`
+* `status = SUCCEEDED`
+* `payment.status = SUCCEEDED`
+* `payment.sub_status = CAPTURED/PARTIALLY_CAPTURED`
+
+Si la respuesta contiene los valores anteriores, la captura fue exitosa.
+
+### Pago que ya está en un estado final {#payment-already-in-a-final-state}
+
+Si llamas al endpoint de captura con un pago que ya no está en estado `PENDING` (por ejemplo, ya fue capturado, reembolsado o cancelado), el endpoint devuelve HTTP 400 con el código `INVALID_STATUS`:
+
+```json
+{
+  "code": "INVALID_STATUS",
+  "messages": ["Invalid transaction status."]
+}
+```
+
+Interpreta este código como "no se aplican más operaciones a este pago" y no reintentes la captura. Para conocer el estado actual del pago, usa el endpoint [Retrieve payment](/reference/payments/retrieve-payment-by-id).
+
+### Revisa el estado del pago {#check-the-payment-status}
+
+Si, por algún motivo, necesitas confirmar la captura del pago:
+
+* Usa [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) o [Retrieve Payment by merchant\_order\_id](/reference/payments/retrieve-payment-by-merchant-order-id) para obtener información detallada sobre el pago.
+* También puedes configurar webhooks para recibir notificaciones de cada evento. Consulta la guía de [Webhooks](/es/docs/webhooks/configure-webhooks) para aprender a configurar webhooks en Yuno.
+
+## Ver también {#see-also}
+
+* [Cancela pagos](/es/docs/direct-integration-use-cases/cancel-payments)

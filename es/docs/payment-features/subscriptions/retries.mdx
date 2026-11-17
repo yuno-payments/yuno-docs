@@ -1,0 +1,160 @@
+---
+title: "Reintentos inteligentes"
+description: "Recupera los cobros recurrentes con tarjeta rechazados reintentándolos en un calendario optimizado y personalizable"
+---
+
+Los Smart Retries de Yuno ayudan a recuperar los pagos recurrentes con tarjeta de crédito rechazados al reintentarlos en un calendario optimizado. Al reintentar en los momentos adecuados, los Smart Retries aumentan la probabilidad de éxito del pago, lo que asegura un flujo de ingresos constante y reduce la baja involuntaria de suscriptores.
+
+### Ventajas clave {#key-advantages}
+
+Los Smart Retries de Yuno ofrecen varios beneficios que mejoran los procesos de pago y la recuperación de ingresos:
+
+* **Decisiones basadas en datos**: usa un calendario de reintentos comprobado, o una temporización de reintentos basada en machine learning mediante la estrategia `SMART`.
+* **Mayor recuperación de ingresos**: aumenta las posibilidades de cobrar los pagos con éxito.
+* **Menor rotación de suscriptores**: minimiza las interrupciones y las bajas involuntarias de suscriptores.
+* **Lógica flexible**: permite personalizar los calendarios de reintentos para maximizar las oportunidades de éxito.
+* **Enfoque integral**: funciona en conjunto con otras estrategias de recuperación de ingresos.
+
+### Calendario de reintentos {#retry-schedule}
+
+De forma predeterminada, Yuno aplica el calendario fijo de reintentos que aparece a continuación. Cada demora se mide **desde el intento anterior**, no de forma acumulada desde el primer intento. También puedes cambiar a una temporización de reintentos basada en machine learning, que adapta el momento de cada reintento por transacción, estableciendo `strategy` en `SMART`: consulta [Temporización de reintentos con machine learning](#machine-learning-retry-timing).
+
+| Intento                    | Demora después del intento anterior | Tiempo total después del primer intento |
+| :------------------------- | :---------------------------------- | :-------------------------------------- |
+| Primer intento (cobro inicial) | -                               | -                                       |
+| Reintento 1                | 5 horas                             | ~5 horas                                |
+| Reintento 2                | 12 horas                            | ~17 horas                               |
+| Reintento 3                | 24 horas                            | ~41 horas                               |
+| Reintento 4                | 36 horas                            | ~77 horas (~3.2 días)                   |
+| Reintento 5                | 48 horas                            | ~125 horas (~5.2 días)                  |
+| Reintento 6                | 96 horas                            | ~221 horas (~9.2 días)                  |
+
+El último reintento se realiza aproximadamente 9.2 días después del cobro inicial fallido.
+
+### Personalización {#customization}
+
+Cada modelo de negocio es único, por lo que permitimos que los comercios definan reglas específicas para mejorar la flexibilidad de nuestro calendario de reintentos. Puedes establecer la estructura `retries` al crear la suscripción y cambiarla más adelante en una suscripción existente con [Update Subscription](/reference/subscriptions/update-subscription), con todos los campos excepto `cancel_on_exhausted_retries`, que solo se puede establecer al crear:
+
+<div className="nowrap-col1-table dense-table">
+
+| Parámetro          | Tipo   | Descripción                                                                                                                              | Ejemplo                            |
+| :----------------- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------- |
+| `retry_on_decline` | bool   | Indica si se reintenta un pago después de un primer rechazo. El valor predeterminado es false. Este indicador es el único interruptor que activa los reintentos; no hay un interruptor en el Dashboard. | TRUE |
+| `amount`           | number | Número de reintentos que intentará la suscripción. El máximo es igual a la longitud del calendario de reintentos configurado en tu entorno: 6 en producción. Un valor por encima del tope se rechaza con `400` (`Max retries attempts exceeded`). Este tope se establece por entorno y no se puede configurar por cuenta mediante la API. | 4 |
+| `strategy`         | string | La estrategia de reintentos. Valores permitidos: DEFAULT, SMART y CUSTOM_SCHEDULE. DEFAULT usa el calendario fijo anterior. SMART usa una temporización de reintentos basada en machine learning: consulta [Temporización de reintentos con machine learning](#machine-learning-retry-timing). CUSTOM_SCHEDULE usa el calendario por intento que proporciones. | `CUSTOM_SCHEDULE` |
+| `stop_on_hard_decline` | bool | Cuando es true y se detecta un rechazo definitivo, los reintentos se detienen solo para el ciclo actual. Por sí solo, la suscripción permanece ACTIVE, la facturación avanza al siguiente ciclo y no se emite ninguna cancelación, pausa ni webhook de suscripción. Si `cancel_on_exhausted_retries` también es true, la suscripción se cancela: consulta [Cancelar una suscripción cuando se agotan los reintentos](#canceling-a-subscription-when-retries-run-out). | TRUE |
+| `cancel_on_exhausted_retries` | bool | Cuando es true, la suscripción se cancela una vez que los reintentos de un ciclo de facturación terminan sin un pago exitoso, en lugar de pasar al siguiente ciclo. El valor predeterminado es false. Solo se puede establecer al crear: no se puede cambiar después, y [Update Subscription](/reference/subscriptions/update-subscription) rechaza un valor distinto con `400`. Consulta [Cancelar una suscripción cuando se agotan los reintentos](#canceling-a-subscription-when-retries-run-out). | TRUE |
+| `schedule`         | object | Calendario por intento para `CUSTOM_SCHEDULE`, un arreglo de objetos con los campos `attempt` y `delay_seconds`. Hasta 7 intentos; los números de intento deben ser secuenciales a partir de 1, y cada `delay_seconds` debe estar entre 1 y 604800 (7 días). Enviarlo sin `strategy` implica `CUSTOM_SCHEDULE`, y la cantidad de reintentos sigue la longitud del calendario. | Intento: 2, `delay_seconds`: 86400 |
+
+</div>
+
+<Note>
+**Actualizar los reintentos de una suscripción existente**
+
+[Update Subscription](/reference/subscriptions/update-subscription) acepta el mismo objeto `retries` (un `schedule` enviado reemplaza al almacenado en su totalidad). El cambio se aplica la próxima vez que se programen reintentos: un ciclo de facturación que ya está ejecutando sus reintentos termina con la configuración con la que empezó, y la nueva configuración entra en vigor desde el siguiente ciclo.
+</Note>
+
+<Note>
+El número máximo de reintentos es igual a la longitud del calendario de reintentos configurado en tu entorno: 6 en producción. El sandbox está limitado actualmente a 5 y se está alineando para coincidir con producción.
+</Note>
+
+<Note>
+`strategy`: `DEFAULT` aplica el calendario fijo anterior. Usa `SMART` para una temporización de reintentos basada en machine learning, o `CUSTOM_SCHEDULE` junto con el arreglo `schedule` para definir tus propias demoras.
+</Note>
+
+### Temporización de reintentos con machine learning {#machine-learning-retry-timing}
+
+Establece `strategy` en `SMART` para que el modelo de machine learning de Yuno elija **cuándo** se intenta cada reintento, en lugar de usar el calendario fijo. El modelo pondera señales como el motivo del rechazo, el país, el emisor de la tarjeta y el proveedor de pago para elegir el momento con más probabilidades de éxito.
+
+```json
+{
+  "retries": {
+    "retry_on_decline": true,
+    "amount": 4,
+    "strategy": "SMART"
+  }
+}
+```
+
+`SMART` cambia solo la **temporización** de los reintentos. No cambia cuántos reintentos tienes: `amount` sigue controlando eso, y se aplica el mismo máximo por entorno. Cualquier arreglo `schedule` enviado junto con `strategy: SMART` se ignora.
+
+<Note>
+La temporización con machine learning se aplica **a partir del segundo reintento**. El primer reintento siempre usa la demora estándar del calendario fijo anterior.
+</Note>
+
+<Note>
+Si una decisión de temporización no está disponible a tiempo, el reintento recurre al calendario fijo anterior. Los reintentos nunca se omiten ni se descartan por esto: solo cambia su temporización.
+</Note>
+
+<Note>
+`SMART` está disponible para todas las cuentas.
+</Note>
+
+### Suscripciones Pix Automático {#pix-automático-subscriptions}
+
+El calendario y la configuración de `retries` de esta página se aplican a las suscripciones que Yuno reintenta por sí mismo. En cambio, una suscripción `PIX_AUTOMATIC` sigue la escalera fija propia del riel de Pix (hasta tres reintentos, uno por fecha de débito, dentro de los siete días posteriores a la fecha de débito), y la configuración anterior no se puede modificar en ella. Consulta [Pix Automático](/es/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).
+
+### Suscripciones en espera de recuperación {#subscriptions-awaiting-recovery}
+
+Donde el estado `PAST_DUE` está habilitado para la cuenta, un cobro recurrente fallido mueve la suscripción de `ACTIVE` (o de `TRIALING`) a [`PAST_DUE`](/reference/subscriptions/status-subscriptions) y emite un webhook `subscription.past_due`. La suscripción sigue facturando y todavía se puede cancelar mientras está en ese estado; el siguiente cobro exitoso la devuelve al estado de origen y emite el evento correspondiente `subscription.active` o `subscription.trialing`.
+
+Donde el estado no está habilitado, un cobro fallido deja la suscripción en `ACTIVE` mientras se ejecutan los reintentos, y solo el webhook `payment.purchase` informa el rechazo. Contacta a tu representante de Yuno para habilitar `PAST_DUE`.
+
+Cancelar una suscripción `PAST_DUE` (de inmediato, o porque una cancelación programada llega a su fecha) nunca produce un error y siempre detiene los reintentos de ese ciclo. Consulta [Cancel Subscription](/reference/subscriptions/cancel-subscription) para programar una cancelación con anticipación, incluida la opción `past_due_behavior`, que controla si una programación pendiente espera a que terminen los reintentos o se ejecuta de inmediato.
+
+### Cancelar una suscripción cuando se agotan los reintentos {#canceling-a-subscription-when-retries-run-out}
+
+De forma predeterminada, cuando se han intentado todos los reintentos de un ciclo de facturación y ninguno tuvo éxito, la suscripción permanece en su estado actual y la facturación pasa al siguiente ciclo. Por lo tanto, una suscripción respaldada por una tarjeta definitivamente inutilizable sigue generando cobros fallidos de forma indefinida.
+
+Establece `cancel_on_exhausted_retries` en `true` al crear la suscripción para cambiar ese comportamiento:
+
+```json
+{
+  "retries": {
+    "retry_on_decline": true,
+    "amount": 3,
+    "cancel_on_exhausted_retries": true
+  }
+}
+```
+
+Cuando los reintentos de un ciclo terminan sin un pago exitoso, Yuno entonces:
+
+1. Establece el estado de la suscripción en `CANCELED`.
+2. Establece `cancellation_source` en `RETRIES_EXHAUSTED`.
+3. Detiene toda la facturación programada futura de la suscripción.
+4. Envía un webhook `SUBSCRIPTION.CANCEL`.
+
+Esto se aplica sin importar cómo terminaron los reintentos: el calendario llegando a su último intento, o `stop_on_hard_decline` terminando el ciclo antes de tiempo tras un rechazo definitivo. En ambos casos `cancellation_source` es `RETRIES_EXHAUSTED`.
+
+<Note>
+`cancel_on_exhausted_retries` tiene como valor predeterminado `false`. Si lo omites, las suscripciones se comportan exactamente como lo hacen hoy. Ninguna suscripción existente cambia de comportamiento.
+</Note>
+
+<Warning>
+**Esta cancelación es definitiva.** Una suscripción cancelada ya no se puede facturar, por lo que [Retry Subscription](/reference/subscriptions/retry-subscription) se rechaza para ella. Sin este indicador puedes rescatar manualmente una suscripción cuyos reintentos se agotaron; con él habilitado, esa opción desaparece una vez que ocurre la cancelación. Habilítalo solo si un calendario de reintentos agotado realmente debe terminar la suscripción del cliente.
+</Warning>
+
+<Note>
+`cancel_on_exhausted_retries` solo se puede establecer al crear. [Update Subscription](/reference/subscriptions/update-subscription) rechaza un valor distinto al almacenado con `400` (`The field 'retries.cancel_on_exhausted_retries' can only be set when the subscription is created`); el resto del objeto `retries` sigue siendo actualizable.
+</Note>
+
+<Note>
+Este indicador se aplica a los ciclos de renovación. Las suscripciones creadas con `initial_payment_validation: true` ya se cancelan solas cuando falla su primer pago, y esa vía informa `cancellation_source` como `SYSTEM` en lugar de `RETRIES_EXHAUSTED`.
+</Note>
+
+### Prueba de reintentos en sandbox {#testing-retries-in-sandbox}
+
+Con el [Yuno Testing Gateway](/es/docs/direct-integration-use-cases/yuno-testing-gateway) configurado como tu proveedor de tarjetas en sandbox, cada una de sus [tarjetas de prueba](/es/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway) devuelve un código de respuesta de transacción fijo. Elige la tarjeta según lo que quieras probar:
+
+* **Calendario completo de reintentos**: usa una tarjeta que devuelva un rechazo temporal, como `DECLINED_BY_BANK`, `DO_NOT_HONOR` o `INSUFFICIENT_FUNDS`.
+* **`stop_on_hard_decline`**: establece `stop_on_hard_decline` en `true` y usa una tarjeta que devuelva un rechazo definitivo, como `REPORTED_STOLEN` o `INVALID_CARD_DATA`.
+
+Si un código de respuesta es un rechazo temporal o definitivo se indica en la tabla [Declined status](/reference/payments/status-and-response-codes/transaction#declined-status).
+
+Ten en cuenta lo siguiente:
+
+* Establece `retry_on_decline` en `true` al crear la suscripción de prueba. Su valor predeterminado es `false`, y sin él no se ejecutan reintentos.
+* El sandbox está limitado a 5 reintentos, por lo que allí se rechaza un `amount` superior a 5.
+* Envía `cancel_on_exhausted_retries` al crear la suscripción de prueba; no se puede agregar después.
+* Cuando los reintentos se agotan con `cancel_on_exhausted_retries` habilitado, confirma con [Retrieve Subscription](/reference/subscriptions/retrieve-subscription) que `status` es `CANCELED` y `cancellation_source` es `RETRIES_EXHAUSTED`, y que tu endpoint de webhook recibió un evento `SUBSCRIPTION.CANCEL`.

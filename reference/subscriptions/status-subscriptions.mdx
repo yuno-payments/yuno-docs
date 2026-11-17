@@ -38,7 +38,7 @@ Subscriptions can have the status described in the table below.
 
 ## Status transition matrix
 
-Each cell shows what moves a subscription from the status in the row to the status in the column. N/A means the transition does not exist. `COMPLETED` and `CANCELED` are terminal: nothing leaves them.
+Each cell shows what moves a subscription from the status in the row to the status in the column. N/A means the transition does not exist. Billing never leaves `COMPLETED` or `CANCELED` on its own — the only way out of either is an explicit [Reactivate Subscription](/reference/subscriptions/reactivate-subscription) call.
 
 |  From \ To   | `TRIALING` | `ACTIVE` | `PAST_DUE` | `PAUSED` | `COMPLETED` | `CANCELED` |
 | ------------ | ---------- | -------- | ---------- | -------- | ----------- | ---------- |
@@ -47,6 +47,8 @@ Each cell shows what moves a subscription from the status in the row to the stat
 | `ACTIVE`     | A [plan change](/reference/subscriptions/change-subscription-plan) lands inside a trial phase | N/A | A recurring charge fails¹ | The subscription is paused | `billing_cycles.total` is reached or the availability window ends | Canceled by you, by a plan cancellation, or by `retries.cancel_on_exhausted_retries` |
 | `PAST_DUE`   | A later charge succeeds while the trial phase is still running | A later charge succeeds | N/A | N/A | The availability window ends | Canceled by you, or retries end without a successful payment and `retries.cancel_on_exhausted_retries` is `true` |
 | `PAUSED`     | Resumed while the trial phase is still running | Resumed after the trial phase | N/A | N/A | N/A | The subscription is canceled |
+| `COMPLETED`  | [Reactivated](/reference/subscriptions/reactivate-subscription) while a trial phase covers the cycle | [Reactivated](/reference/subscriptions/reactivate-subscription), while billing cycles remain | N/A | N/A | N/A | N/A |
+| `CANCELED`   | [Reactivated](/reference/subscriptions/reactivate-subscription) while a trial phase covers the cycle | [Reactivated](/reference/subscriptions/reactivate-subscription) | N/A | N/A | N/A | N/A |
 
 ¹ Only where `PAST_DUE` is enabled for the account; otherwise the subscription stays in its current status while the retries run.
 
@@ -59,8 +61,9 @@ Each cell shows what moves a subscription from the status in the row to the stat
 
 You can cancel a subscription in `CREATED`, `ACTIVE`, `TRIALING`, `PAST_DUE` and `PAUSED`, both
 through [Cancel Subscription](/reference/subscriptions/cancel-subscription) and from the dashboard.
-`COMPLETED` and `CANCELED` are terminal — canceling from either returns `400 INVALID_STATE`, which
-is also what a repeated cancel on an already-canceled subscription returns.
+`COMPLETED` and `CANCELED` cannot be canceled — doing so returns `400 INVALID_STATE`, which is also
+what a repeated cancel on an already-canceled subscription returns. Either can be brought back to
+`ACTIVE` with [Reactivate Subscription](/reference/subscriptions/reactivate-subscription).
 
 The same endpoint can also schedule the cancellation for a future date or billing cycle instead of
 applying it immediately — see [Cancel Subscription](/reference/subscriptions/cancel-subscription#scheduling-a-cancellation-instead).

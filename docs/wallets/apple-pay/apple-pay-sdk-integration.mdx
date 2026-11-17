@@ -21,6 +21,12 @@ This guide provides a comprehensive process to integrate Apple Pay with Yuno SDK
   Apple Pay on the web is not limited to Safari or Apple devices. It also works in third-party browsers on iPhone, iPad, and macOS, and in any browser on Windows through Apple's cross-device payment flow. See [Supported devices and browsers](/docs/apple-pay#supported-devices-and-browsers) for the full matrix.
 </Note>
 
+<Note>
+  **Cross-Origin Iframe Embedding (Web SDK 1.11.31+)**
+
+  When embedding checkout in an iframe hosted on a different domain, Safari requires validating the Apple Pay merchant session against the top-level parent page domain. The Web SDK detects this automatically. The top-level domain must be registered on the Apple Pay connection, otherwise the session falls back to the iframe domain. You can explicitly specify the parent domain or disable detection using `externalButtons.applePay.topLevelDomain`. See the [Web SDK reference](/docs/sdks/resources/references/web#apple-pay).
+</Note>
+
 ## Apple Pay overview
 
 1. Customer initiates payment on their iOS device
@@ -48,7 +54,7 @@ To add Apple Pay capability to your iOS app:
 
 ### Create checkout session
 
-Use the [create checkout session](/reference/create-checkout-session) endpoint to create a payment session for one-time Apple Pay transactions:
+Use the [create checkout session](/reference/checkout-sessions/create-checkout-session) endpoint to create a payment session for one-time Apple Pay transactions:
 
 ```json
 {
@@ -62,6 +68,46 @@ Use the [create checkout session](/reference/create-checkout-session) endpoint t
   }
 }
 ```
+
+#### Customize the payment sheet (`summary_items`)
+
+To display an itemized price breakdown or control what appears on the Apple Pay payment sheet, include a top-level `summary_items` array when creating the checkout session:
+
+```json
+{
+  "country": "US",
+  "customer_id": "070a34cb-4649-4a4e-b231-065a53060379",
+  "merchant_order_id": "order-123",
+  "amount": {
+    "currency": "USD",
+    "value": 115
+  },
+  "summary_items": [
+    {
+      "id": "subtotal",
+      "label": "Subtotal",
+      "amount": { "currency": "USD", "value": 100 }
+    },
+    {
+      "id": "tax",
+      "label": "Tax",
+      "amount": { "currency": "USD", "value": 15 }
+    },
+    {
+      "id": "total",
+      "label": "Your Business Name",
+      "amount": { "currency": "USD", "value": 115 }
+    }
+  ]
+}
+```
+
+The iOS and Web SDKs map `summary_items` to the Apple Pay payment sheet:
+- Earlier items appear as individual line items.
+- The **last item** represents the grand total.
+- Apple Pay renders the total's label directly after "Pay" on the sheet (for example, "Pay Your Business Name"). Set this label to your business or merchant name rather than "Total" so the sheet clearly identifies your business to the customer.
+
+The currency for every item in `summary_items` must match the session currency. If you also offer in-wallet delivery selection, see [Fast Checkout Shipping](/docs/payment-features/fast-checkout-shipping) for configuring `summary_items` per delivery method.
 
 ### Process the payment
 
@@ -102,5 +148,5 @@ When any of these fields are enabled as required in the Checkout Builder, the Ap
 ## Related documentation
 
 - [Prerequisites for Apple Pay](/docs/wallets/apple-pay/prerequisites-apple-pay)
-- [Apple Pay Direct integration](/docs/apple-pay-direct-integration)
+- [Apple Pay Direct integration](/docs/wallets/apple-pay/apple-pay-direct-integration)
 - [Webhooks](/docs/webhooks)

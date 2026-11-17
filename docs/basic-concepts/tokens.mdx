@@ -5,7 +5,7 @@ description: "Compares one-time, vaulted, and network tokens and how Yuno's toke
 
 Yuno provides a fully managed, PCI DSS Level 1 tokenization service. When a customer provides their payment details, Yuno replaces the sensitive data with a token, a non-sensitive string that represents the original credentials. Your systems only ever store and transmit tokens, never raw card data.
 
-This approach reduces your PCI compliance scope significantly. Instead of a full audit, most merchants using Yuno's SDK only need to complete a short self-assessment questionnaire (SAQ A). For more details, see [PCI Compliance](/docs/pci-compliance).
+This approach reduces your PCI compliance scope significantly. Instead of a full audit, most merchants using Yuno's SDK only need to complete a short self-assessment questionnaire (SAQ A). For more details, see [PCI Compliance](/docs/security-and-compliance/pci-compliance).
 
 ## Yuno tokenization coverage
 
@@ -24,7 +24,7 @@ Yuno issues three types of tokens, each suited to a different integration scenar
 
 ### One-time use token
 
-When using Yuno's SDK, all necessary payment information is gathered and stored in a one-time use token scoped to a single [checkout session](/docs/sessions). This token is used once when creating the payment and cannot be reused.
+When using Yuno's SDK, all necessary payment information is gathered and stored in a one-time use token scoped to a single [checkout session](/docs/basic-concepts/sessions). This token is used once when creating the payment and cannot be reused.
 
 One-time tokens are the right choice for:
 
@@ -34,12 +34,12 @@ One-time tokens are the right choice for:
 <Note>
 **Vault on success**
 
-Set `vault_on_success: true` in the token request to automatically enroll and vault the payment method if the payment succeeds. This converts a one-time token into a persistent vaulted token without a separate enrollment step.
+Set `vault_on_success: true` in the token request, or `payment_method.vault_on_success: true` on the payment, to automatically enroll and vault the payment method if the payment succeeds. This converts a one-time token into a persistent vaulted token without a separate enrollment step.
 </Note>
 
 ### Vaulted token
 
-A vaulted token is created when a payment method is [enrolled](/docs/enroll-payment-methods) and securely stored in Yuno's centralized vault alongside the customer's information. You can use the vaulted token to authorize future payments without the customer re-entering their details.
+A vaulted token is created when a payment method is [enrolled](/docs/payment-features/enrollment/enroll-payment-methods) and securely stored in Yuno's centralized vault alongside the customer's information. You can use the vaulted token to authorize future payments without the customer re-entering their details.
 
 Vaulted tokens are the right choice for:
 
@@ -63,8 +63,25 @@ Unlike vaulted tokens, network tokens are managed by the card network and **auto
 <Note>
 **Learn more**
 
-For a full overview of network tokens, lifecycle statuses, and integration options, see [Network Tokens](/docs/network-tokens).
+For a full overview of network tokens, lifecycle statuses, and integration options, see [Network Tokens](/docs/security-and-compliance/network-tokens).
 </Note>
+
+### Provider token
+
+Some payment methods are authorized at the provider, such as a Pix Automático authorization with EBANX. The provider identifies that authorization with its own reference, the **provider token**. Yuno stores it inside the customer's vaulted payment method, so your integration never handles it: you charge with the `vaulted_token` and Yuno sends the provider token with the payment. Only the provider that issued it can use it, so route payments made with that `vaulted_token` to that provider; Yuno sends it to the provider your routing selects.
+
+### Saving a payment method while paying
+
+For Pix with EBANX, the authorization is created during the first payment: send `payment_method.vault_on_success: true` on that payment. Yuno stores the provider token and saves the payment method for the customer:
+
+1. **First payment (customer-initiated):** create the payment with the customer (`customer_payer.id`), `payment_method.vault_on_success: true` and a `subscription` block that describes the authorization. The customer approves it outside your page.
+2. **The vaulted token:** the saved payment method appears in [Retrieve Enrolled Payment Methods](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api) as soon as the payment is created, and its token is in `transactions[].payment_method.vaulted_token` in [Retrieve Payment](/reference/payments/retrieve-payment-by-id-v2) once the payment reaches `SUCCEEDED`. It is not in the create response. Charge it only after the customer approves: before that, charges are declined.
+3. **Later payments (merchant-initiated):** send `payment_method.vaulted_token`. Yuno charges the stored authorization without a new customer approval.
+4. **Checkout:** returning customers see the saved Pix in the SDK checkout and can pay with one click, when you create the checkout session with their `customer_id`.
+
+If you already hold card provider tokens created outside Yuno, [enroll each one](/reference/payment-methods-direct-workflow/enroll-payment-method-api) once with `type: "CARD"`, `provider_data.token_source: "PROVIDER_TOKEN"`, the provider in `provider_data.id`, the connection in `provider_data.connection_id` and the provider reference in `provider_data.payment_method_token`. Yuno returns a `vaulted_token` you use the same way.
+
+For a complete example, see [Pix with vault on success](/docs/payment-features/subscriptions/pix-automatico#pix-with-vault-on-success).
 
 ## Token comparison
 
@@ -80,14 +97,14 @@ For a full overview of network tokens, lifecycle statuses, and integration optio
 
 ### Card fingerprinting
 
-Every card enrolled through Yuno receives a `fingerprint`, a stable, cryptographic identifier derived from the PAN. Fingerprints remain consistent across multiple enrollments of the same card. This lets you detect duplicates and deduplicate your vault without ever accessing or storing raw card numbers. See [Card Fingerprint](/docs/fingerprint).
+Every card enrolled through Yuno receives a `fingerprint`, a stable, cryptographic identifier derived from the PAN. Fingerprints remain consistent across multiple enrollments of the same card. This lets you detect duplicates and deduplicate your vault without ever accessing or storing raw card numbers. See [Card Fingerprint](/docs/security-and-compliance/fingerprint).
 
 ### Automatic card updates
 
-Yuno's Card Account Updater automatically refreshes vaulted cards when issuers update card numbers or expiration dates. This keeps your vault current without any cardholder action, reducing declines caused by outdated card data. See [Card Account Updater](/docs/card-account-updater).
+Yuno's Card Account Updater automatically refreshes vaulted cards when issuers update card numbers or expiration dates. This keeps your vault current without any cardholder action, reducing declines caused by outdated card data. See [Card Account Updater](/docs/additional-services/card-account-updater).
 
 ### Token migration
 
-If you are moving to Yuno from another provider, Yuno supports importing your existing tokenized cards directly into the Yuno vault. Your customers keep their saved payment methods, and you keep their full history, with no re-enrollment required. See [Token Migration Process](/docs/token-migration-process).
+If you are moving to Yuno from another provider, Yuno supports importing your existing tokenized cards directly into the Yuno vault. Your customers keep their saved payment methods, and you keep their full history, with no re-enrollment required. See [Token Migration Process](/docs/security-and-compliance/data-migration-processes/token-migration-process).
 
-Yuno also supports exporting tokens if you ever need to move your vault data to another provider. See [Exporting Tokens from Yuno](/docs/exporting-tokens-from-yuno).
+Yuno also supports exporting tokens if you ever need to move your vault data to another provider. See [Exporting Tokens from Yuno](/docs/security-and-compliance/data-migration-processes/exporting-tokens-from-yuno).

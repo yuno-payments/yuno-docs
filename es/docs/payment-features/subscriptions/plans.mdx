@@ -1,0 +1,65 @@
+---
+title: "Planes"
+description: "Define una vez un catálogo de precios reutilizable y luego suscribe a los clientes a él, en lugar de definir el monto y la frecuencia en cada suscripción"
+---
+
+Un plan es una definición de precios reutilizable: nombre, precio (opcionalmente por país), frecuencia de cobro y una escalera opcional de fases de prueba. En lugar de especificar `amount`/`frequency` en cada [suscripción](/es/docs/payment-features/subscriptions/index) que creas, suscribe al cliente a un plan y Yuno resuelve automáticamente el precio para su país.
+
+<Note>
+**Planes frente a suscripciones sin plan**
+
+Las suscripciones sin plan (`amount` + `frequency`, sin `plan_id`) siguen siendo totalmente compatibles: los planes son un complemento, no un reemplazo. Una suscripción creada sin plan simplemente omite los campos del plan (`plan_id`, `billing_phases`, `current_phase`, …) de sus respuestas: están ausentes, no son `null`.
+</Note>
+
+## Crear y usar un plan {#creating-and-using-a-plan}
+
+Supón que lanzas un nivel "Streaming Pro" que cuesta \$20/mes en Estados Unidos, pero quieres cobrar R\$99.90 en Brasil en lugar de una conversión directa de moneda. Este es el flujo completo:
+
+1. **Crea el plan una sola vez.** Llama a [Create a Plan](/reference/plans/create-plan) con un nombre, un `base_amount` (el precio por defecto, \$20 USD en nuestro ejemplo), una `frequency` (mensual) y, si necesitas precios específicos por país, una lista `country_prices` (`BR` → R\$99.90). Esto te devuelve un `plan_id`.
+2. **Suscribe a tantos clientes como quieras.** Cuando llames a [Create Subscription](/reference/subscriptions/create-subscription), envía ese `plan_id` en lugar de un `amount`. Yuno busca el `country` del suscriptor y le cobra automáticamente el precio correcto, sin que tengas que calcular ni enviar el monto en cada suscripción.
+3. **El precio se resuelve por suscriptor, en este orden:** ¿el plan tiene un precio explícito para su país? Se usa ese. Si no, se recurre a `base_amount`. Así, en nuestro ejemplo, un cliente de Estados Unidos paga \$20, un cliente de Brasil paga R\$99.90 y un cliente de cualquier otro lugar también paga \$20 (el `base_amount` de respaldo cubre todos los países que no listaste explícitamente).
+
+<Warning>
+**`plan_id` asume el control del precio y la cadencia, pero no todos los campos en conflicto se rechazan de la misma manera**
+
+- `amount` es mutuamente excluyente con `plan_id`: envía exactamente uno de los dos.
+- `trial_period` y `billing_date` enviados junto con `plan_id` se rechazan con `400 BAD_REQUEST`: el plan ya define la escalera de prueba y la cadencia, por lo que estos campos entrarían en conflicto.
+- `retries` enviado junto con un `plan_id` cuyo plan tiene su propia configuración de reintentos se rechaza con `400 INVALID_PARAMETERS` ("retries cannot be combined with a plan_id whose plan defines its own retry configuration"). La suscripción hereda los reintentos del plan, así que omite `retries` para estos planes. Un plan sin configuración de reintentos sigue aceptando `retries` en la suscripción.
+- `frequency` enviado junto con `plan_id` **no** se rechaza: se ignora en silencio y la frecuencia propia del plan lo sobrescribe. Si lo envías esperando que se aplique, no se aplicará, y nada te lo indicará.
+
+Regla más simple: al suscribir con `plan_id`, omite por completo `amount`, `frequency`, `trial_period` y `billing_date`, además de `retries` cuando el plan define los suyos: el plan proporciona todos ellos. (Las suscripciones sin plan siguen funcionando exactamente igual que antes: los planes son un complemento, no un reemplazo.)
+</Warning>
+
+## Los planes son inmutables: por qué es importante {#plans-are-immutable--heres-why-that-matters}
+
+No puedes editar el precio de un plan después de crearlo: no existe un endpoint de actualización. Esto es deliberado: significa que cada suscriptor conserva para siempre el precio exacto con el que se suscribió, incluso si más adelante cambias tus precios. Nadie recibe un aumento de precio inesperado porque modificaste el plan.
+
+En la práctica, esto significa que un "cambio de precio" es en realidad "crear un nuevo plan": si Streaming Pro pasa de \$20 a \$25/mes, creas un nuevo plan por \$25 y diriges a él las nuevas altas; tus suscriptores actuales de \$20 siguen pagando \$20 hasta que los migres o cancelen. Para migrar a los suscriptores existentes al nuevo plan, usa [Change Subscription Plan](/reference/subscriptions/change-subscription-plan) (inmediato, pero reemplaza la suscripción con un nuevo `id`) o el objeto `plan_change` en [Update Subscription](/reference/subscriptions/update-subscription), que conserva el mismo `id`: se programa para la próxima renovación por defecto, o se aplica de inmediato con `"effective": "IMMEDIATE"`, y opcionalmente reinicia el ancla de facturación con `billing_cycle_behavior: RESTART`. Cuando estés listo para dejar de ofrecer el precio anterior por completo, consulta **Cancelar un plan** más abajo.
+
+## Fases de prueba: ofrece un período inicial con descuento o gratuito {#trial-phases--offering-a-discounted-or-free-intro-period}
+
+Si quieres que los nuevos suscriptores paguen menos (o nada) durante un tiempo antes de que entre en vigor el precio regular, como una prueba gratuita de 14 días o \$9.99/mes durante los primeros 3 meses antes de pasar a \$20/mes, para eso sirven las `phases` del plan.
+
+Piénsalo como una escalera corta que recorre el suscriptor: uno o más pasos `TRIAL` (con el precio que quieras, incluido \$0), seguidos de exactamente un paso `REGULAR` al final, que siempre se cobra según el `base_amount`/`country_prices` normales del plan. Por ejemplo, un plan de 3 meses y luego regular tiene dos fases: la fase 1 es `TRIAL`, 3 meses, \$9.99; la fase 2 es `REGULAR` sin duración definida: simplemente se ejecuta al precio normal del plan a partir de ese momento.
+
+Mientras un suscriptor está dentro de una fase `TRIAL`, el `status` de su suscripción es `TRIALING` (en lugar de `ACTIVE`) y `current_phase` es `TRIAL`, así puedes saber de un vistazo que todavía está en el período con descuento. En cuanto llega a la fase `REGULAR`, ambos cambian automáticamente: `status` pasa a `ACTIVE` y `current_phase` pasa a `REGULAR`, sin que tengas que hacer nada.
+
+Si no necesitas una prueba ni un descuento inicial, simplemente omite `phases`: el plan cobra su precio regular desde la primera factura.
+
+Consulta [The Plan Object](/reference/plans/the-plan-object) para ver todos los campos de una fase y [The Subscription Object](/reference/subscriptions/the-subscription-object) para ver cómo una suscripción informa en qué fase está (`plan_id`, `billing_phases`, `current_phase`). Para ver qué se cobró realmente en cada fase (proveedor, montos por cobro, a qué fase pertenecía un pago), usa [List Subscription Payments](/reference/subscriptions/list-subscription-payments).
+
+## Cancelar un plan {#canceling-a-plan}
+
+<Danger>
+**Esto cancela de inmediato a todos los suscriptores del plan: no hay forma de evitarlo.**
+
+Llamar a [Cancel Plan](/reference/plans/cancel-plan) hace dos cosas a la vez, de forma síncrona, en la misma solicitud:
+1. Impide que nuevos clientes se suscriban a este plan.
+2. **Cancela todas las suscripciones que tiene actualmente, ahora mismo.** No "en su próxima renovación", ni "después de un período de gracia": de inmediato, como parte de esta misma llamada a la API.
+
+No hay cancelación suave, ni derechos adquiridos, ni forma de retirar un plan para nuevas altas mientras los suscriptores existentes siguen pagando en él. Si eso es lo que necesitas, no canceles el plan: simplemente deja de dirigir nuevas altas a él (paso 2 anterior) y déjalo activo todo el tiempo que sus suscriptores actuales deban seguir facturándose.
+</Danger>
+
+Antes de llamar a este endpoint, revisa el `subscribers_count` del plan (mediante [List Plans](/reference/plans/list-plans); este campo no está en la respuesta de [Retrieve Plan](/reference/plans/retrieve-plan) de un solo plan) para saber exactamente cuántas suscripciones activas están a punto de cancelarse. La respuesta también devuelve `affected_subscriptions` para que puedas confirmar después que el número coincide con lo que esperabas.
+
+<Note>Si no estás seguro de que una llamada de cancelación anterior haya terminado de cancelar a todos los suscriptores, puedes volver a llamarla sin riesgo: volver a cancelar un plan ya cancelado vuelve a ejecutar la cascada y devuelve `200`, no genera un error.</Note>

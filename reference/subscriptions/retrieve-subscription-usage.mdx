@@ -1,0 +1,88 @@
+---
+title: "Retrieve Subscription Usage"
+openapi: "/openapi/subscriptions/retrieve-subscription-usage.json GET /subscriptions/{subscription_id}/usage"
+description: "Reads the metered usage a subscription has accrued in its current billing period, priced by the meters on its plan."
+hidden: true
+---
+
+Returns the metered usage a subscription has accrued in its **current billing period**, priced by
+the meters attached to its plan — one item per meter, with the aggregated quantity, the quantity
+that is actually billable after any included credits are consumed, the unit price and the
+resulting amount, plus a total for the period. This is a read: it does not itself trigger billing.
+See [Usage-Based Billing](/docs/payment-features/subscriptions/usage-based-billing) for how a
+subscription accrues meters, credits and pricing in the first place.
+
+## Reading the response
+
+| Field | Meaning |
+| --- | --- |
+| `subscription_code` | The subscription the usage belongs to — the `id` you passed in the path. |
+| `currency` | The subscription's currency — what every `unit_price`, `amount` and `total` on this page is denominated in. |
+| `period.start` / `period.end` | The subscription's current billing period — the window `items` is aggregated over. |
+| `items[].meter_code` | The meter this item aggregates. |
+| `items[].event_name` | The meter's `event_name` — what your usage events report against. |
+| `items[].aggregation` | `SUM`, `COUNT` or `LAST` — see [Choosing an aggregation](/docs/payment-features/subscriptions/usage-based-billing#choosing-an-aggregation). |
+| `items[].quantity` | The aggregated quantity reported for this meter in the period. |
+| `items[].credits` | How much of the meter's included credits this item's quantity consumed. |
+| `items[].billable_quantity` | The quantity actually billable after `credits` are consumed. |
+| `items[].remaining_credits` | Included credits left unused for this meter in the period. |
+| `items[].unit_price` | The price of one billable unit. |
+| `items[].amount` | `billable_quantity` priced at `unit_price`. |
+| `items[].events_count` | How many usage events were reported against this meter in the period. |
+| `items[].last_event_at` | When the most recent of those events was reported. |
+| `total` | The sum of every item's `amount` for the period. Zero when `items` is empty. |
+
+Every quantity and amount is a JSON number.
+
+```json A subscription with one metered item
+{
+  "subscription_code": "c2094820-df10-4bd4-b7ef-dbe0d28db857",
+  "period": {
+    "start": "2026-09-15T15:54:32.436443Z",
+    "end": "2026-10-15T15:54:32.272111Z"
+  },
+  "currency": "COP",
+  "items": [
+    {
+      "meter_code": "b7cb6aad-0fcc-4898-ae8b-f500ee6dfbb3",
+      "event_name": "lifecycle_1789487669444",
+      "aggregation": "SUM",
+      "quantity": 20,
+      "credits": 0,
+      "billable_quantity": 20,
+      "remaining_credits": 0,
+      "unit_price": { "currency": "COP", "value": 500 },
+      "amount": { "currency": "COP", "value": 10000 },
+      "events_count": 2,
+      "last_event_at": "2026-09-15T15:54:46.620383Z"
+    }
+  ],
+  "total": { "currency": "COP", "value": 10000 }
+}
+```
+
+## When there is nothing to bill
+
+A subscription whose plan has no meters, or that has no plan at all, returns `items: []` and a
+zero `total` rather than an error.
+
+<Note>
+**Reporting is asynchronous**
+
+`POST /subscriptions/meters/events` answers `202` once the event is validated, before it is
+stored. A usage read that lands moments after reporting an event can still show the total from
+before that event — a subscription's `items` stayed at the same `quantity` and `events_count` on a
+read taken immediately after a further event was reported on stg. Allow a short delay before
+relying on a read to reflect the very latest report.
+</Note>
+
+## Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `401` | `INVALID_CREDENTIALS` | The `public-api-key` / `private-secret-key` pair is missing or invalid. |
+| `404` | `NOT_FOUND` | The subscription does not exist — `"Subscription not found."` |
+
+</div>

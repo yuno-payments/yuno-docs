@@ -4,7 +4,7 @@ sidebarTitle: "Handle app redirects"
 description: "Forward incoming URLs to the SDK so it can resume a transaction after returning from an external app or page."
 ---
 
-When a transaction redirects the user to an external destination. Another app, a wallet, a bank flow, or a hosted page. The user eventually returns to your app or site. The iOS and Android SDKs expose `handleDeeplink` so you can forward that incoming URL and let the SDK resume the transaction.
+When a transaction redirects the user to an external destination. Another app, a wallet, a bank flow, or a hosted page. The user eventually returns to your app or site. The iOS, Android and React Native SDKs expose `handleDeeplink` so you can forward that incoming URL and let the SDK resume the transaction.
 
 The Web SDK has no `handleDeeplink`. When the shopper comes back to your return URL, the page loads fresh and the SDK keeps no state across the redirect. Read the checkout session you stored, or the one in your return URL, and call `sdkPayments.transactionStatus({ checkoutSession, elementSelector })`. The SDK renders the payment outcome for that session into `elementSelector`. Pass `language` and `countryCode` to match the original transaction. The screen is display-only, so confirm the result through webhooks or the payments API.
 
@@ -91,6 +91,26 @@ class MainActivity : ComponentActivity() {
 ```
 
   </Tab>
+  <Tab title="React Native">
+
+Wire your app's URL scheme to React Native's `Linking` (on iOS, forward the URL from your `AppDelegate` as the React Native docs describe), then hand each URL to the transaction you started. On a cold start, pass the URL from `Linking.getInitialURL()` the same way.
+
+```tsx
+useEffect(() => {
+  const subscription = Linking.addEventListener('url', ({ url }) => {
+    transaction.handleDeeplink(url).then((handled) => {
+      if (!handled) {
+        // Handle other URLs here.
+      }
+    });
+  });
+  return () => subscription.remove();
+}, [transaction]);
+```
+
+`SdkPayments.handleDeeplink(url)` does the same without a transaction reference: it uses the last started transaction.
+
+  </Tab>
 </Tabs>
 
 ## Signature
@@ -104,6 +124,12 @@ func handleDeeplink(_ url: URL) -> Bool
 ```kotlin
 // Android: method of Transaction
 fun handleDeeplink(activity: ComponentActivity, uri: Uri): Boolean
+```
+
+```typescript
+// React Native
+transaction.handleDeeplink(url: string): Promise<boolean>
+SdkPayments.handleDeeplink(url: string): Promise<boolean>
 ```
 
 ## Related

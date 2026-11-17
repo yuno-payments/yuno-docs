@@ -31,15 +31,15 @@ sequenceDiagram
     Customer->>MerchantApp: Selects "Tap to Add"
     MerchantApp->>MerchantServer: Request customer session
     MerchantServer->>Yuno: Create Customer Session (POST /v1/customers/sessions)
-    Yuno-->>MerchantServer: customer_session + session_token
-    MerchantServer-->>MerchantApp: customer_session + session_token
+    Yuno-->>MerchantServer: customer_session
+    MerchantServer-->>MerchantApp: customer_session
     MerchantApp->>TapSDK: Start Tap Session (YunoTapTransaction.start)
     TapSDK->>Customer: Display animated tap UI & prompt NFC tap
     Customer->>TapSDK: Taps contactless card on NFC antenna
     TapSDK->>TapSDK: Encrypt card payload on device
     TapSDK->>Yuno: Submit encrypted card payload
     Yuno-->>TapSDK: Enrollment response
-    TapSDK-->>MerchantApp: TapOutcome.Added(paymentMethodCode, paymentAccountReference)
+    TapSDK-->>MerchantApp: TapOutcome.Added(paymentMethodCode, paymentAccountReference, merchantCardAlias)
     MerchantApp->>Customer: Display enrollment success
 ```
 
@@ -72,7 +72,7 @@ Your Android project must meet the following hardware, system, and toolchain req
 You can integrate Tap to Add in one of two ways:
 
 1. **Path A: Automatic Enrollment via Yuno Android SDK 3.x (Recommended)**: If you already use Yuno's Full Checkout SDK for Android, adding the `yuno-tap` dependency automatically enables the Tap to Add entrypoint on the enrollment form with zero UI code.
-2. **Path B: Standalone Yuno Tap SDK**: If you build custom enrollment screens or headless UI, integrate `com.yuno.payments:yuno-tap` directly with either the pre-built `YunoTapToAddButton` or the headless `YunoTapController`.
+2. **Path B: Standalone Yuno Tap SDK**: If you build custom enrollment screens or headless UI, integrate `com.yuno.payments:yuno-tap` directly with either the pre-built `YunoTapToAddButton` or your own button calling `YunoTapTransaction.start`.
 
 ---
 
@@ -94,7 +94,7 @@ dependencies {
     implementation("com.yuno.payments:android-sdk:3.0.0")
 
     // Yuno Tap SDK for Tap to Add
-    implementation("com.yuno.payments:yuno-tap:0.3.0")
+    implementation("com.yuno.payments:yuno-tap:0.4.0")
 }
 ```
 
@@ -157,7 +157,7 @@ Add `yuno-tap` to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.yuno.payments:yuno-tap:0.3.0")
+    implementation("com.yuno.payments:yuno-tap:0.4.0")
 }
 ```
 
@@ -176,186 +176,160 @@ curl -X POST https://api-sandbox.y.uno/v1/customers/sessions \
   }'
 ```
 
-The response returns a `customer_session` ID and a `session_token`. Pass both values to your Android application.
+The response returns a `customer_session` ID. Pass it to your Android application. The SDK does not create customer sessions; it only consumes one.
 
-### 3. Initialize YunoTapConfig
+### 3. Implement a YunoTapController and build a YunoTapConfig
 
-Initialize the SDK in your `Application` class or main activity:
+`YunoTapController` is the interface the SDK uses to report back to your app. `onStatus` receives the single final `TapStatus` of each transaction. `showLoading` is optional and reflects the one-time SDK warm-up:
 
 ```kotlin
-import android.app.Application
 import com.yuno.payments.tap.YunoTapConfig
-import com.yuno.payments.tap.model.YunoEnvironment
+import com.yuno.payments.tap.YunoTapController
+import com.yuno.payments.tap.YunoTapTransaction
+import com.yuno.payments.tap.model.TapStatus
 
-class MainApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
+val controller =
+    object : YunoTapController {
+        override fun onStatus(status: TapStatus) {
+            handleTapStatus(status)
+        }
 
-        YunoTapConfig.init(
-            context = this,
-            apiKey = "YOUR_PUBLIC_API_KEY",
-            environment = YunoEnvironment.SANDBOX // Use YunoEnvironment.PRODUCTION in release builds
-        )
+        override fun showLoading(loading: Boolean) {
+            addCardButton.isEnabled = !loading
+        }
     }
-}
+
+val transaction =
+    YunoTapTransaction(
+        YunoTapConfig(
+            customerSession = customerSession,
+            controller = controller,
+            publicApiKey = "SANDBOX_us_your_public_api_key",
+        ),
+    )
 ```
+
+The SDK picks the environment and region from the public API key prefix, so there is no environment parameter: `PROD_…` is production and `SANDBOX_…` is sandbox, and the segment after the prefix is the region (for example `PROD_us_…`).
+
+`publicApiKey` is optional if your app already called `YunoTap.initialize(context, publicApiKey)` earlier in the process. If it is missing and the SDK was never initialized, the transaction reports `ERROR` with `NOT_INITIALIZED`.
 
 ### 4. Option 1: Drop-in YunoTapToAddButton
 
-The simplest standalone UI integration uses `YunoTapToAddButton`. Place it directly in your layout or Composable tree:
-
-```xml
-<com.yuno.payments.tap.ui.YunoTapToAddButton
-    android:id="@+id/btnTapToAdd"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="16dp" />
-```
-
-Attach your transaction parameters and completion callback in your Activity or Fragment:
+The simplest standalone UI integration uses `YunoTapToAddButton`, a Jetpack Compose composable that renders the Visa Tap to Add entry and starts the flow when pressed:
 
 ```kotlin
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.widget.Toast
 import com.yuno.payments.tap.ui.YunoTapToAddButton
-import com.yuno.payments.tap.model.TapTransactionData
-import com.yuno.payments.tap.model.TapFlow
-import com.yuno.payments.tap.model.TapOutcome
 
-class EnrollmentActivity : AppCompatActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_enrollment)
-
-        val btnTapToAdd = findViewById<YunoTapToAddButton>(R.id.btnTapToAdd)
-
-        btnTapToAdd.setup(
-            activity = this,
-            data = TapTransactionData(
-                customerSession = "YOUR_CUSTOMER_SESSION",
-                sessionToken = "YOUR_SESSION_TOKEN",
-                flow = TapFlow.Add
-            )
-        ) { outcome ->
-            handleTapOutcome(outcome)
-        }
-    }
-
-    private fun handleTapOutcome(outcome: TapOutcome) {
-        when (outcome) {
-            is TapOutcome.Added -> {
-                // Card successfully enrolled
-                val paymentMethodCode = outcome.paymentMethodCode
-                val par = outcome.paymentAccountReference // Note: PAR may be null depending on issuer support
-                Toast.makeText(this, "Card enrolled: $paymentMethodCode", Toast.LENGTH_SHORT).show()
-            }
-            is TapOutcome.Canceled -> {
-                // User dismissed or canceled the tap sheet
-            }
-            is TapOutcome.Error -> {
-                // Tap error occurred
-                val errorCode = outcome.code
-                val message = outcome.message
-                Toast.makeText(this, "Error: $message ($errorCode)", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-}
+YunoTapToAddButton(
+    transaction = transaction,
+    activity = this,
+    requestCvv = false, // true only if Yuno enabled CVV2 capture for your account
+    modifier = Modifier.padding(horizontal = 16.dp),
+)
 ```
 
-### 4. Option 2: Programmatic YunoTapController
+The result arrives on the same `YunoTapController`. By default the button renders nothing on devices that cannot tap (`hideWhenNotEligible = true`). It is Compose-only: on a View-based screen, host it in a `ComposeView`, or use Option 2.
 
-For custom UI or button designs, trigger the tap flow programmatically using `YunoTapController`:
+### 4. Option 2: Start the flow from your own button
+
+For a custom trigger, call `start` on the transaction. `activity` must be a `ComponentActivity`:
 
 ```kotlin
-import com.yuno.payments.tap.YunoTapController
-import com.yuno.payments.tap.model.TapTransactionData
 import com.yuno.payments.tap.model.TapFlow
-import com.yuno.payments.tap.model.TapOutcome
 
-class CustomEnrollmentActivity : AppCompatActivity() {
-
-    private lateinit var tapController: YunoTapController
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_custom_enrollment)
-
-        tapController = YunoTapController(this)
-
-        findViewById<Button>(R.id.btnCustomTap).setOnClickListener {
-            startTapEnrollment()
-        }
-    }
-
-    private fun startTapEnrollment() {
-        tapController.start(
-            data = TapTransactionData(
-                customerSession = "YOUR_CUSTOMER_SESSION",
-                sessionToken = "YOUR_SESSION_TOKEN",
-                flow = TapFlow.Add
-            )
-        ) { outcome ->
-            when (outcome) {
-                is TapOutcome.Added -> {
-                    // Card successfully enrolled
-                }
-                is TapOutcome.Canceled -> {
-                    // Dismissed by user
-                }
-                is TapOutcome.Error -> {
-                    // Tap error occurred
-                }
-            }
-        }
-    }
+findViewById<Button>(R.id.btnCustomTap).setOnClickListener {
+    transaction.start(activity = this, flow = TapFlow.Add())
 }
 ```
+
+`start` checks device eligibility, initializes the Visa SDK on first use, shows its own secure UI, reads the card over NFC and reports the result through `onStatus`. Only one transaction can run at a time. To dismiss an in-progress transaction, call `transaction.cancel()`; `onStatus` then receives `CANCELED`.
 
 ---
 
 ## Result Handling & Outcomes
 
-The callback returns a sealed `TapOutcome` object:
+`onStatus` is called exactly once per `start()`, on the main thread, with a `TapStatus`. Its `status` is a `TapStatusCode`, and depending on the code it carries an `outcome` (`TapOutcome`) and/or an `error` (`YunoTapError`):
 
-| Outcome | Properties | Description |
-| :--- | :--- | :--- |
-| `TapOutcome.Added` | `paymentMethodCode: String`<br />`paymentAccountReference: String?` | Contactless card successfully enrolled. `paymentAccountReference` (PAR) uniquely identifies the underlying account across tokens, but can be `null` depending on the issuing bank. |
-| `TapOutcome.Canceled` | None | The user dismissed the tap prompt or closed the NFC sheet before completing the read. |
-| `TapOutcome.Error` | `code: String`<br />`message: String`<br />`cause: Throwable?` | The tap operation failed (e.g., NFC timeout, unsupported scheme, or network error). |
+```kotlin
+import com.yuno.payments.tap.model.TapOutcome
+import com.yuno.payments.tap.model.TapStatus
+import com.yuno.payments.tap.model.TapStatusCode
+
+fun handleTapStatus(status: TapStatus) {
+    when (status.status) {
+        TapStatusCode.SUCCEEDED -> {
+            val added = status.outcome as TapOutcome.Added
+            val paymentMethodCode = added.paymentMethodCode
+            val par = added.paymentAccountReference // May be null depending on issuer support
+            val alias = added.merchantCardAlias // From yuno-tap 0.4.0; pass it to your fraud engine with paymentMethodCode
+        }
+        TapStatusCode.CANCELED -> {
+            if (status.outcome is TapOutcome.ManualEntryRequested) openManualCardForm()
+        }
+        TapStatusCode.NOT_ELIGIBLE -> showManualCardEntryOnly()
+        TapStatusCode.FAILED -> showMessage(status.error?.message)
+        TapStatusCode.ERROR -> logTapError(status.error?.code)
+    }
+}
+```
+
+| `TapStatusCode` | `outcome` / `error` | Meaning | What to do |
+| :--- | :--- | :--- | :--- |
+| `SUCCEEDED` | `outcome` is `TapOutcome.Added` | The card was added. | Store `paymentMethodCode` and refresh the customer's saved cards. |
+| `FAILED` | `error` with a Visa or backend code | A card, Visa or backend business failure, for example a declined card. | Show `error.message` and let the customer retry with the same or another card. |
+| `CANCELED` | `outcome` is `null`, or `TapOutcome.ManualEntryRequested` | The customer closed the flow, your app called `cancel()`, or the customer chose **Enter card manually**. | Return to your previous screen; on `ManualEntryRequested`, open your manual card form. Not an error. |
+| `NOT_ELIGIBLE` | `outcome` is `TapOutcome.NotEligible(reasons)` | The device or app cannot tap. No UI was shown. | Hide the Tap to Add option and use manual card entry. |
+| `ERROR` | `error.code` from `YunoTapErrorCodes` | An SDK or integration error, not a card failure. | Log `error.code`; see [Error Codes](#error-codes). |
+
+`TapOutcome.Added` carries these properties:
+
+| Property | Description |
+| :--- | :--- |
+| `paymentMethodCode: String` | The enrolled payment method. |
+| `paymentAccountReference: String?` | The Visa Payment Account Reference (PAR). It identifies the underlying account across tokens and can be `null` depending on the issuing bank. |
+| `last4: String?` | Last four digits of the tapped card, as reported by Yuno. `null` when unknown. |
+| `issuerName: String?` | Issuing bank of the tapped card, as reported by Yuno. `null` when unknown. |
+| `merchantCardAlias: String?` | The alias your own endpoint returned for this card when Yuno called it during the enrollment. This outcome is the only place where it arrives together with `paymentMethodCode`, because the code does not exist yet when your endpoint is called, so hand both to your fraud engine here. `null` when Yuno could not obtain an alias, which is still a successful enrollment. |
+
+`last4`, `issuerName` and `merchantCardAlias` are available from yuno-tap 0.4.0. `TapOutcome.Confirmed` is reserved for Tap to Confirm and is never produced by `TapFlow.Add`.
 
 ---
 
 ## Error Codes
 
-When `TapOutcome.Error` is returned, examine `outcome.code` to handle specific failure scenarios:
+With `ERROR`, `error.code` is one of `YunoTapErrorCodes`:
 
-| Error Code | Meaning | Recommended Action |
+| Error Code | Meaning |
+| :--- | :--- |
+| `NOT_INITIALIZED` | No `publicApiKey` on the `YunoTapConfig` and `YunoTap.initialize` was never called. |
+| `TAP_IN_PROGRESS` | Another transaction is already running. Wait for it to finish or call `cancel()` on it. |
+| `INIT_TIMEOUT` | The Visa SDK did not finish initializing within 30 seconds. |
+| `SDK_ERROR` | The Visa SDK raised an exception. |
+| `NETWORK_ERROR` | A call to the Yuno backend failed. |
+| `TRANSACTION_INTERRUPTED` | The tap was interrupted, for example the app went to the background or NFC was lost mid-read. |
+| `UNEXPECTED_RESULT` | The Visa SDK returned an unexpected result. |
+| `NOT_AVAILABLE` | The requested flow is not available yet. |
+
+A reasonable default: let the customer retry for `NETWORK_ERROR`, `INIT_TIMEOUT` and `TRANSACTION_INTERRUPTED`, and fall back to manual card entry for the others.
+
+With `FAILED`, `error.code` carries the backend or Visa code as is:
+
+| Error Code | Raised when | What to do |
 | :--- | :--- | :--- |
-| `TAP_NFC_NOT_SUPPORTED` | Device hardware does not support NFC or Host Card Emulation (HCE). | Hide Tap to Add UI and fallback to manual card input. |
-| `TAP_NFC_DISABLED` | NFC is turned off in Android system settings. | Prompt user to enable NFC in system settings (`Settings.ACTION_NFC_SETTINGS`). |
-| `TAP_CARD_NOT_SUPPORTED` | Scanned card is not supported (e.g., non-Visa card or unsupported card profile). | Prompt the customer to use another contactless Visa card or enter details manually. |
-| `TAP_COMMUNICATION_ERROR` | NFC connection lost or interrupted before the cryptographic handshake finished. | Prompt the customer to tap and hold the card firmly against the back of the device. |
-| `TAP_SESSION_EXPIRED` | The customer session token is invalid or expired. | Refresh the customer session token from your backend and restart the transaction. |
-| `TAP_INTERNAL_ERROR` | An unexpected error occurred inside the Visa Thin Client SDK. | Log the error and offer standard manual card entry. |
+| `TAP_TO_ADD_CARD_VERIFICATION_FAILED` | Visa could not verify the chip data read from the card. | Ask the customer to tap the card again. |
+| `TAP_TO_ADD_CARD_DECLINED` | The issuer or Visa declined provisioning the card. | Ask for another card or use manual entry. |
+| `TAP_TO_ADD_CARD_NOT_SUPPORTED` | The card is not eligible for network-token provisioning. | Ask for another card or use manual entry. |
+| `TAP_TO_ADD_SESSION_EXPIRED` | The tap session expired before provisioning completed. | Start a new tap. |
+| `TAP_TO_ADD_PROVISIONING_FAILED` | Any other provider failure, such as a provider error or timeout. | Retry once, then ask for another card. |
+| `TAP_TO_ADD_CONFIGURATION_INCOMPLETE` | Tap to Add is not enabled for this account or country. | Contact Yuno support; retrying fails the same way. |
+| `3009` | NFC is turned off in Android settings. | Ask the customer to turn on NFC. |
+| `3010` | The card is not supported, for example a non-Visa card. | Ask for a Visa contactless card or use manual entry. |
 
 ---
 
 ## ProGuard & R8 Configuration
 
-If your build has code shrinking enabled (`minifyEnabled = true`), include the following ProGuard rules in your `proguard-rules.pro` file:
-
-```proguard
-# Yuno Tap SDK
--keep class com.yuno.payments.tap.** { *; }
--dontwarn com.yuno.payments.tap.**
-
-# Visa Thin Client SDK
--keep class com.visa.mpos.** { *; }
--dontwarn com.visa.mpos.**
-```
+The ProGuard and R8 keep rules ship inside the `yuno-tap` artifact and apply to your release build automatically, so you don't need to add any. The Visa Tap SDK is embedded in `yuno-tap`: don't add Visa's AAR separately.
 
 ---
 

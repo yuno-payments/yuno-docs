@@ -1,7 +1,73 @@
 ---
 title: "Resume Subscription"
 openapi: "/openapi/subscriptions/resume-subscription.json POST /subscriptions/{subscription_id}/resume"
-description: "Reactivates a paused subscription, changing its status back to ACTIVE."
+description: "Reactivates a paused subscription, returning it to the status it was billing under."
 ---
 
-Calling this endpoint will reactivate a subscription. It will change a subscription with PAUSED `status` to ACTIVE once again.
+Calling this endpoint will reactivate a subscription. It will change a subscription with PAUSED `status` back to the status it was billing under — `ACTIVE`, or `TRIALING` if it is still inside a trial phase.
+
+You can also send `reason`, an optional free-form string of at most 255 characters, stored on the subscription's `reason` field. It overwrites whatever `reason` a preceding pause recorded.
+
+<Note>
+**Choosing what happens to the billing date**
+
+`billing_cycle_behavior` is an optional field on this call. It decides what happens to the billing anchor — the date in `billing_cycles.next_at` — when the subscription resumes:
+
+- `KEEP` — the original billing date is preserved. If it fell due while the subscription was paused, it advances by whole billing periods until it is in the future.
+- `RESTART` — the cycle re-anchors to the moment of the resume, plus the subscription's frequency.
+
+Omitting the field applies whatever `billing_cycle_behavior` was stored on the pause — set explicitly there, or recorded as `KEEP` by default. An explicit value on this call always wins over what the pause stored. A subscription paused before this feature was enabled for your organization has nothing stored, and a bodyless resume on one of those keeps the pre-existing default instead: a billing date still in the future is left untouched, and one that already passed moves one billing period from the resume.
+
+No charge is issued during the call under any of these. `billing_cycle_behavior` is **write-only** — it is accepted on the request and never echoed in any response.
+</Note>
+
+<Note>
+**Availability**
+
+`billing_cycle_behavior` is available to organizations enabled for it; contact Yuno. For an organization that is not yet enabled, sending the field returns `400` — `"billing_cycle_behavior is not enabled for this organization."`
+</Note>
+
+### KEEP and RESTART compared
+
+A subscription with a future billing anchor is resumed with each value:
+
+<CodeGroup>
+```json KEEP
+{ "billing_cycle_behavior": "KEEP" }
+
+// billing_cycles.next_at -> unchanged (the anchor already in the future is kept)
+```
+
+```json RESTART
+{ "billing_cycle_behavior": "RESTART" }
+
+// billing_cycles.next_at -> the resume instant plus one month
+// frequency.monthly_billing_day -> stamped to the day of the resume
+```
+</CodeGroup>
+
+For example, resuming a monthly subscription on the 15th with `RESTART` moves `billing_cycles.next_at` one month out and stamps `frequency.monthly_billing_day` to `15`, on both the engine-direct and the merchant chain. A subscription that already declares a `monthly_billing_day` keeps it: `RESTART` re-anchors the date but does not move the day it falls on.
+
+<Note>
+**RESTART and the monthly billing day**
+
+On a monthly subscription created without an explicit `frequency.monthly_billing_day`, `RESTART` sets that field to the day of the restart, and every future renewal reads it. A subscription that already declares a billing day keeps it: the date does not move to the restart day, only the time of day is re-anchored. `frequency.monthly_billing_day` is returned on the subscription object, so the value a restart settled on can be read back from any subscription response.
+
+The same rule applies to a `RESTART` on [Update Subscription](/reference/subscriptions/update-subscription) — it is one rule, on both endpoints.
+</Note>
+
+The `subscription.resume` webhook fires once, carrying `resume_reason: MERCHANT` for a resume you call yourself.
+
+### Errors
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `BAD_REQUEST` | `billing_cycle_behavior` is not `KEEP` or `RESTART` — `"billing_cycle_behavior must be one of KEEP, RESTART."` |
+| `400` | `INVALID_PARAMETERS` | `billing_cycle_behavior` is not `KEEP` or `RESTART`, caught at the gateway — `"The field 'billing_cycle_behavior' has an invalid value."` |
+| `400` | `BAD_REQUEST` | The organization is not enabled for `billing_cycle_behavior` and it is sent — `"billing_cycle_behavior is not enabled for this organization."` |
+| `400` | `INVALID_STATE` | The subscription is not `PAUSED`. |
+| `400` | `INVALID_DATE` | `availability.finish_at` has already passed. |
+
+</div>

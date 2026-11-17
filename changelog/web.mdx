@@ -1,41 +1,199 @@
 ---
-title: "Web SDK Changelog"
-description: "Latest updates and version history for the Yuno Web SDK"
+title: "Web SDK (Legacy) Changelog"
+description: "Latest updates and version history for the legacy Yuno Web SDK (v1.x)"
 ---
 
 import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
-## v2.1.0
-*October 17, 2026*
+## v1.11.58
+*November 16, 2026*
 
-**Universal Web SDK**
+**Core SDK**
 
-- <ChangelogBadge type="added" /> **Czech Checkout Language**  
-  Adds Czech (cs, cs-CZ) localization to the Universal Web SDK checkout, with the same copy as the Web SDK 1.11 release.
+- <ChangelogBadge type="fixed" /> **No card form error after the page removes the SDK element**  
+  When the merchant's page removed the element it gave the SDK without calling `unmountSdk()` (for example when the shopper pressed back while the checkout was loading), the SDK reported `Element card-form-<uuid> doesn't exist in the DOM` through the `error` callback. It no longer reports that error in this case. The checkout that was rendering in the removed element is closed, as it was before; only the error is no longer reported.
 
-- <ChangelogBadge type="added" /> **Payment method description from the Checkout Builder**  
-  In the payment method list, the description the merchant sets for a payment method in the Checkout Builder (`custom_description`) shows as a grey second line under its name. The text is shown complete, wraps to as many lines as it needs and keeps its line breaks. Methods without a description, and saved cards or accounts, render as before. Same behavior as the Web SDK 1.11 release.
+**Card**
 
-- <ChangelogBadge type="fixed" /> **Fixed Loader After 3DS Setup**  
-  When a payment ends at the 3DS setup step and the merchant handles the payment status (`showPaymentStatus: false`), the SDK now hides its loader as soon as it delivers the result. Before, the loader stayed on screen for about a minute and then showed a "Transaction failed" error, even though the result had already reached the merchant. This affected 3DS-only authentications and card payments declined during 3DS authentication. Same behavior as the Web SDK 1.11 release.
+- <ChangelogBadge type="fixed" /> **Document types now load in step-by-step card enrollment**  
+  In step-by-step card enrollment (`mountEnrollmentLite` with `card.type` "step"), the Document step could show an empty list of document types, so the shopper could not save the card. The step now also reads the country data stored for the customer session. Payment flows are unchanged because a checkout session still takes precedence.
 
-- <ChangelogBadge type="fixed" /> **EBANX Fingerprint No Longer Throws "invalid country"**  
-  When EBANX device fingerprinting is configured and the `countryCode` passed to the SDK is a country EBANX does not support (for example `US`), the SDK no longer surfaces an uncaught `invalid country` error on every load. The error is now caught and logged, and the EBANX fingerprint is skipped for that load. Payments were not affected before or after this change.
+## v1.11.57
+*November 12, 2026*
 
-## v2.0.0
-*October 16, 2026*
+**Core SDK**
 
-- <ChangelogBadge type="breaking" /> **A new Yuno SDK**  
-  Version 2.0.0 is the new Yuno SDK: one integration for payments and enrollment, with the same API on Web, iOS and Android. Load it from the CDN, create a transaction, and get the result in `onStatus`. It replaces the Full, Lite, Seamless, Render, Headless and Secure Fields integrations and isn't compatible with 1.x.  
-  [Migration guide →](/docs/yuno-sdk/migration/overview)
-  *See also: [Yuno SDK documentation](/docs/yuno-sdk/introduction) · [Get started](/docs/yuno-sdk/get-started)*
+- <ChangelogBadge type="changed" /> **Container Presence Logged On Mount**  
+  When the element passed to the SDK is not in the page at mount time, or left the page and was drawn again, the SDK now records whether the element was there when it started and how many milliseconds later it left. No change for the shopper.
 
-- <ChangelogBadge type="breaking" /> **New global: SdkPayments**  
-  The SDK is exposed as `window.SdkPayments` and initialized with `SdkPayments.initialize` (previously `window.Yuno`).
-  *See also: [Get started](/docs/yuno-sdk/get-started)*
+## v1.11.56
+*November 10, 2026*
 
-- <ChangelogBadge type="deprecated" /> **Previous SDK supported until 2027**  
-  The 1.x SDK (Full, Lite, Seamless, Render, Headless and Secure Fields) stays supported side by side with the new Yuno SDK during the transition. Its deprecation is scheduled for 2027. Contact your Account Manager to plan the migration.
+**Core SDK**
+
+- <ChangelogBadge type="added" /> **onBillingAddressChanged callback for checkouts with taxes**  
+  When the checkout session has `tax_collection`, pass `onBillingAddressChanged` to `startCheckout`. The SDK calls it every time the billing country or postal code of the selected payment method changes, waits for the price with taxes, and keeps the pay button disabled until it answers: the button reads "Adding tax…" meanwhile, and "Try again to continue" with a notice and a retry button above it when the quote fails. A host that draws its own pay button reads `form.taxQuoteStatus` (`pending`, `ready` or `error`) from `onChange`. Without the callback the SDK does not mount and reports `TAX_COLLECTION_CALLBACK_REQUIRED`. With `tax_collection`, Apple Pay is the only express button: Google Pay, PayPal, Revolut Pay and Samsung Pay move into the list as rows with their own billing block, and their button stays disabled until the billing is valid and the price was answered; a new price mounts only that button again.
+
+- <ChangelogBadge type="fixed" /> **Saved-card CVV shows its own label and the merchant font**  
+  In the saved-card form, the security code field showed the card section title (for example "Información de la tarjeta") instead of "CVV" when the form was not in the slim variant. It now uses the same copy as the new-card form. The security code and card PIN fields of the saved-card form also load the fonts passed in `card.fonts`, so they no longer fall back to the browser default font.
+
+## v1.11.54
+*November 10, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Click to Pay enrolment works again when the shopper ticks the consent box**  
+  In the Golden Flow card form, ticking "Save my information with Mastercard Click to Pay" showed a tick but the SDK received it as unticked, so the card was paid as a regular card and never enrolled in Click to Pay. "Remember me in this browser" and the mandate consent checkbox had the same problem. All three now report what the shopper sees.
+
+- <ChangelogBadge type="fixed" /> **Mercado Pago Sandbox Bundle**  
+  Sandbox public API keys now load Mercado Pago's beta bundle on every SDK build. Production keys keep the production bundle.
+
+- <ChangelogBadge type="changed" /> **Apple Pay Merchant Session And PayPal Enrollment On Demand**  
+  When the configuration marks the Apple Pay merchant session or the PayPal enrollment as on demand, the SDK requests it from the sdk-provider endpoint when the shopper taps the button instead of reading it from the configuration, so no PayPal setup token is created for shoppers who never click PayPal. The PayPal button stays visible without a setup token in the configuration. If the request fails, the Apple Pay sheet or the PayPal window closes and the shopper can tap again while the rest of the checkout keeps working.
+
+**Lite Web SDK**
+
+- <ChangelogBadge type="added" /> **Uplift Flex Pay confirms or releases the loan after the payment**  
+  After the Flex Pay one-time token is handed to the merchant, the SDK polls the payment result for about 3 minutes. On SUCCEEDED it confirms the Uplift loan with the id chosen by `CONFIRMATION_ID_SOURCE` and emits the normal Lite payment result. On DECLINED, REJECTED, ERROR or EXPIRED it calls Uplift `error()` and emits `FLEXPAY_FAILED` with reason `PAYMENT_DECLINED`. A missing confirmation id emits `FLEXPAY_FAILED` with reason `CONFIRM_ID_MISSING`, and a timeout emits `FLEXPAY_FAILED` with reason `OBSERVER_TIMEOUT`. Per Uplift order in a tab, confirm is sent at most once and error at most once; nothing is sent after a confirm, and a later successful charge of the same order may still confirm after an error. If Uplift `confirm()` or `error()` throws, the SDK polls once more and retries it once, and each action has its own retry. The merchant receives one result per payment.
+
+- <ChangelogBadge type="changed" /> **Uplift Flex Pay options move to startCheckout and Flex Pay is Lite only**  
+  Pass the Flex Pay options to `startCheckout({..., flexpay: { orderInfo, onAvailabilityChange } })` and mount it with `mountCheckoutLite({ paymentMethodType: 'FLEXPAY' })`; `mountCheckoutLite` does not take `flexpay`. Flex Pay is hidden from the Full and Seamless Full payment list, and `mountSeamlessCheckoutLite({ paymentMethodType: 'FLEXPAY' })` throws a "not compatible" error. The Flex Pay options are never sent to Monitoring. A missing or invalid `orderInfo` and an unsupported currency are logged as errors. When Uplift `confirm()` or `error()` throws, the merchant result is held until the one retry ends, so the retry also runs in a real Lite mount, and the known result is sent if the observer times out first.
+
+- <ChangelogBadge type="added" /> **Mercado Pago Wallet Without Its Own Buttons**  
+  `submitOneTimeTokenForm()` now drives the Mercado Pago wallet form from the merchant's button: it confirms the e-mail, asks the shopper to choose a payment method when none is selected, and starts the payment. With `showPayButton: false`, in a modal or a merchant element, the Pay and Back buttons no longer show once a method is selected; the Continue button of the e-mail step stays, and shoppers can still change the method in the list. A method opened from the payment list keeps its buttons.
+
+- <ChangelogBadge type="added" /> **Uplift Flex Pay in Checkout Lite**  
+  Pass the Flex Pay options to `startCheckout({..., flexpay: { orderInfo, onAvailabilityChange } })` and mount Uplift Flex Pay with `mountCheckoutLite({ paymentMethodType: 'FLEXPAY' })`. The SDK reuses the Uplift runtime already on the page, tokenizes the Uplift virtual card as a one-time token and hands it to `yunoCreatePayment`.
+
+## v1.11.53
+*November 6, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Show Only The Venmo Button**  
+  When a PayPal connection lists paypal under Disable Funding Sources and venmo under Enable Funding Sources, checkout shows the Venmo button and hides the PayPal button. Merchants who do not set that combination keep the buttons they have today.
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Performance logs include time since SDK call**  
+  Performance logs now include the time elapsed since the merchant's SDK call that started the flow, so slow starts can be traced from the merchant's first call.
+
+- <ChangelogBadge type="changed" /> **SDK chunk download timings are reported as network metrics**  
+  The SDK's own lazy JS and CSS chunks now report their download timing as network metrics, with cache hits marked, so slow chunk loads show up in monitoring. Loading behaviour and timing are unchanged.
+
+- <ChangelogBadge type="changed" /> **Unfinished chunk and wallet loads are logged when the page is hidden**  
+  When the page is hidden while a chunk download or a wallet button is still loading, the SDK logs which loads were still open and for how long.
+
+## v1.11.52
+*November 6, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Every Express Wallet You Switch On Now Renders As A Button**  
+  With Horizontal express button stacking, every wallet whose Render as express button switch is on now renders as an express button, in your list order. Two rules used to pull wallets out of the row: Google Pay moved into the payment method list as soon as a second express wallet was on (a rule inherited from a merchant-specific workaround), and the row stopped at three buttons. Both are gone, the way Stripe's Express Checkout shows every available wallet. Instead of dropping a wallet to make the rest fit, the row wraps: buttons keep an equal width, a row holds two on a phone and three when there is room, and a short last line is centred. The list order, the fallback to the list when a button does not load and Vertical stacking behave as before. Merchants with two or more express wallets on will see Google Pay move from the list into the row, and merchants with more than three will see every wallet as a button over two or more lines.
+
+## v1.11.50
+*November 3, 2026*
+
+**Apple Pay**
+
+- <ChangelogBadge type="fixed" /> **Apple Pay Button Outside Safari**  
+  When Apple answers applePayUnsupported for the merchant identifier on a browser other than Safari, the SDK no longer hides the Apple Pay button on that answer alone: it now shows the button when canMakePayments() is true. Shoppers with no card in Wallet (paymentCredentialsUnavailable) still do not see it.
+
+## v1.11.49
+*October 30, 2026*
+
+**Payment Actions**
+
+- <ChangelogBadge type="fixed" /> **KCP Card Window In Popup**  
+  When a KCP card payment or enrollment opens in a popup, the KCP window no longer fails with a card integration error (신용카드 연동 오류) and now completes in the popup.
+
+## v1.11.48
+*October 29, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **Mount Waits For Late Container**  
+  When the element given in elementSelector is not in the page yet, the SDK now waits up to 3 seconds for it to appear before reporting ELEMENT_NOT_FOUND. Nothing changes when the element is already there.
+
+## v1.11.47
+*October 28, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **PayPal routed to Braintree renders the Braintree button under the unified PAYPAL method**  
+  A `PAYPAL` checkout entry whose connection is Braintree now renders the PayPal Braintree button (same flow as `PAYPAL_BRAINTREE`, including the customer-session vault) instead of rendering nothing. The Braintree client token is read from the `PAYPAL` entry, the button style comes from `externalButtons.paypal` when `externalButtons.paypalBraintree` is not set, and `isPaymentMethodAvailable` no longer reports `PAYPAL` as unavailable for that connection. `PAYPAL_BRAINTREE` keeps its own flow unchanged.
+
+## v1.11.45
+*October 26, 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Fixed Payments With Country Kosovo (XK)**  
+  startCheckout rejected countryCode XK as not valid, so payments created for Kosovo never started 3DS on the redirect page and stayed pending. The SDK now accepts XK.
+
+## v1.11.43
+*October 22, 2026*
+
+**Fraud & Risk**
+
+- <ChangelogBadge type="added" /> **Checkout.com Risk.js Device Session**  
+  When a connection routed to Checkout.com has `RISK_JS_ENABLED` on, a `PUBLIC_KEY` and the merchant-specific sub-domain (`MSSD`), the SDK loads Checkout.com's Risk.js in the background when the payment method mounts, publishes the device data and sends the returned `deviceSessionId` with the token and the payment as the `CHECKOUT` third-party session id, so Checkout.com can forward it as `risk.device_session_id`. It applies to every payment method routed to Checkout.com (cards, wallets and alternative payment methods). A failed script load, initialisation or publish never blocks the checkout: the entry is left empty, the failure is logged and the next request publishes again. Checkout.com keeps the device session for 20 minutes after it is issued, so a checkout that stays open longer than that pays without it.
+
+**Headless**
+
+- <ChangelogBadge type="added" /> **apiClientPayment.generateToken accepts several payment methods for one payment**  
+  Yuno.apiClientPayment().generateToken({ payment_method }) now also accepts an array of exactly two items, one per card that funds the same payment. Each item takes the fields a single payment method already takes (type, card, vaulted_token, customer, device_fingerprints, third_party_data) plus amount: { currency, value }. A total: { currency, value } next to payment_method is required to create the payment: it is sent to the service, which also checks it against the checkout session amount. An array creates one composite one-time token and resolves to { token, checkout_session, expires_at }. An object keeps the current behaviour and response, so existing integrations are not affected. An array with fewer than two items, an amount.value that is missing or not positive, or an empty amount.currency is rejected before any request is sent, and the error message names the item index. The item amounts must add up to total.value and use total.currency, as the service requires. apiClientPayment().getThreeDSecureChallenge() now runs the 3DS of each card of such a payment in turn: call it once per card, in sequence order, and render each URL it returns. One-card payments behave as before. Requires @yuno/sdk-web-core 8.29.0.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Form fields follow the Checkout Builder field colour**  
+  When the Checkout Builder field colour is a colour other than white, the form fields take it: card number, expiration date, CVV and card PIN, the customer fields, the dropdown lists, the address suggestions and the CVV help. Their text uses the Checkout Builder text colours, the borders and the highlighted options are mixed from the text and field colours, and the focused field is outlined in the accent colour, so light text on a dark field stays readable. The minimal card form follows the same colours. Nothing changes when the field colour is white or not set, whatever the background colour, and the styles passed in `card.styles` still apply on top.
+
+**Core SDK**
+
+- <ChangelogBadge type="added" /> **Check whether a payment method will render before listing it**  
+  New `yuno.isPaymentMethodAvailable({ paymentMethodType, checkoutSession? })` resolves to `true` or `false` for any payment method type, with the same decision the SDK takes before it shows that method for the checkout session: the method has to be enabled for the session, and for methods that the SDK checks against the device or browser first it runs that same check (for example Apple Pay in the browser and on the device, Google Pay's `isReadyToPay`, or a supported PayPal provider). Merchants that draw their own payment-method list (Lite, Seamless Lite, express buttons inside their own list) can call it after `startCheckout`, or pass `checkoutSession`, and hide the methods that would not render. It never rejects: when the session has no payment methods, the request fails or a device check fails it resolves to `false`.
+
+**PayPal**
+
+- <ChangelogBadge type="fixed" /> **PayPal window closes when the merchant reports a payment creation error**  
+  In the Full workflow, when creating the payment failed and the merchant called `yuno.notifyError()`, the PayPal window stayed on its loading screen and never closed, both when paying with PayPal and when saving a PayPal account (PayPal enrollment). It now closes and the checkout stays mounted so the merchant can retry; no error status is shown.
+
+**Lite Web SDK**
+
+- <ChangelogBadge type="added" /> **KCP PAYCO Enrollment Support**  
+  PAYCO enrollment through KCP (`KCP_PAYCO`) on desktop browsers now shows the same KCP button as KakaoPay: it opens KCP's PAYCO window on click and forwards KCP's result to the enrollment result URL, so the shopper lands on the merchant's success or error page.
+
+## v1.11.42
+*October 20, 2026*
+
+- <ChangelogBadge type="fixed" /> **More Options Spacing and Divider**  
+  In the Moon Active layout, the "More options" section no longer covers the border of the saved payment method, and it shows the "Or pay with" divider between the express buttons and the other payment methods. The folded layout also gets the spacing above "More options".
+
+## v1.11.41
+*October 20, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Checkbox texts keep the checkout font**  
+  On host pages that set fonts on every element with a `*` rule, the text of every checkbox (save card, save on success, billing same as shipping, mandate consent, Click to Pay sign-up and remember me) and of the Click to Pay radio options uses the checkout font, weight and spacing, like the payment method names.
+
+## v1.11.40
+*October 20, 2026*
+
+**PayPal**
+
+- <ChangelogBadge type="fixed" /> **Fixed PayPal Loading Screen On iPhone And iPad**  
+  On iPhone and iPad (Safari and every other browser there), the PayPal and Venmo windows, including saving a PayPal account from the checkout, can now open as an overlay inside the checkout page instead of a new tab, so they no longer stay on their loading screen. Yuno turns this on per merchant; other devices and merchants keep the current behaviour.
+
+## v1.11.39
+*October 19, 2026*
+
+**Card Payments**
+
+- <ChangelogBadge type="fixed" /> **Card CVC Length Follows The Card Service**  
+  The CVC field now enforces the `security_code_length` the card service returns for the card's brand, for a new card and for a saved card. A 4-digit CVC typed on a 3-digit brand (Elo, Alelo, Edenred, Sodexo, VR) shows "Invalid security code" instead of being sent, which Adyen refused with code 103 "CVC is not the right length". Amex keeps 4 digits, and brands with no length from the card service keep the previous 3-or-4 rule (sdk-web-card 1.92.0).
 
 ## v1.11.38
 *October 19, 2026*
@@ -489,6 +647,35 @@ import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 - <ChangelogBadge type="fixed" /> **Regional static hosts: chunks and card iframes follow the host the SDK was loaded from**  
   Until now the bundle served from `sdk-web.<region>.y.uno` (EU: `sdk-web.prod.eu.y.uno`, MENA: `sdk-web.mena.staging.y.uno`) still fetched every lazy chunk from the US host it was built for and both card iframes from `sdk-web-card.prod.y.uno`. The SDK now records the host `main.js` was actually loaded from and, when it is a Yuno static host other than the built one, serves lazy chunks from that same directory and loads the card form and secure-field iframes from the matching `sdk-web-card.<region>` host. The same build works on every regional bucket, so no build variants or infra changes are needed. Merchant `apiUrl` / `assetUrl` overrides keep precedence, and a bundle self-hosted on a non-Yuno domain behaves as before. No merchant integration changes are required.
 
+## v1.10.37
+*November 10, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **Saved-card CVV shows its own label and the merchant font**  
+  In the saved-card form, the security code field showed the card section title (for example "Información de la tarjeta") instead of "CVV" when the form was not in the slim variant. It now uses the same copy as the new-card form. The security code and card PIN fields of the saved-card form also load the fonts passed in `card.fonts`, so they no longer fall back to the browser default font.
+
+## v1.10.36
+*October 21, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Apple Pay availability always uses the capabilities check**  
+  The Apple Pay button and `isPaymentMethodAvailable` no longer read the `apple_pay_capabilities_enabled` setting: when Apple's `applePayCapabilities` API is available and the merchant identifier is known, it decides whether the button is shown, as it already did with the setting on for every merchant. Without the API, or when the call fails, the SDK still falls back to `canMakePayments()`. No visible change.
+
+## v1.10.35
+*October 19, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="added" /> **Check whether a payment method will render before listing it**  
+  New `yuno.isPaymentMethodAvailable({ paymentMethodType, checkoutSession? })` resolves to `true` or `false` for any payment method type, with the same decision the SDK takes before it shows that method for the checkout session: the method has to be enabled for the session, and for methods that the SDK checks against the device or browser first it runs that same check (for example Apple Pay in the browser and on the device, or Google Pay's `isReadyToPay`). Merchants that draw their own payment-method list (Lite, Seamless Lite, express buttons inside their own list) can call it after `startCheckout`, or pass `checkoutSession`, and hide the methods that would not render. It never rejects: when the session has no payment methods, the request fails or a device check fails it resolves to `false`.
+
+**Apple Pay**
+
+- <ChangelogBadge type="fixed" /> **Apple Pay waits for Apple's script when it is still loading**  
+  When Apple's Apple Pay script was already on the page but still downloading (a second Apple Pay button, or `isPaymentMethodAvailable` called right before mounting), the SDK did not wait for it and the button could fail to render. It now waits for the download in progress, as Web SDK 1.11 does.
+
 ## v1.10.34
 *October 16, 2026*
 
@@ -928,6 +1115,14 @@ import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 - <ChangelogBadge type="breaking" /> **Full-width action button in modal footers**  
   The action button in the shared modal footer now spans the full width on every viewport, with the "Powered by Yuno" privacy tag centered above it. Lite keeps the tag below the button. Embedded forms rendered with `renderMode: element` are unchanged.
 
+## v1.9.53
+*October 21, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Apple Pay availability always uses the capabilities check**  
+  The Apple Pay button no longer reads the `apple_pay_capabilities_enabled` setting: when Apple's `applePayCapabilities` API is available and the merchant identifier is known, it decides whether the button is shown, as it already did with the setting on for every merchant. Without the API, or when the call fails, the SDK still falls back to `canMakePayments()`. No visible change.
+
 ## v1.9.51
 *October 12, 2026*
 
@@ -1318,6 +1513,14 @@ import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
 - <ChangelogBadge type="fixed" /> **More Resilient Asset Resolution**  
   Guard the webpack public path when running under Vite, skip duplicate `/v<x.y>` suffixes when the asset URL already includes one, and use the configured `apiUrl` directly as the API client base URL to avoid region-prefix corruption.
+
+## v1.8.20
+*October 13, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Apple Pay availability always uses the capabilities check**  
+  The Apple Pay button no longer reads the `apple_pay_capabilities_enabled` setting: when Apple's `applePayCapabilities` API is available and the merchant identifier is known, it decides whether the button is shown, as it already did with the setting on for every merchant. Without the API, or when the call fails, the SDK still falls back to `canMakePayments()`. No visible change.
 
 ## v1.8.19
 *October 12, 2026*
@@ -2070,7 +2273,7 @@ yuno.continuePayment({
 <Accordion title="Lite SDK continuePayment with overrides">
 
 ```js
-if (paymentResponse.sdk_action_required) {
+if (paymentResponse.checkout?.sdk_action_required) {
   await yuno.continuePayment({
     countryCode: 'DE',
     language: 'de',
@@ -2107,7 +2310,7 @@ await yuno.startCheckout(config);
 </Accordion>
 
 - <ChangelogBadge type="added" /> **continuePayment Method**  
-  Introduced `continuePayment()` for handling complex payment flows. Call it when the API response includes `sdk_action_required: true` — the SDK then automatically renders 3DS challenges, external wallet steps, or redirects as needed.
+  Introduced `continuePayment()` for handling complex payment flows. Call it when the API response includes `checkout.sdk_action_required: true` — the SDK then automatically renders 3DS challenges, external wallet steps, or redirects as needed.
 
 <Accordion title="Handle sdk_action_required with continuePayment">
 
@@ -2116,7 +2319,7 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 
 await yuno.startCheckout(config);
 
-if (paymentResponse.sdk_action_required) {
+if (paymentResponse.checkout?.sdk_action_required) {
   const result = await yuno.continuePayment();
 }
 ```

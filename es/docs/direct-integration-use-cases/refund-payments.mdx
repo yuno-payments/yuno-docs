@@ -1,0 +1,80 @@
+---
+title: "Reembolsar pagos"
+description: "Muestra cómo reembolsar total o parcialmente un pago capturado, elegir entre los endpoints de reembolso e interpretar el resultado del reembolso."
+---
+
+En esta guía encontrarás instrucciones para reembolsar un pago creado previamente en Yuno.
+
+## Requisitos {#requirements}
+
+Para reembolsar un pago, necesitas:
+
+* Acceder a tus [credenciales de API](/es/docs/using-yuno/settings/developers-credentials) en el Yuno Dashboard, que constan de:
+  * `public-api-key`
+  * `private-secret-key`
+* Tener los datos de identificación del pago recibidos después de crearlo con el endpoint [Create Payment](/es/reference/payments/create-payment) y los datos de captura de la operación de captura ejecutada con el endpoint [Capture Payment](/reference/payments/capture-authorization):
+  * `id`: el identificador único del pago, que se obtiene del parámetro `id` después de crear el pago.
+  * `transaction_id`: el identificador único de la transacción. Obtendrás esta información de una fuente distinta, según cómo hayas capturado el pago.
+    * Si creaste y capturaste el pago con una sola operación, obtienes el `transaction_id` del parámetro `transaction.id` después de crear el pago con el endpoint [Create Payment](/es/reference/payments/create-payment).
+    * Si realizaste la autorización y luego la captura del pago, usarás el `transaction_id` del parámetro `id` que recibes después de capturar el pago con el endpoint [Capture Payment](/reference/payments/capture-authorization).
+    * Si consultas el pago más tarde con el endpoint [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id), toma del arreglo `transactions` el `id` de la transacción cuyo `type` sea `PURCHASE` o `CAPTURE`. El `id` de una transacción `REFUND` no se puede usar para reembolsar.
+
+<Note>
+**Explora las colecciones de Postman de Yuno**
+
+Yuno ofrece [colecciones de Postman](/reference/getting-started/postman-collections) que puedes usar para replicar los casos de uso de forma local.
+</Note>
+
+## Reembolsar un pago {#refund-a-payment}
+
+Si inicias un reembolso, se devolverá el dinero de un cobro creado anteriormente que aún no se haya reembolsado. El monto se acreditará al método de pago original con el que se realizó el cobro.
+
+Yuno ofrece tres endpoints para reembolsar un pago. Comparten el mismo cuerpo de solicitud, y cada llamada requiere un encabezado `X-Idempotency-Key` con un valor nuevo en cada intento:
+
+* [Refund Payment](/reference/payments/refund-payment): reembolsa una transacción específica. Envía el `id` del pago y el `transaction_id`. Úsalo cuando quieras controlar exactamente qué transacción se reembolsa.
+* [Cancel or Refund a Payment](/reference/payments/cancel-or-refund-a-payment): funciona a nivel del pago, por lo que no se necesita `transaction_id`. Yuno cancela el pago si no se ha capturado y lo reembolsa si ya se capturó. El campo `reason` es obligatorio.
+* [Cancel or Refund a Payment with Transaction](/reference/payments/cancel-or-refund-payment-with-transaction): aplica la misma decisión automática a un `transaction_id` específico.
+
+Además, debes indicar el monto que se va a reembolsar con el objeto `amount` en el cuerpo de la solicitud:
+
+* Reembolso total: deja `amount` vacío.
+* Reembolso parcial: envía el valor del reembolso con el parámetro `amount`.
+
+<Note>
+**Pagos con una promoción de Yuno**
+
+Un reembolso se calcula sobre lo que pagó el cliente, es decir, `amount.value` menos `discount_amount`. Un reembolso total devuelve ese monto y pasa el pago a `REFUNDED`, y un `amount` superior al que queda por reembolsar se rechaza con `400 INVALID_PARAMETERS`. Consulta [Promotions](/docs/payment-features/promotions#refunds-captures-and-cancellations).
+</Note>
+
+<Warning>
+**Un reembolso a la vez**
+
+No inicies un nuevo reembolso sobre la misma transacción mientras otro anterior siga en curso. Espera a que el reembolso anterior llegue a un estado final (`SUCCEEDED`, `DECLINED` o `ERROR`) antes de enviar el siguiente.
+</Warning>
+
+## Resultados del reembolso {#refund-results}
+
+La respuesta contiene una nueva transacción con `transaction.type = REFUND`. Usa su `status` para interpretar el resultado del reembolso:
+
+* `SUCCEEDED`: el proveedor aceptó el reembolso. En un reembolso total, el pago pasa a `status = REFUNDED` y `sub_status = REFUNDED`. En un reembolso parcial, el pago mantiene `status = SUCCEEDED` y su `sub_status` cambia a `PARTIALLY_REFUNDED`.
+* `PENDING`: el proveedor confirma el reembolso de forma asíncrona. El pago muestra `status = REFUNDED` y `sub_status = PENDING_PROVIDER_CONFIRMATION` hasta que llegue la confirmación. Usa webhooks o los endpoints de consulta para obtener el estado final, como se describe en [Verificar el estado del pago](#check-the-payment-status).
+* `DECLINED` o `ERROR`: el proveedor, o el emisor del titular de la tarjeta, rechazó el reembolso. No se mueven fondos y el pago mantiene su `status` y `sub_status` anteriores. Revisa el `response_code` y el `response_message` de la transacción para conocer el motivo. Una vez resuelta la causa, vuelve a enviar el reembolso con un nuevo `X-Idempotency-Key`, o establece `simplified_mode` en `true` en la solicitud para que Yuno reintente el reembolso automáticamente, como se describe en [Transaction Retries](/es/docs/payment-features/transaction-retries).
+
+<Note>
+**Comportamiento que depende del proveedor**
+
+Que un reembolso se confirme de forma síncrona o quede en `PENDING`, que se permitan reembolsos parciales y varios reembolsos sobre la misma transacción, y durante cuánto tiempo después de la compra se acepta un reembolso, todo depende del proveedor que procesó el pago. Muchos adquirentes de tarjetas procesan un reembolso como una transacción en línea contra la cuenta del titular de la tarjeta y responden de inmediato con un estado final, lo que también significa que el emisor puede rechazarlo. Si tu integración depende de alguno de estos comportamientos, confírmalos con Yuno para los proveedores de tu enrutamiento.
+</Note>
+
+<Note>
+**Tiempo de procesamiento del reembolso**
+
+El tiempo de procesamiento de los reembolsos varía según el tipo de pago. En modo de prueba, los reembolsos se procesan al instante en el entorno de Sandbox. Si tu conexión de sandbox apunta al entorno de pruebas del propio proveedor, el reembolso se envía a ese entorno y requiere antes una compra de prueba exitosa.
+</Note>
+
+### Verificar el estado del pago {#check-the-payment-status}
+
+Si, por algún motivo, necesitas confirmar el reembolso del pago:
+
+* Usa [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) o [Retrieve Payment by merchant_order_id](/reference/payments/retrieve-payment-by-merchant-order-id) para obtener información detallada sobre el pago.
+* También puedes configurar webhooks para recibir notificaciones de cada evento. Consulta la guía de [Webhooks](/es/docs/webhooks/configure-webhooks) para aprender a configurar webhooks en Yuno.

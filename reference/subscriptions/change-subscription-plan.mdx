@@ -79,14 +79,21 @@ returned as `null`, so test for absence, not for `null`. A default change return
 populated.
 </Note>
 
-## Scheduling the change instead
+## Keeping the same `id` instead
 
-Both mechanisms take billing effect at the next renewal — neither charges now. They differ in
-what happens to the subscription record. This endpoint restructures it immediately: an attach
-mutates the subscription in place, and a plan-to-plan change returns a new `id` with the
-original left `CANCELED`. The `plan_change` object on
-[Update Subscription](/reference/subscriptions/update-subscription) leaves the subscription
-untouched until the renewal and keeps the same `id`.
+The `plan_change` object on [Update Subscription](/reference/subscriptions/update-subscription)
+changes the plan of a subscription **in place**: the `id` never changes, nothing is canceled,
+and no `subscription.cancel` webhook fires. Neither mechanism charges now, and nothing is
+prorated or refunded either way. They differ in what happens to the subscription record:
+
+| | Record | Next charge |
+|---|---|---|
+| This endpoint, plan-to-plan | New `id`; the original is left `CANCELED` | The original's next renewal, at the new plan's price |
+| `plan_change` with `effective: NEXT_BILLING_CYCLE` | Untouched until the renewal, same `id` | The next renewal, at the new plan's price |
+| `plan_change` with `effective: IMMEDIATE` | Moved to the new plan in this call, same `id` | `billing_cycle_behavior: KEEP` (default) keeps the next charge date; `RESTART` re-anchors it to now plus the new plan's frequency |
+
+If you change plans on subscriptions that are already on a plan and want to keep their `id`,
+prefer `plan_change` with `effective: IMMEDIATE` over this endpoint.
 
 `plan_change` is not a general substitute: it requires a subscription that is already on a
 plan and is `ACTIVE` or `TRIALING`. Attaching a plan to a subscription that has none, or

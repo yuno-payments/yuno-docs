@@ -12,10 +12,6 @@
     {
       "url": "https://api.y.uno/v1",
       "description": "Production (US)"
-    },
-    {
-      "url": "https://api.eu.y.uno/v1",
-      "description": "Production (EMEA)"
     }
   ],
   "components": {
@@ -51,7 +47,7 @@
     "/checkouts/{checkout_code}": {
       "put": {
         "summary": "Publish Checkout Configuration",
-        "description": "Writes configuration and/or styling for the checkout in a single call. The body may contain a `config` object, a `styling` object, or both; at least one is required. Each part is validated independently before being applied; if any rule fails, the request is rejected with a single aggregated 400 and nothing is applied. Configuration is a sparse upsert (omitted payment methods keep their previous state; new methods cannot be created). Styling is a partial merge (omitted or null fields are preserved).",
+        "description": "Writes configuration and/or styling for the checkout in a single call. The body may contain a `config` object, a `styling` object, or both; at least one is required. When the body includes `config`, `name` is also required. Each part is validated independently before being applied; if any rule fails, the request is rejected with a single aggregated 400 and nothing is applied. Configuration is a sparse upsert (omitted payment methods keep their previous state; new methods cannot be created). Styling is a partial merge (omitted or null fields are preserved).",
         "operationId": "publish-checkout-configuration",
         "parameters": [
           {
@@ -76,10 +72,12 @@
               "examples": {
                 "Configuration and styling": {
                   "value": {
+                    "name": "Main Checkout",
                     "config": {
                       "payment_methods": [
                         {
                           "payment_method_type": "CARD",
+                          "type": "PAYMENT_METHOD",
                           "order_to_show": 0,
                           "is_active": true,
                           "active_enrollment_type": "BOTH",
@@ -123,12 +121,41 @@
                       "flags": { "force_default_styles": false }
                     }
                   }
+                },
+                "Hide a field on the card form": {
+                  "value": {
+                    "name": "My Checkout",
+                    "config": {
+                      "payment_methods": [
+                        {
+                          "payment_method_type": "CARD",
+                          "type": "PAYMENT_METHOD",
+                          "order_to_show": 1,
+                          "is_active": true,
+                          "active_enrollment_type": "BOTH",
+                          "required_fields_to_override": {
+                            "is_active": true,
+                            "fields": [
+                              { "field_name": "phone", "is_active": false }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
                 }
               },
               "schema": {
                 "type": "object",
-                "description": "At least one of `config` or `styling` is required.",
+                "description": "At least one of `config` or `styling` is required. `name` is required when `config` is sent.",
                 "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "description": "Name of the checkout configuration (1 to 50 characters). Required when the body includes `config`; a request with `config` and no `name` returns 400 `name must not be blank`. A styling-only request does not need it. The value replaces the current checkout name, so send the current name to keep it.",
+                    "example": "Main checkout"
+                  },
                   "config": {
                     "type": "object",
                     "description": "Checkout configuration: payment methods and general settings. Sparse upsert; omitted payment methods keep their previous state.",
@@ -140,6 +167,11 @@
                           "type": "object",
                           "properties": {
                             "payment_method_type": { "type": "string", "description": "Payment method type, e.g. CARD, PAYPAL, NU_PAY, GOOGLE_PAY.", "example": "CARD" },
+                            "type": {
+                              "type": "string",
+                              "enum": ["PAYMENT_METHOD", "ENROLLMENT"],
+                              "description": "Which stored row this entry updates for the given `payment_method_type`: the one-time payment flow (`PAYMENT_METHOD`) or the enrollment/saved-card flow (`ENROLLMENT`). The existing row is matched by this field; omitting it means no row matches, so `fields` is silently ignored (the request still returns 200, but the non-enrolled card form doesn't change). `enrollment_fields` still applies when the payment method already has a stored enrollment row."
+                            },
                             "order_to_show": { "type": "integer", "description": "Display order (>= 0). Lower is shown first.", "example": 0 },
                             "is_active": { "type": "boolean", "description": "Whether the method is offered.", "example": true },
                             "active_enrollment_type": { "type": "string", "enum": ["ENROLLMENT", "NO_ENROLLMENT", "BOTH", "NONE"], "description": "Enrollment posture for the method." },
@@ -149,8 +181,34 @@
                               "description": "Per-field configuration. `fields` = non-enrolled flow; `enrollment_fields` = enrolled (saved-card) flow. At most one condition set per field (a second is rejected with 400).",
                               "properties": {
                                 "is_active": { "type": "boolean" },
-                                "fields": { "type": "array", "items": { "type": "object" } },
-                                "enrollment_fields": { "type": "array", "items": { "type": "object" } },
+                                "fields": {
+                                  "type": "array",
+                                  "description": "Per-field overrides for the non-enrolled (one-time payment) flow.",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "field_name": { "type": "string", "description": "The form field to override, e.g. `phone`, `security_code`.", "example": "phone" },
+                                      "is_active": { "type": "boolean", "description": "Whether the field is shown/required on the form. This is the on/off switch for the field — set `false` to hide it.", "example": false },
+                                      "current_value": { "type": "string", "enum": ["ALWAYS", "FIRST_TIME", "NONE"], "description": "A fixed value to apply instead of letting the payer enter one. Only meaningful for `security_code`. `NONE` returns 400 on the non-enrolled CARD flow. Unrelated to `is_active`.", "example": "ALWAYS" },
+                                      "conditions_to_override": { "type": "array", "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.", "items": { "type": "object" } }
+                                    },
+                                    "required": ["field_name", "is_active"]
+                                  }
+                                },
+                                "enrollment_fields": {
+                                  "type": "array",
+                                  "description": "Per-field overrides for the enrolled (saved-card) flow. Same shape as `fields`.",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "field_name": { "type": "string", "description": "The form field to override, e.g. `phone`, `security_code`.", "example": "phone" },
+                                      "is_active": { "type": "boolean", "description": "Whether the field is shown/required on the form. This is the on/off switch for the field — set `false` to hide it.", "example": false },
+                                      "current_value": { "type": "string", "enum": ["ALWAYS", "FIRST_TIME", "NONE"], "description": "A fixed value to apply instead of letting the payer enter one. Only meaningful for `security_code`. `NONE` returns 400 on the non-enrolled CARD flow. Unrelated to `is_active`.", "example": "ALWAYS" },
+                                      "conditions_to_override": { "type": "array", "description": "Conditions that gate when this field override applies, e.g. by country. At most one condition set per field; a second is rejected with 400.", "items": { "type": "object" } }
+                                    },
+                                    "required": ["field_name", "is_active"]
+                                  }
+                                },
                                 "is_enrollment_active": { "type": "boolean" }
                               }
                             }
@@ -213,7 +271,7 @@
         },
         "responses": {
           "200": {
-            "description": "The updated checkout (configuration + styling composed). Its identifier is exposed as the top-level `id`.",
+            "description": "Summary of the updated checkout. The configuration and styling are not returned in this response; read them with [Fetch checkout configuration](/reference/checkout-builder/fetch-checkout-configuration). Its identifier is exposed as the top-level `id`.",
             "content": {
               "application/json": {
                 "examples": {
@@ -221,14 +279,24 @@
                     "value": {
                       "id": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
                       "name": "Main Checkout",
-                      "status": "PUBLISHED",
+                      "description": "Default checkout",
                       "is_default": true,
-                      "config": { "payment_methods": [], "general_settings": {} },
-                      "styling": { "styles": {}, "settings": {}, "flags": {} }
+                      "is_active": true,
+                      "created_at": "2026-10-22T03:16:36Z"
                     }
                   }
                 },
-                "schema": { "type": "object" }
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "example": "8005ca91-dcfb-4428-b9f6-49c6e3446474" },
+                    "name": { "type": "string", "example": "Main Checkout" },
+                    "description": { "type": "string", "example": "Default checkout" },
+                    "is_default": { "type": "boolean", "example": true },
+                    "is_active": { "type": "boolean", "example": true },
+                    "created_at": { "type": "string", "example": "2026-10-22T03:16:36Z" }
+                  }
+                }
               }
             }
           },

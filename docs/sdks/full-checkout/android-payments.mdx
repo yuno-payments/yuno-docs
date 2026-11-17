@@ -71,7 +71,7 @@ maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 
 ```kotlin
 dependencies {
-    implementation 'com.yuno.payments:android-sdk:2.26.0'
+    implementation 'com.yuno.payments:android-sdk:2.27.0'
 }
 ```
 
@@ -268,14 +268,17 @@ This ensures that the backend payment remains in a pending state and can be prop
 
 ##### Async payment methods (PIX and QR-based methods)
 
-For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
+For asynchronous payment methods, when a user closes the payment window before completing the payment:
 
-* **SDK Status**: Returns `PROCESSING`, optionally with a sub-status such as `CLOSED_BY_USER`
-* **Backend payment status**: Remains `PENDING` and the QR code remains valid until expiry
-* **Checkout session reuse**: Re-opening the same checkout session can display the same valid QR code
-* **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+* **SDK Status**: Returns `CANCELED_BY_USER`\*.
+* **Backend payment status**: Remains `PENDING` and the payment code remains valid until expiry.
+* **Checkout session reuse**: Re-opening the same checkout session can display the same valid payment code.
+* **No automatic cancellation**: The payment is not automatically cancelled on the backend when the user closes the window.
+* **Confirming status**: `CANCELED_BY_USER` means the shopper left the screen, not that the payment failed. Confirm the final state via webhook or `GET /v1/payments/{payment_id}` before you show a cancellation.
 
-This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
+<Note>
+\* Payment methods that show a payment code or voucher (PIX QR code, boleto, OXXO and similar), and Pix Parcelado, return `PROCESSING` with sub-status `CLOSED_BY_USER` instead of `CANCELED_BY_USER` when the user closes the screen. The payment stays `PENDING` on the backend and can still be completed.
+</Note>
 
 ##### Expired async payments
 
@@ -485,7 +488,13 @@ continuePayment(
 
 To show your payment status screens, send `FALSE` in the `showPaymentStatus` parameter. Then, get the payment state by callback.
 
+### Direct debit mandates and authorization
 
+For direct debit payment methods (such as ACH, SEPA Direct Debit, Bacs, and PAD) or stored payment methods, the SDK automatically presents the required authorization and mandate text provided by Yuno below the account input fields.
+
+* **Mandate presentation**: Displays the backend-configured debit authorization copy in the customer's language.
+* **Mandatory acceptance checkbox**: For payment schemes requiring explicit customer consent before charging or storing the bank account, the SDK renders a required checkbox. The shopper must accept the mandate before the form can be submitted. Consent is packaged and returned with the one-time token.
+* **Configuration**: Managed directly via the Checkout Builder's [Authorization text](/docs/using-yuno/dashboard-overview/checkout-builder#authorization-text) panel without requiring client-side code changes.
 
 ## Common reference
 
