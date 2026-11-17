@@ -116,7 +116,7 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
   </Step>
 
   <Step title="Read the response">
-    The destination's status code, headers, and body are returned to you unchanged, except that any card number the destination echoes back is redacted first (see [Card data in responses](#card-data-in-responses) below). Redirects are **not** followed: a `3xx` from the destination is returned to you as-is, so you decide whether to follow it. The proxy adds diagnostic headers:
+    The destination's status code and body are returned to you unchanged, except that any card number the destination echoes back is redacted first (see [Card data in responses](#card-data-in-responses) below). Most of the destination's headers are returned too, but cookies and browser-security headers are not (see [Response headers](#response-headers) below). Redirects are **not** followed: a `3xx` from the destination is returned to you as-is, with its `Location` header, so you decide whether to follow it. The proxy adds diagnostic headers:
 
     | Header | Meaning |
     |---|---|
@@ -124,6 +124,16 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
     | `yuno-proxy-destination-status` | The HTTP status returned by the destination. **Present only when the destination was reached** — if it is missing, the failure happened inside Yuno. |
     | `yuno-proxy-replacements` | How many expressions were replaced. `0` on a request you expected to be detokenized means your expressions did not match. |
     | `yuno-proxy-response-redactions` | How many card numbers were redacted from the destination's response. A non-zero value means the destination returned card data. |
+
+    #### Response headers
+
+    | | Headers |
+    |---|---|
+    | **Returned unchanged** | `Content-Type`, `Location`, `Link`, `WWW-Authenticate`, caching headers (such as `Cache-Control`, `ETag`), and the destination's custom headers |
+    | **Not relayed** | `Set-Cookie` / `Set-Cookie2`; browser-security headers: `Content-Security-Policy` (and `-Report-Only`), `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`, `Access-Control-*`, `Cross-Origin-*`, `Permissions-Policy`, `Refresh`, `Clear-Site-Data`; reporting headers such as `Report-To` and `NEL`; `Alt-Svc`; `Server-Timing` |
+    | **Added by Yuno** | `Content-Security-Policy: default-src 'none'; sandbox`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` on every forward response |
+
+    If your integration needs a cookie from the destination (for example, a session cookie), note that it is not returned through the proxy.
   </Step>
 
   <Step title="Handle errors">
