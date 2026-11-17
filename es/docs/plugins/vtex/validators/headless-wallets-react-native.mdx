@@ -1,0 +1,337 @@
+---
+title: "Validador: billeteras headless de VTEX (React Native)"
+sidebarTitle: "Billeteras headless (React Native)"
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Una lista de verificación de solo lectura para agentes de programación con IA que audita Google Pay, Apple Pay y Click to Pay en una app React Native sobre VTEX headless con el flujo de preflight diferido."
+---
+
+Coloca este archivo en la raíz de tu app React Native y pregunta a Claude Code:
+
+> Validate my Yuno VTEX headless wallet integration following CLAUDE.md.
+
+Audita la app contra el contrato de preflight diferido para billeteras en VTEX headless (Google Pay, Apple Pay,
+Click to Pay), descrito en el flujo siguiente, e informa qué está mal, con archivo y línea. Solo lee código;
+no cambia nada a menos que se lo pidas.
+
+SDK: `@yuno-payments/yuno-sdk-react-native` ([docs](https://docs.y.uno/docs/sdks/additional-platforms/react-native/index)).
+La integración que se usa aquí es el **Lite SDK** (`startPaymentLite`), no Full Checkout, Seamless ni Headless.
+
+## El flujo que se valida {#the-flow-being-validated}
+
+```
+VTEX cart (Steps 1–5, total final)
+  → POST /session/preflight                     → { checkoutSession, publicApiKey }
+  → (optional) POST /installments/apm           → plans for the wallet
+  → YunoSdk.initialize({ apiKey: publicApiKey, countryCode })   → the key preflight returned, nothing else
+  → YunoSdk.onOneTimeToken(...) subscribed
+  → YunoSdk.startPaymentLite({ checkoutSession,
+        methodSelected: { paymentMethodType: APPLE_PAY | GOOGLE_PAY | CLICK_TO_PAY, vaultedToken: null },
+        showPaymentStatus: false }, countryCode)
+  → OTT arrives in onOneTimeToken               ← the flow only continues here
+  → POST /session/preflight/payments            → body with the token, createPaymentInAuth: true → { deferred: true }
+  → VTEX Step 6 transaction → Step 7 payments → Step 8 gatewayCallback
+  → the connector creates the payment in Yuno during authorization and answers VTEX
+  → the gatewayCallback response + GET /api/checkout/pub/orders/order-group/{orderGroup} → outcome
+```
+
+El orden importa: la orden de VTEX (pasos 6 a 8) se crea **solo después de que** `/session/preflight/payments` haya
+almacenado el cuerpo con el token. El pago no existe en Yuno hasta el paso 8, por lo que `onPaymentStatus` nunca
+informa un resultado de pago en este flujo. El resultado proviene de VTEX (verificación 17).
+
+Los endpoints están en el host de la tienda VTEX: `https://<store-host>/_v/<connector-app>/v4`.
+
+## Verificaciones {#checks}
+
+Informa cada una como PASS / FAIL / N/A con la evidencia (archivo:línea). No asumas que una verificación pasa porque el
+código "se ve bien": cita la línea que lo demuestra.
+
+### 1. El traspaso ocurre solo después del OTT {#1-the-hand-off-happens-only-after-the-ott}
+
+El defecto más común. `/session/preflight/payments` debe llamarse **desde dentro del callback
+`onOneTimeToken` (o `onOneTimeTokenInfo`)**, con un token no vacío, nunca antes de
+`startPaymentLite` ni con un temporizador.
+
+- Busca la suscripción a `YunoSdk.onOneTimeToken` / `onOneTimeTokenInfo` (o el llamador de `YunoSdk.startPaymentLite`)
+  y sigue hacia dónde va el token.
+- FAIL si la llamada a preflight-payments es alcanzable sin un token, envía `token: ''`/`null`/`undefined`, o
+  se ejecuta justo después de `await YunoSdk.startPaymentLite(...)`. Esa promesa se resuelve cuando la billetera **inicia**,
+  no cuando termina; nunca lleva el token.
+- FAIL si la orden de VTEX (pasos 6 a 8) puede crearse antes de que el traspaso devuelva `{ deferred: true }`, o si el
+  token se envía a `/payments/yuno` (la ruta de la Payment App) en lugar de `/session/preflight/payments`.
+- FAIL si el traspaso puede ejecutarse dos veces para un mismo intento. El SDK conecta dos callbacks nativos al mismo
+  evento `YunoOneTimeToken`, por lo que el evento puede llegar más de una vez con el mismo token, y suscribirse a
+  `onOneTimeToken` y a `onOneTimeTokenInfo` lo duplica de nuevo. Protégelo (una referencia que guarde el token ya
+  traspasado) para que la orden se cree una sola vez.
+- Por qué: el conector acepta un cuerpo sin token y responde `{ deferred: true }`; el fallo solo aparece en la
+  autorización, como una orden denegada con `Deferred preflight payment creation failed`. Una app que crea la
+  orden primero, envía un traspaso sin token y luego publica el token en `/payments/yuno` puede completar un pago,
+  pero solo mientras la autorización llegue antes del traspaso; el día que llegue después, el
+  conector usa el cuerpo sin token y la orden se deniega.
+
+### 2. `createPaymentInAuth: true` {#2-createpaymentinauth-true}
+
+Debe estar en el cuerpo de `/session/preflight/payments`. Sin él, el pago se crea de inmediato, antes de que exista una
+orden de VTEX.
+
+### 3. El SDK se inicializa exactamente con la clave que devolvió preflight {#3-the-sdk-is-initialized-with-exactly-the-key-preflight-returned}
+
+- `YunoSdk.initialize({ apiKey, countryCode })` debe recibir la `publicApiKey` de **esa misma respuesta de
+  preflight**.
+- Busca todos los puntos de inicialización, JavaScript y nativos:
+  `grep -rnE "YunoSdk\.initialize|YunoSdkModule\.initialize|Yuno\.initialize|markAsInitialized" --include='*.ts' --include='*.tsx' --include='*.js' --include='*.kt' --include='*.java' --include='*.swift' --exclude-dir=node_modules --exclude-dir=Pods --exclude-dir=.git --exclude-dir=build .`
+- **La primera inicialización del proceso es la que cuenta.** En Android esto es seguro: una vez inicializado el
+  SDK, `YunoSdk.initialize` desde JavaScript regresa sin tocar el SDK nativo, por lo que una llamada posterior
+  con la clave de preflight no cambia nada. Trata iOS de la misma manera.
+- FAIL si encuentras: una clave codificada en `App.tsx`, una clave de `.env` / configuración remota / build flavor, o
+  `YunoSdkModule.initialize(this, "<key>")` en `MainApplication.onCreate()`, **a menos que** se demuestre que ese valor
+  es la misma clave que preflight devuelve para esta tienda y este entorno. La guía de configuración del SDK pide esa
+  llamada nativa, por lo que la mayoría de las apps Android la tienen: informa el prefijo de entorno de la clave (`sandbox_`, `prod_`, nunca
+  el valor completo) junto al prefijo de la clave que devuelve preflight.
+- FAIL si la tienda usa más de una afiliación de Yuno (preflight llamado con `affiliationName`) y la app
+  espera cambiar de clave entre órdenes: la segunda clave se ignora hasta que la app se reinicia. La verificación 4 indica qué nombre
+  debe enviar cada llamada.
+- Una clave obsoleta hace que las primeras llamadas de la sesión fallen con 401 y la billetera se cierre sin ningún mensaje.
+
+### 4. Ambas llamadas de preflight nombran la afiliación de producción {#4-both-preflight-calls-name-the-production-affiliation}
+
+Aplica al conector de VTEX 4.2.378 y posteriores. `affiliationName` es opcional en los cuerpos de
+`/session/preflight` (`orderFormId`, `amount`, `currency`, `country`, `affiliationName`) y de
+`/session/preflight/payments` (`orderFormId`, `payment`, `affiliationName`, `createPaymentInAuth`), pero la
+app debe enviarlo en ambas.
+
+- Sin él, o con una cadena vacía, el conector toma la primera afiliación de la tienda cuyo nombre de
+  implementación contiene "Yuno" (en cualquier combinación de mayúsculas y minúsculas), en el orden en que VTEX las lista. Una afiliación de VTEX no lleva indicador de prueba ni de producción, por lo que una
+  afiliación de prueba (estado "Teste" en el admin de VTEX) listada antes que la de producción es la que se usa. La sesión
+  se abre entonces con las credenciales de la afiliación de prueba y falla cuando no son válidas para producción
+  (por ejemplo, un Account ID que no existe), y preflight responde
+  `500 {"error":"Failed to create preflight session"}`.
+- Con un nombre, el conector busca una afiliación con exactamente ese nombre, con la misma ortografía y las mismas mayúsculas y minúsculas. Un nombre
+  que la tienda no tiene responde `404 {"error":"Yuno affiliation not found"}` en ambas rutas.
+- El nombre es por tienda. La app debe conocer el nombre de la afiliación de Yuno de producción de cada tienda, tal como aparece
+  en el admin de VTEX en Payments > Affiliations.
+- Envía el mismo nombre en ambas llamadas. El pago queda vinculado a la sesión que abrió la primera llamada y a la cuenta de Yuno
+  de la afiliación que resuelve la segunda llamada, por lo que dos nombres emparejan una sesión de una cuenta con
+  otra cuenta.
+- FAIL si alguna llamada omite `affiliationName` o envía `''`, `null` o `undefined`.
+- FAIL si el nombre está codificado con un solo valor mientras la app atiende tiendas cuya afiliación de producción tiene un
+  nombre diferente.
+- FAIL si las dos llamadas pueden enviar nombres diferentes para una misma orden.
+- Informa el valor enviado en cada llamada, de dónde lo lee la app y si la tienda tiene más de una
+  afiliación del proveedor Yuno. Cuando el código no lo permita saber, indícalo y pide la lista de afiliaciones de la tienda.
+- Síntoma: con la misma compilación de la app, el botón de la billetera falla en algunas tiendas y funciona en otras, preflight
+  responde el 500 anterior y los pagos con tarjeta en las mismas tiendas funcionan. El mismo 500 también aparece cuando la búsqueda de afiliaciones de la tienda falla
+  del lado de VTEX, sin importar el nombre que se envíe, por lo que un 500 por sí solo no demuestra un nombre incorrecto.
+
+### 5. El tipo de método de pago coincide con lo que VTEX autoriza {#5-payment-method-type-matches-what-vtex-authorizes}
+
+`methodSelected.paymentMethodType` y el `payment_method.type` del traspaso (`APPLE_PAY` / `GOOGLE_PAY` /
+`CLICK_TO_PAY`) deben tener el mismo valor y corresponder al método de pago de VTEX con el que se crea la orden
+(`Apple Pay` / `Google Pay` / `C2P`). Compara el `paymentSystem` usado en el paso 5 / paso 7 con el tipo enviado
+en el traspaso. Una discrepancia hace que el conector ignore el pago almacenado.
+
+### 6. El monto, la moneda y el país son idénticos en preflight y en el traspaso {#6-amount-currency-and-country-are-identical-in-preflight-and-hand-off}
+
+- El monto es un **número** JSON en **unidades decimales** (`845.90`), no centavos (`84590`) ni una cadena.
+- La misma tripleta `amount:currency:country` va a ambas llamadas; se le calcula una huella. Una discrepancia da `409`.
+- FAIL si el monto se lee de una fuente diferente en las dos llamadas (por ejemplo, total del carrito frente a total de la orden), o si
+  alguna llamada ocurre antes de que el total del carrito sea definitivo.
+- El `countryCode` que se pasa a `YunoSdk.initialize` y a `startPaymentLite` es ese mismo país. FAIL si
+  es una constante mientras la tienda vende en más de un país.
+
+### 7. El total se fija antes de preflight y el flujo se reinicia si cambia {#7-the-total-is-locked-before-preflight-and-the-flow-restarts-if-it-changes}
+
+El envío, los cupones y las cuotas deben resolverse todos antes de `/session/preflight`. Si el total cambia después,
+la app debe volver a ejecutar desde preflight e iniciar la billetera con el nuevo `checkoutSession`. FAIL si el código puede
+cambiar el carrito mientras hay una sesión activa sin recrearla.
+
+### 8. Un host de tienda por orden {#8-one-store-host-per-order}
+
+Preflight, preflight/payments y la creación de la orden deben usar el mismo host de cuenta de VTEX. FAIL si la URL base del conector
+y la URL base del checkout apuntan a cuentas diferentes.
+
+### 9. `showPaymentStatus` está desactivado {#9-showpaymentstatus-is-off}
+
+`startPaymentLite({ ..., showPaymentStatus: false })`. Su valor predeterminado es `true` cuando se omite, así que FAIL si el campo
+falta. El resultado vive en la orden de VTEX, no en la pantalla del SDK (verificación 17).
+
+### 10. Los listeners se suscriben antes de que inicie la billetera y permanecen suscritos {#10-the-listeners-are-subscribed-before-the-wallet-starts-and-stay-subscribed}
+
+El token llega como un evento nativo. Una suscripción que no existe en ese instante pierde el evento: en iOS
+nada almacena el token, por lo que se pierde.
+
+- FAIL si `onOneTimeToken` se suscribe después de `startPaymentLite`, dentro del mismo handler que inicia la
+  billetera, o en un componente que puede desmontarse mientras la hoja de la billetera está abierta (un modal o bottom sheet, una pantalla
+  que navega a otra).
+- FAIL si una suscripción nunca se elimina (`subscription.remove()` en la limpieza del efecto): una pantalla montada
+  dos veces realiza entonces el traspaso dos veces.
+- Solo Android: `YunoSdk.getLastOneTimeToken()` devuelve el token del intento actual cuando el evento se
+  emitió mientras JavaScript estaba en pausa (se borra cuando inicia `startPaymentLite`). Leerlo cuando la app
+  vuelve al primer plano sin un token es una recuperación válida. En iOS siempre devuelve `null`.
+
+Registra cada evento, no solo el token:
+
+```typescript
+useEffect(() => {
+  const token = YunoSdk.onOneTimeToken((ott) => {
+    console.log(`[yuno] token=${ott ? 'present' : '-'}`);
+    if (ott) handOffToConnector(ott); // guarded, runs once per attempt (check 1)
+  });
+  const status = YunoSdk.onPaymentStatus((state) => {
+    console.log(`[yuno] status=${state.status}`);
+  });
+  return () => {
+    token.remove();
+    status.remove();
+  };
+}, []);
+```
+
+Nunca registres el token en sí. Compara `state.status` como cadena y maneja ambas grafías: las plataformas no
+emiten los mismos valores (iOS `CANCELLED_BY_USER` / `PROCESSING` / `INTERNAL_ERROR`, Android `CANCELLED` /
+`PENDING` / `ERROR`), y el enum `YunoStatus` solo lista los de iOS. FAIL si el cierre de la hoja de la billetera se
+detecta únicamente con `YunoStatus.CANCELLED_BY_USER`.
+
+### 11. Las órdenes divididas no se ofrecen con billeteras {#11-split-orders-are-not-offered-with-wallets}
+
+Un carrito cumplido por más de un vendedor se convierte en varias órdenes de VTEX, y un token de billetera no puede cubrirlas.
+FAIL si se ofrecen billeteras sin comprobar que el carrito puede producir una sola orden.
+
+### 12. Cuotas (solo si se ofrecen, Apple Pay / Google Pay) {#12-installments-only-if-offered-apple-pay--google-pay}
+
+- `/installments/apm` se llama **después de** preflight, con el `checkoutSession` + `publicApiKey` de esa sesión,
+  una vez por billetera, con `country` y un `locale` completo (`pt-BR`).
+- La cantidad elegida viaja como `payment_method.detail.card.installments` en el cuerpo del traspaso, nunca con
+  `CLICK_TO_PAY`, y el monto sigue siendo el total de la orden.
+- Una lista vacía, un error o un tiempo de espera agotado deben dejar sin selector y permitir que la billetera continúe. FAIL si el checkout
+  se bloquea por esta llamada.
+
+### 13. Configuración nativa {#13-native-setup}
+
+- La app no se ejecuta en Expo Go: el SDK es un módulo nativo y necesita una development build o un proyecto bare.
+  Informa cómo se generan los proyectos nativos (bare, `expo prebuild`, EAS).
+- Android:
+  - el repositorio Maven de Yuno (`https://yunopayments.jfrog.io/artifactory/snapshots-libs-release`) está en los
+    repositorios a nivel de proyecto;
+  - `minSdkVersion` 21+, `compileSdkVersion` 35+, Java 17, Kotlin 1.9.24+. Informa la versión de Kotlin: el módulo
+    del SDK usa Jetpack Compose con la extensión del compilador para Kotlin 1.9, por lo que con Kotlin 2.x informa si el
+    módulo compila;
+  - `YunoSdkModule.initialize(...)` en `MainApplication.onCreate()` (su clave se evalúa en la verificación 3);
+  - `YunoSdkModule.registerYunoCallbacks(this)` en `MainActivity.onCreate()` **antes de** `super.onCreate()`.
+    Es lo que entrega los eventos de estado del pago en Android; sin ello, una hoja de billetera que el comprador cerró es
+    invisible para la app. Informa si está presente.
+- iOS: `platform :ios, '14.0'` o superior en el `Podfile`, el archivo `.entitlements` de la app tiene
+  `com.apple.developer.in-app-payments` con **el merchant ID registrado en Yuno para esta afiliación**,
+  y el App ID tiene la capacidad de Apple Pay. Informa el merchant ID encontrado para poder compararlo con el
+  lado de Yuno. Con Expo, el entitlement proviene de `ios.entitlements` en la configuración de la app.
+
+### 14. Pruebas en compilaciones reales {#14-testing-on-real-builds}
+
+Las billeteras no se pueden validar en un simulador/emulador ni en una compilación de depuración: Google Pay necesita el keystore de release
+registrado en la Google Pay & Wallet Console, y Apple Pay una compilación firmada con el entitlement anterior.
+FAIL si las instrucciones de prueba del repositorio dicen lo contrario.
+
+### 15. Versión del SDK {#15-sdk-version}
+
+`@yuno-payments/yuno-sdk-react-native` en `package.json`. Informa la versión que resuelve el lockfile y las
+versiones nativas que fija, ya que el comportamiento de las billeteras lo decide el SDK nativo, no la capa de JavaScript:
+
+- Android: `com.yuno.payments:android-sdk` en
+  `node_modules/@yuno-payments/yuno-sdk-react-native/android/build.gradle`
+- iOS: `YunoSDK` en `node_modules/@yuno-payments/yuno-sdk-react-native/YunoSdkReactNative.podspec`
+  (`YunoSdk.podspec` hasta 1.3.0), y la versión realmente instalada en `ios/Podfile.lock`
+
+| SDK de React Native | SDK de Android | SDK de iOS |
+|---|---|---|
+| 1.3.0 | 2.17.2 | 2.18.0 |
+| 1.4.0 | 2.21.1 | 2.22.0 |
+
+FAIL si `Podfile.lock` contiene un `YunoSDK` diferente del que fija el podspec (no se volvió a ejecutar `pod install` después de
+la actualización).
+
+### 16. El SDK nativo llega al servicio de tokens (en ejecución, compilación firmada) {#16-the-native-sdk-reaches-the-token-service-runtime-signed-build}
+
+Nada en el código de la app puede demostrarlo: el token de un solo uso lo solicita el SDK nativo, no JavaScript.
+Ejecuta un intento en una compilación firmada con el tráfico del dispositivo capturado (Proxyman / Charles con el iPhone o
+el dispositivo Android por proxy, SSL proxying habilitado para `*.y.uno`), completa la hoja de la billetera e informa cuáles
+de estas llamadas a la API de Yuno aparecen después de `startPaymentLite`, en orden:
+
+1. la llamada de configuración de la billetera: Apple Pay: `.../payments/transactions/APPLE_PAY` (sesión de comercio);
+   Google Pay: las llamadas de configuración/`sdk` antes de que se abra la hoja
+2. `.../wallet/decrypt`: el payload de la billetera regresó de la hoja y se entregó a Yuno
+3. la llamada de creación del token (`.../token` o `.../one-time-token`): el OTT existe
+
+Informa la última llamada vista y lo que mostró la hoja al cerrarse. Cómo interpretar el resultado:
+
+- Solo 1 → la hoja nunca devolvió un pago: discrepancia de entitlement / merchant ID (verificación 13) o el usuario
+  canceló. No es un defecto del SDK.
+- 1 y 2, sin 3 → el SDK nativo se detuvo entre decrypt y token. Informa el par de versiones (verificación 15).
+- 1, 2 y 3, pero el listener no registró ningún token → el evento se emitió sin nadie suscrito (verificación 10). En
+  Android, lee `YunoSdk.getLastOneTimeToken()` para confirmar que el token existió.
+- Las tres y el listener registró el token → el lado del SDK está bien; el problema está en el traspaso (verificación 1).
+
+El bridge también registra en la consola del dispositivo (`adb logcat | grep -i yuno`, la consola de Xcode en iOS), y
+`enable_logs_ios` / `enable_logs_android` en la cuenta de Yuno imprimen estas llamadas desde el SDK nativo, pero están
+desactivados de forma predeterminada, por lo que la captura con proxy es la opción confiable. Nunca pegues la captura en un canal público:
+los cuerpos de decrypt y de token contienen datos de tarjeta.
+
+### 17. El resultado se lee de VTEX, no del listener {#17-the-outcome-is-read-from-vtex-not-from-the-listener}
+
+Después del traspaso, la app no debe esperar `onPaymentStatus`: en este flujo no llega ningún resultado de pago. El
+resultado proviene del paso 8 y de la orden:
+
+| Respuesta de `gatewayCallback` | Significado | Qué hace la app |
+|---|---|---|
+| **428** | El conector no usó el cuerpo almacenado y respondió con el payload de la Payment App (discrepancia del método de pago, o no hay sesión almacenada para este order form id) | Pantalla de error; registra la respuesta |
+| **Otro no 2xx** (p. ej. 500 `CHK0223`) | Pago denegado; el cuerpo del error lleva el mensaje del conector, por ejemplo `Preflight session expired or does not match the order. Please retry.` ante una discrepancia de monto/moneda/país o una sesión de más de 5 horas | Pantalla de error; registra la respuesta |
+| **2xx** | No denegado: **aprobado o aún pendiente**; VTEX responde igual en ambos casos | Lee la orden |
+
+Después de un 2xx, `GET /api/checkout/pub/orders/order-group/{orderGroup}` y decide a partir del `status` de cada orden:
+`payment-approved` (o cualquier estado posterior) es éxito, `payment-pending` significa que el pago aún se está
+procesando.
+
+- FAIL si la pantalla de éxito/fallo depende de `onPaymentStatus`, de `continuePayment` o del valor de retorno de
+  `startPaymentSeamlessLite`, o si un 2xx se trata como aprobado sin leer la orden.
+- FAIL si la app no muestra nada entre el token y el resultado. El SDK cierra su UI una vez emitido el token
+  (`keepLoader` no tiene efecto en el SDK 1.4.0, y `hideLoader()` no hace nada en Android), por lo que el
+  estado de progreso es propio de la app, y el botón de pago debe permanecer deshabilitado hasta que se conozca el resultado.
+
+## Formato del informe {#report-format}
+
+```
+CHECK  1  Hand-off after OTT            FAIL  src/checkout/PaymentScreen.tsx:212 — preflight/payments is called
+                                              right after startPaymentLite, no token at that point
+CHECK  2  createPaymentInAuth           PASS  src/api/yunoConnector.ts:64
+CHECK  3  SDK key                       FAIL  android/app/src/main/java/com/store/MainApplication.kt:41 —
+                                              native key prefix sandbox_, preflight returns prod_
+...
+CHECK 16  Native token call             FAIL  capture 2026-09-22 13:07 UTC — merchant session only, no decrypt,
+                                              no token; sheet closed with "Payment Not Completed"
+SDK: @yuno-payments/yuno-sdk-react-native 1.4.0 (Android 2.21.1, iOS 2.22.0), React Native 0.76.3, new architecture on
+```
+
+Termina con los fallos ordenados por impacto, cada uno con la solución en una línea.
+
+## Diagnósticos para capturar de una ejecución fallida en el dispositivo {#diagnostics-to-capture-from-a-failing-device-run}
+
+Cuando las verificaciones pasan y la billetera aun así no se completa, captura y envía:
+
+1. El `checkoutSession` de la respuesta de preflight, el `affiliationName` enviado en ambas llamadas de preflight
+   y la marca de tiempo UTC del intento.
+2. Cada línea del listener de la verificación 10, en orden, más las líneas de la consola nativa que mencionen Yuno. Los eventos de React
+   Native llevan solo el estado; el subestado y el mensaje existen únicamente en los logs nativos.
+3. El modelo del dispositivo y la versión del sistema operativo, la compilación de la app (release/debug), la versión de React Native y la arquitectura
+   (antigua / nueva), y las versiones del SDK de la verificación 15.
+4. Si apareció la hoja nativa de la billetera y qué mostró al cerrarse.
+5. El `orderGroup` de VTEX, el estado HTTP y el cuerpo de `gatewayCallback`, y el estado de la orden leído después.
+
+Eso basta para alinear los eventos del cliente con el trazado del servidor de la sesión en el lado de Yuno.
+
+## Versiones del SDK {#sdk-versions}
+
+Ninguna versión del SDK nativo se conoce como causante de fallos en este flujo. El flujo y el contrato del conector son los verificados
+en otras integraciones nativas (iOS 2.23.1 creó el token de Apple Pay y completó un pago aprobado); los detalles
+específicos de React Native de las verificaciones 3, 10, 13 y 17 provienen del código fuente del SDK en la versión 1.4.0. Si el token nunca
+llega al listener, ejecuta la verificación 16 antes de sospechar del SDK.

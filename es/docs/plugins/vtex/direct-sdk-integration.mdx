@@ -1,0 +1,300 @@
+---
+title: "Integración del Headless SDK"
+description: "Renderiza la experiencia de checkout de Yuno directamente en tu propio front-end, incluidas las configuraciones headless y de WebView móvil, usando el SDK Web para VTEX."
+---
+
+La mayoría de las tiendas integran Yuno mediante el flujo estándar del plugin descrito en [Configura Yuno en VTEX](/es/docs/plugins/vtex/set-up-yuno-on-vtex). Para las tiendas que necesitan renderizar la experiencia de checkout de Yuno directamente en su propio front-end, Yuno ofrece el paquete npm **Yuno SDK Web for VTEX**.
+
+## Cuándo aplica {#when-this-applies}
+
+Si tu tienda tiene requisitos estándar, no necesitas esta página. El flujo estándar del plugin ya se encarga de todo. Usa la integración del Headless SDK solo cuando tu tienda tenga necesidades específicas que requieran que tu front-end renderice directamente la experiencia de checkout de Yuno. Esto aplica, por ejemplo, a los checkouts headless o muy personalizados.
+
+Una tienda **headless** en VTEX es aquella en la que el comercio ejecuta su propio front-end fuera de la tienda nativa de VTEX. Sigue usando las capacidades de comercio de VTEX (catálogo, carrito, checkout, órdenes) a través de APIs. Como el front-end está completamente bajo tu control, el plugin estándar ya no renderiza la experiencia de checkout de Yuno por ti. En su lugar, tu front-end monta el **Yuno SDK Web for VTEX** por sí mismo. Para conocer los antecedentes de esta arquitectura, consulta la [guía de Headless commerce](https://developers.vtex.com/docs/guides/headless-commerce) de VTEX.
+
+## Qué se mantiene igual {#what-stays-the-same}
+
+La configuración en tu **VTEX dashboard** y en tu **Yuno dashboard** no cambia:
+
+*   Sigues configurando Yuno como proveedor de pago en VTEX.
+*   Sigues configurando el webhook en tu Yuno dashboard.
+*   El **Yuno Payment Connector** sigue siendo la base de la integración. Todos los pagos continúan fluyendo a través de él.
+*   Los [tokens de red para compradores recurrentes](/es/docs/plugins/vtex/advanced-features#network-tokens-repeat-card-purchases) funcionan de la misma manera aquí: los campos `Enable Network Tokens` y `Create Customer` están en la misma configuración del proveedor, y todo pago con tarjeta procesado a través del Connector es elegible, sin importar qué flujo renderizó el checkout.
+
+## Qué es diferente {#whats-different}
+
+En lugar de dejar que el flujo estándar renderice el checkout de Yuno por ti, tu front-end monta directamente el **Yuno SDK Web for VTEX** y le proporciona la configuración que necesita para renderizar la experiencia de checkout para el comprador actual.
+
+## Antes de montar: ejecuta primero la autorización {#before-you-mount-run-the-authorization-first}
+
+El SDK no genera su propio contexto de pago. Renderiza el checkout a partir de un `payload` producido por el **Yuno Payment Connector**. Ese `payload` solo existe una vez que se ha ejecutado el **paso de autorización** de la transacción.
+
+La autorización es el **paso 1** del [flujo de la transacción de pago](https://help.vtex.com/docs/tutorials/transaction-flow-in-payments) de VTEX. Cuando el comprador realiza la orden, VTEX llama al Payment Connector con los detalles de la orden (productos, montos, comprador, envío). El Connector procesa esa solicitud y devuelve una respuesta que incluye el `payload`. El SDK necesita este payload para configurarse y montarse para esa orden específica.
+
+<Warning>
+  Activa siempre el paso de autorización **antes** de montar el SDK. Si lo montas sin el `payload` devuelto por el Connector, el SDK no tiene contexto de pago que renderizar y el checkout no se cargará.
+</Warning>
+
+---
+
+## Pasos de integración {#integration-steps}
+
+<Steps>
+  <Step title="Instala el SDK">
+    El Yuno SDK Web for VTEX se publica en npm como `@yuno-payments/sdk-web-vtex`. Instálalo en tu proyecto con el gestor de paquetes que prefieras:
+
+    <CodeGroup>
+    ```bash npm
+    npm install @yuno-payments/sdk-web-vtex
+    ```
+
+    ```bash yarn
+    yarn add @yuno-payments/sdk-web-vtex
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Monta el SDK">
+    Monta el SDK en la página donde el comprador completa el pago. Inicialízalo llamando al método `mount` con un objeto de configuración:
+
+    ```javascript
+    import { loadScript } from '@yuno-payments/sdk-web-vtex'
+    import type { YunoVTEXInterface, MountProps, OnPaymentDoneParams } from '@yuno-payments/sdk-web-vtex'
+
+    // Load the SDK
+    const yunoVTEX: YunoVTEXInterface = await loadScript()
+
+    // Example of payload received from the connector 
+    const payload = "{\"isVTEXCard\":true,\"checkoutSessions\":[\"bd0c0a6e\"],\"paymentIds\":[\"ABC\"],\"orderId\":\"123\"}"
+
+    // SDK Props
+    const mountProps: MountProps = {
+      // Required properties
+      elementRoot: 'yuno-sdk-root',
+      payload,
+      language: 'en',
+
+      // Optional VTEX configuration (Recommended)
+      domainVTEX: 'https://mystore.myvtex.com',
+      proxyUrlVTEX: 'https://proxy.mystore.com',
+      
+      // Event handlers
+      onPaymentDone: (paymentData: OnPaymentDoneParams) => {
+        // Continue to your order confirmation flow.
+        console.log('Payment completed:', paymentData)
+        if (paymentData.success) {
+          // Handle successful payment
+          paymentData.payments?.forEach(payment => {
+            console.log(`Order ${payment.orderId}: ${payment.status}`)
+          })
+        }
+      },
+      onError: (message: string, error?: any) => {
+        // Handle and surface the error to the shopper.
+        console.error('Payment error:', message, error)
+      },
+      onLoading: (loading: boolean) => {
+        // Show or hide a loading indicator.
+        console.log('Loading state:', loading)
+      },
+
+      // Device fingerprinting for fraud prevention
+      deviceFingerprints: [
+        {
+          provider_id: 'RISKIFIED',
+          session_id: 'riskified-session-123'
+        }
+      ]
+    }
+    
+    // Mount the payment interface
+    await yunoVTEX.mount(mountProps);
+    ```
+
+    <Note>
+      Mantén el SDK montado mientras el comprador paga. Llama a `unmount` **solo cuando desmontes el checkout**, por ejemplo, cuando se destruya el componente o el comprador navegue a otra página:
+
+      ```javascript
+      // Later, when the checkout is no longer needed:
+      await yunoVTEX.unmount()
+      ```
+    </Note>
+
+    <Accordion title="Referencia de configuración">
+      | Campo | Descripción |
+      | :--- | :--- |
+      | `elementRoot` | **Obligatorio.** ID del elemento del DOM donde el SDK renderiza la interfaz del checkout (por ejemplo, `yuno-sdk-root`). |
+      | `payload` | **Obligatorio.** El contexto de pago del comprador actual, devuelto por el Yuno Payment Connector durante la autorización. Es una cadena JSON serializada. Pásalo tal como se recibe, sin analizarlo. |
+      | `language` | **Obligatorio.** Idioma en el que se muestra el SDK (por ejemplo, `en`, `es`, `pt-BR`). |
+      | `domainVTEX` | Opcional (recomendado). El dominio de tu tienda VTEX (por ejemplo, `https://mystore.myvtex.com`). |
+      | `proxyUrlVTEX` | Opcional. URL de un proxy hacia VTEX, si tu configuración enruta las llamadas a VTEX a través de uno. |
+      | `onPaymentDone` | Opcional. Callback que se invoca cuando el pago termina. Recibe un objeto de resultado con `success` y un arreglo `payments`. |
+      | `onError` | Opcional. Callback que se invoca cuando ocurre un error durante el pago. |
+      | `onLoading` | Opcional. Callback que se invoca cuando el SDK cambia su estado de carga. |
+      | `deviceFingerprints` | Opcional. IDs de sesión antifraude que se informan por proveedor, cada uno con un `provider_id` (tal como está configurado en tu Yuno dashboard, por ejemplo `RISKIFIED`, `SIGNIFYD`, `CYBERSOURCE`, `CIELO_CYBERSOURCE_FRAUD`) y un `session_id`. El `session_id` suministrado reemplaza al que genera el script del proveedor; las entradas de proveedores que no has configurado se ignoran. Para compartir una sesión antifraude con el Yuno Payment Connector (obligatorio para órdenes divididas), usa el `orderFormId` de VTEX como `session_id`. Consulta [Sesión antifraude](/es/docs/plugins/vtex/advanced-features#antifraud-session-device-fingerprints). |
+    </Accordion>
+  </Step>
+</Steps>
+
+---
+
+## Usar el Headless SDK dentro de una app móvil {#using-the-headless-sdk-inside-a-mobile-app}
+
+El Yuno SDK Web for VTEX es una librería **web**. Para usarlo dentro de una app móvil, cargas la página de tu front-end (la que monta el SDK) dentro de un **WebView**. El WebView es lo que le da al SDK el entorno de navegador que necesita para ejecutarse.
+
+### Qué es un WebView y por qué lo necesitas {#what-a-webview-is-and-why-you-need-one}
+
+Un **WebView** es un componente de navegador integrable que renderiza contenido web dentro de una app nativa (`WebView` en Android, `WKWebView` en iOS y wrappers como `react-native-webview`). Como el SDK se ejecuta en el navegador, el WebView es lo que le da ese entorno de navegador. Tu app carga la URL que monta el SDK, y el SDK renderiza el checkout dentro del WebView.
+
+Los detalles de implementación que siguen son **sugerencias**. Cómo construyas el WebView y el puente depende por completo de ti. El objetivo es solo mostrar qué debe existir para que el SDK funcione.
+
+### El puente entre tu app y el WebView {#the-bridge-between-your-app-and-the-webview}
+
+Tu app y la página dentro del WebView necesitan comunicarse en ambas direcciones:
+
+*   **Web → App:** la página informa los resultados a la app nativa (por ejemplo, pago completado, error o estado de carga). Todas las plataformas de WebView exponen un canal de mensajes para esto: `window.ReactNativeWebView.postMessage(...)`, una interfaz de JavaScript en Android o un `WKScriptMessageHandler` en iOS.
+*   **App → Web:** la app inyecta/evalúa JavaScript en la página (por ejemplo, para entregar el `payload` después de que la página se cargue).
+
+Recomendamos definir un pequeño **contrato de mensajes** que la página emita y la app escuche. Por ejemplo:
+
+```json
+{ "type": "paymentDone", "paymentData": { "success": true, "payments": [] } }
+{ "type": "error", "message": "..." }
+{ "type": "loading", "loading": true }
+```
+
+Cuando el SDK llama a `onPaymentDone`, `onError` o `onLoading`, tu página reenvía un mensaje con esta forma a través del puente. Luego la app reacciona cerrando el WebView, mostrando el resultado o activando un indicador de carga. Los nombres exactos de los campos los defines tú.
+
+### Consideraciones técnicas {#technical-considerations}
+
+Para que el SDK funcione dentro de un WebView, asegúrate de que el WebView tenga:
+
+*   **JavaScript habilitado.**
+*   **DOM storage habilitado** (el SDK usa el almacenamiento del navegador).
+*   **Cookies de terceros / compartidas habilitadas**, para que la sesión de pago se conserve entre las solicitudes que hace el SDK.
+*   Un puente configurado (consulta lo anterior) para que los resultados puedan regresar a la app.
+
+### Wallets: Apple Pay y Google Pay {#wallets-apple-pay-and-google-pay}
+
+Las wallets tienen requisitos adicionales además de la configuración general, porque interviene la superficie de pago nativa del dispositivo.
+
+#### Google Pay (WebView de Android) {#google-pay-android-webview}
+
+Google Pay dentro de un WebView de Android depende de la **Payment Request API** de Chromium y de abrir la hoja de Google Pay. Para que funcione:
+
+*   **Habilita la Payment Request API** en el WebView. En Android esto se hace mediante `androidx.webkit` (`WebSettingsCompat.setPaymentRequestEnabled(...)`) cuando la función es compatible.
+*   **Permite que se abra la hoja de la wallet.** Google Pay abre su hoja mediante `window.open()`. Un WebView predeterminado puede bloquearla (es posible que veas un error `OR_BIBED_15` / "pop-ups turned off"). Configura el WebView para que la nueva ventana se cargue en el mismo WebView en lugar de requerir un popup bloqueado.
+*   **Declara los intents de Google Pay** que tu app puede consultar, en el manifiesto de Android, para que el WebView pueda acceder al servicio de Google Pay:
+
+    ```xml
+    <queries>
+      <intent>
+        <action android:name="org.chromium.intent.action.PAY" />
+      </intent>
+      <intent>
+        <action android:name="org.chromium.intent.action.IS_READY_TO_PAY" />
+      </intent>
+      <intent>
+        <action android:name="org.chromium.intent.action.UPDATE_PAYMENT_DETAILS" />
+      </intent>
+    </queries>
+    ```
+
+Algunas condiciones no dependen del código de tu app sino del **dispositivo donde se realiza el pago**. Aplican tanto al dispositivo de un comprador como a cualquier dispositivo que uses para probar el flujo. El dispositivo necesita un **Android System WebView** y **Google Play services** actualizados, y una **cuenta de Google con un método de pago válido** agregado. Para ver todos los detalles, consulta la guía de Google [Using Google Pay with an Android WebView](https://developers.google.com/pay/api/android/guides/recipes/using-android-webview).
+
+#### Apple Pay (WebView de iOS) {#apple-pay-ios-webview}
+
+Apple Pay tiene un requisito estricto sobre **desde dónde se sirve la página**: no puede ejecutarse desde un **archivo HTML local estático** cargado en el WebView. La página que monta el SDK debe servirse desde una **URL alojada cuyo dominio esté registrado y verificado en tu cuenta de Apple Developer**. Ese dominio también debe estar configurado en tu **Yuno dashboard** para que todos los dominios involucrados coincidan. Si los dominios no coinciden, Apple Pay no estará disponible.
+
+### Ejemplos {#examples}
+
+Los fragmentos siguientes son **solo ejemplos de referencia**. Muestran una forma posible de conectar el WebView y el puente en cada stack. No son una elección tecnológica obligatoria ni recomendada; usa lo que mejor se adapte a tu app.
+
+<AccordionGroup>
+  <Accordion title="React Native (react-native-webview)">
+    Carga la página alojada en un `WebView`, habilita los ajustes compatibles con wallets y escucha los mensajes de la página. La entrega del `payload` a la página (después del paso de autorización) y el contrato de mensajes dependen de ti.
+
+    ```jsx
+    import { WebView } from 'react-native-webview'
+
+    function CheckoutWebView({ uri, onResult }) {
+      return (
+        <WebView
+          source={{ uri }}
+          javaScriptEnabled
+          domStorageEnabled
+          // Google Pay opens its sheet with window.open(); letting the new window
+          // load in the same WebView avoids the pop-up being blocked.
+          javaScriptCanOpenWindowsAutomatically
+          setSupportMultipleWindows={false}
+          thirdPartyCookiesEnabled
+          sharedCookiesEnabled
+          onMessage={(event) => {
+            const data = JSON.parse(event.nativeEvent.data)
+            // { type: 'paymentDone' | 'error' | 'loading', ... }
+            onResult(data)
+          }}
+        />
+      )
+    }
+    ```
+
+    > Habilitar la Payment Request API de Android (`setPaymentRequestEnabled`) no está expuesto por `react-native-webview` de forma predeterminada; requiere un pequeño ajuste nativo en la configuración del WebView.
+  </Accordion>
+
+  <Accordion title="Android (WebView nativo)">
+    Habilita JavaScript, registra una interfaz de JavaScript para el canal Web → App e inyecta el `payload` una vez que la página se haya cargado.
+
+    ```kotlin
+    WebView(context).apply {
+        settings.javaScriptEnabled = true
+
+        // Web -> App: the page calls Android.receiveMessageFromJS("...")
+        addJavascriptInterface(object {
+            @JavascriptInterface
+            fun receiveMessageFromJS(message: String) {
+                // Parse the message contract and react (e.g. paymentDone / error).
+            }
+        }, "Android")
+
+        webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                // App -> Web: deliver the payload returned by the connector.
+                evaluateJavascript("window.postMessage('$payloadJson', '*');", null)
+            }
+        }
+
+        loadUrl(hostedUrl)
+    }
+    ```
+
+    > Para Google Pay, habilita también la Payment Request API en `settings` mediante `WebSettingsCompat.setPaymentRequestEnabled(...)` y agrega al manifiesto los intents de `<queries>` mostrados anteriormente.
+  </Accordion>
+
+  <Accordion title="iOS (WKWebView)">
+    Registra un `WKScriptMessageHandler` para el canal Web → App e inyecta el `payload` cuando la página termine de cargarse. Recuerda que Apple Pay requiere una URL alojada y verificada (no un archivo local).
+
+    ```swift
+    let contentController = WKUserContentController()
+    contentController.add(coordinator, name: "iosListener") // Web -> App
+
+    let config = WKWebViewConfiguration()
+    config.userContentController = contentController
+
+    let webView = WKWebView(frame: .zero, configuration: config)
+    webView.navigationDelegate = coordinator
+    webView.load(URLRequest(url: hostedURL))
+
+    // In the navigation delegate, after the page loads:
+    // App -> Web: deliver the payload returned by the connector.
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        webView.evaluateJavaScript("window.postMessage(\(payloadJson), '*');")
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+**Recursos**
+
+*   [Paquete NPM: @yuno-payments/sdk-web-vtex](https://www.npmjs.com/package/@yuno-payments/sdk-web-vtex)

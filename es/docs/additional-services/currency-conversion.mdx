@@ -1,0 +1,162 @@
+---
+title: "Conversión de moneda"
+description: "Liquida pagos convirtiendo entre las monedas del comercio y del titular de la tarjeta mediante proveedores de tipo de cambio configurables"
+---
+
+## Qué es la conversión de moneda {#what-is-currency-conversion}
+
+El servicio de conversión de moneda de Yuno te permite liquidar pagos tanto en tu moneda como en la de tu cliente. La conversión de moneda es el proceso de convertir una moneda en otra. Implica usar tipos de cambio para determinar el monto equivalente en la moneda de destino.
+
+### Beneficios {#benefits}
+
+* **Alcance global y comodidad para el cliente**: Acepta y liquida pagos en varias monedas para que los clientes paguen en la moneda que prefieran.
+* **Optimización de costos e ingresos**: Reduce los costos de transacción y aprovecha tipos de cambio favorables.
+
+### Casos de uso comunes {#common-use-cases}
+
+* **Comercio transfronterizo**: Negocios de e-commerce, remesas y viajes y hotelería que necesitan cobrar o pagar en la moneda local del cliente.
+* **Plataformas de inversión**: Fintechs que operan acciones, bonos o criptomonedas extranjeras en distintas monedas.
+
+## Implementación {#implementation}
+
+Yuno conecta distintos proveedores de conversión de moneda, para que no tengas que preocuparte por las diferencias entre cada integración. La implementación del servicio depende del proveedor de conversión de moneda con el que elijas trabajar.
+
+### Conceptos clave {#key-concepts}
+
+* **Tipo de cambio**: La tasa a la que una moneda puede intercambiarse por otra. Puede ser una tasa fija o una tasa flotante que fluctúa según las condiciones del mercado.
+* **Moneda base**: La moneda desde la que conviertes.
+* **Moneda del titular de la tarjeta**: La moneda a la que conviertes.
+* **Margen de conversión**: La diferencia entre las tasas de compra y de venta, que representa el margen de ganancia de la entidad que presta el servicio de conversión.
+* **Conversión en tiempo real**: Uso de tipos de cambio actualizados para realizar conversiones en el momento exacto de la transacción.
+
+### Implementación de la API {#api-implementation}
+
+Para usar el servicio de conversión de moneda, tienes dos implementaciones de API disponibles.
+
+#### Servicio de tipo de cambio del proveedor {#providers-rate-service}
+
+El comercio puede usar el servicio de conversión de moneda de un proveedor externo y enviar la información correspondiente directamente en el pago en Yuno. Para usarlo, contacta a tu technical account manager para asegurarte de que la información esté configurada correctamente.
+
+Ejemplo:
+
+```json
+ "amount": {
+        "currency": "COP",
+        "value": 5000, 
+        "currency_conversion": {
+            "provider_currency_conversion_id": "AAA01SADOIAJSDLAKSJM",
+            "cardholder_currency": "ARS",
+            "cardholder_amount": 1146.55    
+        }
+    }
+```
+
+#### Servicio de tipo de cambio de Yuno {#yunos-rate-service}
+
+El comercio también puede usar directamente el [servicio de conversión de moneda de Yuno](/reference/conversion-rate/currency-conversion), que obtiene la información del proveedor de su elección, y enviar en la creación del pago el id de la consulta de tipo de cambio y los datos del monto según corresponda. Si usas este servicio, también deberás enviar el id obtenido en la solicitud de pago para que podamos vincular la información. Ejemplo:
+
+```json Rate service
+{
+  "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
+  "amount": {
+    "currency_conversion": {
+      "cardholder_currency": "USD",
+      "provider_data": {
+        "id": "CIBC"
+      }
+    },
+    "value": 10000,
+    "currency": "COP"
+  }
+}
+```
+
+```json Payment
+    "amount": {
+        "currency": "COP",
+        "value": 5000, 
+        "currency_conversion": {
+            "id": "62fdcd6c-50ea-4640-985b-5656010fe5fD",
+            "cardholder_currency": "ARS",
+            "cardholder_amount": 1146.55    
+        }
+    },
+```
+
+Para usarlo, **contacta a tu technical account manager** para asegurarte de que la información esté configurada correctamente.
+
+## Parámetros de la solicitud {#request-parameters}
+
+Los siguientes campos se envían dentro de `amount.currency_conversion` en `POST /v1/payments`.
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Obligatorio | Descripción |
+| --- | --- | --- | --- |
+| `cardholder_currency` | `string` | Sí | Moneda en la que se cobra al titular de la tarjeta. Código ISO 4217 alfa-3. Debe ser distinta de `amount.currency`. |
+| `cardholder_amount` | `decimal` | Sí | Monto total facturado al titular de la tarjeta en `cardholder_currency`. Rango: `0.0001` – `9,999,999,999`. |
+| `cardholder_accepted` | `boolean` | Sí | Consentimiento explícito del titular de la tarjeta a la oferta DCC. `true` = aceptada (se cobra en `cardholder_currency`). `false` = rechazada (el pago continúa en la moneda del comercio). |
+| `rate` | `decimal` | Sí | Tipo de cambio aplicado (incluye el margen). Debe ser `> 0`. |
+| `rate_margin_percentage` | `decimal` | Sí | Margen añadido sobre la tasa mayorista, expresado como porcentaje. Rango: `0` – `100`. |
+| `rate_source` | `string` | Condicional | Referencia mayorista usada para la cotización. Obligatorio cuando `rate_margin_percentage > 0`. Texto libre, máximo 50 caracteres. Ejemplos: `ECB`, `REUTERS`, `BLOOMBERG`, `PROVIDER_INTERNAL`. |
+| `provider` | `string` (enum) | Sí | Proveedor de DCC que emitió la cotización. Consulta [Valores de proveedor](#provider-values). |
+| `description` | `string` | Opcional | Texto de divulgación literal que se muestra al titular de la tarjeta en el punto de venta. Se almacena sin cambios para auditoría. Máximo 4096 caracteres. |
+| `created_at` | `string` (ISO 8601) | Sí | Marca de tiempo en que el proveedor de DCC emitió la cotización. Debe ser `≤ now()`. |
+| `expires_at` | `string` (ISO 8601) | Opcional | Marca de tiempo en que vence la cotización. Debe ser `> created_at`. El pago se rechaza si `expires_at < now()` en el momento de la validación. |
+
+</div>
+
+### Valores de proveedor {#provider-values}
+
+`provider` acepta uno de estos valores:
+
+<div className="code-nowrap-table dense-table">
+
+| Valor | Proveedor de DCC | Mercado típico |
+| --- | --- | --- |
+| `FEXCO` | Fexco Merchant Services | Universal: mayor proveedor de DCC; compatible de forma nativa con MPGS |
+| `GLOBAL_BLUE` | Global Blue | Retail, compras libres de impuestos, turismo |
+| `PLANET` | Planet Payment | Retail, hotelería, turismo |
+| `EURONET` | Euronet / Pure Commerce | DCC en cajeros automáticos, LatAm, APAC |
+| `CURRENCYFAIR` | Currencyfair | E-commerce, digital |
+| `EUROPEAN_PAYMENT_SERVICES` | European Payment Services (EPS) | Regional de la UE |
+| `OTHER` | Cualquier proveedor no listado arriba | Proveedores de nicho o de mercados emergentes |
+
+</div>
+
+### Reglas de validación {#validation-rules}
+
+* Todos los campos obligatorios deben estar presentes.
+* `provider` debe coincidir exactamente con uno de los valores enum permitidos.
+* `cardholder_currency` debe ser un código ISO 4217 alfa-3 válido y debe ser distinta de `amount.currency`.
+* `created_at` y `expires_at` deben ser marcas de tiempo ISO 8601 válidas.
+* `expires_at`, cuando se proporciona, debe ser estrictamente mayor que `created_at`.
+* `rate_source` es obligatorio siempre que `rate_margin_percentage > 0`.
+* Un pago con una [promoción de Yuno](/docs/payment-features/promotions) no puede incluir una conversión de moneda: Yuno lo rechaza con `422 PROMOTION_CONTEXT_MISMATCH`. Una promoción se valora en la moneda propia del pago, así que envía el pago sin la conversión.
+
+### Ejemplo de solicitud {#request-example}
+
+```json
+POST /v1/payments
+
+{
+  "account_id": "4b8f9c10-5c6a-4b2d-9b7e-2c8d3a1b4f55",
+  "merchant_order_id": "order-2026-04-24-0001",
+  "amount": {
+    "value": 1000.00,
+    "currency": "USD",
+    "currency_conversion": {
+      "cardholder_currency": "QAR",
+      "cardholder_amount": 3640.00,
+      "cardholder_accepted": true,
+      "rate": 3.6400,
+      "rate_margin_percentage": 3.75,
+      "rate_source": "ECB",
+      "provider": "FEXCO",
+      "description": "You have chosen to pay in QAR. Amount: 3640.00 QAR. Rate: 3.6400.",
+      "created_at": "2026-04-24T14:30:00Z",
+      "expires_at": "2026-04-24T15:30:00Z"
+    }
+  }
+}
+```
