@@ -1,0 +1,101 @@
+---
+title: "Conversión de moneda"
+description: "Explica cómo el servicio de conversión de moneda de Yuno liquida pagos en las monedas del comercio y del cliente"
+---
+
+El servicio de conversión de moneda de Yuno te permite liquidar pagos tanto en tu moneda como en la de tu cliente. La conversión de moneda es el proceso de convertir una moneda en otra. Implica usar tipos de cambio para determinar el monto equivalente en la moneda de destino.
+
+### Beneficios {#benefits}
+
+* **Alcance global**: permite a las empresas operar a nivel internacional al aceptar y realizar pagos en múltiples monedas.
+* **Comodidad para el cliente**: los clientes pueden pagar en su moneda preferida, lo que mejora su experiencia de compra.
+* **Eficiencia de costos**: optimizar los tipos de conversión puede reducir los costos de transacción.
+* **Optimización de ingresos**: las empresas pueden aprovechar tipos de cambio favorables para maximizar sus ganancias.
+
+### Algunos casos de uso {#some-use-cases}
+
+* **Plataformas de comercio electrónico**: las tiendas en línea que venden productos a nivel internacional usan la conversión de moneda para mostrar precios en monedas locales y procesar los pagos en consecuencia.
+* **Servicios de remesas**: las empresas que facilitan transferencias de dinero entre países dependen de la conversión de moneda para asegurar que los destinatarios reciban los fondos en su moneda local.
+* **Viajes y hotelería**: las empresas de este sector usan la conversión de moneda para gestionar los pagos de viajeros internacionales.
+* **Plataformas de inversión**: las plataformas fintech que ofrecen operar con acciones, bonos o criptomonedas extranjeras usan la conversión de moneda para gestionar inversiones en distintas monedas.
+
+## Implementación {#implementation}
+
+En Yuno conectamos distintos proveedores de conversión de moneda, para que no tengas que preocuparte por las diferencias entre cada integración. La implementación del servicio dependerá del proveedor de conversión de moneda con el que elijas trabajar.
+
+### Conceptos clave {#key-concepts}
+
+* **Tipo de cambio**: la tasa a la que una moneda se puede intercambiar por otra. Puede ser una tasa fija o una tasa flotante que fluctúa según las condiciones del mercado.
+* **Moneda base**: la moneda desde la que conviertes.
+* **Moneda del titular de la tarjeta**: la moneda a la que conviertes.
+* **Margen de conversión**: la diferencia entre las tasas de compra y de venta, que representa el margen de ganancia de la entidad que ofrece el servicio de conversión.
+* **Conversión en tiempo real**: usar tipos de cambio actualizados para realizar las conversiones en el momento exacto de la transacción.
+
+### Implementación de la API {#api-implementation}
+
+Para poder usar el servicio de conversión de moneda tienes dos implementaciones de API disponibles.
+
+#### Servicio de tasas del proveedor {#providers-rate-service}
+
+El comercio puede usar el servicio de conversión de moneda de un proveedor externo y enviar la información correspondiente directamente en el pago en Yuno. 
+
+Ejemplo:
+
+```json
+ "amount": {
+    "currency": "USD",
+    "value": 1000.00,
+    "currency_conversion": {
+      "cardholder_currency": "QAR",
+      "cardholder_amount": 3640.00,
+      "cardholder_accepted": true,
+      "rate": 3.6400,
+      "rate_margin_percentage": 3.75,
+      "rate_source": "ECB",
+      "provider": "FEXCO",
+      "description": "You have chosen to pay in QAR. Amount: 3640.00 QAR. Rate: 3.6400.",
+      "created_at": "2026-04-24T14:30:00Z",
+      "expires_at": "2026-04-24T15:30:00Z"
+    }
+  }
+```
+
+## Referencia de parámetros {#parameter-reference}
+
+La siguiente tabla describe los parámetros del objeto `amount.currency_conversion`:
+
+### Campos de la solicitud {#request-fields}
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `cardholder_currency` | `string` | ✅ | Moneda en la que se cobra al titular de la tarjeta. Código ISO 4217 alpha-3. |
+| `cardholder_amount` | `number` | ✅ | Monto total facturado al titular de la tarjeta en `cardholder_currency`. |
+| `cardholder_accepted` | `boolean` | ✅ | Consentimiento explícito del titular de la tarjeta a la oferta de DCC. |
+| `rate` | `number` | ✅ | Tipo de cambio aplicado (margen incluido). |
+| `rate_margin_percentage` | `number` | ✅ | Margen agregado sobre la tasa mayorista, expresado como porcentaje. |
+| `rate_source` | `string` | Conditional | Referencia mayorista usada para la cotización. Obligatorio cuando `rate_margin_percentage > 0`. |
+| `provider` | `string` | ✅ | Proveedor de DCC que emitió la cotización (por ejemplo, `FEXCO`, `PLANET`). |
+| `description` | `string` | Optional | Texto textual de divulgación mostrado al titular de la tarjeta. |
+| `created_at` | `string` | ✅ | Marca de tiempo en que el proveedor de DCC emitió la cotización (ISO 8601). |
+| `expires_at` | `string` | Optional | Marca de tiempo en que vence la cotización (ISO 8601). |
+
+### Adiciones al webhook y a la respuesta {#webhook--response-additions}
+
+| Field | Type | Description |
+|---|---|---|
+| `code` | `string` | Identificador interno de Yuno para este registro de DCC. |
+| `status` | `string` | Estado del ciclo de vida de la conversión (por ejemplo, `APPLIED`, `DECLINED`). |
+| `error_reason` | `string` | Se completa solo cuando no se pudo aplicar el DCC. |
+| `provider_data` | `object` | Datos de ida y vuelta del adquirente devueltos por el adaptador del proveedor subyacente. |
+
+## Estado del ciclo de vida {#lifecycle-status}
+
+| Value | Meaning |
+|---|---|
+| `QUOTED` | Cotización recibida y validada; aún no aplicada a una autorización. |
+| `APPLIED` | La cotización se aplicó a la autorización con éxito. |
+| `EXPIRED` | La cotización venció antes de poder aplicarse. |
+| `DECLINED` | El titular de la tarjeta rechazó la oferta de DCC. |
+| `REVERSED` | La conversión se revirtió como parte de una cancelación o un reembolso. |
+
+Para usar esto, por favor **contacta a tu gerente técnico de cuenta** para asegurarte de que la información esté configurada correctamente.
