@@ -1,7 +1,7 @@
 ---
 title: "Native modules"
 sidebarTitle: "Add native modules"
-description: "Add a third-party native SDK, antifraud, 3DS or Revolut Pay, to the Yuno SDK as an optional module, without changing your transaction code."
+description: "Add a third-party native SDK, antifraud or 3DS, to the Yuno SDK as an optional module, without changing your transaction code."
 ---
 
 The Yuno SDK stays small on purpose: every third-party native SDK ships as a separate, optional module. You add only the modules your account uses, the SDK picks them up when the app starts, and your `Transaction` code does not change.
@@ -18,32 +18,34 @@ Installing a module does not make the SDK use it. A module runs only when the pr
 
 1. You add the module to your app next to the SDK, as a package product or a Gradle dependency.
 2. When the app starts, the module registers itself with the SDK.
-3. During a transaction, the SDK asks Yuno which providers apply and uses the matching module: it collects a device fingerprint and attaches it to the payment, runs the 3DS challenge natively instead of in a WebView, or opens the Revolut Pay checkout.
+3. During a transaction, the SDK asks Yuno which providers apply and uses the matching module: it collects a device fingerprint and attaches it to the payment, or runs the 3DS challenge natively instead of in a WebView.
 
 ## Available modules
 
 | Module | What it adds | iOS | Android |
 |---|---|---|---|
-| ClearSale antifraud | Collects the ClearSale device fingerprint and sends it as the payment's `customer.device_fingerprint` | Coming with SdkPayments 3.1.0 | `yuno-sdk-antifraud-clearsale` |
-| PayPal Magnes antifraud | Collects PayPal's Magnes device data and attaches it to the payment | Coming with SdkPayments 3.1.0 | Not available |
-| Koin antifraud | Collects the Koin device fingerprint and sends it as `customer.device_fingerprint` | Coming with SdkPayments 3.1.0 | `yuno-sdk-antifraud-koin` |
-| Riskified antifraud | Starts the Riskified beacon with the checkout session and sends that session as `customer.device_fingerprint` | Not available | `yuno-sdk-antifraud-riskified` |
-| Signifyd antifraud | Runs Signifyd's device profiling and sends the Signifyd session as `customer.device_fingerprint` | Not available | `yuno-sdk-antifraud-signifyd` |
-| Netcetera 3DS | Runs 3D Secure challenges natively in your app, for payments and enrollment | Not yet available | `yuno-sdk-3ds-netcetera` |
-| Revolut Pay | Runs the Revolut Pay checkout natively, on top of Revolut's official SDK | Coming with SdkPayments 3.1.0 | Not available |
+| ClearSale antifraud | Collects the ClearSale device fingerprint and attaches it to the payment | `SdkAntifraudClearsale` | `yuno-sdk-antifraud-clearsale` |
+| Koin antifraud | Collects the Koin device fingerprint and attaches it to the payment | `SdkAntifraudKoin` | `yuno-sdk-antifraud-koin` |
+| Riskified antifraud | Starts the Riskified beacon with the checkout session and attaches that session to the payment | `SdkAntifraudRiskified` | `yuno-sdk-antifraud-riskified` |
+| Signifyd antifraud | Runs Signifyd's device profiling and attaches the Signifyd session to the payment |  | `yuno-sdk-antifraud-signifyd` |
+| Netcetera 3DS | Runs 3D Secure challenges natively in your app, for payments and enrollment | `SdkPaymentsNetcetera` | `yuno-sdk-3ds-netcetera` |
 
-Minimum platform: iOS 14.0, Android 6.0 (API 23). Every module requires the same SDK version you install from [Get Started](/docs/yuno-sdk/get-started#install).
+Minimum platform: iOS 14.0, Android 6.0 (API 23). Every module requires the same SDK version you install from [Get Started](/docs/yuno-sdk/get-started#install). On iOS the modules are supported from SdkPayments 3.2.0, through Swift Package Manager only, with either `SdkPayments` or `SdkPayments-Static`.
 
 ## Install
 
 <Tabs>
   <Tab title="iOS">
 
-<Note>
-**iOS native modules are being published for the Yuno SDK.** They will be documented here when available. Until then, 3DS challenges run in the SDK's WebView and native antifraud fingerprints are not collected on iOS 3.x.
+Every module lives in the same package as the SDK, so there is a single URL to add. In Xcode go to **File > Add Package Dependencies...**, add:
+
+```
+https://github.com/yuno-payments/yuno-sdk-ios
+```
+
+choose the **Up to Next Major Version** rule starting at `3.2.0`, and in the product list tick `SdkPayments` (dynamic) or `SdkPayments-Static` (static), never both, plus the modules you need (`SdkAntifraudClearsale`, `SdkAntifraudKoin`, `SdkAntifraudRiskified`, `SdkPaymentsNetcetera`). Each product brings its vendor binary, downloaded from the provider.
 
 The Legacy SDK (2.x) modules documented at [iOS Overview](/docs/sdks/external-native-modules/ios-overview) are for the Legacy SDK only and cannot be used with the Yuno SDK (3.x).
-</Note>
 
   </Tab>
   <Tab title="Android">
@@ -75,7 +77,7 @@ The Signifyd module needs Signifyd's private registry and a download token from 
   </Tab>
   <Tab title="React Native">
 
-Add the Android modules to `android/app/build.gradle` as the Android tab shows, and the iOS modules to `ios/Podfile` as the CocoaPods part of the iOS tab shows, then run `pod install`. React Native apps install iOS dependencies through CocoaPods only.
+Add the Android modules to `android/app/build.gradle` as the Android tab shows. iOS native modules are not yet available for React Native apps.
 
   </Tab>
 </Tabs>
@@ -85,11 +87,13 @@ Add the Android modules to `android/app/build.gradle` as the Android tab shows, 
 <Tabs>
   <Tab title="iOS">
 
-<Note>
-**iOS native modules are being published for the Yuno SDK.** They will be documented here when available. Until then, 3DS challenges run in the SDK's WebView and native antifraud fingerprints are not collected on iOS 3.x.
+Every module registers itself when the app launches, with either `SdkPayments` or `SdkPayments-Static`. Keep your usual initialization:
 
-The Legacy SDK (2.x) modules documented at [iOS Overview](/docs/sdks/external-native-modules/ios-overview) are for the Legacy SDK only and cannot be used with the Yuno SDK (3.x).
-</Note>
+```swift
+import SdkPayments
+
+SdkPayments.initialize(apiKey: "your-public-api-key")
+```
 
   </Tab>
   <Tab title="Android">
@@ -132,7 +136,7 @@ initializer.initializeComponent(Netcetera3DSInitializer::class.java)
   </Tab>
   <Tab title="React Native">
 
-On Android the modules register themselves through App Startup, as in the Android tab. On iOS the pods are static frameworks: call each module's `register()` from your `AppDelegate` before the first transaction, as in the iOS tab. Keep `SdkPayments.initialize` in your JavaScript code.
+On Android the modules register themselves through App Startup, as in the Android tab. Keep `SdkPayments.initialize` in your JavaScript code.
 
   </Tab>
 </Tabs>
@@ -145,27 +149,21 @@ Once a module is registered the SDK uses it automatically. You do not change any
 
 ### Antifraud modules
 
-- The fingerprint travels as the payment's `customer.device_fingerprint`. Nothing changes in the data you send.
+- Nothing changes in the data you send.
 - Collection runs when the shopper confirms the payment, and the shopper waits for it. On Android collection is bounded by the `timeout` configured for the provider in your Yuno account (5 seconds by default). Keep it short.
 - None of them requests location. On Android, do not add `play-services-location` version 21 or higher next to the ClearSale module: those versions are incompatible with the bundled ClearSale SDK.
 - Signifyd on Android: the module uses the Signifyd SDK key that Yuno serves for your account, so you do not set any key in your app. Signifyd's SDK comes from Signifyd's private registry, and your build downloads it with your own token. The registry snippet, the token setup and the permissions are in [Signifyd antifraud (Android)](/docs/sdks/external-native-modules/signifyd-android).
 
 ### Netcetera 3DS
 
-<Note>
-**iOS:** Native 3DS modules are not yet available for the Yuno SDK (3.x). Until they are published, 3DS challenges run in the SDK's WebView on iOS.
-</Note>
+**iOS:**
+- Add the `SdkPaymentsNetcetera` product. It runs the 3D Secure challenge inside your app, for payments and enrollment, instead of the WebView challenge.
+- Sandbox only: the Netcetera SDK needs the same Visa test root certificate as on Android. Ask your Yuno TAM for it.
 
 **Android:**
 - Runs the 3D Secure challenge inside your app, for payments and enrollment, instead of the WebView challenge. If you customize the SDK styles, they propagate to the challenge screen.
 - The challenge is still presented full-screen by the SDK: it does not come through `showView`.
 - Sandbox only: the Netcetera SDK needs a Visa test root certificate (`acq-root-certeq-prev-environment.crt`) in your app bundle. Ask your Yuno TAM for it, it is not distributed publicly. Production builds do not use it.
-
-### Revolut Pay
-
-<Note>
-**iOS:** The Revolut Pay module is coming with SdkPayments 3.1.0. Integration instructions will be documented here when available.
-</Note>
 
 ## Troubleshooting
 
