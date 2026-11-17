@@ -31,19 +31,15 @@ Web SDK v1 (CDN script tag):
 <script src="https://sdk-web.y.uno/v1.11/main.js"></script>
 ```
 
-iOS (CocoaPods):
-
-```ruby
-pod 'YunoSDK', '~> 2.29'
-```
-
 iOS (Swift Package Manager):
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.29.0")
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.31.0")
 ]
 ```
+
+Add `YunoSDK` (dynamic) or `YunoSDK-Static` (static) to your app target, never both. YunoSDK is no longer published on CocoaPods.
 
 Android (Gradle Kotlin DSL, add the repository and the dependency):
 
