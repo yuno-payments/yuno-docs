@@ -1,0 +1,182 @@
+---
+title: "Modo Render"
+description: "Migra las integraciones Render de iOS (Yuno.startPaymentRenderFlow + formView + submitForm) a la API de Transaction unificada."
+---
+
+El modo Render te permitía incrustar el formulario de pago del SDK dentro de tu propio diseño: obtenías un `YunoPaymentRenderFlowProtocol` desde `Yuno.startPaymentRenderFlow(...)`, le pedías un `formView` para colocarlo donde quisieras y llamabas a `submitForm()` desde tu propio botón cuando el usuario estaba listo para pagar.
+
+En la API unificada, el mismo patrón se expresa sobrescribiendo [`showView`](/es/docs/yuno-sdk/controllers/show-view). El SDK sigue proporcionando la vista del formulario; la recibes junto con un objeto de control `TransactionProcess` que expone `onSubmit()`.
+
+## Antes de empezar {#before-you-start}
+
+- Reemplaza `import YunoSDK` por `import SdkPayments`. Tu clave de API pública y las sesiones de checkout que crea tu backend no cambian ([Antes de comenzar](/es/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide quién crea el pago. El `workflow` de la sesión de checkout debe coincidir con esa decisión:
+
+| Quién crea el pago | En Render tenías | En la API unificada | `workflow` de la sesión |
+|---|---|---|---|
+| Tu backend | `yunoCreatePayment` implementado | Sobrescribir `createPayment` | Predeterminado (`SDK_CHECKOUT`) |
+| El SDK | Sin equivalente: solo Seamless permitía que el SDK creara el pago | Sin sobrescritura | `SDK_SEAMLESS` |
+
+<Warning>
+Una sesión con el workflow predeterminado y sin sobrescritura de `createPayment` termina en `INTERNAL_ERROR`: el backend rechaza la creación del pago por parte del SDK. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Comparación lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```swift Before. Render mode
+import SwiftUI
+import YunoSDK
+
+// 1. Initialize once at app startup
+Yuno.initialize(apiKey: "your-public-api-key")
+
+// 2. Implement the delegate
+final class CheckoutModel: YunoPaymentDelegate, ObservableObject {
+    var checkoutSession: String = "session-from-backend"
+    var countryCode: String = "CO"
+    var language: String? = "en"
+    var viewController: UIViewController?
+
+    func yunoPaymentResult(_ result: Yuno.Result) { /* ... */ }
+
+    // Called by the SDK during render mode (the only mode where this fires)
+    func onLoading(isLoading: Bool) { /* show your own loader */ }
+}
+
+// 3. Embed the form, render layout yourself, submit from your button
+struct CheckoutView: View {
+    @StateObject var model = CheckoutModel()
+    let selectedMethod: PaymentMethodSelected
+    @State var paymentFlow: YunoPaymentRenderFlowProtocol?
+    @State var formView: AnyView?
+
+    var body: some View {
+        VStack {
+            Text("Checkout")
+            // ... your products / shipping / etc.
+            formView    // SDK form embedded here
+            Button("Pay") {
+                paymentFlow?.submitForm()
+            }
+        }
+        .task {
+            paymentFlow = await Yuno.startPaymentRenderFlow(
+                paymentMethodSelected: selectedMethod,
+                with: model
+            )
+            formView = await paymentFlow?.formView(
+                paymentMethodSelected: selectedMethod,
+                with: model
+            )
+        }
+    }
+}
+```
+
+```swift After. OnShowView override
+import SwiftUI
+import SdkPayments
+
+// 1. Initialize once at app startup
+SdkPayments.initialize(apiKey: "your-public-api-key")
+
+// 2. Implement the controller. Override showView + showLoading
+final class CheckoutModel: SdkPayments.TransactionController, ObservableObject {
+
+    @Published var formView: AnyView?
+    @Published var process: SdkPayments.TransactionProcess?
+    @Published var isLoading: Bool = false
+
+    func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep) {
+        // step == .FORM for the data-capture form, .ACTION for a payment code or OTP view. 3DS and redirects are full-screen.
+        self.formView = view
+        self.process = process
+    }
+
+    func showLoading(isLoading: Bool) {
+        self.isLoading = isLoading
+    }
+
+    func onStatus(status: SdkPayments.TransactionStatus) { /* ... */ }
+}
+
+// 3. Embed the delivered view, submit via process.onSubmit()
+struct CheckoutView: View {
+    @StateObject var model = CheckoutModel()
+    let selectedMethod: SdkPayments.PaymentMethodSelected
+
+    var body: some View {
+        VStack {
+            Text("Checkout")
+            // ... your products / shipping / etc.
+            if model.isLoading { ProgressView() }
+            model.formView
+            Button("Pay") {
+                model.process?.onSubmit()
+            }
+        }
+        .task {
+            let config = SdkPayments.TransactionConfig(
+                checkoutSession: "session-from-backend",
+                countryCode: "CO",
+                controller: model
+            )
+            SdkPayments.Transaction(config: config)
+                .start(paymentSelected: selectedMethod)
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+## Qué cambia {#what-changes}
+
+Agrupado en el orden en que editas el código. **Renombrado**: mismo rol, nuevo nombre. **Movido**: mismo valor, nuevo propietario. **Eliminado**: no hay nada que llamar. **Nuevo**: sin equivalente anterior. La última columna es lo único que tienes que hacer además del cambio de nombre.
+
+### Inicialización y configuración {#initialization-and-config}
+
+| Render | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `import YunoSDK` | `import SdkPayments` | Renombrado | |
+| `Yuno.initialize(apiKey:)` | `SdkPayments.initialize(apiKey:)` | Renombrado | El parámetro `callback:` ya no existe; usa la sobrecarga `async` si necesitas esperar. |
+| `Yuno.Appearance` pasado en `YunoConfig.appearance` | `SdkPayments.Appearance` en `SdkPayments.TransactionConfig.appearance` | Renombrado | Mismo inicializador; elimina el prefijo `Yuno.` y pásalo en cada transacción en lugar de una sola vez al inicio. |
+| `YunoPaymentDelegate.checkoutSession`, `.countryCode`, `.language`, `.viewController` | Los mismos campos en `SdkPayments.TransactionConfig` | Movido | Las propiedades del delegado pasan a ser campos de la configuración. `viewController` sigue siendo exclusivo de iOS y opcional en SwiftUI. |
+
+### Controlador {#controller}
+
+| Render | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `YunoPaymentDelegate` | `SdkPayments.TransactionController` | Renombrado | Haz que la misma clase se ajuste a él y pásala como `TransactionConfig.controller`. Como antes, el SDK no la retiene: mantenla activa durante toda la transacción. |
+| `yunoPaymentResult(_:)` | `onStatus(status:)` | Renombrado | Sigue siendo el único callback del resultado, una vez por transacción, también cuando el SDK muestra su pantalla de resultado. `status` y `substatus` provienen del backend; el SDK solo emite `INTERNAL_ERROR` y `USER_CANCEL`. Consulta [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `Yuno.Result.message` | `SdkPayments.TransactionStatus.message` | Renombrado | Mismo rol. `source` ahora es un enum (`.sdk` / `.backend`) y `code` no es opcional. |
+| `yunoCreatePayment(with:)` / `(with:information:)` | `createPayment(token:)` | Renombrado | Opcional. Un solo manejador reemplaza ambas variantes; `token` es el token de un solo uso completo como diccionario. Crea el pago y regresa: regresar es lo que antes era `continuePayment()`. Si el manejador lanza un error, el flujo se detiene y no se llama a `onStatus`, así que muestra el error tú mismo. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). |
+| `YunoLoaderDelegate.onLoading(isLoading:)` | `showLoading(isLoading:)` | Renombrado | Misma semántica. Render era el único modo anterior que realmente lo invocaba, por lo que las integraciones Render existentes casi seguro necesitan migrarlo. Una vez sobrescrito, el SDK oculta su propio indicador de carga y te informa el estado. Consulta [`showLoading`](/es/docs/yuno-sdk/controllers/show-loading). |
+| `onInstallmentSelected(_:)` con `YunoInstallmentSelected` | `onInstallmentSelected(_:)` con `SdkPayments.InstallmentSelected` | Renombrado | Opcional. Mismo disparador y mismos campos; solo cambia el tipo del payload. Se activa cuando el comprador selecciona o cambia una cuota en el formulario de tarjeta del SDK, incluida la selección automática predeterminada del SDK, y con `nil` cuando la selección ya no aplica. Consulta [`onInstallmentSelected`](/es/docs/yuno-sdk/controllers/on-installment-selected). |
+| `YunoShippingDelegate.onShippingAddressChanged(_:shippingInfo:)` | `onShippingAddressChanged(_:shippingInfo:)` mediante `SdkPayments.ShippingAddressHandling` | Movido | Opcional. Haz que el controlador se ajuste al protocolo; los tipos pierden el prefijo `Yuno` y la variante basada en completion ya no existe. Misma firma async y mismo rol: actualizaciones de envío en tiempo real en la hoja de Apple Pay. El protocolo hereda de `TransactionController`, por lo que el SDK lo toma del `controller` que pasas en la configuración. Consulta [`onShippingAddressChanged`](/es/docs/yuno-sdk/controllers/on-shipping-address-changed). |
+
+### Vistas {#views}
+
+| Render | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `paymentFlow.formView(paymentMethodSelected:with:)` | `showView(view:process:step:)` | Movido | Push, no pull: ya no obtienes la vista, el SDK la entrega a tu manejador cuando está lista. Guárdala en caché en tu modelo y renderízala desde ahí. `showView` puede llamarse más de una vez por transacción: `step == .FORM` para el formulario de captura de datos, `step == .ACTION` para una vista de acción como un código de pago o un OTP. Los desafíos 3DS y las redirecciones nunca pasan por `showView`: el SDK los presenta a pantalla completa. Consulta [`showView`](/es/docs/yuno-sdk/controllers/show-view). |
+| `paymentFlow.submitForm()` | `process.onSubmit()` | Renombrado | Mismo rol. Llámalo en el `TransactionProcess` que recibes en `showView`. |
+| *(ninguno)* | `SdkPayments.defaultShowView(view:process:step:)` | Nuevo | Llámalo desde tu sobrescritura de `showView` para los pasos que no quieres incrustar (por ejemplo, incrusta `.FORM` y devuelve `.ACTION` al SDK). |
+
+### Puntos de entrada {#entry-points}
+
+| Render | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `Yuno.startPaymentRenderFlow(paymentMethodSelected:with:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Renombrado | Construye la configuración y luego llama a `start`: Transaction es el único punto de entrada y la selección se pasa a `start`. Sobrescribe `showView` para mantener el formulario dentro de tu diseño (consulta Vistas). |
+| `paymentFlow.continuePayment()` | *(eliminado)* | Eliminado | Elimina la llamada: regresar de `createPayment` reanuda el flujo. El SDK ejecuta 3DS y las redirecciones por sí mismo, a pantalla completa; ya no los renderizas en tu diseño. Establece [`autoContinuePayment`](/es/docs/yuno-sdk/reference/objects-you-pass#autocontinuepayment) en `false` solo si necesitas que el SDK se detenga justo después de crear el pago. |
+| `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Renombrado | Mismo rol: reenvía la URL que recibe tu app después de una redirección externa. Consulta [Gestionar deeplinks](/es/docs/yuno-sdk/features/handle-deeplinks). |
+| `Yuno.hideLoader()` | *(eliminado)* | Eliminado | Elimina la llamada: el SDK cierra su propio indicador de carga. Con una sobrescritura de `showLoading` recibes `isLoading: false` en su lugar. |
+
+## Relacionado {#related}
+
+- [`showView`](/es/docs/yuno-sdk/controllers/show-view). Referencia completa del controlador y de `TransactionProcess`.
+- [`showLoading`](/es/docs/yuno-sdk/controllers/show-loading). Controlador del estado de carga.
+- [`TransactionConfig`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referencia completa de campos.
+- [Migración / Lite](/es/docs/yuno-sdk/migration/ios/payment/lite). Cuando no necesitas incrustar el formulario tú mismo.

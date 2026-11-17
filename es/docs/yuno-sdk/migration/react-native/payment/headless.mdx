@@ -1,0 +1,126 @@
+---
+title: "Modo Headless"
+description: "Migra las integraciones React Native Headless (YunoSdk.generateToken + continueCardPayment) a la API unificada Transaction."
+---
+
+El modo Headless te permitía recopilar los datos de pago en tu propia interfaz: `YunoSdk.generateToken` los tokenizaba, tu backend creaba el pago y `YunoSdk.continueCardPayment` ejecutaba la acción pendiente, como un desafío 3DS, y se resolvía con el estado final. En la API unificada pasas los datos que recopilaste como `transactionData` en el `PaymentMethodSelected`. El SDK omite su formulario, tokeniza, te entrega el token en `createPayment`, ejecuta 3DS e informa el resultado mediante `onStatus`.
+
+## Antes de empezar {#before-you-start}
+
+- Actualiza `@yuno-payments/yuno-sdk-react-native` a 2.0.0 y ejecuta `pod install`. Tu clave de API pública y las sesiones de checkout que crea tu backend no cambian ([Antes de comenzar](/es/docs/yuno-sdk/get-started#before-you-begin)).
+- En Android, `minSdkVersion` ahora es 23. Si tu `android/build.gradle` aplica el plugin del compilador de Compose al módulo de Yuno (una solución alternativa de 1.x), elimina ese bloque: con 2.0.0 la compilación falla con "The Compose Compiler requires the Compose Runtime to be on the class path".
+- Decide quién crea el pago. El `workflow` de la sesión de checkout debe coincidir con esa decisión:
+
+| Quién crea el pago | En Headless tenías | En la API unificada | `workflow` de la sesión |
+|---|---|---|---|
+| Tu backend | Siempre: `generateToken`, luego tu propia llamada al backend | Implementa `createPayment` | Predeterminado (`SDK_CHECKOUT`) |
+| El SDK | Sin equivalente: Headless nunca creaba el pago | No implementes `createPayment` | `SDK_SEAMLESS` |
+
+## Comparación lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```tsx Before. Headless mode
+import { YunoSdk, CardType } from '@yuno-payments/yuno-sdk-react-native';
+
+const { token } = await YunoSdk.generateToken(
+  {
+    checkoutSession,
+    paymentMethod: {
+      type: 'CARD',
+      vaultedToken: null,
+      card: {
+        save: false,
+        detail: {
+          number: cardNumber,
+          securityCode: cvv,
+          expirationMonth: 12,
+          expirationYear: 28,
+          holderName: holder,
+          type: CardType.CREDIT,
+        },
+      },
+    },
+  },
+  checkoutSession,
+  'CO'
+);
+
+await myBackend.createPayment(token);
+
+// When the payment response has checkout.sdk_action_required = true (3DS, for example)
+const result = await YunoSdk.continueCardPayment(checkoutSession, 'CO');
+console.log('Final state:', result.paymentState);
+```
+
+```tsx After. Unified Transaction
+import { Transaction } from '@yuno-payments/yuno-sdk-react-native';
+
+const transaction = new Transaction({
+  checkoutSession,
+  countryCode: 'CO',
+  controller: {
+    createPayment: async (token) => {
+      await myBackend.createPayment(token);
+    },
+    onStatus: (status) => {
+      console.log('Final status:', status.status);
+    },
+  },
+});
+
+await transaction.start({
+  type: 'CARD',
+  transactionData: {
+    card: {
+      number: cardNumber,
+      securityCode: cvv,
+      expirationMonth: 12,
+      expirationYear: 28,
+      holderName: holder,
+      type: 'CREDIT',
+    },
+  },
+});
+```
+
+</CodeGroup>
+
+## Qué cambia {#what-changes}
+
+Agrupado en el orden en que editas el código. **Renombrado**: mismo rol, nuevo nombre. **Movido**: mismo valor, nuevo responsable. **Eliminado**: no hay nada que llamar. **Nuevo**: sin equivalente anterior. La última columna es lo único que debes hacer además del cambio de nombre.
+
+### Inicialización y configuración {#initialization-and-config}
+
+| Headless | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `YunoSdk.initialize({ apiKey, countryCode, yunoConfig })` | `SdkPayments.initialize(apiKey)` | Renombrado | Ahora solo recibe la clave. `countryCode` y `language` pasan a `TransactionConfig`. |
+| `TokenCollectedData.checkoutSession` y el argumento `checkoutSession` de `generateToken` | `TransactionConfig.checkoutSession` | Movido | Defínelo una sola vez en la configuración, junto con el `countryCode` que pasabas a `generateToken`. |
+| `paymentMethod.type` | `PaymentMethodSelected.type` | Movido | Pasa al objeto padre. Consulta [`PaymentMethodSelected`](/es/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected). |
+| `paymentMethod.vaultedToken` | `PaymentMethodSelected.vaultedToken` | Movido | Pasa al objeto padre. |
+| `paymentMethod.card.detail` | `transactionData.card` | Movido | Mismos campos, dentro del espacio de nombres `transactionData` y sin anidar: no hay contenedor `detail`. `CardType.CREDIT` y `CardType.DEBIT` pasan a ser las cadenas `'CREDIT'` y `'DEBIT'`. Consulta [`TransactionData`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-data). |
+| `paymentMethod.card.installment` | `transactionData.installment` | Movido | Mismo `{ id, value }`. |
+| `paymentMethod.card.save` | `transactionData.vaultOnSuccess` | Renombrado | Guarda la tarjeta cuando el pago es exitoso. |
+| `paymentMethod.customer` | `transactionData.customer` | Movido | Dentro del espacio de nombres `transactionData`, con `document: { documentType, documentNumber }`. Cada SDK nativo usa los campos de cliente que admite y, en desarrollo, el wrapper advierte sobre los que ignora. |
+
+### Controlador {#controller}
+
+| Headless | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| *(llamadas libres, sin controlador)* | `TransactionConfig.controller` | Nuevo | Un objeto simple con `createPayment` y `onStatus` (no se necesita nada más), pasado en la configuración. |
+| Tu propia llamada al backend después de `generateToken` | `createPayment(token)` | Movido | El SDK lo invoca con `token`, el objeto completo del token de un solo uso. Crea el pago en tu backend y resuelve la Promise devuelta: así indicas "pago creado, continúa". Si se rechaza, el flujo se detiene: en Android `onStatus` recibe `INTERNAL_ERROR` con `message.code` `MERCHANT_CREATE_PAYMENT_FAILED`, en iOS el flujo se cierra sin un estado. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). |
+| El `CardPaymentResult` de `continueCardPayment` (`paymentState`, `paymentSubState`) | `onStatus(status)` | Movido | El SDK ahora gestiona todo el ciclo de vida e informa el estado final aquí, una vez por transacción. `status` y `substatus` provienen del backend; el SDK solo emite `INTERNAL_ERROR` y `USER_CANCEL`. Consulta [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Puntos de entrada {#entry-points}
+
+| Headless | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `YunoSdk.generateToken(data, checkoutSession, countryCode)` que devuelve `{ token }` | `new Transaction(config).start(paymentSelected)` | Renombrado | Ya no tokenizas tú mismo. Crea el `PaymentMethodSelected` con tus datos en `transactionData` e inicia la transacción: el token te llega en `createPayment`. |
+| `YunoSdk.continueCardPayment(checkoutSession, countryCode, showPaymentStatus)` | *(eliminado)* | Eliminado | Elimina la llamada: el SDK ejecuta 3DS como parte de la transacción, a pantalla completa, e informa el resultado a `onStatus`. Para conservar la pantalla de resultado del SDK, define `showStatusScreen: true` en la configuración. |
+| `YunoSdk.receiveDeeplink(url)` | `transaction.handleDeeplink(url)` | Renombrado | Consulta [Gestionar deeplinks](/es/docs/yuno-sdk/features/handle-deeplinks). |
+
+## Relacionado {#related}
+
+- [`TransactionData`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-data). Forma de los datos recopilados previamente.
+- [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). El recorrido del token.
+- [Lista de métodos de pago](/es/docs/yuno-sdk/features/payment-methods-list). Combina la lista del SDK para seleccionar el método con tu propia recopilación de datos.
