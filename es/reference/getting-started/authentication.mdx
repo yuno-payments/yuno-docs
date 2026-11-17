@@ -1,0 +1,49 @@
+---
+title: "Autenticación"
+description: "Explica los encabezados de clave de API y las claves de idempotencia que se usan para autenticar y proteger las solicitudes a la API de Yuno"
+---
+
+La API de Yuno usa el esquema de seguridad ApiKey para autenticar las solicitudes HTTP. Las claves de API son credenciales alfanuméricas que otorgan acceso a funciones específicas de la API.
+
+Todas las solicitudes requieren los encabezados `public-api-key` y `private-secret-key`. Encuéntralos en tu [Dashboard de Yuno](https://dashboard.y.uno/developers).
+
+<Danger>
+  No compartas tus claves de API secretas en lugares públicos como GitHub o Bitbucket, para evitar llamadas maliciosas a la API.
+</Danger>
+
+Ocasionalmente, puede requerirse un `X-Idempotency-Key`. Este UUID debe ser único para cada solicitud. Consulta [Idempotencia](/reference/authentication#idempotency) para más detalles.
+
+**Ejemplo de solicitud**:
+
+```sh
+curl --request <Method> \
+     --url <URL> \
+     --header 'X-Idempotency-Key: 7bf41af5-70ae-4e79-9b28-a8fa75c3ac53' \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>'
+```
+
+## Idempotencia {#idempotency}
+
+La idempotencia te permite reintentar una solicitud de forma segura cuando su resultado no está claro, por ejemplo ante un tiempo de espera agotado, un error de conexión o una respuesta `500`. Elimina el riesgo de ejecutar la operación dos veces.
+
+Algunas solicitudes incluyen un identificador único que se envía como el encabezado `X-Idempotency-Key` (por ejemplo, `7bf41af5-70ae-4e79-9b28-a8fa75c3ac53`). Esta clave también sirve para identificar una transacción específica.
+
+<Note>
+  Establece el valor de `X-Idempotency-Key` en `{$randomUUID}` para generar claves automáticamente.
+</Note>
+
+Reutilizar un `X-Idempotency-Key` produce uno de los siguientes resultados:
+
+- **La respuesta original.** Si la primera solicitud con esta clave creó un pago (sin importar su estado: aprobado, autorizado o rechazado), cualquier solicitud posterior con la misma clave devuelve ese pago original en lugar de crear uno nuevo. El cuerpo del reintento se ignora.
+- **`400 REQUEST_IN_PROCESS`.** La primera solicitud con esta clave aún se está procesando. Reintenta con la misma clave después de unos segundos.
+- **`400 IDEMPOTENCY_DUPLICATED`.** La primera solicitud con esta clave falló antes de que se creara un pago. No existe ningún pago para esta clave y la clave no puede reutilizarse: corrige la solicitud y envíala con una clave nueva.
+- **Procesamiento normal.** Si la primera solicitud fue rechazada antes de que comenzara el procesamiento (por ejemplo, un cuerpo mal formado), la clave no se consumió y el reintento se procesa como una solicitud nueva.
+
+### Lógica de reintento recomendada {#recommended-retry-logic}
+
+1. Si una solicitud falla con un resultado poco claro (un tiempo de espera agotado, un error de conexión, un `500` o una respuesta que no puedes interpretar), reinténtala **con la misma clave**. El reintento devuelve el resultado original, se procesa con normalidad o devuelve `IDEMPOTENCY_DUPLICATED`, lo que significa que no se creó ningún pago.
+2. Usa una **clave nueva** solo para iniciar un intento genuinamente nuevo: una orden nueva, o un intento nuevo después de un rechazo o después de `IDEMPOTENCY_DUPLICATED`.
+3. Nunca reintentes un fallo poco claro con una clave nueva. Si la solicitud original en realidad tuvo éxito, reintentarla con una clave nueva crea una operación duplicada.
