@@ -1,0 +1,111 @@
+---
+title: "Modo Lite"
+description: "Migra las integraciones Web Lite (yuno.startCheckout + yuno.mountCheckoutLite) a la API unificada Transaction."
+---
+
+El modo Lite preseleccionaba el método de pago del lado del comercio y luego cedía el control al SDK para mostrar el formulario de ese método, tokenizar, crear el pago, gestionar 3DS e informar el resultado. En la API unificada este es el **comportamiento predeterminado** de `transaction.start({ paymentMethod })`. No se necesitan sobrescrituras del controlador aparte de `onStatus`.
+
+## Antes de empezar {#before-you-start}
+
+- Carga el bundle unificado del SDK en lugar del anterior e inicialízalo como muestra la comparación lado a lado: `window.Yuno.initialize(...)` pasa a ser `SdkPayments.initialize(...)`. Tu clave de API pública y las sesiones de checkout que crea tu backend no cambian ([Antes de comenzar](/es/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide quién crea el pago. El `workflow` de la sesión de checkout debe coincidir con esa decisión:
+
+| Quién crea el pago | En Lite tenías | En la API unificada | `workflow` de la sesión |
+|---|---|---|---|
+| Tu backend | `yunoCreatePayment` implementado | Sobrescribe `createPayment` | Predeterminado (`SDK_CHECKOUT`) |
+| El SDK | Sin `yunoCreatePayment` | Sin sobrescritura | `SDK_SEAMLESS` |
+
+<Warning>
+Una sesión con el workflow predeterminado y sin la sobrescritura de `createPayment` termina en `INTERNAL_ERROR`: el backend rechaza la creación del pago del SDK. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Comparación lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```typescript Before. Lite mode
+// 1. Initialize once at page startup
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+// 2. Configure the checkout
+await yuno.startCheckout({
+    checkoutSession: 'session-from-backend',
+    elementSelector: '#root',
+    countryCode: 'CO',
+    language: 'en',
+    renderMode: { type: 'modal' },
+    yunoPaymentResult: (status) => {
+        console.log('Final status:', status)
+    },
+    yunoError: (error) => {
+        console.log('Error', error)
+    },
+})
+
+// 3. Mount Lite for the pre-selected payment method
+await yuno.mountCheckoutLite({
+    paymentMethodType: 'PIX',
+    vaultedToken: null,
+})
+```
+
+```typescript After. Unified Transaction
+// 1. Initialize once at page startup
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+// 2. Build the transaction and start with the pre-selected method
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    elementSelector: '#root',
+    onStatus: (result) => {
+        console.log('Final status:', result.status)
+    },
+})
+
+await transaction.start({
+    paymentMethod: { type: 'PIX' },
+})
+```
+
+</CodeGroup>
+
+## Qué cambia {#what-changes}
+
+Agrupado en el orden en que editas el código. **Renombrado**: mismo rol, nuevo nombre. **Movido**: mismo valor, nuevo responsable. **Eliminado**: no hay nada que llamar. La última columna es lo único que debes hacer además del cambio de nombre.
+
+### Inicialización y configuración {#initialization-and-config}
+
+| Lite | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renombrado | El global es `window.SdkPayments`. Como antes, usa `await`: se resuelve en la instancia de `SdkPayments` desde la que creas las transacciones. |
+| `checkoutSession`, `countryCode`, `language` en la configuración de `startCheckout` | Los mismos campos en la configuración de la transacción | Movido | Mismos campos, una sola fábrica: `sdkPayments.transaction({ checkoutSession, countryCode, language, … })`. |
+| `elementSelector` en la configuración de `startCheckout` | `elementSelector` en la configuración de la transacción | Movido | Obligatorio para un formulario de pago. `start({ paymentMethod })` muestra el formulario dentro de ese elemento y lanza un error si falta. Acepta un selector CSS o un `HTMLElement`. Los flujos headless lo ignoran. Las vistas de billetera y de lista reciben su propio `elementSelector` en `.mount()` (consulta [`getPaymentMethodsViews`](/es/docs/yuno-sdk/features/payment-methods-list)). |
+| `renderMode: { type: 'modal' \| 'element', elementSelector }` | `elementSelector` en la configuración de la transacción | Movido | El modo modal ya no existe. El formulario se muestra dentro del elemento que pasas en la configuración de la transacción. |
+| `card: CardConfig` | `card: CardConfig` en la configuración de la transacción | Movido | Misma forma. |
+| `showPayButton` en la configuración de `startCheckout` | `showPayButton` en la configuración de la transacción | Movido | Mismo significado. Solo para flujos de pago. |
+
+### Callbacks {#callbacks}
+
+| Lite | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renombrado | Sigue siendo el único callback de resultado, ahora como campo de la configuración de la transacción. Recibe un solo objeto `TransactionStatus` (`status`, `substatus`, `message`) en lugar de dos argumentos posicionales: `status` ya no es la unión de Lite. `result.status` lleva el estado del pago tal como lo informa la API (`READY_TO_PAY`, `CREATED`, `SUCCEEDED`, `REFUNDED`, `REJECTED`, `CANCELED`, `ERROR`, `DECLINED`, `PENDING`, `EXPIRED`, `VERIFIED`) más dos valores del SDK: `INTERNAL_ERROR` (un error del SDK o del backend, con detalles en `result.message`) y `USER_CANCEL` (desmontaste antes de recibir un resultado). Asigna tus ramas `SUCCEEDED`, `REJECT`, `FAIL`, `PROCESSING` y `READY` a esos valores. `subStatus` pasa a ser `result.substatus`. Consulta [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `yunoCreatePayment(ott, info)` | `createPayment(token) => Promise<void>` | Renombrado | Opcional. Basado en Promise, con un solo argumento: `token` es el `OneTimeToken` más `checkout_session`, la sesión a la que pertenece el token (rota después de un rechazo reintentable). Crea el pago con `token.token` y `token.checkout_session`, luego resuelve: resolver es lo que antes era `continuePayment()`, y el SDK después orquesta 3DS y el sondeo del estado. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). |
+| `yunoError(message, data?)` | *(eliminado)* | Eliminado | Todos los resultados terminales fluyen por `onStatus` (un `TransactionStatus` con `message` definido) o por una Promise de `start()` rechazada. |
+| `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Renombrado | Opcional. Elimina el campo obsoleto `type`. Consulta [`showLoading`](/es/docs/yuno-sdk/controllers/show-loading). |
+
+### Puntos de entrada {#entry-points}
+
+| Lite | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `yuno.startCheckout(config)` | `sdkPayments.transaction(config)` | Renombrado | Fábrica única: crea la transacción con la configuración (campos y callbacks anteriores) y luego llama a `start`. |
+| `yuno.mountCheckoutLite({ paymentMethodType, vaultedToken })` | `transaction.start({ paymentMethod: { type: paymentMethodType, vaultedToken } })` | Renombrado | La preselección de Lite pasa a ser el argumento `paymentMethod` de `start()`. |
+| `yuno.submitOneTimeTokenForm()` | `transaction.submit()` | Renombrado | Envía el formulario que montó `start()`, desde tu propio botón. Úsalo con `showPayButton: false`. Consulta [Web: enviar desde tu propio botón](/es/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button). |
+| `yuno.continuePayment()` | *(eliminado)* | Eliminado | Elimina la llamada. Lite exigía llamarla dentro de `yunoCreatePayment` para avanzar el flujo; el SDK ahora orquesta 3DS y el sondeo del estado automáticamente cuando `createPayment` se resuelve. |
+
+## Relacionado {#related}
+
+- [Primeros pasos](/es/docs/yuno-sdk/get-started). Guía completa de la API unificada.
+- [`TransactionConfig`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referencia completa de campos.
+- [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status). Valores y substatus.

@@ -143,3 +143,19 @@ This applies whichever way the retries ended — the schedule running to its las
 <Note>
 This flag applies to renewal cycles. Subscriptions created with `initial_payment_validation: true` already cancel themselves when their first payment fails, and that path reports `cancellation_source` as `SYSTEM` rather than `RETRIES_EXHAUSTED`.
 </Note>
+
+### Testing retries in sandbox
+
+With the [Yuno Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-gateway) set up as your card provider in sandbox, each of its [test cards](/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway) returns a fixed transaction response code. Pick the card according to what you want to test:
+
+* **Full retry schedule**: use a card that returns a soft decline, such as `DECLINED_BY_BANK`, `DO_NOT_HONOR` or `INSUFFICIENT_FUNDS`.
+* **`stop_on_hard_decline`**: set `stop_on_hard_decline` to `true` and use a card that returns a hard decline, such as `REPORTED_STOLEN` or `INVALID_CARD_DATA`.
+
+Whether a response code is a soft or hard decline is listed in the [Declined status](/reference/payments/status-and-response-codes/transaction#declined-status) table.
+
+Keep in mind:
+
+* Set `retry_on_decline` to `true` when you create the test subscription. It defaults to `false`, and without it no retries run.
+* Sandbox is limited to 5 retries, so an `amount` above 5 is rejected there.
+* Send `cancel_on_exhausted_retries` when you create the test subscription; it cannot be added afterwards.
+* When retries run out with `cancel_on_exhausted_retries` enabled, confirm with [Retrieve Subscription](/reference/subscriptions/retrieve-subscription) that `status` is `CANCELED` and `cancellation_source` is `RETRIES_EXHAUSTED`, and that your webhook endpoint received one `SUBSCRIPTION.CANCEL` event.

@@ -34,7 +34,7 @@ One-time tokens are the right choice for:
 <Note>
 **Vault on success**
 
-Set `vault_on_success: true` in the token request to automatically enroll and vault the payment method if the payment succeeds. This converts a one-time token into a persistent vaulted token without a separate enrollment step.
+Set `vault_on_success: true` in the token request, or `payment_method.vault_on_success: true` on the payment, to automatically enroll and vault the payment method if the payment succeeds. This converts a one-time token into a persistent vaulted token without a separate enrollment step.
 </Note>
 
 ### Vaulted token
@@ -65,6 +65,23 @@ Unlike vaulted tokens, network tokens are managed by the card network and **auto
 
 For a full overview of network tokens, lifecycle statuses, and integration options, see [Network Tokens](/docs/security-and-compliance/network-tokens).
 </Note>
+
+### Provider token
+
+Some payment methods are authorized at the provider, such as a Pix Automático authorization with EBANX. The provider identifies that authorization with its own reference, the **provider token**. Yuno stores it inside the customer's vaulted payment method, so your integration never handles it: you charge with the `vaulted_token` and Yuno sends the provider token with the payment. Only the provider that issued it can use it, so route payments made with that `vaulted_token` to that provider; Yuno sends it to the provider your routing selects.
+
+### Saving a payment method while paying
+
+For Pix with EBANX, the authorization is created during the first payment: send `payment_method.vault_on_success: true` on that payment. Yuno stores the provider token and saves the payment method for the customer:
+
+1. **First payment (customer-initiated):** create the payment with the customer (`customer_payer.id`), `payment_method.vault_on_success: true` and a `subscription` block that describes the authorization. The customer approves it outside your page.
+2. **The vaulted token:** the saved payment method appears in [Retrieve Enrolled Payment Methods](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api) as soon as the payment is created, and its token is in `transactions[].payment_method.vaulted_token` in [Retrieve Payment](/reference/payments/retrieve-payment-by-id-v2) once the payment reaches `SUCCEEDED`. It is not in the create response. Charge it only after the customer approves: before that, charges are declined.
+3. **Later payments (merchant-initiated):** send `payment_method.vaulted_token`. Yuno charges the stored authorization without a new customer approval.
+4. **Checkout:** returning customers see the saved Pix in the SDK checkout and can pay with one click, when you create the checkout session with their `customer_id`.
+
+If you already hold card provider tokens created outside Yuno, [enroll each one](/reference/payment-methods-direct-workflow/enroll-payment-method-api) once with `type: "CARD"`, `provider_data.token_source: "PROVIDER_TOKEN"`, the provider in `provider_data.id`, the connection in `provider_data.connection_id` and the provider reference in `provider_data.payment_method_token`. Yuno returns a `vaulted_token` you use the same way.
+
+For a complete example, see [Pix with vault on success](/docs/payment-features/subscriptions/pix-automatico#pix-with-vault-on-success).
 
 ## Token comparison
 

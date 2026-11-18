@@ -1,0 +1,298 @@
+---
+title: Headless SDK (Payment iOS)
+description: >-
+  Guía paso a paso para integrar el Headless SDK (Payment iOS) de Yuno en tu
+  aplicación móvil.
+robots: index
+---
+import GenericOrientation from '/snippets/es/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+El Headless SDK de Yuno para iOS te permite crear pagos e inscribir métodos de pago de forma simultánea. Al usar el Headless SDK, ten en cuenta que debes solicitar y enviar por API todos los campos obligatorios que exige el proveedor de pago. Estos campos son necesarios para generar el pago en la API del proveedor.
+
+El Headless SDK de Yuno te permite crear pagos en dos escenarios diferentes:
+
+* Crear un token de un solo uso con la información de una tarjeta de crédito o de métodos de pago alternativos y luego crear un pago.
+* Crear un token de un solo uso con un `vaulted_token` de un método de pago inscrito previamente. Esto recopila la información relevante para los proveedores de fraude antes de que crees un pago.
+
+Los siguientes pasos describen cómo crear un pago con el Headless SDK de Yuno.
+
+## Paso 1: Incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+El primer paso es instalar el Yuno SDK en tu proyecto de iOS.
+
+<Info>
+**Verifica las versiones del iOS SDK**
+
+Para ver todas las versiones disponibles, visita la [página de versiones](https://github.com/yuno-payments/yuno-sdk-ios/releases) en el repositorio del iOS SDK de Yuno.
+</Info>
+
+Puedes instalar el Yuno SDK de dos maneras:
+
+* **Cocoapods**: Si no tienes un Podfile, sigue la guía de [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) para crear uno. Después de crear el Podfile, integrarás el Yuno SDK con Cocoapods agregando la siguiente línea a tu Podfile:
+  ```ruby
+  pod 'YunoSDK', '~> 2.29.0'
+  ```
+* **[Swift Package Manager](https://www.swift.org/package-manager/)**: Configura el paquete de Swift y luego agrega el Yuno SDK como dependencia, como se muestra en el siguiente bloque de código:
+  ```swift
+  dependencies: [
+      .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.29.0"))
+  ]
+  ```
+
+## Paso 2: Inicializa el Headless SDK con la clave pública {#step-2-initialize-headless-sdk-with-the-public-key}
+
+Para inicializar el Headless SDK, debes importar Yuno y proporcionar una **PUBLIC_API_KEY** válida. Si no tienes tus credenciales de API, accede a la página [Developers (Credentials)](/es/docs/using-yuno/settings/developers-credentials) para ver cómo obtenerlas desde el dashboard.
+
+<Warning>
+**Inicialización con UISceneDelegate**
+
+Si tu aplicación usa un `UISceneDelegate`, asegúrate de colocar el código de inicialización de Yuno dentro de tu `SceneDelegate`.
+</Warning>
+
+El siguiente bloque de código presenta un ejemplo de cómo importar e inicializar `Yuno`.
+
+```swift
+import YunoSDK
+
+Yuno.initialize(
+    apiKey: "PUBLIC_API_KEY"
+)
+```
+
+<Info>
+**Requisitos de concurrencia de Swift 6**
+
+Si usas Swift 6, necesitarás manejar la concurrencia correctamente al usar los métodos asíncronos del SDK. Consulta la guía [Concurrencia en Swift 6](/es/docs/sdks/resources/swift-6-concurrency) para ver opciones de implementación detalladas y mejores prácticas.
+</Info>
+
+## Paso 3: Inicia el proceso de checkout {#step-3-start-the-checkout-process}
+
+A continuación, iniciarás el proceso de checkout con la función `apiClientPayment`, proporcionando los parámetros de configuración necesarios. Debes llamar a esta función cuando tu cliente seleccione el método de pago. Como resultado, el SDK comenzará a recopilar la información relevante para 3DS y para las herramientas de prevención de fraude que hayas configurado en tu enrutamiento.
+
+### Parámetros {#parameters}
+
+La siguiente tabla enumera todos los parámetros obligatorios y sus descripciones.
+
+| Parámetro | Descripción |
+| --- | --- |
+| `countryCode` | Este parámetro determina el país para el cual se configura el proceso de pago. La lista completa de países compatibles y su `countryCode` está disponible en la página [Cobertura por país](/es/docs/sdks/resources/country-coverage). |
+| `checkout_session` | Se refiere a la sesión de checkout del pago actual, creada con el endpoint [Crear sesión de checkout](/es/reference/checkout-sessions/create-checkout-session). Ejemplo: '438413b7-4921-41e4-b8f3-28a5a0141638' |
+
+El siguiente bloque de código presenta un ejemplo de la configuración de los parámetros.
+
+```swift
+var apiClientPayment: YunoPaymentHeadless?
+
+apiClientPayment = try Yuno.apiClientPayment(
+    countryCode: "CO",
+    checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638"
+)
+```
+
+## Paso 4: Genera el token {#step-4-generate-token}
+
+Después de recopilar toda la información del usuario, puedes iniciar el pago. Primero, debes crear un token de un solo uso (OTT) con la función `apiClientPayment.generateToken`. Como es una función asíncrona, puedes usar `do/catch` para asegurarte de manejar correctamente los errores que se produzcan. A continuación, encontrarás dos ejemplos de escenarios diferentes para crear un token de un solo uso:
+
+1. **Ejemplo 1**: Crea un token de un solo uso con una tarjeta como método de pago e incluyendo toda la información requerida de la tarjeta.
+2. **Ejemplo 2**: Crea un token de un solo uso con la información del `vaulted_token`.
+
+<Tip>
+**Ventajas de usar un token almacenado (vaulted token)**
+
+Usar un vaulted token con el SDK garantiza que toda la información de fraude de los proveedores que configuraste se recopile y se adjunte al token de un solo uso. Además, puedes incluir detalles de cuotas y un código de seguridad si el proveedor lo requiere.
+</Tip>
+
+```swift Example 1
+let tokenCollectedData: TokenCollectedData = TokenCollectedData(
+    checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+    paymentMethod: CollectedData(
+        type: "CARD",
+        vaultedToken: nil,
+        card: CardData(
+            save: true,
+            detail: CardData.Detail(
+                number: "4111111111111111",
+                expirationMonth: 12,
+                expirationYear: 25,
+                securityCode: "123",
+                holderName: "Andrea",
+                type: .credit
+            ),
+            installment: CardData.Installment(
+                id: "64ceacef-0886-4c81-9779-b2b3029c4e8b",
+                value: 1
+            )
+        ),
+        customer: Customer()
+    )
+)
+
+let result = try await apiClientPayment?.generateToken(
+    data: tokenCollectedData
+)
+```
+```swift Example 2
+let tokenCollectedData: TokenCollectedData = TokenCollectedData(
+    checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+    paymentMethod: CollectedData(
+        type: "CARD",
+        vaultedToken: "c8bb2bd8-8abf-4265-b478-0ec4e3c10cd5",
+        card: CardData(
+            installment: CardData.Installment(
+                id: "64ceacef-0886-4c81-9779-b2b3029c4e8b",
+                value: 1
+            )
+        ),
+        customer: Customer()
+    )
+)
+
+let result = try await apiClientPayment?.generateToken(
+    data: tokenCollectedData
+)
+```
+
+El siguiente bloque de código presenta las respuestas de la función `apiClientPayment.generateToken` para ambos ejemplos anteriores. La respuesta es un diccionario de tipo `[String: Any]`.
+
+```swift Example 1
+ ["token": "9ee44ac7-9134-4598-ae28-a26fec03099d",
+     "type": "CARD",
+     "customer": ["billing_address": nil,
+                  "first_name": nil,
+                  "gender": "",
+                  "phone": nil,
+                  "browser_info": ["color_depth": nil,
+                                   "language": "en",
+                                   "accept_header": "*/*",
+                                   "browser_time_difference": null,
+                                   "accept_content": null,
+                                   "accept_browser": null,
+                                   "java_enabled": null,
+                                   "user_agent": "YunoSDK_Example/1 CFNetwork/1406.0.4 Darwin/22.6.0",
+                                   "screen_height": "844.0",
+                                   "screen_width": "390.0",
+                                   "javascript_enabled": null],
+                  "document": null,
+                  "last_name": null,
+                  "device_fingerprint": nil,
+                  "email": nil],
+     "country": "BR",
+     "vaulted_token": nil,
+     "installment": ["rate": "",
+                     "id": "cca80084-961b-4212-9c34-54f03f4f10ae",
+                     "value": 24,
+                     "amount": null],
+     "card_data": null]
+
+```
+```swift Example 2
+["token": "9ee44ac7-9134-4598-ae28-a26fec03099d",
+     "type": "CARD",
+     "customer": ["billing_address": nil,
+                  "first_name": nil,
+                  "gender": "",
+                  "phone": nil,
+                  "browser_info": ["color_depth": nil,
+                                   "language": "en",
+                                   "accept_header": "*/*",
+                                   "browser_time_difference": null,
+                                   "accept_content": null,
+                                   "accept_browser": null,
+                                   "java_enabled": null,
+                                   "user_agent": "YunoSDK_Example/1 CFNetwork/1406.0.4 Darwin/22.6.0",
+                                   "screen_height": "844.0",
+                                   "screen_width": "390.0",
+                                   "javascript_enabled": null],
+                  "document": null,
+                  "last_name": null,
+                  "device_fingerprint": nil,
+                  "email": nil],
+     "country": "BR",
+     "vaulted_token": "a1c7c5d1-b260-4dc6-909a-8368704233cf",
+     "installment": ["rate": "",
+                     "id": "cca80084-961b-4212-9c34-54f03f4f10ae",
+                     "value": 24,
+                     "amount": null],
+     "card_data": null]
+
+```
+
+## Paso 5: Crea el pago {#step-5-create-the-payment}
+
+Una vez que hayas completado los pasos descritos anteriormente, puedes crear el pago. Llama al [endpoint Crear pago](/es/reference/payments/create-payment) desde tu backend justo después de generar el token, usando el token de un solo uso y la sesión de checkout.
+
+La respuesta del endpoint incluye el parámetro `sdk_action_required`, que indica si se necesitan acciones adicionales para completar el pago:
+
+En los métodos de pago síncronos, el pago se completa al instante. En este caso, `sdk_action_required` será false en la respuesta de la API y el proceso de pago termina. Si el pago requiere más interacción del SDK para completar el flujo, `sdk_action_required` será true. En ese caso, continúa con el Paso 6 para ver las instrucciones.
+
+## Paso 6: Procesa pagos asíncronos (opcional) {#step-6-process-asynchronous-payments-optional}
+
+Un pago con 3DS puede requerir un desafío adicional para verificar la identidad del cliente, como se describe en la página [Verificación de tarjetas con 3DS](/es/docs/security-and-compliance/3d-secure). Si es necesario un desafío de verificación 3DS, la respuesta del endpoint [Crear pago](/es/reference/payments/create-payment) contendrá:
+
+- Estado igual a `PENDING` y subestado igual a `WAITING_ADDITIONAL_STEP`
+- `sdk_action_required = true`
+
+Para realizar el desafío y finalizar el pago, usa la siguiente opción de integración:
+
+### Completa el desafío 3DS {#complete-the-3ds-challenge}
+
+Para completar el desafío 3DS de un pago con tarjeta que creaste desde tu servidor, llama a la función `continueCardPayment` en tu cliente Headless. El SDK recuperará el estado del pago, presentará el desafío 3DS a tu cliente y te informará de cada actualización del estado del pago.
+
+<Note>
+`continueCardPayment` solo admite pagos con `CARD`.
+</Note>
+
+```swift
+func continueCardPayment(onResult: @escaping (Yuno.Result) -> Void)
+```
+
+La función está disponible en la misma instancia de `YunoPaymentHeadless` que usaste para generar el token de un solo uso. A continuación, se muestra un ejemplo completo:
+
+```swift
+import YunoSDK
+
+apiClientPayment?.continueCardPayment { result in
+    switch result.status {
+    case .processing:
+        // The challenge was presented; the payment is being processed.
+        break
+    case .succeeded:
+        // The customer completed the challenge and the payment was approved.
+        break
+    case .reject, .fail:
+        // The payment was rejected or failed.
+        break
+    case .userCancelled:
+        // The customer closed the challenge without completing it.
+        break
+    case .internalError:
+        // Something went wrong while continuing the payment.
+        break
+    @unknown default:
+        break
+    }
+}
+```
+
+Cuando llamas a `continueCardPayment`, el SDK hará lo siguiente:
+
+1. Recuperar el estado actual del pago asociado con el `checkoutSession`.
+2. Presentar el desafío 3DS en una vista web segura, sobre la pantalla actual de tu aplicación.
+3. Cerrar el desafío automáticamente una vez que el cliente lo complete.
+4. Escuchar el resultado de la transacción en tiempo real y entregar cada actualización de estado mediante el closure `onResult`, que se invoca en el hilo principal.
+
+El closure `onResult` puede llamarse más de una vez. Recibirás el estado intermedio `processing` mientras se confirma la transacción, seguido de un estado final (`succeeded`, `reject`, `fail`, `userCancelled` o `internalError`).
+
+<Warning>
+**Obsoleto: `getThreeDSecureChallenge`**
+
+El método `getThreeDSecureChallenge` quedó obsoleto en la versión 2.18.0. Usa `continueCardPayment` en su lugar.
+</Warning>
+
+## Manejo de errores {#error-handling}
+
+Maneja en tu aplicación los errores que devuelve el SDK, como pagos fallidos o errores de validación. Para ver los códigos de estado HTTP y de respuesta, consulta [Códigos de estado y de respuesta](/reference/payments/status-and-response-codes/payment) en la referencia de la API.

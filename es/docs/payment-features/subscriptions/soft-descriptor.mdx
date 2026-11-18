@@ -1,0 +1,87 @@
+---
+title: "Descriptor de estado de cuenta en pagos recurrentes"
+description: "Controla el soft descriptor (descriptor del estado de cuenta) que aparece en el estado de cuenta bancario del titular de la tarjeta en cobros de suscripción y cobros recurrentes iniciados por el comercio."
+---
+
+El soft descriptor (también llamado descriptor del estado de cuenta) es el texto que un titular de la tarjeta ve en su estado de cuenta bancario junto a un cargo. Un descriptor claro reduce la confusión y las disputas que se derivan de ella, lo cual importa sobre todo en los cobros recurrentes, donde al cliente se le cobra sin volver a ingresar al checkout.
+
+Dónde configuras el descriptor depende del mecanismo recurrente que uses. Las dos rutas son independientes, así que elige la que corresponda a cómo se genera el cobro.
+
+<Note>
+**Qué ruta te corresponde**
+
+* **Motor de suscripciones de Yuno**: Yuno genera cada recobro a partir de un objeto de suscripción. Configura el descriptor en la suscripción.
+* **Iniciado por el comercio (MIT)**: tú generas cada recobro con una llamada a Create Payment usando credenciales almacenadas. Configura el descriptor en cada pago.
+
+El mismo comercio puede usar ambas para productos distintos. Los recobros con billeteras (Apple Pay / Google Pay) viajan por el canal de tarjeta / network token en ambos casos, por lo que las reglas de abajo también se aplican a ellos.
+</Note>
+
+## Recobros del motor de suscripciones {#subscription-engine-rebills}
+
+Cuando el [motor de suscripciones](/es/docs/payment-features/subscriptions) de Yuno cobra al cliente en cada ciclo, configura el descriptor una sola vez con el campo `soft_descriptor` de la suscripción. Yuno lo guarda en la suscripción y lo aplica a cada recobro que genera el motor.
+
+* Configúralo en [Create Subscription](/reference/subscriptions/create-subscription) (`soft_descriptor`, string, máx. 255).
+* Cámbialo después en [Update Subscription](/reference/subscriptions/update-subscription); el nuevo valor se aplica a los recobros siguientes.
+
+```json Create Subscription (excerpt)
+{
+  "name": "Streaming plan",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "country": "US",
+  "soft_descriptor": "ACME STREAMING",
+  "amount": { "currency": "USD", "value": 15000 },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "{{vaulted_token}}"
+  }
+}
+```
+
+## Recobros iniciados por el comercio (MIT) {#merchant-initiated-mit-rebills}
+
+Cuando tú gestionas la recurrencia, enviando cada cobro como un pago iniciado por el comercio con `stored_credentials.usage = USED` y `reason = SUBSCRIPTION`, no hay un objeto de suscripción que lleve el descriptor. Configúralo en cada pago.
+
+En [Create Payment](/es/reference/payments/create-payment), el descriptor está en el detalle del método de pago:
+
+* `payment_method.detail.card.soft_descriptor`
+* `payment_method.detail.wallet.soft_descriptor`
+* `payment_method.detail.bank_transfer.soft_descriptor`
+
+Para los recobros con Apple Pay y Google Pay, el método guardado es un network token de tipo tarjeta, así que usa `payment_method.detail.card.soft_descriptor`.
+
+```json Create Payment (excerpt)
+{
+  "amount": { "currency": "USD", "value": 15000 },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "{{vaulted_token}}",
+    "detail": {
+      "card": {
+        "soft_descriptor": "ACME STREAMING",
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED"
+        }
+      }
+    }
+  }
+}
+```
+
+Consulta [Credenciales almacenadas](/es/docs/payment-features/stored-credentials) para ver el flujo completo de CIT/MIT.
+
+## Comportamiento por proveedor {#provider-behavior}
+
+Yuno envía `soft_descriptor` al campo equivalente de cada proveedor (por ejemplo, Stripe `statement_descriptor` / `statement_descriptor_suffix`, Unlimit `dynamic_descriptor`, Airwallex `descriptor`, Inovio `PMT_DESCRIPTOR`, Nuvei `dynamicDescriptor.merchantName`). El comportamiento difiere según el proveedor:
+
+| Proveedor | Comportamiento |
+| :------- | :------- |
+| Stripe | Envía solo el sufijo (`statement_descriptor_suffix`) por defecto. El descriptor completo se envía solo para las organizaciones habilitadas para descriptores de estado de cuenta completos: contacta a tu technical account manager. |
+| Unlimit | Trunca a 22 caracteres. |
+| Airwallex | Trunca a 30 caracteres. |
+| Inovio | Elimina los caracteres no alfanuméricos. |
+| Worldpay | No lee `soft_descriptor`. La descripción del estado de cuenta proviene del campo genérico `payment_description`. |
+
+<Warning>
+La longitud y los caracteres permitidos varían según el proveedor. Mantén los descriptores cortos y alfanuméricos para que sobrevivan al truncamiento y a la limpieza de caracteres, y prueba con tu proveedor antes de depender de un formato específico.
+</Warning>

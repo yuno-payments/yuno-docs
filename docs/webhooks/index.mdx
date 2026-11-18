@@ -49,16 +49,25 @@ import { ExplainerVideo } from "/snippets/ExplainerVideo.jsx";
 
 ## Delivery and retries
 
-Yuno expects an **HTTP 200 OK** response to confirm a notification was received. No response body is required. If it doesn't get one in time, Yuno retries on the schedule below, so a brief outage on your end doesn't lose an event. Each retry delay counts from the previous attempt, and the elapsed time is approximate and counts from the first send.
+Yuno expects an **HTTP 200 OK** response to confirm a notification was received. No response body is required. `201 Created` and `204 No Content` also count as delivered.
+
+Error responses such as `400`, `401`, `429` and `5xx`, a timeout, or a connection error start the retry schedule below, so a brief outage on your end doesn't lose an event. Each retry delay counts from the previous attempt, and the elapsed time is approximate and counts from the first send.
 
 | Attempt | Delay after the previous attempt | Approximate time since the first send |
 | :------ | :------------------------------- | :------------------------------------ |
 | Initial send | N/A | 0 |
-| Retry 1 | 5 minutes | ~5 minutes |
-| Retry 2 | 50 minutes | ~55 minutes |
-| Retry 3 | 6 hours | ~6 hours 55 minutes |
-| Retry 4 | 24 hours | ~30 hours 55 minutes |
-| Retry 5 | 48 hours | ~78 hours 55 minutes |
+| Retry 1 | Immediately | ~0 |
+| Retry 2 | 5 minutes | ~5 minutes |
+| Retry 3 | 50 minutes | ~55 minutes |
+| Retry 4 | 6 hours | ~6 hours 55 minutes |
+| Retry 5 | 24 hours | ~30 hours 55 minutes |
+| Retry 6 | 48 hours | ~78 hours 55 minutes |
+
+With this default schedule, Yuno makes up to 7 attempts per event, and the payload's `retry` field goes from `0` on the initial send to `6` on the last retry. Some webhook configurations use a longer schedule with more retries, so don't treat `retry: 6` as the final attempt.
+
+<Warning>
+Yuno does not retry a `404 Not Found`. If your webhook URL has a wrong path, or your framework returns 404 for an unknown route, the event is dropped after the first attempt. Check the URL in Dashboard → Developers → Webhooks and make sure the route returns 200.
+</Warning>
 
 ## De-duplication
 

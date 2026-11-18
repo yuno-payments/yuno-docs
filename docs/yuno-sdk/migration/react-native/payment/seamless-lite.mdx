@@ -1,0 +1,98 @@
+---
+title: "Seamless Lite mode"
+description: "Migrate React Native Seamless Lite integrations (YunoSdk.startPaymentSeamlessLite) to the unified Transaction API."
+---
+
+Seamless Lite pre-selected the payment method on your side and let the SDK do the rest: form, tokenization, payment creation, 3DS and result. `YunoSdk.startPaymentSeamlessLite` resolved with the final `YunoStatus`. In the unified API this is the **default behavior** of `Transaction.start(paymentSelected)` when the controller has no `createPayment`: the SDK creates the payment and reports the result through `onStatus`.
+
+## Before you start
+
+- Upgrade `@yuno-payments/yuno-sdk-react-native` to 2.0.0 and run `pod install`. Your public API key does not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).
+- On Android, `minSdkVersion` is now 23. If your `android/build.gradle` applies the Compose compiler plugin to the Yuno module (a 1.x workaround), remove that block: with 2.0.0 the build fails with "The Compose Compiler requires the Compose Runtime to be on the class path".
+- Create the checkout session with `workflow: "SDK_SEAMLESS"`, as you did for Seamless Lite. It is what lets the SDK create the payment; without it the transaction ends in `INTERNAL_ERROR`. See the [`workflow` field](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow).
+
+## Side-by-side
+
+<CodeGroup>
+
+```tsx Before. Seamless Lite mode
+import { YunoSdk, YunoStatus } from '@yuno-payments/yuno-sdk-react-native';
+
+await YunoSdk.initialize({
+  apiKey: 'your-public-api-key',
+  countryCode: 'CO',
+  yunoConfig: { language: 'en' },
+});
+
+const status = await YunoSdk.startPaymentSeamlessLite({
+  checkoutSession,
+  methodSelected: { paymentMethodType: 'CARD', vaultedToken: savedToken },
+  showPaymentStatus: true,
+  countryCode: 'CO',
+});
+
+if (status === YunoStatus.SUCCEEDED) {
+  console.log('Success');
+}
+```
+
+```tsx After. Unified Transaction
+import { SdkPayments, Transaction } from '@yuno-payments/yuno-sdk-react-native';
+
+await SdkPayments.initialize('your-public-api-key');
+
+const transaction = new Transaction({
+  checkoutSession,
+  countryCode: 'CO',
+  language: 'en',
+  showStatusScreen: true,
+  controller: {
+    onStatus: (status) => {
+      if (status.status === 'SUCCEEDED') {
+        console.log('Success');
+      }
+    },
+  },
+});
+
+await transaction.start({ type: 'CARD', vaultedToken: savedToken });
+```
+
+</CodeGroup>
+
+## What changes
+
+Grouped in the order you edit the code. **Renamed**: same role, new name. **Moved**: same value, new owner. **Removed**: nothing to call. **New**: no legacy counterpart. The last column is the only thing you have to do beyond the rename.
+
+### Initialization and config
+
+| Seamless Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoSdk.initialize({ apiKey, countryCode, yunoConfig, iosConfig, androidConfig })` | `SdkPayments.initialize(apiKey)` | Renamed | It takes only the key now. The other arguments move to `TransactionConfig` or disappear (next rows). |
+| `countryCode` of `initialize` and of `startPaymentSeamlessLite` | `TransactionConfig.countryCode` | Moved | Pass it once per transaction. |
+| `yunoConfig.language`, `yunoConfig.saveCardEnabled` | `TransactionConfig.language`, `TransactionConfig.saveCardEnabled` | Moved | Pass them per transaction instead of once at startup. |
+| `yunoConfig.keepLoader`, `isDynamicViewEnabled`, `cardFormDeployed`, `iosConfig`, `androidConfig`, the `CardFlow` enum | *(removed)* | Removed | Delete them. The SDK keeps its loader unless you implement `showLoading`, and it has one card form. |
+| `checkoutSession` of `startPaymentSeamlessLite` | `TransactionConfig.checkoutSession` | Moved | The call's argument becomes a config field. |
+| `showPaymentStatus` of `startPaymentSeamlessLite` | `TransactionConfig.showStatusScreen` | Moved | Off by default now: set `showStatusScreen: true` to keep the SDK result screen. |
+
+### Controller
+
+| Seamless Lite | Unified | Change | What to do |
+|---|---|---|---|
+| The `YunoStatus` that `startPaymentSeamlessLite` resolved with | `onStatus(status)` | Moved | The result now arrives in the controller, once per transaction. `status` and `substatus` come from the backend: handle `DECLINED`, `REJECTED`, `ERROR` and `PENDING` instead of the 1.x `FAILED` and `PROCESSING`, and `USER_CANCEL` instead of `CANCELLED_BY_USER`. The SDK itself only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). |
+| *(none)* | `createPayment(token)` | New | Leave it out: without it the SDK creates the payment, which is the Seamless behavior. To create the payment on your backend for some methods only, implement it and return `SdkPayments.defaultCreatePayment(token)` for the rest. See [`createPayment`](/docs/yuno-sdk/controllers/create-payment). |
+| *(none)* | `showLoading`, `showView` | New | Optional. Show your own loader, or embed the SDK's form in your own screen. See [Take over the SDK](/docs/yuno-sdk/controllers/take-over-the-sdk). |
+
+### Entry points
+
+| Seamless Lite | Unified | Change | What to do |
+|---|---|---|---|
+| `YunoSdk.startPaymentSeamlessLite({ checkoutSession, methodSelected, showPaymentStatus, countryCode })` | `new Transaction(config).start(paymentSelected)` | Renamed | Build the config, then `start`. The Promise resolves once the transaction has started, not with the result: read the result in `onStatus`. |
+| `methodSelected: { paymentMethodType, vaultedToken }` | `PaymentMethodSelected`: `{ type, vaultedToken }` | Renamed | `paymentMethodType` is now `type`. |
+| `YunoSdk.receiveDeeplink(url)` | `transaction.handleDeeplink(url)` | Renamed | See [Handle deeplinks](/docs/yuno-sdk/features/handle-deeplinks). |
+
+## Related
+
+- [Get Started](/docs/yuno-sdk/get-started). Full unified-API walkthrough.
+- [`createPayment`](/docs/yuno-sdk/controllers/create-payment). Why leaving it out means the SDK creates the payment.
+- [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status). Values and substatus.

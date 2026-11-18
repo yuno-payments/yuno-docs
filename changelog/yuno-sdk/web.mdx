@@ -5,6 +5,139 @@ description: "Latest updates and version history for the new Yuno SDK for Web"
 
 import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
+## v2.7.2
+*November 12, 2026*
+
+**Card Payments**
+
+- <ChangelogBadge type="fixed" /> **A Saved Card No Longer Pays By Itself When Installments Fail**  
+  When the installments lookup for a saved credit card failed and installments was its only required field, the SDK created the one-time token and the payment with no click on pay. In the payment method list the preferred saved card is selected as the checkout loads, so it paid as soon as the SDK mounted, for example when the amount has no installment plan (`NO_INSTALLMENT_PLAN_AVAILABLE`). A failed lookup now means no installments: the saved card is shown with its pay button and nothing is paid until the shopper clicks pay or picks another payment method.
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Container Presence Logged On Mount**  
+  When the element passed to the SDK is not in the page at mount time, or left the page and was drawn again, the SDK now records whether the element was there when it started and how many milliseconds later it left. No change for the shopper.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Faster Payment Method List And Wallet Buttons**  
+  The payment method list and the wallet buttons load faster: the SDK downloads their code while it loads the checkout settings instead of after, and the wallet buttons reuse the payment methods the SDK already requested, so they make one request less. The express buttons above the list keep their place while they load, so the payment methods below do not move when a button appears.
+
+## v2.7.1
+*November 11, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Saved-card CVV and card PIN use the merchant font**  
+  The security code and card PIN fields of the saved-card form now load the fonts passed in `card.fonts`, like the new-card form, so they no longer fall back to the browser default font.
+
+- <ChangelogBadge type="added" /> **Mercado Pago Fast Payments In Headless start()**  
+  A headless `start()` with `MERCADO_PAGO_SUPERTOKEN` now sends the Mercado Pago wallet fields (`thirdPartyToken`, `providerMethodId`, `providerMethodType`) and the installments in the one-time token. If any wallet field is missing, `onStatus` reports `WALLET_DATA_MISSING` and no token is created.
+
+## v2.7.0
+*November 10, 2026*
+
+**PayPal**
+
+- <ChangelogBadge type="added" /> **Venmo Only Button**  
+  When Disable Funding Sources includes paypal and Enable Funding Sources includes venmo, checkout shows only the Venmo button. PayPal stays beside Venmo when paypal is not disabled. With paypal disabled and venmo not enabled, neither button is shown.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Apple Pay Merchant Session And PayPal Enrollment On Demand**  
+  When the configuration marks the Apple Pay merchant session or the PayPal enrollment as on demand, the SDK requests it from the sdk-provider endpoint when the shopper taps the button instead of reading it from the configuration, so no PayPal setup token is created for shoppers who never click PayPal. The PayPal button stays visible without a setup token in the configuration. If the request fails, the Apple Pay sheet or the PayPal window closes and the shopper can tap again while the rest of the checkout keeps working.
+
+## v2.6.0
+*November 6, 2026*
+
+**Card Payments**
+
+- <ChangelogBadge type="added" /> **Split One Payment Across Two Cards**  
+  `transaction.start([...])` takes an array of two card payment methods, each with its `data.amount`. The SDK creates one composite token, hands it to `createPayment`, runs each card's 3DS in turn and sends one `onStatus` for the whole payment. With `autoContinuePayment: false` it stops after `createPayment` and you continue each card on your side. An invalid array rejects `start()` with `INVALID_SPLIT_PAYMENT` before any request.
+
+## v2.5.1
+*November 5, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Click to Pay enrolment works again when the shopper ticks the consent box**  
+  In the Golden Flow card form, ticking "Save my information with Mastercard Click to Pay" showed a tick but the SDK received it as unticked, so the card was paid as a regular card and never enrolled in Click to Pay. "Remember me in this browser" and the mandate consent checkbox had the same problem. All three now report what the shopper sees.
+
+- <ChangelogBadge type="changed" /> **Every Express Wallet You Switch On Now Renders As A Button**  
+  With Horizontal express button stacking, every wallet whose Render as express button switch is on now renders as an express button, in your list order. Two rules used to pull wallets out of the row: Google Pay moved into the payment method list as soon as a second express wallet was on, and the row stopped at three buttons. Both are gone. Instead of dropping a wallet to make the rest fit, the row wraps: buttons keep an equal width, a row holds two on a phone and three when there is room, and a short last line is centred. The list order, the fallback to the list when a button does not load, and Vertical stacking behave as before. Merchants with two or more express wallets on will see Google Pay move from the list into the row, and merchants with more than three will see every wallet as a button over two or more lines.
+
+## v2.5.0
+*November 3, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="added" /> **Customer fields you already sent can be hidden, read-only or editable**  
+  When the checkout session carries a customer and the Checkout Builder sets a state for a customer field, the form follows it: a hidden field is not shown and its value is still sent with the payment, a read-only field shows the value locked with a lock icon, and an editable field shows the value prefilled so the shopper can change it for this payment only. The SDK checks every hidden and read-only value with the same validation as the form: a value that fails it is shown editable with its error instead. When every field is hidden and valid, the form is skipped. If the country data the document, phone or address check needs cannot be loaded, those values are sent as they are. Without a state, without a customer or without a value, the fields behave as before.
+
+- <ChangelogBadge type="changed" /> **Payment method list shows before the wallet buttons**  
+  The payment method list now appears as soon as its payment methods render, without waiting for the Google Pay or Apple Pay buttons. A wallet that loads slowly or never loads no longer keeps the list behind a spinner for up to 5 seconds.
+
+**Apple Pay**
+
+- <ChangelogBadge type="changed" /> **Apple Pay loads sooner on the payment method list**  
+  On the payment method list, the SDK now starts loading the Apple Pay button and Apple's SDK as soon as the payment methods arrive, when Apple Pay is in the list, so the wallet buttons appear sooner. Nothing changes when Apple Pay is not offered or cannot be shown on the device.
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Performance logs include time since SDK start**  
+  Performance logs now include the time elapsed since the merchant called `start()`, so slow starts can be traced from the merchant's first call.
+
+- <ChangelogBadge type="changed" /> **SDK chunk download timings are reported as network metrics**  
+  The SDK's own lazy JS and CSS chunks now report their download timing as network metrics, with cache hits marked, so slow chunk loads show up in monitoring. Loading behaviour and timing are unchanged.
+
+- <ChangelogBadge type="changed" /> **A performance log marks when all external buttons have rendered**  
+  On the payment method list, the SDK logs once when every external button has finished loading, as Web SDK 1.11 does.
+
+- <ChangelogBadge type="changed" /> **Unfinished chunk and wallet loads are logged when the page is hidden**  
+  When the page is hidden while a chunk download or a wallet button is still loading, the SDK logs which loads were still open and for how long.
+
+## v2.4.0
+*November 3, 2026*
+
+**Installments**
+
+- <ChangelogBadge type="changed" /> **Installment options are identified by plan id**  
+  When two installment options shared the same number of installments, choosing the second one displayed the first. Options are now identified by their plan id, the selected plan id travels with the one-time token, and options with interest show an interest label. The `onInstallmentSelected` callback also receives the plan id (`installmentId`), the plan type, the rate and its financial costs (sdk-web-core 9.7.0).
+
+**Apple Pay**
+
+- <ChangelogBadge type="fixed" /> **Apple Pay Button Outside Safari**  
+  When Apple answers `applePayUnsupported` for the merchant identifier on a browser other than Safari, the SDK no longer hides the Apple Pay button on that answer alone: it now shows the button when `canMakePayments()` is true. Shoppers with no card in Wallet (`paymentCredentialsUnavailable`) still do not see it.
+
+## v2.3.0
+*October 29, 2026*
+
+**Enrollment**
+
+- <ChangelogBadge type="added" /> **Vaulted Token On The Enrollment onStatus Result**  
+  When an enrollment ends with status ENROLLED, the result delivered to `onStatus` now carries `vaultedToken` with the token of the saved payment method, on every enrollment path. Other statuses and payment results do not carry the field.
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Saved PayPal accounts no longer show the "Unauthorized payment" banner**  
+  Selecting a saved PayPal account whose instalment lookup returns no plans no longer shows NuPay's "Unauthorized payment. There are no payment options available" banner. That banner is NuPay's own rule and only applies to NuPay; a saved PayPal account with no plans pays as any other saved payment method.
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **Wallet views follow showStatusScreen**  
+  The wallet views from `getPaymentMethodsViews` (Apple Pay, Google Pay, PayPal, Samsung Pay, Revolut Pay and PayPal Braintree) ignored the transaction's `showStatusScreen` and always showed the SDK status screen, so with `showStatusScreen: false` `onStatus` waited for the shopper to click Continue. They now follow the transaction's value, as the payment method list does: with `false` no status screen is shown and `onStatus` fires without it.
+
+- <ChangelogBadge type="fixed" /> **Mount Waits For Late Container**  
+  When the element given in elementSelector is not in the page yet, the SDK now waits up to 3 seconds for it to appear before reporting ELEMENT_NOT_FOUND. Nothing changes when the element is already there.
+
+## v2.2.1
+*October 29, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **Wallet views follow showStatusScreen**  
+  The wallet views from `getPaymentMethodsViews` (Apple Pay, Google Pay, PayPal, Samsung Pay, Revolut Pay and PayPal Braintree) ignored the transaction's `showStatusScreen` and always showed the SDK status screen, so with `showStatusScreen: false` `onStatus` waited for the shopper to click Continue. They now follow the transaction's value, as the payment method list does: with `false` no status screen is shown and `onStatus` fires without it.
+
 ## v2.2.0
 *October 27, 2026*
 

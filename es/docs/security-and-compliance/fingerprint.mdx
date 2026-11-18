@@ -1,0 +1,364 @@
+---
+title: "Huella digital de la tarjeta"
+description: "Usa las huellas digitales de tarjeta para detectar y deduplicar inscripciones repetidas de una misma tarjeta sin almacenar datos de la tarjeta."
+---
+
+Las huellas digitales de tarjeta son un hash criptográfico del PAN de la tarjeta que identifica de forma única una tarjeta de pago específica. Yuno devuelve este valor como `fingerprint` en el [objeto Payment Method](/reference/payment-methods-direct-workflow/the-payment-method-object-api). Cuando un mismo cliente inscribe la misma tarjeta varias veces, Yuno crea inscripciones separadas con valores de `vaulted_token` distintos, y la huella digital te ayuda a detectar los duplicados.
+
+**Propiedades clave:**
+
+* **Se mantiene constante** en múltiples inscripciones de la misma tarjeta
+* **Es única** para cada número de tarjeta distinto
+* **Protege el cumplimiento de PCI** al no exponer el número completo de la tarjeta
+* **Permite la deduplicación** sin almacenar ni acceder a datos sensibles de la tarjeta
+
+<Warning>
+  No puedes verificar las huellas digitales antes de que el cliente ingrese la información de su tarjeta. Este es un requisito de cumplimiento de PCI.
+</Warning>
+
+**Alternativa:** Muestra las tarjetas guardadas existentes antes del formulario de inscripción para que los clientes vean lo que ya tienen guardado.
+
+## Cómo funciona {#how-it-works}
+
+### La misma tarjeta, múltiples inscripciones {#same-card-multiple-enrollments}
+
+```json
+// First enrollment
+{
+  "vaulted_token": "b82b7682-def1-4d46-ad51-7da446b2966c",
+  "card_data": {
+    "fingerprint": "fp_abc123xyz789",
+    "iin": "41111111",
+    "lfd": "1111"
+  }
+}
+
+// Second enrollment of the SAME card
+{
+  "vaulted_token": "7ce53292-c402-4e3d-8ddd-a49268633294",  // Different token
+  "card_data": {
+    "fingerprint": "fp_abc123xyz789",  // Same fingerprint!
+    "iin": "41111111",
+    "lfd": "1111"
+  }
+}
+```
+
+### Tarjetas diferentes {#different-cards}
+
+```json
+{
+  "vaulted_token": "...",
+  "card_data": {
+    "fingerprint": "fp_different456",  // Different fingerprint
+    "iin": "52222222",
+    "lfd": "2222"
+  }
+}
+```
+
+## Por qué se producen inscripciones duplicadas {#why-duplicate-enrollments-occur}
+
+Para evitar problemas operativos, Yuno no impide automáticamente las inscripciones duplicadas de tarjetas. Cuando un cliente inscribe la misma tarjeta varias veces:
+
+* Cada inscripción crea un **nuevo `vaulted_token`**
+* **No se realiza ninguna deduplicación automática**
+* Esto aplica **sin importar** si cambian la fecha de vencimiento o la información del titular de la tarjeta
+
+Implementa la deduplicación de tu lado usando las huellas digitales.
+
+## Guía de implementación {#implementation-guide}
+
+### Paso 1: Recupera los métodos de pago existentes {#step-1-retrieve-existing-payment-methods}
+
+Usa el endpoint [Retrieve Enrolled Payment Methods](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api) para listar las tarjetas existentes del cliente.
+
+```bash
+GET /v1/customers/{customer_id}/payment-methods
+```
+
+**Respuesta:**
+
+```json
+{
+  "payment_methods": [
+    {
+      "vaulted_token": "token_1",
+      "card_data": {
+        "fingerprint": "fp_abc123",
+        "iin": "41111111",
+        "lfd": "1111",
+        "brand": "VISA"
+      }
+    },
+    {
+      "vaulted_token": "token_2",
+      "card_data": {
+        "fingerprint": "fp_xyz789",
+        "iin": "52222222",
+        "lfd": "2222",
+        "brand": "MASTERCARD"
+      }
+    }
+  ]
+}
+```
+
+### Paso 2: Verifica si hay duplicados después de la inscripción {#step-2-check-for-duplicates-after-enrollment}
+
+```javascript
+async function checkForDuplicates(customerId, newCardFingerprint) {
+  // Get existing payment methods
+  const existingMethods = await getCustomerPaymentMethods(customerId);
+  
+  // Extract fingerprints (filter out nulls)
+  const existingFingerprints = existingMethods
+    .map(method => method.card_data?.fingerprint)
+    .filter(Boolean);
+  
+  // Check for duplicates
+  const isDuplicate = existingFingerprints.includes(newCardFingerprint);
+  
+  if (isDuplicate) {
+    // Handle duplicate (see options below)
+    console.log('Duplicate card detected');
+  }
+  
+  return isDuplicate;
+}
+```
+
+### Paso 3: Gestiona los duplicados {#step-3-handle-duplicates}
+
+Tienes varias opciones cuando se detecta un duplicado:
+
+**Recomendado:** La opción A (impedir la inscripción) para la mayoría de las integraciones. Usa la B o la C solo si tu producto permite intencionalmente varias copias guardadas de la misma tarjeta.
+
+#### Opción A: Impedir la inscripción (recomendada para la mejor experiencia de usuario) {#option-a-prevent-enrollment-recommended-for-best-ux}
+
+```javascript
+// Before enrollment, fetch existing cards and display them
+// Show user: "You already have these cards saved:"
+// - VISA ending in 1111
+// - MASTERCARD ending in 2222
+//
+// This prevents the duplicate enrollment from happening
+```
+
+#### Opción B: Notificar después de la inscripción {#option-b-notify-after-enrollment}
+
+```javascript
+enrollmentStatus: async ({ status, vaultedToken }) => {
+  if (status === 'ENROLLED' && vaultedToken) {
+    const newCard = await getPaymentMethodDetails(customerId, vaultedToken);
+    const isDuplicate = await checkForDuplicates(
+      customerId, 
+      newCard.card_data?.fingerprint
+    );
+    
+    if (isDuplicate) {
+      // Notify user
+      showNotification("This card was already saved. We've removed the duplicate.");
+      
+      // Optionally remove the duplicate
+      await unenrollPaymentMethod(customerId, vaultedToken);
+    } else {
+      showNotification("Card saved successfully!");
+    }
+  }
+}
+```
+
+#### Opción C: Conservar ambas inscripciones {#option-c-keep-both-enrollments}
+
+```javascript
+// Allow duplicates for customer flexibility
+// Display all cards with visual indicators:
+// - VISA •••• 1111 (Primary)
+// - VISA •••• 1111 (Duplicate - added Jan 15)
+```
+
+## Ejemplo de implementación completa {#complete-implementation-example}
+
+```javascript
+// Enrollment flow with duplicate detection
+const enrollmentFlow = {
+  
+  // 1. Customer completes enrollment via SDK
+  enrollmentStatus: async ({ status, vaultedToken }) => {
+    if (status !== 'ENROLLED' || !vaultedToken) {
+      return;
+    }
+    
+    try {
+      // 2. Fetch the newly enrolled payment method
+      const newCard = await fetch(
+        `/api/payment-methods/${vaultedToken}`
+      ).then(r => r.json());
+      
+      const newFingerprint = newCard.card_data?.fingerprint;
+      
+      // 3. Handle cases where fingerprint is not available
+      if (!newFingerprint) {
+        console.warn('Fingerprint not available for this card');
+        showNotification("Card saved successfully!");
+        return;
+      }
+      
+      // 4. Get existing cards for this customer
+      const existingCards = await fetch(
+        `/api/customers/${customerId}/payment-methods`
+      ).then(r => r.json());
+      
+      // 5. Check for duplicates
+      const duplicates = existingCards.payment_methods.filter(card => 
+        card.card_data?.fingerprint === newFingerprint &&
+        card.vaulted_token !== vaultedToken  // Exclude the newly enrolled card
+      );
+      
+      // 6. Handle duplicate
+      if (duplicates.length > 0) {
+        const confirmRemove = await showConfirmDialog(
+          "This card is already saved to your account. " +
+          "Would you like to remove the duplicate?"
+        );
+        
+        if (confirmRemove) {
+          await fetch(
+            `/api/payment-methods/${vaultedToken}`,
+            { method: 'DELETE' }
+          );
+          showNotification("Duplicate card removed.");
+        } else {
+          showNotification("Card saved. You now have multiple copies of this card.");
+        }
+      } else {
+        showNotification("Card saved successfully!");
+      }
+      
+    } catch (error) {
+      console.error('Error checking for duplicates:', error);
+      // Fail gracefully - card is still enrolled
+      showNotification("Card saved successfully!");
+    }
+  }
+};
+```
+
+## Consideraciones importantes {#important-considerations}
+
+### Disponibilidad de la huella digital {#fingerprint-availability}
+
+El campo `fingerprint` puede ser `null` en algunos métodos de pago o proveedores. Verifica siempre que la huella digital exista antes de usarla:
+
+```javascript
+const fingerprint = card.card_data?.fingerprint;
+
+if (!fingerprint) {
+  // Handle this case gracefully
+  // Option 1: Skip duplicate detection
+  // Option 2: Use alternative matching (IIN + LFD)
+  // Option 3: Log and notify your team
+  console.warn('Fingerprint not available');
+}
+```
+
+**Coincidencia alternativa:**
+
+```javascript
+// Fallback: Match by IIN + LFD + expiration
+const isSameCard = (card1, card2) => {
+  return card1.card_data?.iin === card2.card_data?.iin &&
+         card1.card_data?.lfd === card2.card_data?.lfd &&
+         card1.card_data?.expiration_month === card2.card_data?.expiration_month &&
+         card1.card_data?.expiration_year === card2.card_data?.expiration_year;
+};
+```
+
+<Warning>
+  Tarjetas diferentes pueden compartir el mismo IIN y LFD.
+</Warning>
+
+### Actualizaciones de la tarjeta {#card-updates}
+
+Comportamiento de la huella digital ante las actualizaciones de la tarjeta:
+
+| Cambio                          | Comportamiento de la huella digital |
+| ------------------------------- | -------------------------------- |
+| **Cambia el número de tarjeta**         | ✅ Se genera una **nueva** huella digital  |
+| **Cambia la fecha de vencimiento**     | ❌ La huella digital **se mantiene igual** |
+| **Cambia el nombre del titular de la tarjeta**     | ❌ La huella digital **se mantiene igual** |
+| **Tarjeta reemitida (mismo número)** | ❌ La huella digital **se mantiene igual** |
+
+### Huella digital del network token {#network-token-fingerprint}
+
+Para los network tokens, Yuno usa un `network_token_fingerprint` que funciona como la huella digital de la tarjeta y tiene como alcance tu organización y el identificador único del network token en el vault de PCI. Esto significa que las inscripciones duplicadas del mismo PAN pueden corresponder al mismo network token. Para más detalles, consulta [Network Tokens](/es/docs/security-and-compliance/network-tokens).
+
+## Casos de uso {#use-cases}
+
+### 1. Evitar el desorden en la billetera {#1-prevent-wallet-clutter}
+
+Ayuda a los usuarios a evitar guardar la misma tarjeta varias veces:
+
+```javascript
+// Show before enrollment form
+"You already have these cards saved:
+ - VISA ending in 1111
+ - MASTERCARD ending in 2222"
+```
+
+### 2. Mejorar la experiencia de usuario {#2-improve-user-experience}
+
+Limpia automáticamente los duplicados:
+
+```javascript
+if (isDuplicate) {
+  await removeOlderDuplicate(vaultedToken);
+  showMessage("We updated your saved card.");
+}
+```
+
+### 3. Limpieza de datos {#3-data-cleanup}
+
+Identifica y elimina las inscripciones duplicadas en lote:
+
+```javascript
+async function cleanupDuplicates(customerId) {
+  const cards = await getPaymentMethods(customerId);
+  const fingerprints = new Map();
+  
+  for (const card of cards.payment_methods) {
+    const fp = card.card_data?.fingerprint;
+    if (!fp) continue;
+    
+    if (fingerprints.has(fp)) {
+      // Keep the most recent, remove older duplicates
+      const existing = fingerprints.get(fp);
+      const newerCard = new Date(card.created_at) > new Date(existing.created_at) 
+        ? card 
+        : existing;
+      const olderCard = newerCard === card ? existing : card;
+      
+      await unenrollPaymentMethod(customerId, olderCard.vaulted_token);
+      fingerprints.set(fp, newerCard);
+    } else {
+      fingerprints.set(fp, card);
+    }
+  }
+}
+```
+
+### 4. Análisis y monitoreo {#4-analytics-and-monitoring}
+
+Haz seguimiento de las tasas de inscripciones duplicadas:
+
+```javascript
+// Log duplicate events for monitoring
+if (isDuplicate) {
+  analytics.track('duplicate_card_enrolled', {
+    customer_id: customerId,
+    fingerprint: fingerprint.substring(0, 10), // Partial for privacy
+    duplicate_count: duplicates.length + 1
+  });
+}
+```

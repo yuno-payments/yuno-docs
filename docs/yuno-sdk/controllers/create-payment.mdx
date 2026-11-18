@@ -14,7 +14,7 @@ When you override it, the SDK delivers the token to your handler and waits for t
 
 On Web, send `token.token` as the one-time token and `token.checkout_session` as the checkout session. After a retryable card decline the SDK moves the form to a new checkout session, so the session in your transaction config can be stale. If you set [`autoContinuePayment: false`](/docs/yuno-sdk/reference/objects-you-pass#autocontinuepayment), the SDK stops after your handler resolves. It runs no status query and no 3DS, does not call `onStatus`, and marks the checkout session as finished, so a later `start()` or `submit()` on it throws. The PayPal button ignores the flag and always continues.
 
-If the Promise/Task is rejected, the SDK stops the flow. On Web, `onStatus` then fires with `status: "INTERNAL_ERROR"` and `message.code: "MERCHANT_CREATE_PAYMENT_FAILED"`. `showLoading` emits `isLoading: false` and the view is closed at that point. You are responsible for showing the error to your user.
+If the Promise/Task is rejected, the SDK stops the flow. On Web, `onStatus` then fires with `status: "INTERNAL_ERROR"` and `message.code: "MERCHANT_CREATE_PAYMENT_FAILED"`. `showLoading` emits `isLoading: false` and the view is closed at that point. You are responsible for showing the error to your user. On React Native the outcome follows the native SDK underneath: on Android `onStatus` receives `INTERNAL_ERROR` with `message.code: "MERCHANT_CREATE_PAYMENT_FAILED"` and your error message in `message.reason`; on iOS the flow closes without a status.
 
 On iOS you can create the payment yourself for some methods only. Call `SdkPayments.defaultCreatePayment(token:)` from your override to fall through to the SDK's own payment creation, which needs a session created with `workflow: "SDK_SEAMLESS"`:
 
@@ -28,11 +28,24 @@ func createPayment(token: [String: Any]) async throws {
 }
 ```
 
+On React Native, return `SdkPayments.defaultCreatePayment(token)` from your override. It resolves once the SDK has created the payment, with the same `workflow: "SDK_SEAMLESS"` requirement:
+
+```tsx
+createPayment: async (token) => {
+  if (!createsPaymentsOnBackend) {
+    return SdkPayments.defaultCreatePayment(token);
+  }
+  await myBackend.createPayment(token);
+},
+```
+
 In an enrollment flow, this controller is not invoked with payment data and overriding it has no effect. On Web the enrollment config does not accept `createPayment`. TypeScript rejects it and JavaScript ignores it.
 
 <Warning>
 Match the checkout session's `workflow` to this decision. Sessions created with the default workflow (`SDK_CHECKOUT`) require this override, because the backend rejects payment creation coming from the SDK. If you don't override `createPayment`, create the session with `workflow: "SDK_SEAMLESS"`. The field lives on the [`POST /v1/checkout/sessions` body](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow), not on `TransactionConfig`.
 </Warning>
+
+In a [split payment](/docs/yuno-sdk/features/split-payment), the token is a composite token. Send it to `POST /v2/payments` with `workflow: "SDK_CHECKOUT"`, because `POST /v1/payments` rejects it.
 
 ## Signature
 
@@ -68,6 +81,16 @@ suspend fun createPayment(token: Map<String, Any>)
 ```
 
   </Tab>
+
+  <Tab title="React Native">
+
+```typescript
+createPayment?(token: OneTimeToken): Promise<void>
+```
+
+Resolve the Promise once your backend has created the payment; reject it to stop the flow. On Android the native SDK stops waiting after 60 seconds and reports `INTERNAL_ERROR` with `message.code: "OperationTimeout"`.
+
+  </Tab>
 </Tabs>
 
 <Tip>
@@ -83,12 +106,13 @@ Your backend call must follow the [Create Payment API reference](https://docs.y.
 | Web | `CreatePaymentTokenInformation`. The `OneTimeToken` fields (`token`, `type`, `vaulted_token`, `vault_on_success`, `customer`, `card_data`, `bank_transfer`) plus `checkout_session`, and `recognitionToken` and `quote` when present. |
 | iOS | `[String: Any]` |
 | Android | `Map<String, Any>` |
+| React Native | `OneTimeToken` (`Record<string, unknown>`), with the keys of the native token of the platform |
 
 See [`OneTimeToken`](/docs/yuno-sdk/reference/objects-you-receive#one-time-token) for the full reference.
 
 ## Threading
 
-On iOS and Android, `createPayment` is invoked on the main thread. You can update UI directly from inside this handler. But keep in mind that any backend call you make should happen off the main thread.
+On iOS and Android, `createPayment` is invoked on the main thread. You can update UI directly from inside this handler. But keep in mind that any backend call you make should happen off the main thread. On React Native it runs on the JavaScript thread, and the native SDK waits for the returned Promise.
 
 ## Related
 

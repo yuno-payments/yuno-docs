@@ -5,10 +5,10 @@ title: "Integration types"
 description: "Local, cloud, standalone or reconciliation first: how your stores connect to Yuno In-Person Payments, what each one asks of you, and how to choose."
 ---
 
-How a sale reaches the POS terminal depends on what you run in store. All four types share the same payment object, webhooks, dashboard and reconciliation, so a merchant can start with one and add another later. In every type the Yuno Payment App on the terminal reads the card, picks the acquirer and authorises; what changes is who tells it how much to charge.
+How a sale reaches the POS terminal depends on what you run in store. All four types share the same payment object, webhooks, dashboard and reconciliation, so a merchant can start with one and add another later. In every type the Yuno Payment App reads the card and Yuno Cloud chooses the acquirer and authorises; what changes is who tells the terminal how much to charge.
 
-<Frame caption="Four integration types. They differ in who starts the sale; the payment, the routing and the reconciliation are the same.">
-  <img src="/images/in-person/ways-to-integrate.svg" alt="Four integration types: local, cloud, standalone and reconciliation first" />
+<Frame caption="Four integration types. They differ in who starts the sale; the authorisation, the routing and the reconciliation are the same.">
+  <img src="/images/in-person/ways-to-integrate.svg" alt="Four integration types: local, cloud, standalone and reconciliation first. In each one the sale is authorised through Yuno Cloud." />
 </Frame>
 
 ## Compare
@@ -19,12 +19,15 @@ How a sale reaches the POS terminal depends on what you run in store. All four t
 | **What talks to the POS terminal** | Your checkout system, in the store | Yuno Cloud | Nobody; the cashier | Nothing changes |
 | **Runs on** | Your terminals, Yuno Payment App | Your terminals, Yuno Payment App | Your terminals, Yuno Payment App | Your current terminals and app |
 | **You build** | The calls on your checkout system | An API call and a webhook handler | Nothing | Nothing |
-| **If the store loses its connection to Yuno** | Sales continue | Cannot start a sale until connectivity returns | Sales continue | Not affected |
+| **If the store loses its connection to Yuno** | No card sale through Yuno until it returns | No card sale until it returns | No card sale until it returns | Not affected |
 | **Multi-acquirer routing** | Yes | Yes | Yes | No |
+| **First step** | Integrate your checkout system with the terminal | One API call and a webhook handler | Register the terminals; nothing to build | Connect your acquirers' settlement files |
 | **Best for** | Retail chains with their own checkout software | Cloud checkout systems, platforms, order pickup, mobile checkout | Small counters, pop-ups, fallback | Any fleet, before or alongside the others |
 
 <Info>
   **Which one for you?** If your checkout software runs in the store, go **Local** and keep **Standalone** as the fallback of the same app. If your checkout runs in the cloud, or you are a platform whose merchants own the terminals, go **Cloud**. **Reconciliation first** gives the finance benefit on your current fleet while the terminals switch. The online integration you already have does not change.
+
+  **Reconciliation first is the quickest to start**, because it changes nothing in your stores: connect the settlement files and the view is there while your terminals stay as they are. Which package each type belongs to, and what each one needs from you, is on [Solutions](/docs/in-person/solutions).
 </Info>
 
 ## Each type in detail
@@ -53,7 +56,7 @@ How a sale reaches the POS terminal depends on what you run in store. All four t
     | Checkout system to POS terminal | amount, currency, reference, cashier, instalment plan (optional) |
     | POS terminal to checkout system | status, reason, authorisation code, masked card, entry mode, instalment plan, acquirer and its IDs, receipt lines |
 
-    **You build:** the calls described in [Connect your checkout system](/docs/in-person/connect-your-checkout-system). **Offline:** the checkout system and the terminal keep working on the store network; the terminal reports sales to Yuno when its connection returns.
+    **You build:** the calls described in [Connect your checkout system](/docs/in-person/connect-your-checkout-system). **If the link to Yuno drops:** the checkout system and the terminal still talk to each other on the store network, but a card sale cannot be authorised, so the terminal declines cleanly and nothing is charged.
 
   </Tab>
   <Tab title="Cloud">
@@ -67,7 +70,7 @@ How a sale reaches the POS terminal depends on what you run in store. All four t
         Every terminal keeps a secure connection open to Yuno Cloud; the sale arrives on that connection and the amount appears on the screen.
       </Step>
       <Step title="The POS terminal runs the payment">
-        Exactly as in the other types: the Yuno Payment App picks the acquirer with the published rules, takes the card and the PIN, and authorises directly with the acquirer. Yuno Cloud only delivers the amount; it is not in the authorisation.
+        Exactly as in the other types: the Yuno Payment App reads the card and takes the PIN under Yuno's key, and Yuno Cloud chooses the acquirer, translates the PIN and authorises the sale.
       </Step>
       <Step title="You get the result">
         By webhook, and on the payment through the API.
@@ -105,7 +108,7 @@ How a sale reaches the POS terminal depends on what you run in store. All four t
 
     **Timeouts.** The terminal waits up to 120 seconds for the customer. If you get no webhook within 150 seconds of the request, read the payment by its `id` before retrying, and reuse the same `X-Idempotency-Key` on any retry so a second sale is never created.
 
-    **You build:** one API call and a webhook handler. **Offline:** a sale cannot start without connectivity between your server, Yuno and the terminal; sales already on the terminal complete.
+    **You build:** one API call and a webhook handler. **If the link to Yuno drops:** a sale cannot start, and a sale already on the terminal cannot be authorised either; nothing is charged.
 
   </Tab>
   <Tab title="Standalone">

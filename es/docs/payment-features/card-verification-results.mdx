@@ -1,0 +1,123 @@
+---
+title: "Resultados de verificación de tarjeta (AVS y CVV)"
+description: "Entiende cómo Yuno expone los resultados de las verificaciones del emisor sobre dirección (AVS), código postal, nombre del titular de la tarjeta y CVV/CVC en cada pago con tarjeta."
+---
+
+Cuando se autoriza un pago con tarjeta, el emisor puede devolver el resultado de varias verificaciones que la red ejecutó sobre los datos de la tarjeta proporcionados por el cliente, principalmente **AVS** (Address Verification Service) y la coincidencia del **CVV / CVC**. Yuno te devuelve esos resultados en cada transacción con tarjeta para que puedas usarlos en tu propia lógica de riesgo, conciliación o reintentos.
+
+Esta guía cubre:
+
+- Qué significa cada resultado de verificación
+- Dónde encontrarlos en la respuesta de la API y en los webhooks
+- Cómo interpretar los códigos
+- Cómo usarlos en tu flujo de decisión
+
+---
+
+## Qué se verifica {#what-gets-checked}
+
+| Verificación | Qué comprueba | Campo |
+|---|---|---|
+| Dirección (AVS) | La primera línea de la dirección de facturación que ingresó el cliente coincide con la que el emisor tiene registrada. | `address_line_1_check` |
+| Código postal / ZIP (AVS) | El código postal de facturación coincide con el registro del emisor. | `zip_code_check` |
+| Nombre del titular de la tarjeta | El nombre del titular de la tarjeta en la solicitud coincide con el registro del emisor. La cobertura varía mucho según la red y el país. | `card_holder_name_check` |
+| Código de seguridad de la tarjeta (CVV / CVC / CVV2) | El código de seguridad de 3 o 4 dígitos de la tarjeta coincide. | `card_security_code_check` |
+
+Las cuatro verificaciones dependen del emisor: Yuno no las calcula, reenvía exactamente lo que devuelve el adquirente o la red de tarjetas.
+
+---
+
+## Dónde encontrarlos en la respuesta {#where-to-find-them-in-the-response}
+
+El bloque se encuentra en el **detalle de la tarjeta** del método de pago, y se duplica en cada transacción que ejecutó una verificación:
+
+```text
+payment.payment_method.payment_method_detail.card.verification_services
+payment.transactions.payment_method.detail.card.verification_services
+payment.transactions_history[].payment_method.detail.card.verification_services
+```
+
+Aparece en la respuesta de:
+
+- `POST /v1/payments`: Crear pago
+- `GET /v1/payments/{id}`: Consultar pago
+- `POST /v1/payments/{id}/capture`, `/refund`, `/cancel`, etc.
+
+También se incluye en los **eventos de webhook de pago** (`payment.created`, `payment.updated`, …), dentro de la misma ruta `payment_method.detail.card`.
+
+### Ejemplo de respuesta (extracto) {#example-response-excerpt}
+
+```json
+{
+  "id": "p_01HZK3TJX5W8R7Q2V4N6Y8M1B3",
+  "status": "SUCCEEDED",
+  "payment_method": {
+    "type": "CARD",
+    "payment_method_detail": {
+      "card": {
+        "authorization_code": "123456",
+        "card_data": {
+          "brand": "VISA",
+          "iin": "411111",
+          "lfd": "1111"
+        },
+        "verification_services": {
+          "address_line_1_check":     "PASS",
+          "zip_code_check":           "PASS",
+          "card_holder_name_check":   "UNAVAILABLE",
+          "card_security_code_check": "PASS"
+        }
+      }
+    }
+  }
+}
+```
+
+Si no se realizó ninguna de las verificaciones, el objeto `verification_services` completo se omite de la respuesta.
+
+---
+
+## Valores de resultado {#result-values}
+
+Yuno normaliza el resultado de cada verificación devuelto por el emisor o el adquirente en uno de cuatro valores canónicos. Cada uno de los cuatro campos usa el mismo enum:
+
+| Valor | Significado |
+|---|---|
+| `PASS` | La verificación se ejecutó y el valor coincidió con el registro del emisor. |
+| `FAIL` | La verificación se ejecutó y el valor **no** coincidió. |
+| `UNAVAILABLE` | No se pudo completar la verificación: el emisor no está certificado, no respondió o no admite la verificación en esta región. |
+| `UNCHECKED` | La verificación no se realizó en esta transacción (por ejemplo, el comercio no envió un CVV o el proveedor no ejecuta AVS). |
+
+---
+
+## Cómo usar estos resultados {#how-to-use-these-results}
+
+Los resultados de AVS y CVV **no** son decisiones de autorización: la transacción puede ser aprobada aunque las verificaciones fallen. Son señales orientativas que puedes incorporar a tu propia estrategia de riesgo.
+
+Una matriz de decisión simple que usan muchos comercios:
+
+| AVS (address_line_1_check / zip_code_check) | CVV (card_security_code_check) | Acción sugerida |
+|---|---|---|
+| `PASS` | `PASS` | Aceptar. |
+| `PASS` | `FAIL` | Rechazo suave o autenticación adicional: los datos de facturación parecen correctos, pero el código de seguridad es incorrecto. |
+| `FAIL` | `PASS` | Revisar: la discrepancia en los datos de facturación es una señal fuerte de fraude incluso con un CVV correcto. |
+| `FAIL` | `FAIL` | Rechazar. |
+| `UNAVAILABLE` / `UNCHECKED` | cualquiera | Tratar como desconocido: recurrir a otras señales de riesgo (resultado de 3DS, puntaje de la evaluación de fraude). |
+
+Como la cobertura de la verificación varía según el emisor y la región, cualquier lógica de decisión que construyas encima debería:
+
+1. **Tomar por defecto la decisión de autorización.** Una transacción `SUCCEEDED` debería enviarse, a menos que tu política de riesgo indique lo contrario.
+2. **Combinar señales.** Combina CVV / AVS con `fraud_screening`, el resultado de `three_d_secure` y `provider_data.iso8583_response_code`.
+3. **Tolerar `UNAVAILABLE` y `UNCHECKED`.** Muchas tarjetas en Latinoamérica y EMEA no ejecutan AVS en absoluto.
+
+---
+
+## Envío de datos de verificación en la solicitud {#sending-verification-data-on-the-request}
+
+También puedes enviar `verification_services` **a** Yuno en la solicitud de creación del pago, por ejemplo, cuando retransmites resultados de autenticación de un sistema de registro. Los mismos cuatro campos se aceptan en:
+
+```text
+payment_method.payment_method_detail.card.verification_services
+```
+
+Cuando se proporcionan en la solicitud, Yuno reenvía los valores al proveedor downstream cuando es compatible.

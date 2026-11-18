@@ -7,6 +7,66 @@ Headless was a tokenization client: the merchant collected card data in their ow
 
 In the unified API the same scenario maps to **non-seamless headless** mode: pass the pre-collected data inside `transactionData` on the `PaymentMethodSelected`, override [`createPayment`](/docs/yuno-sdk/controllers/create-payment) to create the payment from your backend, and let the SDK orchestrate tokenization, 3DS, and status polling automatically. There is no second call to resume the payment: returning from `createPayment` does it.
 
+## Using Payment Methods List with Headless
+
+Headless doesn't mean you cannot use SDK components. You can combine [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list) for method selection with a headless `start()` for payment execution.
+
+* **Ownership split:**
+  - **Yuno handles:** Rendering the payment method list, displaying customer saved payment methods, express wallet buttons (Apple Pay), 3DS challenges, redirects, and handoffs.
+  - **Merchant handles:** Rendering custom card collection inputs and your own Pay button.
+
+```swift
+var selectedPayment: SdkPayments.PaymentMethodSelected?
+
+// Request the views. The list reports the shopper's choice to your PaymentListController
+let views = transaction.getPaymentMethodsViews(
+    types: [.APPLE_PAY(), .PAYMENT_METHOD_LIST],
+    controller: self
+)
+
+// In your SdkPayments.PaymentListController:
+func onPaymentSelected(paymentSelected: SdkPayments.PaymentMethodSelected) {
+    selectedPayment = paymentSelected
+}
+
+// When the customer taps your own Pay button:
+if let selected = selectedPayment {
+    if let vaultedToken = selected.vaultedToken {
+        // Saved card: keep the token from the list and add the CVV from your own input
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: selected.paymentMethodType,
+            vaultedToken: vaultedToken,
+            transactionData: SdkPayments.TransactionData(
+                card: SdkPayments.CardTransactionData(securityCode: cvv)
+            )
+        )
+        transaction.start(paymentSelected: paymentSelected)
+    } else if selected.paymentMethodType == "CARD" {
+        // New card: send the data collected in your own inputs
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: "CARD",
+            transactionData: SdkPayments.TransactionData(
+                card: SdkPayments.CardTransactionData(
+                    number: cardNumber,
+                    securityCode: cvv,
+                    expirationMonth: expMonth,
+                    expirationYear: expYear,
+                    holderName: cardHolder
+                )
+            )
+        )
+        transaction.start(paymentSelected: paymentSelected)
+    } else {
+        // Non-card method (e.g. APM or redirect): pass the selection as it is
+        transaction.start(paymentSelected: selected)
+    }
+}
+```
+
+<Warning>
+**Unfolded display cannot be used with headless card collection.** When **Unfolded display** is enabled in **Checkout Builder → Styling**, selecting a method embeds and submits Yuno's pre-built form directly inside the list row. To collect card details in your own inputs, ensure Unfolded display is disabled so the list acts strictly as a selector.
+</Warning>
+
 ## Before you start
 
 - Replace `import YunoSDK` with `import SdkPayments`. Your public API key and the checkout sessions your backend creates do not change ([Before you begin](/docs/yuno-sdk/get-started#before-you-begin)).

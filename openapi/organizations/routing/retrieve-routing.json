@@ -6,8 +6,7 @@
   },
   "servers": [
     { "url": "https://api-sandbox.y.uno/v1", "description": "Sandbox" },
-    { "url": "https://api.y.uno/v1", "description": "Production (US)" },
-    { "url": "https://api.eu.y.uno/v1", "description": "Production (EMEA)" }
+    { "url": "https://api.y.uno/v1", "description": "Production (US)" }
   ],
   "components": {
     "securitySchemes": {
@@ -68,6 +67,10 @@
                               "provider_id": { "type": "string", "example": "STRIPE", "description": "Required on provider steps; absent on action steps. Must match the provider of the connection." },
                               "connection_id": { "type": "string", "example": "f1a3c4d5-...", "description": "Required on provider steps; absent on action and smart routing steps. Must be ACTIVE and support the payment_method." },
                               "provider_type": { "type": "string", "enum": ["PAYMENT", "FRAUD", "THREE_D_SECURE", "AUTHENTICATION"], "description": "The kind the provider resolves to. Response only." },
+                              "timeout": { "type": "integer", "example": 60, "description": "Provider steps. Timeout in seconds of the provider, from the provider catalog. Response only." },
+                              "network_token_enable": { "type": "boolean", "description": "Payment steps. Whether network_token_on can be true on this step: the organization is onboarded to network tokens and the provider supports them. Response only." },
+                              "network_token_on": { "type": "boolean", "description": "Payment steps. Whether the step pays with the network token of the card when one is available." },
+                              "three_d_secure_exemptions": { "type": "array", "items": { "type": "string", "enum": ["LOW_VALUE", "TRANSACTION_RISK_ANALYSIS", "SECURE_CORPORATE", "TRUSTED_BENEFICIARY", "RECURRING_PAYMENT", "STRONG_CUSTOMER_AUTHENTICATION", "OUT_OF_SCOPE"] }, "description": "3DS steps. The SCA exemptions the step may apply; an empty array when none." },
                               "action": { "type": "string", "enum": ["CANCEL", "CAPTURE", "HOLD_FOR_REVIEW", "REVERT"], "description": "Makes the step an action step that ends the route: CANCEL rejects the payment, CAPTURE captures the authorization after action_delay, HOLD_FOR_REVIEW leaves it pending manual review, REVERT reverts it after a post-payment fraud screening. CAPTURE and HOLD_FOR_REVIEW follow an APPROVED or SUCCEEDED_GROUP output of a payment or smart routing step, REVERT the outputs of a fraud step that runs after the payment, CANCEL never an approval. An action step has no provider_id, connection_id or output." },
                               "action_delay": { "type": "string", "example": "PT5M", "description": "Only with action = CAPTURE. ISO-8601 duration between the approval and the capture, at least PT1M and at most P7D. Omit to capture as soon as the approval is processed." },
                               "output": {
@@ -163,16 +166,16 @@
                             "items": {
                               "type": "object",
                               "properties": {
-                                "condition_type": { "type": "string", "example": "COUNTRY", "description": "See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT." },
+                                "condition_type": { "type": "string", "example": "COUNTRY", "description": "See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CURRENCY, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT, SUBSCRIPTION_RETRY, SUBSCRIPTION_RETRY_COUNT." },
                                 "conditional": { "type": "string", "example": "ONE_OF" },
                                 "values": {
                                   "type": "array",
                                   "items": { "type": "string" },
                                   "example": ["US", "CA"],
-                                  "description": "Empty only on an AMOUNT condition with currency, which then matches any amount in that currency."
+                                  "description": "On CURRENCY, uppercase ISO 4217 codes (not XXX, no repeats): exactly 1 with EQUAL or NOT_EQUAL, 1 or more with ONE_OF or NOT_ONE_OF. Empty only on an AMOUNT condition with currency, which then matches any amount in that currency."
                                 },
                                 "key": { "type": "string", "description": "METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name." },
-                                "currency": { "type": "string", "example": "USD", "description": "ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME." },
+                                "currency": { "type": "string", "example": "USD", "description": "ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME. Not sent on CURRENCY, whose currencies go in values." },
                                 "time_period_repeat_amount": { "type": "integer", "example": 1, "description": "TIME_PERIOD and VOLUME_PAYMENTS_LIMIT: every how many units of time_period_repeat_frequency (schedule), or the length of a DAILY window in days, 1 to 90 (limit)." },
                                 "time_period_repeat_frequency": { "type": "string", "enum": ["DAILY", "WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"], "description": "TIME_PERIOD: recurrence unit. VOLUME_PAYMENTS_LIMIT: period of the limit, DAILY, MONTHLY or QUARTERLY." },
                                 "time_period_repetition_days": {

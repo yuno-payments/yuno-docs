@@ -1,0 +1,138 @@
+---
+title: "Reembolsos"
+description: "Yuno ofrece un conjunto completo de flujos de reembolso que cubren cada etapa del proceso de devolución del dinero al cliente."
+---
+
+Yuno ofrece un conjunto completo de flujos de reembolso que cubren cada etapa del proceso de devolución del dinero al cliente. Hay tres flujos compatibles, cada uno diseñado para una necesidad operativa distinta:
+
+- **[Reembolsos referenciados](https://docs.y.uno/docs/direct-integration-use-cases/refund-payments)**: revierten un solo pago capturado por Yuno mediante la API. Es el flujo estándar de reembolso por atención al cliente.
+- **[Reembolsos por lotes](https://docs.y.uno/docs/using-yuno/dashboard-overview/payments#batch-refunds)**: procesan hasta 1,000 reembolsos a la vez al cargar un CSV en el Yuno Dashboard. Los equipos de operaciones los usan para eventos de retiro de productos, barridos por fraude y reembolsos masivos.
+- **Reembolsos sin referencia**: envían fondos a un método de pago sin referenciar un pago original de Yuno. Consulta [Reembolsos sin referencia](#unreferenced-refunds) más abajo.
+
+---
+
+## Flujos de reembolso que Yuno admite {#refund-flows-yuno-supports}
+
+<div className="dense-table">
+
+| Flujo | Canal | ¿Vinculado a un pago de Yuno? | Cuándo usarlo |
+|---|---|---|---|
+| **Reembolso referenciado** | API `POST /v1/payments/{id}/refunds` | Sí: requiere el `id` del pago y el `transaction_id` | Revertir un cobro realizado a través de Yuno. Flujo estándar de reembolso por atención al cliente. |
+| **Reembolso por lotes** | Carga de CSV en el Dashboard | Sí: cada fila referencia un `payment_id` de Yuno | Procesar hasta 1,000 reembolsos a la vez. Los equipos de operaciones lo usan para eventos de retiro de productos, barridos por fraude o reembolsos masivos. |
+| **Reembolso sin referencia** | API `POST /v1/unreferenced-refunds` | **No**: envía los fondos directamente a un método de pago | Reembolsar a clientes cuyo cobro original se procesó fuera de Yuno (por ejemplo, un sistema de facturación heredado, Zuora OPG, una corrección de suscripción). También créditos de cortesía o promocionales. |
+
+</div>
+
+### Reembolso referenciado (individual, mediante API) {#referenced-refund-single-via-api}
+
+Un reembolso referenciado devuelve el dinero de un pago capturado por Yuno. Llamas a `POST /v1/payments/{id}/refunds` con el `id` del pago, el `transaction_id` que se va a reembolsar y un objeto `amount` opcional. Deja `amount` vacío para un reembolso total, o especifica un `value` y una `currency` para un reembolso parcial. El reembolso se acredita al **mismo método de pago con el que se realizó el cobro original**.
+
+Cuando un reembolso referenciado es exitoso, el pago principal pasa a `status = REFUNDED` / `sub_status = REFUNDED`, y se agrega una nueva transacción con `transaction.type = REFUND` y `transaction.status = SUCCEEDED`. Los webhooks se envían como de costumbre.
+
+<Tip>
+**Tiempo de procesamiento del reembolso**
+
+Los reembolsos se procesan al instante en Sandbox. En producción, el tiempo de procesamiento varía según el método de pago y el proveedor: los reembolsos de tarjeta suelen liquidarse en 1–5 días hábiles, mientras que ACH y SEPA pueden tardar de 3 a 10 días hábiles.
+</Tip>
+
+### Reembolso por lotes (masivo, mediante Dashboard) {#batch-refund-bulk-via-dashboard}
+
+La función de reembolso por lotes del Yuno Dashboard permite que tu equipo procese reembolsos de varias transacciones al mismo tiempo, lo que ahorra tiempo y trabajo manual. Cada fila del CSV cargado referencia un pago existente de Yuno.
+
+**Cómo usarla**
+
+1. Ve a **All payments → Batch refunds → Upload**.
+2. Descarga la plantilla de ejemplo y complétala. Columnas obligatorias:
+   - `Payment ID`
+   - `Transaction ID`
+   - `Amount to refund`
+   - `Currency`
+   - `Merchant reference`
+   - `Reason`: uno de `DUPLICATE`, `FRAUDULENT`, `REQUESTED_BY_CUSTOMER`
+3. Carga el CSV. Yuno valida cada fila y pone los reembolsos en cola.
+4. Supervisa el progreso en **All payments → Batch refunds → Overview**.
+
+**Límites**: hasta 1,000 pagos por lote. Para volúmenes mayores, divide la carga en varios lotes o comunícate con tu gerente de cuenta.
+
+### Reembolso sin referencia (crédito independiente, mediante API) {#unreferenced-refund-standalone-credit-via-api}
+
+Un reembolso sin referencia, también llamado **crédito** o **reembolso independiente**, devuelve fondos a un método de pago **sin referenciar un pago original de Yuno**. Es esencial cuando el cobro que se reembolsa se realizó fuera de Yuno, o cuando el comercio necesita enviar un crédito promocional o de cortesía.
+
+El resto de esta página explica de principio a fin cómo funcionan los reembolsos sin referencia.
+
+---
+
+## Reembolsos sin referencia {#unreferenced-refunds}
+
+Los **reembolsos sin referencia** de Yuno son una solución de API diseñada para emitir reembolsos directamente a un método de pago sin referenciar una transacción de pago original. En la terminología de gateway, esto corresponde a la operación `operation_type: "Credit"`.
+
+Te permite enviar fondos a una tarjeta, cuenta bancaria, mandato o billetera que no necesariamente se cobró a través de Yuno, y unifica más de 28 proveedores de pago detrás de un único contrato de API.
+
+### Cómo funcionan los reembolsos sin referencia {#how-unreferenced-refunds-work}
+
+Un reembolso sin referencia pasa por una pequeña máquina de estados que replica el ciclo de vida estándar de pagos de Yuno.
+
+1. **`CREATED`**: Yuno guarda el reembolso después de validar la solicitud y enrutarla a un proveedor compatible.
+2. **`PENDING`**: el proveedor aceptó el reembolso y espera la liquidación asíncrona (compensación ACH, liquidación SEPA, etc. pagado).
+3. **Estados finales**:
+   - **`SUCCEEDED`**: los fondos se confirmaron en el método de pago de destino (ya sea con liquidación síncrona, por ejemplo Stripe, o con liquidación asíncrona mediante un webhook del proveedor).
+   - **`FAILED`**: el proveedor rechazó el reembolso, devolvió los fondos, se encontró con OFAC/sanciones, superó el SLA o hubo cualquier otro error irrecuperable. El detalle está en `provider.response_code` y `provider.response_message`.
+
+Los eventos de webhook se envían solo en las transiciones de `status`:
+
+| Evento | Se envía cuando `status` pasa a |
+|---|---|
+| `unreferenced_refund.created` | `CREATED` |
+| `unreferenced_refund.succeeded` | `SUCCEEDED` |
+| `unreferenced_refund.failed` | `FAILED` |
+
+### Uso de los reembolsos sin referencia de Yuno {#using-yuno-unreferenced-refunds}
+
+Para emitir un reembolso sin referencia, llama al endpoint `POST /v1/unreferenced-refunds` con:
+
+- `account_id`, `merchant_order_id`, `description`, `country`, `amount`
+- Un `payment_method` que describa el destino (token almacenado, tarjeta sin tokenizar, transferencia bancaria o billetera)
+- Un bloque `customer_payer` con la identidad del destinatario (obligatorio para ACH / SEPA / PayPal, para cumplir con los controles de OFAC y AML)
+- Opcionalmente, `provider_data.id` para fijar un gateway específico
+
+Ejemplo: reembolsar el cargo duplicado de una suscripción a una tarjeta de Stripe almacenada:
+
+```json
+{
+  "account_id": "9f6e0a4c-1d2b-4e3f-8a9b-1c2d3e4f5a6b",
+  "merchant_order_id": "REFUND-2026-05-14-001",
+  "description": "Subscription correction — duplicate charge",
+  "country": "US",
+  "amount": { "value": 25.00, "currency": "USD" },
+  "provider_data": { "id": "STRIPE" },
+  "payment_method": {
+    "vaulted_token": "vt_01HX2Y3ZP4Q5R6S7T8U9V0W1X2"
+  },
+  "customer_payer": {
+    "id": "cus_01HX2K9PQR3S4T5U6V7W8X9Y0Z"
+  }
+}
+```
+
+Recibirás una respuesta `201 Created` con un `id` con el prefijo `urf_*`, y se enviará un webhook cuando el reembolso llegue a su estado final.
+
+#### Destinos admitidos {#supported-destinations}
+
+| Destino            | `payment_method_type` de Yuno | Campos obligatorios                                                                                                                                    |
+| ------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tarjeta sin tokenizar | `CARD`                     | `payment_method.detail.card.card_data.{number, holder_name, expiration_month, expiration_year, brand}`                                                 |
+| Tarjeta almacenada | `VAULTED_TOKEN`            | `payment_method.vaulted_token`                                                                                                                         |
+| SEPA / IBAN        | `BANK_TRANSFER`            | `payment_method.detail.bank_transfer.{bank_account, account_type: "IBAN", beneficiary_name}`                                                           |
+| ACH                | `BANK_TRANSFER`            | `payment_method.detail.bank_transfer.{bank_account, bank_id, account_type, beneficiary_name, beneficiary_document}` + `customer_payer.billing_address` |
+| PayPal             | `WALLET`                   | `payment_method.detail.wallet.payment_token` + `customer_payer.email`                                                                                  |
+| Mandato de GoCardless | `BANK_TRANSFER`            | `payment_method.detail.bank_transfer.{provider_token, account_type: "MANDATE", beneficiary_name}`                                                      |
+
+---
+
+## Cómo elegir el flujo de reembolso adecuado {#choosing-the-right-refund-flow}
+
+| Pregunta | Flujo recomendado |
+|---|---|
+| ¿El pago original se capturó a través de Yuno? | **Reembolso referenciado** |
+| ¿Necesitas revertir cientos o miles de pagos de Yuno a la vez? | **Reembolso por lotes** (CSV en el Dashboard) |
+| ¿El cobro original se hizo fuera de Yuno, o no existe un cobro original (crédito de cortesía, crédito promocional, corrección de suscripción desde un sistema de facturación externo)? | **Reembolso sin referencia** |

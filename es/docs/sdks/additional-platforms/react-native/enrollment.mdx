@@ -1,0 +1,68 @@
+---
+title: Inscripción en React Native
+sidebarTitle: Inscripción
+description: "Guarda los métodos de pago de tus clientes para usarlos en el futuro con el SDK de React Native."
+---
+
+import GenericOrientation from '/snippets/es/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+
+Yuno te permite guardar métodos de pago (inscripción) durante un flujo de pago o como un paso independiente.
+
+## Guardar durante el pago {#save-during-payment}
+
+Para guardar una tarjeta durante un flujo de pago normal, incluye la marca `vault_on_success` al crear el pago en tu backend.
+
+```typescript
+// When creating payment on backend, include vault_on_success flag
+async function createPayment(token: string, checkoutSession: string) {
+  await fetch('/api/payment/create', {
+    method: 'POST',
+    body: JSON.stringify({
+      one_time_token: token,
+      checkout_session: checkoutSession,
+      vault_on_success: true, // Save after successful payment
+    }),
+  });
+}
+```
+
+## Inscripción independiente {#separate-enrollment}
+
+Usa el flujo de inscripción para guardar un método de pago sin procesar un pago.
+
+```typescript
+// 1. Create customer session on backend
+const customerSession = await createCustomerSession('cus_123');
+
+// 2. Set up listener
+const enrollmentSubscription = YunoSdk.onEnrollmentStatus((state) => {
+  if (state.status === 'SUCCEEDED') {
+    console.log('Card saved successfully');
+  }
+});
+
+// 3. Start enrollment flow
+await YunoSdk.enrollmentPayment({
+  customerSession: customerSession.id,
+  countryCode: 'US',
+  showPaymentStatus: true,
+});
+
+// 4. Clean up
+enrollmentSubscription.remove();
+```
+
+## Listeners {#listeners}
+
+Usa `onEnrollmentStatus` para seguir el progreso del flujo de inscripción.
+
+| Estado | Descripción |
+| ------ | ----------- |
+| `SUCCEEDED` | El método de pago se guardó correctamente. |
+| `FAILED` | La inscripción falló. |
+| `CANCELED` | El usuario cerró el flujo de inscripción. |
