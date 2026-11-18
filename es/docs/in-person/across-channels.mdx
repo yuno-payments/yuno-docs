@@ -1,0 +1,100 @@
+---
+hidden: true
+noindex: true
+title: "Entre canales"
+description: "Un cliente, una tarjeta guardada y una suscripción, ya sea que la venta ocurra en el mostrador o en tu sitio web: qué vincula los dos canales, qué guarda Yuno y qué conservan tus sistemas."
+---
+
+Un cliente que compra en tu tienda y un cliente que compra en tu sitio web suelen ser dos registros, en dos sistemas, sin forma de saber que son la misma persona. Los pagos presenciales en Yuno los convierten en uno: el mismo cliente, la misma tarjeta guardada y la misma suscripción, sin importar en qué canal empiece la venta.
+
+Esto es lo que agrega el paquete **Unify** sobre el [tipo de integración](/es/docs/in-person/ways-to-integrate) que uses.
+
+<Note>
+  **Certificación.** Yuno certifica la cadena para cada adquirente y cada mercado, incluidos los requisitos PCI de tarjeta presente. Dile a tu contacto en Yuno qué mercados y adquirentes necesitas.
+</Note>
+
+## Un cliente, en tienda y en línea {#one-customer-in-store-and-online}
+
+Cada tarjeta lleva una **referencia de cuenta de pago** (PAR): un identificador de la cuenta de la tarjeta que no es el número de la tarjeta y es seguro de guardar. Yuno la toma de la respuesta de autorización, tanto en tienda como en línea, y vincula ambas al mismo `customer_payer`, el mismo objeto de [cliente](/es/docs/basic-concepts/customers) que ya ves en los pagos en línea. El vínculo se hace **solo dentro de tu propia cuenta de Yuno**; un cliente nunca se asocia entre comercios.
+
+Para ti esto significa:
+
+- Sabes quién paga en tienda: clientes recurrentes, con qué frecuencia vienen, qué tiendas visitan.
+- Las compras en tienda y en línea del mismo cliente quedan lado a lado, para fidelización, analítica y atención al cliente.
+- Un reembolso o una disputa se puede rastrear hasta el cliente, sea cual sea el canal de la compra original.
+- Un cliente que vuelve puede tocar la tarjeta con la que se registró y la venta se cobra a la cuenta que ya está guardada, sin nada que ingresar.
+
+El vínculo se hace solo con los datos de la tarjeta. Para asociar tu propio ID de cliente a una venta en tienda, envíalo en los metadatos de la venta desde tu sistema de checkout.
+
+<Note>
+  **La PAR no es un número de tarjeta y no se puede cobrar.** Identifica la cuenta detrás de una tarjeta para que dos ventas se reconozcan como del mismo cliente. Cobrar una tarjeta guardada es otra cosa, y requiere el consentimiento del cliente (ver abajo).
+</Note>
+
+## La tarjeta guardada {#the-card-on-file}
+
+Cuando el cliente acepta, la tarjeta se guarda como un **token de vault** en el vault de Yuno, el mismo vault que ya usan tus pagos en línea. El token se genera a partir de la venta en el mostrador, así que no hace falta presentar la tarjeta otra vez para guardarla. Tus sistemas conservan el token; el número de la tarjeta nunca llega a ellos.
+
+| | Qué es | ¿Puede cobrar? |
+| --- | --- | --- |
+| **Referencia de cuenta de pago** | Un identificador de la cuenta de la tarjeta, leído de la tarjeta en ambos canales | No. Solo vincula al cliente, nada más |
+| **Token de vault** | La tarjeta misma, guardada en el vault de Yuno una vez que el cliente acepta | Sí, en cualquiera de los dos canales |
+
+Como el vault es central a tu cuenta de Yuno y no está atado a un solo procesador, un token creado en el mostrador es el mismo token que usa tu sitio web, y sigue funcionando si agregas o cambias de adquirente. El detalle de cómo se emiten y guardan los tokens está en [Tokens](/es/docs/basic-concepts/tokens).
+
+Los cobros posteriores se hacen contra ese token de vault. Un [token de red](/es/docs/security-and-compliance/network-tokens) es otra cosa, se usa en la autorización misma, y no es a lo que se ancla una suscripción ni un cobro posterior.
+
+Lo que esto te da en la práctica:
+
+- Una tarjeta guardada en el mostrador se puede cobrar en línea, y al revés.
+- Cobros posteriores y propinas sobre una venta que ya ocurrió.
+- Suscripciones que empiezan en tienda y se cobran en línea, más abajo.
+
+El PIN, el número completo de la tarjeta, la fecha de vencimiento y el criptograma de la tarjeta nunca llegan a tu sistema de checkout ni a tus servidores. Los datos de la tarjeta salen del terminal cifrados, y solo se guardan como token, solo cuando el cliente acepta. Consulta [Cobertura y preguntas frecuentes](/es/docs/in-person/coverage-and-faq) para ver cómo encaja esto con PCI.
+
+## Suscripciones iniciadas en tienda {#subscriptions-started-in-store}
+
+Un cliente puede iniciar una suscripción en el mostrador: el terminal POS toma el primer pago, y el consentimiento del cliente para conservar la tarjeta viaja con esa venta para que la tarjeta se pueda guardar en el vault a partir de ella.
+
+**Tu propio sistema crea la suscripción**, una vez que ese pago se haya completado, contra el token de vault que produjo la venta. Yuno no la crea por ti, lo que significa que una venta rechazada simplemente no deja ninguna suscripción, y tú decides qué ve el personal del mostrador antes de que exista algo recurrente. Yuno cobra cada ciclo a partir de ahí.
+
+El pago en tienda y los cobros en línea comparten el mismo `customer_payer` y aparecen juntos en el dashboard.
+
+Un cliente puede tener varias suscripciones en la misma tarjeta: una membresía comprada en el mostrador para cada uno de cuatro familiares son cuatro suscripciones contra el mismo cliente y el mismo token de vault, cada una cobrada y cancelada por separado.
+
+Esta es la ruta de dos pasos que la documentación en línea ya describe: tienes un token de vault para el cliente y luego llamas a [Create Subscription](/es/reference/subscriptions/create-subscription) con él. Lo único que cambia en tienda es de dónde viene el token: la venta en el mostrador en lugar de una inscripción en línea. *No* es la ruta de una sola llamada de [Start a subscription with the first payment](/es/docs/payment-features/subscriptions/start-with-payment), donde Yuno crea la suscripción a partir del cobro mismo.
+
+Todo lo que sigue es una suscripción normal de Yuno: los mismos [planes](/es/docs/payment-features/subscriptions/plans), los mismos [reintentos](/es/docs/payment-features/subscriptions/retries) y los mismos endpoints para pausarla, reanudarla o cancelarla. Consulta [Suscripciones](/es/docs/payment-features/subscriptions/index).
+
+<Note>
+  **Importa quién inicia.** La venta en el mostrador la inicia el cliente: el titular de la tarjeta está presente y se autentica en el terminal. Las renovaciones que siguen las inicia el comercio, y se envían con la credencial almacenada sin que el cliente esté presente. Las reglas de las marcas para esto, y cómo las cumple Yuno, están en [Credenciales almacenadas](/es/docs/payment-features/stored-credentials).
+</Note>
+
+<Warning>
+  **En la UE, el primer cobro tiene que llevar autenticación reforzada del cliente.** Según PSD2, la venta iniciada por el cliente que establece la credencial debe autenticarse: chip y PIN cumple, y también una billetera como Apple Pay. Un toque contactless que no pide verificación del titular no cumple, y no se puede usar para iniciar una suscripción.
+</Warning>
+
+## Qué necesita de tu parte {#what-it-needs-from-you}
+
+| | |
+| --- | --- |
+| **Requisito previo** | Tu volumen en línea en Yuno, o que Yuno tenga tu vault |
+| **En tus terminales** | Nada más allá de la Yuno Payment App que ya usas |
+| **Certificación** | Por adquirente y por mercado |
+| **Cómo empieza** | Pregunta a tu contacto en Yuno en qué punto está esto para tus mercados y adquirentes |
+
+A qué paquete pertenece esto, y qué necesita cada paquete de tu parte, está en [Soluciones](/es/docs/in-person/solutions).
+
+<CardGroup cols={2}>
+  <Card title="Pagos y eventos" href="/es/docs/in-person/payments-and-events">
+    El objeto de pago en tienda, estados, códigos de rechazo y webhooks.
+  </Card>
+  <Card title="Soluciones" href="/es/docs/in-person/solutions">
+    See, Orchestrate, Unify y Connect: qué hace cada paquete.
+  </Card>
+  <Card title="Tokens" href="/es/docs/basic-concepts/tokens">
+    Tokens de un solo uso, de vault y de red, y para qué sirve cada uno.
+  </Card>
+  <Card title="Suscripciones" href="/es/docs/payment-features/subscriptions/index">
+    Planes, ciclos de cobro, reintentos y los endpoints de suscripciones.
+  </Card>
+</CardGroup>
