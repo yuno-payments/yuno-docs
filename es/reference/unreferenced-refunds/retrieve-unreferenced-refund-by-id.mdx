@@ -7,16 +7,30 @@ api: "GET /v1/unreferenced-refunds/{unreferenced_refund_id}"
 Esta solicitud te permite consultar los detalles de un reembolso sin referencia a partir de su `id`, que debe proporcionarse en la ruta de la solicitud.
 
 <Info>
-**Datos sin procesar del proveedor**
+**Datos del proveedor en la respuesta**
 
-El objeto `provider` contiene el intercambio sin modificar con el proveedor en dos campos. La estructura de ambos la define el proveedor, no Yuno, por lo que varía según el proveedor y la operación. Cada uno se controla por separado:
+La respuesta siempre incluye un objeto `provider_data` con el resultado del proveedor que procesó el reembolso. Los payloads de webhook contienen el mismo objeto.
+
+| Campo | Contenido |
+| --- | --- |
+| `id` | Proveedor que procesó el reembolso, por ejemplo `STRIPE`. |
+| `type` | Tipo de proveedor, por ejemplo `PSP`. |
+| `connection_id` | Conexión que procesó el reembolso (UUID). |
+| `transaction_id` | El identificador del reembolso en el proveedor. |
+| `category` | Categoría del resultado del proveedor, por ejemplo `APPROVED`. |
+| `response_code` | Código de respuesta que devolvió el proveedor. |
+| `response_message` | Mensaje de respuesta que devolvió el proveedor. |
+
+Los siguientes campos contienen el intercambio sin modificar con el proveedor. Su estructura la define el proveedor, no Yuno, por lo que varía según el proveedor y la operación. Cada uno se controla por separado:
 
 | Campo | Contenido | Cómo obtenerlo |
 | --- | --- | --- |
 | `raw_request` | El payload exacto que Yuno envió al proveedor. | Requiere que tu cuenta esté habilitada para los datos sin procesar del proveedor. Contacta a tu gerente de cuenta de Yuno para solicitar acceso. No se ve afectado por `include_raw_responses`. |
+| `raw_request_details` | Detalles de la solicitud que Yuno envió al proveedor, como el método HTTP, la URL y los encabezados, con las credenciales ocultas. | Igual que `raw_request`. |
 | `raw_response` | El payload completo que devolvió el proveedor. | Envía `include_raw_responses=true` en esta solicitud. |
+| `raw_response_details` | Detalles de la respuesta del proveedor, como el código de estado HTTP. | Igual que `raw_response`. |
 
-`raw_response_code` y `raw_response_message` son resúmenes de la respuesta del proveedor y siempre se devuelven, independientemente de los dos campos anteriores.
+`response_code` y `response_message` son resúmenes de la respuesta del proveedor y siempre se devuelven, independientemente de los campos sin procesar anteriores.
 </Info>
 
 <ParamField header="public-api-key" type="string" required>
@@ -32,7 +46,7 @@ Identificador único del reembolso sin referencia generado por Yuno.
 </ParamField>
 
 <ParamField query="include_raw_responses" type="boolean" default="false">
-Cuando es `true`, el objeto `provider` en el payload de la respuesta incluirá `raw_response`, el payload completo que devolvió el proveedor. Los campos de resumen `raw_response_code` y `raw_response_message` siempre se devuelven, sin importar este parámetro.
+Cuando es `true`, el objeto `provider_data` en el payload de la respuesta incluirá `raw_response`, el payload completo que devolvió el proveedor, y `raw_response_details`. Los campos de resumen `response_code` y `response_message` siempre se devuelven, sin importar este parámetro.
 </ParamField>
 
 <ParamField query="include_transaction_responses" type="boolean" default="false">
@@ -70,18 +84,26 @@ curl --request GET \
   "customer_payer": {
     "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
   },
-  "provider": {
-    "name": "STRIPE",
+  "provider_data": {
+    "id": "STRIPE",
     "type": "PSP",
-    "reference": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
+    "connection_id": "8821cf99-89a5-4ecb-aba9-149cb08624fa",
+    "transaction_id": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
     "category": "APPROVED",
-    "raw_response_code": "succeeded",
-    "raw_response_message": "Refund settled",
+    "response_code": "succeeded",
+    "response_message": "Refund settled",
     "raw_request": {
       "amount": 2500,
       "currency": "usd",
       "payment_method": "pm_1OqQz92eZvKYlo2C7Kx9Vbnm",
       "metadata": { "merchant_order_id": "REFUND-2026-05-14-001" }
+    },
+    "raw_request_details": {
+      "method": "POST",
+      "url": "/v1/refunds",
+      "headers": {
+        "Authorization": ["[REDACTED]"]
+      }
     },
     "raw_response": {
       "id": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
@@ -89,6 +111,9 @@ curl --request GET \
       "amount": 2500,
       "currency": "usd",
       "status": "succeeded"
+    },
+    "raw_response_details": {
+      "http_status_code": 200
     }
   },
   "created_at": "2026-05-14T11:47:13.482Z",

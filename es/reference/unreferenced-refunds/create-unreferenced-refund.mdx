@@ -15,16 +15,30 @@ La cuenta del proveedor debe permitir los reembolsos sin referencia. Algunos pro
 </Info>
 
 <Info>
-**Datos sin procesar del proveedor**
+**Datos del proveedor en la respuesta**
 
-El objeto `provider` incluye el intercambio con el proveedor sin modificar en dos campos. La forma de ambos la define el proveedor, no Yuno, por lo que varía según el proveedor y la operación.
+En la solicitud, `provider_data` solo fija el reembolso a un proveedor o una conexión. En la respuesta y en los payloads de webhook, `provider_data` siempre está presente y contiene el resultado del proveedor que procesó el reembolso:
+
+| Campo | Contenido |
+| --- | --- |
+| `id` | Proveedor que procesó el reembolso, por ejemplo `STRIPE`. |
+| `type` | Tipo de proveedor, por ejemplo `PSP`. |
+| `connection_id` | Conexión que procesó el reembolso (UUID). |
+| `transaction_id` | El identificador del reembolso en el proveedor. |
+| `category` | Categoría del resultado del proveedor, por ejemplo `APPROVED`. |
+| `response_code` | Código de respuesta que devolvió el proveedor. |
+| `response_message` | Mensaje de respuesta que devolvió el proveedor. |
+
+Los siguientes campos incluyen el intercambio con el proveedor sin modificar. Su forma la define el proveedor, no Yuno, por lo que varía según el proveedor y la operación.
 
 | Campo | Contenido | Disponibilidad |
 | --- | --- | --- |
 | `raw_request` | El payload exacto que Yuno envió al proveedor. | Cuentas habilitadas para los datos sin procesar del proveedor. Contacta a tu gerente de cuenta de Yuno para solicitar acceso. De lo contrario, se omite. |
+| `raw_request_details` | Detalles de la solicitud que Yuno envió al proveedor, como el método HTTP, la URL y los encabezados, con las credenciales ocultas. | Igual que `raw_request`. |
 | `raw_response` | El payload completo que devolvió el proveedor. | No se devuelve en este endpoint. Obtenlo con [Obtener reembolso sin referencia por ID](/es/reference/unreferenced-refunds/retrieve-unreferenced-refund-by-id) usando `include_raw_responses=true`. |
+| `raw_response_details` | Detalles de la respuesta del proveedor, como el código de estado HTTP. | Igual que `raw_response`. |
 
-`raw_response_code` y `raw_response_message` son resúmenes de la respuesta del proveedor y siempre se devuelven, independientemente de los dos campos anteriores.
+`response_code` y `response_message` son resúmenes de la respuesta del proveedor y siempre se devuelven, independientemente de los campos sin procesar anteriores.
 </Info>
 
 <ParamField header="public-api-key" type="string" required>
@@ -73,7 +87,7 @@ La moneda usada para el reembolso (MAX 3; MIN 3; [ISO 4217](/reference/country-r
 </ParamField>
 
 <ParamField body="provider_data" type="object">
-Fija el reembolso a un gateway específico, omitiendo las reglas de enrutamiento. Es útil cuando el proveedor de destino lo determina el lugar donde se procesó el pago original.
+Fija el reembolso a un gateway específico, omitiendo las reglas de enrutamiento. La respuesta devuelve `provider_data` con el resultado del proveedor (consulta **Datos del proveedor en la respuesta** arriba). Es útil cuando el proveedor de destino lo determina el lugar donde se procesó el pago original.
 
 <Expandable title="propiedades">
 <ParamField body="id" type="string" required>
@@ -263,18 +277,25 @@ Cuando `stand_alone: true`, Yuno ejecuta una verificación de fraude con ML ante
     "first_name": "John",
     "last_name": "Doe"
   },
-  "provider": {
-    "name": "STRIPE",
+  "provider_data": {
+    "id": "STRIPE",
     "type": "PSP",
-    "connection_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
-    "reference": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
+    "connection_id": "8821cf99-89a5-4ecb-aba9-149cb08624fa",
+    "transaction_id": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
     "category": "APPROVED",
-    "raw_response_code": "succeeded",
+    "response_code": "succeeded",
     "raw_request": {
       "amount": 2500,
       "currency": "usd",
       "payment_method": "pm_1OqQz92eZvKYlo2C7Kx9Vbnm",
       "metadata": { "merchant_order_id": "REFUND-2026-05-14-001" }
+    },
+    "raw_request_details": {
+      "method": "POST",
+      "url": "/v1/refunds",
+      "headers": {
+        "Authorization": ["[REDACTED]"]
+      }
     }
   },
   "metadata": [
