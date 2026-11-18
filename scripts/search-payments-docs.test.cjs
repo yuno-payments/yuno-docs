@@ -41,11 +41,26 @@ test("the created_at window and the account header are required and every filter
   }
   assert.equal(param("X-Account-Code").in, "header");
   assert.equal(param("X-Account-Code").required, true);
-  for (const name of ["updated_at_from", "updated_at_to", "status", "customer_id", "payment_method_type", "country", "currency", "merchant_order_id", "cursor"]) {
+  for (const name of ["updated_at_from", "updated_at_to", "status", "customer_id", "country", "currency", "merchant_order_id", "cursor"]) {
     assert.ok(param(name), name);
     assert.notEqual(param(name).required, true, name);
   }
   assert.equal(param("status").schema.type, "array");
+});
+
+test("payment_method_type is not documented as a filter because the API rejects it", () => {
+  assert.equal(param("payment_method_type"), undefined);
+  assert.ok(!read(`${page}.mdx`).includes("payment_method_type"));
+});
+
+test("the created_at window is at most 1 day in the spec, the page and the DATE_RANGE_TOO_WIDE message", () => {
+  const texts = [op().description, param("created_at_from").description, param("created_at_to").description, read(`${page}.mdx`)];
+  for (const t of texts) {
+    assert.ok(t.includes("1 day"), t);
+    assert.ok(!/7 days|7-day/.test(t), t);
+  }
+  const ex = op().responses["400"].content["application/json"].examples;
+  assert.deepEqual(ex.DATE_RANGE_TOO_WIDE.value.messages, ["The range between 'created_at_from' and 'created_at_to' must be at most 1 day."]);
 });
 
 test("limit is 1 to 100 with a default of 50", () => {
@@ -82,6 +97,6 @@ test("400 documents INVALID_PARAMETERS, DATE_RANGE_TOO_WIDE and INVALID_CURSOR i
 test("the page explains the window, filters, pagination, rows and errors without prev_cursor or sort", () => {
   const g = read(`${page}.mdx`);
   for (const h of ["## Creation window", "## Filters", "## Pagination", "## Rows", "## Errors"]) assert.ok(g.includes(h), h);
-  for (const s of ["7 days", "INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "`next_cursor`", "`has_more`", "defaults to 50", "from 1 to 100", "`X-Account-Code`", "`created_at` ascending and then by `id`", "no `transactions` array"]) assert.ok(g.includes(s), s);
+  for (const s of ["1 day", "INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "`next_cursor`", "`has_more`", "defaults to 50", "from 1 to 100", "`X-Account-Code`", "`created_at` ascending and then by `id`", "no `transactions` array"]) assert.ok(g.includes(s), s);
   assert.ok(!g.includes("prev_cursor"));
 });
