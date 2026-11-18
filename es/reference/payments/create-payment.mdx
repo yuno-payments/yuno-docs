@@ -23,7 +23,7 @@ Consulta la página [3D Secure](/es/docs/security-and-compliance/3d-secure) para
 <Note>
 **Promociones**
 
-Para cobrar el precio de una promoción, envía el `amount` original y una línea de descuento en `additional_data.order.discounts` con `type: YUNO_PROMOTION` y el `quote_id` de una cotización de promoción. Yuno cobra el precio con descuento, mantiene el `amount` tal como lo enviaste y devuelve `discount_amount`. Consulta [Promociones](/docs/payment-features/promotions). El ejemplo de cotización de promoción necesita que Promotions esté habilitado para tu organización: hasta que Yuno lo habilite, [Create Promotion Quote](/reference/promotions/create-promotion-quote) responde 204 y no existe ningún `quote_id`.
+Para cobrar el precio de una promoción, envía el `amount` original y una línea de descuento en `additional_data.order.discounts` con `type: YUNO_PROMOTION` y el `quote_id` de una cotización de promoción. Yuno cobra el precio con descuento, mantiene el `amount` tal como lo enviaste y devuelve `discount_amount`. Para canjear un código de promoción en lugar de una cotización, envía `{ "code": "<code>" }` en la línea de descuento. Un dry run no admite código (consulta [Dry run](#dry-run)). Consulta [Códigos de promoción](#promotion-codes) y [Promociones](/docs/payment-features/promotions). El ejemplo de cotización de promoción necesita que Promotions esté habilitado para tu organización: hasta que Yuno lo habilite, [Create Promotion Quote](/reference/promotions/create-promotion-quote) responde 204 y no existe ningún `quote_id`.
 </Note>
 
 Para autorizar un pago sin capturarlo de inmediato (no se le cobra al cliente), envía `capture: false` dentro del detalle del método de pago, en el objeto que corresponde al tipo de método de pago: `payment_method.detail.card.capture` para tarjetas y `payment_method.detail.wallet.capture` para billeteras que admiten autorización (por ejemplo, PayPal con un billing agreement guardado en vault). Yuno solo lee el indicador en el objeto que corresponde al tipo de método de pago, así que `capture: false` dentro de `card` se ignora en un pago con billetera y el pago se captura de inmediato.
@@ -47,3 +47,111 @@ Si envías `payment_method.vaulted_token` junto con `payment_method.token`, el `
 Para pagos en dos pasos (autorización y luego captura), envía `capture` como `false` como se describe arriba, y luego usa el endpoint [Capture Authorization](/es/reference/payments/capture-authorization).
 
 Esta solicitud requiere un `X-Idempotency-Key`. Consulta [Autenticación](/es/reference/getting-started/authentication#idempotency) para más detalles.
+
+## Códigos de promoción {#promotion-codes}
+
+<Note>
+**Promotions se habilita por organización**
+
+Un pago que lleva un código funciona solo después de que Yuno habilite Promotions para tu organización. Hasta entonces se rechaza con `422 PROMOTION_NOT_APPLICABLE` y el motivo `PROMOTIONS_NOT_ENABLED`, y no se crea ningún pago. Consulta [Promociones](/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Note>
+
+Para cobrar el precio de un código de promoción, coloca el código en una línea de descuento de `additional_data.order.discounts` en lugar de un `quote_id`. Envía el `amount` original, nunca el que tiene descuento.
+
+```json Request
+{
+    "account_id": "00000000-0000-4000-8000-0000000000a1",
+    "country": "US",
+    "amount": { "currency": "USD", "value": 250.00 },
+    "additional_data": {
+        "order": {
+            "discounts": [{ "code": "SUMMER10" }]
+        }
+    }
+}
+```
+
+Esta es la parte de la solicitud que importa aquí; el resto es el cuerpo que ya envías. Yuno canjea el código por una cotización antes de crear el pago, y el pago continúa como un pago con cotización. La respuesta es la que aparece en [Qué lleva el pago](/docs/payment-features/promotions#what-the-payment-carries). Crea la promoción con [Create Promotion](/reference/promotions/create-promotion). [Códigos de promoción](/docs/payment-features/promotion-codes) describe todo el flujo.
+
+La línea de descuento sigue estas reglas. Una línea que incumple una de ellas se rechaza con `400 INVALID_PARAMETERS` antes de que ocurra cualquier otra cosa, y no se crea ningún pago.
+
+| Regla | Mensaje cuando se incumple |
+| --- | --- |
+| `code` tiene de 3 a 32 caracteres: letras, dígitos, `-` y `_`. Yuno recorta los espacios alrededor. | `The field 'additional_data.order.discounts[0].code' must have 3 to 32 characters, letters, digits, hyphens and underscores only.` |
+| `code` no está en blanco. | `The field 'additional_data.order.discounts[0].code' must not be blank.` |
+| La línea no tiene `quote_id`. Una línea lleva un código o un quote id, nunca ambos. | `The fields 'additional_data.order.discounts[0].code' and 'additional_data.order.discounts[0].quote_id' must not be sent together.` |
+| `type` se omite o es `YUNO_PROMOTION`. Una línea con un `code`, sin `type` y sin `id` ni `name` se interpreta como `YUNO_PROMOTION`. | Un código en una línea `MERCHANT` se ignora, sin error. Consulta la nota después de esta tabla. |
+| La línea no tiene `unit_amount`, y una línea con `type: YUNO_PROMOTION` no tiene `id` ni `name`. Yuno los completa después de aplicar la promoción. | `The field 'additional_data.order.discounts[0].id' must not be sent on a YUNO_PROMOTION discount line.` (lo mismo para `name` y `unit_amount`) |
+| El pago tiene en total una línea de promoción: un código o un quote id. | `Only one YUNO_PROMOTION discount line is permitted per payment.` |
+
+**Un código en una línea `MERCHANT` se ignora.** Yuno interpreta una línea como `MERCHANT` cuando su `type` es `MERCHANT`, o cuando no tiene `type` y lleva un `id` o un `name`. Yuno descarta el `code` de esa línea sin un error: no se aplica ninguna promoción, y el pago continúa sin ese descuento. Para canjear un código, envíalo en una línea sin `id`, `name` ni `unit_amount`, y con `type` omitido o definido como `YUNO_PROMOTION`.
+
+Ninguna respuesta repite tu código. Cuando el servicio de promociones lo cita en un mensaje, Yuno lo reemplaza por `***`.
+
+`payment_method.type` no es obligatorio para un código. Un código se aplica a todo el pago, sea cual sea el método de pago. Yuno envía el tipo al servicio de promociones solo cuando tu pago lo tiene.
+
+### Clave de idempotencia y usos {#idempotency-key-and-uses}
+
+* **El `X-Idempotency-Key` es obligatorio.** Create Payment lo requiere en cada pago: sin el encabezado la respuesta es `400 INVALID_PARAMETERS` y `The header 'x-idempotency-key' is required.` Yuno también recorta la clave antes de contar un uso, y una clave que queda vacía tras el recorte se rechaza con `400 INVALID_PARAMETERS`: `The header 'x-idempotency-key' is required to apply a promotion code.`
+* **Se cuenta un uso cuando Yuno acepta el código para un pago.** El conteo ocurre en el intento de pago, antes de que el pago llegue a un proveedor, y se asocia al `X-Idempotency-Key` del pago.
+* **La misma clave de nuevo no cuenta un segundo uso.** Un reintento de un pago con la misma clave y el mismo código se calcula a partir del primer uso.
+* **Una clave pertenece a un solo código.** La misma clave con otro código se rechaza con `422 PROMOTION_NOT_APPLICABLE` y el motivo `IDEMPOTENCY_KEY_REUSED`.
+* **Un pago rechazado conserva su uso.** Yuno no devuelve ningún uso. Un nuevo intento después de un rechazo necesita un nuevo `X-Idempotency-Key`, y cuenta un nuevo uso.
+
+### Dry run {#dry-run}
+
+Un dry run no admite código de promoción. Un pago con el encabezado `X-Dry-Run: true` que lleva un `code` en una línea `YUNO_PROMOTION` se rechaza con `400 INVALID_PARAMETERS`, y no se crea ningún pago:
+
+```json Dry run with a code (400)
+{
+    "code": "INVALID_PARAMETERS",
+    "messages": ["Promotion codes can't be used on a dry-run payment (X-Dry-Run). Test promotion codes in the sandbox environment."]
+}
+```
+
+Yuno rechaza el pago antes de pedir una cotización, tokenizar una tarjeta o llegar a un proveedor, así que no cuenta ningún uso. El mensaje nunca repite tu código. Solo el valor `true`, en cualquier combinación de mayúsculas y minúsculas, activa un dry run. Un dry run sin código, o con una línea `quote_id`, no se ve afectado. Para probar un código de promoción, usa el entorno sandbox.
+
+### Respuestas a un pago con código {#answers-to-a-payment-with-a-code}
+
+Cuando un código no se convierte en una cotización, no se crea ningún pago y la respuesta explica por qué.
+
+| HTTP | Código | Motivo | Cuándo |
+| --- | --- | --- | --- |
+| `404` | `PROMOTION_NOT_FOUND` | | Ninguna promoción de la cuenta tiene el código, o la promoción que lo tiene aún no ha comenzado. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `EXPIRED` | La promoción terminó. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `DISABLED` | Deshabilitaste la promoción. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `USAGE_LIMIT_REACHED` | El código no tiene usos disponibles. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `IDEMPOTENCY_KEY_REUSED` | La clave del pago ya contó un uso de otro código. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `CONDITIONS_NOT_MET` | El país o el monto no cumple las condiciones de la promoción. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `CURRENCY_MISMATCH` | La promoción no indica ninguna regla de monto para la moneda del pago, o es un descuento fijo sin monto en esa moneda. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_DISCOUNT` | La promoción no da ningún descuento sobre este monto. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_CHARGE` | El código se aplica y el pago se cobraría en cero o menos. Yuno no cuenta ningún uso. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `PROMOTIONS_NOT_ENABLED` | Promotions no está habilitado para tu organización. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | No se pudo verificar el código, así que no se creó ningún pago. Este motivo agrupa dos tipos de causa: transitorias, para reintentar más tarde, y una promoción automática que deja un cobro de cero, algo que un reintento no cambia. Consulta la nota después de esta tabla. |
+
+**`ENGINE_UNAVAILABLE` abarca dos causas, y la respuesta no indica cuál es.** Ambas llegan con el mismo `reason` y el mismo mensaje.
+
+* **Transitoria: reintenta más tarde.** El servicio de promociones no respondió a tiempo, respondió con un error, o Yuno deshabilitó Promotions temporalmente. Reintenta el mismo pago más tarde.
+* **No transitoria: un reintento obtiene la misma respuesta.** Una promoción automática gana la selección para este pago y dejaría un cobro de cero. Envía el pago **sin el código**. Un pago sin código se cobra completo, y la verificación de promociones no lo rechaza.
+
+El mensaje dice `Try again.` para ambas causas, así que no te indica cuál reintentar. Si el mismo pago sigue recibiendo `ENGINE_UNAVAILABLE` después de reintentar más tarde, envíalo sin el código. El cliente paga entonces el precio completo y pierde el descuento de ese código para ese pago.
+
+```json Code that leaves a charge of zero (422)
+{
+    "code": "PROMOTION_NOT_APPLICABLE",
+    "messages": ["The promotion leaves a charge of zero on this amount."],
+    "reason": "ZERO_CHARGE"
+}
+```
+
+`ZERO_CHARGE` corresponde a un código que gana. Cuando una promoción automática gana la selección y su cotización cobraría cero, el pago no se rechaza con `ZERO_CHARGE`: Yuno lo rechaza con `422 PROMOTION_NOT_APPLICABLE` y el motivo `ENGINE_UNAVAILABLE`, y no se crea ningún pago. Esa es la causa no transitoria de `ENGINE_UNAVAILABLE` descrita arriba: envía el pago sin el código.
+
+Un código también se rechaza para estos pagos, y no se crea ningún pago:
+
+| Pago | Respuesta |
+| --- | --- |
+| Un pago que lleva una `subscription` | `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED`: `YUNO_PROMOTION discount lines are not supported on subscriptions.` |
+| Un pago que lleva una `external_subscription` o una `external_invoice` | `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED`: `Subscription payments cannot carry a promotion quote.` |
+| Un pago cuyo `amount` lleva una `currency_conversion` o una `merchant_currency_conversion` | `422 PROMOTION_CONTEXT_MISMATCH`: `The payment context does not match the promotion quote.` |
+
+[Promotion Error Codes](/reference/promotions/promotion-error-codes) enumera todas las respuestas, con el texto de cada mensaje.
