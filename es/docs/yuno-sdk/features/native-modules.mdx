@@ -7,7 +7,7 @@ description: "Agrega un SDK nativo de terceros, antifraude, 3DS o Revolut Pay, a
 El Yuno SDK se mantiene pequeño a propósito: cada SDK nativo de terceros se distribuye como un módulo independiente y opcional. Agregas solo los módulos que usa tu cuenta, el SDK los detecta cuando la app inicia y tu código de `Transaction` no cambia.
 
 <Note>
-Los módulos nativos aplican solo a iOS y Android. Una app de React Native los agrega a sus proyectos nativos (`android/` y `ios/`) exactamente como una app nativa, y su código JavaScript no cambia. En Web no hay nada que instalar. El SDK carga en tiempo de ejecución los scripts de los proveedores de antifraude habilitados para tu cuenta y recopila los fingerprints durante la transacción. Para recopilarlos antes de la transacción, llama a `sdkPayments.antifraud()`.
+Los módulos nativos aplican solo a iOS y Android. Una app de React Native los agrega a su proyecto nativo de Android (`android/`) exactamente como una app nativa, y su código JavaScript no cambia. Los módulos de iOS aún no están disponibles para React Native. En Web no hay nada que instalar. El SDK carga en tiempo de ejecución los scripts de los proveedores de antifraude habilitados para tu cuenta y recopila los fingerprints durante la transacción. Para recopilarlos antes de la transacción, llama a `sdkPayments.antifraud()`.
 </Note>
 
 <Note>
@@ -24,13 +24,13 @@ Instalar un módulo no hace que el SDK lo use. Un módulo se ejecuta solo cuando
 
 | Módulo | Qué agrega | iOS | Android |
 |---|---|---|---|
-| Antifraude ClearSale | Recopila el fingerprint del dispositivo de ClearSale y lo envía como `customer.device_fingerprint` del pago | Llegará con SdkPayments 3.1.0 | `yuno-sdk-antifraud-clearsale` |
-| Antifraude PayPal Magnes | Recopila los datos de dispositivo de Magnes de PayPal y los adjunta al pago | Llegará con SdkPayments 3.1.0 | No disponible |
-| Antifraude Koin | Recopila el fingerprint del dispositivo de Koin y lo envía como `customer.device_fingerprint` | Llegará con SdkPayments 3.1.0 | `yuno-sdk-antifraud-koin` |
-| Antifraude Riskified | Inicia el beacon de Riskified con la sesión de checkout y envía esa sesión como `customer.device_fingerprint` | No disponible | `yuno-sdk-antifraud-riskified` |
-| Antifraude Signifyd | Ejecuta el perfilado de dispositivo de Signifyd y envía la sesión de Signifyd como `customer.device_fingerprint` | No disponible | `yuno-sdk-antifraud-signifyd` |
-| Netcetera 3DS | Ejecuta los desafíos de 3D Secure de forma nativa en tu app, para pagos e inscripción | Aún no disponible | `yuno-sdk-3ds-netcetera` |
-| Revolut Pay | Ejecuta el checkout de Revolut Pay de forma nativa, sobre el SDK oficial de Revolut | Llegará con SdkPayments 3.1.0 | No disponible |
+| Antifraude ClearSale | Recopila el fingerprint del dispositivo de ClearSale y lo envía como `customer.device_fingerprint` del pago | `SdkAntifraudClearsale` | `yuno-sdk-antifraud-clearsale` |
+| Antifraude PayPal Magnes | Recopila los datos de dispositivo de Magnes de PayPal y los adjunta al pago | Aún no disponible | No disponible |
+| Antifraude Koin | Recopila el fingerprint del dispositivo de Koin y lo envía como `customer.device_fingerprint` | `SdkAntifraudKoin` | `yuno-sdk-antifraud-koin` |
+| Antifraude Riskified | Inicia el beacon de Riskified con la sesión de checkout y envía esa sesión como `customer.device_fingerprint` | `SdkAntifraudRiskified` | `yuno-sdk-antifraud-riskified` |
+| Antifraude Signifyd | Ejecuta el perfilado de dispositivo de Signifyd y envía la sesión de Signifyd como `customer.device_fingerprint` | Aún no disponible | `yuno-sdk-antifraud-signifyd` |
+| Netcetera 3DS | Ejecuta los desafíos de 3D Secure de forma nativa en tu app, para pagos e inscripción | `SdkPaymentsNetcetera` | `yuno-sdk-3ds-netcetera` |
+| Revolut Pay | Ejecuta el checkout de Revolut Pay de forma nativa, sobre el SDK oficial de Revolut | Aún no disponible | No disponible |
 
 Plataforma mínima: iOS 14.0, Android 6.0 (API 23). Cada módulo requiere la misma versión del SDK que instalas desde [Get Started](/es/docs/yuno-sdk/get-started#install).
 
@@ -39,11 +39,28 @@ Plataforma mínima: iOS 14.0, Android 6.0 (API 23). Cada módulo requiere la mis
 <Tabs>
   <Tab title="iOS">
 
-<Note>
-**Los módulos nativos de iOS se están publicando para el Yuno SDK.** Se documentarán aquí cuando estén disponibles. Mientras tanto, los desafíos 3DS se ejecutan en el WebView del SDK y los fingerprints antifraude nativos no se recopilan en iOS 3.x.
+Agrega los módulos que necesites a tu app junto al SDK. En Xcode, ve a **File > Add Package Dependencies**, selecciona el paquete de tu proyecto y agrega los productos de módulos desde `https://github.com/yuno-payments/yuno-sdk-ios.git`. O agrégalos directamente en tu `Package.swift`:
 
-Los módulos del SDK Legacy (2.x) documentados en [iOS Overview](/es/docs/sdks/external-native-modules/ios-overview) son solo para el SDK Legacy y no se pueden usar con el Yuno SDK (3.x).
-</Note>
+```swift
+dependencies: [
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "3.2.0"))
+],
+targets: [
+    .target(
+        name: "YourApp",
+        dependencies: [
+            .product(name: "SdkPayments", package: "yuno-sdk-ios"),
+            // Agrega solo los módulos que usa tu cuenta
+            .product(name: "SdkAntifraudClearsale", package: "yuno-sdk-ios"),
+            .product(name: "SdkAntifraudKoin", package: "yuno-sdk-ios"),
+            .product(name: "SdkAntifraudRiskified", package: "yuno-sdk-ios"),
+            .product(name: "SdkPaymentsNetcetera", package: "yuno-sdk-ios"),
+        ]
+    )
+]
+```
+
+Cada módulo trae su SDK del proveedor y se registra solo cuando la app inicia, por lo que no necesitas llamar a `register()`. El binario del módulo se descarga desde la URL de release del proveedor.
 
   </Tab>
   <Tab title="Android">
@@ -75,7 +92,9 @@ El módulo de Signifyd necesita el registro privado de Signifyd y un token de de
   </Tab>
   <Tab title="React Native">
 
-Agrega los módulos de Android a `android/app/build.gradle` como muestra la pestaña de Android, y los módulos de iOS a `ios/Podfile` como muestra la parte de CocoaPods de la pestaña de iOS, y luego ejecuta `pod install`. Las apps de React Native instalan las dependencias de iOS solo mediante CocoaPods.
+Agrega los módulos de Android a `android/app/build.gradle` como muestra la pestaña de Android.
+
+Los módulos de iOS aún no están disponibles para React Native. El SDK de React Native instala `SdkPayments` mediante CocoaPods, y los módulos de iOS se distribuyen solo mediante Swift Package Manager.
 
   </Tab>
 </Tabs>
@@ -85,11 +104,13 @@ Agrega los módulos de Android a `android/app/build.gradle` como muestra la pest
 <Tabs>
   <Tab title="iOS">
 
-<Note>
-**Los módulos nativos de iOS se están publicando para el Yuno SDK.** Se documentarán aquí cuando estén disponibles. Mientras tanto, los desafíos 3DS se ejecutan en el WebView del SDK y los fingerprints antifraude nativos no se recopilan en iOS 3.x.
+Los módulos se registran solos cuando la app inicia, por lo que no necesitas llamar a `register()`. Mantén tu inicialización habitual:
 
-Los módulos del SDK Legacy (2.x) documentados en [iOS Overview](/es/docs/sdks/external-native-modules/ios-overview) son solo para el SDK Legacy y no se pueden usar con el Yuno SDK (3.x).
-</Note>
+```swift
+import SdkPayments
+
+SdkPayments.initialize(apiKey: "your-public-api-key")
+```
 
   </Tab>
   <Tab title="Android">
@@ -132,7 +153,7 @@ initializer.initializeComponent(Netcetera3DSInitializer::class.java)
   </Tab>
   <Tab title="React Native">
 
-En Android los módulos se registran solos mediante App Startup, como en la pestaña de Android. En iOS los pods son frameworks estáticos: llama al `register()` de cada módulo desde tu `AppDelegate` antes de la primera transacción, como en la pestaña de iOS. Mantén `SdkPayments.initialize` en tu código JavaScript.
+En Android los módulos se registran solos mediante App Startup, como en la pestaña de Android. Los módulos de iOS aún no están disponibles para React Native.
 
   </Tab>
 </Tabs>
@@ -152,10 +173,6 @@ Una vez que un módulo está registrado, el SDK lo usa automáticamente. No camb
 
 ### Netcetera 3DS {#netcetera-3ds}
 
-<Note>
-**iOS:** Los módulos nativos de 3DS aún no están disponibles para el Yuno SDK (3.x). Hasta que se publiquen, los desafíos 3DS se ejecutan en el WebView del SDK en iOS.
-</Note>
-
 **Android:**
 - Ejecuta el desafío de 3D Secure dentro de tu app, para pagos e inscripción, en lugar del desafío en WebView. Si personalizas los estilos del SDK, se propagan a la pantalla del desafío.
 - El SDK sigue presentando el desafío a pantalla completa: no pasa por `showView`.
@@ -163,9 +180,7 @@ Una vez que un módulo está registrado, el SDK lo usa automáticamente. No camb
 
 ### Revolut Pay {#revolut-pay}
 
-<Note>
-**iOS:** El módulo de Revolut Pay llegará con SdkPayments 3.1.0. Las instrucciones de integración se documentarán aquí cuando estén disponibles.
-</Note>
+Los módulos nativos de Revolut Pay aún no están disponibles para el Yuno SDK.
 
 ## Solución de problemas {#troubleshooting}
 

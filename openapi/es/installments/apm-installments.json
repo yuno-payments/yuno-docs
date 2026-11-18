@@ -1,0 +1,232 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "APM Installments",
+    "version": "1.0.0",
+    "description": "Retrieve available installment plans for specific Alternative Payment Methods (APMs), such as NuPay."
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key"
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key"
+      },
+      "accountCode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Account-Code"
+      }
+    }
+  },
+  "security": [
+    {
+      "publicApiKey": [],
+      "privateSecretKey": [],
+      "accountCode": []
+    }
+  ],
+  "paths": {
+    "/apm-installments": {
+      "post": {
+        "summary": "Recuperar cuotas de APM",
+        "description": "Recupera los planes de cuotas disponibles para métodos de pago alternativos (APM) específicos. Es útil para integraciones como NuPay, en las que puede que quieras mostrar al cliente las opciones de cuotas antes de finalizar el pago.",
+        "operationId": "retrieve-apm-installments",
+        "tags": [
+          "Installments"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "country",
+                  "amount",
+                  "payment_method"
+                ],
+                "properties": {
+                  "country": {
+                    "type": "string",
+                    "description": "Código de país ISO 3166-1 alpha-2 (por ejemplo, BR).",
+                    "example": "BR"
+                  },
+                  "amount": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "Código de moneda ISO 4217.",
+                        "example": "BRL"
+                      },
+                      "value": {
+                        "type": "string",
+                        "description": "Monto en unidades menores.",
+                        "example": "25000"
+                      }
+                    }
+                  },
+                  "customer": {
+                    "type": "object",
+                    "description": "Datos del cliente. Puede incluir el id o el email y los datos del documento.",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "ID de cliente de Yuno.",
+                        "example": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "customer@example.com"
+                      },
+                      "document": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "CPF",
+                              "CNPJ"
+                            ],
+                            "example": "CPF"
+                          },
+                          "number": {
+                            "type": "string",
+                            "example": "52998224725"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "description": "El método de pago alternativo para el que se recuperan las cuotas.",
+                    "enum": [
+                      "NU_PAY",
+                      "NU_PAY_ENROLLMENT",
+                      "APPLE_PAY"
+                    ],
+                    "example": "NU_PAY_ENROLLMENT"
+                  },
+                  "vaulted_token": {
+                    "type": "string",
+                    "description": "Obligatorio para el flujo de inscripción.",
+                    "example": "vaulted_token_uuid"
+                  }
+                }
+              },
+              "examples": {
+                "EnrollmentFlow": {
+                  "summary": "Enrollment Flow",
+                  "value": {
+                    "country": "BR",
+                    "amount": {
+                      "currency": "BRL",
+                      "value": "25000"
+                    },
+                    "customer": {
+                      "id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f"
+                    },
+                    "payment_method": "NU_PAY_ENROLLMENT",
+                    "vaulted_token": "vaulted_token_uuid"
+                  }
+                },
+                "TwoFAMode": {
+                  "summary": "2FA Mode",
+                  "value": {
+                    "country": "BR",
+                    "payment_method": "NU_PAY",
+                    "amount": {
+                      "currency": "BRL",
+                      "value": "25000"
+                    },
+                    "customer": {
+                      "email": "customer@example.com",
+                      "document": {
+                        "type": "CPF",
+                        "number": "52998224725"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lista de planes de cuotas disponibles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "installment": {
+                        "type": "integer"
+                      },
+                      "amount": {
+                        "type": "object",
+                        "properties": {
+                          "currency": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "rate": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "installment": 1,
+                    "amount": {
+                      "currency": "BRL",
+                      "value": 25000
+                    },
+                    "rate": 1
+                  },
+                  {
+                    "installment": 3,
+                    "amount": {
+                      "currency": "BRL",
+                      "value": 25000
+                    },
+                    "rate": 1.05
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
