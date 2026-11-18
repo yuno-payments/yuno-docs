@@ -1,0 +1,78 @@
+---
+title: "Listar grupos de rechazo"
+description: "Lista los grupos de rechazo y los grupos de Merchant Advice Code de una cuenta, para referenciarlos por group_id desde las salidas de enrutamiento."
+openapi: "/openapi/es/organizations/routing/list-decline-groups.json GET /routing/decline-groups"
+---
+
+Lista los grupos de rechazo guardados en una cuenta: los grupos de subestados de rechazo que referencias con `status: "DECLINE_GROUP"` y los grupos de Merchant Advice Codes que referencias con `status: "MAC_CODE_GROUP"`. Usa el `id` de un grupo como `group_id` en una salida de enrutamiento; consulta [Grupos de resultados](/es/reference/organizations/routing/routing-resource-shape#outcome-groups).
+
+El endpoint es de solo lectura. Los grupos se crean en el dashboard, o automáticamente cuando se guarda una salida `DECLINE_GROUP` con `decline_types` y sin `group_id` (esos se nombran `auto_…`).
+
+### Parámetros de consulta {#query-parameters}
+
+<ParamField query="account_id" type="string" required>
+  La cuenta para la que se listan los grupos. Debe pertenecer a la organización a la que están asociadas tus credenciales de API.
+</ParamField>
+
+### Respuesta {#response}
+
+Un arreglo con los grupos de la cuenta, o un arreglo vacío si no tiene ninguno. Cada grupo contiene:
+
+<ResponseField name="id" type="integer">
+  El valor que se envía como `group_id`.
+</ResponseField>
+<ResponseField name="name" type="string">
+  El nombre del grupo, tal como se muestra en el dashboard y se devuelve como `group_name` en las salidas de enrutamiento.
+</ResponseField>
+<ResponseField name="type" type="enum">
+  El tipo del grupo, según el `status` de salida con el que coincide: `DECLINE_GROUP` para un grupo de subestados de rechazo, `MAC_CODE_GROUP` para un grupo de Merchant Advice Codes. Un grupo de Merchant Advice Codes también puede referenciarse desde una salida `DECLINE_GROUP`, que coincide de otra forma; consulta [Grupos de resultados](/es/reference/organizations/routing/routing-resource-shape#outcome-groups).
+</ResponseField>
+<ResponseField name="decline_types" type="string[]">
+  Los miembros del grupo, en el mismo vocabulario que usan las salidas de enrutamiento: subestados de rechazo como `DECLINED_BY_BANK` para `DECLINE_GROUP`, Merchant Advice Codes normalizados como `NO_RETRY_POLICY` para `MAC_CODE_GROUP`. Consulta [Códigos de transacción](/es/reference/payments/status-and-response-codes/transaction#declined-status).
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/routing/decline-groups?account_id=7825fc5e-e50a-4248-9ae8-5d3786afb0be' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK
+[
+  {
+    "id": 1044,
+    "name": "Soft declines",
+    "type": "DECLINE_GROUP",
+    "decline_types": ["DECLINED_BY_BANK", "RESTRICTED_BY_BANK"]
+  },
+  {
+    "id": 4542,
+    "name": "Do not retry",
+    "type": "MAC_CODE_GROUP",
+    "decline_types": ["NO_RETRY_POLICY", "NO_RETRY_SECURITY"]
+  }
+]
+```
+
+```json 400 Bad Request — Missing account_id
+{
+  "code": "ROUTING_VALIDATION_FAILED",
+  "messages": ["account_id is required."]
+}
+```
+</CodeGroup>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `400` | `ROUTING_VALIDATION_FAILED` | Falta el parámetro de consulta `account_id`. |
+| `400` | `INVALID_ACCOUNT_ID` | `account_id` pertenece a una organización que tu clave de API no posee. |
+| `401` | `NOT_AUTHENTICATED` | Falta el encabezado `public-api-key` o `private-secret-key`. |
+| `401` | `INVALID_CREDENTIALS` | Par de claves incorrecto, o se usó una **Customized API key** del Dashboard. Usa en su lugar una clave de cuenta o una clave de organización. |
+| `502` | `ROUTING_UPSTREAM_ERROR` | No se pudo acceder al servicio de enrutamiento. Reintenta la solicitud. |
+
+</div>

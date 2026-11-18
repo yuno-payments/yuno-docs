@@ -1,0 +1,107 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Account Groups API - Remove Account",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/organizations/account-groups/{account_group_id}/accounts/{account_id}": {
+      "delete": {
+        "summary": "Quitar una cuenta de un grupo",
+        "operationId": "remove-account-from-group",
+        "description": "Desvincula una cuenta de un grupo de cuentas. La cuenta en sí no se elimina ni se deshabilita: conserva sus usuarios, permisos y configuración, y pasa a ser una cuenta independiente de la organización, por lo que luego puede asociarse a otro grupo con Create Account. Un grupo siempre debe conservar al menos una cuenta, por lo que la última cuenta de un grupo no se puede quitar de esta forma: muévela a otro grupo (con `account_codes` en Create Account Group) o elimina la cuenta.",
+        "parameters": [
+          {
+            "name": "account_group_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID del grupo de cuentas."
+          },
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID de la cuenta que se desvinculará. Debe pertenecer actualmente a este grupo."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Sin contenido: la cuenta se desvinculó del grupo."
+          },
+          "400": {
+            "description": "Solicitud incorrecta, `LAST_ACCOUNT_IN_GROUP`: la cuenta es la única que queda en el grupo. Un grupo debe contener al menos una cuenta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Código de error legible por máquina."
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Detalles legibles por personas."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "LAST_ACCOUNT_IN_GROUP",
+                  "messages": [
+                    "A group must contain at least one account"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No encontrado: no existe ese grupo de cuentas en esta organización, o la cuenta no es miembro de este grupo."
+          }
+        }
+      }
+    }
+  }
+}

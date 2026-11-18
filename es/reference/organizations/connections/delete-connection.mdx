@@ -1,0 +1,70 @@
+---
+title: "Eliminar una conexión"
+description: "Elimina una conexión. No debe estar referenciada por una regla de enrutamiento activa."
+openapi: "/openapi/es/organizations/connections/delete-connection.json DELETE /connections/{connection_id}"
+---
+
+Elimina una conexión que creaste previamente. Devuelve `204 No Content` si la operación es exitosa.
+
+<Warning>
+Problema conocido: después del `204`, la conexión sigue apareciendo como `ACTIVE` cuando la obtienes. La llamada no cambia el estado que devuelve la consulta.
+</Warning>
+
+<Warning>
+Una conexión que todavía está referenciada por una regla de enrutamiento activa no se puede eliminar: la solicitud falla con `409 CONNECTION_IN_USE`. Desvincúlala primero de tus rutas y luego reintenta.
+</Warning>
+
+### Parámetros de ruta {#path-parameters}
+
+<ParamField path="connection_id" type="string" required>
+  El id devuelto por [Crear una conexión](/es/reference/organizations/connections/create-connection). Debe pertenecer a la cuenta a la que está asociada tu clave de API.
+</ParamField>
+
+### Encabezados {#headers}
+
+<ParamField header="X-Account-Code" type="string" required>
+  UUID de la cuenta a la que pertenece la conexión.
+</ParamField>
+
+### Respuesta {#response}
+
+Devuelve `204 No Content` con un cuerpo vacío.
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE 'https://api.y.uno/v1/connections/f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'X-Account-Code: a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+```
+
+```json 409 — In Use
+{
+  "type": "conflict",
+  "code": "CONNECTION_IN_USE",
+  "message": "Connection 'f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e' is still referenced by an active routing rule",
+  "details": { "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e" }
+}
+```
+
+```json 404 Not Found
+{
+  "type": "not_found",
+  "code": "CONNECTION_NOT_FOUND",
+  "message": "Connection '...' was not found",
+  "details": { "connection_id": "..." }
+}
+```
+</CodeGroup>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` |
+| --- | --- |
+| `401` | `NOT_AUTHENTICATED`<br />Clave de API ausente o no válida. |
+| `404` | `CONNECTION_NOT_FOUND`<br />`connection_id` desconocido, o el id pertenece a otra cuenta. |
+| `409` | `CONNECTION_IN_USE`<br />La conexión todavía está referenciada por una regla de enrutamiento activa. |
+
+</div>

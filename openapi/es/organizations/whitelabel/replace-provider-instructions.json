@@ -1,0 +1,269 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - Replace Instructions",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers/{provider_id}/instructions": {
+      "put": {
+        "summary": "Reemplazar la personalización de instrucciones de un proveedor",
+        "operationId": "replace-whitelabel-provider-instructions",
+        "description": "Almacena tus propias instrucciones de conexión para este proveedor, reemplazando la redacción del catálogo de Yuno donde la personalices.\n\nEl documento se almacena completo, no se combina. Un campo que este cuerpo omite se borra y el proveedor vuelve al valor del catálogo para ese campo, por lo que debes leer el documento actual con `GET`, editarlo y volver a enviarlo completo. Debe estar presente al menos uno de `instructions`, `setup_instructions`, `more_info_url` y `name`, las claves de nivel superior desconocidas se rechazan en lugar de ignorarse, y el documento serializado no puede superar los 64 KB.\n\nTodo `link`, y `more_info_url`, debe ser https. `name` cambia el nombre del proveedor y solo se acepta para proveedores propiedad de Yuno (un id de catálogo que contenga `YUNO`); cualquier otro proveedor se rechaza con `400`. Los rechazos enumeran todas las infracciones a la vez en `violations`.\n\nPersonalizar la redacción de un proveedor no lo agrega a tu lista de permitidos.",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "description": "ID del proveedor del catálogo de Yuno en UPPER_SNAKE_CASE. No distingue mayúsculas de minúsculas; se normaliza a mayúsculas.",
+            "schema": {
+              "type": "string",
+              "example": "STRIPE"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "El documento de personalización completo.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "El documento de personalización completo. Debe estar presente al menos una propiedad.",
+                "minProperties": 1,
+                "properties": {
+                  "instructions": {
+                    "type": "array",
+                    "description": "Los pasos de conexión que se muestran a tus propios usuarios. Todo `link` debe ser https.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "description": "Un paso de instrucciones. Acepta `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` y `sub_instructions` (anidados hasta 3 niveles). `text` y `text_link` son una cadena simple o un mapa de idiomas como `{\"EN\": \"...\", \"ES\": \"...\"}`. Todo `link` debe ser https."
+                    }
+                  },
+                  "setup_instructions": {
+                    "type": "array",
+                    "description": "Pasos de configuración agrupados.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "description": "Un grupo de configuración. Acepta `title`, `order`, `instructions_type` e `instructions` (la misma estructura de paso)."
+                    }
+                  },
+                  "more_info_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Enlace a tu propia documentación para este proveedor. Debe ser una URL https.",
+                    "example": "https://docs.example.com/stripe"
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "description": "Nombre visible que reemplaza al del catálogo. Se acepta solo para proveedores propiedad de Yuno (un id de catálogo que contenga `YUNO`, por ejemplo `YUNO_3DS`); cualquier otro proveedor se rechaza con `400`.",
+                    "example": "Acme Risk"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "La anulación almacenada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider_id": {
+                      "type": "string",
+                      "description": "ID del proveedor del catálogo de Yuno, UPPER_SNAKE_CASE.",
+                      "example": "STRIPE"
+                    },
+                    "instructions": {
+                      "type": "array",
+                      "description": "Pasos de conexión que reemplazan los del catálogo.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Un paso de instrucciones. Acepta `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` y `sub_instructions` (anidados hasta 3 niveles). `text` y `text_link` son una cadena simple o un mapa de idiomas como `{\"EN\": \"...\", \"ES\": \"...\"}`. Todo `link` debe ser https."
+                      }
+                    },
+                    "setup_instructions": {
+                      "type": "array",
+                      "description": "Pasos de configuración agrupados que reemplazan los del catálogo.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Un grupo de configuración. Acepta `title`, `order`, `instructions_type` e `instructions` (la misma estructura de paso)."
+                      }
+                    },
+                    "more_info_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "Enlace a la documentación que reemplaza al del catálogo, cuando se personaliza. Siempre https.",
+                      "example": "https://docs.example.com/stripe"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Nombre visible que reemplaza al del catálogo, cuando se personaliza. Solo los proveedores propiedad de Yuno pueden tener uno.",
+                      "example": "Acme Risk"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true,
+                      "description": "Cuándo se escribió la anulación por primera vez.",
+                      "example": "2026-09-02T13:54:13Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true,
+                      "description": "Cuándo se escribió la anulación por última vez.",
+                      "example": "2026-09-02T13:54:13Z"
+                    },
+                    "created_by": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true,
+                      "description": "El usuario del Dashboard que la creó. Las anulaciones escritas mediante esta API llevan el valor centinela con todos ceros `00000000-0000-0000-0000-000000000000`, que significa \"escrito mediante la API\" y no por una persona en el Dashboard.",
+                      "example": "00000000-0000-0000-0000-000000000000"
+                    },
+                    "updated_by": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true,
+                      "description": "El usuario del Dashboard que la actualizó por última vez, con la misma regla del valor centinela que `created_by`.",
+                      "example": "00000000-0000-0000-0000-000000000000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El documento fue rechazado: provider_id inválido, clave desconocida, enlace que no es https, `name` en un proveedor que no es propiedad de Yuno, o tamaño superior a 64 KB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "about:blank"
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "Invalid provider instructions"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "detail": {
+                      "type": "string",
+                      "example": "The instruction override was rejected"
+                    },
+                    "violations": {
+                      "type": "array",
+                      "description": "Todas las infracciones de la solicitud, informadas juntas en lugar de una por cada ida y vuelta.",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "name: only Yuno's own providers can be renamed; 'STRIPE' cannot"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado: las claves de API no son válidas o faltan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "El cuerpo de la solicitud supera los 256 KB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Request body is too large"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
