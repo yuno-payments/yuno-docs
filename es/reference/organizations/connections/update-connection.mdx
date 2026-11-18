@@ -1,0 +1,199 @@
+---
+title: "Actualizar una conexión"
+description: "Actualiza parcialmente una conexión. Solo se aplican los campos que envías; los secretos permanecen enmascarados."
+openapi: "/openapi/es/organizations/connections/update-connection.json PATCH /connections/{connection_id}"
+---
+
+Actualiza parcialmente una conexión que creaste previamente. Solo se aplican los campos presentes en el cuerpo: todo lo que omitas conserva su valor actual.
+
+<Note>
+**Lo que no puedes cambiar aquí:** `provider_id`, `flow_type`, `payment_methods` y el parámetro `INTEGRATION_TYPE` son inmutables. Para cambiar cualquiera de ellos, crea una nueva conexión y redirige tus reglas de enrutamiento hacia ella.
+</Note>
+
+### Parámetros de ruta {#path-parameters}
+
+<ParamField path="connection_id" type="string" required>
+  El id devuelto por [Crear una conexión](/es/reference/organizations/connections/create-connection). Debe pertenecer a la cuenta a la que está asociada tu clave de API.
+</ParamField>
+
+### Cuerpo {#body}
+
+<ParamField body="account_id" type="string" required>
+  UUID de la cuenta a la que pertenece la conexión.
+</ParamField>
+
+<ParamField body="merchant_connection_id" type="string">
+  Nueva etiqueta para esta conexión. Máximo 255 caracteres, y debe seguir siendo única dentro de la cuenta. Omítela para conservar la etiqueta actual.
+</ParamField>
+
+<ParamField body="params" type="object[]">
+  Parámetros a cambiar, como un **arreglo plano** de pares `{param_id, value}`: la misma estructura que en [Crear una conexión](/es/reference/organizations/connections/create-connection).
+
+  Los parámetros se **combinan por `param_id`** sobre los parámetros actuales de la conexión: un `param_id` que no envías conserva su valor actual. Solo necesitas enviar lo que realmente cambias. Cada `param_id` que envías se valida contra el catálogo del proveedor.
+
+  <Expandable title="elemento">
+    <ParamField body="param_id" type="string" required>
+      El `param_id` exacto del catálogo. Las mayúsculas y minúsculas importan.
+    </ParamField>
+    <ParamField body="value" type="string | boolean | number | array" required>
+      Debe coincidir con el `field_type` del catálogo.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="costs" type="object[]">
+  Configuración de costos. A diferencia de `params`, `costs` **no se combina**: cuando está presente *reemplaza* toda la tabla de costos de la conexión. Omítela para dejar intactos los costos existentes.
+  <Expandable title="elemento">
+    <ParamField body="sort_number" type="integer">
+      Orden de prioridad de la entrada de costo.
+    </ParamField>
+    <ParamField body="cost_name" type="string">
+      Etiqueta de la entrada de costo.
+    </ParamField>
+    <ParamField body="currency" type="string">
+      Código de moneda ISO 4217. Debe ser una admitida por el proveedor.
+    </ParamField>
+    <ParamField body="cost_values" type="object">
+        <Expandable title="successful | unsuccessful">
+            <ParamField body="fixed_fee" type="number">
+                Monto de la tarifa fija.
+            </ParamField>
+            <ParamField body="percentage" type="number">
+                Tarifa porcentual.
+            </ParamField>
+        </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Respuesta {#response}
+
+Devuelve la conexión actualizada, con la misma estructura que [Obtener una conexión](/es/reference/organizations/connections/retrieve-connection).
+
+<ResponseField name="connection_id" type="string">
+  Identificador único de la conexión. Una actualización no lo modifica.
+</ResponseField>
+<ResponseField name="merchant_connection_id" type="string">
+  Tu etiqueta interna para esta conexión.
+</ResponseField>
+<ResponseField name="provider_id" type="string">
+  El proveedor al que pertenece esta conexión.
+</ResponseField>
+<ResponseField name="status" type="string">
+  Estado actual.
+</ResponseField>
+<ResponseField name="flow_type" type="string">
+  Siempre `PAYIN`.
+</ResponseField>
+<ResponseField name="payment_methods" type="string[]">
+  Lista de métodos de pago admitidos.
+</ResponseField>
+<ResponseField name="params" type="object[]">
+  El conjunto completo de parámetros de la conexión tras la combinación, no solo los que enviaste. Los valores sensibles se enmascaran como `***`.
+</ResponseField>
+<ResponseField name="costs" type="object[]">
+  Configuración de costos de la conexión.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  Marca de tiempo ISO 8601.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  Marca de tiempo ISO 8601. Se actualiza con cada actualización exitosa.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL — rotate a secret
+curl -X PATCH 'https://api.y.uno/v1/connections/f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "params": [
+      { "param_id": "SECRET_KEY", "value": "sk_live_new..." }
+    ]
+  }'
+```
+
+```bash cURL — rename
+curl -X PATCH 'https://api.y.uno/v1/connections/f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "merchant_connection_id": "stripe-us-prod-002"
+  }'
+```
+
+```json 200 OK
+{
+  "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+  "merchant_connection_id": "stripe-us-prod-002",
+  "provider_id": "STRIPE",
+  "status": "ACTIVE",
+  "flow_type": "PAYIN",
+  "payment_methods": ["CARD"],
+  "params": [
+    { "param_id": "INTEGRATION_TYPE",             "value": "STRIPE_CHARGES" },
+    { "param_id": "SECRET_KEY",                   "value": "***" },
+    { "param_id": "RADAR_FRAUD_ANALYSIS",         "value": false },
+    { "param_id": "SEND_RECEIPT_EMAIL_PARAMETER", "value": false },
+    { "param_id": "SETUP_FUTURE_USAGE",           "value": false },
+    { "param_id": "ORDER_ID",                     "value": "DEFAULT" }
+  ],
+  "costs": [
+    {
+      "sort_number": 1,
+      "cost_name": "Transaction Fee",
+      "currency": "USD",
+      "cost_values": {
+        "successful":   { "fixed_fee": 0.30, "percentage": 2.9 },
+        "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
+      }
+    }
+  ],
+  "created_at": "2026-05-12T10:24:00Z",
+  "updated_at": "2026-05-12T11:02:17Z"
+}
+```
+
+```json 400 — Unknown Param
+{
+  "type": "validation_error",
+  "code": "UNKNOWN_PARAM",
+  "message": "Param 'FOO' is not part of provider 'STRIPE' catalog",
+  "details": { "provider_id": "STRIPE", "param_id": "FOO" }
+}
+```
+
+```json 409 — Conflict
+{
+  "type": "conflict",
+  "code": "CONNECTION_MERCHANT_ID_CONFLICT",
+  "message": "A connection with merchant_connection_id 'stripe-us-prod-002' already exists in this account",
+  "details": { "merchant_connection_id": "stripe-us-prod-002" }
+}
+```
+</CodeGroup>
+
+<Note>
+**Manejo de secretos:** los parámetros marcados como `secret: true` en el catálogo siempre se devuelven como `"value": "***"`. Reenviar `"***"` no es la forma de conservar un secreto: simplemente omite el `param_id` por completo y se conserva su valor almacenado.
+</Note>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` |
+| --- | --- |
+| `400` | `UNKNOWN_PARAM`<br />Un `param_id` no forma parte del catálogo del proveedor. |
+| `400` | `INVALID_PARAM_VALUE`<br />Un valor no coincide con el `field_type` del catálogo ni con las opciones permitidas. |
+| `400` | `UNSUPPORTED_CURRENCY`<br />Un `costs[].currency` no está en la lista de monedas admitidas por el proveedor. |
+| `400` | `VALIDATION_ERROR`<br />`connection_id` no es un UUID válido, o `merchant_connection_id` supera los 255 caracteres. |
+| `400` | `MALFORMED_BODY`<br />El cuerpo no es un JSON válido. |
+| `401` | `NOT_AUTHENTICATED`<br />Clave de API ausente o no válida. |
+| `404` | `CONNECTION_NOT_FOUND`<br />`connection_id` desconocido, o el id pertenece a otra cuenta. |
+| `409` | `CONNECTION_MERCHANT_ID_CONFLICT`<br />`merchant_connection_id` ya existe en esta cuenta. |
+
+</div>

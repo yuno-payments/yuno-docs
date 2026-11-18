@@ -1,0 +1,89 @@
+---
+title: "Reemplazar la lista de proveedores permitidos"
+description: "Reemplaza todo el conjunto de proveedores que ofrece tu organización por los ids del cuerpo."
+openapi: "/openapi/es/organizations/whitelabel/replace-provider-allowlist.json PUT /whitelabel/providers"
+---
+
+Reemplaza todo el conjunto de proveedores que ofrece tu organización por los ids del cuerpo.
+
+**Un proveedor que el cuerpo omite deja de ofrecerse.** Esto es un reemplazo, no una fusión: usa [Actualizar la visibilidad de varios proveedores](/es/reference/organizations/whitelabel/update-providers-visibility) para cambiar algunos proveedores sin volver a indicar el resto.
+
+Quitar un proveedor **conserva** su personalización de instrucciones, de modo que desactivarlo y volver a activarlo no pierde tu redacción.
+
+### Cuerpo {#body}
+
+<ParamField body="provider_ids" type="string[]" required>
+  El conjunto completo de ids de proveedores que ofrece tu organización. Ids de catálogo en UPPER_SNAKE_CASE (`[A-Z0-9_]`), de máximo 100 caracteres cada uno y como máximo 500 entradas. No distingue mayúsculas de minúsculas: se normaliza a mayúsculas.
+
+  Un **arreglo vacío es una solicitud válida** y borra la lista de permitidos, con el mismo estado final que [Borrar la lista de proveedores permitidos](/es/reference/organizations/whitelabel/clear-provider-allowlist). Por lo tanto, una pantalla de administración de "guardar todo" no necesita un caso especial para "se desmarcó el último proveedor".
+</ParamField>
+
+<Warning>
+Bajo la regla de opt-in, un `provider_ids` vacío deja a tu organización sin ninguna entrada en la lista de permitidos: **no** es un interruptor de "mostrar todo". Envía los ids que quieres ofrecer en lugar de borrar la lista para ampliarla.
+</Warning>
+
+### Respuesta {#response}
+
+La personalización actualizada, con la misma estructura que [Listar la personalización de proveedores de marca blanca](/es/reference/organizations/whitelabel/list-providers).
+
+<ResponseField name="filtered" type="boolean">
+  Indica si tu organización tiene al menos una entrada en la lista de permitidos, después de este cambio.
+</ResponseField>
+<ResponseField name="providers" type="object[]">
+  La unión de tu lista de permitidos, tus personalizaciones de instrucciones y tus personalizaciones de logo.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X PUT 'https://api.y.uno/v1/whitelabel/providers' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{ "provider_ids": ["STRIPE", "ADYEN", "YUNO_3DS"] }'
+```
+
+```json 200 OK
+{
+  "filtered": true,
+  "providers": [
+    {
+      "provider_id": "ADYEN",
+      "allowed": true,
+      "has_instruction_override": false
+    },
+    {
+      "provider_id": "STRIPE",
+      "allowed": true,
+      "has_instruction_override": true,
+      "more_info_url": "https://docs.example.com/stripe"
+    },
+    {
+      "provider_id": "YUNO_3DS",
+      "allowed": true,
+      "has_instruction_override": false,
+      "logo_url": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+    }
+  ]
+}
+```
+
+```json 400 Bad Request
+{
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "provider_ids contains an invalid catalogue id"
+}
+```
+</CodeGroup>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | Envelope | Cuándo |
+|---|---|---|
+| `400` | problem+json | Un campo desconocido, más de 500 ids, o un id que no es un id de catálogo válido. |
+| `401` | `NOT_AUTHENTICATED` | Faltan las claves de API o no son válidas. |
+| `413` | — | Cuerpo de la solicitud mayor a 256 KB. |
+
+</div>

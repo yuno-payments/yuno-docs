@@ -1,0 +1,89 @@
+---
+title: "Actualizar la visibilidad de un proveedor"
+description: "Activa o desactiva un solo proveedor en la pestaña Proveedores de tu marca blanca."
+openapi: "/openapi/es/organizations/whitelabel/update-provider-visibility.json PATCH /whitelabel/providers/{provider_id}"
+---
+
+Activa o desactiva un solo proveedor. Es idempotente, y al desactivarlo se **conserva** su instrucción personalizada, de modo que tu redacción sobrevive al cambio.
+
+La respuesta es la capa actualizada del proveedor, con `allowed` reflejando el valor de `visible` que enviaste.
+
+<Warning>
+Tu lista de permitidos es opt-in: una organización de marca blanca sin entradas en la lista de permitidos no ofrece ningún proveedor. Enviar `visible: true` en una organización así **inicia** la lista de permitidos con ese único proveedor: los demás siguen sin ofrecerse hasta que los agregues uno por uno, o de forma masiva con [Actualizar la visibilidad de varios proveedores](/es/reference/organizations/whitelabel/update-providers-visibility) o [Reemplazar la lista de proveedores permitidos](/es/reference/organizations/whitelabel/replace-provider-allowlist).
+</Warning>
+
+### Parámetros de ruta {#path-parameters}
+
+<ParamField path="provider_id" type="string" required>
+  Id del proveedor del catálogo de Yuno en UPPER_SNAKE_CASE. No distingue mayúsculas de minúsculas: se normaliza a mayúsculas, por lo que `stripe` y `STRIPE` direccionan al mismo proveedor.
+</ParamField>
+
+### Cuerpo {#body}
+
+<ParamField body="visible" type="boolean" required>
+  Indica si tu organización ofrece este proveedor. `true` lo agrega a la lista de permitidos, `false` lo elimina.
+
+  Obligatorio. Un cuerpo que lo omite, o que envía un `null` explícito, produce un `400`: nunca se trata como `false`.
+</ParamField>
+
+### Respuesta {#response}
+
+La capa actualizada del proveedor, con la misma estructura que [Obtener la capa de un proveedor](/es/reference/organizations/whitelabel/retrieve-provider).
+
+<ResponseField name="provider_id" type="string">
+  Id del proveedor del catálogo de Yuno, normalizado a mayúsculas.
+</ResponseField>
+<ResponseField name="allowed" type="boolean">
+  Indica si tu organización ofrece este proveedor, después de este cambio.
+</ResponseField>
+<ResponseField name="name" type="string">
+  Nombre visible que reemplaza al del catálogo, cuando se personaliza.
+</ResponseField>
+<ResponseField name="instructions" type="object[]">
+  Pasos de conexión que reemplazan a los del catálogo, cuando se personalizan.
+</ResponseField>
+<ResponseField name="setup_instructions" type="object[]">
+  Pasos de configuración agrupados que reemplazan a los del catálogo, cuando se personalizan.
+</ResponseField>
+<ResponseField name="more_info_url" type="string">
+  Enlace de documentación que reemplaza al del catálogo, cuando se personaliza.
+</ResponseField>
+<ResponseField name="logo_url" type="string">
+  Prefirmada en esta lectura y de corta duración.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH 'https://api.y.uno/v1/whitelabel/providers/ADYEN' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{ "visible": true }'
+```
+
+```json 200 OK
+{
+  "provider_id": "ADYEN",
+  "allowed": true
+}
+```
+
+```json 400 Bad Request
+{
+  "code": "VALIDATION_ERROR",
+  "messages": ["provider_id is invalid"]
+}
+```
+</CodeGroup>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | `provider_id` no válido, o un cuerpo con `visible` ausente o nulo. |
+| `401` | `NOT_AUTHENTICATED` | Claves de API ausentes o no válidas. |
+| `413` | — | Cuerpo de la solicitud mayor a 256 KB. |
+
+</div>
