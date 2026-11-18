@@ -25,12 +25,12 @@ Revisa estos puntos según tu caso de uso antes de integrar:
 | Planes, precios, impuestos, prorrateo | Es responsable | Configura | Ninguna |
 | Ciclo de vida de la suscripción y de la factura | Es responsable | Lee webhooks para los derechos de acceso | Ninguna |
 | Calendario de reintentos | Lo ejecuta | Lo configura | Ejecuta cada intento |
-| Primer pago | Espera el informe | Crea el pago en Yuno con `external_subscription` | Cobra, almacena en bóveda e informa a Stripe |
+| Primer pago | Espera el informe | Crea el pago en Yuno con `external_subscription` | Cobra, almacena en la bóveda e informa a Stripe |
 | Renovaciones | Envía `invoice.payment_attempt_required` | Nada | Cobra como transacción iniciada por el comercio e informa a Stripe |
 | Referencia del método de pago en Stripe | La almacena | Nada | La crea y la establece como predeterminada |
 | Reembolsos | Registra el reembolso y la nota de crédito | Inicia el reembolso en Yuno | Reembolsa, informa a Stripe y crea la nota de crédito |
 | Disputas | Ninguna | Las gestiona en Yuno | Las recibe del proveedor |
-| Emails de cobro de deuda y flujo de actualización de tarjeta | Ninguna | Es responsable | Almacena en bóveda la nueva tarjeta y actualiza Stripe |
+| Emails de cobro de deuda y flujo de actualización de tarjeta | Ninguna | Es responsable | Almacena en la bóveda la nueva tarjeta y actualiza Stripe |
 
 Para cobrar el pago de una factura específica de Stripe, como una recarga de saldo, consulta [Pagar una factura de Stripe (recargas)](/es/docs/payment-features/subscriptions/stripe-billing-top-ups).
 
@@ -160,7 +160,7 @@ Stripe y Yuno formatean los montos de forma distinta, así que convierte ambos c
 | --- | --- | --- |
 | `external_subscription.id` | Sí | El ID de la suscripción en Stripe (`sub_...`). De 3 a 255 caracteres. |
 | `external_subscription.customer_id` | No | El cliente de Stripe propietario de la suscripción (`cus_...`). |
-| `payment_method.vault_on_success` | Para renovaciones | Yuno se encarga de los cobros recurrentes solo cuando el pago es aprobado **y** la tarjeta se almacena en bóveda. |
+| `payment_method.vault_on_success` | Para renovaciones | Yuno se encarga de los cobros recurrentes solo cuando el pago es aprobado **y** la tarjeta se almacena en la bóveda. |
 
 <Warning>
   `external_subscription` y el objeto `subscription` son mutuamente excluyentes: enviar ambos devuelve `INVALID_REQUEST`. Usa `subscription` cuando Yuno es el motor de recurrencia, y `external_subscription` cuando lo es Stripe.
@@ -225,11 +225,11 @@ Cuando el registro inicia con una **prueba**, no hay primer cobro. En su lugar, 
   `verify.vault_on_success` debe ser `true`. Enviar `verify.external_subscription` sin él devuelve `INVALID_PARAMETERS`.
 </Warning>
 
-Cuando la verificación es exitosa, Yuno vincula la tarjeta almacenada en bóveda con la suscripción en prueba: su `default_payment_method` en Stripe pasa a ser la referencia de Yuno. No se cobra ni se informa nada, porque no hay ninguna factura pendiente. Al terminar la prueba, Stripe emite la primera factura real y Yuno la cobra con credenciales almacenadas conformes con las redes, como cualquier renovación.
+Cuando la verificación es exitosa, Yuno vincula la tarjeta almacenada en la bóveda con la suscripción en prueba: su `default_payment_method` en Stripe pasa a ser la referencia de Yuno. No se cobra ni se informa nada, porque no hay ninguna factura pendiente. Al terminar la prueba, Stripe emite la primera factura real y Yuno la cobra con credenciales almacenadas conformes con las redes, como cualquier renovación.
 
 ## Renovaciones {#renewals}
 
-Las renovaciones no requieren código de tu parte. Stripe finaliza la factura y envía `invoice.payment_attempt_required`. Yuno cobra la tarjeta almacenada en bóveda como una transacción iniciada por el comercio, a través de tu enrutamiento y cascada de proveedores, e informa el resultado. Cada cobro aparece como un pago normal en tu dashboard de Yuno y en los reportes.
+Las renovaciones no requieren código de tu parte. Stripe finaliza la factura y envía `invoice.payment_attempt_required`. Yuno cobra la tarjeta almacenada en la bóveda como una transacción iniciada por el comercio, a través de tu enrutamiento y cascada de proveedores, e informa el resultado. Cada cobro aparece como un pago normal en tu dashboard de Yuno y en los reportes.
 
 Yuno cobra cada solicitud de Stripe una sola vez. Si Stripe envía el mismo evento de nuevo, Yuno lo ignora. Si Stripe envía una nueva solicitud para una factura que ya está pagada, o cuyo cobro sigue en curso, Yuno tampoco la cobra de nuevo. Una nueva solicitud para una factura cuyo último cobro fue rechazado es el siguiente reintento, y Yuno la cobra.
 
@@ -272,7 +272,7 @@ Usa este flujo para cambiar la tarjeta de una suscripción, incluida una `past_d
     Crea una verificación, como en una [prueba gratuita](#free-trials), o un pago, con el mismo `external_subscription.id` y `vault_on_success: true`. Una verificación cambia la tarjeta sin cobrar al cliente.
   </Step>
   <Step title="Yuno cambia el valor predeterminado en Stripe">
-    Yuno almacena en bóveda la nueva tarjeta y la establece como método de pago predeterminado de la suscripción en Stripe. Las renovaciones continúan con la nueva tarjeta.
+    Yuno almacena en la bóveda la nueva tarjeta y la establece como método de pago predeterminado de la suscripción en Stripe. Las renovaciones continúan con la nueva tarjeta.
   </Step>
 </Steps>
 
@@ -282,7 +282,7 @@ Usa este flujo para cambiar la tarjeta de una suscripción, incluida una `past_d
 
 ### Cambia a un método de pago que el cliente ya inscribió {#switch-to-a-payment-method-the-customer-already-enrolled}
 
-Si el cliente ya tiene otro método de pago almacenado en bóveda en Yuno, puedes mover la suscripción a ese método sin llevar al cliente de vuelta al checkout. Llama a [Cambiar el método de pago de una suscripción externa](/es/reference/subscriptions/change-external-subscription-payment-method) con el ID de la suscripción de Stripe en la ruta, y envía el ID de cliente de Yuno en `customer_payer.id` (no el ID `cus_` de Stripe) y el nuevo `vaulted_token`.
+Si el cliente ya tiene otro método de pago almacenado en la bóveda en Yuno, puedes mover la suscripción a ese método sin llevar al cliente de vuelta al checkout. Llama a [Cambiar el método de pago de una suscripción externa](/es/reference/subscriptions/change-external-subscription-payment-method) con el ID de la suscripción de Stripe en la ruta, y envía el ID de cliente de Yuno en `customer_payer.id` (no el ID `cus_` de Stripe) y el nuevo `vaulted_token`.
 
 No se realiza ningún pago: Yuno no cobra al cliente y no ejecuta una verificación de $0 ni 3DS. Yuno establece el nuevo método de pago como predeterminado de la suscripción en Stripe, y las próximas renovaciones lo cobran. Si Stripe no confirma el cambio, la suscripción conserva su método de pago anterior y la API devuelve `502` `BILLING_PLATFORM_ERROR`: reintenta con un nuevo `X-Idempotency-Key`.
 
