@@ -68,7 +68,7 @@ Un intento de fallback es una autorización nueva. El emisor todavía puede rech
 
 | Integración | Quién ejecuta la autenticación | Cuándo usarla | Guía |
 | :--- | :--- | :--- | :--- |
-| SDK de Yuno | Yuno. El SDK recopila los datos del dispositivo y muestra el desafío | Usas Yuno Checkout en web o móvil | [Quickstart del SDK](/es/docs/sdks/overview/quickstart) |
+| SDK de Yuno | Yuno. El SDK recopila los datos del dispositivo y muestra el desafío | Usas Yuno Checkout en web o móvil | [Empieza con el SDK de Yuno](/es/docs/yuno-sdk/get-started) |
 | API directa | Yuno. Rediriges al cliente a la `redirect_url` | Cumples con PCI y creas los pagos desde tu servidor | [Configuración y pruebas de 3DS](/es/docs/direct-integration-use-cases/3ds-configuration-and-testing) |
 | 3DS Standalone | Yuno. Solo autenticación, sin proveedor y sin autorización | Quieres el ECI y el criptograma para autorizar en otro lugar | [3DS Standalone](/es/docs/payment-features/3ds-standalone) |
 | 3DS externo | Tu propio servidor 3DS o MPI | Ya autenticas y solo envías el resultado a Yuno | [Crear pago](/es/reference/payments/create-payment) |
@@ -89,15 +89,21 @@ Los requisitos de cada opción están en [Integración de Yuno 3D Secure 2](#yun
 ## Configurar 3D Secure para tus pagos {#configuring-3d-secure-for-your-payments}
 
 <Note>
-**Mejora del SDK v1.1**
+**SDK de Yuno: 3DS se ejecuta dentro de la transacción**
 
-Con el SDK v1.1, la lógica de 3DS se gestiona automáticamente mediante el método `continuePayment()`, sin necesidad de una configuración de 3DS por separado. Para más información, consulta la [documentación del Yuno Web SDK](/docs/sdks/full-checkout/web-payments).
+Con el [SDK de Yuno](/es/docs/yuno-sdk/get-started) no hay una configuración de 3DS por separado ni una llamada adicional que debas encadenar. El SDK crea el pago, ejecuta 3DS cuando la ruta o el emisor lo piden y entrega el estado final a [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). Si creas el pago desde tu propio backend con [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment), el SDK igualmente ejecuta 3DS y reporta el resultado. Consulta [Cómo fluye una transacción](/es/docs/yuno-sdk/how-a-transaction-flows) para ver la secuencia completa.
 </Note>
 
 <Note>
-  **Experiencia de desafío 3DS de Yuno (SDK web)**: en web, cuando llamas a `getThreeDSecureChallenge` y abres la URL devuelta con `embedded=true`, el desafío se presenta en un iFrame en lugar de una redirección a página completa, tanto en escritorio como en web móvil. Esto reduce el abandono en comparación con redirigir a una URL separada, y es opcional: si omites `embedded=true`, el desafío se abre en una pestaña nueva. Consulta el [Paso 6](/es/docs/sdks/headless-web/payment#step-6-get-the-3ds-challenge-url) para ver los detalles de implementación.
+**Experiencia de desafío en el SDK de Yuno**: el SDK presenta el desafío por sí mismo, así que no abres una URL de desafío ni gestionas una redirección. En móvil, el desafío se ejecuta por defecto en un WebView a pantalla completa. En Android, agrega el módulo de 3DS de Netcetera para ejecutarlo de forma nativa en tu app, en pagos y en enrolamiento. En iOS 3.x el módulo nativo aún no está disponible, por lo que los desafíos se ejecutan en el WebView. Consulta [Módulos nativos](/es/docs/yuno-sdk/features/native-modules) para la configuración.
+</Note>
 
-  Esto aplica solo al proveedor de 3DS web de Yuno. Las apps móviles nativas ya ejecutan el desafío dentro de la app mediante los SDK nativos de 3DS de Netcetera, consulta las guías de [iOS](/es/docs/sdks/external-native-modules/netcetera-3ds-ios) y [Android](/es/docs/sdks/external-native-modules/netcetera-3ds-android).
+<Note>
+**¿Usas un SDK legacy?** Los SDK legacy siguen soportados durante la transición, y 3DS funciona así:
+
+- Full, Lite y Seamless: desde el SDK v1.1, `continuePayment()` gestiona 3DS sin una configuración por separado. Consulta la [guía del Web SDK legacy](/docs/sdks/full-checkout/web-payments).
+- Headless web: llama a `getThreeDSecureChallenge` y abre la URL devuelta con `embedded=true` para mostrar el desafío en un iFrame en lugar de una redirección a página completa, en escritorio y en web móvil. Sin `embedded=true`, el desafío se abre en una pestaña nueva. Consulta el [Paso 6](/es/docs/sdks/headless-web/payment#step-6-get-the-3ds-challenge-url). Esto aplica solo al proveedor de 3DS web de Yuno.
+- Apps móviles nativas: el desafío se ejecuta dentro de la app mediante los SDK nativos de 3DS de Netcetera. Consulta las guías de [iOS](/es/docs/sdks/external-native-modules/netcetera-3ds-ios) y [Android](/es/docs/sdks/external-native-modules/netcetera-3ds-android).
 </Note>
 
 Tú decides si tu sistema implementará 3DS2 o no. El paso de verificación 3DS2 se agrega al definir el [enrutamiento dinámico](/es/docs/using-yuno/dashboard-overview/routing#configuring-the-dynamic-routing) de tus tarjetas. Al iniciar tus rutas de tarjetas, puedes agregar el paso 3DS2 antes de definir el proveedor de pago. Cuando agregas el paso de verificación 3DS2, al iniciarse un pago con tarjeta, el sistema de Yuno analizará si la tarjeta necesita un desafío adicional. Si es necesario un desafío adicional, el usuario será redirigido al entorno del banco para completar la autorización. En caso contrario, el proceso de pago continuará con normalidad.
@@ -146,7 +152,7 @@ En términos generales, una integración de 3DS requiere un `setup_id`/`device_f
 
 Por lo tanto, según tu integración con Yuno, tienes tres opciones diferentes:
 
-1. **Integración de Checkout**: el flujo de Checkout forma parte de la solución de [Checkout](/es/docs/sdks/overview/quickstart) que ofrece Yuno. Usa nuestros SDK para que gestionemos toda la lógica relacionada con los requisitos y ejecuciones de proveedores externos para 3DS. Si quieres definir casos específicos para el análisis de 3DS, puedes definirlos en la ruta CARD de tu Yuno Dashboard.
+1. **Integración de Checkout**: el flujo de Checkout forma parte de la solución de [Checkout](/es/docs/yuno-sdk/get-started) que ofrece Yuno. Usa nuestros SDK para que gestionemos toda la lógica relacionada con los requisitos y ejecuciones de proveedores externos para 3DS. Si quieres definir casos específicos para el análisis de 3DS, puedes definirlos en la ruta CARD de tu Yuno Dashboard.
 2. **Integración externa**: usa tu propio 3DS y luego envía los campos de autorización correspondientes en la [creación del pago](/es/reference/payments/create-payment) (card\_data - eci, cryptogram, etc.). Solo disponible para comercios que cumplen con PCI.
 3. **Integración directa**: el flujo Direct solo está disponible para comercios que cumplen con PCI. Ofrece una forma sencilla de crear un pago y validar la información del usuario, y requiere que el comercio realice una sola solicitud para crear el pago. Para implementar con éxito la integración Direct, sigue los pasos descritos en la [guía de integración](/es/docs/direct-integration-use-cases/direct-flow) y proporciona la información requerida según se indica. Para cada pago tendrás:
    1. Un estado/subestado `PENDING/WAITING_ADDITIONAL_STEP`.
