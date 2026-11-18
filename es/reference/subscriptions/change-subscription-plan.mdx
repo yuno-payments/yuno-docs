@@ -1,0 +1,177 @@
+---
+title: "Cambiar el plan de una suscripción"
+openapi: "/openapi/es/subscriptions/change-subscription-plan.json POST /subscriptions/{subscription_id}/plan"
+description: "Mueve una suscripción a un plan, con efecto en su próxima renovación."
+---
+
+<Note>
+**El cambio entra en vigor en la próxima renovación**
+
+No se realiza ningún cobro cuando llamas a este endpoint, y no se prorratea ni se reembolsa nada. La
+suscripción sigue facturando según su calendario actual; el precio del nuevo plan se aplica a partir
+de la fecha de la próxima renovación.
+</Note>
+
+## Dos comportamientos, un endpoint {#two-behaviors-one-endpoint}
+
+El comportamiento que obtienes depende de si la suscripción ya está en un plan.
+
+| Suscripción | Qué sucede | `id` en la respuesta |
+|---|---|---|
+| Sin plan | Se asocia al plan en el mismo registro | Sin cambios |
+| Ya está en un plan | Se cancela y se reemplaza por una nueva suscripción en el plan de destino | **Nuevo**: el `id` anterior está en `previous_subscription_id` |
+
+En el caso de reemplazo, la suscripción original queda `CANCELED` con un
+`cancellation_source` de `PLAN_CHANGE`, y la suscripción de reemplazo hereda los ciclos de facturación
+restantes de la original y su fecha de próxima renovación: `availability.start_at` y
+`billing_cycles.next_at` en la de reemplazo son iguales al `next_at` de la original, y su
+`billing_cycles.current` se reinicia en `1`. Si esa fecha de renovación ya pasó (por
+ejemplo, en una suscripción pausada durante mucho tiempo), la de reemplazo comienza en
+aproximadamente un minuto y factura de inmediato.
+
+<Warning>
+**Guarda el `id` devuelto después de un cambio de plan a plan**
+
+La suscripción de reemplazo es una suscripción distinta. Si conservas el `id` anterior, las llamadas posteriores
+actuarán sobre una suscripción cancelada.
+</Warning>
+
+## Webhooks {#webhooks}
+
+Un cambio de plan a plan emite tres eventos:
+
+- `subscription.create` para la suscripción de reemplazo.
+- `subscription.cancel` para la original, con `cancellation_source: PLAN_CHANGE`. No
+  lo cuentes como cancelación de clientes (churn).
+- `subscription.plan_changed` para la suscripción de reemplazo, con `previous_subscription_id` definido.
+
+El caso de asociación no emite ninguno de ellos. Su único webhook es un cambio de estado, y solo cuando
+la secuencia de fases del plan promueve la suscripción a `TRIALING` en esta llamada.
+
+## Omitir el periodo de prueba del plan de destino {#skipping-the-target-plans-trial}
+
+Si el plan de destino define fases de prueba o de introducción, la suscripción adopta toda esa secuencia por
+defecto, lo que significa que un suscriptor puede cambiar de plan durante una prueba y recibir una prueba nueva.
+
+Establece `skip_trial` en `true` para evitarlo. La suscripción de reemplazo factura el precio regular del plan de destino
+desde su primer cobro y su estado se mantiene `ACTIVE` en lugar de pasar a `TRIALING`.
+
+```json Change plan without granting a new trial
+{
+  "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+  "skip_trial": true
+}
+```
+
+`skip_trial` tiene como valor predeterminado `false` y se aplica solo a los cambios de plan a plan. Enviar
+`skip_trial: true` en una suscripción que no está en un plan devuelve `400`; `false` y una
+omisión del indicador son equivalentes y se aceptan en todos los casos. En un plan sin fases no
+hace ninguna diferencia.
+
+<Note>
+**`phases` sigue describiendo el plan**
+
+Con `skip_trial: true`, la respuesta sigue listando las `phases` del plan de destino: ese arreglo
+describe el *plan*, no lo que se facturará a esta suscripción. Las señales a nivel de suscripción
+son `status`, que se mantiene `ACTIVE` en lugar de pasar a `TRIALING`, y la **ausencia**
+de `current_phase` y `billing_phases`: ambas claves se omiten de la respuesta en lugar de
+devolverse como `null`, así que verifica la ausencia, no `null`. Un cambio predeterminado devuelve ambas
+con valores.
+</Note>
+
+## Conservar el mismo `id` {#keeping-the-same-id-instead}
+
+El objeto `plan_change` de [Actualizar suscripción](/es/reference/subscriptions/update-subscription)
+cambia el plan de una suscripción **en el mismo registro**: el `id` nunca cambia, no se cancela nada
+y no se dispara el webhook `subscription.cancel`. Ninguno de los dos mecanismos cobra en el momento, y tampoco
+se prorratea ni se reembolsa nada en ningún caso. Se diferencian en lo que ocurre con el registro de la suscripción:
+
+| | Registro | Próximo cobro |
+|---|---|---|
+| Este endpoint, de plan a plan | Nuevo `id`; la original queda `CANCELED` | La próxima renovación de la original, al precio del nuevo plan |
+| `plan_change` con `effective: NEXT_BILLING_CYCLE` | Sin cambios hasta la renovación, mismo `id` | La próxima renovación, al precio del nuevo plan |
+| `plan_change` con `effective: IMMEDIATE` | Movido al nuevo plan en esta llamada, mismo `id` | `billing_cycle_behavior: KEEP` (predeterminado) mantiene la fecha del próximo cobro; `RESTART` la vuelve a anclar a ahora más la frecuencia del nuevo plan |
+
+Si cambias de plan en suscripciones que ya están en un plan y quieres conservar su `id`,
+usa `plan_change` con `effective: IMMEDIATE` en lugar de este endpoint.
+
+`plan_change` no es un sustituto general: requiere una suscripción que ya esté en un
+plan y que esté `ACTIVE` o `TRIALING`. Asociar un plan a una suscripción que no tiene ninguno, o
+cambiar de plan desde `CREATED` o `PAUSED`, solo es posible mediante este endpoint.
+
+Los dos se diferencian en su comportamiento predeterminado respecto a la prueba, por motivos de retrocompatibilidad:
+
+| | Valor predeterminado |
+|---|---|
+| Este endpoint | Adopta las fases del plan de destino (`skip_trial: false`) |
+| `plan_change` en Actualizar suscripción | Las omite (`phases_behavior: "START_FROM_REGULAR"`) |
+
+Establece `skip_trial` o `phases_behavior` de forma explícita siempre que el comportamiento de la prueba sea importante para ti.
+
+## Llamadas repetidas {#repeated-calls}
+
+Mientras la suscripción esté en un estado aceptado, volver a enviar su plan **actual** es una operación
+idempotente sin efecto que devuelve `200` con la suscripción sin cambios, incluso si
+solo cambias `skip_trial`, e incluso si ese plan se canceló después.
+
+Un cambio de plan a plan no se puede repetir sobre el mismo `subscription_id`. Una vez que tiene éxito, la
+original queda `CANCELED`, por lo que volver a enviar a ese `id` devuelve `400` `INVALID_STATE`
+(`The subscription status CANCELED does not support plan changes.`) en lugar de repetir el
+primer resultado. Trata ese error como confirmación de que el cambio ya se realizó, y dirige cualquier
+llamada posterior al `id` de la suscripción de reemplazo.
+
+Si una llamada excede el tiempo de espera, concilia con `GET /v1/subscriptions/{subscription_id}` en lugar de
+reintentar a ciegas: la original lleva `cancellation_source: PLAN_CHANGE` una vez que el cambio
+se realizó, y la de reemplazo es la suscripción cuyo `previous_subscription_id` es ese
+`id`. Un reintento en curso enviado mientras la original aún se puede cambiar es seguro: se
+deduplica siempre que `skip_trial` no cambie. Un valor distinto de `skip_trial` es una
+operación distinta.
+
+## Requisitos {#requirements}
+
+La suscripción no debe estar `CANCELED` ni `COMPLETED`: esas devuelven `400` `INVALID_STATE`
+(`The subscription status <STATUS> does not support plan changes.`). Este endpoint acepta
+suscripciones `CREATED` y `PAUSED`, que el objeto `plan_change` de Actualizar suscripción
+no acepta.
+
+En ambos casos se requiere que el plan esté `ACTIVE` y pertenezca a la cuenta de la suscripción, y
+ninguno está disponible para suscripciones facturadas con `frequency.execution: MERCHANT`.
+
+**Asociar una suscripción que no tiene plan** requiere además que la cadencia del plan
+coincida con la de la suscripción y que el precio resuelto esté en la moneda de la suscripción. La
+suscripción no debe estar en un periodo de prueba, no debe tener ya fases de facturación, no debe usar
+un `billing_date` y no debe tener un monto `VARIABLE`.
+
+La suscripción adopta la secuencia de fases del plan de destino desde su próximo ciclo sin facturar, y esa
+secuencia debe caber dentro de los ciclos de facturación restantes de la suscripción. Si la secuencia comienza con una
+fase `TRIAL` que cubre el ciclo en curso, una suscripción `ACTIVE` pasa a `TRIALING` en esta
+misma llamada; las suscripciones `CREATED` y `PAUSED` no se promueven de esta forma. `skip_trial` no puede
+evitarlo: es un indicador exclusivo de cambios de plan a plan.
+
+**Cambiar de un plan a otro** requiere además que la suscripción tenga al menos
+un ciclo de facturación restante y que su ventana de disponibilidad no termine antes de la próxima renovación.
+El plan de destino debe aceptar el tipo de método de pago de la suscripción, si restringe
+`allowed_payment_methods`, y la suscripción debe tener un método de pago almacenado en la bóveda. La
+cadencia y el precio del plan de destino se aplican tal como están definidos en ese plan.
+
+Si la suscripción tenía un cambio programado pendiente, esta llamada lo descarta sin
+un webhook `subscription.plan_change_canceled`; la suscripción de reemplazo comienza con
+`pending_plan_change: null`.
+
+## Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `404` | `PLAN_NOT_FOUND` | El plan de destino no existe o no está vinculado a esta cuenta. |
+| `400` | `INVALID_STATE` | El estado de la suscripción no admite cambios de plan; el plan de destino no está activo; o la ventana de disponibilidad termina antes de la próxima renovación. |
+| `400` | `BAD_REQUEST` | `skip_trial: true` en una suscripción que no está en un plan; no hay ciclos de facturación restantes; la suscripción se factura con `frequency.execution: MERCHANT`. |
+| `400` | `INCORRECT_PAYMENT_METHOD_TYPE` | El plan de destino restringe `allowed_payment_methods` y el tipo de método de pago de la suscripción no está en la lista. |
+| `400` | `PAYMENT_METHOD_NOT_FOUND` | La suscripción no tiene un método de pago almacenado en la bóveda. |
+
+</div>
+
+Volver a enviar el plan actual de la suscripción aquí es una operación `200` sin efecto. La misma intención expresada
+mediante el objeto `plan_change` de [Actualizar suscripción](/es/reference/subscriptions/update-subscription)
+se rechaza con `422` `SAME_PLAN`.

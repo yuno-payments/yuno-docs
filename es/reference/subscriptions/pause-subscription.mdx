@@ -1,0 +1,71 @@
+---
+title: "Pausar suscripción"
+openapi: "/openapi/es/subscriptions/pause-subscription.json POST /subscriptions/{subscription_id}/pause"
+description: "Pausa una suscripción activa, lo que permite reanudarla o cancelarla más adelante."
+---
+
+Al llamar a este endpoint, el `status` de la suscripción cambia a PAUSED. Este estado puede cambiar a ACTIVE o CANCELED.
+
+## Pausar por un tiempo determinado {#pause-for-a-set-time}
+
+Una pausa es indefinida por defecto: la suscripción permanece `PAUSED` hasta que la reanudes. Enviar un cuerpo con una duración programa la reanudación por adelantado, y la suscripción vuelve por sí sola cuando llega ese momento.
+
+Indica la duración de una de dos formas, nunca de ambas:
+
+- `pause_cycles`: un entero de 1 a 3, contado desde la pausa en la frecuencia propia de la suscripción.
+- `pause_until`: un instante RFC 3339. Debe estar en el futuro y caer antes de `availability.finish_at` cuando la suscripción lo tenga.
+
+`billing_cycle_behavior` es opcional y define la fecha de facturación cuando la suscripción se reanuda, con los mismos significados de `KEEP`/`RESTART` que en [Reanudar suscripción](/es/reference/subscriptions/resume-subscription#keep-and-restart-compared): `KEEP` (el valor predeterminado) mantiene la fecha de facturación original, `RESTART` la vuelve a anclar desde la reanudación. Enviarlo sin `pause_cycles` ni `pause_until` es válido: es una pausa indefinida que solo registra el comportamiento para cuando la suscripción se reanude más adelante.
+
+`reason` es una cadena de texto libre opcional, de 255 caracteres como máximo, que se almacena en el campo `reason` de la suscripción. Un `GET` posterior sobre la suscripción lo devuelve, y permanece hasta que algo más lo sobrescribe, por ejemplo una reanudación que envía su propio `reason`.
+
+<CodeGroup>
+```json Pause for two cycles
+{ "pause_cycles": 2 }
+```
+
+```json Pause until a date
+{ "pause_until": "2026-09-22T15:47:04.964Z" }
+```
+
+```json Pause and re-anchor on resume
+{ "pause_cycles": 1, "billing_cycle_behavior": "RESTART" }
+```
+
+```json Pause with a reason
+{ "pause_cycles": 1, "reason": "customer requested a break" }
+```
+</CodeGroup>
+
+`pause_cycles` se resuelve una sola vez, en el momento de la pausa: el instante resuelto es el instante de la pausa más `pause_cycles` × la frecuencia de la suscripción. A partir de entonces, la suscripción lleva ese instante como `pause_until` en cada lectura posterior mientras siga pausada: una pausa indicada en ciclos y una indicada como fecha son indistinguibles después. Por ejemplo, `{ "pause_cycles": 1 }` en una suscripción mensual pausada en `2026-09-15T15:54:18Z` se resuelve como `pause_until: "2026-10-15T15:54:22.780166Z"`.
+
+### Qué sucede mientras está pausada y cuándo vuelve {#what-happens-while-it-is-paused-and-when-it-returns}
+
+No se cobra ningún ciclo durante la pausa. Mientras una duración está en curso, la suscripción lleva `pause_until` en cada lectura; vuelve por sí sola al estado con el que estaba facturando, dentro de aproximadamente un minuto de ese instante, y llega un webhook `subscription.resume` con `resume_reason: SCHEDULED`. Una reanudación manual antes de ese instante cancela la programación: llama tú mismo a [Reanudar suscripción](/es/reference/subscriptions/resume-subscription) en cualquier momento para terminar la pausa antes. Si la reanudación automática no se puede completar después de sus reintentos, la suscripción permanece `PAUSED` y se envía en su lugar un evento [`subscription.auto_resume_failed`](/es/docs/webhooks/object-and-examples#subscription-auto_resume_failed).
+
+<Note>
+**Disponibilidad**
+
+Pausar por un tiempo determinado y el campo `reason` están disponibles para las organizaciones habilitadas para ello; contacta a Yuno.
+</Note>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `400` | `BAD_REQUEST` | Se envían `pause_cycles` y `pause_until` a la vez: `"pause_cycles cannot be combined with pause_until."` |
+| `400` | `BAD_REQUEST` | `pause_until` no está en el futuro: `"pause_until must be in the future."` |
+| `400` | `BAD_REQUEST` | `pause_until` cae en o después de `availability.finish_at`: el mensaje nombra ambos instantes. |
+| `400` | `BAD_REQUEST` | Se envía `pause_cycles` en una suscripción sin cadencia de facturación recurrente. |
+| `400` | `BAD_REQUEST` | La organización no está habilitada para `pause_cycles`/`pause_until` y se envía uno de ellos: el mensaje nombra el campo. |
+| `400` | `BAD_REQUEST` | Se envía un campo no reconocido, rechazado en el gateway: `"Bad request"` |
+| `400` | `INVALID_PARAMETERS` | `billing_cycle_behavior` no es `KEEP` ni `RESTART`: `"The field 'billing_cycle_behavior' has an invalid value."` |
+| `400` | `INVALID_PARAMETERS` | `pause_cycles` está fuera del rango 1 a 3: `"The field 'pause_cycles' has a value greater than allowed."` |
+| `400` | `BAD_REQUEST` | El cuerpo de la solicitud es un JSON mal formado, rechazado en el gateway: `"The field '' wrong data type."` |
+| `400` | `INVALID_STATE` | El estado de la suscripción no admite la pausa. |
+
+</div>
+
+Enviar la solicitud sin cuerpo es una pausa indefinida y ninguna de las condiciones anteriores la rechaza.
