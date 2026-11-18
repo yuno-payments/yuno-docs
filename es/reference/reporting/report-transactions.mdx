@@ -1,6 +1,6 @@
 ---
 title: "Reportar transacciones fuera de Yuno"
-openapi: "/openapi/reporting/report-transactions.json POST /reporting/transactions"
+openapi: "/openapi/es/reporting/report-transactions.json POST /reporting/transactions"
 description: "Reporta las transacciones procesadas directamente con tus proveedores para que aparezcan en Yuno como pagos: dashboard, listados y analíticas incluidos."
 ---
 
@@ -41,7 +41,7 @@ El lote se procesa **por evento**: un evento inválido queda en `rejected[]` con
 
 En los eventos `CARD` puedes enviar el BIN de la tarjeta en `payment_method_details.card.bin`: exactamente los primeros **6 u 8 dígitos** del número de la tarjeta. El BIN no es dato del titular de la tarjeta: identifica al emisor y el rango de la tarjeta, nunca la tarjeta.
 
-Cuando está presente, Yuno lo guarda en el pago reportado (`payment_method.detail.card.card_data.iin` en la transacción) y lo usa para segmentar tus estadísticas por BIN en la [API de recomendaciones de enrutamiento](/reference/organizations/routing/get-routing-recommendations), de modo que un pago con el mismo BIN se pueda clasificar según el historial propio de ese BIN en lugar del de todo el país.
+Cuando está presente, Yuno lo guarda en el pago reportado (`payment_method.detail.card.card_data.iin` en la transacción) y lo usa para segmentar tus estadísticas por BIN en la [API de recomendaciones de enrutamiento](/es/reference/organizations/routing/get-routing-recommendations), de modo que un pago con el mismo BIN se pueda clasificar según el historial propio de ese BIN en lugar del de todo el país.
 
 - `payment_method_details` se identifica por el tipo de método de pago: hoy solo `card`, y solo en eventos cuyo `payment_method_type` es `CARD`. Un `card.bin` en un evento de cualquier otro tipo, o un contenedor con cualquier otra clave, rechaza el evento.
 - El BIN debe tener exactamente 6 u 8 dígitos. Un valor de 7 dígitos, un valor más largo o cualquier cosa que no sean solo dígitos rechaza el evento con `INVALID_EVENT`.
@@ -49,14 +49,14 @@ Cuando está presente, Yuno lo guarda en el pago reportado (`payment_method.deta
 
 ## Iniciación CIT / MIT para estadísticas de enrutamiento por iniciación {#cit--mit-initiation-for-initiation-level-routing-statistics}
 
-Puedes indicarle a Yuno cómo se inició cada transacción enviando `initiation` a nivel de evento: `CIT` (iniciada por el titular de la tarjeta: el cliente estaba presente en el checkout) o `MIT` (iniciada por el comercio, por ejemplo la renovación de una suscripción). CIT y MIT se aprueban de forma muy distinta según el proveedor, por lo que dividir tu historial reportado por iniciación permite que la [API de recomendaciones de enrutamiento](/reference/organizations/routing/get-routing-recommendations) clasifique un pago según el historial de su propio tipo de iniciación.
+Puedes indicarle a Yuno cómo se inició cada transacción enviando `initiation` a nivel de evento: `CIT` (iniciada por el titular de la tarjeta: el cliente estaba presente en el checkout) o `MIT` (iniciada por el comercio, por ejemplo la renovación de una suscripción). CIT y MIT se aprueban de forma muy distinta según el proveedor, por lo que dividir tu historial reportado por iniciación permite que la [API de recomendaciones de enrutamiento](/es/reference/organizations/routing/get-routing-recommendations) clasifique un pago según el historial de su propio tipo de iniciación.
 
 - `initiation` es opcional y va al nivel plano del evento, igual que `token_type_used`. Solo acepta `CIT` o `MIT`; cualquier otro valor rechaza ese evento con `INVALID_EVENT` y el mensaje `The field 'initiation' must be CIT or MIT.`
 - Omitir `initiation` deja el evento exactamente como antes: alimenta solo las estadísticas sin iniciación, y una solicitud de recomendación que no lleva `payment.initiation` no se ve afectada.
 
 ## ID de recomendación para la atribución de resultados {#recommendation-id-for-outcome-attribution}
 
-Si enrutas con la [API de recomendaciones de enrutamiento](/reference/organizations/routing/get-routing-recommendations), envía el `recommendation_id` que devolvió para el pago en el evento que reportas. Yuno lo usa para atribuir el resultado reportado a la recomendación exacta, en lugar de hacer la coincidencia por `merchant_order_id`.
+Si enrutas con la [API de recomendaciones de enrutamiento](/es/reference/organizations/routing/get-routing-recommendations), envía el `recommendation_id` que devolvió para el pago en el evento que reportas. Yuno lo usa para atribuir el resultado reportado a la recomendación exacta, en lugar de hacer la coincidencia por `merchant_order_id`.
 
 - `recommendation_id` es opcional y va al nivel plano del evento, igual que `initiation`. Envíalo exactamente como se devolvió: un UUID v4 en minúsculas. Cualquier otro valor, incluida una cadena vacía, rechaza ese evento con `INVALID_EVENT` y el mensaje `The field 'recommendation_id' must be a UUID.`
 - Yuno solo verifica el formato. No comprueba que la recomendación exista ni que pertenezca a tu cuenta, por lo que un valor desconocido se guarda pero no atribuye nada.

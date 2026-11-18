@@ -1,0 +1,234 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - Replace Allowlist",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers": {
+      "put": {
+        "summary": "Reemplazar la lista de proveedores permitidos",
+        "operationId": "replace-whitelabel-provider-allowlist",
+        "description": "Reemplaza todo el conjunto de proveedores que ofrece tu organización por los ids del cuerpo. Un proveedor que el cuerpo omite deja de ofrecerse: esto es un reemplazo, no una combinación; usa `PATCH /v1/whitelabel/providers` para cambiar algunos proveedores sin volver a indicar el resto.\n\nUn `provider_ids` vacío es una solicitud válida y borra la lista de permitidos, con el mismo estado final que `DELETE /v1/whitelabel/providers`, por lo que una pantalla de administración de tipo guardar todo no necesita un caso especial para \"se desmarcó el último proveedor\".\n\nQuitar un proveedor conserva su personalización de instrucciones, por lo que desactivarlo y volver a activarlo no hace que pierdas tu redacción.",
+        "requestBody": {
+          "required": true,
+          "description": "El conjunto completo de ids de proveedores que se ofrecerán.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "provider_ids"
+                ],
+                "properties": {
+                  "provider_ids": {
+                    "type": "array",
+                    "description": "El conjunto completo de ids de proveedores que ofrece la organización. Ids de catálogo en UPPER_SNAKE_CASE (`[A-Z0-9_]`), de hasta 100 caracteres cada uno, con un máximo de 500 entradas.",
+                    "maxItems": 500,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 100
+                    },
+                    "example": [
+                      "STRIPE",
+                      "ADYEN",
+                      "YUNO_3DS"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "La capa actualizada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filtered": {
+                      "type": "boolean",
+                      "description": "Indica si la organización tiene al menos una entrada en la lista de permitidos. Bifurca según este campo, nunca según la longitud de `providers`: la lista también tiene elementos cuando las únicas entradas son personalizaciones de instrucciones o logotipos.",
+                      "example": true
+                    },
+                    "providers": {
+                      "type": "array",
+                      "description": "La unión de la lista de permitidos, las personalizaciones de instrucciones y las personalizaciones de logotipos. Un proveedor puede tener redacción o logotipo personalizado sin ser ofrecido, en cuyo caso aparece con `allowed: false`.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider_id": {
+                            "type": "string",
+                            "description": "ID del proveedor del catálogo de Yuno, UPPER_SNAKE_CASE.",
+                            "example": "STRIPE"
+                          },
+                          "allowed": {
+                            "type": "boolean",
+                            "description": "Indica si la organización ofrece este proveedor.",
+                            "example": true
+                          },
+                          "has_instruction_override": {
+                            "type": "boolean",
+                            "description": "Indica si existe alguna personalización de instrucciones. Es una marca económica para insignias, redundante con los campos de contenido y no autoritativa para mostrarlos.",
+                            "example": true
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Nombre visible que reemplaza al del catálogo, cuando se personaliza. Solo los proveedores propiedad de Yuno pueden tener uno.",
+                            "example": "Acme Risk"
+                          },
+                          "instructions": {
+                            "type": "array",
+                            "description": "Pasos de conexión que reemplazan a los del catálogo, cuando se personalizan. Si está ausente, se conservan los del catálogo.",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "description": "Un paso de instrucciones. Acepta `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` y `sub_instructions` (anidados hasta 3 niveles). `text` y `text_link` son una cadena simple o un mapa de idiomas como `{\"EN\": \"...\", \"ES\": \"...\"}`. Todo `link` debe ser https."
+                            }
+                          },
+                          "setup_instructions": {
+                            "type": "array",
+                            "description": "Pasos de configuración agrupados que reemplazan a los del catálogo, cuando se personalizan. Si está ausente, se conservan los del catálogo.",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": true,
+                              "description": "Un grupo de configuración. Acepta `title`, `order`, `instructions_type` e `instructions` (la misma estructura de paso)."
+                            }
+                          },
+                          "more_info_url": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "Enlace a la documentación que reemplaza al del catálogo, cuando se personaliza. Siempre https.",
+                            "example": "https://docs.example.com/stripe"
+                          },
+                          "logo_url": {
+                            "type": "string",
+                            "readOnly": true,
+                            "description": "Solo lectura y efímera: una URL prefirmada generada en esta lectura y válida solo durante una ventana corta. Nunca la almacenes: vuelve a leer el proveedor para obtener una nueva.",
+                            "example": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error de validación: campo desconocido, más de 500 ids, o un id que no es un id de catálogo válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "about:blank"
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "Bad Request"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "detail": {
+                      "type": "string",
+                      "example": "provider_ids contains an invalid catalogue id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado: las claves de API no son válidas o faltan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "El cuerpo de la solicitud supera los 256 KB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Request body is too large"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

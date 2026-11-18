@@ -1,0 +1,133 @@
+---
+title: "Obtener un enrutamiento"
+description: "Devuelve la configuración activa actual de un enrutamiento, identificado por su routing_id."
+openapi: "/openapi/es/organizations/routing/retrieve-routing.json GET /routing/{routing_id}"
+---
+
+Devuelve la configuración activa actual del enrutamiento, con la misma estructura que aceptan [Crear un enrutamiento](/es/reference/organizations/routing/create-routing) y [Actualizar un enrutamiento](/es/reference/organizations/routing/update-routing), de modo que puedes reenviar el resultado en un `PATCH`. En comparación con el cuerpo de una solicitud, la respuesta también incluye:
+
+- `retry` en cada salida (`false` cuando no está definido).
+- `group_id`, `group_name` y `decline_types` en las salidas `DECLINE_GROUP` y `MAC_CODE_GROUP`; `group_id` y `group_name` en las salidas `SUCCEEDED_GROUP`.
+- `action` y `action_delay` en los pasos de acción, y `output: []` en ellos.
+- `provider_type` y `timeout` en cada paso de proveedor, `network_token_enable` y `network_token_on` en los pasos de pago, `three_d_secure_exemptions` en los pasos de 3DS, `fraud` en los pasos de fraude y `smart_routing` en los pasos de enrutamiento inteligente.
+- Los campos de programación y límite de las condiciones `TIME_PERIOD` y `VOLUME_PAYMENTS_LIMIT`.
+- `start_split` cuando la entrada está dividida y `output[].next_split` cuando un respaldo está dividido; ambos se omiten en caso contrario.
+- Los campos sin valor se devuelven como `null` (`next`, `decline_types`, `key`, `currency`); los ejemplos de abajo los omiten por brevedad.
+
+Las partes de un enrutamiento que la API no puede expresar se omiten de la respuesta y se conservan intactas al actualizar. Consulta [Lo que la API no muestra](/es/reference/organizations/routing/routing-resource-shape#what-the-api-does-not-show).
+
+### Parámetros de ruta {#path-parameters}
+
+<ParamField path="routing_id" type="string" required>
+  El id devuelto por [Crear un enrutamiento](/es/reference/organizations/routing/create-routing). Debe pertenecer a la cuenta a la que está asociada tu clave de API.
+</ParamField>
+
+### Respuesta {#response}
+
+<ResponseField name="id" type="string">
+  Identificador único del enrutamiento.
+</ResponseField>
+<ResponseField name="account_id" type="string">
+  Identificador único de la cuenta.
+</ResponseField>
+<ResponseField name="payment_method" type="enum">
+  El método de pago al que se aplica este enrutamiento (por ejemplo, `CARD`).
+</ResponseField>
+<ResponseField name="name" type="string">
+  Etiqueta del enrutamiento.
+</ResponseField>
+<ResponseField name="default_route" type="object">
+  La lógica de enrutamiento predeterminada. Consulta [Estructura del recurso de enrutamiento](/es/reference/organizations/routing/routing-resource-shape) para ver todos los campos de `steps[]` y `output[]`.
+</ResponseField>
+<ResponseField name="condition_sets" type="object[]">
+  Lógica condicional opcional.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  Marca de tiempo ISO 8601.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  Marca de tiempo ISO 8601.
+</ResponseField>
+<ResponseField name="warnings" type="string[]">
+  Lista opcional de advertencias de orquestación no bloqueantes (por ejemplo, `MONITOR_REDISTRIBUTION_DEFERRED`).
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/routing/8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK
+{
+  "id": "8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f",
+  "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
+  "payment_method": "CARD",
+  "name": "Card routing — Stripe primary, Adyen fallback",
+  "default_route": {
+    "steps": [
+      {
+        "index": 1,
+        "provider_id": "STRIPE",
+        "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+        "output": [
+          { "status": "APPROVED",       "next": 3, "retry": false },
+          { "status": "DECLINE_GROUP",  "group_id": 1044, "group_name": "Soft declines",
+            "decline_types": ["DECLINED_BY_BANK", "RESTRICTED_BY_BANK"], "next": 2, "retry": true },
+          { "status": "MAC_CODE_GROUP", "group_id": 4542, "group_name": "Do not retry",
+            "decline_types": ["NO_RETRY_POLICY", "NO_RETRY_SECURITY"], "retry": false },
+          { "status": "DECLINED",       "next": 2, "retry": false },
+          { "status": "INTERNAL_ERROR", "next": 2, "retry": false }
+        ]
+      },
+      {
+        "index": 2,
+        "provider_id": "ADYEN",
+        "connection_id": "b2c4d5e6-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+        "output": [
+          { "status": "APPROVED",        "next": 3, "retry": false },
+          { "status": "SUCCEEDED_GROUP", "group_id": 430, "group_name": "Pending review", "next": 4, "retry": false }
+        ]
+      },
+      { "index": 3, "action": "CAPTURE", "action_delay": "PT5M", "output": [] },
+      { "index": 4, "action": "HOLD_FOR_REVIEW", "output": [] }
+    ]
+  },
+  "condition_sets": [
+    {
+      "sort_number": 1,
+      "name": "Business hours via Adyen",
+      "conditions": [
+        { "condition_type": "TIME_PERIOD", "conditional": "EQUAL", "values": ["2026-10-01T00:00:00-03:00"],
+          "time_period_repeat_amount": 1, "time_period_repeat_frequency": "WEEKLY",
+          "time_period_repetition_days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+          "time_period_start_time": "09:00:00", "time_period_end_time": "18:00:00", "timezone": "-03:00" }
+      ],
+      "route": { "steps": [ { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-...", "output": [{ "status": "APPROVED", "next": null, "decline_types": null, "retry": false }, { "status": "INTERNAL_ERROR", "next": null, "decline_types": null, "retry": false }] } ] }
+    }
+  ],
+  "created_at": "2026-05-12T14:30:00Z",
+  "updated_at": "2026-05-12T14:30:00Z"
+}
+```
+
+```json 404 Not Found
+{
+  "code": "ROUTING_NOT_FOUND",
+  "messages": ["Routing '...' was not found"]
+}
+```
+</CodeGroup>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `404` | `ROUTING_NOT_FOUND` | `routing_id` desconocido, o el id pertenece a otra cuenta. |
+| `401` | `NOT_AUTHENTICATED` | Falta el encabezado `public-api-key` o `private-secret-key`. |
+| `401` | `INVALID_CREDENTIALS` | Par de claves incorrecto, o se usó una **clave de API personalizada** del Dashboard. Usa una clave de cuenta o de organización en su lugar. |
+
+</div>

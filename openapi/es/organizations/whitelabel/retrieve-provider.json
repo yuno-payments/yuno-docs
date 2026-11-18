@@ -1,0 +1,169 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - Retrieve",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers/{provider_id}": {
+      "get": {
+        "summary": "Obtener la superposición de un proveedor",
+        "operationId": "retrieve-whitelabel-provider",
+        "description": "Devuelve la superposición de tu organización sobre un solo proveedor: si lo ofreces y cualquier nombre, instrucciones, enlace de documentación y logo personalizados.\n\nNunca devuelve 404. Un proveedor que nunca modificaste responde `200` con `allowed` y sin campos de anulación: exactamente lo que necesita un editor para mostrar un formulario vacío. Un campo ausente significa \"conservar el valor del catálogo de Yuno\"; una anulación reemplaza un campo por completo y nunca se combina con él.\n\n`logo_url` se prefirma en esta lectura y dura poco: vuelve a leer el proveedor para obtener una URL nueva en lugar de almacenar esta.",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "description": "ID del proveedor del catálogo de Yuno en UPPER_SNAKE_CASE. No distingue mayúsculas de minúsculas; se normaliza a mayúsculas.",
+            "schema": {
+              "type": "string",
+              "example": "STRIPE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "La superposición del proveedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider_id": {
+                      "type": "string",
+                      "description": "ID del proveedor del catálogo de Yuno, UPPER_SNAKE_CASE.",
+                      "example": "STRIPE"
+                    },
+                    "allowed": {
+                      "type": "boolean",
+                      "description": "Indica si la organización ofrece este proveedor.",
+                      "example": true
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Nombre visible que reemplaza al del catálogo, cuando se personaliza. Solo los proveedores propiedad de Yuno pueden tener uno.",
+                      "example": "Acme Risk"
+                    },
+                    "instructions": {
+                      "type": "array",
+                      "description": "Pasos de conexión que reemplazan a los del catálogo, cuando se personalizan. Si está ausente, se conservan los del catálogo.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Un paso de instrucciones. Acepta `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` y `sub_instructions` (anidados hasta 3 niveles). `text` y `text_link` son una cadena simple o un mapa de idiomas como `{\"EN\": \"...\", \"ES\": \"...\"}`. Todo `link` debe ser https."
+                      }
+                    },
+                    "setup_instructions": {
+                      "type": "array",
+                      "description": "Pasos de configuración agrupados que reemplazan a los del catálogo, cuando se personalizan. Si está ausente, se conservan los del catálogo.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Un grupo de configuración. Acepta `title`, `order`, `instructions_type` e `instructions` (la misma estructura de paso)."
+                      }
+                    },
+                    "more_info_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "Enlace a la documentación que reemplaza al del catálogo, cuando se personaliza. Siempre https.",
+                      "example": "https://docs.example.com/stripe"
+                    },
+                    "logo_url": {
+                      "type": "string",
+                      "readOnly": true,
+                      "description": "Solo lectura y efímera: una URL prefirmada generada en esta lectura y válida solo durante una ventana corta. Nunca la almacenes: vuelve a leer el proveedor para obtener una nueva.",
+                      "example": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "provider_id no válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "provider_id is invalid"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado: las claves de API no son válidas o faltan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
