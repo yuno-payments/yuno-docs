@@ -1,0 +1,96 @@
+---
+title: "Generar criptograma de network token"
+openapi: "/openapi/es/network-tokens/generate-network-token-cryptogram.json POST /network-tokens/cryptograms"
+description: "Genera un criptograma de network token nuevo y de un solo uso para una tarjeta almacenada en la bóveda, de modo que pueda autorizarse en un PSP externo."
+---
+
+Este endpoint devuelve, bajo demanda, un **criptograma de network token** para una tarjeta almacenada en la bóveda y, por defecto, el network token vigente de la tarjeta (DPAN). El network token de una tarjeta no basta por sí solo para autorizar un pago. Las marcas de tarjeta exigen un criptograma de un solo uso por transacción, y solo Yuno puede solicitarlo porque Yuno posee el Token Requestor ID. Usa este endpoint cuando quieras tomar un network token de Yuno y autorizar la transacción en tu propio PSP.
+
+Identificas la tarjeta con su `vaulted_token`, el mismo identificador que usas en [Create Payment](/es/reference/payments/create-payment). Yuno resuelve internamente el network token vigente de la tarjeta y absorbe la rotación de tokens, de modo que siempre recibes un conjunto `(DPAN, cryptogram, ECI)` consistente y vigente.
+
+<Warning>
+**El DPAN requiere certificación PCI: el criptograma no**
+
+El network token completo (DPAN) equivale a datos de PAN, por lo que la respuesta por defecto, que lo incluye, solo está disponible para comercios con certificación PCI. El criptograma en sí no equivale a datos de PAN: es de un solo uso, de corta duración y está vinculado a un DPAN específico, por lo que no puede autorizar nada por sí solo.
+
+Si tu organización no tiene certificación PCI, envía `include_network_token: false` para recibir solo el criptograma. Consulta [Modo solo criptograma](#cryptogram-only-mode) más abajo. Para habilitar el producto, comunícate con tu Key Account Manager (KAM).
+</Warning>
+
+<Warning>
+**Envía siempre un par consistente.** Un criptograma está vinculado a un network token específico. Envía el `network_token.number` (DPAN) devuelto en la **misma respuesta** junto con su `cryptogram` y su `eci`. Nunca combines un criptograma devuelto con un DPAN almacenado previamente. Después de una rotación de token, un DPAN almacenado dejará de coincidir. En el [modo solo criptograma](#cryptogram-only-mode) se aplica la misma regla a través del proxy: reenvía inmediatamente después de solicitar el criptograma, para que el DPAN que resuelve el proxy sea aquel para el que se generó el criptograma.
+</Warning>
+
+## Cómo funciona {#how-it-works}
+
+1. Solicita un criptograma justo antes de autorizar. Cada llamada genera un criptograma **nuevo y de un solo uso** desde la marca: no hay idempotencia, y las llamadas duplicadas devuelven criptogramas nuevos (no se mueve dinero).
+2. Envía `network_token.number` (DPAN), `cryptogram` y `eci` a tu PSP como una transacción con network token.
+3. Si la autorización es rechazada y reintentas, solicita primero un criptograma **nuevo**. Un criptograma usado o vencido no puede reutilizarse.
+
+## Modo solo criptograma {#cryptogram-only-mode}
+
+Envía `include_network_token: false` y la respuesta omite por completo `network_token.number` (el DPAN) y `network_token.token_data`. El objeto `network_token` conserva sus metadatos que no equivalen a datos de PAN (`network`, `status`, `par`, `network_token_id`), y la respuesta incluye `cryptogram` y `eci` como de costumbre. Como no se devuelven datos equivalentes a PAN, este modo no requiere certificación PCI.
+
+Combínalo con el [Forward Proxy](/es/docs/security-and-compliance/pci-proxy/forward-proxy) para ejecutar una transacción con network token de extremo a extremo sin que datos equivalentes a PAN entren en tus sistemas:
+
+1. Solicita el criptograma con `include_network_token: false`.
+2. Construye la solicitud de reenvío con la expresión `{{vaulted_token.<TOKEN>.network_token_number}}` (y las expresiones `network_token_expiration_*`) donde el destino espera el DPAN. Incluye el valor de `cryptogram` directamente en el cuerpo, ya que los criptogramas se generan por transacción y el proxy no los resuelve como expresiones.
+3. Envíala a través del proxy **de inmediato**: el proxy resuelve el DPAN vigente de la tarjeta en el momento del reenvío, y el criptograma está vinculado a un DPAN específico. Solicitar el criptograma justo antes del reenvío mantiene el par consistente. Una demora que abarque una rotación de token provocaría que no coincidan.
+
+La matriz completa de condiciones:
+
+| Tu organización | `include_network_token` | Resultado |
+| --- | --- | --- |
+| Con certificación PCI | `true` / omitido | Respuesta completa (network token + criptograma) |
+| Con certificación PCI | `false` | Respuesta solo con criptograma |
+| Sin certificación PCI | `false` | Respuesta solo con criptograma |
+| Sin certificación PCI | `true` / omitido | `403 NETWORK_TOKEN_RETURN_NOT_ALLOWED` |
+
+La última fila es un error explícito por diseño: un integrador que espera `network_token` en la respuesta recibe un rechazo claro, nunca una respuesta con una forma degradada en silencio.
+
+## Requisitos {#requirements}
+
+Para usar este endpoint, tu organización debe:
+
+- Tener el **producto habilitado** para tu organización.
+- Estar **incorporada a network tokens** para la marca de la tarjeta y el `country` solicitado.
+- Ser un **comercio con certificación PCI** para recibir el network token (DPAN) en la respuesta. El [modo solo criptograma](#cryptogram-only-mode) (`include_network_token: false`) no requiere certificación PCI.
+
+La tarjeta a la que hace referencia `vaulted_token` debe ser una **tarjeta inscrita** de tu organización que ya tenga un **network token activo**.
+
+Redes compatibles: **Visa** y **Mastercard**.
+
+<Note>
+**Cuándo no necesitas este endpoint.** Las transacciones recurrentes iniciadas por el comercio (MIT) se autorizan con el network token y el `network_transaction_id` almacenado, y **no** requieren un criptograma. Este endpoint es para transacciones iniciadas por el cliente que necesitan un criptograma nuevo.
+</Note>
+
+## Vigencia del criptograma {#cryptogram-lifetime}
+
+El criptograma es de un solo uso. Solicítalo inmediatamente antes de autorizar y no lo guardes en caché.
+
+`expires_at` es el último momento en el que la marca acepta el criptograma. Es la vigencia del **criptograma**, no la del network token ni la de la tarjeta.
+
+- **Una marca de tiempo** (hoy, Mastercard): trátala como un límite estricto. Un criptograma enviado después de `expires_at` es rechazado.
+- **`null`** (hoy, Visa): la red no publica vigencia para este criptograma. Esto no significa que nunca venza. Úsalo de inmediato.
+
+En ambos casos, solicita un criptograma nuevo para cada intento de autorización, incluidos los reintentos.
+
+## Errores {#errors}
+
+Los errores devuelven un `code` y un arreglo `messages`. El valor exacto de `messages` por cada `code`:
+
+| HTTP | `code` | `messages` |
+| --- | --- | --- |
+| 404 | `PAYMENT_METHOD_NOT_FOUND` | "Payment method not found." |
+| 400 | `INSTRUMENT_NOT_TOKENIZABLE` | "Payment method is not a card." |
+| 400 | `PAYMENT_METHOD_NOT_ENROLLED` | "Payment method is not enrolled." |
+| 400 | `NETWORK_TOKEN_NOT_FOUND` | "Payment method has no network token." |
+| 400 | `TOKEN_NOT_ACTIVE` | "Network token is not active." |
+| 400 | `NETWORK_NOT_SUPPORTED` | "Network token brand is not supported." |
+| 400 | `COUNTRY_NOT_SUPPORTED` | "Country is not supported for this organization." |
+| 400 | `INVALID_REQUEST` | El campo inválido específico, por ejemplo "The field 'vaulted_token' must be a valid uuid v4." |
+| 403 | `PCI_MERCHANT_REQUIRED` | "This endpoint is only available to PCI-certified merchants." |
+| 403 | `NETWORK_TOKEN_RETURN_NOT_ALLOWED` | "Returning the network token requires PCI certification. Send include_network_token: false to receive the cryptogram only, or contact your Key Account Manager (KAM)." |
+| 403 | `PRODUCT_NOT_ENABLED` | "The Network Token Cryptogram API is enabled per organization. Contact your Key Account Manager (KAM) to activate it." |
+| 502 | `PROVIDER_ERROR` | "The network token cryptogram service is temporarily unavailable, please retry." |
+
+Un `vaulted_token` que no existe y uno que pertenece a otra organización devuelven el mismo `PAYMENT_METHOD_NOT_FOUND`, por lo que no hay filtración de existencia.

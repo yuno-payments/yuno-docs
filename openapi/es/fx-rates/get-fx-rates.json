@@ -1,0 +1,261 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Yuno FX Rates API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.y.uno/v1"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/fx-rates": {
+      "get": {
+        "summary": "Obtener tipos de cambio",
+        "description": "Devuelve el tipo de cambio diario oficial de Yuno para una moneda o para todas, expresado en unidades de la moneda por 1 USD. Sin fechas, devuelve el último día disponible.",
+        "operationId": "getFxRates",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tu clave de API pública."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tu clave secreta privada. Nunca la expongas del lado del cliente."
+          },
+          {
+            "in": "query",
+            "name": "start_date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-09-28"
+            },
+            "description": "Primer día del rango, inclusive, como `YYYY-MM-DD`. Omítelo para obtener el último día disponible."
+          },
+          {
+            "in": "query",
+            "name": "end_date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-09-30"
+            },
+            "description": "Último día del rango, inclusive, como `YYYY-MM-DD`. Solo es válido junto con `start_date`, toma ese valor por defecto y no puede ser posterior a ayer (UTC)."
+          },
+          {
+            "in": "query",
+            "name": "currency",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "example": "COP"
+            },
+            "description": "Un código de moneda de 3 letras. Omítelo para obtener todas las monedas publicadas en esos días."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK: los tipos de cambio publicados para los días solicitados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "base_currency": {
+                      "type": "string",
+                      "description": "Siempre `USD` en esta versión. Es explícito para que la lectura no sea ambigua.",
+                      "example": "USD"
+                    },
+                    "rates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "fx_date": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Día para el que se publica el tipo de cambio.",
+                            "example": "2026-09-28"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "description": "Código de moneda de 3 letras. En su mayoría ISO 4217; el conjunto publicado también incluye códigos que no son monedas fiduciarias, como `BTC`, `XAU` y `XAG`.",
+                            "example": "COP"
+                          },
+                          "rate": {
+                            "type": "number",
+                            "description": "Unidades de esta moneda por 1 unidad de `base_currency`, con hasta 15 decimales. `USD` se publica con una tasa de 1. Procésalo con un tipo decimal: un double lo redondea sin avisar.",
+                            "example": 3306.859716727783
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "one_day_every_currency": {
+                    "summary": "One day, every currency",
+                    "value": {
+                      "base_currency": "USD",
+                      "rates": [
+                        {
+                          "fx_date": "2026-09-28",
+                          "currency": "BRL",
+                          "rate": 5.3214
+                        },
+                        {
+                          "fx_date": "2026-09-28",
+                          "currency": "COP",
+                          "rate": 3306.859716727783
+                        },
+                        {
+                          "fx_date": "2026-09-28",
+                          "currency": "USD",
+                          "rate": 1
+                        }
+                      ]
+                    }
+                  },
+                  "no_rate_published": {
+                    "summary": "A day with no published rate",
+                    "value": {
+                      "base_currency": "USD",
+                      "rates": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitud incorrecta: `INVALID_PARAMETERS` (a un parámetro de consulta le falta su complemento, tiene un formato incorrecto o está fuera de rango).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "end_date_without_start_date": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The query parameter 'end_date' can only be used together with 'start_date'."
+                      ]
+                    }
+                  },
+                  "end_date_after_yesterday": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The query parameter 'end_date' must not be later than yesterday (UTC)."
+                      ]
+                    }
+                  },
+                  "range_over_the_limit": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The range between 'start_date' and 'end_date' must not exceed 31 days when 'currency' is omitted."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Prohibido: `PRODUCT_NOT_ENABLED` (el producto no está habilitado para tu organización).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "product_not_enabled": {
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "The FX Rates API is enabled per organization. Contact your Key Account Manager (KAM) to activate it."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Servicio no disponible: `SERVICE_UNAVAILABLE` (la fuente de los tipos de cambio no está disponible temporalmente).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "service_unavailable": {
+                    "value": {
+                      "code": "SERVICE_UNAVAILABLE",
+                      "messages": [
+                        "The FX rates service is temporarily unavailable, please retry."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
