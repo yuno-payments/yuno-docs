@@ -1,0 +1,240 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkout-builder",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "description": "Clave de API pública del comercio. Se encuentra en el Dashboard de Yuno → Settings → API Keys."
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "description": "Clave secreta privada del comercio, asociada a la clave pública. Nunca la incluyas en código del lado del cliente."
+      },
+      "accountCode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Account-Code",
+        "description": "UUID del ámbito de la cuenta del comercio para la solicitud. El tenant se resuelve únicamente a partir de este encabezado."
+      }
+    },
+    "schemas": {
+      "CheckoutMutationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador del checkout (UUID). Úsalo como checkout_code en los endpoints de consulta, publicación y ciclo de vida."
+          },
+          "name": {
+            "type": "string",
+            "description": "Nombre del checkout."
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción del checkout."
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Indica si este checkout es el predeterminado de la cuenta. Un checkout recién creado nunca es el predeterminado."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Indica si el checkout está activo (atendiendo tráfico)."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Marca de tiempo de creación (ISO-8601)."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "publicApiKey": [],
+      "privateSecretKey": [],
+      "accountCode": []
+    }
+  ],
+  "paths": {
+    "/checkouts": {
+      "post": {
+        "summary": "Create Checkout",
+        "description": "Crea un nuevo checkout personalizado como un clon publicado del checkout predeterminado de la cuenta: los métodos de pago (incluidos los reemplazos de ícono y nombre y los conjuntos de condiciones de campos obligatorios) se copian del predeterminado; la configuración general y los estilos heredan la base de la cuenta hasta la primera publicación del checkout. El nuevo checkout nace con el estado PUBLISHED y nunca es el predeterminado de la cuenta. El identificador se expone como el `id` de nivel superior.",
+        "operationId": "create-checkout",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "Clave opcional del cliente, de hasta 64 caracteres. Se aplica con el mejor esfuerzo; si se reenvía la misma clave, no se garantiza que se elimine la duplicación.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Nombre del checkout. Obligatorio, no puede estar en blanco y debe ser único por cuenta (un nombre duplicado se rechaza con 409)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Descripción opcional de texto libre."
+                  }
+                }
+              },
+              "examples": {
+                "Name only": {
+                  "value": {
+                    "name": "Promo Checkout"
+                  }
+                },
+                "Name and description": {
+                  "value": {
+                    "name": "Promo Checkout",
+                    "description": "Seasonal promo storefront"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El checkout creado. Nace PUBLISHED como un clon del predeterminado de la cuenta; `is_default` siempre es false al crearlo. Usa `id` como checkout_code en los demás endpoints de Checkout Builder.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutMutationResponse"
+                },
+                "examples": {
+                  "Created": {
+                    "value": {
+                      "id": "0b28ff66-15f1-44c1-8d1e-bd1fefbc0a19",
+                      "name": "Promo Checkout",
+                      "description": "Seasonal promo storefront",
+                      "is_default": false,
+                      "is_active": true,
+                      "created_at": "2026-07-17T10:02:33.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falta `name` o está en blanco, o el cuerpo JSON tiene un formato incorrecto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Missing name": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "name is required"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado, o la cuenta no está en la lista de acceso permitido de la beta.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La cuenta no tiene un checkout predeterminado que clonar.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "No default checkout": {
+                    "value": {
+                      "code": "DEFAULT_CHECKOUT_NOT_FOUND",
+                      "messages": [
+                        "No default Custom Checkout found for account: 78163a7c-c63c-4fdd-b72b-d5f77093a927"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ya existe un checkout con el mismo nombre para la cuenta.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Duplicate name": {
+                    "value": {
+                      "code": "DUPLICATE_CHECKOUT_NAME",
+                      "messages": [
+                        "A Custom Checkout with name 'Promo Checkout' already exists for this account"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
