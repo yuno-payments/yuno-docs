@@ -1,0 +1,115 @@
+---
+title: "Actualizar suscripción"
+openapi: "/openapi/es/subscriptions/update-subscription.json PATCH /subscriptions/{subscription_id}"
+description: "Actualiza los campos de una suscripción, incluida la adición retroactiva de datos de uso de credenciales almacenadas."
+---
+
+<Warning>
+**Transición de la suscripción**
+
+Los campos `billing_cycles` y `availability.finish_at` se influyen entre sí. Si ambos se completan al crear la suscripción, esta pasará al estado `COMPLETED` al llegar al evento más cercano definido en esos campos, ya sea el ciclo de facturación o el `finish_at` correspondiente. Son condiciones de finalización independientes: la primera que se cumpla completa la suscripción.
+
+Cuando se incluye el objeto `availability`, `finish_at` se aplica tal como se envía: si lo omites o lo envías como `null`, se elimina cualquier fecha de finalización definida antes, por lo que la suscripción queda sin fecha de fin y sigue renovándose hasta que se cancele. Esto significa que, cuando actualices `availability.start_at`, debes incluir `finish_at` en la misma solicitud si quieres conservar la fecha de finalización. `start_at` no se comporta así: si lo omites, la fecha de inicio actual no cambia. Si omites el objeto `availability` completo, ambas fechas permanecen sin cambios.
+
+Ten en cuenta que `availability.start_at` solo puede moverse a una fecha anterior al actualizar. Enviar una fecha posterior devuelve un error 400: `The availability start date cannot be greater than the current availability start date`.
+</Warning>
+
+<Note>
+**Actualización retroactiva de credenciales**
+
+Si tienes suscripciones existentes cuyos cobros recurrentes fallan por falta de uso de credenciales (por ejemplo, a partir de un pago CIT inicial), puedes usar este endpoint `PATCH` para definir `payment_method.card.usage` de forma retroactiva y corregir el problema.
+</Note>
+
+<Note>
+**Cambios de plan programados**
+
+Usa el bloque `plan_change` para mover una suscripción a otro plan con efecto en su siguiente ciclo de facturación, sin prorrateo y sin cobro a mitad de ciclo. La suscripción debe estar `ACTIVE` o `TRIALING` y ya tener un plan; el plan de destino debe estar activo y solo puede haber un cambio pendiente a la vez. Envía `"plan_change": null` para deshacer un cambio pendiente; omitir el campo nunca lo modifica. El cambio pendiente se devuelve como `pending_plan_change` en este endpoint y en el objeto de suscripción, y los webhooks `subscription.plan_change_scheduled`, `subscription.plan_change_canceled` y `subscription.plan_changed` registran su ciclo de vida.
+
+El plan administra `amount`, `frequency`, `billing_date` y `country`, y no se pueden enviar para una suscripción vinculada a un plan: combinar cualquiera de ellos con `plan_change` devuelve `400`.
+</Note>
+
+<Note>
+**Cambios de plan inmediatos**
+
+Envía `"effective": "IMMEDIATE"` dentro de `plan_change` para aplicar el cambio en esta llamada en lugar de programarlo: la suscripción conserva su `id`, el precio del nuevo plan se factura desde el siguiente cobro y, a diferencia de un cambio programado, esto funciona incluso en el último ciclo de facturación. Un cambio inmediato mientras hay otro cambio pendiente devuelve `409 PLAN_CHANGE_ALREADY_SCHEDULED`; primero deshaz el pendiente con `"plan_change": null`.
+
+`billing_cycle_behavior` decide qué ocurre con el ancla de facturación cuando el plan cambia en el mismo lugar:
+
+- `KEEP` (predeterminado, omitir el campo se comporta igual): la fecha del siguiente cobro no se modifica; solo cambia el precio.
+- `RESTART`: el siguiente cobro se vuelve a anclar al momento del cambio más la frecuencia del nuevo plan. **Solo se restablece el ancla**: los contadores de ciclos de facturación, la configuración de reintentos y el estado de la suscripción se conservan. `RESTART` requiere `effective: IMMEDIATE` y devuelve `400` con un cambio programado; `KEEP` junto con un cambio programado se acepta y simplemente programa el cambio como de costumbre: un cambio programado nunca mueve el ancla de todos modos.
+
+Un cambio inmediato emite el webhook `subscription.plan_changed` en el momento de la llamada: `subscription.plan_change_scheduled` nunca se dispara para él y `pending_plan_change` permanece en `null` en todo momento.
+
+`billing_cycle_behavior` es **solo de escritura**: se acepta en la solicitud y nunca se devuelve en ninguna respuesta.
+
+En una suscripción mensual creada sin un `frequency.monthly_billing_day` explícito, `RESTART` establece ese campo con el día del reinicio, y cada renovación futura lo lee: reiniciar el día 15 factura el día 15 de ahí en adelante, no solo en el siguiente ciclo. Una suscripción que ya declara un día de facturación lo conserva: la fecha no se mueve al día del reinicio, solo se vuelve a anclar la hora del día. El valor se devuelve en el objeto de suscripción, por lo que se puede leer después del cambio. La misma regla se aplica a `RESTART` en [Reanudar suscripción](/es/reference/subscriptions/resume-subscription#keep-and-restart-compared): es una sola regla, en ambos endpoints.
+</Note>
+
+<Note>
+**Reiniciar el ciclo de facturación sin un plan**
+
+Para una suscripción que *no* está vinculada a un plan, `billing_cycle_behavior` está disponible como campo de nivel superior en este endpoint, normalmente combinado con un cambio de `frequency` en la misma llamada, por ejemplo, pasar a un suscriptor de mensual a anual y reiniciar el ciclo desde hoy. Se aplica la misma semántica de `KEEP`/`RESTART` y, en una suscripción que aún no ha comenzado, la fecha vuelta a anclar se ajusta a su `availability.start_at`.
+
+Reglas de ubicación: en una suscripción vinculada a un plan, el campo de nivel superior devuelve `400` (el ancla se administra mediante `plan_change`), y combinar el campo de nivel superior con un bloque `plan_change` devuelve `400`: usa `plan_change.billing_cycle_behavior` en su lugar. Una suscripción `PAUSED` devuelve `409 INVALID_SUBSCRIPTION_STATUS`: se acepta un reinicio mientras la suscripción está `ACTIVE`, `TRIALING` o `PAST_DUE`, o mientras aún está `CREATED`, donde (a diferencia de `plan_change`) la solicitud se permite y la fecha vuelta a anclar se ajusta a `availability.start_at`. Un reinicio de nivel superior no emite ningún webhook: lee el nuevo ancla desde el objeto de suscripción.
+</Note>
+
+### Errores de cambio de plan {#plan-change-errors}
+
+Cada uno de los errores `409` y `422` de abajo incluye un campo `current_status` junto con `code` y `messages`, con el estado de la suscripción en el momento en que se rechazó la solicitud. La solicitud rechazada no realiza ningún cambio.
+
+```json 409 Conflict
+{
+  "code": "PLAN_CHANGE_ALREADY_SCHEDULED",
+  "messages": [
+    "A plan change is already scheduled for this subscription. Undo it first with plan_change: null."
+  ],
+  "current_status": "ACTIVE"
+}
+```
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `404` | `PLAN_NOT_FOUND` | El plan de destino no existe o no está vinculado a esta cuenta. |
+| `409` | `PLAN_CHANGE_ALREADY_SCHEDULED` | Ya hay un cambio pendiente. Deshazlo primero con `plan_change: null`. |
+| `409` | `PLAN_CHANGE_ALREADY_APPLIED` | El deshacer con `plan_change: null` llegó después de que el cambio pendiente ya había entrado en vigor en la renovación. |
+| `409` | `TARGET_PLAN_NOT_ACTIVE` | El plan de destino no está activo. |
+| `409` | `SUBSCRIPTION_NOT_ON_A_PLAN` | La suscripción no tiene un plan. |
+| `409` | `PLAN_CHANGE_NOT_AVAILABLE` | La suscripción está en su último ciclo de facturación, o su ventana de disponibilidad termina antes de la siguiente renovación. |
+| `409` | `INVALID_SUBSCRIPTION_STATUS` | La suscripción está `PAUSED`, `CREATED` o `ERROR`. |
+| `422` | `SAME_PLAN` | La suscripción ya está en este plan. |
+
+</div>
+
+Una suscripción `CANCELED` o `COMPLETED` se rechaza antes con `400 INVALID_STATE`, que no incluye `current_status`.
+
+Los problemas de validación en el propio bloque (un `plan_id` faltante, un `effective` no admitido, un plan de destino en otra moneda o una escalera `HONOR_PHASES` más larga que los ciclos de facturación restantes) devuelven `400 BAD_REQUEST` sin `current_status`. Lo mismo aplica a los errores de ubicación de `billing_cycle_behavior`: `RESTART` sin `effective: IMMEDIATE`, el campo de nivel superior combinado con `plan_change`, o el campo de nivel superior en una suscripción vinculada a un plan devuelven cada uno `400 BAD_REQUEST` con un mensaje que indica la corrección. Dónde se detecta un **valor** no válido de `billing_cycle_behavior` depende de su posición: el campo de nivel superior se rechaza en el borde de la API como `400 INVALID_PARAMETERS` (`"The field 'billing_cycle_behavior' has an invalid value."`), mientras que un valor incorrecto anidado dentro de `plan_change` llega al motor y devuelve `400 BAD_REQUEST` (p. ej., `"RESET is invalid for plan_change.billing_cycle_behavior field"`): trata ambos códigos como fallas de validación.
+
+Una excepción a la tabla de errores de cambio de plan anterior: `PLAN_CHANGE_NOT_AVAILABLE` se aplica solo a los cambios *programados*. Un cambio `IMMEDIATE` no necesita un ciclo próximo, por lo que se acepta en el último ciclo de facturación.
+
+## Definir una regla de reembolso {#setting-a-refund-rule}
+
+`refund_rule` configura cómo se calcula un reembolso `CUSTOM` cuando una solicitud de cancelación posterior no incluye su propio `refund_amount`. Se define aquí o al crear, y enviar `"refund_rule": null` la elimina.
+
+<CodeGroup>
+```json A share of the charged amount
+{ "refund_rule": { "type": "PERCENT", "percent": 50 } }
+```
+
+```json A flat amount
+{ "refund_rule": { "type": "FIXED", "amount": { "value": 10000, "currency": "COP" } } }
+```
+
+```json Clear the rule
+{ "refund_rule": null }
+```
+</CodeGroup>
+
+`PERCENT` y `FIXED` son excluyentes: se rechaza una regla que incluya tanto `percent` como `amount`, y también una que no incluya ninguno para su propio `type`. El `amount.currency` de una regla `FIXED` debe ser igual a la moneda de la propia suscripción; enviar una que no coincida devuelve `400` `REFUND_RULE_CURRENCY_MISMATCH`: `"refund_rule.amount.currency USD must match the subscription currency COP."` (las monedas varían según la solicitud).
+
+La misma verificación se aplica cuando la actualización cambia el `amount.currency` de la propia suscripción mientras aún hay almacenada una regla `FIXED` en la moneda anterior, sin modificar `refund_rule` en la misma solicitud: `400` `REFUND_RULE_CURRENCY_MISMATCH`: `"stored refund rule is FIXED in COP; send refund_rule in USD or refund_rule: null in the same request."` (con los nombres de las monedas involucradas). Vuelve a enviar la regla en la nueva moneda, o elimínala, en la misma solicitud que cambia `amount.currency`.
+
+Después de eliminarla, `refund_rule` se omite del objeto de suscripción en la respuesta: nunca se devuelve como `null`.
+
+Consulta [Cancelar suscripción](/es/reference/subscriptions/cancel-subscription#custom) para ver cómo se usa la regla, y [El objeto de suscripción](/es/reference/subscriptions/the-subscription-object) para la referencia de campos. Disponible para las organizaciones habilitadas; contacta a Yuno: en una organización que no está habilitada, enviar `refund_rule` (incluido `null`) se ignora en silencio y no cambia nada.

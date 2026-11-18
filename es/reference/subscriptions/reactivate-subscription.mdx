@@ -1,0 +1,167 @@
+---
+title: "Reactivar suscripción"
+openapi: "/openapi/es/subscriptions/reactivate-subscription.json POST /subscriptions/{subscription_id}/reactivate"
+description: "Devuelve una suscripción cancelada o completada al estado ACTIVE, conservando la misma suscripción y su historial."
+---
+
+Usa este endpoint para campañas de recuperación de clientes. Al llamarlo, una suscripción `CANCELED` o `COMPLETED`
+vuelve a `ACTIVE` (o a `TRIALING` cuando una fase de prueba cubre el ciclo reactivado),
+conservando el mismo `id` y todo su historial de pagos. Nunca se crea una suscripción sucesora
+y esta llamada nunca define `previous_subscription_id`. La llamada en sí no genera ningún cobro.
+
+<Note>
+**Solo organizaciones en la lista de permitidos**
+
+La reactivación se habilita por organización y esto se verifica antes que el estado de la suscripción. Si
+tus llamadas devuelven `409` `"Subscription reactivation is not enabled for this organization."`,
+contacta a tu representante de Yuno para que la habilite.
+</Note>
+
+## Qué suscripciones se pueden reactivar {#which-subscriptions-can-be-reactivated}
+
+| `status` actual | Resultado |
+| --- | --- |
+| `CANCELED` | Se reactiva. |
+| `COMPLETED` | Se reactiva, si quedan ciclos de facturación. Consulta [Cuando se agotan los ciclos de facturación](#when-the-billing-cycles-are-used-up) más abajo. |
+| Cualquier otro estado | `409` `INVALID_SUBSCRIPTION_STATUS`, con el estado actual en `current_status`. Una suscripción `PAUSED` se reanuda con [Reanudar suscripción](/es/reference/subscriptions/resume-subscription). |
+
+```json 409 — status is not CANCELED or COMPLETED
+{
+  "code": "INVALID_SUBSCRIPTION_STATUS",
+  "messages": [
+    "Only a CANCELED or COMPLETED subscription can be reactivated."
+  ],
+  "current_status": "ACTIVE"
+}
+```
+
+Una suscripción cuyo `availability.finish_at` ya pasó se rechaza con `400`
+`INVALID_DATE`, sin importar su estado:
+
+```json 400 — availability window already closed
+{
+  "code": "INVALID_DATE",
+  "messages": [
+    "The subscription can not be resume due to a conflict with the availability dates. Please update availability dates and try again if you want to keep using the subscription"
+  ]
+}
+```
+
+## Cuando se agotan los ciclos de facturación {#when-the-billing-cycles-are-used-up}
+
+Una suscripción `COMPLETED` que usó todos los ciclos de `billing_cycles.total` se rechaza con `409`
+`INVALID_SUBSCRIPTION_STATUS`:
+
+```json 409 — no billing cycles left
+{
+  "code": "INVALID_SUBSCRIPTION_STATUS",
+  "messages": [
+    "The subscription exhausted its 1 billing cycles. Send billing_cycles.total greater than 1 in the reactivate body."
+  ],
+  "current_status": "COMPLETED"
+}
+```
+
+Envía `billing_cycles.total` con un valor mayor al actual para subir el límite y
+reactivar en la misma llamada. Esto no crea una sucesora: sube el límite **en la misma
+suscripción**, conservando su `id` y su historial intactos:
+
+```json Raise the limit and reactivate
+{
+  "billing_cycles": { "total": 24 }
+}
+```
+
+Al enviar `billing_cycles.total`:
+
+| Condición | Resultado |
+| --- | --- |
+| No es mayor que el total actual | `400` `BAD_REQUEST`: `"billing_cycles.total must be greater than the current total (N)."` |
+| La suscripción no tiene ningún límite de ciclos de facturación | `400` `BAD_REQUEST`: `"billing_cycles.total cannot be set on a subscription without a billing cycle limit."` |
+| No es un entero positivo | `400` `BAD_REQUEST`: `"billing_cycles.total must be a positive integer."` |
+
+Enviar `billing_cycles.total` para una suscripción que aún tiene ciclos disponibles se acepta de la misma
+manera: sube el límite, no está restringido a suscripciones agotadas. Un
+`billing_cycles.total: null` explícito se trata igual que omitir el campo: el total actual se mantiene
+sin cambios.
+
+## Elegir la próxima fecha de facturación {#choosing-the-next-billing-date}
+
+`billing_cycle_behavior` es el mismo eje que se usa al reanudar y en los cambios de plan.
+
+<CodeGroup>
+```json KEEP (default, or omitted)
+{ "billing_cycle_behavior": "KEEP" }
+
+// billing_cycles.next_at -> unchanged while it is still in the future,
+// otherwise rolled forward to its next future occurrence
+```
+
+```json RESTART
+{ "billing_cycle_behavior": "RESTART" }
+
+// billing_cycles.next_at -> the reactivation instant plus the subscription's frequency
+// frequency.monthly_billing_day -> stamped to the day of the reactivation,
+// on a monthly subscription that had none
+```
+</CodeGroup>
+
+En ambos casos la llamada no genera ningún cobro. Un valor no válido devuelve `400` `BAD_REQUEST`:
+`"billing_cycle_behavior must be one of KEEP, RESTART."` Reactivar no tiene validación propia en el gateway:
+el mismo texto vuelve sin cambios a través del gateway.
+
+<Note>
+**RESTART y el día de facturación mensual**
+
+En una suscripción mensual que no tenía definido `frequency.monthly_billing_day`, `RESTART` lo fija
+al día de la reactivación, la misma regla que aplican Actualizar suscripción y Reanudar suscripción. Una
+suscripción que ya declara un día de facturación lo conserva.
+</Note>
+
+## El método de pago {#the-payment-method}
+
+El método de pago almacenado se revalida antes de reactivar la suscripción. Si ya no
+está inscrito, la llamada devuelve `400` `PAYMENT_METHOD_STATUS_INVALID` y la suscripción no se
+modifica: la verificación del método de pago se ejecuta antes de escribir el estado:
+
+```json 400 — payment method no longer enrolled
+{
+  "code": "PAYMENT_METHOD_STATUS_INVALID",
+  "messages": [
+    "The payment method is a state that does not allow payments to be made."
+  ]
+}
+```
+
+## Qué borra la reactivación {#what-reactivation-clears}
+
+Al reactivar una suscripción se borra lo siguiente:
+
+- `cancellation_time`
+- `cancellation_source`
+- `ending_time`
+- `reason`
+- cualquier cancelación programada (`cancel_scheduled`)
+- cualquier pausa programada para terminar por sí sola: una suscripción reactivada nunca conserva
+  `pause_until`
+
+El webhook `subscription.reactivate` se envía una sola vez y lleva la suscripción reactivada.
+
+## Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `409` | `INVALID_SUBSCRIPTION_STATUS` | La reactivación no está habilitada para la organización. |
+| `409` | `INVALID_SUBSCRIPTION_STATUS` | El estado de la suscripción no es `CANCELED` ni `COMPLETED`. |
+| `409` | `INVALID_SUBSCRIPTION_STATUS` | La suscripción usó todos los ciclos de facturación de `billing_cycles.total` y la solicitud no lo subió. |
+| `400` | `INVALID_DATE` | `availability.finish_at` ya pasó. |
+| `400` | `BAD_REQUEST` | `billing_cycles.total` no es mayor que el total actual, se envía en una suscripción sin límite de ciclos o no es un entero positivo. |
+| `400` | `BAD_REQUEST` | `billing_cycle_behavior` no es `KEEP` ni `RESTART`. |
+| `400` | `BAD_REQUEST` | Una clave de nivel superior no reconocida, detectada por el propio binding JSON del gateway antes de que la llamada llegue al motor: `"Bad request"` |
+| `400` | `BAD_REQUEST` | Una clave distinta de `total` dentro de `billing_cycles`, reenviada tal cual al motor y rechazada allí: `"Unknown field(s): foo."` |
+| `400` | `PAYMENT_METHOD_STATUS_INVALID` | El método de pago almacenado ya no está inscrito. |
+| `400` | `OPERATION_IN_PROCESS` | Otra escritura sobre la misma suscripción sigue en curso: `"Operation over the same subscription is already in process. Try again in a few seconds."` |
+
+</div>

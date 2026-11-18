@@ -1,0 +1,57 @@
+---
+title: "Crear suscripción"
+openapi: "/openapi/es/subscriptions/create-subscription.json POST /subscriptions"
+description: "Crea un plan de suscripción recurrente con ciclos de facturación, periodos de prueba y credenciales de pago almacenadas."
+---
+
+<Note>
+**Crear la suscripción junto con su primer pago**
+
+Este endpoint inicia una suscripción a partir de un `vaulted_token` que ya tienes. Si el cliente se registra y paga al mismo tiempo, puedes enviar un bloque `subscription` en [Crear pago](/es/reference/payments/create-payment): una sola llamada cobra la tarjeta y crea la suscripción a partir de ese mismo cobro. Esa ruta está documentada solo para pagos con tarjeta sin fricción. Consulta [Inicia una suscripción con el primer pago](/es/docs/payment-features/subscriptions/start-with-payment).
+</Note>
+
+<Warning>
+**Finalización de la suscripción**
+
+Los campos `billing_cycles` y `availability.finish_at` se afectan entre sí. Si ambos se completan al crear la suscripción, esta pasará al estado `COMPLETED` al llegar al evento más cercano definido en esos campos, ya sea el ciclo de facturación o el `finish_at` correspondiente.
+</Warning>
+
+<Warning>
+**Uso de credenciales para un CIT previo**
+
+Si creas un pago CIT (por ejemplo, Apple Pay o tarjeta) *antes* de crear la suscripción y pasas el vaulted token resultante a la suscripción, **debes** incluir `payment_method.card.usage` para indicar si es el primer uso o uno posterior. Sin esto, los cobros recurrentes se tratarán como CIT y el proveedor los rechazará.
+
+El payload requerido para suscripciones nuevas es:
+
+```json
+{
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "{{vaulted_token}}",
+    "card": {
+      "usage": "USED"
+    }
+  }
+}
+```
+</Warning>
+
+Consulta la sección [Códigos de respuesta HTTP](/es/reference/getting-started/response-codes) para ver los detalles de los posibles resultados de error.
+
+## Configurar una regla de reembolso {#setting-a-refund-rule}
+
+`refund_rule` se puede definir al crear la suscripción para configurar cómo se calcula un reembolso `CUSTOM` cuando una solicitud de cancelación posterior no incluye su propio `refund_amount`:
+
+<CodeGroup>
+```json A share of the charged amount
+{ "refund_rule": { "type": "PERCENT", "percent": 50 } }
+```
+
+```json A flat amount
+{ "refund_rule": { "type": "FIXED", "amount": { "value": 8000, "currency": "COP" } } }
+```
+</CodeGroup>
+
+`PERCENT` y `FIXED` son excluyentes: una regla `PERCENT` solo lleva `percent` (0–100) y una regla `FIXED` solo lleva `amount`. El `amount.currency` de una regla `FIXED` debe ser igual a la moneda de la propia suscripción.
+
+Se puede cambiar o eliminar más adelante en [Actualizar suscripción](/es/reference/subscriptions/update-subscription#setting-a-refund-rule) y se describe en [el objeto Subscription](/es/reference/subscriptions/the-subscription-object). Consulta [Cancelar suscripción](/es/reference/subscriptions/cancel-subscription#custom) para ver cómo se usa. Está disponible para las organizaciones habilitadas; contacta a Yuno. Para las demás, enviar `refund_rule` se ignora en silencio y no se almacena nada.

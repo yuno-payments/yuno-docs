@@ -1,0 +1,198 @@
+---
+title: "El objeto de plan"
+description: "Documenta los atributos del objeto de plan, incluidos los precios por país, las fases y los metadatos."
+---
+
+## Atributos {#attributes}
+
+Un plan es una entrada reutilizable de un catálogo de precios. Suscribe a un cliente a un plan en lugar de definir `amount`/`frequency` directamente en la suscripción, y todos los campos que definen "cuánto y con qué frecuencia" se resuelven a partir del plan.
+
+<ParamField body="id" type="string">
+  El identificador único del plan (MAX 64; MIN 36).
+
+  Ejemplo: 00000000-0000-4000-8000-000000000001
+</ParamField>
+
+<ParamField body="account_id" type="string">
+  El identificador único de la cuenta a la que pertenece el plan (MAX 64; MIN 36).
+
+  Ejemplo: 00000000-0000-4000-8000-000000000002
+</ParamField>
+
+<ParamField body="account_ids" type="Array of strings">
+  Las cuentas adicionales con las que se comparte el plan, sin incluir al propietario indicado en `account_id`. Vacío para un plan que pertenece a una sola cuenta. Solo se devuelve, el campo no se acepta al crear un plan.
+
+  Ejemplo: ["00000000-0000-4000-8000-000000000003"]
+</ParamField>
+
+<ParamField body="name" type="string">
+  El nombre del plan (MAX 255; MIN 3).
+
+  Ejemplo: Streaming Pro
+</ParamField>
+
+<ParamField body="description" type="string">
+  La descripción del plan. Actualmente no se aplica ningún límite de longitud.
+
+  Ejemplo: Access to Pro features, billed monthly
+</ParamField>
+
+<ParamField body="merchant_reference" type="string">
+  Tu propio identificador para el plan. Actualmente no se aplica ningún límite de longitud.
+
+  Ejemplo: streaming-pro-monthly
+</ParamField>
+
+<ParamField body="status" type="enum">
+  Estado del plan.
+
+  Valores posibles:
+  - `ACTIVE` = Se puede suscribir al plan.
+  - `CANCELED` = El plan ya no acepta nuevas suscripciones. Cancelar un plan también cancela todas las suscripciones vinculadas a él en ese momento.
+</ParamField>
+
+<ParamField body="base_amount" type="object">
+  El precio predeterminado que se cobra en cualquier país sin una entrada explícita en `country_prices`.
+
+  <Expandable title="properties">
+    <ParamField body="currency" type="enum">
+      La moneda utilizada para realizar el pago (MAX 3; MIN 3; <a href="/reference/country-reference">ISO 4217</a>).
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      El monto del pago (múltiplo de 0.0001).
+
+      Ejemplo: 20.00
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="frequency" type="object">
+  La frecuencia de facturación del plan. Toda suscripción creada a partir de este plan la hereda: no envíes `frequency` al suscribir con un `plan_id`.
+
+  <Expandable title="properties">
+    <ParamField body="type" type="enum">
+      Valores posibles del enum: `DAY`, `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` o `YEAR`.
+    </ParamField>
+
+    <ParamField body="value" type="int">
+      Ejemplo: 1
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="country_prices" type="array of objects">
+  Precios explícitos por país. Un país que no aparece aquí usa `base_amount`.
+
+  <Expandable title="properties">
+    <ParamField body="country" type="string">
+      MAX 2; MIN 2; <a href="/reference/country-reference">ISO 3166-1</a>.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      <Expandable title="properties">
+        <ParamField body="currency" type="enum" />
+        <ParamField body="value" type="number" />
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="allowed_payment_methods" type="array of strings">
+  Tipos de método de pago aceptados para las suscripciones de este plan.
+
+  Ejemplo: `["CARD", "PIX"]`
+</ParamField>
+
+<ParamField body="metadata" type="array of objects">
+  Pares clave-valor asociados al propio plan. Es independiente de cualquier `metadata` definido directamente en una suscripción: consulta el [objeto de suscripción](/es/reference/subscriptions/the-subscription-object) para eso.
+
+  <Expandable title="properties">
+    <ParamField body="key" type="string">
+      Ejemplo: campaign
+    </ParamField>
+
+    <ParamField body="value" type="string">
+      Ejemplo: app_store
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="phases" type="array of objects">
+  Una escalera inicial opcional de fases (por ejemplo, un periodo de prueba) antes de que se aplique el precio regular del plan. Omítela para un plan fijo sin periodo de prueba.
+
+  <Expandable title="properties">
+    <ParamField body="order*" type="int">
+      Posición en la escalera, a partir de 1. El `order` más alto es la fase terminal, de precio regular, y no tiene `duration`. Obligatorio.
+    </ParamField>
+
+    <ParamField body="name*" type="string">
+      Obligatorio y no vacío: toda fase debe tener un nombre.
+    </ParamField>
+
+    <ParamField body="type*" type="enum">
+      Obligatorio. Valores posibles: `TRIAL` (cualquier fase inicial, con cualquier precio, incluido 0), `REGULAR` (la fase terminal).
+    </ParamField>
+
+    <ParamField body="duration" type="object">
+      Obligatorio en toda fase no terminal; se omite en la fase terminal.
+
+      <Expandable title="properties">
+        <ParamField body="type" type="enum">
+          `DAY`, `WEEK`, `MONTH` o `YEAR`.
+        </ParamField>
+        <ParamField body="value" type="int" />
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="frequency" type="object">
+      Opcional. Si se omite, la fase se factura como un único cobro de suma global que cubre toda la `duration`. Si se define, la fase se factura en cada intervalo de `frequency`. No aplica a la fase terminal.
+
+      <Expandable title="properties">
+        <ParamField body="type" type="enum">
+          `DAY`, `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` o `YEAR`.
+        </ParamField>
+        <ParamField body="value" type="int" />
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      El precio fijo de la fase. Se permite 0 (un periodo de prueba gratuito).
+
+      <Warning>En una fase **no terminal**, este campo o `country_prices` es obligatorio: uno de los dos. En la fase terminal REGULAR, omítelo por completo: enviar un `amount` allí se rechaza con `400 BAD_REQUEST` ("The terminal phase price comes from the plan base_amount/country_prices - remove the phase amount"). El precio de la fase terminal siempre proviene del `base_amount`/`country_prices` del propio plan, nunca de un campo a nivel de fase.</Warning>
+    </ParamField>
+
+    <ParamField body="country_prices" type="array of objects">
+      Precios por país para esta fase, con la misma forma que los `country_prices` a nivel de plan. En una fase no terminal, este campo o `amount` es obligatorio. No aplica a la fase terminal.
+    </ParamField>
+
+    <ParamField body="total_payments" type="int">
+      Calculado por el servidor. Si se omite `frequency`, siempre es `1` (un único cobro de suma global por toda la fase). Si se define `frequency`, es `duration / frequency` (ambos en la misma unidad); por ejemplo, una duración de 3 meses facturada mensualmente (`frequency: {type: MONTH, value: 1}`) produce `3`. `null` en la fase terminal.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="subscribers_count" type="int">
+  El número de suscripciones activas (en cualquier estado no terminal) que hay actualmente en este plan. Este es el conjunto que afectaría una cancelación.
+
+  Ejemplo: 12
+
+  <Note>Solo lo devuelve [Listar planes](/es/reference/plans/list-plans); no está presente en las respuestas de [Crear plan](/es/reference/plans/create-plan) ni de [Consultar plan](/es/reference/plans/retrieve-plan).</Note>
+</ParamField>
+
+<ParamField body="countries" type="array of strings">
+  Códigos ISO α2 ordenados: la unión distinta de todos los países que este plan fija explícitamente, a nivel de plan o dentro de cualquier fase. Un arreglo vacío significa que el plan se aplica globalmente mediante `base_amount`, no que no tenga cobertura.
+
+  <Note>Solo lo devuelve [Listar planes](/es/reference/plans/list-plans); no está presente en las respuestas de [Crear plan](/es/reference/plans/create-plan) ni de [Consultar plan](/es/reference/plans/retrieve-plan).</Note>
+</ParamField>
+
+<ParamField body="created_at" type="Timestamp" />
+<ParamField body="updated_at" type="Timestamp" />
+
+## Relacionado {#related}
+
+* [Crear plan](/es/reference/plans/create-plan)
+* [Consultar plan](/es/reference/plans/retrieve-plan)
+* [Listar planes](/es/reference/plans/list-plans)
+* [Cancelar plan](/es/reference/plans/cancel-plan)
+* [El objeto de suscripción](/es/reference/subscriptions/the-subscription-object): consulta `plan_id` para ver cómo una suscripción se vincula de vuelta a su plan
