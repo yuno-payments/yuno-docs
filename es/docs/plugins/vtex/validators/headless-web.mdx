@@ -47,13 +47,13 @@ Informa cada una como PASS / FAIL / N/A con la evidencia (archivo:línea). No ap
 ### 1. El montaje se ejecuta solo después de que existe el payload del conector {#1-mount-runs-only-after-the-connector-payload-exists}
 
 - Rastrea de dónde viene `payload`. Según la guía pública, es el payload que el conector de Yuno devuelve durante el
-  paso de autorización de este pedido, y debe existir antes de `mount`. Los casos de soporte muestran que VTEX lo entrega como
+  paso de autorización de esta orden, y debe existir antes de `mount`. Los casos de soporte muestran que VTEX lo entrega como
   el `appPayload` de una respuesta 428 a `gatewayCallback` (o tu backend retransmitiendo `paymentAppData.payload`).
 - FAIL si `mount` puede ejecutarse antes de que el código haya recibido ese payload (carga de la página, `useEffect` sin protección de payload, un temporizador), con un
   payload fijo o de ejemplo (el ejemplo del README o de la guía `"{\"isVTEXCard\":true,...}"`), o con un payload guardado en caché
-  de un pedido anterior.
+  de una orden anterior.
 - Por qué: el bundle no tiene contexto de pago propio. Un payload vacío lanza `payload = ... is not valid`;
-  uno obsoleto muestra una sesión de checkout que pertenece a otro pedido.
+  uno obsoleto muestra una sesión de checkout que pertenece a otra orden.
 
 ### 2. El payload se pasa como la cadena sin analizar {#2-the-payload-is-passed-as-the-unparsed-string}
 
@@ -71,15 +71,15 @@ Informa cada una como PASS / FAIL / N/A con la evidencia (archivo:línea). No ap
 - Por qué: un elemento ausente llama a `onError('Element with id <x> not found')` y lanza una excepción; un elemento reemplazado deja
   el checkout desvinculado y al comprador frente a un área en blanco.
 
-### 4. Un montaje por pedido y `unmount` al desmontar {#4-one-mount-per-order-and-unmount-on-teardown}
+### 4. Un montaje por orden y `unmount` al desmontar {#4-one-mount-per-order-and-unmount-on-teardown}
 
 - `window.YunoVTEX` es una única instancia con una sola raíz de React. Un segundo `mount` desmonta en silencio el primero,
-  sin importar qué elemento tenga como destino. Verifica que `mount` se llame una vez por pedido: no en el cuerpo de un render, no en un
+  sin importar qué elemento tenga como destino. Verifica que `mount` se llame una vez por orden: no en el cuerpo de un render, no en un
   efecto sin una protección de ejecución única, no en un controlador `window.addEventListener('message', ...)` que acepte cualquier
   mensaje (la demo de WebView de Yuno hace esto; filtra por un `type` propio de tu contrato de bridge e ignora el resto).
 - `await yunoVTEX.unmount()` debe ejecutarse cuando la página o el componente se desmonta (cambio de ruta, destrucción del componente,
   WebView cerrado). La Payment App lo hace en la limpieza del efecto.
-- FAIL si mount puede ejecutarse dos veces para un mismo pedido, o si nada llama a `unmount`. `unmount` solo elimina la raíz de React:
+- FAIL si mount puede ejecutarse dos veces para una misma orden, o si nada llama a `unmount`. `unmount` solo elimina la raíz de React:
   `window.YunoVTEX`, `window.Yuno` y las dos etiquetas script permanecen, lo cual es lo esperado.
 
 ### 5. `domainVTEX` es el origen exacto de la tienda: esquema y host, sin barra final, sin ruta {#5-domainvtex-is-the-exact-store-origin-scheme-and-host-no-trailing-slash-no-path}
@@ -92,7 +92,7 @@ Informa cada una como PASS / FAIL / N/A con la evidencia (archivo:línea). No ap
 - Por qué: el bundle convierte el valor a minúsculas y lo antepone tal cual (`yuno-api.ts`), por lo que una barra final produce
   `https://<host>//api/io/_v/yunopartnerbr.yuno/v4/payments/yuno`. En un incidente reportado (un flujo de checkout por
   WhatsApp), VTEX respondió la solicitud preflight de CORS en esa URL con 405 y sin encabezados CORS, el
-  navegador bloqueó la llamada (`Network Error`, sin estado), no se creó ningún pago y los pedidos se cancelaron después
+  navegador bloqueó la llamada (`Network Error`, sin estado), no se creó ningún pago y las órdenes se cancelaron después
   de 24 h. Al momento de escribir esto, el bundle de producción no elimina la barra.
   Un valor sin `http(s)://` lanza `onError('Domain must be https.  It is <value>')`.
 - Las tiendas servidas bajo una subruta usan el campo `Store Base Path` de la afiliación del conector, nunca una ruta en
@@ -111,7 +111,7 @@ Informa cada una como PASS / FAIL / N/A con la evidencia (archivo:línea). No ap
 - Nota para el informe: `proxyUrlVTEX` no se aplica a las cuotas de las wallets (`/installments/apm` usa
   solo `domainVTEX`), por lo que una tienda que llega a VTEX únicamente a través de un proxy no obtiene el selector de cuotas de wallets.
 
-### 7. Un solo host de cuenta VTEX por pedido y sin llamadas directas al conector {#7-one-vtex-account-host-per-order-and-no-direct-connector-calls}
+### 7. Un solo host de cuenta VTEX por orden y sin llamadas directas al conector {#7-one-vtex-account-host-per-order-and-no-direct-connector-calls}
 
 - El host usado para las llamadas de checkout (`orderForm`, `transaction`, `gatewayCallback`) y el host de
   `domainVTEX` deben ser de la misma cuenta VTEX, y esa cuenta debe tener configurada la afiliación del conector de Yuno. La
@@ -154,12 +154,12 @@ Informa cada una como PASS / FAIL / N/A con la evidencia (archivo:línea). No ap
 - `onPaymentDone({ success, payments: [{ status, orderId, paymentId }] })` se dispara una vez por montaje: después de que cada
   sesión de checkout fue exitosa, o en cuanto una falla. Cualquier error también termina el flujo: se ejecuta `onError` y le
   sigue `onPaymentDone({ success: false })` (`sdk.main.tsx`), posiblemente antes de que se ejecuten las sesiones posteriores de un
-  pedido dividido. Es la única señal para continuar: página de confirmación, mensaje al bridge nativo, lectura del pedido de VTEX.
+  orden dividida. Es la única señal para continuar: página de confirmación, mensaje al bridge nativo, lectura de la orden de VTEX.
   FAIL si el resultado se infiere del DOM, de una URL, de un temporizador o de `onLoading`, o si el código supone que `onError`
   y `onPaymentDone` son excluyentes (por ejemplo, dos pantallas de fallo, o un reintento iniciado desde `onError` que el
   `onPaymentDone` siguiente anula).
 - `success` es `true` para `SUCCEEDED`, `PENDING`, `READY_TO_PAY` y `VERIFIED`. FAIL si `success === true` se
-  muestra como "aprobado" sin leer `payments[].status` o el estado del pedido de VTEX (los pagos pendientes se resuelven
+  muestra como "aprobado" sin leer `payments[].status` o el estado de la orden de VTEX (los pagos pendientes se resuelven
   más tarde mediante el webhook).
 - `onError(message, error)` debe pasarse y debe mostrar algo al comprador o al bridge. FAIL si está ausente
   o vacío. `mount` debe esperarse dentro de `try/catch`: los fallos de validación llaman a `onError` y además lanzan una excepción.
@@ -177,8 +177,8 @@ Informa cada una como PASS / FAIL / N/A con la evidencia (archivo:línea). No ap
   no `pt-BR`. Recomienda `pt`, `es` o `en`. FAIL si está vacío o se calcula como `undefined`.
 - `deviceFingerprints` es un arreglo de `{ provider_id, session_id }`, con `provider_id` tal como está configurado en Yuno
   (`RISKIFIED`, `SIGNIFYD`, `CYBERSOURCE`, `CIELO_CYBERSOURCE_FRAUD`). `session_id` debe ser el `orderFormId`
-  de VTEX en cada pedido: la guía pública dice que el conector envía ese mismo id del lado del servidor, por lo que el
-  proveedor solo puede asociar los datos del dispositivo cuando el navegador también lo usa (y los pedidos divididos lo requieren). FAIL si hay
+  de VTEX en cada orden: la guía pública dice que el conector envía ese mismo id del lado del servidor, por lo que el
+  proveedor solo puede asociar los datos del dispositivo cuando el navegador también lo usa (y las órdenes divididas lo requieren). FAIL si hay
   un objeto en lugar de un arreglo, otros nombres de clave (`providerId`, `sessionId`), o un `session_id` que no es el
   `orderFormId` para un proveedor configurado.
 
