@@ -1,0 +1,70 @@
+---
+title: Uso de sellers en pagos
+description: "Guía para referenciar un seller registrado en las solicitudes de pago mediante additional_data.seller_details."
+---
+
+Una vez que se registra un mapeo de seller, puedes referenciarlo en las solicitudes de pago mediante `additional_data.seller_details`. El sistema resuelve automáticamente el `merchant_id` correcto al momento del pago, según el proveedor que procesa el pago.
+
+## Referenciar un seller {#referencing-a-seller}
+
+Puedes referenciar un seller con cualquiera de los dos identificadores (son **mutuamente excluyentes**: envía uno u otro):
+
+| Campo | Descripción |
+| :---- | :---- |
+| `merchant_seller_id` | El identificador propio del comercio (por ejemplo, `"FRANCHISE_STORE_001"`). |
+| `seller_id` | El UUID generado por Yuno (por ejemplo, `"f7a1b2c3-d4e5-6789-abcd-ef0123456789"`). |
+
+### Ejemplo: pago con `merchant_seller_id` {#example--payment-using-merchantsellerid}
+
+```json
+{
+  "amount": { "currency": "BRL", "value": 10000 },
+  "country": "BR",
+  "payment_method": {
+    "type": "CARD",
+    "token": "pm_tok_abc123"
+  },
+  "additional_data": {
+    "seller_details": {
+      "merchant_seller_id": "FRANCHISE_STORE_001"
+    }
+  }
+}
+```
+
+### Ejemplo: pago con campos sobrescritos {#example--payment-with-field-overrides}
+
+Cuando envías campos adicionales del seller junto con la referencia al seller, esos campos **sobrescriben** los valores almacenados del seller solo para ese pago. No se guardan de nuevo en el mapeo del seller.
+
+```json
+{
+  "amount": { "currency": "BRL", "value": 10000 },
+  "country": "BR",
+  "payment_method": {
+    "type": "CARD",
+    "token": "pm_tok_abc123"
+  },
+  "additional_data": {
+    "seller_details": {
+      "merchant_seller_id": "FRANCHISE_STORE_001",
+      "name": "Store 001 - Campinas",
+      "document": {
+        "type": "CNPJ",
+        "number": "98765432000111"
+      }
+    }
+  }
+}
+```
+
+## Cómo funciona la resolución {#how-resolution-works}
+
+1. El comercio envía una solicitud de pago con `merchant_seller_id` o `seller_id` dentro de `additional_data.seller_details`.
+2. El pago fluye por el pipeline estándar. El enrutamiento selecciona un proveedor (por ejemplo, Cielo).
+3. Después del enrutamiento, el sistema busca el mapeo de franquicia por `(organization, seller_identifier, provider, payment_method_type)`.
+4. **Si lo encuentra:** el `merchant_id` de la conexión se sobrescribe con el `merchant_id` resuelto. Cualquier campo del seller enviado en la solicitud sobrescribe los valores almacenados para este pago.
+5. **Si no lo encuentra o el servicio no está disponible:** el pago continúa con el `merchant_id` predeterminado de la conexión (fallback controlado).
+
+### Retrocompatibilidad {#backward-compatibility}
+
+Cuando no hay ni `seller_id` ni `merchant_seller_id`, se omite por completo la función de franquicias: sin impacto en los flujos existentes.
