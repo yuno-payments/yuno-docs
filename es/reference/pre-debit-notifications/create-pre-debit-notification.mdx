@@ -1,0 +1,16 @@
+---
+title: "Crear notificación previa al débito"
+description: "Envía al cliente la notificación previa al débito que exige NPCI antes de un débito recurrente de UPI Autopay."
+keywords: ["débito previo", "PDN", "UPI Autopay", "recurrente", "mandato"]
+openapi: "/openapi/es/pre-debit-notifications/create-pre-debit-notification.json POST /predebit-notify"
+---
+
+Antes de cada débito recurrente de UPI Autopay, NPCI exige notificar al cliente con anticipación. Este endpoint envía ese aviso a través del proveedor de pagos y devuelve un `id` que debes referenciar en el débito.
+
+El flujo tiene tres pasos:
+
+1. **Notificar**: llama a este endpoint con el `vaulted_token` del mandato, el `amount` próximo y la `billing_date`. El enrutamiento al proveedor proviene de `origin_payment_id` (el pago que creó el mandato) o de un `provider_data` explícito.
+2. **Revisar el estado**: `SENT` significa que el proveedor entregó la notificación y devolvió su referencia en `provider_data.provider_notification_id`.
+3. **Debitar**: crea el pago recurrente con `payment_method.detail.bank_transfer.pre_debit_notification_id` establecido con el `id` devuelto. Yuno resuelve la referencia del proveedor y la reenvía automáticamente (consulta [Crear pago](/es/reference/payments/create-payment)).
+
+Esta solicitud requiere un `X-Idempotency-Key`. Si reutilizas un `merchant_reference`, se devuelve la notificación existente de tu cuenta.

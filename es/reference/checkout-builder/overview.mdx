@@ -1,0 +1,100 @@
+---
+title: "Descripción general de Checkout Builder"
+sidebarTitle: "Descripción general"
+description: "Configura de forma programática el checkout de Yuno de un comercio (métodos de pago, condiciones, campos obligatorios y estilos) mediante la API B2B pública de Yuno."
+badge: "Beta"
+---
+
+<Warning>
+**BETA: el acceso se concede por cuenta.** Esta API está en beta cerrada y se habilita por cuenta. Tu cuenta debe estar incluida de forma explícita en la lista de permitidos; las solicitudes de una cuenta que no está en la lista se rechazan con `401`. Los Endpoints son estables en su forma, pero están sujetos a cambios aditivos durante la ventana de BETA.
+</Warning>
+
+Configura el checkout de Yuno de un comercio **de servidor a servidor**, con la misma superficie de configuración que impulsa el Checkout Builder del Dashboard de Yuno. Esto permite que un socio administre los checkouts de sus comercios de forma programática, sin usar la interfaz de Yuno:
+
+- **Métodos de pago**: qué métodos se muestran y en qué orden de visualización
+- **Condiciones**: reglas por método (moneda, país, monto, metadata) que determinan cuándo aparece un método
+- **Campos obligatorios**: configuración de los campos del formulario por método (CVV, cuotas, dirección de facturación, etc.) tanto para el flujo con inscripción (tarjeta guardada) como para el flujo sin inscripción (primera vez)
+- **Configuración general**: tipos de documento aceptados por país
+- **Estilos y configuración del SDK**: colores, fuentes, formas de botones, logotipos y marca del enlace de pago
+
+## URL base {#base-url}
+
+| Entorno | URL base |
+| --- | --- |
+| Producción | `https://api.y.uno` |
+| Sandbox | `https://api-sandbox.y.uno` |
+
+Todos los ejemplos de esta referencia usan la URL base de producción. El host de sandbox acepta los mismos endpoints y las mismas formas de payload.
+
+## Autenticación {#authentication}
+
+Cada solicitud se autentica con tus credenciales de API de comercio y se limita a una sola cuenta.
+
+<div className="code-nowrap-table dense-table">
+
+| Encabezado | Obligatorio | Descripción |
+| --- | --- | --- |
+| `PUBLIC-API-KEY` | Sí | Clave de API pública del comercio. La encuentras en tu Dashboard de Yuno, en **Settings → API Keys**. |
+| `PRIVATE-SECRET-KEY` | Sí | Clave secreta privada del comercio, emparejada con la clave pública. Solo para el servidor. Nunca la incluyas en código del lado del cliente. |
+| `X-Account-Code` | Sí | UUID de la cuenta del comercio. La cuenta se resuelve **únicamente** a partir de este encabezado (nunca desde el cuerpo de la solicitud ni la ruta) y debe estar en la lista de permitidos de la beta. |
+| `X-Idempotency-Key` | No | Clave opcional del cliente, de hasta 64 caracteres. Mejor esfuerzo. Consulta [Idempotencia](#idempotency). |
+| `Content-Type` | Sí (POST/PUT/PATCH) | `application/json` |
+
+</div>
+
+<Note>
+Yuno resuelve la organización a partir de tus credenciales. **No envíes** un encabezado de organización. Las credenciales ausentes o inválidas, o una cuenta que no está en la lista de permitidos, devuelven `401`.
+</Note>
+
+## Endpoints {#endpoints}
+
+Un **checkout personalizado** se identifica con un `checkout_code` (un UUID). Se crea, lista, consulta, escribe y administra en su ciclo de vida a través del mismo recurso, en cinco operaciones:
+
+| Método | Ruta | Propósito |
+| --- | --- | --- |
+| `POST` | `/v1/checkouts` | Crea un nuevo checkout personalizado como un clon publicado del checkout predeterminado de la cuenta. |
+| `GET` | `/v1/checkouts` | Lista los checkouts personalizados de la cuenta (solo resúmenes): IDs, nombres, estados, indicador de predeterminado. Admite filtros y paginación opcional. |
+| `GET` | `/v1/checkouts/{checkout_code}` | Consulta el checkout personalizado completo: configuración **y** estilos, juntos. |
+| `PUT` | `/v1/checkouts/{checkout_code}` | Publica la configuración y/o los estilos. |
+| `PATCH` | `/v1/checkouts/{checkout_code}` | Administra el ciclo de vida: renombrar, publicar, despublicar, archivar, restaurar o promover a predeterminado. |
+
+`{checkout_code}` debe ser un UUID válido; cualquier otro valor se rechaza con `400` antes de cualquier procesamiento.
+
+<Note>
+Obtienes un `checkout_code` al llamar a [Create Checkout](/es/reference/checkout-builder/create-checkout) (el `id` de nivel superior de la respuesta) o al llamar a [List Checkouts](/es/reference/checkout-builder/list-checkouts) (el `id` de cada elemento es el `checkout_code`). También puedes obtener uno cuando el checkout personalizado se crea en el Dashboard de Yuno o en el Checkout Builder integrado.
+</Note>
+
+## Comportamientos clave {#key-behaviors}
+
+<Note>
+**`PUT` es un upsert parcial de la configuración, no un reemplazo completo.** Los métodos de pago omitidos del arreglo `payment_methods` conservan su estado anterior. No se eliminan ni se desactivan. Para desactivar un método, inclúyelo con `is_active: false`.
+</Note>
+
+- **Configuración: actualización parcial.** Solo se actualizan los métodos de pago que incluyes; los métodos omitidos conservan su estado anterior. La publicación solo actualiza métodos existentes. **No se pueden crear nuevos métodos de pago** mediante la API (comunícate con tu TAM de Yuno para agregar métodos).
+- **Estilos: fusión parcial.** Los campos que omites (o envías como `null`) se conservan; solo cambian los campos que incluyes. Las actualizaciones parciales de estilos son seguras. No necesitas reenviar todo el objeto `styles`. Para restablecer los estilos a los valores predeterminados, usa `flags.force_default_styles`.
+- **El orden lo determina `order_to_show`**, no la posición en el arreglo. Los valores más bajos se muestran primero.
+- **Como máximo un conjunto de condiciones por campo obligatorio.** Enviar más de un conjunto de condiciones en un campo se rechaza con `400` (`conditions_to_override must contain at most one condition set`).
+- **Los flujos con inscripción y sin inscripción son independientes.** Para CARD, configura el flujo sin inscripción mediante `fields` y el flujo con inscripción (tarjeta guardada) mediante `enrollment_fields`. Para dejar un flujo sin cambios, pasa un arreglo vacío para ese lado.
+- **Las transiciones del ciclo de vida siguen una máquina de estados.** Publicar solo es válido desde `NOT_PUBLISHED`. Un checkout `ARCHIVED` se restaura en dos pasos (primero `NOT_PUBLISHED`, luego `PUBLISHED`). El checkout predeterminado no se puede archivar ni despublicar. Consulta [Manage Checkout Lifecycle](/es/reference/checkout-builder/manage-checkout-lifecycle) para ver las reglas completas.
+- **Los cambios surten efecto de inmediato.** Valida los payloads contra la URL base de sandbox antes de aplicarlos en producción.
+- Cada cuerpo de solicitud se valida de forma independiente; si falla cualquier regla, se rechaza toda la solicitud con un único `400` agregado y no se aplica nada. Consulta el endpoint [Publish](/es/reference/checkout-builder/publish-checkout-configuration) para ver la forma completa de la solicitud y los valores permitidos.
+
+## Errores {#errors}
+
+Los fallos de validación devuelven HTTP `400` con un único cuerpo agregado que lista todos los problemas encontrados:
+
+```json
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "payment_methods[0].order_to_show must be >= 0",
+    "styles.global.accent_color must be a 6- or 8-digit hex color (#RRGGBB or #RRGGBBAA)"
+  ]
+}
+```
+
+Otros estados incluyen `401` (autenticación / cuenta fuera de la lista de permitidos) y `404` (checkout no encontrado para la cuenta, o sin checkout predeterminado para clonar al crear). `409` cubre un nombre de checkout duplicado, o el intento de archivar o despublicar el checkout predeterminado. Consulta la página [Publish](/es/reference/checkout-builder/publish-checkout-configuration) para ver el esquema completo de solicitud y respuesta y ejemplos de mensajes de validación.
+
+## Idempotencia {#idempotency}
+
+`X-Idempotency-Key` es de **mejor esfuerzo**: el encabezado se acepta y se valida (hasta 64 caracteres), pero no se garantiza que las repeticiones de la misma clave se dupliquen. Diseña tu integración para entrega al menos una vez.
