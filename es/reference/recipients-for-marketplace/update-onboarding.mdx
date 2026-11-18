@@ -1,0 +1,33 @@
+---
+title: "Actualizar onboarding"
+openapi: "/openapi/es/recipients-for-marketplace/update-onboarding.json PATCH /recipients/{recipient_id}/onboardings/{onboarding_id}"
+description: "Actualiza los datos o la documentación de un onboarding existente de un destinatario"
+---
+
+Actualiza un onboarding existente de un destinatario. Solo se actualizarán los campos especificados.
+
+Este endpoint actualiza un onboarding existente de un destinatario, lo que permite modificar los detalles del onboarding después de su creación inicial. Úsalo cuando necesites actualizar la información del proveedor, la documentación, los datos bancarios u otros parámetros del onboarding de destinatarios existentes en el [marketplace de pagos con split](/docs/split-payments-marketplace#/).
+
+## Requisitos previos {#prerequisites}
+
+Este endpoint requiere un onboarding existente creado mediante [Create Onboarding](/reference/create-onboarding)
+
+## Actualizar una cuenta bancaria {#updating-a-bank-account}
+
+Para los onboardings de Zoop y Pagar.me con un ID de destinatario del proveedor, una actualización explícita de `withdrawal_methods.bank` espera el resultado del proveedor. Actualiza solo el onboarding seleccionado; el valor predeterminado del destinatario y los demás onboardings permanecen sin cambios.
+
+Solo se guarda para el onboarding una cuenta confirmada. Los resultados de la actualización bancaria no cambian su estado de ciclo de vida. Envía una cuenta completa cuando el onboarding no muestre ninguna cuenta bancaria. Consulta [errores bancarios y reintentos](/es/reference/recipients-for-marketplace/update-recipient-1#bank-errors-and-retries) para ver resultados parciales, respuestas `400` y la guía de conciliación de `409`.
+
+Para estos onboardings compatibles vinculados al proveedor, los campos que no son bancarios, distintos de `documentation`, se guardan en Yuno sin una actualización separada del perfil en el proveedor. Enviar una descripción o metadata no reenvía la cuenta bancaria guardada. En una solicitud mixta, el banco se procesa primero; los demás campos se guardan solo después de que tenga éxito. Los destinatarios incorporados previamente conservan la notificación de estado existente para las actualizaciones no bancarias sin `documentation`.
+
+Por ejemplo, cambiar solo la descripción de una tienda deja sin cambios su cuenta de pago confirmada y el estado del onboarding. Para cambiar la cuenta de pago, incluye `withdrawal_methods.bank` de forma explícita.
+
+## Actualizar la documentación {#updating-documentation}
+
+Para los onboardings de Zoop con un ID de destinatario del proveedor, una solicitud con `documentation` envía a Zoop los documentos de esa solicitud y espera el resultado. Esto incluye a los destinatarios incorporados previamente. Solo se envían las categorías de documentos de la solicitud, y la cuenta bancaria no se reenvía.
+
+- Si Zoop acepta los documentos, el onboarding toma el estado y los requisitos que informa Zoop, y se envía el webhook de onboarding habitual.
+- Si Zoop rechaza los documentos, o no se puede confirmar el envío o el estado resultante, la respuesta es `400` con el código `PROVIDER_OPERATION_FAILED`. Los documentos se guardan en Yuno, y el onboarding conserva su estado y requisitos anteriores. Reenvía solo `documentation`.
+- En una solicitud que también actualiza la cuenta bancaria, la actualización bancaria se procesa primero. Si luego fallan los documentos, el `400` también informa el resultado bancario. Un cambio bancario informado como `APPLIED` permanece aplicado, por lo que debes reenviar solo `documentation`.
+
+Los onboardings en estado `CANCELLED`, `BLOCKED`, `INACTIVE` o `TRANSFERRED` rechazan las actualizaciones con `400 INVALID_STATE`, excepto los destinatarios incorporados previamente: su actualización guarda `documentation` en Yuno sin enviarla al proveedor. Un onboarding `TERMINATED` siempre devuelve `400 INVALID_STATE`.

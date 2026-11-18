@@ -1,0 +1,74 @@
+---
+title: "Descripción general de webhooks"
+description: "Explica cómo un webhook se suscribe a eventos y cómo Yuno se autentica en tu endpoint cuando los entrega"
+keywords: ["webhooks", "notificaciones", "eventos", "hmac", "oauth2"]
+---
+
+Un webhook le indica a Yuno adónde enviar las notificaciones de eventos (`url`), qué eventos enviar (triggers) y cómo debe autenticarse Yuno en tu endpoint cuando los entrega. La misma configuración está disponible desde el [dashboard de Yuno](/es/docs/webhooks/configure-webhooks).
+
+`account_id` es obligatorio en cada solicitud, en el cuerpo para `POST` y `PATCH` y como parámetro de consulta para `GET` y `DELETE`. Solo puedes gestionar los webhooks de las cuentas de tu propia organización.
+
+## Secretos {#secrets}
+
+Los secretos son de solo escritura. `api_key`, `secret`, `hmac_client_secret` y `oauth2_client_secret` se devuelven como `***` una vez configurados, y como `null` en caso contrario.
+
+Para conservar un secreto tal como está, omítelo en la actualización. Si envías de vuelta el valor enmascarado, se almacena `***` como el secreto mismo, y si envías una cadena vacía, se elimina el secreto.
+
+## Triggers {#triggers}
+
+Un webhook se suscribe a eventos mediante cinco campos de trigger, uno por dominio, y necesita al menos un trigger. Un webhook con `payment_triggers: ["AUTHORIZE"]` recibe una notificación cuando se autoriza un pago. Coloca cada trigger en el campo de su propio dominio, ya que el campo es lo que suscribe el webhook a esa familia de eventos. Consulta [Eventos y triggers](/es/docs/webhooks/events) para ver todos los valores que acepta cada campo y el evento al que corresponde, y [Payloads y ejemplos](/es/docs/webhooks/object-and-examples) para ver el payload que transporta cada uno.
+
+| Campo | Se suscribe a |
+| :---- | :------------- |
+| `enrollment_triggers` | Inscripción y baja de inscripción de métodos de pago |
+| `payment_triggers` | Eventos del ciclo de vida del pago (autorización, captura, reembolso y más) |
+| `subscription_triggers` | Eventos del ciclo de vida de la suscripción |
+| `onboarding_triggers` | Eventos del ciclo de vida del onboarding |
+| `report_triggers` | Eventos del ciclo de vida de los reportes |
+
+`renewal_days` define cuántos días antes de una renovación Yuno envía la notificación `CLOSE_TO_RENEWAL`, y solo es válido cuando `subscription_triggers` contiene `CLOSE_TO_RENEWAL`.
+
+## Autenticación de la entrega {#delivery-authentication}
+
+Así se autentica Yuno en tu endpoint cuando envía un evento, para que tu receptor pueda distinguir una notificación genuina de una falsificada. Todos los métodos son opcionales y puedes combinarlos.
+
+### Clave de API y secreto {#api-key-and-secret}
+
+Configura `api_key` y `secret`. Yuno los envía como encabezados en cada entrega, y tu endpoint verifica que coincidan con lo que configuraste.
+
+```http
+x-api-key: <api_key>
+x-secret:  <secret>
+```
+
+### Firma HMAC {#hmac-signature}
+
+Configura `hmac_client_secret`. Yuno firma el payload con él y envía la firma como un encabezado, para que puedas verificar que la notificación es auténtica y no fue alterada.
+
+La autenticación de un webhook (incluido `hmac_client_secret`) se limita al objeto webhook en sí, no a una conexión con un proveedor de pagos específico. Si tu cuenta enruta pagos a través de varias conexiones con PSP, un único webhook sigue entregando y firmando los eventos de todas ellas de la misma manera: no hay un secreto separado por conexión. Configura más de un webhook solo si necesitas dividir los eventos entre distintos endpoints, no para segmentar por proveedor.
+
+```http
+x-hmac-signature: Base64(
+  HMAC-SHA256(key = hmac_client_secret, msg = <raw request body>)
+)
+```
+
+Consulta [Verificar firmas de webhooks (HMAC)](/es/docs/webhooks/verify-webhook-signatures-hmac) para saber cómo calcular y comprobar esta firma.
+
+### OAuth2 {#oauth2}
+
+Configura tu endpoint de token y tus credenciales de cliente. Antes de la entrega, Yuno solicita un token a tu endpoint y lo envía como `Authorization: Bearer <token>`.
+
+Tu endpoint de token debe usar HTTPS. Yuno reutiliza un token entre las entregas de una cuenta hasta que está cerca de expirar, por lo que un token de corta duración implica una solicitud de token en casi cada entrega.
+
+| Campo | Descripción |
+| :---- | :---- |
+| `oauth2_authentication_url` | Tu endpoint de token, mediante HTTPS. |
+| `oauth2_client_id` | El identificador de cliente con el que Yuno se autentica. |
+| `oauth2_client_secret` | El secreto de cliente con el que Yuno se autentica. |
+| `oauth2_grant_type` | El tipo de concesión con el que Yuno solicita el token, normalmente `client_credentials`. |
+| `oauth2_scope` | El scope con el que Yuno solicita el token. Defínelo con [Actualizar un webhook](/es/reference/webhooks/update-webhook). |
+| `oauth2_authorization_name` | El encabezado en el que Yuno envía el token. El valor predeterminado es `Authorization`. |
+| `oauth2_include_client_id` | Envía también el identificador de cliente como un encabezado en la solicitud de token. |
+
+Envía `oauth2_authentication_url`, `oauth2_client_id`, `oauth2_client_secret` y `oauth2_grant_type` juntos, ya que se configuran como un conjunto.
