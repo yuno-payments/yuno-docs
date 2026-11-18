@@ -1,0 +1,200 @@
+---
+title: Inscripción en Android
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Inscribe métodos de pago en Android con full-checkout, interfaz prediseñada y configuración de ProGuard"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+El SDK de Android facilita la implementación de flujos de inscripción para guardar métodos de pago en la cuenta de un cliente.
+
+Incluye la biblioteca en tu proyecto siguiendo los mismos pasos que en [full-checkout](/docs/sdks/full-checkout/android-payments#include-the-library-in-your-project).
+
+## Recursos adicionales {#additional-resources}
+
+- Consulta [Elige la integración adecuada para ti](/es/docs/sdks/overview/choose-integration) si no tienes claro qué flujo seguir.
+- Accede a las [Notas de la versión](/changelog/android) o al [repositorio del Yuno Android SDK](https://github.com/yuno-payments/yuno-sdk-android) para verificar la última versión disponible del SDK.
+
+- [Inscripción con full-checkout (Android)](#full-checkout-enrollment-android): inscripción automática con componentes de interfaz prediseñados
+
+## Requisitos {#requirements}
+
+* **Versión mínima del SDK**: `minSdkVersion` 23 o superior (Android 6.0). Obligatoria desde Yuno Android SDK 2.24.0
+* **Java**: Java 8 habilitado
+* **AndroidX**: usa AndroidX en lugar de las bibliotecas de soporte anteriores
+* **Android Gradle Plugin**: 4.0.0 o superior
+* **ProGuard**: 6.2.2 o superior
+* **Kotlin Gradle Plugin**: 1.4.0 o superior
+* **Compatibilidad con el tamaño de página ELF**: cumple los requisitos de alineación de página ELF de 16 KB de Google (listo para Android 15 / ARMv9)
+
+### Configuración de ProGuard / R8 {#proguard--r8-configuration}
+
+Si tu proyecto tiene `minifyEnabled = true`, agrega estas reglas a tu archivo `proguard-rules.pro` para que el SDK funcione correctamente, especialmente con el **modo completo de R8 de AGP 8.x+**.
+
+<Accordion title="Reglas oficiales de ProGuard / R8 de Yuno">
+  ```proguard
+  # Preserve generic type signatures and annotations
+  -keepattributes Signature
+  -keepattributes *Annotation*
+
+  # Yuno SDK
+  -keep class com.yuno.** { *; }
+  -dontwarn com.yuno.**
+
+  # Gson — R8 full mode compatibility
+  -keep class com.google.gson.** { *; }
+  -keep,allowobfuscation,allowshrinking,allowoptimization class * extends com.google.gson.reflect.TypeToken
+  -dontwarn com.google.gson.**
+
+  # Retrofit — R8 full mode compatibility
+  -keep,allowobfuscation,allowshrinking interface retrofit2.Call
+  -keep,allowobfuscation,allowshrinking class retrofit2.Response
+  -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+  -dontwarn retrofit2.**
+
+  # OkHttp + Okio — Suppress warnings
+  -dontwarn okhttp3.**
+  -dontwarn okio.**
+  ```
+
+  ### ¿Por qué son necesarias estas reglas?
+
+  AGP 8.x+ habilita por defecto el **modo completo de R8**, que elimina de forma agresiva las firmas de tipos genéricos. Sin `-keepattributes Signature`, el `TypeToken<T>` de Gson puede fallar en tiempo de ejecución con `java.lang.Class cannot be cast to java.lang.reflect.ParameterizedType`.
+</Accordion>
+
+## Parámetros {#parameters}
+
+Para ver la lista completa de parámetros, consulta la [Referencia común del SDK de Android](/es/docs/sdks/resources/references/android).
+
+| Parámetro | Descripción |
+|-----------|-------------|
+| `customerSession` | ID de la sesión de cliente de la API Create customer session. Obligatorio para `apiClientEnroll`. |
+| `countryCode` | Código de país ISO. Obligatorio para `apiClientEnroll`. |
+| `showEnrollmentStatus` | Muestra la pantalla de resultado de la inscripción. Opcional; por defecto es true. |
+| `callbackEnrollmentState` | Callback `(state, message)`: estado de la inscripción y, en `INTERNAL_ERROR`, un [`StatusMessage?`](/es/docs/sdks/resources/references/android#statusmessage-error-details). Opcional; requiere `initEnrollment` en onCreate. Segundo parámetro agregado en el SDK `2.22.0`. |
+| `keepLoader` | Si es `true`, el indicador de carga del SDK se mantiene durante la inscripción, lo que evita parpadeos en la interfaz. |
+
+## Inscripción con full-checkout (Android) {#full-checkout-enrollment-android}
+
+Yuno full-checkout para Android ofrece inscripción con interfaz prediseñada, inscripción de tarjetas, gestión de estados y manejo básico de errores. Consulta la sección anterior de [Requisitos](#requirements).
+
+### Paso 1: crea un cliente {#step-1-create-a-customer}
+
+Crea un cliente en el sistema de Yuno con el [endpoint Create customer](/reference/customers/create-customer) antes de inscribir métodos de pago. Este endpoint devuelve un `customer_id`. Luego crea una sesión de cliente con el endpoint [Create Customer Session](/reference/customer-sessions-enrollment/create-customer-session); usa el `customer_session` devuelto al llamar a los métodos de inscripción.
+
+En tu servidor, crea también un [objeto de método de pago de inscripción](/reference/payment-methods-checkout/enroll-payment-method-checkout) para esa sesión de cliente, a fin de definir qué método de pago puede inscribir el cliente. Mantén tus claves de API privadas en el servidor.
+
+### Paso 2: incluye la biblioteca en tu proyecto {#step-2-include-the-library-in-your-project}
+
+Agrega la biblioteca de Yuno a tu proyecto de Android:
+
+#### Agrega el repositorio {#add-the-repository}
+
+Agrega el repositorio Maven de Yuno a la configuración de Gradle de tu proyecto:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+Agrega la dependencia en `build.gradle`:
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:2.27.0'
+}
+```
+
+#### Permisos {#permissions}
+
+El Yuno SDK incluye por defecto el permiso `INTERNET`, necesario para realizar solicitudes de red.
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+### Paso 3: inicializa el SDK con la clave pública {#step-3-initialize-sdk-with-the-public-key}
+
+Inicializa el SDK:
+
+1. Obtén tu clave de API pública en el [Yuno Dashboard](https://dashboard.y.uno/)
+2. Crea una clase de aplicación personalizada si aún no lo has hecho
+3. En el método `onCreate()` de tu clase de aplicación, llama a `Yuno.initialize()` con tu clave de API:
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      PUBLIC_API_KEY,
+      config = YunoConfig(
+        keepLoader = true,
+      ),
+    )
+  }
+}
+```
+
+Usa la data class `YunoConfig` para personalizar el comportamiento del SDK. Incluye esta configuración al llamar a `Yuno.initialize()`. Las opciones disponibles son:
+
+```kotlin
+data class YunoConfig(
+    val saveCardEnabled: Boolean = false,
+    val keepLoader: Boolean = false,
+    val language: YunoLanguage? = null,
+    val styles: YunoStyles? = null
+)
+```
+
+<Info>
+  Para una explicación detallada del parámetro `keepLoader` y del manejo obligatorio de errores, consulta la [Guía de referencia de Android](/es/docs/sdks/resources/references/android#keeploader-parameter).
+</Info>
+<Warning>
+**cardFlow eliminado de YunoConfig**
+
+A partir de la versión **2.11.0**, `cardFlow` ya no forma parte de `YunoConfig`. La configuración del flujo de tarjeta ahora se gestiona exclusivamente a través del **CheckoutBuilder**.
+</Warning>
+
+### Paso 4: inscribe un nuevo método de pago {#step-4-enroll-a-new-payment-method}
+
+El proceso de inscripción es un flujo de dos pasos. Primero, inicializa el proceso para configurar los componentes necesarios. Luego, inicia el flujo de interfaz para que el usuario inscriba un método de pago.
+
+#### 4.1 Inicializa el proceso de inscripción {#41-initialize-the-enrollment-process}
+
+Llama al método `initEnrollment` dentro del método `onCreate` de tu activity para preparar tu app y que pueda gestionar el flujo de inscripción. Este es un paso de configuración obligatorio que exige el sistema operativo Android para registrar el contrato que permite al SDK devolver a tu app el estado final de la inscripción.
+
+```kotlin
+fun ComponentActivity.initEnrollment(
+    callbackEnrollmentState: ((String?, StatusMessage?) -> Unit)? = null
+)
+```
+
+#### 4.2 Inicia el flujo de inscripción {#42-start-the-enrollment-flow}
+
+Llama al método `startEnrollment` para lanzar la interfaz de usuario y comenzar la inscripción de un nuevo método de pago. Puedes llamar a este método en cualquier momento después de ejecutar `initEnrollment`, por ejemplo, cuando un usuario toca un botón "Enroll New Payment Method".
+
+```kotlin
+fun Context.startEnrollment(
+    customerSession: String,
+    countryCode: String,
+    showEnrollmentStatus: Boolean = true,
+    callbackEnrollmentState: ((String?, StatusMessage?) -> Unit)? = null
+)
+```
+
+Parámetros de `startEnrollment`:
+
+| Parámetro                 | Descripción                                                                                                                                                                                                                                                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`         | La sesión de cliente asociada al proceso de inscripción actual.                                                                                                                                                                                                                                             |
+| `countryCode`             | Código del país donde se realiza el pago. Consulta [Cobertura por país](/es/docs/sdks/resources/country-coverage) para ver la lista completa de países compatibles y sus códigos. |
+| `showEnrollmentStatus`    | Indica si se debe mostrar el estado de la inscripción. Este parámetro es opcional y por defecto es `true`.                                                                                                                                                                                                      |
+| `callbackEnrollmentState` | Una función `(state, message)` que devuelve el estado actual del proceso de inscripción y, en `INTERNAL_ERROR`, un [`StatusMessage?`](/es/docs/sdks/resources/references/android#statusmessage-error-details) que describe el fallo (las inscripciones rechazadas no incluyen mensaje). Opcional, por defecto es `null`. Para registrar este callback, debes llamar a `initEnrollment` en el método `onCreate` de la activity. Revisa los posibles estados que se pueden devolver. |
+
+## Referencia común {#common-reference}
+
+Para ver todos los detalles de parámetros y personalización, consulta la [Referencia común del SDK de Android](/es/docs/sdks/resources/references/android).

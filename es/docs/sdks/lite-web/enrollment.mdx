@@ -1,0 +1,275 @@
+---
+title: Lite SDK (Inscripción en Web)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Lite SDK (Inscripción en Web)
+  description: >-
+    Guía paso a paso para integrar el Lite SDK de Yuno (Inscripción en Web) en
+    tu aplicación web y ofrecer una experiencia de inscripción personalizada.
+  robots: index
+description: "Inscribe métodos de pago con el Lite SDK en Web mediante un formulario de inscripción personalizable"
+---
+import GenericOrientation from '/snippets/es/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Sigue esta guía paso a paso para implementar y habilitar la capacidad de inscripción del Lite Web SDK de Yuno en tu app.
+
+## Paso 1: Incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+Antes de continuar con la implementación del Lite SDK, consulta la [Guía de inicio rápido](/es/docs/sdks/overview/quickstart) para ver las instrucciones detalladas sobre cómo integrar correctamente el SDK en tu proyecto.
+
+La guía de integración ofrece tres métodos flexibles:
+
+1. Inclusión directa del script HTML
+2. Inyección dinámica de JavaScript
+3. Instalación del módulo NPM
+
+Elige el método de integración que mejor se adapte a tu flujo de desarrollo y a tus requisitos técnicos. Después de completar la integración del SDK, puedes continuar con los siguientes pasos para implementar la capacidad de inscripción lite.
+
+<Note>
+**Biblioteca de TypeScript**
+
+Si usas TypeScript, Yuno ofrece una [biblioteca](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) que da acceso a todos los métodos disponibles en el Yuno Web SDK.
+</Note>
+
+## Paso 2: Inicializa el SDK con la clave pública {#step-2-initialize-sdk-with-the-public-key}
+
+Inicializa el Yuno SDK en tu aplicación JavaScript proporcionando una `PUBLIC_API_KEY` válida:
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+<Note>
+**Credenciales**
+
+Consulta la página de credenciales para obtener más información: [/reference/getting-started/authentication](/es/reference/getting-started/authentication)
+</Note>
+
+## Paso 3: Crea una sesión de cliente {#step-3-create-a-customer-session}
+
+Para iniciar el proceso de inscripción, debes proporcionar el `customer_session`. Primero, debes crear un cliente. Usa el endpoint [Crear cliente](/reference/customers/create-customer) para crear nuevos clientes. En la respuesta recibirás el `id` del cliente, que usas para crear la sesión de cliente.
+
+Después de crear el cliente, puedes crear la sesión de cliente. Usa el `id` del cliente y el endpoint [Crear sesión de cliente](/reference/customer-sessions-enrollment/create-customer-session). El `customer_session` se proporcionará en la respuesta. Necesitas un nuevo `customer_session` cada vez que inscribas un nuevo método de pago.
+
+## Paso 4: Inicia el proceso de inscripción {#step-4-start-the-enrollment-process}
+
+Usa la siguiente configuración para ofrecer a tus clientes una experiencia de inscripción ligera y fácil de usar:
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  renderMode: {
+    type: "element",
+    elementSelector: "#root",
+  },
+  countryCode: "US",
+  language: "en",
+  showLoading: true,
+  issuersFormEnable: true,
+  onLoading: (args) => console.log(args),
+  card: {
+    type: "extends",
+    styles: "",
+    texts: {},
+  },
+  texts: {},
+  enrollmentStatus(data) {
+    console.log("Enrollment status:", data);
+  },
+  async error(error, data) {
+    console.error("An error occurred:", error);
+    await yuno.hideLoader();
+  },
+});
+```
+
+Al usar `mountEnrollmentLite`, especifica los callbacks que gestionarán la inscripción. También puedes personalizar la interfaz con los objetos `texts`.
+
+### Parámetros {#parameters}
+
+Configura la inscripción lite con las siguientes opciones:
+
+| Parámetro              | Descripción |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`      | Hace referencia a la [sesión de cliente](/reference/customer-sessions-enrollment/create-customer-session) de la inscripción actual. |
+| `elementSelector`      | El elemento HTML donde se renderiza el formulario de inscripción. Pásalo dentro de `renderMode: { type: "element", elementSelector }`; un `elementSelector` de nivel superior se ignora y el formulario se abre como modal. |
+| `countryCode`          | Este parámetro especifica el código de país para el que se configura la inscripción. |
+| `language`             | Idioma de los formularios de inscripción. |
+| `showLoading`          | Controla la visibilidad de la página de carga o spinner de Yuno durante el proceso de inscripción. |
+| `onLoading`            | Obligatorio para recibir notificaciones sobre llamadas al servidor o eventos de carga durante el proceso de inscripción. |
+| `issuersFormEnable`    | Habilita el formulario del emisor (por ejemplo, una lista de bancos). |
+| `card`                 | Define la configuración del formulario de tarjeta. |
+| `texts`                | Te permite definir textos personalizados para los botones. |
+| `enrollmentStatus` | Callback que se invoca cuando finaliza el proceso de inscripción. Recibe `{ vaultedToken, status }`. |
+| `error`            | Callback que se invoca cuando hay un error en el proceso de inscripción. |
+| `onChange`                        | Informa si el formulario de inscripción está completo. Recibe `{ form: { isValid } }`. Disponible desde la v1.10.11. |
+
+<Note>
+**Valores de estado**
+
+Los valores de estado comunes incluyen `ENROLLED`, `DECLINED`, `CANCELED` y `ERROR`.
+</Note>
+
+## Inscripción en PayPal con el modo de renderizado element {#paypal-enrollment-with-element-render-mode}
+
+<Note>
+Disponible desde el Web SDK **1.10.13**.
+</Note>
+
+De forma predeterminada, `mountEnrollmentLite` abre el modal de Yuno para la inscripción en PayPal. El comprador hace clic en tu botón de PayPal, ve el modal y tiene que hacer clic en PayPal por segunda vez. Con el modo de renderizado element, el botón de PayPal se renderiza directamente en tu página y el comprador completa la inscripción con un solo clic.
+
+### Cómo funciona {#how-it-works}
+
+Agrega un contenedor vacío a tu página y luego pasa `renderMode: { type: 'element', elementSelector }` a `mountEnrollmentLite`. El SDK renderiza el botón real de PayPal dentro de ese contenedor y muestra un esqueleto de carga hasta que PayPal termina de cargar.
+
+El botón de PayPal reemplaza tu propio botón: no coloques tu botón delante de él. Si no pasas `renderMode`, el comportamiento del modal se mantiene exactamente como antes.
+
+### Pasos de integración {#integration-steps}
+
+1. Elimina tu botón de PayPal actual.
+2. Agrega un `<div>` vacío donde debe aparecer el botón de PayPal.
+3. Pasa `renderMode` con `type: 'element'` y un `elementSelector` que apunte a ese `<div>`.
+
+```html
+<div id="paypal-enrollment"></div>
+```
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  countryCode: "US",
+  language: "en",
+  renderMode: {
+    type: "element",
+    elementSelector: "#paypal-enrollment",
+  },
+  enrollmentStatus(data) {
+    console.log("Enrollment status:", data);
+  },
+  error(error, data) {
+    console.error("An error occurred:", error);
+  },
+});
+```
+
+El botón ocupa el 100% del ancho del contenedor, a menos que definas `width`.
+
+### Personalizar el botón de PayPal {#customizing-the-paypal-button}
+
+Opcional. Pasa `externalButtons.paypal` a `mountEnrollmentLite` para darle estilo al botón, con las mismas propiedades que el [botón express de PayPal](/es/docs/sdks/resources/references/web#paypal) en el checkout. Los valores predeterminados difieren de los del checkout, por lo que se listan completos a continuación.
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  countryCode: "US",
+  language: "en",
+  renderMode: {
+    type: "element",
+    elementSelector: "#paypal-enrollment",
+  },
+  externalButtons: {
+    paypal: {
+      color: "blue",
+      shape: "pill",
+      label: "paypal",
+      height: 48,
+      width: 300,
+      locale: "en_US",
+    },
+  },
+  // ... rest of config
+});
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Propiedad | Tipo | Valor predeterminado | Descripción |
+| -------- | ---- | ------- | ----------- |
+| `color` | `'gold'` \| `'blue'` \| `'silver'` \| `'white'` \| `'black'` | PayPal decide | Color de fondo del botón |
+| `shape` | `'rect'` \| `'pill'` \| `'sharp'` | `'rect'` | Forma del botón |
+| `label` | `'paypal'` \| `'checkout'` \| `'buynow'` \| `'pay'` \| `'installment'` | PayPal decide | Texto de la etiqueta del botón |
+| `height` | `number` | `48` | Altura del botón en px (rango válido: 25–55) |
+| `width` | `number` | 100% del contenedor | Ancho del contenedor en px |
+| `locale` | `string` | PayPal lo decide según el navegador del comprador | Idioma del botón, en el formato `language_COUNTRY` de PayPal (por ejemplo `en_US`, `es_ES`, `pt_BR`). Consulta las [configuraciones regionales compatibles](https://developer.paypal.com/sdk/js/configuration/#locale) de PayPal. |
+
+</div>
+
+### Resultado {#result}
+
+- El comprador hace clic en el botón de PayPal, aprueba en la ventana emergente de PayPal y el SDK completa la inscripción.
+- `enrollmentStatus` recibe el `vaultedToken` con el estado `ENROLLED`.
+- Si el comprador cierra la ventana emergente, `error` recibe `CANCELED_BY_USER`.
+
+## Inscripción con KCP KakaoPay y PAYCO (Web) {#kcp-kakaopay-and-payco-enrollment-web}
+
+<Note>
+La inscripción de KakaoPay en escritorio y las redirecciones POST de KCP en móvil están disponibles desde el Web SDK **1.11.27**. La inscripción de PAYCO en escritorio es compatible desde el Web SDK **1.11.43**.
+</Note>
+
+El Yuno Lite Web SDK es compatible con la inscripción de KakaoPay (`KAKAO_PAY`) y PAYCO (`KCP_PAYCO`) mediante KCP en navegadores de escritorio, así como con redirecciones automáticas de formulario HTTP POST para la inscripción con KCP en navegadores móviles.
+
+### Flujo de inscripción en escritorio {#desktop-enrollment-flow}
+
+En navegadores de escritorio, las inscripciones de KakaoPay y PAYCO renderizan un botón de acción dentro del componente de inscripción lite.
+
+#### Cómo funciona {#how-it-works-1}
+
+1. **Carga del script y configuración del callback:** Cuando se monta el componente de inscripción, el SDK declara el manejador de callback de KCP (`window.m_Completepayment`) y luego verifica y carga el paquete de scripts de KCP desde `script_url` (`https://*.kcp.co.kr`).
+2. **Acción del usuario:** El comprador hace clic en el botón de acción. El SDK prepara el formulario del pedido y abre la ventana de autorización de KCP (`KCP_Pay_Execute_Web`).
+3. **Finalización y envío:** Cuando el comprador termina en KCP, KCP llama al callback del SDK con el resultado (`res_cd`, `res_msg`, `enc_data`, `enc_info`, `tran_cd`), y el SDK lo envía por POST al `result_url` del backend (`https://*.y.uno` o el host de tu API white-label) mediante el envío de un formulario oculto. Cuando se configura con `RENDER_POPUP`, el envío POST se realiza dentro de la ventana emergente en lugar de navegar en la página principal.
+4. **Limpieza:** Al desmontar el componente de inscripción, se cierra cualquier ventana de KCP abierta y se restaura cualquier manejador `window.m_Completepayment` preexistente.
+
+#### Estados del botón y recuperación de errores {#button-states-and-error-recovery}
+
+- **Botón deshabilitado:** Si falta la configuración de inscripción requerida del backend (`script_url`, `form_fields` o `result_url`) o apunta a un host no autorizado, el botón se deshabilita y muestra un mensaje de error en línea.
+- **Reintento de carga del script:** Si los scripts de KCP no se cargan, el botón muestra un error en línea; al hacer clic en él se vuelve a cargar KCP y, una vez cargado, el siguiente clic abre KCP.
+- **Recuperación tras cerrar la ventana emergente:** Si el comprador cierra la ventana emergente de KCP sin aprobar, el SDK detecta la eliminación de la capa mediante observadores de mutaciones del DOM y vuelve a habilitar el botón para otro intento.
+- **Recuperación por tiempo de espera:** Si el navegador permanece en la página 10 segundos después de enviar el resultado de la inscripción (normalmente porque faltan políticas CSP form-action y se bloquea el envío del formulario), el SDK borra el estado de procesamiento, muestra un error en línea y vuelve a habilitar el botón para que el comprador pueda reintentar. Ten en cuenta que no se dispara ningún callback de error del comercio.
+
+### Redirección POST de KCP en móvil {#kcp-mobile-post-redirect}
+
+Al inscribirse con KCP en navegadores móviles, el backend devuelve un payload `require_action.redirect` con `method: "POST"` y un `init_url` que apunta a un host de KCP (`*.kcp.co.kr`).
+
+El Lite Web SDK detecta automáticamente la configuración de redirección POST, construye un formulario oculto con los `form_fields`, lo agrega al DOM y lo envía para llevar al usuario directamente al proveedor.
+
+### Requisitos de Content Security Policy (CSP) {#content-security-policy-csp-requirements}
+
+Si tu sitio web aplica una Content Security Policy (CSP) estricta, configura las siguientes directivas para permitir los scripts de KCP, las superposiciones con iframe y los envíos de formularios:
+
+<div className="nowrap-col1-table dense-table">
+
+| Directiva | Orígenes permitidos | Descripción |
+| --------- | --------------- | ----------- |
+| `script-src` | `https://*.kcp.co.kr` | Permite cargar el hub del SDK de KCP y los scripts auxiliares (`kcp_spay_hub.js`, `kcp_jquery`, etc.). |
+| `frame-src` | `https://*.kcp.co.kr` | Permite renderizar el modal de superposición de KCP y el iframe de pago. |
+| `form-action` | `https://*.kcp.co.kr https://*.y.uno` | Permite la navegación por POST de formulario oculto hacia KCP y el envío del resultado de la inscripción a Yuno (o al dominio de tu API white-label). |
+
+</div>
+
+<Warning>
+Si faltan las directivas `form-action` para `*.y.uno` o `*.kcp.co.kr`, el navegador bloqueará el envío del formulario sin errores de JavaScript, lo que provocará que la inscripción agote el tiempo de espera.
+</Warning>
+
+## Paso 5: Inicia la inscripción (obligatorio) {#step-5-initiate-the-enrollment-required}
+
+Después de montar el SDK con `await yuno.mountEnrollmentLite()`, el formulario se mostrará en el elemento especificado. El usuario podrá entonces ingresar los datos de su método de pago para completar la inscripción.
+
+<Note>
+**App de demostración**
+
+Además de los ejemplos de código proporcionados, puedes acceder a la [app de demostración](https://github.com/yuno-payments/yuno-sdk-web) para ver una implementación completa de los SDK de Yuno (clónala desde el repositorio).
+</Note>
+
+## Manejo de errores {#error-handling}
+
+Gestiona en tu app los errores que devuelve el SDK, como inscripciones fallidas o errores de validación. Para los códigos de estado HTTP y de respuesta, consulta [Códigos de estado y de respuesta](/es/reference/getting-started/response-codes) en la referencia de la API.
+
+## Mantente al día {#stay-updated}
+
+Visita el [changelog](/changelog/web#v1-6-0) para ver las últimas actualizaciones del SDK y el historial de versiones.

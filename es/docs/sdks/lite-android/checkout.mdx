@@ -1,0 +1,157 @@
+---
+title: Lite SDK (Pago Android)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Lite SDK (Payment Android)
+  description: >-
+    Step-by-step guide on integrating Yuno's Lite SDK (Payment Android) into
+    your mobile application for a streamlined checkout experience.
+  robots: index
+description: "Integra el Lite SDK en Android para una experiencia de checkout de pago con tarjeta simplificada"
+---
+import GenericOrientation from '/snippets/es/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Esta página es una guía del Yuno Lite SDK para pagos en Android. Este SDK ofrece un proceso de integración simplificado con las capacidades esenciales de pago, lo que lo hace ideal para comercios que:
+
+* Necesitan una implementación rápida con requisitos mínimos de personalización
+* Quieren centrarse principalmente en el procesamiento de pagos con tarjeta
+* Prefieren una interfaz lista para usar que gestione el flujo de pago
+
+El Lite SDK incluye funciones principales como:
+
+* Componentes de interfaz de pago predefinidos
+* Procesamiento de pagos con tarjeta
+* Gestión básica del estado del pago
+* Manejo esencial de errores
+
+Para los comercios que requieren funciones más avanzadas, como varios métodos de pago, una interfaz personalizada o prevención de fraude avanzada, considera usar el [Full SDK](/docs/sdks/full-checkout/android-payments) de Yuno.
+
+## Requisitos {#requirements}
+
+Antes de comenzar la integración del Yuno Android SDK, asegúrate de que tu proyecto cumpla los [requisitos técnicos](/es/docs/sdks/resources/references/android). Además, asegúrate de contar con los siguientes prerrequisitos:
+
+* Debes tener una cuenta activa de Yuno.
+* Necesitas tus credenciales de la API de Yuno (`account_id`, `public-api-key` y `private-secret-key`), que puedes obtener en la [sección de credenciales de Developers](/es/reference/getting-started/authentication) del Dashboard de Yuno.
+
+## Paso 1: crea un cliente {#step-1-create-a-customer}
+
+Crea un cliente con el [endpoint Create customer](/reference/customers/create-customer) antes de iniciar los pagos. El ID de cliente que devuelve este endpoint se usará al crear la `checkout_session`.
+
+## Paso 2: crea una sesión de checkout {#step-2-create-a-checkout-session}
+
+Crea una nueva `checkout_session` con el endpoint [Create checkout session](/es/reference/checkout-sessions/create-checkout-session) para inicializar el flujo de pago.
+
+## Paso 3: incluye la biblioteca en tu proyecto {#step-3-include-the-library-in-your-project}
+
+Incluye el archivo del Yuno SDK en tu proyecto mediante Gradle. Agrega el origen del repositorio:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+Incluye el siguiente código en el archivo `build.gradle` para agregar la dependencia del Yuno SDK:
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:2.27.0'
+}
+```
+
+## Paso 4: inicializa el SDK con la clave pública {#step-4-initialize-sdk-with-the-public-key}
+
+Inicializa el SDK llamando a `Yuno.initialize()` en el método `onCreate()` de tu aplicación:
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      PUBLIC_API_KEY,
+      config = YunoConfig(
+        saveCardEnabled = false,
+        keepLoader = true,
+        language = YunoLanguage.ENGLISH,
+      )
+    )
+  }
+}
+```
+
+### Personalización de YunoConfig {#yunoconfig-customization}
+
+| Opción | Descripción |
+| --- | --- |
+| `saveCardEnabled` | Habilita la **casilla Guardar tarjeta**. |
+| `keepLoader` | Si es `true`, el indicador de carga del SDK permanece desde la generación del OTT hasta que se llama a `continuePayment()`. Consulta [Parámetro keepLoader](/es/docs/sdks/resources/references/android#keeploader-parameter). |
+| `language` | Define el idioma como un valor `YunoLanguage` (por ejemplo, `SPANISH`, `ENGLISH`, `PORTUGUESE`). |
+| `styles` | [Estilos](/es/docs/sdks/resources/references/android#styles) predefinidos. |
+
+## Paso 5: inicia el proceso de checkout {#step-5-start-the-checkout-process}
+
+Llama al método `startCheckout` en tu activity:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "US",
+  callbackPaymentState = { state, subState, message ->
+    println("Payment State: $state, Substate: $subState, Error: ${message?.code}")
+  }
+)
+```
+
+### Estados del callback {#callback-states}
+
+| Estado | Descripción |
+| --- | --- |
+| `SUCCEEDED` | La transacción se completó correctamente. |
+| `FAIL` | La transacción falló. |
+| `PROCESSING` | En curso, a la espera de verificación. |
+| `REJECT` | Rechazada (por ejemplo, fondos insuficientes). |
+| `CANCELED_BY_USER` | El usuario canceló el proceso. |
+
+## Paso 6: inicia el proceso de pago {#step-6-initiate-the-payment-process}
+
+Llama a `startPaymentLite` para iniciar el proceso:
+
+```kotlin
+startPaymentLite(
+    paymentSelected = PaymentSelected(
+      paymentMethodType = "CARD",
+      vaultedToken = null
+    ),
+    callbackOTT = { ott -> println("OTT: $ott") },
+    callBackTokenWithInformation = { info -> println("Token Info: $info") },
+    showPaymentStatus = true,
+)
+```
+
+## Paso 7: crea el pago {#step-7-create-the-payment}
+
+Después de obtener el token de un solo uso (OTT), crea el pago desde tu backend con la API [Create Payment](/es/reference/payments/create-payment).
+
+## Paso 8: continúa el pago (obligatorio) {#step-8-continue-payment-required}
+
+Si la respuesta de la API incluye `sdk_action_required: true`, llama a `continuePayment()`:
+
+```kotlin
+continuePayment(
+    showPaymentStatus = true,
+    checkoutSession = "checkout_session",
+    countryCode = "US",
+    callbackPaymentState = { state, subState, message -> ... }
+)
+```
+
+<Note>
+**Demo App**
+
+Consulta el [repositorio del Yuno Android SDK](https://github.com/yuno-payments/yuno-sdk-android) para ver ejemplos completos de implementación.
+</Note>

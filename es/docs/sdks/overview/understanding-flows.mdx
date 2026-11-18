@@ -1,0 +1,103 @@
+---
+title: Entendiendo los flujos
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Entiende los flujos de pago, inscripción, token almacenado y Headless SDK con diagramas y secuencias de pasos"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+En los Yuno SDK, los **flujos de pago** y los **flujos de inscripción** son independientes. El pago es el proceso de completar una transacción. La inscripción es el proceso de guardar un método de pago (por ejemplo, una tarjeta) en la cuenta de un cliente para usarlo en el futuro. Esta página explica ambos flujos a alto nivel con diagramas y secuencias de pasos. Usa la [Guía de inicio rápido](/es/docs/sdks/overview/quickstart) y las páginas de flujo de cada plataforma ([Web](/docs/sdks/full-checkout/web-payments), [iOS](/docs/sdks/full-checkout/ios-payments), [Android](/docs/sdks/full-checkout/android-payments)) para ver los detalles de implementación.
+
+## Flujo de pago {#payment-flow}
+
+El SDK ofrece una experiencia de pago unificada: los clientes completan transacciones con varios métodos de pago en una sola integración. El siguiente diagrama ilustra el flujo de pago principal.
+
+<iframe src="https://yuno-diagrams-public.pages.dev/diagrams/sdks/overview/understanding-flows/full-checkout-flow.html" title="Diagrama del flujo de pago" style={{ width: "100%", aspectRatio: "1600 / 874" }} frameBorder="0" allow="fullscreen" allowFullScreen></iframe>
+
+<div style={{ display: "flex", gap: "20px", flexWrap: "wrap", fontSize: "13px", color: "#64748b", marginTop: "8px", marginBottom: "4px" }}><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#3e4fe0" }}></span>Solicitud</span><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#f97316" }}></span>Respuesta</span><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#15803d" }}></span>Éxito</span></div>
+
+### Pasos del flujo de pago {#payment-flow-steps}
+
+1. Servidor del comercio: `Create Customer` → Servidor de Yuno: `Creates Customer`
+2. Cliente del comercio: `Initiate Checkout` → Servidor del comercio: `Create Checkout session`
+3. Servidor del comercio: `Create Checkout session` → Servidor de Yuno: `Creates Checkout session`
+4. Cliente del comercio: `Initiate Checkout` → `Initiate SDK` to continue payment flow
+5. Cliente del comercio: `Initiate SDK` to continue payment flow → Yuno SDK: `Receive checkout session`
+6. Yuno SDK: `Receive checkout session` → `List payment methods`
+7. Yuno SDK: `List payment methods` → El usuario selecciona los métodos de pago
+8. Yuno SDK: El usuario selecciona los métodos de pago → Callback con el `one-time token`
+9. Yuno SDK: Callback con el `one-time token` → Cliente del comercio: Recibe el `one-time token` (de un solo uso)
+10. Cliente del comercio: Recibe el `one-time token` (de un solo uso) → `Initiate payment`
+11. Cliente del comercio: `Initiate payment` → `Initiate SDK` to continue payment flow
+12. Cliente del comercio: `Initiate SDK` to continue payment flow → Yuno SDK: `Continue with the payment flow`
+13. Yuno SDK: `Continue with the payment flow` → Muestra una pantalla para que el usuario complete el pago
+14. Yuno SDK: Muestra una pantalla para que el usuario complete el pago → Muestra el `payment result` (opcional)
+15. Cliente del comercio: `Initiate payment` → Servidor del comercio: `Create payment`
+16. Servidor del comercio: `Create payment` → Servidor de Yuno: `Creates payment` en el proveedor de pago
+
+### Flujo de pago con un token almacenado {#payment-flow-using-a-vaulted-token}
+
+Si un cliente tiene un método de pago inscrito, puede usar un **token almacenado** (vaulted token) para pagar sin volver a ingresar los datos de pago.
+
+<iframe src="https://yuno-diagrams-public.pages.dev/diagrams/sdks/overview/understanding-flows/payment-flow-using-vaulted-token.html" title="Diagrama del flujo de pago con un token almacenado" style={{ width: "100%", aspectRatio: "1510 / 874" }} frameBorder="0" allow="fullscreen" allowFullScreen></iframe>
+
+<div style={{ display: "flex", gap: "20px", flexWrap: "wrap", fontSize: "13px", color: "#64748b", marginTop: "8px", marginBottom: "4px" }}><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#3e4fe0" }}></span>Solicitud</span><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#f97316" }}></span>Respuesta</span><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#15803d" }}></span>Éxito</span></div>
+
+#### Pasos del flujo con token almacenado {#vaulted-token-flow-steps}
+
+1. Cliente del comercio: `Initiate checkout` → Servidor del comercio: `Create Customer`
+2. Servidor del comercio: `Create Customer` → Servidor de Yuno: `Create Customer`
+3. Cliente del comercio: `Initiate SDK` con la `checkout session` → Yuno SDK: `Receive checkout session`
+4. Yuno SDK: `Receive checkout session` → `List payment methods`
+5. Yuno SDK: `List payment methods` → El usuario selecciona los métodos de pago
+6. Yuno SDK: El usuario selecciona el método de pago → Callback con el `one-time token`
+7. Yuno SDK: Callback con el `one-time token` → Cliente del comercio: `Initiate payment`
+8. Cliente del comercio: `Initiate payment` → Servidor del comercio: `Create payment`
+9. Servidor del comercio: `Create payment` → Servidor de Yuno: `Creates payment` en el proveedor de pago
+10. Cliente del comercio: Muestra el `payment result` → Servidor del comercio: `Receive payment result`
+11. Servidor del comercio: `Receive payment result` → Servidor de Yuno: Proporciona el `payment result`
+
+## Flujo de inscripción {#enrollment-flow}
+
+La **inscripción** es el proceso de guardar un método de pago (por ejemplo, una tarjeta) en la cuenta de un cliente para poder usarlo más adelante (por ejemplo, con un token almacenado). full-checkout admite la inscripción; el siguiente diagrama describe el flujo de inscripción.
+
+<iframe src="https://yuno-diagrams-public.pages.dev/diagrams/sdks/overview/understanding-flows/payment-method-enrollment-flow.html" title="Diagrama del flujo de inscripción" style={{ width: "100%", aspectRatio: "1460 / 874" }} frameBorder="0" allow="fullscreen" allowFullScreen></iframe>
+
+<div style={{ display: "flex", gap: "20px", flexWrap: "wrap", fontSize: "13px", color: "#64748b", marginTop: "8px", marginBottom: "4px" }}><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#3e4fe0" }}></span>Solicitud</span><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#f97316" }}></span>Respuesta</span><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#15803d" }}></span>Éxito</span></div>
+
+### Pasos del flujo de inscripción {#enrollment-flow-steps}
+
+1. Servidor del comercio: `Create Customer` → Servidor de Yuno: `Creates Customer`
+2. Cliente del comercio: `Add payment method` → Servidor del comercio: `Create customer session`
+3. Servidor del comercio: `Create customer session` → Servidor de Yuno: `Creates customer session`
+4. Cliente del comercio: `Display payment methods to enroll` → Servidor del comercio: `Request available payment methods to enroll`
+5. Servidor del comercio: `Request available payment methods to enroll` → Servidor de Yuno: `Returns available payment method`
+6. Cliente del comercio: `Display payment methods to enroll` → Cliente del comercio: El usuario selecciona el método de pago que desea inscribir
+7. Cliente del comercio: El usuario selecciona el método de pago que desea inscribir → Cliente del comercio: `Initiate enrollment`
+8. Cliente del comercio: `Initiate enrollment` → Cliente del comercio: `Initiate SDK` to continue enrollment
+9. Cliente del comercio: `Initiate SDK` to continue enrollment → Yuno SDK: `Continue enrollment flow`
+10. Yuno SDK: `Continue enrollment flow` → Yuno SDK: Muestra pantallas para que el usuario complete la inscripción
+11. Servidor del comercio: Recibe el `enrollment result` mediante webhook → Servidor de Yuno: Recibe los `enrollment results` del proveedor de pago
+12. Servidor de Yuno: Recibe los `enrollment results` del proveedor de pago → Yuno SDK: Muestra el `enrollment result` (opcional)
+
+## Flujo del Headless SDK {#headless-sdk-flow}
+
+El **Headless SDK** ofrece máxima flexibilidad al permitirte gestionar toda la interfaz de usuario, mientras Yuno se encarga de la lógica de pago compleja y de la seguridad (como 3DS).
+
+<iframe src="https://yuno-diagrams-public.pages.dev/diagrams/sdks/overview/understanding-flows/headless-sdk-flow.html" title="Diagrama del flujo del Headless SDK" style={{ width: "100%", aspectRatio: "1600 / 874" }} frameBorder="0" allow="fullscreen" allowFullScreen></iframe>
+
+<div style={{ display: "flex", gap: "20px", flexWrap: "wrap", fontSize: "13px", color: "#64748b", marginTop: "8px", marginBottom: "4px" }}><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#3e4fe0" }}></span>Solicitud</span><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#f97316" }}></span>Respuesta</span><span style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-block", width: "10px", height: "10px", borderRadius: "50%", background: "#15803d" }}></span>Éxito</span></div>
+
+### Pasos del flujo headless {#headless-flow-steps}
+
+1. Servidor del comercio: `Create Customer` → Servidor de Yuno: `Creates Customer`
+2. Cliente del comercio: `Initiate Checkout` → Servidor del comercio: `Create Checkout session`
+3. Cliente del comercio: `Collect Information` → El usuario ingresa los datos de la tarjeta o del método de pago en tu interfaz personalizada.
+4. Cliente del comercio: `Generate Token` → Yuno SDK: Llama a `generateToken(details)` para recibir un `one-time token`.
+5. Cliente del comercio: `Process Payment` → Servidor del comercio: Envía el `one-time token` a tu backend.
+6. Servidor del comercio: `Create Payment` → Servidor de Yuno: Llama a la API [Create Payment](/es/reference/payments/create-payment).
+7. Cliente del comercio: `Handle Actions` → Si la respuesta de la API devuelve `sdk_action_required: true`, usa el SDK para gestionar 3DS u otras [acciones de pago](/es/docs/sdks/headless-web/payment#step-7-get-payment-actions).
