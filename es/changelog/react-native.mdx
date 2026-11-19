@@ -1,0 +1,202 @@
+---
+title: "Changelog del React Native SDK"
+description: "Últimas actualizaciones e historial de versiones del React Native SDK de Yuno"
+---
+
+import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
+
+<Info>
+  Las notas de versión del React Native SDK se publican aquí a medida que salen nuevas versiones. Consulta esta página después de cada actualización del SDK para ver un resumen detallado de los cambios, las nuevas funciones y la guía de migración.
+</Info>
+
+## v1.4.0
+*14 de agosto de 2026*
+
+- <ChangelogBadge type="changed" /> **SDK nativos actualizados: iOS 2.22.0 y Android 2.21.1**  
+  Se actualizaron las dependencias nativas subyacentes: `YunoSDK` (iOS) de 2.18.0 a 2.22.0 y `com.yuno.payments:android-sdk` de 2.17.2 a 2.21.1.
+
+## v1.3.2
+*3 de agosto de 2026*
+
+- <ChangelogBadge type="fixed" /> **La generación de tokens headless y la inscripción aceptan las propiedades camelCase documentadas**  
+  `YunoSdk.generateToken()` y `YunoSdk.continueEnrollment()` fallaban en tiempo de ejecución al llamarse con las propiedades camelCase declaradas por los propios tipos de TypeScript del paquete (`checkoutSession`, `paymentMethod`, `expirationMonth`, …), porque los puentes nativos solo decodifican claves en snake_case. En iOS esto aparecía como `TOKEN_GENERATION_ERROR` ("No value associated with key checkout_session") y en Android como una `NullPointerException` en `PaymentMethod.getType()`. Ahora el SDK convierte las claves del payload de camelCase a snake_case en el límite de JS antes de invocar el puente nativo, de modo que el contrato de TypeScript documentado funciona en ambas plataformas. Los payloads que ya usan claves en snake_case se pasan sin cambios, por lo que no se requiere migración.
+
+## v1.3.1
+*13 de julio de 2026*
+
+- <ChangelogBadge type="fixed" /> **Falla de compilación de iOS en sistemas de archivos que no distinguen mayúsculas de minúsculas**  
+  Se renombró el pod del puente de React Native de `YunoSdk` a `YunoSdkReactNative` para eliminar una colisión de nombres con el pod nativo `YunoSDK` en los sistemas de archivos de macOS que no distinguen mayúsculas de minúsculas (el valor predeterminado en todas las Mac). La colisión causaba fallas del enlazador durante `pod install` o la compilación, en particular en Xcode 26, a menos que `use_frameworks!` estuviera habilitado. Los proyectos que usan el autolinking de React Native no requieren cambios; si tu Podfile hace referencia directa a `pod 'YunoSdk'`, actualízalo a `pod 'YunoSdkReactNative'`.
+
+- <ChangelogBadge type="fixed" /> **Definiciones de TypeScript ahora publicadas en npm**  
+  El paquete de npm ahora incluye los archivos de declaración de TypeScript a los que hace referencia su campo `types` (`lib/typescript/index.d.ts`). Las versiones anteriores declaraban los tipos, pero no los incluían en el paquete publicado, por lo que los proyectos de TypeScript no obtenían resolución de tipos de forma predeterminada. Ahora los proyectos de TypeScript obtienen tipado completo y autocompletado sin soluciones alternativas.
+
+## v1.3.0
+*2 de julio de 2026*
+
+- <ChangelogBadge type="changed" /> **Actualización de los SDK nativos**  
+  Se actualizaron los SDK nativos subyacentes a Android `2.17.2` e iOS `2.18.0`.
+
+- <ChangelogBadge type="fixed" /> **Falla de compilación en Android en v1.2.0**  
+  Se corrigió un problema por el cual v1.2.0 no compilaba en proyectos de Android.
+
+**Payments**
+
+- <ChangelogBadge type="breaking" /> **getThreeDSecureChallenge eliminado**  
+  Se eliminaron `YunoSdk.getThreeDSecureChallenge()` y el tipo `ThreeDSecureChallengeResponse`. Usa en su lugar el nuevo método `continueCardPayment()`: ahora el SDK gestiona internamente el desafío 3DS y devuelve el estado final del pago.
+
+- <ChangelogBadge type="added" /> **Método headless continueCardPayment**  
+  Se agregó `YunoSdk.continueCardPayment(checkoutSession, countryCode?, showPaymentStatus?)` para completar pagos con tarjeta headless que requieren una acción adicional, como un desafío 3DS. Se resuelve con el estado final del pago (`CardPaymentResult`). Solo es compatible con pagos CARD.
+
+## v1.2.0
+*19 de mayo de 2026*
+
+- <ChangelogBadge type="added" /> **Flujo Payment Render**  
+  Se agregó el nuevo flujo Payment Render con el componente `<YunoPaymentForm>` y los métodos de puente (`startRenderFlow`, `showForm`, `submitForm`, `continueRender`), para que los comercios puedan incrustar el formulario de pago en línea con control total del ciclo de vida.
+
+- <ChangelogBadge type="added" /> **Flujo Enrollment Render**  
+  Se agregó el flujo Enrollment Render con el componente `<YunoEnrollmentForm>` para la inscripción de tarjetas incrustada, que replica la API de Payment Render.
+
+- <ChangelogBadge type="changed" /> **Actualización de los SDK nativos**  
+  Se actualizaron los SDK nativos subyacentes a Android `2.15.1` e iOS `2.16.0`, lo que incorpora al wrapper de React Native las últimas mejoras de pagos, inscripción y seguridad.
+
+- <ChangelogBadge type="fixed" /> **Superposición edge-to-edge en Android 15**  
+  Se configuró edge-to-edge en Android 15 para evitar que la interfaz de pago se superponga con las barras del sistema, y ahora `enableEdgeToEdge` se ejecuta en el hilo de la interfaz.
+
+- <ChangelogBadge type="fixed" /> **Compatibilidad con Samsung One UI**  
+  Usa `setDecorFitsSystemWindows` para la compatibilidad con Samsung One UI y evitar fallas de diseño en los dispositivos afectados.
+
+- <ChangelogBadge type="fixed" /> **Fallas al iniciar el pago Seamless**  
+  Se hizo completamente diferido el acceso al módulo nativo, se aseguró que los eventos de estado del pago se envíen en el hilo principal, se desempaqueta de forma segura el view controller de iOS y se resolvió un error de `TurboModuleRegistry` en los flujos Seamless.
+
+- <ChangelogBadge type="fixed" /> **Alineación de estados en Android**  
+  Se alinearon los valores de estado de Android con el enum `YunoStatus` de TypeScript y se mantuvieron separadas las asignaciones de estado del flujo de renderizado de las asignaciones compartidas.
+
+- <ChangelogBadge type="security" /> **Vulnerabilidad de DoS en fast-xml-parser**  
+  Se actualizó `fast-xml-parser` para atender avisos de denegación de servicio (CVE-2026-25128).
+
+## v1.1.0
+*10 de marzo de 2026*
+
+- <ChangelogBadge type="breaking" /> **Configuración CardFlow eliminada**  
+  Se eliminaron el enum `CardFlow` y la propiedad `cardFlow` de `YunoConfig`. Ahora el tipo de formulario de tarjeta se configura desde el dashboard de Yuno en lugar del SDK del cliente. Elimina cualquier importación de `CardFlow` y las referencias a `cardFlow` de tu código de inicialización antes de actualizar.  
+  [Guía de migración →](https://github.com/yuno-payments/yuno-sdk-react-native#breaking-changes-v110)
+
+- <ChangelogBadge type="changed" /> **Actualización de los SDK nativos**  
+  Se actualizaron los SDK nativos subyacentes a Android `2.11.0` e iOS `2.12.9-RC`.
+
+- <ChangelogBadge type="fixed" /> **Flujo de pago Seamless en iOS**  
+  Se cambiaron los pagos Seamless de iOS a `startPaymentSeamlessLite`, ahora se resuelven las promesas con el estado final del pago en lugar de `PROCESSING`, se ejecuta la llamada en `MainActor` y se usa el `currentLanguage` de `initialize` en `SeamlessParams`.
+
+- <ChangelogBadge type="fixed" /> **Falla de removeListeners en Android**  
+  Se corrigió una falla en Android causada por una discrepancia de tipos en `removeListeners`. Ahora el tipo del parámetro coincide con lo que React Native pasa desde JS.
+
+- <ChangelogBadge type="fixed" /> **Firma de onPaymentSelected en Android**  
+  Se actualizó la firma del callback `onPaymentSelected` para que coincida con el SDK de Android 2.11.0.
+
+- <ChangelogBadge type="security" /> **Vulnerabilidad ReDoS en minimatch**  
+  Se actualizó `minimatch` para resolver un aviso de denegación de servicio por expresiones regulares (ReDoS) en el árbol de dependencias.
+
+## v1.0.30
+*13 de enero de 2026*
+
+- <ChangelogBadge type="added" /> **Compatibilidad con TurboModule**  
+  Se agregó compatibilidad con TurboModule para React Native 0.82+ mediante una nueva especificación de codegen `NativeYunoSdk`, manteniendo la compatibilidad con la arquitectura anterior mediante un respaldo `NativeModules`.
+
+## v1.0.29
+*13 de enero de 2026*
+
+- <ChangelogBadge type="changed" /> **Preparación para la nueva arquitectura**  
+  Actualizaciones internas que preparan el paquete para React Native 0.82+ y la nueva arquitectura (TurboModules). No hay cambios en la API pública; la compatibilidad completa con TurboModule llegó en 1.0.30.
+
+## v1.0.28
+*13 de enero de 2026*
+
+- <ChangelogBadge type="changed" /> **Actualizaciones internas del proceso de lanzamiento**  
+  Republicación de mantenimiento sin cambios funcionales. No se requieren cambios en la API.
+
+## v1.0.27
+*13 de enero de 2026*
+
+- <ChangelogBadge type="changed" /> **Actualizaciones internas del proceso de lanzamiento**  
+  Republicación de mantenimiento sin cambios funcionales. No se requieren cambios en la API.
+
+## v1.0.26
+*23 de diciembre de 2025*
+
+- <ChangelogBadge type="fixed" /> **Análisis de saveCardEnabled en iOS**  
+  Se corrigió un error tipográfico en el analizador de claves de configuración de iOS que impedía aplicar `saveCardEnabled`. Ahora el interruptor llega correctamente al SDK nativo.
+
+## v1.0.25
+*22 de diciembre de 2025*
+
+- <ChangelogBadge type="changed" /> **Fijación del Podspec de iOS**  
+  Se fijó la dependencia `YunoSDK` de iOS en `2.9.0-r`. No se requieren cambios en la API.
+
+## v1.0.24
+*17 de diciembre de 2025*
+
+- <ChangelogBadge type="fixed" /> **Idioma de iOS en el flujo Payment Full**  
+  Se corrigió el flujo Payment Full de iOS para que respete el parámetro `language` pasado en la inicialización.
+
+## v1.0.23
+*17 de diciembre de 2025*
+
+- <ChangelogBadge type="fixed" /> **Inicialización de CardFlow en iOS**  
+  Se corrigió la inicialización de iOS para que respete el parámetro de configuración `cardFlow`, que antes se ignoraba en iOS.
+
+## v1.0.22
+*15 de diciembre de 2025*
+
+- <ChangelogBadge type="changed" /> **Actualizaciones de la documentación**  
+  Se amplió la documentación del README. No se requieren cambios en la API.
+
+## v1.0.21
+*10 de diciembre de 2025*
+
+- <ChangelogBadge type="changed" /> **API de idioma simplificada**  
+  Ahora el parámetro `language` acepta una cadena de texto simple en lugar de requerir el enum `YunoLanguage`, lo que simplifica la inicialización. No se requiere migración para las integraciones existentes que usan el enum.
+
+## v1.0.20
+*10 de diciembre de 2025*
+
+- <ChangelogBadge type="fixed" /> **Inicialización del idioma en iOS**  
+  Se corrigió la inicialización de iOS para que respete el parámetro de configuración `language` (igual que la clave de Android), manteniendo la compatibilidad con el parámetro heredado `lang`.
+
+## v1.0.19
+*3 de diciembre de 2025*
+
+- <ChangelogBadge type="changed" /> **Compatibilidad de callbacks con el SDK de Android 2.8.1**  
+  Se actualizaron las firmas de los callbacks de Android para que sean compatibles con el SDK de Android 2.8.1. No se requieren cambios en la API.
+
+## v1.0.18
+*3 de diciembre de 2025*
+
+- <ChangelogBadge type="changed" /> **Actualizaciones internas del proceso de lanzamiento**  
+  Alineación interna de versiones entre el wrapper de React Native y las referencias al SDK nativo subyacente. No se requieren cambios en la API.
+
+## v1.0.17
+*3 de diciembre de 2025*
+
+- <ChangelogBadge type="added" /> **Flujo de pago headless**  
+  Se agregó un flujo de pago headless para Android e iOS, para que los comercios puedan controlar el avance del pago desde su propia interfaz y delegar la ejecución nativa al SDK.
+
+- <ChangelogBadge type="added" /> **Flujo de inscripción headless**  
+  Se agregó un flujo de inscripción headless para Android e iOS, para inscribir tarjetas mediante una interfaz personalizada del comercio.
+
+- <ChangelogBadge type="added" /> **Flujo Payment Full en iOS**  
+  Se agregó compatibilidad con el flujo Payment Full en iOS con el componente nativo `YunoPaymentMethods`, para igualar a Android.
+
+- <ChangelogBadge type="changed" /> **Módulo nativo de iOS para YunoSDK 2.x**  
+  Se actualizó el módulo nativo de iOS a YunoSDK 2.x, con el paso correcto del delegate para `startPayment` y `continuePayment` y el uso del caso de enum `.succeeded`.
+
+- <ChangelogBadge type="fixed" /> **Registro del módulo de iOS**  
+  Se corrigió el registro del módulo nativo de iOS agregando `moduleName()` y `constantsToExport()` y cambiando `NativeEventEmitter` a carga diferida, lo que resuelve problemas de enlace al iniciar.
+
+- <ChangelogBadge type="fixed" /> **Eventos de OTT y de estado del pago**  
+  Ahora los eventos de OTT y de estado del pago se emiten desde el delegate del flujo Full Payment en iOS, y el flujo Payment Full de Android ya no informa un estado `CANCELLED` obsoleto entre sesiones.
+
+## v1.0.16
+*2 de diciembre de 2025*
+
+- <ChangelogBadge type="fixed" /> **Alineación del valor predeterminado de CardFlow**  
+  Se alineó el valor predeterminado de `CardFlow` con el SDK nativo, cambiando de `MULTI_STEP` a `STEP_BY_STEP` para evitar que el formulario de tarjeta se muestre de forma inconsistente.
