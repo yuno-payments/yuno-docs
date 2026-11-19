@@ -114,7 +114,7 @@ Each step is a **provider step** (`provider_id` + `connection_id`: a payment, fr
 | `three_d_secure_exemptions` | string[] | no | 3DS provider steps only. The [SCA exemptions](/docs/payment-features/sca-exemptions#allowed-values) this step may apply. See [Provider step settings](#provider-step-settings). |
 | `timeout` | int | response only | Provider steps. The timeout in seconds of the provider, from Yuno's provider catalog. Ignored on write. |
 | `network_token_enable` | boolean | response only | Payment provider steps. Whether `network_token_on` can be `true` on this step: the organization is onboarded to network tokens and the provider supports them. Ignored on write. |
-| `smart_routing` | object | smart routing steps | `type`, `providers[]`, `no_retry_decline_types[]` and `no_retry_failure_causes[]`. See [Smart routing steps](#smart-routing-steps). |
+| `smart_routing` | object | smart routing steps | `type`, `providers[]`, `no_retry_decline_types[]`, `no_retry_decline_group_ids[]` and `no_retry_failure_causes[]`. See [Smart routing steps](#smart-routing-steps). |
 | `action` | enum | action steps | `CANCEL`, `CAPTURE`, `HOLD_FOR_REVIEW` or `REVERT`. See [Action steps](#action-steps). Omit on provider steps. |
 | `action_delay` | string | no | ISO-8601 duration, only with `action = CAPTURE`. How long after the approval Yuno captures. See [Action steps](#action-steps). |
 | `output[]` | object[] | no | Per-outcome handlers of a provider step. **Omit for terminal steps with no chaining or per-decline customization** — the route will just run the step and terminate with whatever the provider returned. Not allowed on an action step; responses return it as an empty array there. |
@@ -131,7 +131,7 @@ Each step is a **provider step** (`provider_id` + `connection_id`: a payment, fr
 | `decline_types[]` | string[] | see [Outcome groups](#outcome-groups) | Decline sub-statuses the entry reacts to, or ISO 8583 response codes on `ISO_CODE_GROUP`. On `DECLINE_GROUP` and `ISO_CODE_GROUP` it is required unless `group_id` is sent. Responses return it on `DECLINE_GROUP`, `MAC_CODE_GROUP` and `ISO_CODE_GROUP` entries. |
 | `group_id` | int | see [Outcome groups](#outcome-groups) | Id of a decline group, Merchant Advice Code group, ISO code group or succeeded group of the account. Required on `MAC_CODE_GROUP` and `SUCCEEDED_GROUP`; optional on `DECLINE_GROUP` and `ISO_CODE_GROUP`. Not allowed on other statuses. |
 | `group_name` | string | response only | Name of the group behind `group_id`, as shown in the dashboard. Ignored on write. |
-| `retry` | boolean | no | `true` runs the same provider once more before this entry's destination applies. Only on `DECLINED`, `INTERNAL_ERROR` and `DECLINE_GROUP`. Responses always return it. See [Retry](#retry). |
+| `retry` | boolean | no | `true` runs the same provider once more before this entry's destination applies. Only on `DECLINED`, `INTERNAL_ERROR`, `DECLINE_GROUP` and `ISO_CODE_GROUP`. Responses always return it. See [Retry](#retry). |
 | `next` | int \| null | no | Index of the step to jump to, or `null` to terminate. When `next_split` is set, Yuno returns `next` as its first entry and accepts it only with that value. |
 | `next_split[]` | object[] | no | Splits the jump across several steps by percentage instead of a single `next`. See [Percentage splits](#percentage-splits). |
 
@@ -242,12 +242,13 @@ An ISO code group holds issuer response codes from the ISO 8583 standard (field 
 
 `ISO_CODE_GROUP` applies to card payments only. It is evaluated only when a payment step is `DECLINED` and the connection returned the issuer's ISO code. A decline without an ISO code, or with a code that is not in the group, skips the entry and continues down `output[]`, so the step's `DECLINED` entry applies as before.
 
-- **What it matches.** The decline's ISO 8583 response code only. The sub-status (`PROVIDER_STATUS` groups, referenced as `DECLINE_GROUP`) and the Merchant Advice Code (`MAC_CODE` groups, referenced as `MAC_CODE_GROUP`) are not compared, and those groups never match on the ISO code.
+- **What it matches.** The decline's ISO 8583 response code only. The sub-status and the Merchant Advice Code are not compared, and decline groups (referenced as `DECLINE_GROUP`) and Merchant Advice Code groups (referenced as `MAC_CODE_GROUP`) never match on the ISO code.
 - **Code format.** A code is a free string of 1 to 30 characters after trimming, with no restriction on the characters: `51`, `100`, `9G` and `R1` are all valid. Surrounding spaces are removed. An empty code, a code of only spaces, or a code longer than 30 characters is rejected with `400`.
-- **Case.** Codes are compared without case: a group holding `9G` matches a decline with `9g`, and an account cannot hold the same code, in any case, in two ISO code groups.
-- **How it is selected on a step's Declined output.** Add an `ISO_CODE_GROUP` entry to the `output[]` of the payment step, before the step's catch-all `DECLINED` entry. Reference a saved group with `group_id`, or send the codes in `decline_types[]` with no `group_id` to let Yuno create an `auto_…` ISO code group with them.
-- **Precedence.** When a step has several group entries, `DECLINE_GROUP` (`PROVIDER_STATUS` groups), `MAC_CODE_GROUP` (`MAC_CODE` groups) and `ISO_CODE_GROUP` entries are compared in `output[]` order and the first one that matches wins, whatever its type. Place the `ISO_CODE_GROUP` entry above a `DECLINE_GROUP` or `MAC_CODE_GROUP` entry to let the ISO code decide first, or below it to let the sub-status or Merchant Advice Code decide first.
-- **Saved groups.** Saved ISO code groups are created in the dashboard, not through the public API. List them with [List Decline Groups](/reference/organizations/routing/list-decline-groups), where they have `type: "ISO_CODE_GROUP"`.
+- **Case.** Codes are compared without case: a group holding `9G` matches a decline with `9g`.
+- **How it is selected on a step's Declined output.** Add an `ISO_CODE_GROUP` entry to the `output[]` of the payment step, before the step's catch-all `DECLINED` entry. Reference a saved group with `group_id`, or send the codes in `decline_types[]` with no `group_id` to let Yuno create an `auto_…` ISO code group with them, the same way as on `DECLINE_GROUP`.
+- **Retry.** `retry: true` is allowed on an `ISO_CODE_GROUP` entry, as on `DECLINE_GROUP`: the same provider runs once more before the entry's `next` applies. `MAC_CODE_GROUP` keeps its current rule. See [Retry](#retry).
+- **Precedence.** When a step has several group entries, decline groups (referenced as `DECLINE_GROUP`), Merchant Advice Code groups (referenced as `MAC_CODE_GROUP`) and ISO code groups (referenced as `ISO_CODE_GROUP`) are compared in `output[]` order and the first one that matches wins, whatever its type. Place the `ISO_CODE_GROUP` entry above a `DECLINE_GROUP` or `MAC_CODE_GROUP` entry to let the ISO code decide first, or below it to let the sub-status or Merchant Advice Code decide first.
+- **Saved groups.** Saved ISO code groups are created in the dashboard, not through the public API; the only ISO code groups a routing request creates are the `auto_…` groups for `decline_types[]` sent without `group_id`. List them with [List Decline Groups](/reference/organizations/routing/list-decline-groups), where they have `type: "ISO_CODE_GROUP"`.
 - The step's `sub_status` still reports the connection's decline sub-status after an ISO match; the ISO code is not stored as the sub-status.
 
 An output carrying its codes in `decline_types[]`, on [Create a Routing](/reference/organizations/routing/create-routing) or [Update a Routing](/reference/organizations/routing/update-routing):
@@ -261,7 +262,7 @@ An output carrying its codes in `decline_types[]`, on [Create a Routing](/refere
     "steps": [
       { "index": 1, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…",
         "output": [
-          { "status": "ISO_CODE_GROUP", "decline_types": ["51", "9G"], "next": 2 },
+          { "status": "ISO_CODE_GROUP", "decline_types": ["51", "9G"], "retry": true, "next": 2 },
           { "status": "DECLINED",       "next": 3 }
         ] },
       { "index": 2, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-…" },
@@ -301,9 +302,9 @@ A retrieved routing returns the entry with the group's name and codes, and can b
 
 ### Retry
 
-`retry: true` on a `DECLINED`, `INTERNAL_ERROR` or `DECLINE_GROUP` entry tells Yuno to attempt the **same provider once more** when that outcome happens, before following the entry's `next` / `next_split`. The second attempt uses the step's other outputs as usual: if it is approved, the `APPROVED` path applies; if it fails again, the original destination of the entry applies. There is at most one retry per entry per payment.
+`retry: true` on a `DECLINED`, `INTERNAL_ERROR`, `DECLINE_GROUP` or `ISO_CODE_GROUP` entry tells Yuno to attempt the **same provider once more** when that outcome happens, before following the entry's `next` / `next_split`. The second attempt uses the step's other outputs as usual: if it is approved, the `APPROVED` path applies; if it fails again, the original destination of the entry applies. There is at most one retry per entry per payment.
 
-- `retry: true` on `APPROVED`, `MAC_CODE_GROUP` or `SUCCEEDED_GROUP` is rejected with `400 INVALID_ROUTE_CONFIGURATION`; `retry: false` is accepted anywhere, which is what lets you send a retrieved routing back unchanged.
+- `retry: true` on `APPROVED`, `MAC_CODE_GROUP` or `SUCCEEDED_GROUP` is rejected with `400 INVALID_ROUTE_CONFIGURATION`; `MAC_CODE_GROUP` keeps this rule, while `ISO_CODE_GROUP` accepts `retry: true` like `DECLINE_GROUP`; `retry: false` is accepted anywhere, which is what lets you send a retrieved routing back unchanged.
 - `retry: true` on a `DECLINE_GROUP` entry that references a Merchant Advice Code group is accepted only when the stored routing already retries that group on the same step, so a retrieved routing round trips but an update cannot start retrying on Merchant Advice Codes. Otherwise it is rejected with `400 INVALID_ROUTE_CONFIGURATION`. This also applies when the retry would be kept from the stored entry because the request omits `retry`: send `retry: false`.
 - Responses always return `retry` on every entry (`false` when not set), so you can see which branches retry.
 - On [Update a Routing](/reference/organizations/routing/update-routing), an entry sent **without** `retry` keeps the value already stored for that position; send `retry: false` explicitly to turn a retry off.
@@ -364,6 +365,7 @@ A smart routing step lets Yuno pick the provider per payment among a set of conn
 | `type` | enum | yes | `COSTS` (cheapest connection first) or `LATENCY` (fastest first). `COSTS` requires every listed connection to be active with its costs configured, including the "All other payments" cost. |
 | `providers[]` | object[] | yes | Two to four payment providers, each `{ provider_id, connection_id, network_token_on }`, with distinct connections. Fraud, 3DS and authentication providers are not allowed here. `network_token_on` requires the organization to be onboarded to network tokens and the provider to support them. |
 | `no_retry_decline_types[]` | string[] | no | Decline sub-statuses after which Yuno does not try the next provider of the set. A decline group chosen in the dashboard is returned expanded into its sub-statuses, and an update stores the list as sent. |
+| `no_retry_decline_group_ids[]` | int[] | no | Ids of decline groups of the account, from [List Decline Groups](/reference/organizations/routing/list-decline-groups), whose declines Yuno does not retry on the next provider of the set. ISO code groups are accepted: a decline whose ISO 8583 response code is in one of those groups is not retried on the next Smart Routing provider. On update, omitting the field keeps the stored groups and `[]` clears them. |
 | `no_retry_failure_causes[]` | string[] | no | Failure causes (for example `PROVIDER_TIMEOUT`) after which Yuno does not try the next provider of the set. |
 
 </div>
