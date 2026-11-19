@@ -14,7 +14,7 @@ El onboarding es el primer paso del flujo de [marketplace con pagos divididos](/
 
 El proceso de onboarding admite dos flujos:
 
-* **Cuentas con onboarding previo**: para submerchants que ya están registrados con los proveedores. Usa `type: "PREVIOUSLY_ONBOARDED"` y envía `provider.recipient_id`, que es obligatorio para este tipo.
+* **Cuentas con onboarding previo**: para submerchants que ya están registrados con los proveedores. Usa `type: "PREVIOUSLY_ONBOARDED"` y envía `provider.recipient_id`, que es obligatorio para este tipo. Consulta [Cuentas con onboarding previo](#previously-onboarded-accounts).
 * **Onboarding dinámico**: para registrar nuevos submerchants, incluida la validación KYC/KYB (Know Your Customer/Know Your Business). Usa `type: "ONE_STEP_ONBOARDING"` o `type: "TWO_STEP_ONBOARDING"` (anteriormente `type: "ONBOARD_ONTO_PROVIDER"`).
 
 <Note>
@@ -22,3 +22,28 @@ El proceso de onboarding admite dos flujos:
 
 Para los flujos con `type: "TWO_STEP_ONBOARDING"`, usa el endpoint [Continuar onboarding](/reference/continue-onboarding) para completar el proceso KYC después de crear la cuenta.
 </Note>
+
+## Cuentas con onboarding previo {#previously-onboarded-accounts}
+
+Usa `type: "PREVIOUSLY_ONBOARDED"` para asociar una cuenta que el submerchant ya tiene en el proveedor, de modo que Yuno no cree una nueva.
+
+Envía los ids de cuenta del proveedor en el objeto `provider`, junto con `provider.id` y `provider.connection_id`. Yuno reenvía los ids a la integración del proveedor exactamente como se envían:
+
+| Campo | Descripción |
+| --- | --- |
+| `provider.recipient_id` | El id de cuenta del destinatario en el proveedor. Obligatorio para este tipo. |
+| `provider.recipient_additional_id` | Un id de cuenta adicional, para proveedores que identifican una cuenta con más de un id. |
+| `provider.balance_account_id` | La cuenta de saldo del destinatario en el proveedor. |
+| `provider.legal_entity` | La entidad legal del destinatario en el proveedor. |
+| `provider.recipient_type` | El tipo de destinatario para el proveedor. |
+
+Cuáles de estos ids necesita un proveedor lo define su integración. Envía todos los ids que el proveedor usa para identificar la cuenta.
+
+Lo que sucede después depende de si la integración del proveedor admite adoptar cuentas existentes:
+
+* **La integración admite adoptar cuentas existentes**: Yuno registra la cuenta en el proveedor. La respuesta es `201` con estado `CREATED`, y el onboarding pasa luego a:
+  * `SUCCEEDED` cuando el proveedor acepta la cuenta. Recibes el webhook `onboarding.succeeded`.
+  * `ERROR` cuando el proveedor la rechaza, por ejemplo porque el id de cuenta no existe en el proveedor. El mensaje del proveedor está en `response_message` y recibes el webhook `onboarding.error`. Para corregirlo, [vuelve a registrar la cuenta](/es/reference/recipients-for-marketplace/update-onboarding#previously-onboarded-accounts) con los ids correctos.
+* **Cualquier otro proveedor**: el onboarding se registra como `SUCCEEDED` de inmediato y no se hace ninguna llamada al proveedor. Los ids se almacenan tal como se envían y no se validan en el proveedor, así que asegúrate de que sean correctos.
+
+Qué proveedores adoptan cuentas existentes es una configuración del lado de Yuno por entorno, no un campo de la API. Para saber si está disponible para tu conexión con el proveedor, contacta a tu Key Account Manager.

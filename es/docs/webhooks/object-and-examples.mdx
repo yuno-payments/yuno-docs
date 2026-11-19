@@ -2506,6 +2506,33 @@ Se envía antes de una renovación próxima. El momento lo controla `renewal_not
 
 Se envía para las suscripciones basadas en planes cuando se ejecuta un ciclo de `$0`, ya sea un ciclo de prueba o uno con descuento total. Esos ciclos no generan un webhook `payment.purchase`, por lo que este evento es el único comprobante de ellos. `reason` es `TRIAL` o `FULL_DISCOUNT`, `phase` es la fase a la que pertenece el ciclo y `breakdown` incluye el mismo detalle de líneas que un ciclo pagado, con un total de cero.
 
+En un ciclo con descuento de una suscripción con una [promoción](/es/docs/payment-features/subscriptions/promotions) activa, el evento también incluye un objeto `promotion` en `data`. Contiene el `id` de la promoción, el `discount_amount` descontado de ese cobro y `cycles_remaining`, el número de ciclos con descuento que quedan después de este. Un cobro a precio completo sin promoción no envía este evento. Un ciclo con descuento que se cobra no incluye `reason`. `reason` es `FULL_DISCOUNT` solo cuando el cobro del ciclo es 0.
+
+| Ciclo | ¿Se envía? |
+| :---- | :---- |
+| Cobro aprobado con descuento | Sí. Incluye el objeto `promotion` y se envía después de contar el ciclo. |
+| Reintento automático o forzado, aprobado | Sí, una vez por ciclo, con el objeto `promotion`. |
+| Resultado tardío, aprobado | Sí, una vez, cuando llega el resultado. |
+| Cobro rechazado | No. |
+| Ciclo de prueba | Se envía solo para suscripciones de un plan con fases, como hasta ahora (reason `TRIAL`). Cuando el ciclo de prueba cuenta para una promoción, el evento incluye el objeto promotion con `discount_amount` 0. |
+| Ciclo de $0 de una fase de un plan con fases, sin promoción | Sí, con reason `TRIAL` o `FULL_DISCOUNT`. Sin cambios. |
+| Ciclo del 100 % (`FULL_DISCOUNT`) | Sí, con reason `FULL_DISCOUNT`. El objeto `promotion` se incluye cuando se puede leer. |
+| Cobro a precio completo sin promoción | No. |
+
+```json
+"promotion": {
+  "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+  "discount_amount": 50,
+  "cycles_remaining": 2
+}
+```
+
+<Note>
+**Los montos son números JSON**
+
+Los montos en los payloads de webhook son números JSON, por lo que puede no conservarse un cero final: un monto de 50.00 puede llegar como 50.0. Compara los montos como números, no como texto.
+</Note>
+
 ```json JSON
 {
   "type": "subscription",
@@ -2555,6 +2582,74 @@ Se envía para las suscripciones basadas en planes cuando se ejecuta un ciclo de
           }
         }
       ]
+    }
+  }
+}
+```
+
+### subscription.promotion_applied {#subscriptionpromotionapplied}
+
+Se envía cuando se aplica una promoción a una suscripción: al crearla, cuando un enlace de pago crea la suscripción, con [Update Subscription](/es/reference/subscriptions/update-subscription) (incluida una nueva aplicación que reemplaza la promoción actual) y en un cambio de plan que aplica la promoción del nuevo plan. Se envía a los webhooks con el trigger `PROMOTION_APPLIED`. `data.promotion` es el [objeto de promoción de suscripción](/es/reference/subscriptions/the-subscription-promotion-object), y la suscripción incrustada incluye el mismo objeto. No se envía ningún evento cuando termina una promoción; lee la suscripción para ver su estado.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.promotion_applied",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+  "status": "ACTIVE",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "promotion": {
+      "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+      "name": "Welcome 50% x3",
+      "status": "ACTIVE",
+      "discount": {
+        "type": "PERCENTAGE",
+        "value": 50
+      },
+      "cycles": {
+        "total": 3,
+        "used": 0,
+        "remaining": 3
+      },
+      "on_pause": "KEEP",
+      "applied_at": "2026-06-14T19:19:32.117629Z",
+      "ended_at": null,
+      "end_reason": null
+    },
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "status": "ACTIVE",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 100
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "promotion": {
+        "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+        "name": "Welcome 50% x3",
+        "status": "ACTIVE",
+        "discount": {
+          "type": "PERCENTAGE",
+          "value": 50
+        },
+        "cycles": {
+          "total": 3,
+          "used": 0,
+          "remaining": 3
+        },
+        "on_pause": "KEEP",
+        "applied_at": "2026-06-14T19:19:32.117629Z",
+        "ended_at": null,
+        "end_reason": null
+      }
     }
   }
 }
