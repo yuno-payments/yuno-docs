@@ -53,6 +53,31 @@ Para una suscripción que *no* está vinculada a un plan, `billing_cycle_behavio
 Reglas de ubicación: en una suscripción vinculada a un plan, el campo de nivel superior devuelve `400` (el ancla se administra mediante `plan_change`), y combinar el campo de nivel superior con un bloque `plan_change` devuelve `400`: usa `plan_change.billing_cycle_behavior` en su lugar. Una suscripción `PAUSED` devuelve `409 INVALID_SUBSCRIPTION_STATUS`: se acepta un reinicio mientras la suscripción está `ACTIVE`, `TRIALING` o `PAST_DUE`, o mientras aún está `CREATED`, donde (a diferencia de `plan_change`) la solicitud se permite y la fecha vuelta a anclar se ajusta a `availability.start_at`. Un reinicio de nivel superior no emite ningún webhook: lee el nuevo ancla desde el objeto de suscripción.
 </Note>
 
+<Note>
+**Promociones de la suscripción**
+
+Envía `promotion` con un `id` o un `code` para aplicar una promoción asociada al plan de la suscripción. La suscripción debe estar `ACTIVE` o `TRIALING`. El descuento entra en vigor desde el siguiente cobro. La respuesta incluye el objeto `promotion`. Aplicar una promoción mientras hay otra activa la reemplaza: la actual termina con `end_reason` `REPLACED` y la nueva empieza con 0 ciclos usados.
+
+```json
+{ "promotion": { "code": "WELCOME50" } }
+```
+
+Para eliminar la promoción activa, usa [Remove Promotion from Subscription](/es/reference/subscriptions/remove-subscription-promotion).
+
+Una solicitud que envía `promotion` no debe enviar nada más. Combinada con `plan_change`, responde `400 INVALID_PARAMETERS` con el mensaje `A promotion and a plan change cannot be sent in the same update, so send them in two requests.` Combinada con cualquier otro campo, como `name` o `metadata`, responde `400 BAD_REQUEST` con el mensaje `a promotion must be sent alone; send the other changes in a separate request`. No se cambia nada en ninguno de los dos casos. Envía los campos en solicitudes separadas.
+</Note>
+
+<Note>
+**Promociones en un cambio de plan**
+
+Dos campos opcionales en `plan_change` deciden qué ocurre con una promoción activa:
+
+* `promotion_behavior`: `KEEP` (predeterminado) conserva la promoción, con sus ciclos restantes, en el nuevo plan. `END` la termina con `end_reason` `PLAN_CHANGE`. Se ignora cuando no hay ninguna promoción activa.
+* `apply_new_plan_promotion`: `true` (predeterminado) aplica la promoción `AUTOMATIC` del nuevo plan, si tiene una, y termina la promoción actual con `PLAN_CHANGE`. `false` deja sin aplicar la promoción del nuevo plan, y `promotion_behavior` decide qué ocurre con la actual.
+
+Consulta [Cambios de plan](/es/docs/payment-features/subscriptions/promotions#plan-changes) para ver el resultado en cada momento.
+</Note>
+
 ### Errores de cambio de plan {#plan-change-errors}
 
 Cada uno de los errores `409` y `422` de abajo incluye un campo `current_status` junto con `code` y `messages`, con el estado de la suscripción en el momento en que se rechazó la solicitud. La solicitud rechazada no realiza ningún cambio.

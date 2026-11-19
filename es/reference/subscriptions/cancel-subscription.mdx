@@ -47,11 +47,13 @@ propio canal de pago, usando el monto cotizado como dato de entrada.
 ### La base del reembolso {#the-refund-basis}
 
 Todos los modos de reembolso se calculan sobre la misma base: **el pago capturado más reciente de la
-suscripción**, nunca el precio de lista de la propia suscripción ni una estimación. Si el ciclo actual
-no tiene ningún pago capturado (un rechazo, un pago aún pendiente o un vacío), `PRORATED`,
-`FULL` y `CUSTOM` devuelven `400 REFUND_NOT_AVAILABLE`, excepto en una fase genuina de `$0` (una fase de prueba o
-promocional sin ningún cobro), que devuelve `200` con `amount: 0.00`. No hay nada que
-reembolsar ahí, pero eso no es un error.
+suscripción**, nunca el precio de lista de la propia suscripción ni una estimación. Para un ciclo que
+incluyó una promoción, estos montos son el neto pagado después del descuento, y `basis.charged_amount`
+lo muestra. Si el ciclo actual no tiene ningún pago capturado (un rechazo, un pago aún pendiente,
+o un vacío), `PRORATED`, `FULL` y `CUSTOM` devuelven `400 REFUND_NOT_AVAILABLE`, excepto en una fase genuina
+de `$0` (una fase de prueba o promocional sin ningún cobro) o un ciclo cubierto por completo por una
+promoción, que devuelve `200` con `amount: 0.00`. No hay nada que reembolsar ahí, pero eso no es
+un error.
 
 Una suscripción `PAST_DUE` no tiene ningún pago capturado para el ciclo en curso, así que se aplica la misma regla:
 `refund: NONE` (o un `refund` ausente) sigue cancelando con normalidad, pero cualquier otro modo devuelve
@@ -213,7 +215,7 @@ permanece en su estado actual, y la facturación continúa con normalidad, hasta
 
 `schedule` acepta exactamente uno de:
 
-| Campo | Tipo | Reglas |
+| Field | Type | Rules |
 |---|---|---|
 | `after_cycles` | integer | De 1 a 60, y no puede superar los ciclos de facturación restantes de la suscripción (`billing_cycles.total − billing_cycles.current`, cuando el plan tiene un total). |
 | `at` | Timestamp | ISO-8601 con desfase UTC, debe estar en el futuro y debe ser anterior a `availability.finish_at` cuando la suscripción lo tiene. |
@@ -238,7 +240,7 @@ previsto: puede cambiar.
 `past_due_behavior` controla qué hace una cancelación programada si la suscripción está en `PAST_DUE`
 cuando la programación se ejecutaría de otro modo:
 
-| Valor | Comportamiento |
+| Value | Behavior |
 |---|---|
 | `EXHAUST_RETRIES` (default) | La cancelación programada espera: los reintentos siguen ejecutándose durante el ciclo en curso, y la cancelación solo se ejecuta cuando la suscripción sale de `PAST_DUE` (se recupera o se agotan los reintentos). |
 | `SKIP_RETRIES` | La cancelación programada se ejecuta de inmediato, sin esperar a que terminen los reintentos pendientes. |
@@ -337,7 +339,7 @@ cancelación `NONE` o sin reembolso.
 
 <div className="code-nowrap-table dense-table">
 
-| HTTP | `code` | Cuándo |
+| HTTP | `code` | When |
 |---|---|---|
 | `400` | `BAD_REQUEST` | Una clave de nivel superior no reconocida, o una clave no reconocida dentro de `schedule`. |
 | `400` | `BAD_REQUEST` | `schedule` incluye tanto `at` como `after_cycles`, o ninguno. |
