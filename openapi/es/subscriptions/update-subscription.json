@@ -296,6 +296,18 @@
                           "RESTART"
                         ],
                         "description": "Qué ocurre con el ancla de facturación cuando el plan cambia en el mismo lugar con `effective: IMMEDIATE`. KEEP (por defecto; omitir el campo se comporta igual): la fecha del próximo cobro no se modifica. RESTART: el próximo cobro se reubica en el momento del cambio más la frecuencia del nuevo plan; solo se reinicia el ancla: los contadores de ciclos de facturación, la configuración de reintentos y el estado de la suscripción se conservan. RESTART requiere `effective: IMMEDIATE` y devuelve 400 con un cambio programado; KEEP junto con un cambio programado se acepta y simplemente programa el cambio como de costumbre. Solo escritura: este campo nunca se repite en ninguna respuesta."
+                      },
+                      "promotion_behavior": {
+                        "type": "string",
+                        "enum": [
+                          "KEEP",
+                          "END"
+                        ],
+                        "description": "Qué sucede con la promoción activa cuando cambia el plan. `KEEP` (predeterminado) la conserva, con sus ciclos restantes, en el nuevo plan. `END` la termina con `end_reason` `PLAN_CHANGE`. Se ignora cuando no hay una promoción activa."
+                      },
+                      "apply_new_plan_promotion": {
+                        "type": "boolean",
+                        "description": "Si la promoción `AUTOMATIC` del nuevo plan se aplica cuando cambia el plan. `true` (predeterminado) la aplica y termina la promoción actual con `PLAN_CHANGE`. `false` la deja sin aplicar, y `promotion_behavior` decide qué sucede con la promoción actual."
                       }
                     }
                   },
@@ -356,6 +368,20 @@
                       }
                     },
                     "nullable": true
+                  },
+                  "promotion": {
+                    "type": "object",
+                    "description": "Aplica una promoción asociada al plan de la suscripción. Envía exactamente uno entre `id` o `code`. La suscripción debe estar `ACTIVE` o `TRIALING`, y el descuento se aplica desde el siguiente cobro. Aplicar una promoción mientras otra está activa la reemplaza: la actual termina con `end_reason` `REPLACED`, y la nueva comienza con 0 ciclos usados. Consulta [Promociones en planes de suscripción](/docs/payment-features/subscriptions/promotions).",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "El ID de la promoción (UUID). Usa `id` o `code`, no ambos."
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "El código de una promoción que tiene uno. Usa `id` o `code`, no ambos."
+                      }
+                    }
                   }
                 }
               },
@@ -1174,6 +1200,94 @@
                         },
                         "last_failure_code": {
                           "type": "string"
+                        }
+                      }
+                    },
+                    "promotion": {
+                      "type": "object",
+                      "description": "La copia de la promoción almacenada en la suscripción. Consulta [El objeto Subscription Promotion](/reference/subscriptions/the-subscription-promotion-object).",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "El ID de la promoción (UUID)."
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "discount": {
+                          "type": "object",
+                          "description": "`PERCENTAGE` con `value`, o `FIXED` con `amount` y `currency`.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "PERCENTAGE",
+                                "FIXED"
+                              ]
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "Solo `PERCENTAGE`. De 0 a 100, con un máximo de 2 decimales."
+                            },
+                            "amount": {
+                              "type": "number",
+                              "description": "Solo `FIXED`. Con los decimales de la moneda."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "Solo `FIXED`. Código ISO 4217."
+                            }
+                          }
+                        },
+                        "cycles": {
+                          "type": "object",
+                          "properties": {
+                            "total": {
+                              "type": "integer"
+                            },
+                            "used": {
+                              "type": "integer",
+                              "description": "Ciclos contados desde que se aplicó: cobros aprobados, ciclos de prueba y ciclos con 100 % de descuento."
+                            },
+                            "remaining": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "on_pause": {
+                          "type": "string",
+                          "enum": [
+                            "KEEP",
+                            "END"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ACTIVE",
+                            "COMPLETED",
+                            "ENDED"
+                          ]
+                        },
+                        "applied_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "ended_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
+                        "end_reason": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            "REPLACED",
+                            "REMOVED",
+                            "PLAN_CHANGE",
+                            "PAUSE",
+                            "CANCELED"
+                          ]
                         }
                       }
                     }
