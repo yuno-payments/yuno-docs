@@ -12,6 +12,30 @@ This endpoint updates an existing onboarding for a recipient, allowing you to mo
 
 This endpoint requires an existing onboarding created via [Create Onboarding](/reference/create-onboarding)
 
+## Previously onboarded accounts
+
+To re-register an existing `PREVIOUSLY_ONBOARDED` onboarding, for example after it ended in `ERROR` because an account id was wrong, call `PATCH /v1/recipients/{recipient_id}/onboardings/{onboarding_id}` with the `provider` object: `provider.id`, `provider.connection_id` and the account ids.
+
+```json
+{
+  "provider": {
+    "id": "PROVIDER_ID",
+    "connection_id": "8fee3cc6-f3cb-455d-b139-973866111a03",
+    "recipient_id": "ACCOUNT_ID_AT_PROVIDER",
+    "balance_account_id": "BALANCE_ACCOUNT_ID_AT_PROVIDER"
+  }
+}
+```
+
+The account ids are the same as on create: `provider.recipient_id`, `provider.recipient_additional_id`, `provider.balance_account_id`, `provider.legal_entity` and `provider.recipient_type`. Which of them a provider needs is defined by its integration. They are forwarded exactly as sent.
+
+* **The integration supports adopting existing accounts**: Yuno repeats the registration with the provider and applies its answer. The onboarding becomes `SUCCEEDED` (webhook `onboarding.succeeded`), or `ERROR` with the provider's message in `response_message` (webhook `onboarding.error`). An onboarding in `ERROR` becomes `SUCCEEDED` once the provider accepts the corrected ids.
+* **Any other provider**: the ids are stored and no call is made to the provider. They are not validated at the provider.
+
+An update without provider ids only re-sends the notification of the current status; it does not register the account again.
+
+Which providers adopt existing accounts is Yuno-side configuration per environment, not an API field. To find out whether it is available for your provider connection, contact your Key Account Manager.
+
 ## Updating a bank account
 
 For Zoop and Pagar.me onboardings with a provider recipient ID, an explicit `withdrawal_methods.bank` update waits for the provider result. It updates only the selected onboarding; the recipient default and other onboardings remain unchanged.
