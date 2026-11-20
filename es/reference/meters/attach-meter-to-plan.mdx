@@ -1,0 +1,35 @@
+---
+title: "Asociar medidor al plan"
+openapi: "/openapi/es/meters/attach-meter-to-plan.json POST /subscriptions/plans/{plan_id}/meters"
+description: "Asocia un medidor a un plan existente como precio medido: créditos incluidos por ciclo más el precio por unidad adicional."
+hidden: true
+---
+
+<Note>
+**Habilitado por organización**
+
+La facturación basada en uso debe estar habilitada para tu organización antes de que estos endpoints acepten solicitudes. Contacta a tu gerente de cuenta de Yuno para habilitarla. Las solicitudes de una organización que no la tiene habilitada devuelven `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+El precio fijo del plan y el monto base de los suscriptores existentes nunca cambian cuando asocias un medidor. Cada suscripción del plan hereda el precio medido y puede empezar a reportar uso de inmediato.
+
+<Note>
+**Dos formas de asociar**
+
+- **Al crear:** envía `meters[]` (con la misma estructura que el cuerpo de esta solicitud) a [Crear plan](/es/reference/plans/create-plan). Las entradas de `meter_id` duplicadas se rechazan con `409`.
+- **En un plan activo:** llama a este endpoint una vez por medidor, o envía `{ "meters": [ ... ] }` a `PATCH /subscriptions/plans/{plan_id}`: ese PATCH solo permite asociar y es atómico: si alguna entrada de la lista no es válida (ya asociada, medidor desconocido o inactivo, precio incorrecto), no se asocia nada. Cualquier otro campo del plan en ese cuerpo (`name`, `base_amount`, …) se ignora sin aviso: los planes siguen siendo inmutables fuera de `meters[]`.
+</Note>
+
+<Note>
+**Herencia de precio**
+
+Si la moneda base del plan es `USD` y el medidor tiene un `default_price`, puedes omitir `price_per_credit`: se aplica el valor predeterminado del medidor y el precio medido se devuelve con `price_per_credit: null`. En cualquier otro caso (la moneda de `price_per_credit` siempre debe ser igual a la moneda base del plan), envíalo de forma explícita. Solo se pueden asociar medidores `ACTIVE`; un medidor archivado se rechaza con `400 METER_NOT_FOUND`.
+</Note>
+
+<Note>
+**Configuración de `pricing_strategy`**
+
+`PER_UNIT` usa `price_per_credit`/`country_prices`. `PACKAGE` usa `package_size`, `package_price` y, de forma opcional, `package_country_prices`. `TIERED` usa `tiers[]` (límites `up_to` ascendentes, el último nivel con `up_to: null`). Enviar campos de configuración de una estrategia distinta de la que seleccionaste se rechaza con `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED`. Una vez asociada, la configuración `PACKAGE`/`TIERED` no se puede cambiar: consulta [Actualizar medidor del plan](/reference/meters/update-plan-meter).
+</Note>
+
+Consulta [El objeto de precio medido](/reference/meters/the-metered-price-object) para ver todos los campos. Revisa [Códigos de error de medidores](/reference/meters/meter-error-codes) para conocer los posibles resultados de error.
