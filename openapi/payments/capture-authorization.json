@@ -85,7 +85,7 @@
                   },
                   "amount": {
                     "type": "object",
-                    "description": "Specifies the amount object for capturing. Optional: if you omit it, the API captures the full authorized amount.",
+                    "description": "Specifies the amount object for capturing. Optional: if you omit it, the API captures the full authorized amount. For a payment sent with `payment_method.detail.card.partial_approval: true` and partially approved, the authorized amount is `payment.amount.authorized`: a capture without `amount` takes it, and an `amount` above it is rejected with `400 INVALID_PARAMETERS`.",
                     "required": [
                       "currency",
                       "value"
@@ -856,6 +856,7 @@
                         "updated_at": "2024-06-06T14:26:41.655119Z",
                         "amount": {
                           "captured": 5000,
+                          "authorized": 5000,
                           "currency": "USD",
                           "refunded": 0,
                           "value": 5000
@@ -916,6 +917,7 @@
                         "amount": {
                           "value": 20000,
                           "captured": 20000,
+                          "authorized": 20000,
                           "refunded": 0,
                           "currency": "USD"
                         },
@@ -1029,6 +1031,7 @@
                         "updated_at": "2024-06-06T14:27:53.74127Z",
                         "amount": {
                           "captured": 3000,
+                          "authorized": 30000,
                           "currency": "USD",
                           "refunded": 0,
                           "value": 30000
@@ -1215,6 +1218,11 @@
                                   "type": "integer",
                                   "example": 30000,
                                   "default": 0
+                                },
+                                "authorized": {
+                                  "type": "number",
+                                  "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                                  "example": 30000
                                 },
                                 "currency": {
                                   "type": "string",
@@ -1434,6 +1442,11 @@
                                   "type": "integer",
                                   "example": 20000,
                                   "default": 0
+                                },
+                                "authorized": {
+                                  "type": "number",
+                                  "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                                  "example": 20000
                                 },
                                 "refunded": {
                                   "type": "integer",
@@ -1837,6 +1850,11 @@
                                   "example": 3000,
                                   "default": 0
                                 },
+                                "authorized": {
+                                  "type": "number",
+                                  "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                                  "example": 30000
+                                },
                                 "currency": {
                                   "type": "string",
                                   "example": "USD"
@@ -1903,6 +1921,15 @@
                       "code": "INVALID_STATUS",
                       "messages": [
                         "Invalid transaction status."
+                      ]
+                    }
+                  },
+                  "Amount above the authorized amount": {
+                    "summary": "The payment was partially approved and the capture exceeds `amount.authorized`",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "Amount to capture exceeds the authorized amount."
                       ]
                     }
                   }
