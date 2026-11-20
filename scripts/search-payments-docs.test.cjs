@@ -86,9 +86,9 @@ test("the response carries payments, a nullable next_cursor and has_more with th
   for (const r of ex["Page with more results"].value.payments) assert.deepEqual(Object.keys(r).sort(), Object.keys(row).sort());
 });
 
-test("400 documents INVALID_PARAMETERS, DATE_RANGE_TOO_WIDE and INVALID_CURSOR in the code and messages envelope", () => {
+test("400 documents INVALID_PARAMETERS, DATE_RANGE_TOO_WIDE, INVALID_CURSOR and INVALID_ACCOUNT_ID in the code and messages envelope", () => {
   const ex = op().responses["400"].content["application/json"].examples;
-  for (const code of ["INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR"]) {
+  for (const code of ["INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "INVALID_ACCOUNT_ID"]) {
     assert.equal(ex[code].value.code, code);
     assert.ok(Array.isArray(ex[code].value.messages) && ex[code].value.messages.length > 0, code);
   }
@@ -97,6 +97,17 @@ test("400 documents INVALID_PARAMETERS, DATE_RANGE_TOO_WIDE and INVALID_CURSOR i
 test("the page explains the window, filters, pagination, rows and errors without prev_cursor or sort", () => {
   const g = read(`${page}.mdx`);
   for (const h of ["## Creation window", "## Filters", "## Pagination", "## Rows", "## Errors"]) assert.ok(g.includes(h), h);
-  for (const s of ["1 day", "INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "`next_cursor`", "`has_more`", "defaults to 50", "from 1 to 100", "`X-Account-Code`", "`created_at` ascending and then by `id`", "no `transactions` array"]) assert.ok(g.includes(s), s);
+  for (const s of ["1 day", "INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "INVALID_ACCOUNT_ID", "`next_cursor`", "`has_more`", "defaults to 50", "from 1 to 100", "`X-Account-Code`", "`created_at` ascending and then by `id`", "no `transactions` array"]) assert.ok(g.includes(s), s);
   assert.ok(!g.includes("prev_cursor"));
+});
+
+test("the Spanish page mirrors the English one on the es spec and is visible in the navigation", () => {
+  assert.ok(navPages().has(`es/${page}`));
+  const g = read(`es/${page}.mdx`);
+  assert.ok(g.includes(`openapi: "/openapi/es/payments/${slug}.json GET /payments/search"`));
+  for (const s of ["1 día", "INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "INVALID_ACCOUNT_ID"]) assert.ok(g.includes(s), s);
+  const en = op();
+  const es = json(`openapi/es/payments/${slug}.json`).paths["/payments/search"].get;
+  assert.deepEqual(es.parameters.map((p) => [p.name, p.in, !!p.required, p.schema]), en.parameters.map((p) => [p.name, p.in, !!p.required, p.schema]));
+  assert.deepEqual(es.responses, en.responses);
 });

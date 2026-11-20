@@ -1,0 +1,59 @@
+---
+title: "Buscar pagos"
+openapi: "/openapi/es/payments/search-payments.json GET /payments/search"
+description: "Lista los pagos de la cuenta creados en una ventana de hasta 1 día, con filtros y paginación por cursor."
+---
+
+Esta solicitud lista los pagos de la cuenta enviada en el header `X-Account-Code`. Úsala para sincronizar pagos con un data warehouse o para construir un panel de administración. Para consultar un solo pago, usa [Obtener pago por ID](/es/reference/payments/retrieve-payment-by-id-v2) u [Obtener pago por ID de orden del comercio](/es/reference/payments/retrieve-payment-by-merchant-order-id).
+
+## Ventana de creación
+
+`created_at_from` y `created_at_to` son fechas y horas obligatorias en formato RFC 3339 con zona horaria, por ejemplo `2026-11-03T00:00:00Z` o `2026-11-03T00:00:00-03:00`. `created_at_from` es inclusiva y `created_at_to` es exclusiva, así que dos ventanas consecutivas que comparten un límite no se superponen. `created_at_to` debe ser posterior a `created_at_from`, y la ventana entre ambas es de hasta 1 día (24 horas). Una ventana más amplia responde `400 DATE_RANGE_TOO_WIDE`. Para cubrir un período más largo, envía una solicitud por cada ventana de 24 horas, por ejemplo días UTC consecutivos.
+
+## Filtros
+
+Todos los filtros son opcionales y se combinan con AND:
+
+| Parámetro | Coincide con |
+| --- | --- |
+| `updated_at_from`, `updated_at_to` | Pagos cuya última actualización está dentro de este rango (`updated_at_from` inclusiva, `updated_at_to` exclusiva) |
+| `status` | Cualquiera de los estados enviados, separados por coma (`status=SUCCEEDED,DECLINED`) o repitiendo el parámetro (`status=SUCCEEDED&status=DECLINED`) |
+| `customer_id` | Pagos de este cliente (UUID) |
+| `country` | Pagos de este país (ISO 3166-1 alpha-2, por ejemplo `US`) |
+| `currency` | Pagos en esta moneda (ISO 4217, por ejemplo `USD`) |
+| `merchant_order_id` | Pagos con este ID de orden del comercio |
+
+Envía cada parámetro una sola vez, salvo `status`. Un parámetro que no aparece en esta página, o un filtro con un valor inválido, responde `400 INVALID_PARAMETERS`.
+
+## Paginación
+
+Las filas se ordenan por `created_at` ascendente y luego por `id`. `limit` define el tamaño de la página, de 1 a 100, y por defecto es 50.
+
+La respuesta es un objeto con tres campos:
+
+| Campo | Descripción |
+| --- | --- |
+| `payments` | Las filas de la página |
+| `next_cursor` | Cursor de la página siguiente, o `null` en la última página |
+| `has_more` | `true` cuando existe otra página, `false` en la última página |
+
+Para leer la página siguiente, envía `cursor` con el valor de `next_cursor` sin modificar, junto con el mismo `X-Account-Code` y los mismos filtros de la solicitud que lo devolvió. Sigue paginando hasta que `has_more` sea `false`. Un cursor modificado, o enviado con otra cuenta u otros filtros, responde `400 INVALID_CURSOR`. La paginación solo avanza.
+
+## Filas
+
+Cada fila es un resumen del pago: `id`, `account_id`, `merchant_order_id`, `description`, `country`, `status`, `sub_status`, `amount.value`, `amount.currency`, `payment_method.type`, `customer_payer.id`, `created_at` y `updated_at`.
+
+<Info>
+  Las filas no incluyen el arreglo `transactions`. Obtén el pago por su `id` para recibir el objeto de pago completo.
+</Info>
+
+## Errores
+
+Los errores usan el envoltorio con `code` y `messages`.
+
+| Estado | Código | Causa |
+| --- | --- | --- |
+| 400 | `INVALID_PARAMETERS` | Falta un parámetro obligatorio, un parámetro no está soportado o se envía más de una vez, o un valor es inválido: una fecha que no está en RFC 3339 con zona horaria, `created_at_to` que no es posterior a `created_at_from`, un `status` desconocido, un `customer_id` o `X-Account-Code` que no es un UUID, o un `limit` fuera del rango de 1 a 100 |
+| 400 | `DATE_RANGE_TOO_WIDE` | La ventana entre `created_at_from` y `created_at_to` es mayor a 1 día (24 horas) |
+| 400 | `INVALID_CURSOR` | El cursor fue modificado, o se envió con una cuenta o filtros distintos a los de la solicitud que lo devolvió |
+| 400 | `INVALID_ACCOUNT_ID` | `X-Account-Code` no es una cuenta de tu organización |
