@@ -1,0 +1,80 @@
+---
+title: "Código QR y pago instantáneo"
+description: "Combina un pago con código QR de Pix con la inscripción a una suscripción para habilitar cobros recurrentes automáticos"
+---
+
+En el flujo **QR Code & Instant Payment**, Yuno presenta un único código QR que cobra al cliente de inmediato y lo inscribe en todos los pagos recurrentes futuros en un solo paso. Cuando el cliente escanea el QR, su aplicación bancaria procesa la primera cuota y, al mismo tiempo, captura su consentimiento para los cobros automáticos posteriores, sin necesidad de aprobaciones adicionales ni de ingreso manual.
+
+Después del escaneo y el pago iniciales, cada **solicitud posterior** la envía el comercio a través de Yuno y el banco del cliente la valida automáticamente contra el consentimiento original, lo que garantiza transferencias rápidas y confiables sin más interacción del cliente. Este flujo simplifica la gestión de suscripciones al combinar la inscripción y el pago en una sola acción del usuario.
+
+## Paso 1: primer pago y creación de la suscripción {#step-1-first-payment-and-subscription-creation}
+
+Para iniciar el flujo, debes comenzar con un [pago Pix](/es/reference/payments/create-payment#/) estándar que también configure la suscripción. Esto genera un código QR o una pantalla de redirección para que el cliente autorice la recurrencia. Una vez pagado, se crea la suscripción y se devuelve un `subscription_code`.
+
+Puedes definir la frecuencia, la ventana de disponibilidad y el tipo de monto (fijo o variable) como parte del payload de la suscripción.
+
+| Campos de las suscripciones | Descripción                                                                                                                                                                        |
+| :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frecuencia                | Define la frecuencia con la que se realizarán los cobros de la suscripción (semanal, mensual, trimestral, semestral o anual) y especifica el monto que se debe cobrar en el siguiente ciclo de facturación. |
+| Disponibilidad             | Las fechas de inicio y fin de la suscripción.                                                                                                                                       |
+| Monto                   | Define el valor que usarás para los pagos futuros de la suscripción. Puede ser `FIXED` con un valor mínimo definido, o `VARIABLE` sin un monto definido para los pagos futuros. |
+
+Ten en cuenta que la información definida al crear la suscripción restringe las fechas y los valores que se pueden usar en los pagos futuros.
+
+```json Example
+{
+  "amount": {
+    "value": "100",
+    "currency": "BRL"
+  },
+	"payment_method": {
+        "type": "PIX_AUTOMATIC"
+	},
+	"subscription": {
+    "frequency": {
+      "type": "MONTH",
+      "value": 1
+    },
+    "availability": {
+      "start_at": "2025-05-23T20:17:30.277678Z",
+      "finish_at": "2027-05-23T20:17:30.277678Z"
+    },
+    "amount": {
+      "value": "100",
+      "currency": "BRL",
+      "type": "FIXED"
+    }
+  }
+}
+```
+
+Después de que se confirma el pago inicial, el cliente tiene una suscripción activa y puedes comenzar a programar cobros futuros.
+
+## Paso 2: pagos futuros {#step-2-future-payments}
+
+Según lo definido por el banco central, los pagos deben crearse dentro de una **ventana de programación de 10 a 2 días antes de la fecha de cobro programada**. Usa el `subscription.id` para identificar la recurrencia en la [creación del pago](/es/reference/payments/create-payment#/).
+
+| Campos de los pagos futuros |                                                                                                                                      |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| `subscription.id`          | ID de la suscripción obtenido en el primer paso (devuelto allí como `subscription_code`).                                           |
+| `billing_date`             | Al especificar el objeto `billing_date`, el comercio puede definir la lógica de la fecha exacta de cobro de la suscripción. |
+
+```json Example
+"workflow": "DIRECT",
+"amount": {
+  "value": "100",
+  "currency": "BRL"
+},
+"payment_method": {
+  "type": "PIX_AUTOMATIC",
+},
+"subscription": {
+  "id": "cab9f0fe-2428-419b-8f9d-4b5efee8c1c8",
+  "billing_date": {
+    "type": "DAY",
+    "day": 14
+  }
+}
+```
+
+Si un pago recurrente falla, se puede reintentar con una nueva solicitud de pago. Los **reintentos** deben realizarse **dentro de los 7 días** posteriores a la fecha de cobro original y se limitan a **3 intentos por ciclo**.

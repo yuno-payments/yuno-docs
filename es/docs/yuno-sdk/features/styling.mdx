@@ -1,0 +1,361 @@
+---
+title: "Estilos"
+sidebarTitle: "Da estilo al checkout"
+description: "Personaliza la apariencia visual de las vistas integradas del SDK."
+---
+
+Adapta las vistas integradas del SDK a tu marca.
+
+<Note>
+Hay **dos formas** de dar estilo al SDK:
+- **En código (iOS, Android y React Native):** pasa un objeto `Appearance` en `TransactionConfig` (se explica más abajo). Web no tiene la opción `appearance`. Consulta la pestaña Web para ver qué estilizas en código.
+- **Desde el Checkout Builder:** configura los estilos del lado del servidor en tu [Yuno Dashboard](https://dashboard.y.uno/), sin necesidad de código.
+
+Si no configuras ninguno, el SDK usa sus estilos predeterminados.
+</Note>
+
+<Tabs>
+  <Tab title="Web">
+
+El SDK Web se renderiza en tu página como DOM normal, por lo que le das estilo con CSS y algunos campos de configuración. En Web no existe un objeto `appearance`.
+
+## Qué puedes estilizar {#what-you-can-style}
+
+| Palanca | Dónde | Qué cambia |
+|---|---|---|
+| Checkout Builder | Yuno Dashboard | Colores, fuentes y forma de los botones de las vistas integradas. El SDK los aplica en cada montaje, sin necesidad de código. |
+| Clases CSS con el prefijo `sdk-payments-` | Tu hoja de estilos | Cada elemento que el SDK renderiza en tu página lleva una clase con ese prefijo. Apúntalas desde tu propio CSS. |
+| `card.styles` | `TransactionConfig` | Una cadena CSS que se inyecta dentro de los iframes del número de tarjeta, la fecha de vencimiento y el CVV, a los que el CSS de tu página no puede llegar. |
+| `card.fonts` | `TransactionConfig` | Fuentes que se cargan dentro de los iframes de la tarjeta. |
+| `card.texts` | `TransactionConfig` | Etiquetas personalizadas para los campos del formulario de tarjeta. |
+| `inputDesignType` | `TransactionConfig` (solo pagos) | Diseño de las etiquetas de los campos: `float-label` (predeterminado), `float-label-static` o `label-placeholder`. |
+| Opciones de los botones de billetera | `mount()` de cada vista de billetera, o `externalButtons` en la configuración | Tipo, color, forma, tamaño e idioma de los botones de Apple Pay, Google Pay, PayPal, Samsung Pay y Revolut Pay. |
+| `options.styles` | `secureFields.create()` | CSS dentro de cada iframe de los secure fields. |
+| `options.externalFonts` | `secureFields.create()` | Fuentes que se cargan dentro de cada iframe de los secure fields. |
+
+## Clases CSS {#css-classes}
+
+Cada elemento que el SDK renderiza en tu página lleva una clase con el prefijo `sdk-payments-`. Apúntalas desde tu hoja de estilos para personalizar colores, espaciado, bordes y otras propiedades visuales. Las clases más comunes incluyen:
+
+| Patrón de clase | Qué estiliza |
+|---|---|
+| `sdk-payments-payment-list__*` | Contenedor y filas de la lista de métodos de pago |
+| `sdk-payments-fieldset__*` | Contenedores y cuadros de los campos del formulario |
+| `sdk-payments-input__*` | Campos de entrada y etiquetas |
+| `sdk-payments-button__*` | Botones |
+| `sdk-payments-card__*` | Elementos del formulario de tarjeta |
+
+```css
+/* Example: customize the payment method list and inputs */
+.sdk-payments-payment-list__radio {
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.sdk-payments-input__label {
+    color: #333;
+    font-weight: 500;
+}
+
+.sdk-payments-user-form__submit {
+    background-color: #6200ee;
+    border-radius: 24px;
+}
+```
+
+<Note>
+Las clases CSS pueden cambiar entre versiones del SDK. Inspecciona el DOM renderizado en las herramientas para desarrolladores de tu navegador para encontrar los nombres de clase vigentes.
+</Note>
+
+## Estilos de los iframes de tarjeta {#styling-card-iframes}
+
+El número de tarjeta, la fecha de vencimiento y el CVV se renderizan dentro de iframes por cumplimiento de PCI. El CSS de tu página no puede llegar a ellos. Usa `card.styles` para inyectar CSS y `card.fonts` para cargar fuentes personalizadas dentro de los iframes.
+
+```typescript
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    card: {
+        styles: `
+            input {
+                font-family: 'Inter', sans-serif;
+                font-size: 16px;
+                color: #111;
+            }
+            input::placeholder {
+                color: #999;
+            }
+            input:focus {
+                border-color: #6200ee;
+            }
+        `,
+        fonts: [
+            {
+                familyName: 'Inter',
+                files: [
+                    { weight: 400, url: 'https://cdn.example.com/fonts/inter-400.woff2' },
+                    { weight: 600, url: 'https://cdn.example.com/fonts/inter-600.woff2' },
+                ],
+            },
+        ],
+    },
+    onStatus: (result) => showResult(result),
+})
+```
+
+### Fuentes personalizadas {#custom-fonts}
+
+`card.fonts` carga archivos de fuente dentro de los iframes de tarjeta. No los aplica: haz referencia a la familia por su nombre en `card.styles`, como en el ejemplo anterior.
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `familyName` | string | Nombre de la familia a la que haces referencia desde `font-family` en `card.styles`. |
+| `files` | array | Una entrada por cada grosor. |
+| `files[].weight` | number | Grosor de la fuente del archivo, por ejemplo `400` o `600`. |
+| `files[].url` | string | URL del archivo de fuente, por ejemplo un `.woff2`. |
+
+<Note>
+Los iframes cargan los archivos desde un origen distinto al de tu página, por lo que el host de la fuente debe permitir solicitudes de origen cruzado (enviar un encabezado `Access-Control-Allow-Origin`). Si un archivo no se carga, el campo recurre a la siguiente fuente de tu lista `font-family`.
+</Note>
+
+## Tipos de diseño de campos {#input-design-types}
+
+El campo `inputDesignType` controla cómo se muestran las etiquetas y los placeholders en los campos del formulario:
+
+| Valor | Comportamiento |
+|---|---|
+| `float-label` (predeterminado) | La etiqueta flota sobre el campo cuando tiene el foco o está lleno. |
+| `float-label-static` | La etiqueta permanece siempre sobre el campo. |
+| `label-placeholder` | La etiqueta aparece como texto de marcador dentro del campo. |
+
+```typescript
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    inputDesignType: 'float-label-static',
+    onStatus: (result) => showResult(result),
+})
+```
+
+## Opciones de los botones de billetera {#wallet-button-options}
+
+Personaliza los botones de billetera exprés mediante las opciones de `mount()` o `externalButtons` en la configuración:
+
+```typescript
+const views = transaction.getPaymentMethodsViews({
+    types: ['applePay', 'googlePay'],
+    onPaymentSelected: (pm) => { /* ... */ },
+})
+
+views.applePay?.mount({
+    elementSelector: '#apple-pay',
+    buttonType: 'buy',       // 'plain', 'buy', 'book', 'donate', etc.
+    buttonStyle: 'black',    // 'black', 'white', 'white-outline'
+})
+
+views.googlePay?.mount({
+    elementSelector: '#google-pay',
+    buttonColor: 'black',    // 'black', 'white'
+    buttonType: 'pay',       // 'pay', 'buy', 'book', 'donate', etc.
+})
+```
+
+## Estilos de Secure Fields {#secure-fields-styling}
+
+Para [Secure Fields](/es/docs/yuno-sdk/features/secure-fields), pasa `styles` y `externalFonts` en las `options` de cada campo cuando lo creas:
+
+```typescript
+const cardNumber = secureFields.create({
+    name: 'pan',
+    options: {
+        placeholder: 'Card number',
+        styles: `
+            input {
+                font-family: 'Inter', sans-serif;
+                font-size: 16px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 12px;
+            }
+        `,
+        externalFonts: [
+            {
+                family_name: 'Inter',
+                files: [{ weight: 400, url: 'https://cdn.example.com/fonts/inter-400.woff2' }],
+            },
+        ],
+    },
+})
+
+cardNumber.mount('#pan')
+```
+
+Cada campo es su propio iframe, así que pasa `externalFonts` a cada campo que use la fuente. Las entradas tienen la misma forma que `card.fonts`, pero la clave de la familia es `family_name` (snake case), no `familyName`. Se aplica el mismo requisito de origen cruzado.
+
+  </Tab>
+
+  <Tab title="iOS">
+
+Crea un `SdkPayments.Appearance` con los campos que quieras sobrescribir y pásalo a `TransactionConfig(appearance:)`. Todos los campos son opcionales; los campos sin definir usan el valor predeterminado del SDK.
+
+## Campos de Appearance {#appearance-fields}
+
+| Campo | Descripción |
+|---|---|
+| `fontFamily` | Familia de fuente que se usa en todo el SDK. Indica el nombre de la fuente tal como está registrada en los recursos de tu app. |
+| `accentColor` | Color de acento que se usa en varios elementos del SDK. |
+| `buttonBackgroundColor` | Color de fondo de los botones principales. |
+| `buttonTitleColor` | Color del texto de los botones principales. |
+| `buttonBorderColor` | Color del borde de los botones principales. |
+| `secondaryButtonBackgroundColor` | Color de fondo de los botones secundarios. |
+| `secondaryButtonTitleColor` | Color del texto de los botones secundarios. |
+| `secondaryButtonBorderColor` | Color del borde de los botones secundarios. |
+| `disableButtonBackgroundColor` | Color de fondo de los botones deshabilitados. |
+| `disableButtonTitleColor` | Color del texto de los botones deshabilitados. |
+| `checkboxColor` | Color de las casillas de verificación que muestra el SDK (p. ej. guardar tarjeta). |
+
+<Note>
+Todos los colores deben ser `UIColor` (del catálogo de recursos de Xcode o de tus propios recursos) para mantener la compatibilidad.
+</Note>
+
+## Cómo se resuelven los estilos {#how-styles-are-resolved}
+
+Definir **cualquier** campo de `Appearance` lo convierte en la fuente de estilos activa de la transacción: los estilos del dashboard se ignoran por completo. La resolución es de todo o nada por fuente, nunca una combinación campo por campo. Un `Appearance()` vacío no cuenta como personalizado, por lo que los estilos del dashboard se siguen aplicando. Cualquier apariencia personalizada (en código o desde el dashboard) se renderiza en modo claro.
+
+## Uso {#usage}
+
+Appearance es por transacción: pásalo en cada `TransactionConfig`, no en `initialize`.
+
+```swift
+import SdkPayments
+
+let appearance = SdkPayments.Appearance(
+    fontFamily: "Climate Crisis",
+    accentColor: .orange,
+    buttonBackgroundColor: .yellow,
+    buttonTitleColor: .black,
+    buttonBorderColor: .black,
+    secondaryButtonBackgroundColor: .yellow,
+    secondaryButtonTitleColor: .black,
+    secondaryButtonBorderColor: .black,
+    disableButtonBackgroundColor: .gray,
+    disableButtonTitleColor: .black,
+    checkboxColor: .black
+)
+
+let config = SdkPayments.TransactionConfig(
+    checkoutSession: "session-from-backend",
+    countryCode: "US",
+    appearance: appearance,
+    controller: self
+)
+
+SdkPayments.Transaction(config: config)
+    .start(paymentSelected: paymentSelected)
+```
+
+  </Tab>
+
+  <Tab title="Android">
+
+Crea un `Appearance` con los campos que quieras sobrescribir y pásalo a `TransactionConfig(appearance = ...)`. Todos los campos son opcionales; los campos sin definir usan el valor predeterminado del SDK.
+
+## Campos de Appearance {#appearance-fields-1}
+
+| Campo | Descripción |
+|---|---|
+| `fontFamily` | Familia de fuente que se usa en todo el SDK. Se resuelve contra las fuentes del sistema y las fuentes configuradas en tu dashboard; un nombre que no se puede resolver recurre a la fuente predeterminada del sistema del dispositivo. |
+| `accentColor` | Color de acento que se usa en los trazos de foco y en los cursores. No se propaga a las casillas de verificación ni a los bordes de los botones secundarios: esos tienen sus propios campos. |
+| `buttonBackgroundColor` | Color de fondo de los botones principales. |
+| `buttonTitleColor` | Color del texto de los botones principales. |
+| `buttonBorderColor` | Color del borde de los botones principales. |
+| `secondaryButtonBackgroundColor` | Color de fondo de los botones secundarios. |
+| `secondaryButtonTitleColor` | Color del texto de los botones secundarios. |
+| `secondaryButtonBorderColor` | Color del borde de los botones secundarios. |
+| `disableButtonBackgroundColor` | Color de fondo de los botones deshabilitados. |
+| `disableButtonTitleColor` | Color del texto de los botones deshabilitados. |
+| `checkboxColor` | Color de las casillas de verificación que muestra el SDK (p. ej. guardar tarjeta). |
+
+<Note>
+Todos los colores son enteros `@ColorInt`: usa `Color.parseColor("#FFD600")`, `ContextCompat.getColor(context, R.color.brand)` o las constantes de `android.graphics.Color`.
+</Note>
+
+## Cómo se resuelven los estilos {#how-styles-are-resolved-1}
+
+Definir **cualquier** campo de `Appearance` lo convierte en la fuente de estilos activa de la transacción: los estilos del dashboard se ignoran por completo. La resolución es de todo o nada por fuente, nunca una combinación campo por campo. Un `Appearance()` vacío no cuenta como personalizado, por lo que los estilos del dashboard se siguen aplicando. Cualquier apariencia personalizada (en código o desde el dashboard) se renderiza en modo claro.
+
+El SDK no incluye una fuente propia: sin `fontFamily` en código y sin una fuente configurada en el dashboard, el texto se renderiza con la fuente predeterminada del sistema del dispositivo.
+
+## Uso {#usage-1}
+
+Appearance es por transacción: pásalo en cada `TransactionConfig`, no en `initialize`.
+
+```kotlin
+import android.graphics.Color
+import com.yuno.payments.sdk.api.Appearance
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+
+val appearance = Appearance(
+    fontFamily = "Climate Crisis",
+    accentColor = Color.parseColor("#E65100"),
+    buttonBackgroundColor = Color.parseColor("#FFD600"),
+    buttonTitleColor = Color.BLACK,
+    buttonBorderColor = Color.BLACK,
+    secondaryButtonBackgroundColor = Color.parseColor("#FFD600"),
+    secondaryButtonTitleColor = Color.BLACK,
+    secondaryButtonBorderColor = Color.BLACK,
+    disableButtonBackgroundColor = Color.GRAY,
+    disableButtonTitleColor = Color.BLACK,
+    checkboxColor = Color.BLACK,
+)
+
+val transaction = Transaction(
+    TransactionConfig(
+        countryCode = "US",
+        checkoutSession = "session-from-backend",
+        appearance = appearance,
+        controller = this,
+    ),
+)
+
+transaction.start(activity = this, paymentSelected = paymentSelected)
+```
+
+  </Tab>
+
+  <Tab title="React Native">
+
+Pasa un objeto `Appearance` en `TransactionConfig`. Tiene los mismos campos que en iOS y Android, todos son opcionales, y los estilos se resuelven como en el SDK nativo de la plataforma (consulta las pestañas iOS y Android). Los colores son cadenas hexadecimales, `#RRGGBB` o `#AARRGGBB`, que se convierten a los tipos de color nativos. `fontFamily` debe nombrar una fuente que tu app nativa pueda cargar.
+
+Appearance es por transacción: pásalo en cada `TransactionConfig`, no en `initialize`.
+
+```tsx
+const transaction = new Transaction({
+  checkoutSession: 'session-from-backend',
+  countryCode: 'US',
+  appearance: {
+    fontFamily: 'Climate Crisis',
+    accentColor: '#E65100',
+    buttonBackgroundColor: '#FFD600',
+    buttonTitleColor: '#000000',
+    buttonBorderColor: '#000000',
+    secondaryButtonBackgroundColor: '#FFD600',
+    secondaryButtonTitleColor: '#000000',
+    secondaryButtonBorderColor: '#000000',
+    disableButtonBackgroundColor: '#9E9E9E',
+    disableButtonTitleColor: '#000000',
+    checkboxColor: '#000000',
+  },
+  controller,
+});
+
+await transaction.start(paymentSelected);
+```
+
+  </Tab>
+</Tabs>
+
+## Relacionado {#related}
+
+- [`TransactionConfig`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Dónde se pasa `appearance`.

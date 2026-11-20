@@ -1,0 +1,2742 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "payment-api-refundcancel-payment",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your public-api-key>",
+        "name": "public-api-key"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your private-secret-key>",
+        "name": "private-secret-key"
+      },
+      "sec2": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your X-Idempotency-Key>",
+        "name": "X-Idempotency-Key"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": [],
+      "sec2": []
+    }
+  ],
+  "paths": {
+    "/payments/{payment_id}/cancel-or-refund": {
+      "post": {
+        "summary": "Cancelar o reembolsar un pago",
+        "description": "",
+        "operationId": "cancel-or-refund-a-payment",
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "description": "El identificador único del pago (UUID, 36 caracteres).",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "description": "Descripción de la cancelación o del reembolso. (MAX 255; MIN 3)."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Indica el motivo de la cancelación o del reembolso. Si se define, los valores posibles son `DUPLICATE`, `FRAUDULENT`, `REQUESTED_BY_CUSTOMER` y `REVERSE`. Usa `REVERSE` para solicitar una reversión automática de los fondos del destinatario cuando hay un destinatario involucrado en la transacción.",
+                    "enum": [
+                      "DUPLICATE",
+                      "FRAUDULENT",
+                      "REQUESTED_BY_CUSTOMER",
+                      "REVERSE"
+                    ]
+                  },
+                  "merchant_reference": {
+                    "type": "string",
+                    "description": "Identificación de la transacción de pago definida por el comercio. Si no se define merchant_reference, se asocia a la transacción el merchant_order_id del pago. (MAX 255; MIN 3)."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Especifica el objeto de monto para el reembolso.",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "La moneda con la que se hace el pago. Para ver la lista completa de códigos de moneda, consulta [Country reference](/reference/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                      },
+                      "value": {
+                        "type": "number",
+                        "format": "float",
+                        "description": "El monto del pago (múltiplo de 0.0001). En una moneda sin decimales (por ejemplo, KRW, JPY o CLP), el valor debe ser un número entero: consulta [Montos y monedas](/docs/basic-concepts/amounts-and-currencies)."
+                      }
+                    }
+                  },
+                  "split_marketplace": {
+                    "type": "array",
+                    "description": "Array de objetos de split marketplace",
+                    "items": {
+                      "properties": {
+                        "recipient_id": {
+                          "type": "string",
+                          "description": "El identificador único del destinatario en el sistema de Yuno. <br/> Al crear un pago, debes enviar el [`recipient_id`](/reference/create-recipient-1) (generado por Yuno) o el `provider_recipient_id` (el ID del proveedor externo)."
+                        },
+                        "provider_recipient_id": {
+                          "type": "string",
+                          "description": "El ID del destinatario que entrega el proveedor de pagos externo, si corresponde. <br/> Al crear un pago, debes enviar el `provider_recipient_id` o el [`recipient_id`](/reference/create-recipients) (generado por Yuno)."
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Descripción del split. (MAX 255; MIN 3)."
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "El tipo de split. `recipient_id` es obligatorio para `PURCHASE` y `MARKETPLACE`.",
+                          "enum": [
+                            "PURCHASE",
+                            "PAYMENTFEE",
+                            "VAT",
+                            "COMMISSION",
+                            "MARKETPLACE",
+                            "SHIPPING"
+                          ]
+                        },
+                        "merchant_reference": {
+                          "type": "string",
+                          "description": "Identificador único opcional de la transacción de split (MAX 255; MIN 3)."
+                        },
+                        "recipient_type": {
+                          "type": "string",
+                          "description": "El tipo de destinatario para el proveedor.",
+                          "enum": [
+                            "MEAL",
+                            "FOOD",
+                            "MULTI_BENEFITS",
+                            "FLEET"
+                          ],
+                          "example": "MEAL"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Define el monto de la división.",
+                          "required": [
+                            "value",
+                            "currency"
+                          ],
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "description": "El monto del split (múltiplo de 0.0001).",
+                              "format": "float"
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "La moneda con la que se hace el pago. Para ver la lista completa de códigos de moneda, consulta [Country reference](/reference/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                            }
+                          }
+                        },
+                        "liability": {
+                          "type": "object",
+                          "description": "Información opcional sobre la responsabilidad del destinatario por cargos y contracargos.",
+                          "properties": {
+                            "processing_fee": {
+                              "type": "string",
+                              "description": "Indica a quién se le cobra el cargo de la transacción.",
+                              "enum": [
+                                "MERCHANT",
+                                "RECIPIENT",
+                                "SHARED"
+                              ]
+                            },
+                            "chargebacks": {
+                              "type": "boolean",
+                              "description": "El destinatario es responsable en caso de un contracargo."
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "simplified_mode": {
+                    "type": "boolean",
+                    "description": "Indica si se debe intentar reembolsar un pago después de un error o rechazo en el primer intento. Por defecto es `false`. Para más información, accede a la [guía](transaction-retries).",
+                    "default": false
+                  },
+                  "response_additional_data": {
+                    "type": "object",
+                    "description": "Especifica datos adicionales requeridos para la respuesta de la transacción",
+                    "properties": {
+                      "receipt": {
+                        "type": "boolean",
+                        "description": "Indica si se necesita un comprobante en la respuesta de la transacción"
+                      },
+                      "receipt_language": {
+                        "type": "string",
+                        "description": "Indica el idioma del comprobante que se generará",
+                        "enum": [
+                          "ES",
+                          "EN",
+                          "PT"
+                        ]
+                      }
+                    }
+                  },
+                  "customer_payer": {
+                    "type": "object",
+                    "description": "Indica el objeto customer de los pagos.",
+                    "properties": {
+                      "first_name": {
+                        "type": "string",
+                        "description": "El nombre del cliente (MAX 255; MIN 3)."
+                      },
+                      "last_name": {
+                        "type": "string",
+                        "description": "El apellido del cliente (MAX 255; MIN 3)."
+                      },
+                      "gender": {
+                        "type": "string",
+                        "description": "El género del cliente (MAX 2; MIN 1). <br/>- M=Masculino <br/>- F=Femenino <br/>- NB=No binario <br/>- NA=No aplica <br/>- NK=No se conoce <br/>- U=Sin definir.",
+                        "enum": [
+                          "M",
+                          "F",
+                          "NB",
+                          "NA",
+                          "NK",
+                          "U"
+                        ]
+                      },
+                      "date_of_birth": {
+                        "type": "string",
+                        "description": "La fecha de nacimiento del cliente en formato `YYYY-MM-DD` (Longitud: 10)."
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "El correo electrónico del cliente (MAX 255; MIN 3)."
+                      },
+                      "nationality": {
+                        "type": "string",
+                        "description": "La nacionalidad del cliente (MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference))."
+                      },
+                      "document": {
+                        "type": "object",
+                        "description": "Indica el objeto del documento del cliente, con su número y su tipo.",
+                        "properties": {
+                          "document_number": {
+                            "type": "string",
+                            "description": "Número de documento del cliente (MAX 40; MIN 3)"
+                          },
+                          "document_type": {
+                            "type": "string",
+                            "description": "El tipo de documento del cliente (MAX 6, MIN 2). Accede a la [lista de tipos de documento](/reference/country-reference) para más detalles.",
+                            "enum": [
+                              "DNI",
+                              "CI",
+                              "LC",
+                              "LE",
+                              "CUIT",
+                              "CUIL",
+                              "PAS",
+                              "CPF",
+                              "RG",
+                              "CNH",
+                              "CNPJ",
+                              "RUT",
+                              "RUN",
+                              "CC",
+                              "CE",
+                              "NIT",
+                              "DUI",
+                              "PIC",
+                              "DPI",
+                              "IFR",
+                              "INE",
+                              "CP",
+                              "RFC",
+                              "CURP",
+                              "CIP",
+                              "CIC",
+                              "CUI",
+                              "RUC"
+                            ]
+                          }
+                        }
+                      },
+                      "phone": {
+                        "type": "object",
+                        "description": "Especifica el objeto de teléfono del cliente.",
+                        "properties": {
+                          "country_code": {
+                            "type": "string",
+                            "description": "El código de país del teléfono del cliente (MAX 3; MIN 1)."
+                          },
+                          "number": {
+                            "type": "string",
+                            "description": "El número de teléfono del cliente, sin el código de país (MAX 32; MIN 1)."
+                          }
+                        }
+                      },
+                      "billing_address": {
+                        "type": "object",
+                        "description": "Indica el objeto de la dirección de facturación del cliente.",
+                        "properties": {
+                          "address_line_1": {
+                            "type": "string",
+                            "description": "La línea principal de la dirección de facturación del cliente (MAX 255; MIN 3)."
+                          },
+                          "address_line_2": {
+                            "type": "string",
+                            "description": "La línea secundaria de la dirección de facturación del cliente (MAX 255; MIN 3)."
+                          },
+                          "city": {
+                            "type": "string",
+                            "description": "La ciudad considerada para la dirección de facturación (MAX 255; MIN 3)."
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "El país considerado para la dirección de facturación (MAX 2; MIN 2; [ISO 3166-1](https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1)).",
+                            "enum": [
+                              "AR",
+                              "BO",
+                              "BR",
+                              "CL",
+                              "CO",
+                              "CR",
+                              "EC",
+                              "SV",
+                              "GT",
+                              "HN",
+                              "MX",
+                              "NI",
+                              "PA",
+                              "PY",
+                              "PE",
+                              "US",
+                              "UY"
+                            ]
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "El estado considerado para la dirección de facturación (MAX 255; MIN 3)."
+                          },
+                          "zip_code": {
+                            "type": "string",
+                            "description": "El código postal considerado para la dirección de facturación (MAX 10; MIN 5)."
+                          }
+                        }
+                      },
+                      "shipping_address": {
+                        "type": "object",
+                        "description": "Indica el objeto de la dirección de envío del cliente.",
+                        "properties": {
+                          "address_line_1": {
+                            "type": "string",
+                            "description": "La línea principal de la dirección de envío del cliente (MAX 255; MIN 3)."
+                          },
+                          "address_line_2": {
+                            "type": "string",
+                            "description": "La línea secundaria de la dirección de envío del cliente (MAX 255; MIN 3)."
+                          },
+                          "city": {
+                            "type": "string",
+                            "description": "La ciudad considerada para la dirección de envío (MAX 255; MIN 3)."
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "El país considerado para la dirección de envío (MAX 2; MIN 2; [ISO 3166-1](https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1)).",
+                            "enum": [
+                              "AR",
+                              "BO",
+                              "BR",
+                              "CL",
+                              "CO",
+                              "CR",
+                              "EC",
+                              "SV",
+                              "GT",
+                              "HN",
+                              "MX",
+                              "NI",
+                              "PA",
+                              "PY",
+                              "PE",
+                              "US",
+                              "UY"
+                            ]
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "El estado considerado para la dirección de envío (MAX 255; MIN 3)."
+                          },
+                          "zip_code": {
+                            "type": "string",
+                            "description": "El código postal considerado para la dirección de envío (MAX 10; MIN 5)."
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "payment_method": {
+                    "type": "object",
+                    "description": "Especifica el objeto de método de pago para los pagos.",
+                    "properties": {
+                      "detail": {
+                        "type": "object",
+                        "description": "Indica el objeto con el detalle del método de pago.",
+                        "properties": {
+                          "bank_transfer": {
+                            "type": "object",
+                            "description": "Especifica los detalles del método de pago por transferencia bancaria.",
+                            "properties": {
+                              "account_type": {
+                                "type": "string",
+                                "description": "Tipo de cuenta bancaria (MAX 255; MIN 3)",
+                                "enum": [
+                                  "CHECKINGS",
+                                  "SAVINGS"
+                                ]
+                              },
+                              "bank_name": {
+                                "type": "string",
+                                "description": "Nombre del banco (MAX 255; MIN 3)"
+                              },
+                              "bank_id": {
+                                "type": "string",
+                                "description": "ID del banco (MAX 255; MIN 3)"
+                              },
+                              "beneficiary_name": {
+                                "type": "string",
+                                "description": "Nombre del titular de la cuenta (MAX 255; MIN 3)"
+                              },
+                              "bank_account": {
+                                "type": "string",
+                                "description": "Número de cuenta bancaria (MAX 255; MIN 3)"
+                              },
+                              "beneficiary_document_type": {
+                                "type": "string",
+                                "description": "Tipo de documento del titular de la cuenta (MAX 255; MIN 3)"
+                              },
+                              "beneficiary_document": {
+                                "type": "string",
+                                "description": "Número de documento del titular de la cuenta (MAX 255; MIN 3)"
+                              },
+                              "reference": {
+                                "type": "string",
+                                "description": "Código de referencia del usuario (MAX 255; MIN 1)"
+                              },
+                              "bank_account_mask_number": {
+                                "type": "string",
+                                "description": "Número enmascarado de la cuenta bancaria asociada a la transferencia (por ejemplo, ****6789). Es un dato de la cuenta, no del mandato."
+                              },
+                              "mandate": {
+                                "type": "object",
+                                "description": "Datos del mandato de débito directo, para los métodos de transferencia bancaria que funcionan con mandatos (por ejemplo, ACH, SEPA, BACS, PAD).",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "Identificador del mandato, tal como lo entrega el proveedor de pagos."
+                                  },
+                                  "info": {
+                                    "type": "string",
+                                    "description": "Free-text mandate information."
+                                  },
+                                  "received_status": {
+                                    "type": "string",
+                                    "description": "Estado del proveedor que indica si se recibió el mandato. Se reenvía tal como lo entrega el proveedor de pagos."
+                                  },
+                                  "existing_status": {
+                                    "type": "string",
+                                    "description": "Estado del proveedor del mandato existente. Se reenvía tal como lo entrega el proveedor de pagos."
+                                  },
+                                  "created_at": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Fecha y hora en que se creó el mandato (ISO 8601)."
+                                  },
+                                  "updated_at": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Fecha y hora de la última actualización del mandato (ISO 8601)."
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              },
+              "examples": {
+                "Full Refund": {
+                  "value": {
+                    "description": "Duplicate",
+                    "reason": "REQUESTED_BY_CUSTOMER",
+                    "merchant_reference": "AAB01-432245"
+                  }
+                },
+                "Partial Refund": {
+                  "value": {
+                    "amount": {
+                      "currency": "COP",
+                      "value": 500
+                    },
+                    "description": "Duplicate",
+                    "reason": "REQUESTED_BY_CUSTOMER",
+                    "merchant_reference": "AAB01-432245"
+                  }
+                },
+                "Cancel": {
+                  "value": {
+                    "description": "Duplicate",
+                    "reason": "REQUESTED_BY_CUSTOMER",
+                    "merchant_reference": "AAB01-432245"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Full Refund": {
+                    "value": {
+                      "id": "7fd485f3-bd72-45eb-a3fb-774daa3d79b6",
+                      "type": "REFUND",
+                      "status": "SUCCEEDED",
+                      "category": "CARD",
+                      "amount": {
+                        "captured": 0,
+                        "currency": "USD",
+                        "refunded": 0,
+                        "value": 30000
+                      },
+                      "merchant_reference": "0000023",
+                      "created_at": "2024-06-06T14:06:06.284443Z",
+                      "updated_at": "2024-06-06T14:06:37.984065Z",
+                      "provider_data": {
+                        "id": "YUNO_TEST_PAYMENT_GW",
+                        "transaction_id": "",
+                        "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                        "status": "",
+                        "status_detail": "",
+                        "response_message": null,
+                        "response_code": "SUCCEEDED",
+                        "iso8583_response_code": "00",
+                        "iso8583_response_message": "Approved or completed successfully",
+                        "raw_request": {
+                          "amount": {
+                            "currency": "BRL",
+                            "value": 2100
+                          },
+                          "reference": "34343434"
+                        },
+                        "raw_response": null,
+                        "third_party_transaction_id": null,
+                        "third_party_account_id": null
+                      },
+                      "connection_data": {
+                        "id": "58cc35f4-faef-4107-8e09-d18d60121d38",
+                        "name": "Connection name"
+                      },
+                      "response_code": "SUCCEEDED",
+                      "response_message": "Transaction successful",
+                      "payment": {
+                        "id": "c3583c27-0478-4e02-8827-4d8f2121c670",
+                        "account_id": "",
+                        "description": "Test Bank of America",
+                        "country": "US",
+                        "status": "REFUNDED",
+                        "sub_status": "REFUNDED",
+                        "merchant_order_id": "0000023",
+                        "created_at": "2024-06-06T14:06:06.284443Z",
+                        "updated_at": "2024-06-06T14:06:06.284443Z",
+                        "amount": {
+                          "captured": 0,
+                          "currency": "USD",
+                          "refunded": 30000,
+                          "value": 30000
+                        },
+                        "additional_data": {
+                          "airline": {
+                            "pnr": "1P-2UUGJW",
+                            "legs": [
+                              {
+                                "departure_airport": "EWR",
+                                "departure_datetime": "2014-05-12 13:05:00",
+                                "departure_airport_timezone": "-05:00",
+                                "arrival_airport": "SFO",
+                                "arrival_airport_timezone": "-08:00",
+                                "arrival_datetime": "",
+                                "carrier_code": "UA",
+                                "carrier_name": "United Airlines",
+                                "flight_number": "842",
+                                "fare_basis_code": "HL7LNR",
+                                "fare_class_code": "FR",
+                                "base_fare": 200,
+                                "base_fare_currency": "USD",
+                                "stopover_code": "s"
+                              }
+                            ],
+                            "passengers": [
+                              {
+                                "first_name": "John",
+                                "last_name": "Doe",
+                                "middle_name": "A",
+                                "type": "adult",
+                                "date_of_birth": "1980-01-01",
+                                "nationality": "US",
+                                "document": {
+                                  "document_type": "SSN",
+                                  "document_number": "123-45-6789"
+                                },
+                                "country": "US",
+                                "loyalty_number": "UA123456",
+                                "loyalty_tier": "Gold",
+                                "email": "johndoe@example.com",
+                                "phone": "+15555555555"
+                              }
+                            ],
+                            "ticket": null,
+                            "tickets": [
+                              {
+                                "ticket_number": "123456",
+                                "e_ticket": false,
+                                "restricted": false,
+                                "total_fare_amount": 80,
+                                "total_tax_amount": 22,
+                                "total_fee_amount": 14,
+                                "issue": null
+                              }
+                            ]
+                          },
+                          "order": {
+                            "fee_amount": 100,
+                            "shipping_amount": 100,
+                            "tip_amount": null,
+                            "items": [
+                              {
+                                "id": "123AD",
+                                "name": "Skirt",
+                                "quantity": 1,
+                                "unit_amount": 29800,
+                                "category": "Clothes",
+                                "brand": "XYZ",
+                                "sku_code": "8765432109",
+                                "manufacture_part_number": "XYZ123456"
+                              }
+                            ]
+                          },
+                          "seller_details": null
+                        }
+                      },
+                      "customer_payer": {
+                        "id": "5e7baf7d-88d5-47c4-8baf-93354d5e195e",
+                        "merchant_customer_id": "4321-2732268",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "gender": "M",
+                        "date_of_birth": "1990-02-28",
+                        "email": "johndoe@example.com",
+                        "nationality": "US",
+                        "ip_address": null,
+                        "device_fingerprint": null,
+                        "device_fingerprints": [],
+                        "browser_info": null,
+                        "document": {
+                          "document_type": "SSN",
+                          "document_number": "123-45-6789"
+                        },
+                        "phone": {
+                          "number": "5551234567",
+                          "country_code": "1"
+                        },
+                        "billing_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 4B",
+                          "country": "US",
+                          "state": "NY",
+                          "city": "New York",
+                          "zip_code": "10001",
+                          "neighborhood": "Manhattan"
+                        },
+                        "shipping_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 4B",
+                          "country": "US",
+                          "state": "NY",
+                          "city": "New York",
+                          "zip_code": "10001",
+                          "neighborhood": "Manhattan"
+                        },
+                        "merchant_customer_created_at": "2022-05-09T20:46:54.786342Z"
+                      },
+                      "simplified_mode": false,
+                      "receipt": false,
+                      "receipt_url": null,
+                      "receipt_language": null,
+                      "split_marketplace": [],
+                      "metadata": null
+                    }
+                  },
+                  "Partial Refund": {
+                    "value": {
+                      "id": "e44cdc8e-01e7-4767-a1b6-3a646a609dc5",
+                      "type": "REFUND",
+                      "status": "SUCCEEDED",
+                      "category": "CARD",
+                      "amount": {
+                        "captured": 0,
+                        "currency": "USD",
+                        "refunded": 0,
+                        "value": 30000
+                      },
+                      "merchant_reference": "0000023",
+                      "created_at": "2024-06-06T14:07:53.881239Z",
+                      "updated_at": "2024-06-06T14:08:17.438878Z",
+                      "provider_data": {
+                        "id": "YUNO_TEST_PAYMENT_GW",
+                        "transaction_id": "",
+                        "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                        "status": "",
+                        "sub_status": "",
+                        "status_detail": "",
+                        "response_message": null,
+                        "response_code": "SUCCEEDED",
+                        "iso8583_response_code": "00",
+                        "iso8583_response_message": "Approved or completed successfully",
+                        "raw_response": null,
+                        "third_party_transaction_id": null,
+                        "third_party_account_id": null
+                      },
+                      "connection_data": {
+                        "id": "58cc35f4-faef-4107-8e09-d18d60121d38",
+                        "name": "Connection name"
+                      },
+                      "response_code": "SUCCEEDED",
+                      "response_message": "Transaction successful",
+                      "payment": {
+                        "id": "eee7daeb-5ed7-41bd-8fee-7a440ca2ab86",
+                        "account_id": "",
+                        "description": "Test",
+                        "country": "US",
+                        "status": "SUCCEEDED",
+                        "sub_status": "PARTIALLY_REFUNDED",
+                        "merchant_order_id": "0000023",
+                        "created_at": "2024-06-06T14:07:53.881239Z",
+                        "updated_at": "2024-06-06T14:07:53.881239Z",
+                        "amount": {
+                          "captured": 0,
+                          "currency": "USD",
+                          "refunded": 1000,
+                          "value": 30000
+                        },
+                        "additional_data": {
+                          "airline": {
+                            "pnr": "1P-2UUGJW",
+                            "legs": [
+                              {
+                                "departure_airport": "EZE",
+                                "departure_datetime": "2014-05-12 13:05:00",
+                                "departure_airport_timezone": "-03:00",
+                                "arrival_airport": "AMS",
+                                "arrival_airport_timezone": "+00:00",
+                                "arrival_datetime": "",
+                                "carrier_code": "KL",
+                                "carrier_name": "KLM Royal Dutch Airlines",
+                                "flight_number": "842",
+                                "fare_basis_code": "HL7LNR",
+                                "fare_class_code": "FR",
+                                "base_fare": 200,
+                                "base_fare_currency": "USD",
+                                "stopover_code": "s"
+                              }
+                            ],
+                            "passengers": [
+                              {
+                                "first_name": "John",
+                                "last_name": "Doe",
+                                "middle_name": "A.",
+                                "type": "adult",
+                                "date_of_birth": "1980-01-01",
+                                "nationality": "US",
+                                "document": {
+                                  "document_type": "SSN",
+                                  "document_number": "123-45-6789"
+                                },
+                                "country": "US",
+                                "loyalty_number": "JD123456",
+                                "loyalty_tier": "Gold",
+                                "email": "johndoe@example.com",
+                                "phone": "5551234567"
+                              }
+                            ],
+                            "ticket": null,
+                            "tickets": [
+                              {
+                                "ticket_number": "123456",
+                                "e_ticket": false,
+                                "restricted": false,
+                                "total_fare_amount": 80,
+                                "total_tax_amount": 22,
+                                "total_fee_amount": 14,
+                                "issue": null
+                              }
+                            ]
+                          },
+                          "order": {
+                            "fee_amount": 100,
+                            "shipping_amount": 100,
+                            "tip_amount": null,
+                            "items": [
+                              {
+                                "id": "123AD",
+                                "name": "Skirt",
+                                "quantity": 1,
+                                "unit_amount": 29800,
+                                "category": "Clothes",
+                                "brand": "XYZ",
+                                "sku_code": "8765432109",
+                                "manufacture_part_number": "XYZ123456"
+                              }
+                            ]
+                          },
+                          "seller_details": null
+                        }
+                      },
+                      "customer_payer": {
+                        "id": "5e7baf7d-88d5-47c4-8baf-93354d5e195e",
+                        "merchant_customer_id": "4321-2732268",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "gender": "M",
+                        "date_of_birth": "1990-02-28",
+                        "email": "johndoe@example.com",
+                        "nationality": "US",
+                        "ip_address": null,
+                        "device_fingerprint": null,
+                        "device_fingerprints": [],
+                        "browser_info": null,
+                        "document": {
+                          "document_type": "SSN",
+                          "document_number": "123-45-6789"
+                        },
+                        "phone": {
+                          "number": "5551234567",
+                          "country_code": "1"
+                        },
+                        "billing_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 4B",
+                          "country": "US",
+                          "state": "NY",
+                          "city": "New York",
+                          "zip_code": "10001",
+                          "neighborhood": "Manhattan"
+                        },
+                        "shipping_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 4B",
+                          "country": "US",
+                          "state": "NY",
+                          "city": "New York",
+                          "zip_code": "10001",
+                          "neighborhood": "Manhattan"
+                        },
+                        "merchant_customer_created_at": "2022-05-09T20:46:54.786342Z"
+                      },
+                      "simplified_mode": false,
+                      "receipt": false,
+                      "receipt_url": null,
+                      "receipt_language": null,
+                      "split_marketplace": [],
+                      "metadata": null
+                    }
+                  },
+                  "Cancel": {
+                    "value": {
+                      "id": "2fbc6db6-718b-4554-b03f-826e552f1b9f",
+                      "type": "CANCEL",
+                      "status": "SUCCEEDED",
+                      "category": "CARD",
+                      "amount": {
+                        "captured": 0,
+                        "currency": "USD",
+                        "refunded": 0,
+                        "value": 30000
+                      },
+                      "merchant_reference": "",
+                      "created_at": "2024-06-06T14:05:31.651012Z",
+                      "updated_at": "2024-06-06T14:05:31.742355Z",
+                      "provider_data": {
+                        "id": "YUNO_TEST_PAYMENT_GW",
+                        "transaction_id": "",
+                        "account_id": "",
+                        "status": "SUCCEEDED",
+                        "sub_status": "",
+                        "status_detail": "SUCCEEDED",
+                        "response_message": null,
+                        "response_code": "SUCCEEDED",
+                        "iso8583_response_code": "00",
+                        "iso8583_response_message": "Approved or completed successfully",
+                        "raw_response": null,
+                        "third_party_transaction_id": null,
+                        "third_party_account_id": null
+                      },
+                      "connection_data": {
+                        "id": "58cc35f4-faef-4107-8e09-d18d60121d38",
+                        "name": "Connection name"
+                      },
+                      "response_code": "SUCCEEDED",
+                      "response_message": "Transaction successful",
+                      "payment": {
+                        "id": "cddba02c-e47d-4330-9cac-afcd9c0194b1",
+                        "account_id": "",
+                        "description": "Test",
+                        "country": "US",
+                        "status": "CANCELED",
+                        "sub_status": "CANCELED",
+                        "merchant_order_id": "0000023",
+                        "created_at": "2024-06-06T14:04:44.768364Z",
+                        "updated_at": "2024-06-06T14:05:31.79539Z",
+                        "amount": {
+                          "captured": 0,
+                          "currency": "USD",
+                          "refunded": 0,
+                          "value": 30000
+                        }
+                      },
+                      "customer_payer": {
+                        "id": "5e7baf7d-88d5-47c4-8baf-93354d5e195e",
+                        "merchant_customer_id": "4321-2732268",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "gender": "M",
+                        "date_of_birth": "1990-02-28",
+                        "email": "johndoe@example.com",
+                        "nationality": "US",
+                        "ip_address": null,
+                        "device_fingerprint": null,
+                        "device_fingerprints": [],
+                        "browser_info": null,
+                        "document": {
+                          "document_type": "SSN",
+                          "document_number": "123-45-6789"
+                        },
+                        "phone": {
+                          "number": "5551234567",
+                          "country_code": "1"
+                        },
+                        "billing_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 4B",
+                          "country": "US",
+                          "state": "NY",
+                          "city": "New York",
+                          "zip_code": "10001",
+                          "neighborhood": "Manhattan"
+                        },
+                        "shipping_address": {
+                          "address_line_1": "123 Main St",
+                          "address_line_2": "Apt 4B",
+                          "country": "US",
+                          "state": "NY",
+                          "city": "New York",
+                          "zip_code": "10001",
+                          "neighborhood": "Manhattan"
+                        },
+                        "merchant_customer_created_at": "2022-05-09T20:46:54.786342Z"
+                      },
+                      "simplified_mode": false,
+                      "receipt": false,
+                      "receipt_url": null,
+                      "receipt_language": null,
+                      "split_marketplace": [],
+                      "metadata": null
+                    }
+                  }
+                },
+                "schema": {
+                  "oneOf": [
+                    {
+                      "title": "Reembolso total",
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "7fd485f3-bd72-45eb-a3fb-774daa3d79b6"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "REFUND"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "SUCCEEDED"
+                        },
+                        "category": {
+                          "type": "string",
+                          "example": "CARD"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "captured": {
+                              "type": "integer",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "refunded": {
+                              "type": "integer",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "value": {
+                              "type": "integer",
+                              "example": 30000,
+                              "default": 0
+                            }
+                          }
+                        },
+                        "merchant_reference": {
+                          "type": "string",
+                          "example": "0000023"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "example": "2024-06-06T14:06:06.284443Z"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "example": "2024-06-06T14:06:37.984065Z"
+                        },
+                        "provider_data": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "YUNO_TEST_PAYMENT_GW"
+                            },
+                            "transaction_id": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "account_id": {
+                              "type": "string",
+                              "example": "493e9374-510a-4201-9e09-de669d75f256"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "status_detail": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "response_message": {},
+                            "response_code": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "iso8583_response_code": {
+                              "type": "string",
+                              "example": "00"
+                            },
+                            "iso8583_response_message": {
+                              "type": "string",
+                              "example": "Approved or completed successfully"
+                            },
+                            "raw_request": {
+                              "type": "object",
+                              "description": "Copia ofuscada de la solicitud que Yuno envió al proveedor. Solo se devuelve para organizaciones autorizadas."
+                            },
+                            "raw_response": {},
+                            "third_party_transaction_id": {},
+                            "third_party_account_id": {}
+                          }
+                        },
+                        "connection_data": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "58cc35f4-faef-4107-8e09-d18d60121d38"
+                            },
+                            "name": {
+                              "type": "string",
+                              "example": "Connection name"
+                            }
+                          }
+                        },
+                        "response_code": {
+                          "type": "string",
+                          "example": "SUCCEEDED"
+                        },
+                        "response_message": {
+                          "type": "string",
+                          "example": "Transaction successful"
+                        },
+                        "payment": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "c3583c27-0478-4e02-8827-4d8f2121c670"
+                            },
+                            "account_id": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "description": {
+                              "type": "string",
+                              "example": "Test Bank of America"
+                            },
+                            "country": {
+                              "type": "string",
+                              "example": "US"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "REFUNDED"
+                            },
+                            "sub_status": {
+                              "type": "string",
+                              "example": "REFUNDED"
+                            },
+                            "merchant_order_id": {
+                              "type": "string",
+                              "example": "0000023"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "example": "2024-06-06T14:06:06.284443Z"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "example": "2024-06-06T14:06:06.284443Z"
+                            },
+                            "amount": {
+                              "type": "object",
+                              "properties": {
+                                "captured": {
+                                  "type": "integer",
+                                  "example": 0,
+                                  "default": 0
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD"
+                                },
+                                "refunded": {
+                                  "type": "integer",
+                                  "example": 30000,
+                                  "default": 0
+                                },
+                                "value": {
+                                  "type": "integer",
+                                  "example": 30000,
+                                  "default": 0
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "El descuento total de la promoción de Yuno aplicada al pago: la suma de las líneas `YUNO_PROMOTION` de `additional_data.order.discounts`. No aparece cuando no se aplicó ninguna promoción. El monto cobrado es `amount.value` menos este valor, y está en `transactions.amount`. Consulta [Promociones](/docs/payment-features/promotions).",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "La moneda del descuento, la misma que `amount.currency`."
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "El descuento."
+                                }
+                              }
+                            },
+                            "additional_data": {
+                              "type": "object",
+                              "properties": {
+                                "airline": {
+                                  "type": "object",
+                                  "properties": {
+                                    "pnr": {
+                                      "type": "string",
+                                      "example": "1P-2UUGJW"
+                                    },
+                                    "legs": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "departure_airport": {
+                                            "type": "string",
+                                            "example": "EWR"
+                                          },
+                                          "departure_datetime": {
+                                            "type": "string",
+                                            "example": "2014-05-12 13:05:00"
+                                          },
+                                          "departure_airport_timezone": {
+                                            "type": "string",
+                                            "example": "-05:00"
+                                          },
+                                          "arrival_airport": {
+                                            "type": "string",
+                                            "example": "SFO"
+                                          },
+                                          "arrival_airport_timezone": {
+                                            "type": "string",
+                                            "example": "-08:00"
+                                          },
+                                          "arrival_datetime": {
+                                            "type": "string",
+                                            "example": ""
+                                          },
+                                          "carrier_code": {
+                                            "type": "string",
+                                            "example": "UA"
+                                          },
+                                          "carrier_name": {
+                                            "type": "string",
+                                            "example": "United Airlines"
+                                          },
+                                          "flight_number": {
+                                            "type": "string",
+                                            "example": "842"
+                                          },
+                                          "fare_basis_code": {
+                                            "type": "string",
+                                            "example": "HL7LNR"
+                                          },
+                                          "fare_class_code": {
+                                            "type": "string",
+                                            "example": "FR"
+                                          },
+                                          "base_fare": {
+                                            "type": "integer",
+                                            "example": 200,
+                                            "default": 0
+                                          },
+                                          "base_fare_currency": {
+                                            "type": "string",
+                                            "example": "USD"
+                                          },
+                                          "stopover_code": {
+                                            "type": "string",
+                                            "example": "s"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "passengers": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "first_name": {
+                                            "type": "string",
+                                            "example": "John"
+                                          },
+                                          "last_name": {
+                                            "type": "string",
+                                            "example": "Doe"
+                                          },
+                                          "middle_name": {
+                                            "type": "string",
+                                            "example": "A"
+                                          },
+                                          "type": {
+                                            "type": "string",
+                                            "example": "adult"
+                                          },
+                                          "date_of_birth": {
+                                            "type": "string",
+                                            "example": "1980-01-01"
+                                          },
+                                          "nationality": {
+                                            "type": "string",
+                                            "example": "US"
+                                          },
+                                          "document": {
+                                            "type": "object",
+                                            "properties": {
+                                              "document_type": {
+                                                "type": "string",
+                                                "example": "SSN"
+                                              },
+                                              "document_number": {
+                                                "type": "string",
+                                                "example": "123-45-6789"
+                                              }
+                                            }
+                                          },
+                                          "country": {
+                                            "type": "string",
+                                            "example": "US"
+                                          },
+                                          "loyalty_number": {
+                                            "type": "string",
+                                            "example": "UA123456"
+                                          },
+                                          "loyalty_tier": {
+                                            "type": "string",
+                                            "example": "Gold"
+                                          },
+                                          "email": {
+                                            "type": "string",
+                                            "example": "johndoe@example.com"
+                                          },
+                                          "phone": {
+                                            "type": "string",
+                                            "example": "+15555555555"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "ticket": {},
+                                    "tickets": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "ticket_number": {
+                                            "type": "string",
+                                            "example": "123456"
+                                          },
+                                          "e_ticket": {
+                                            "type": "boolean",
+                                            "example": false,
+                                            "default": true
+                                          },
+                                          "restricted": {
+                                            "type": "boolean",
+                                            "example": false,
+                                            "default": true
+                                          },
+                                          "total_fare_amount": {
+                                            "type": "integer",
+                                            "example": 80,
+                                            "default": 0
+                                          },
+                                          "total_tax_amount": {
+                                            "type": "integer",
+                                            "example": 22,
+                                            "default": 0
+                                          },
+                                          "total_fee_amount": {
+                                            "type": "integer",
+                                            "example": 14,
+                                            "default": 0
+                                          },
+                                          "issue": {}
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "order": {
+                                  "type": "object",
+                                  "properties": {
+                                    "fee_amount": {
+                                      "type": "integer",
+                                      "example": 100,
+                                      "default": 0
+                                    },
+                                    "shipping_amount": {
+                                      "type": "integer",
+                                      "example": 100,
+                                      "default": 0
+                                    },
+                                    "tip_amount": {},
+                                    "items": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "example": "123AD"
+                                          },
+                                          "name": {
+                                            "type": "string",
+                                            "example": "Skirt"
+                                          },
+                                          "quantity": {
+                                            "type": "integer",
+                                            "example": 1,
+                                            "default": 0
+                                          },
+                                          "unit_amount": {
+                                            "type": "integer",
+                                            "example": 29800,
+                                            "default": 0
+                                          },
+                                          "category": {
+                                            "type": "string",
+                                            "example": "Clothes"
+                                          },
+                                          "brand": {
+                                            "type": "string",
+                                            "example": "XYZ"
+                                          },
+                                          "sku_code": {
+                                            "type": "string",
+                                            "example": "8765432109"
+                                          },
+                                          "manufacture_part_number": {
+                                            "type": "string",
+                                            "example": "XYZ123456"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "seller_details": {}
+                              }
+                            }
+                          }
+                        },
+                        "customer_payer": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "5e7baf7d-88d5-47c4-8baf-93354d5e195e"
+                            },
+                            "merchant_customer_id": {
+                              "type": "string",
+                              "example": "4321-2732268"
+                            },
+                            "first_name": {
+                              "type": "string",
+                              "example": "John"
+                            },
+                            "last_name": {
+                              "type": "string",
+                              "example": "Doe"
+                            },
+                            "gender": {
+                              "type": "string",
+                              "example": "M"
+                            },
+                            "date_of_birth": {
+                              "type": "string",
+                              "example": "1990-02-28"
+                            },
+                            "email": {
+                              "type": "string",
+                              "example": "johndoe@example.com"
+                            },
+                            "nationality": {
+                              "type": "string",
+                              "example": "US"
+                            },
+                            "ip_address": {
+                              "nullable": true
+                            },
+                            "device_fingerprint": {
+                              "nullable": true
+                            },
+                            "device_fingerprints": {
+                              "type": "array",
+                              "items": {}
+                            },
+                            "browser_info": {
+                              "nullable": true
+                            },
+                            "document": {
+                              "type": "object",
+                              "properties": {
+                                "document_type": {
+                                  "type": "string",
+                                  "example": "SSN"
+                                },
+                                "document_number": {
+                                  "type": "string",
+                                  "example": "123-45-6789"
+                                }
+                              }
+                            },
+                            "phone": {
+                              "type": "object",
+                              "properties": {
+                                "number": {
+                                  "type": "string",
+                                  "example": "5551234567"
+                                },
+                                "country_code": {
+                                  "type": "string",
+                                  "example": "1"
+                                }
+                              }
+                            },
+                            "billing_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "123 Main St"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 4B"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "NY"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "10001"
+                                },
+                                "neighborhood": {
+                                  "type": "string",
+                                  "example": "Manhattan"
+                                }
+                              }
+                            },
+                            "shipping_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "123 Main St"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 4B"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "NY"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "10001"
+                                },
+                                "neighborhood": {
+                                  "type": "string",
+                                  "example": "Manhattan"
+                                }
+                              }
+                            },
+                            "merchant_customer_created_at": {
+                              "type": "string",
+                              "example": "2022-05-09T20:46:54.786342Z"
+                            }
+                          },
+                          "description": "Pagador cliente."
+                        },
+                        "simplified_mode": {
+                          "type": "boolean",
+                          "example": false,
+                          "description": "Modo simplificado."
+                        },
+                        "receipt": {
+                          "type": "boolean",
+                          "example": false,
+                          "description": "Comprobante."
+                        },
+                        "receipt_url": {
+                          "nullable": true,
+                          "description": "URL del comprobante."
+                        },
+                        "receipt_language": {
+                          "nullable": true,
+                          "description": "Idioma del comprobante."
+                        },
+                        "split_marketplace": {
+                          "type": "array",
+                          "items": {},
+                          "description": "Split marketplace."
+                        },
+                        "metadata": {
+                          "nullable": true,
+                          "description": "Metadata."
+                        }
+                      }
+                    },
+                    {
+                      "title": "Reembolso parcial",
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "e44cdc8e-01e7-4767-a1b6-3a646a609dc5"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "REFUND"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "SUCCEEDED"
+                        },
+                        "category": {
+                          "type": "string",
+                          "example": "CARD"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "captured": {
+                              "type": "integer",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "refunded": {
+                              "type": "integer",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "value": {
+                              "type": "integer",
+                              "example": 30000,
+                              "default": 0
+                            }
+                          }
+                        },
+                        "merchant_reference": {
+                          "type": "string",
+                          "example": "0000023"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "example": "2024-06-06T14:07:53.881239Z"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "example": "2024-06-06T14:08:17.438878Z"
+                        },
+                        "provider_data": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "YUNO_TEST_PAYMENT_GW"
+                            },
+                            "transaction_id": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "account_id": {
+                              "type": "string",
+                              "example": "493e9374-510a-4201-9e09-de669d75f256"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "sub_status": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "status_detail": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "response_message": {},
+                            "response_code": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "iso8583_response_code": {
+                              "type": "string",
+                              "example": "00"
+                            },
+                            "iso8583_response_message": {
+                              "type": "string",
+                              "example": "Approved or completed successfully"
+                            },
+                            "raw_request": {
+                              "type": "object",
+                              "description": "Copia ofuscada de la solicitud que Yuno envió al proveedor. Solo se devuelve para organizaciones autorizadas."
+                            },
+                            "raw_response": {},
+                            "third_party_transaction_id": {},
+                            "third_party_account_id": {}
+                          }
+                        },
+                        "connection_data": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "58cc35f4-faef-4107-8e09-d18d60121d38"
+                            },
+                            "name": {
+                              "type": "string",
+                              "example": "Connection name"
+                            }
+                          }
+                        },
+                        "response_code": {
+                          "type": "string",
+                          "example": "SUCCEEDED"
+                        },
+                        "response_message": {
+                          "type": "string",
+                          "example": "Transaction successful"
+                        },
+                        "payment": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "eee7daeb-5ed7-41bd-8fee-7a440ca2ab86"
+                            },
+                            "account_id": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "description": {
+                              "type": "string",
+                              "example": "Test"
+                            },
+                            "country": {
+                              "type": "string",
+                              "example": "US"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "sub_status": {
+                              "type": "string",
+                              "example": "PARTIALLY_REFUNDED"
+                            },
+                            "merchant_order_id": {
+                              "type": "string",
+                              "example": "0000023"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "example": "2024-06-06T14:07:53.881239Z"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "example": "2024-06-06T14:07:53.881239Z"
+                            },
+                            "amount": {
+                              "type": "object",
+                              "properties": {
+                                "captured": {
+                                  "type": "integer",
+                                  "example": 0,
+                                  "default": 0
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD"
+                                },
+                                "refunded": {
+                                  "type": "integer",
+                                  "example": 1000,
+                                  "default": 0
+                                },
+                                "value": {
+                                  "type": "integer",
+                                  "example": 30000,
+                                  "default": 0
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "El descuento total de la promoción de Yuno aplicada al pago: la suma de las líneas `YUNO_PROMOTION` de `additional_data.order.discounts`. No aparece cuando no se aplicó ninguna promoción. El monto cobrado es `amount.value` menos este valor, y está en `transactions.amount`. Consulta [Promociones](/docs/payment-features/promotions).",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "La moneda del descuento, la misma que `amount.currency`."
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "El descuento."
+                                }
+                              }
+                            },
+                            "additional_data": {
+                              "type": "object",
+                              "properties": {
+                                "airline": {
+                                  "type": "object",
+                                  "properties": {
+                                    "pnr": {
+                                      "type": "string",
+                                      "example": "1P-2UUGJW"
+                                    },
+                                    "legs": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "departure_airport": {
+                                            "type": "string",
+                                            "example": "EZE"
+                                          },
+                                          "departure_datetime": {
+                                            "type": "string",
+                                            "example": "2014-05-12 13:05:00"
+                                          },
+                                          "departure_airport_timezone": {
+                                            "type": "string",
+                                            "example": "-03:00"
+                                          },
+                                          "arrival_airport": {
+                                            "type": "string",
+                                            "example": "AMS"
+                                          },
+                                          "arrival_airport_timezone": {
+                                            "type": "string",
+                                            "example": "+00:00"
+                                          },
+                                          "arrival_datetime": {
+                                            "type": "string",
+                                            "example": ""
+                                          },
+                                          "carrier_code": {
+                                            "type": "string",
+                                            "example": "KL"
+                                          },
+                                          "carrier_name": {
+                                            "type": "string",
+                                            "example": "KLM Royal Dutch Airlines"
+                                          },
+                                          "flight_number": {
+                                            "type": "string",
+                                            "example": "842"
+                                          },
+                                          "fare_basis_code": {
+                                            "type": "string",
+                                            "example": "HL7LNR"
+                                          },
+                                          "fare_class_code": {
+                                            "type": "string",
+                                            "example": "FR"
+                                          },
+                                          "base_fare": {
+                                            "type": "integer",
+                                            "example": 200,
+                                            "default": 0
+                                          },
+                                          "base_fare_currency": {
+                                            "type": "string",
+                                            "example": "USD"
+                                          },
+                                          "stopover_code": {
+                                            "type": "string",
+                                            "example": "s"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "passengers": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "first_name": {
+                                            "type": "string",
+                                            "example": "John"
+                                          },
+                                          "last_name": {
+                                            "type": "string",
+                                            "example": "Doe"
+                                          },
+                                          "middle_name": {
+                                            "type": "string",
+                                            "example": "A."
+                                          },
+                                          "type": {
+                                            "type": "string",
+                                            "example": "adult"
+                                          },
+                                          "date_of_birth": {
+                                            "type": "string",
+                                            "example": "1980-01-01"
+                                          },
+                                          "nationality": {
+                                            "type": "string",
+                                            "example": "US"
+                                          },
+                                          "document": {
+                                            "type": "object",
+                                            "properties": {
+                                              "document_type": {
+                                                "type": "string",
+                                                "example": "SSN"
+                                              },
+                                              "document_number": {
+                                                "type": "string",
+                                                "example": "123-45-6789"
+                                              }
+                                            }
+                                          },
+                                          "country": {
+                                            "type": "string",
+                                            "example": "US"
+                                          },
+                                          "loyalty_number": {
+                                            "type": "string",
+                                            "example": "JD123456"
+                                          },
+                                          "loyalty_tier": {
+                                            "type": "string",
+                                            "example": "Gold"
+                                          },
+                                          "email": {
+                                            "type": "string",
+                                            "example": "johndoe@example.com"
+                                          },
+                                          "phone": {
+                                            "type": "string",
+                                            "example": "5551234567"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "ticket": {},
+                                    "tickets": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "ticket_number": {
+                                            "type": "string",
+                                            "example": "123456"
+                                          },
+                                          "e_ticket": {
+                                            "type": "boolean",
+                                            "example": false,
+                                            "default": true
+                                          },
+                                          "restricted": {
+                                            "type": "boolean",
+                                            "example": false,
+                                            "default": true
+                                          },
+                                          "total_fare_amount": {
+                                            "type": "integer",
+                                            "example": 80,
+                                            "default": 0
+                                          },
+                                          "total_tax_amount": {
+                                            "type": "integer",
+                                            "example": 22,
+                                            "default": 0
+                                          },
+                                          "total_fee_amount": {
+                                            "type": "integer",
+                                            "example": 14,
+                                            "default": 0
+                                          },
+                                          "issue": {}
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "order": {
+                                  "type": "object",
+                                  "properties": {
+                                    "fee_amount": {
+                                      "type": "integer",
+                                      "example": 100,
+                                      "default": 0
+                                    },
+                                    "shipping_amount": {
+                                      "type": "integer",
+                                      "example": 100,
+                                      "default": 0
+                                    },
+                                    "tip_amount": {},
+                                    "items": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "example": "123AD"
+                                          },
+                                          "name": {
+                                            "type": "string",
+                                            "example": "Skirt"
+                                          },
+                                          "quantity": {
+                                            "type": "integer",
+                                            "example": 1,
+                                            "default": 0
+                                          },
+                                          "unit_amount": {
+                                            "type": "integer",
+                                            "example": 29800,
+                                            "default": 0
+                                          },
+                                          "category": {
+                                            "type": "string",
+                                            "example": "Clothes"
+                                          },
+                                          "brand": {
+                                            "type": "string",
+                                            "example": "XYZ"
+                                          },
+                                          "sku_code": {
+                                            "type": "string",
+                                            "example": "8765432109"
+                                          },
+                                          "manufacture_part_number": {
+                                            "type": "string",
+                                            "example": "XYZ123456"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "seller_details": {}
+                              }
+                            }
+                          }
+                        },
+                        "customer_payer": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "5e7baf7d-88d5-47c4-8baf-93354d5e195e"
+                            },
+                            "merchant_customer_id": {
+                              "type": "string",
+                              "example": "4321-2732268"
+                            },
+                            "first_name": {
+                              "type": "string",
+                              "example": "John"
+                            },
+                            "last_name": {
+                              "type": "string",
+                              "example": "Doe"
+                            },
+                            "gender": {
+                              "type": "string",
+                              "example": "M"
+                            },
+                            "date_of_birth": {
+                              "type": "string",
+                              "example": "1990-02-28"
+                            },
+                            "email": {
+                              "type": "string",
+                              "example": "johndoe@example.com"
+                            },
+                            "nationality": {
+                              "type": "string",
+                              "example": "US"
+                            },
+                            "ip_address": {
+                              "nullable": true
+                            },
+                            "device_fingerprint": {
+                              "nullable": true
+                            },
+                            "device_fingerprints": {
+                              "type": "array",
+                              "items": {}
+                            },
+                            "browser_info": {
+                              "nullable": true
+                            },
+                            "document": {
+                              "type": "object",
+                              "properties": {
+                                "document_type": {
+                                  "type": "string",
+                                  "example": "SSN"
+                                },
+                                "document_number": {
+                                  "type": "string",
+                                  "example": "123-45-6789"
+                                }
+                              }
+                            },
+                            "phone": {
+                              "type": "object",
+                              "properties": {
+                                "number": {
+                                  "type": "string",
+                                  "example": "5551234567"
+                                },
+                                "country_code": {
+                                  "type": "string",
+                                  "example": "1"
+                                }
+                              }
+                            },
+                            "billing_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "123 Main St"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 4B"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "NY"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "10001"
+                                },
+                                "neighborhood": {
+                                  "type": "string",
+                                  "example": "Manhattan"
+                                }
+                              }
+                            },
+                            "shipping_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "123 Main St"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 4B"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "NY"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "10001"
+                                },
+                                "neighborhood": {
+                                  "type": "string",
+                                  "example": "Manhattan"
+                                }
+                              }
+                            },
+                            "merchant_customer_created_at": {
+                              "type": "string",
+                              "example": "2022-05-09T20:46:54.786342Z"
+                            }
+                          },
+                          "description": "Pagador cliente."
+                        },
+                        "simplified_mode": {
+                          "type": "boolean",
+                          "example": false,
+                          "description": "Modo simplificado."
+                        },
+                        "receipt": {
+                          "type": "boolean",
+                          "example": false,
+                          "description": "Comprobante."
+                        },
+                        "receipt_url": {
+                          "nullable": true,
+                          "description": "URL del comprobante."
+                        },
+                        "receipt_language": {
+                          "nullable": true,
+                          "description": "Idioma del comprobante."
+                        },
+                        "split_marketplace": {
+                          "type": "array",
+                          "items": {},
+                          "description": "Split marketplace."
+                        },
+                        "metadata": {
+                          "nullable": true,
+                          "description": "Metadata."
+                        }
+                      }
+                    },
+                    {
+                      "title": "Cancelar",
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "2fbc6db6-718b-4554-b03f-826e552f1b9f"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "CANCEL"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "SUCCEEDED"
+                        },
+                        "category": {
+                          "type": "string",
+                          "example": "CARD"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "captured": {
+                              "type": "integer",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "refunded": {
+                              "type": "integer",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "value": {
+                              "type": "integer",
+                              "example": 30000,
+                              "default": 0
+                            }
+                          }
+                        },
+                        "merchant_reference": {
+                          "type": "string",
+                          "example": ""
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "example": "2024-06-06T14:05:31.651012Z"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "example": "2024-06-06T14:05:31.742355Z"
+                        },
+                        "provider_data": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "YUNO_TEST_PAYMENT_GW"
+                            },
+                            "transaction_id": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "account_id": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "sub_status": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "status_detail": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "response_message": {},
+                            "response_code": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "iso8583_response_code": {
+                              "type": "string",
+                              "example": "00"
+                            },
+                            "iso8583_response_message": {
+                              "type": "string",
+                              "example": "Approved or completed successfully"
+                            },
+                            "raw_request": {
+                              "type": "object",
+                              "description": "Copia ofuscada de la solicitud que Yuno envió al proveedor. Solo se devuelve para organizaciones autorizadas."
+                            },
+                            "raw_response": {},
+                            "third_party_transaction_id": {},
+                            "third_party_account_id": {}
+                          }
+                        },
+                        "connection_data": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "58cc35f4-faef-4107-8e09-d18d60121d38"
+                            },
+                            "name": {
+                              "type": "string",
+                              "example": "Connection name"
+                            }
+                          }
+                        },
+                        "response_code": {
+                          "type": "string",
+                          "example": "SUCCEEDED"
+                        },
+                        "response_message": {
+                          "type": "string",
+                          "example": "Transaction successful"
+                        },
+                        "payment": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "cddba02c-e47d-4330-9cac-afcd9c0194b1"
+                            },
+                            "account_id": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "description": {
+                              "type": "string",
+                              "example": "Test"
+                            },
+                            "country": {
+                              "type": "string",
+                              "example": "US"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "CANCELED"
+                            },
+                            "sub_status": {
+                              "type": "string",
+                              "example": "CANCELED"
+                            },
+                            "merchant_order_id": {
+                              "type": "string",
+                              "example": "0000023"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "example": "2024-06-06T14:04:44.768364Z"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "example": "2024-06-06T14:05:31.79539Z"
+                            },
+                            "amount": {
+                              "type": "object",
+                              "properties": {
+                                "captured": {
+                                  "type": "integer",
+                                  "example": 0,
+                                  "default": 0
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD"
+                                },
+                                "refunded": {
+                                  "type": "integer",
+                                  "example": 0,
+                                  "default": 0
+                                },
+                                "value": {
+                                  "type": "integer",
+                                  "example": 30000,
+                                  "default": 0
+                                }
+                              }
+                            },
+                            "discount_amount": {
+                              "type": "object",
+                              "description": "El descuento total de la promoción de Yuno aplicada al pago: la suma de las líneas `YUNO_PROMOTION` de `additional_data.order.discounts`. No aparece cuando no se aplicó ninguna promoción. El monto cobrado es `amount.value` menos este valor, y está en `transactions.amount`. Consulta [Promociones](/docs/payment-features/promotions).",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "La moneda del descuento, la misma que `amount.currency`."
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "El descuento."
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "customer_payer": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "5e7baf7d-88d5-47c4-8baf-93354d5e195e"
+                            },
+                            "merchant_customer_id": {
+                              "type": "string",
+                              "example": "4321-2732268"
+                            },
+                            "first_name": {
+                              "type": "string",
+                              "example": "John"
+                            },
+                            "last_name": {
+                              "type": "string",
+                              "example": "Doe"
+                            },
+                            "gender": {
+                              "type": "string",
+                              "example": "M"
+                            },
+                            "date_of_birth": {
+                              "type": "string",
+                              "example": "1990-02-28"
+                            },
+                            "email": {
+                              "type": "string",
+                              "example": "johndoe@example.com"
+                            },
+                            "nationality": {
+                              "type": "string",
+                              "example": "US"
+                            },
+                            "ip_address": {
+                              "nullable": true
+                            },
+                            "device_fingerprint": {
+                              "nullable": true
+                            },
+                            "device_fingerprints": {
+                              "type": "array",
+                              "items": {}
+                            },
+                            "browser_info": {
+                              "nullable": true
+                            },
+                            "document": {
+                              "type": "object",
+                              "properties": {
+                                "document_type": {
+                                  "type": "string",
+                                  "example": "SSN"
+                                },
+                                "document_number": {
+                                  "type": "string",
+                                  "example": "123-45-6789"
+                                }
+                              }
+                            },
+                            "phone": {
+                              "type": "object",
+                              "properties": {
+                                "number": {
+                                  "type": "string",
+                                  "example": "5551234567"
+                                },
+                                "country_code": {
+                                  "type": "string",
+                                  "example": "1"
+                                }
+                              }
+                            },
+                            "billing_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "123 Main St"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 4B"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "NY"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "10001"
+                                },
+                                "neighborhood": {
+                                  "type": "string",
+                                  "example": "Manhattan"
+                                }
+                              }
+                            },
+                            "shipping_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "123 Main St"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 4B"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "NY"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "10001"
+                                },
+                                "neighborhood": {
+                                  "type": "string",
+                                  "example": "Manhattan"
+                                }
+                              }
+                            },
+                            "merchant_customer_created_at": {
+                              "type": "string",
+                              "example": "2022-05-09T20:46:54.786342Z"
+                            }
+                          },
+                          "description": "Pagador cliente."
+                        },
+                        "simplified_mode": {
+                          "type": "boolean",
+                          "example": false,
+                          "description": "Modo simplificado."
+                        },
+                        "receipt": {
+                          "type": "boolean",
+                          "example": false,
+                          "description": "Comprobante."
+                        },
+                        "receipt_url": {
+                          "nullable": true,
+                          "description": "URL del comprobante."
+                        },
+                        "receipt_language": {
+                          "nullable": true,
+                          "description": "Idioma del comprobante."
+                        },
+                        "split_marketplace": {
+                          "type": "array",
+                          "items": {},
+                          "description": "Split marketplace."
+                        },
+                        "metadata": {
+                          "nullable": true,
+                          "description": "Metadata."
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Bad Request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_CREDENTIALS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid credentials"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Forbidden": {
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "AUTHORIZATION_REQUIRED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "The merchant has no authorization to use this API."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "key": "charset",
+        "value": "utf-8"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

@@ -1,0 +1,149 @@
+---
+title: "Inscripción Render"
+description: "Migra la inscripción iOS Render (Yuno.startEnrollmentRender) a la API unificada Transaction."
+---
+
+La inscripción Render te permitía incrustar el formulario de inscripción del SDK dentro de tu propio diseño. Obtenías un `YunoEnrollmentRenderFlowProtocol`, le pedías un `formView` y llamabas a `submitForm()` desde tu propio botón. También exponía `needSubmit: Bool` para indicarte si el formulario requería un botón de envío.
+
+En la API unificada el mismo patrón se expresa sobrescribiendo [`showView`](/es/docs/yuno-sdk/controllers/show-view): el SDK entrega la vista del formulario junto con un `TransactionProcess` sobre el que llamas a `onSubmit()`.
+
+## Antes de comenzar {#before-you-start}
+
+- Reemplaza `import YunoSDK` por `import SdkPayments`. Tu clave de API pública y las sesiones de cliente que crea tu backend no cambian ([Before you begin](/es/docs/yuno-sdk/get-started#before-you-begin)).
+- No hay ningún pago que crear: `createPayment` no se invoca durante la inscripción, por lo que sobrescribirlo no tiene efecto.
+
+## Comparación lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```swift Before. Render enrollment
+import SwiftUI
+import YunoSDK
+
+final class EnrollmentModel: YunoEnrollmentDelegate, ObservableObject {
+    var customerSession: String = "session-from-backend"
+    var countryCode: String = "CO"
+    var language: String? = "en"
+    var viewController: UIViewController?
+
+    func yunoEnrollmentResult(_ result: Yuno.Result) { /* ... */ }
+    func onLoading(isLoading: Bool) { /* show your own loader */ }
+}
+
+struct EnrollmentView: View {
+    @StateObject var model = EnrollmentModel()
+    @State var enrollmentFlow: YunoEnrollmentRenderFlowProtocol?
+    @State var formView: AnyView?
+
+    var body: some View {
+        VStack {
+            formView
+            if enrollmentFlow?.needSubmit == true {
+                Button("Enroll") {
+                    enrollmentFlow?.submitForm()
+                }
+            }
+        }
+        .task {
+            enrollmentFlow = Yuno.startEnrollmentRender(with: model)
+            formView = await enrollmentFlow?.formView(with: model)
+        }
+    }
+}
+```
+
+```swift After. showView override
+import SwiftUI
+import SdkPayments
+
+final class EnrollmentModel: SdkPayments.TransactionController, ObservableObject {
+
+    @Published var formView: AnyView?
+    @Published var process: SdkPayments.TransactionProcess?
+    @Published var isLoading: Bool = false
+
+    func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep) {
+        self.formView = view
+        self.process = process
+    }
+
+    func showLoading(isLoading: Bool) { self.isLoading = isLoading }
+
+    func onStatus(status: SdkPayments.TransactionStatus) { /* ... */ }
+}
+
+struct EnrollmentView: View {
+    @StateObject var model = EnrollmentModel()
+
+    var body: some View {
+        VStack {
+            if model.isLoading { ProgressView() }
+            model.formView
+            Button("Enroll") {
+                model.process?.onSubmit()
+            }
+        }
+        .task {
+            let config = SdkPayments.TransactionConfig(
+                customerSession: "session-from-backend",
+                countryCode: "CO",
+                controller: model
+            )
+
+            let paymentSelected = SdkPayments.PaymentMethodSelected(
+                paymentMethodType: "CARD"
+            )
+
+            SdkPayments.Transaction(config: config)
+                .start(paymentSelected: paymentSelected)
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+## Qué cambia {#what-changes}
+
+Agrupado en el orden en que editas el código. **Renombrado**: mismo rol, nuevo nombre. **Movido**: mismo valor, nuevo propietario. **Eliminado**: no hay nada que llamar. **Nuevo**: sin contraparte anterior. La última columna es lo único que debes hacer además del cambio de nombre.
+
+### Inicialización y configuración {#initialization-and-config}
+
+| Render | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `import YunoSDK` | `import SdkPayments` | Renombrado | |
+| `Yuno.initialize(apiKey:)` | `SdkPayments.initialize(apiKey:)` | Renombrado | El parámetro `callback:` ya no existe; usa la sobrecarga `async` si necesitas esperar. |
+| `Yuno.Appearance` pasado en `YunoConfig.appearance` | `SdkPayments.Appearance` en `SdkPayments.TransactionConfig.appearance` | Renombrado | Mismo inicializador; elimina el prefijo `Yuno.` y pásalo en cada transacción en lugar de una sola vez al inicio. |
+| `YunoEnrollmentDelegate.customerSession`, `.countryCode`, `.language`, `.viewController` | Los mismos campos en `SdkPayments.TransactionConfig` | Movido | Las propiedades del delegate pasan a ser campos de la configuración. `viewController` sigue siendo exclusivo de iOS y opcional en SwiftUI. |
+| *(ninguno)* | `SdkPayments.PaymentMethodSelected` | Nuevo | `start` lo requiere. Pasa el `paymentMethodType` con el que se creó la sesión de cliente: como antes, la sesión determina el método que realmente se inscribe. |
+
+### Controlador {#controller}
+
+| Render | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `YunoEnrollmentDelegate` | `SdkPayments.TransactionController` | Renombrado | Haz que la misma clase lo implemente y pásala como `TransactionConfig.controller`. Como antes, el SDK no la retiene: mantenla viva durante toda la transacción. |
+| `yunoEnrollmentResult(_:)` | `onStatus(status:)` | Renombrado | Sigue siendo el único callback de resultado, una vez por transacción, también cuando el SDK muestra su pantalla de resultado. `status` y `substatus` provienen del backend; el SDK solo emite `INTERNAL_ERROR` y `USER_CANCEL`. Consulta [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `YunoEnrollmentRenderFlowProtocol.formView(with:) async -> AnyView?` | `showView(view:process:step:)` | Renombrado | Push, no pull: el SDK entrega la vista a tu manejador cuando está lista, junto con el `TransactionProcess` sobre el que envías (consulta Vistas). Consulta [`showView`](/es/docs/yuno-sdk/controllers/show-view). |
+| `YunoLoaderDelegate.onLoading(isLoading:)` | `showLoading(isLoading:)` | Renombrado | Opcional. Se activa solo cuando lo sobrescribes: el SDK entonces oculta su propio indicador de carga y te informa el estado. Consulta [`showLoading`](/es/docs/yuno-sdk/controllers/show-loading). |
+
+### Vistas {#views}
+
+| Render | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `YunoEnrollmentRenderFlowProtocol.submitForm()` | `process.onSubmit()` | Renombrado | Mismo rol. Llámalo desde tu propio botón sobre el `TransactionProcess` que recibes en `showView`. |
+| `YunoEnrollmentRenderFlowProtocol.needSubmit` | *(eliminado)* | Eliminado | Sin equivalente en la API unificada: renderizas tu propio botón de envío. Si necesitas ocultarlo para formularios que no requieren envío, hazlo desde tu propio estado (por ejemplo, inspeccionando el `step` entregado a `showView`). |
+| *(ninguno)* | `SdkPayments.defaultShowView(view:process:step:)` | Nuevo | Llámalo desde tu sobrescritura de `showView` para los pasos que no quieres incrustar (por ejemplo, incrusta `.FORM` y devuelve `.ACTION` al SDK). |
+
+### Puntos de entrada {#entry-points}
+
+| Render | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `Yuno.startEnrollmentRender(with:)` que devuelve `YunoEnrollmentRenderFlowProtocol` | `SdkPayments.Transaction(config:).start(paymentSelected:)` + sobrescribir `showView` | Renombrado | Crea la configuración y el `PaymentMethodSelected`, y luego llama a `start`. No se devuelve nada: la vista llega a través de `showView` cuando está lista. |
+| `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Renombrado | Mismo rol: reenvía la URL que recibe tu app después de una redirección externa. Consulta [Handle deeplinks](/es/docs/yuno-sdk/features/handle-deeplinks). |
+
+## Relacionado {#related}
+
+- [Enrollment feature](/es/docs/yuno-sdk/features/enrollment). Guía de inscripción con la API unificada.
+- [Lite enrollment](/es/docs/yuno-sdk/migration/ios/enrollment/lite). Controlado por el SDK, sin incrustar vistas.
+- [Headless enrollment](/es/docs/yuno-sdk/migration/ios/enrollment/headless). Recopila los datos en tu propia interfaz.
+- [`showView`](/es/docs/yuno-sdk/controllers/show-view). El controlador que sobrescribes aquí.

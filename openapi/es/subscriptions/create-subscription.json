@@ -1,0 +1,1424 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "subscription",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/subscriptions": {
+      "post": {
+        "summary": "Create Subscription",
+        "description": "",
+        "operationId": "create-subscription",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "account_id",
+                  "country",
+                  "payment_method",
+                  "customer_payer"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "El nombre del plan de suscripción (MAX 255; MIN 3)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "La descripción del plan de suscripción (MAX 255; MIN 3)."
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "El identificador único de la cuenta que tendrá disponible el plan de suscripción para usar (UUID, 36 caracteres)."
+                  },
+                  "merchant_reference": {
+                    "type": "string",
+                    "description": "Identificación del plan de suscripción (MAX 255; MIN 3)."
+                  },
+                  "soft_descriptor": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "description": "Descriptor de estado de cuenta que se muestra en el extracto bancario del titular de la tarjeta. Cuando se define, se guarda en la suscripción y se propaga a cada pago de refacturación generado por el motor de suscripciones. Los límites de longitud y formato varían según el proveedor (por ejemplo, Unlimit lo trunca a 22 caracteres y Airwallex a 30). Worldpay no lee este campo; construye la narrativa del extracto a partir de `payment_description`."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "El país de la suscripción (MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference))."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Especifica el objeto `amount`, con el valor de cada pago de la suscripción y la moneda utilizada. Es mutuamente excluyente con `plan_id`: envía exactamente uno de los dos.",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "La moneda utilizada para realizar el pago (MAX 3; MIN 3; [ISO 4217](/reference/country-reference))."
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "El valor de cada pago de la suscripción (múltiplo de 0.0001).",
+                        "format": "float"
+                      }
+                    }
+                  },
+                  "plan_id": {
+                    "type": "string",
+                    "description": "El identificador único de un [plan](/reference/plans/the-plan-object) al que suscribir a este cliente. Es mutuamente excluyente con `amount`: envía exactamente uno de los dos. Omite `trial_period` y `billing_date` cuando se define: ambos se heredan del plan y la solicitud se rechaza con `400 BAD_REQUEST` si los envías. Omite también `frequency`: también se hereda del plan, pero enviarla no se rechaza: se ignora en silencio y la frecuencia del plan la reemplaza. Si el plan tiene su propia configuración de reintentos, omite también `retries`: la suscripción hereda los reintentos del plan, y enviar ambos se rechaza con `400 INVALID_PARAMETERS`."
+                  },
+                  "additional_data": {
+                    "type": "object",
+                    "description": "Indica el objeto additional_data. Este objeto no es obligatorio. Sin embargo, si envías esta información, la experiencia de pago de tu usuario mejora.",
+                    "properties": {
+                      "order": {
+                        "type": "object",
+                        "description": "Indica el objeto order.",
+                        "properties": {
+                          "items": {
+                            "type": "array",
+                            "description": "Especifica el objeto del ítem.",
+                            "items": {
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "description": "El identificador único del artículo (MAX 255; MIN 3)."
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "description": "El nombre del artículo (MAX 255; MIN 3)."
+                                },
+                                "quantity": {
+                                  "type": "integer",
+                                  "description": "La cantidad del artículo.",
+                                  "format": "int32"
+                                },
+                                "unit_amount": {
+                                  "type": "number",
+                                  "description": "El monto unitario del artículo (múltiplo de 0.0001)."
+                                },
+                                "category": {
+                                  "type": "string",
+                                  "description": "La categoría del artículo. Consulta la referencia de categorías de artículos.",
+                                  "enum": [
+                                    "art",
+                                    "baby",
+                                    "coupons",
+                                    "beauty_&_personal_care",
+                                    "donations",
+                                    "computing",
+                                    "books",
+                                    "grocery_&_gourmet_food",
+                                    "cameras",
+                                    "video_games",
+                                    "television",
+                                    "car_electronics",
+                                    "electronics",
+                                    "automotive",
+                                    "toys_&_games",
+                                    "musical_instruments",
+                                    "handmade",
+                                    "garden_&_outdoor",
+                                    "entertainment",
+                                    "industrial_&_scientific",
+                                    "fashion",
+                                    "games",
+                                    "pet_supplies",
+                                    "home",
+                                    "musical",
+                                    "phones",
+                                    "services",
+                                    "learnings",
+                                    "tickets",
+                                    "travels",
+                                    "virtual_goods",
+                                    "others"
+                                  ]
+                                },
+                                "brand": {
+                                  "type": "string",
+                                  "description": "La marca del artículo (MAX 255; MIN 3)."
+                                },
+                                "sku_code": {
+                                  "type": "string",
+                                  "description": "La unidad de mantenimiento de stock (SKU) del artículo (MAX 255; MIN 3)."
+                                },
+                                "manufacture_part_number": {
+                                  "type": "string",
+                                  "description": "El número de pieza del fabricante del artículo."
+                                }
+                              },
+                              "type": "object"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "frequency": {
+                    "type": "object",
+                    "description": "Especifica el objeto `frequency`. Define la frecuencia de facturación de la suscripción. Incluye type y value.",
+                    "required": [
+                      "type"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "El tipo de intervalo que tendrá la suscripción en el tiempo (DAY, WEEK, MONTH, YEAR). Si no se define, el valor por defecto es MONTH. Cuando `payment_method.type` es `PIX_AUTOMATIC`, solo son válidos `WEEK`, `MONTH` y `YEAR` con `value` `1`: cualquier otro tipo, y cualquier otro valor, se rechaza con `400 INVALID_PARAMETERS`. Consulta [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#accepted-billing-cadences).",
+                        "enum": [
+                          "DAY",
+                          "WEEK",
+                          "MONTH",
+                          "YEAR"
+                        ]
+                      },
+                      "value": {
+                        "type": "integer",
+                        "description": "El valor entre cada intervalo. Mínimo 1. Si no se define, el valor por defecto es 1.",
+                        "format": "int32"
+                      }
+                    }
+                  },
+                  "billing_cycles": {
+                    "type": "object",
+                    "description": "Especifica el objeto `billing_cycles`. Define el número de cobros asociados a la suscripción. Si se omite, la suscripción no tiene límite de ciclos y sigue facturando hasta que se cancela o llega a `availability.finish_at`, si hay uno definido.",
+                    "properties": {
+                      "total": {
+                        "type": "integer",
+                        "description": "El número total de ciclos de facturación de la suscripción (MIN 1). Los valores menores que 1 se rechazan con un error `400`.",
+                        "format": "int32",
+                        "minimum": 1
+                      }
+                    }
+                  },
+                  "customer_payer": {
+                    "type": "object",
+                    "description": "Especifica el objeto `customer_payer` para identificar al cliente. Obligatorio. Ten en cuenta que los errores de validación de este objeto nombran el campo `customer_payer.code`, no `customer_payer.id`; por ejemplo `400 BAD_REQUEST` (\"customer_payer.code field is required\") cuando se omite.",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "El identificador único del cliente (UUID, 36 caracteres)."
+                      },
+                      "ip_address": {
+                        "type": "string",
+                        "maxLength": 45,
+                        "example": "203.0.113.7",
+                        "description": "Dirección IP del pagador en el pago inicial iniciado por el cliente (IPv4 o IPv6, hasta 45 caracteres). Se guarda en la suscripción y se envía en cada renovación; algunos proveedores de pago la exigen para las renovaciones iniciadas por el comercio. Opcional: un valor vacío o ausente se ignora. Un valor que no es una dirección IPv4 o IPv6 válida devuelve `400 BAD_REQUEST` (\"The customer_payer.ip_address must be a valid IPv4 or IPv6 address.\"). Solo se guarda y se devuelve para las organizaciones habilitadas para esta función."
+                      }
+                    }
+                  },
+                  "payment_method": {
+                    "type": "object",
+                    "description": "Especifica el objeto `payment_method`. Los tipos admitidos son `CARD`, `PAYPAL_ENROLLMENT` y `PIX_AUTOMATIC`, todos con métodos de pago inscritos previamente (`vaulted_token`)",
+                    "required": [
+                      "type"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "Tipo de método de pago. `PIX_AUTOMATIC` factura un mandato de Pix Automático de Brasil, se compara sin distinguir mayúsculas y minúsculas, y restringe la cadencia de facturación. Consulta [Pix Automático](/docs/payment-features/subscriptions/pix-automatico).",
+                        "enum": [
+                          "CARD",
+                          "PAYPAL_ENROLLMENT",
+                          "PIX_AUTOMATIC"
+                        ]
+                      },
+                      "vaulted_token": {
+                        "type": "string",
+                        "description": "El token del vault (UUID, 36 caracteres)."
+                      },
+                      "card": {
+                        "type": "object",
+                        "properties": {
+                          "installments": {
+                            "type": "integer",
+                            "description": "El número de cuotas (MAX 50; MIN 1)."
+                          },
+                          "network_transaction_id": {
+                            "type": "string",
+                            "description": "El ID que proporciona Visa/Mastercard en la respuesta del pago inicial (MAX 256; MIN 1)."
+                          },
+                          "usage": {
+                            "type": "string",
+                            "description": "Indica si esta credencial almacenada se usa por primera vez (FIRST) o ya se usó antes (USED). Obligatorio si se creó un pago CIT antes de la suscripción: sin él, las refacturaciones se tratan como CIT y pueden ser rechazadas.",
+                            "enum": [
+                              "FIRST",
+                              "USED"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "trial_period": {
+                    "type": "object",
+                    "description": "Especifica el objeto del período de prueba",
+                    "properties": {
+                      "billing_cycles": {
+                        "type": "integer",
+                        "description": "La cantidad de ciclos que tendrá el período de prueba en el tiempo. Si no se define, el valor por defecto es 1 (MIN 1).",
+                        "format": "int32"
+                      },
+                      "amount": {
+                        "type": "object",
+                        "description": "Monto que se descontará durante el período de prueba",
+                        "required": [
+                          "currency",
+                          "value"
+                        ],
+                        "properties": {
+                          "currency": {
+                            "type": "string",
+                            "description": "La moneda utilizada para realizar el pago (MAX 3; MIN 3; [ISO 4217](/reference/country-reference))."
+                          },
+                          "value": {
+                            "type": "number",
+                            "description": "El valor de cada pago de la suscripción (múltiplo de 0.0001).",
+                            "format": "float"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "availability": {
+                    "type": "object",
+                    "description": "Indica el objeto `availability`. Define el intervalo de fechas, con fecha de inicio y de fin, en el que la suscripción está disponible.",
+                    "properties": {
+                      "start_at": {
+                        "type": "string",
+                        "description": "La fecha de inicio desde la que el plan de suscripción estará disponible para usar. Si no se define, la suscripción está disponible desde el momento en que se crea. Debe ser posterior a la hora actual: una fecha pasada devuelve `400 BAD_REQUEST`.",
+                        "format": "date-time"
+                      },
+                      "finish_at": {
+                        "type": "string",
+                        "description": "La fecha de fin hasta la que el plan de suscripción estará disponible para usar. Si no se define, la suscripción no tiene fecha de vencimiento.",
+                        "format": "date-time"
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "type": "array",
+                    "description": "Conjunto de pares clave-valor que puedes adjuntar a un objeto. Puede ser útil para guardar información adicional sobre el objeto en un formato estructurado. Las claves se pueden eliminar enviando un valor vacío en metadata. Puedes agregar hasta 50 objetos de metadata.",
+                    "items": {
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "description": "La clave de la metadata (MAX 48)."
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "El valor de la clave de la metadata (MAX 512)."
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "retries": {
+                    "type": "object",
+                    "description": "Especifica el objeto 'retries'. Indica si se deben reintentar las transacciones rechazadas en Yuno y el monto si es necesario. Con `plan_id`, envía `retries` solo cuando el plan no tiene una configuración de reintentos propia. Si el plan define reintentos, la suscripción los hereda y una solicitud que también envíe `retries` se rechaza con `400 INVALID_PARAMETERS`.",
+                    "properties": {
+                      "retry_on_decline": {
+                        "type": "boolean",
+                        "description": "Indica si se debe reintentar un pago o no después de un primer rechazo. Es False por defecto."
+                      },
+                      "amount": {
+                        "type": "integer",
+                        "description": "El número de reintentos que deberá completar el plan de suscripción. Si este valor no se define o es mayor que 6, se usará 6 por defecto. (MAX 6).",
+                        "format": "int32"
+                      },
+                      "strategy": {
+                        "type": "string",
+                        "description": "La estrategia de reintentos. Valores permitidos: DEFAULT (el calendario de reintentos fijo), SMART (momento de reintento basado en aprendizaje automático, aplicado desde el segundo reintento en adelante) o CUSTOM_SCHEDULE (usa el arreglo de calendario por intento que proporcionas).",
+                        "enum": [
+                          "DEFAULT",
+                          "SMART",
+                          "CUSTOM_SCHEDULE"
+                        ]
+                      },
+                      "schedule": {
+                        "type": "array",
+                        "description": "Objeto que define la estrategia de calendario para cada evento de reintento; la cantidad de objetos debe coincidir con la cantidad de reintentos definida. Hasta 7 intentos; los números de intento deben ser secuenciales desde 1, y cada delay_seconds debe estar entre 1 y 604800 (7 días). El calendario se puede reemplazar más adelante mediante Update Subscription.",
+                        "items": {
+                          "properties": {
+                            "attempt": {
+                              "type": "number",
+                              "description": "Número del intento de reintento"
+                            },
+                            "delay_seconds": {
+                              "type": "number",
+                              "description": "Especifica la cantidad de segundos entre cada reintento."
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "stop_on_hard_decline": {
+                        "type": "boolean",
+                        "description": "Cuando es true, el calendario de reintentos se detiene para el ciclo de facturación actual después de un rechazo definitivo. Por sí solo, la suscripción sigue ACTIVE y la facturación avanza al siguiente ciclo; no se cancela ni se pausa ninguna suscripción y no se emite ningún webhook de suscripción. Si cancel_on_exhausted_retries también es true, la suscripción se cancela en su lugar."
+                      },
+                      "cancel_on_exhausted_retries": {
+                        "type": "boolean",
+                        "description": "Cuando es true, la suscripción se cancela una vez que los reintentos de un ciclo de facturación terminan sin un pago exitoso, en lugar de seguir ACTIVE y avanzar al siguiente ciclo. El estado de la suscripción pasa a CANCELED, cancellation_source se define como RETRIES_EXHAUSTED, la facturación futura se detiene y se emite un único webhook SUBSCRIPTION.CANCEL. Se aplica tanto cuando se agota el calendario de reintentos como cuando stop_on_hard_decline termina el ciclo antes de tiempo. El valor por defecto es false, que conserva el comportamiento existente. Solo se puede definir al crear: no se puede cambiar después; Update Subscription rechaza un valor diferente con 400. La cancelación en sí es definitiva, por lo que Retry Subscription se rechaza después."
+                      }
+                    }
+                  },
+                  "initial_payment_validation": {
+                    "type": "boolean",
+                    "description": "Indicador para identificar si la suscripción debe esperar el primer pago para continuar. Es False por defecto."
+                  },
+                  "billing_date": {
+                    "type": "object",
+                    "description": "Especifica el objeto `billing_date`. Define el tipo de fecha que se usa para la lógica de la suscripción. Es mutuamente excluyente con el objeto frequency.",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "El tipo de billing_date que tendrá la suscripción en el tiempo. PREPAID, POSTDATE, DAY. Si no se define, se establecerá por defecto la fecha de creación del plan."
+                      },
+                      "day": {
+                        "type": "integer",
+                        "description": "[Condicional] El día del mes en que se cobra la suscripción si type es DAY. El valor por defecto es 1. Rango 1 - 31."
+                      }
+                    }
+                  },
+                  "subscription_agreement_id": {
+                    "type": "string",
+                    "description": "Vincula esta suscripción con el pago inicial creado con el mismo ID de acuerdo. Se usa para el seguimiento, la conciliación y la gestión de contracargos. Debe coincidir exactamente con el `subscription_agreement_id` enviado en `payment_method.detail.card.stored_credentials.subscription_agreement_id` en el pago de origen (MAX 255)."
+                  },
+                  "refund_rule": {
+                    "type": "object",
+                    "description": "Configura la regla de reembolso que se usa para resolver un reembolso de cancelación CUSTOM posterior cuando esa solicitud de cancelación no envía su propio refund_amount. Disponible para las organizaciones habilitadas; contacta a Yuno.",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "PERCENT",
+                          "FIXED"
+                        ],
+                        "description": "PERCENT resuelve el reembolso como un porcentaje del monto cobrado; FIXED lo resuelve como un monto fijo.",
+                        "example": "FIXED"
+                      },
+                      "percent": {
+                        "type": "number",
+                        "description": "Obligatorio, y solo se permite, cuando type es PERCENT (0-100).",
+                        "example": 50
+                      },
+                      "amount": {
+                        "type": "object",
+                        "description": "Obligatorio, y solo se permite, cuando type es FIXED.",
+                        "properties": {
+                          "value": {
+                            "type": "number",
+                            "example": 10000
+                          },
+                          "currency": {
+                            "type": "string",
+                            "description": "Debe coincidir con la moneda propia de la suscripción.",
+                            "example": "COP"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "promotion": {
+                    "type": "object",
+                    "description": "Aplica una promoción asociada al plan en el que se crea esta suscripción. Envía exactamente uno entre `id` o `code`. La promoción comienza con la suscripción y descuenta el primer cobro. Si no se puede aplicar (no está asociada al plan, venció, está deshabilitada, aún no comienza o no tiene usos disponibles), la solicitud se rechaza y no se crea nada. Si el plan también tiene una promoción automática, se aplica el mayor descuento en el primer cobro, y la promoción que envías gana en caso de empate. Consulta [Promociones en planes de suscripción](/docs/payment-features/subscriptions/promotions).",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "El ID de la promoción (UUID). Usa `id` o `code`, no ambos."
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "El código de una promoción que tiene uno. Usa `id` o `code`, no ambos."
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Subscription": {
+                  "value": {
+                    "name": "Test Subscription",
+                    "description": "Subscription Test",
+                    "merchant_reference": "subscription-ref-merchant-AA01",
+                    "soft_descriptor": "ACME SUBSCRIPTION",
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "country": "CL",
+                    "amount": {
+                      "currency": "CLP",
+                      "value": 15000
+                    },
+                    "frequency": {
+                      "type": "MONTH",
+                      "value": 1
+                    },
+                    "billing_cycles": {
+                      "total": 12
+                    },
+                    "customer_payer": {
+                      "id": "a1d3b664-e32a-4508-9da1-9ede3e62a60c"
+                    },
+                    "payment_method": {
+                      "type": "CARD",
+                      "vaulted_token": "d4aa3586-def2-4705-b7cd-fe064bb764e6",
+                      "card": {
+                        "installments": 3
+                      }
+                    },
+                    "availability": {
+                      "start_at": "2030-01-01T00:00:00Z"
+                    },
+                    "trial_period": {
+                      "billing_cycles": 1,
+                      "amount": {
+                        "currency": "CLP",
+                        "value": 0
+                      }
+                    },
+                    "metadata": [
+                      {
+                        "key": "plan",
+                        "value": "gold"
+                      }
+                    ]
+                  }
+                },
+                "PERCENT RULE": {
+                  "value": {
+                    "refund_rule": {
+                      "type": "PERCENT",
+                      "percent": 50
+                    }
+                  }
+                },
+                "FIXED RULE": {
+                  "value": {
+                    "refund_rule": {
+                      "type": "FIXED",
+                      "amount": {
+                        "currency": "COP",
+                        "value": 8000
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "CREATE SUBSCRIPTION": {
+                    "value": {
+                      "id": "0c7fed3e-ee0d-4d34-9547-778be4ec0798",
+                      "name": "Test Subscription",
+                      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                      "country": "US",
+                      "description": "Subscription Test",
+                      "merchant_reference": "subscription-ref-merchant-AA01",
+                      "soft_descriptor": "ACME SUBSCRIPTION",
+                      "status": "ACTIVE",
+                      "amount": {
+                        "currency": "USD",
+                        "value": 15000
+                      },
+                      "frequency": {
+                        "type": "MONTH",
+                        "value": 1
+                      },
+                      "billing_cycles": {
+                        "total": 12,
+                        "current": 1,
+                        "next_at": "2024-09-30T12:04:23.265393Z"
+                      },
+                      "customer_payer": {
+                        "id": "a1d3b664-e32a-4508-9da1-9ede3e62a60c"
+                      },
+                      "payment_method": {
+                        "type": "CARD",
+                        "vaulted_token": "d4aa3586-def2-4705-b7cd-fe064bb764e6"
+                      },
+                      "availability": {
+                        "start_at": "2024-09-30T12:04:23.265393Z",
+                        "finish_at": null
+                      },
+                      "trial_period": {
+                        "billing_cycles": 1,
+                        "amount": {
+                          "value": 0,
+                          "currency": ""
+                        }
+                      },
+                      "metadata": null,
+                      "created_at": "2024-09-30T12:04:23.265372Z",
+                      "updated_at": "2024-09-30T12:04:23.265372Z",
+                      "retries": {
+                        "retry_on_decline": false,
+                        "amount": 6,
+                        "strategy": "DEFAULT",
+                        "schedule": null,
+                        "stop_on_hard_decline": null,
+                        "cancel_on_exhausted_retries": null
+                      },
+                      "additional_data": null,
+                      "initial_payment_validation": false,
+                      "reason": null,
+                      "subscription_agreement_id": null,
+                      "renewal_notification_days": null,
+                      "cancellation_time": null,
+                      "cancellation_source": null,
+                      "ending_time": null,
+                      "pending_plan_change": null,
+                      "current_period_start": "2026-10-23T00:00:00Z",
+                      "current_period_end": "2026-11-23T00:00:00Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "0c7fed3e-ee0d-4d34-9547-778be4ec0798"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Test Subscription"
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "example": "493e9374-510a-4201-9e09-de669d75f256"
+                    },
+                    "country": {
+                      "type": "string",
+                      "example": "US"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Subscription Test",
+                      "nullable": true
+                    },
+                    "merchant_reference": {
+                      "type": "string",
+                      "example": "subscription-ref-merchant-AA01"
+                    },
+                    "soft_descriptor": {
+                      "type": "string",
+                      "example": "ACME SUBSCRIPTION",
+                      "nullable": true
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "ACTIVE"
+                    },
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "example": "USD"
+                        },
+                        "value": {
+                          "type": "number",
+                          "example": 15000,
+                          "default": 0
+                        }
+                      }
+                    },
+                    "frequency": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "MONTH"
+                        },
+                        "value": {
+                          "type": "integer",
+                          "example": 1,
+                          "default": 0
+                        },
+                        "monthly_billing_day": {
+                          "type": "integer",
+                          "nullable": true,
+                          "description": "Día del mes al que se ancla la facturación en una suscripción de frecuencia MONTH. Se establece con RESTART (en Update, un cambio de plan, reanudar o reactivar) o enviando el propio frequency.monthly_billing_day de Update Subscription. Solo está presente una vez establecido; está ausente, no es null, antes de eso y en cualquier otro tipo de frecuencia.",
+                          "example": 15
+                        }
+                      }
+                    },
+                    "billing_cycles": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 12,
+                          "default": 0,
+                          "nullable": true
+                        },
+                        "current": {
+                          "type": "integer",
+                          "example": 1,
+                          "default": 0
+                        },
+                        "next_at": {
+                          "type": "string",
+                          "example": "2024-09-30T12:04:23.265393Z"
+                        },
+                        "scheduling_date": {
+                          "type": "string",
+                          "description": "Momento en que la instrucción de débito se entrega al riel de Pix: `next_at` menos cuatro días. Solo está presente en las suscripciones `PIX_AUTOMATIC` que Yuno ejecuta, y solo cuando el margen de programación de cuatro días está habilitado para la organización; en cualquier otro caso está ausente, no es `null`. Solo lectura. Consulta [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-scheduling-date).",
+                          "example": "2026-11-27T00:00:00Z"
+                        },
+                        "paid": {
+                          "type": "integer",
+                          "description": "Cuántos ciclos se han pagado hasta ahora. Distinto de `current`, que es el ciclo que se está facturando."
+                        }
+                      }
+                    },
+                    "customer_payer": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "a1d3b664-e32a-4508-9da1-9ede3e62a60c"
+                        },
+                        "ip_address": {
+                          "type": "string",
+                          "maxLength": 45,
+                          "example": "203.0.113.7",
+                          "description": "Dirección IP del pagador almacenada para las renovaciones. Solo se devuelve en las respuestas de una sola suscripción (create, retrieve, update, pause, resume, reactivate y cancel) y solo cuando se proporcionó una; nunca se devuelve en los ítems de lista ni en los webhooks."
+                        }
+                      }
+                    },
+                    "payment_method": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "CARD"
+                        },
+                        "vaulted_token": {
+                          "type": "string",
+                          "example": "d4aa3586-def2-4705-b7cd-fe064bb764e6"
+                        },
+                        "card": {
+                          "type": "object",
+                          "properties": {
+                            "installments": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "network_transaction_id": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "usage": {
+                              "type": "string",
+                              "example": "FIRST"
+                            }
+                          },
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "availability": {
+                      "type": "object",
+                      "properties": {
+                        "start_at": {
+                          "type": "string",
+                          "example": "2024-09-30T12:04:23.265393Z"
+                        },
+                        "finish_at": {}
+                      }
+                    },
+                    "trial_period": {
+                      "type": "object",
+                      "properties": {
+                        "billing_cycles": {
+                          "type": "integer",
+                          "example": 1,
+                          "default": 0
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": ""
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "metadata": {},
+                    "plan_id": {
+                      "type": "string",
+                      "description": "Solo está presente cuando la suscripción está vinculada a un plan."
+                    },
+                    "plan_assigned_at": {
+                      "type": "string",
+                      "description": "Solo está presente en suscripciones vinculadas a un plan. El momento en que se asoció el plan: en la creación a partir de un plan, en la migración a un plan o en un cambio de plan."
+                    },
+                    "previous_subscription_id": {
+                      "type": "string",
+                      "description": "Solo está presente cuando esta suscripción se creó por un cambio de plan (cambiar una suscripción existente a un plan diferente)."
+                    },
+                    "current_phase": {
+                      "type": "string",
+                      "description": "Solo está presente en suscripciones vinculadas a un plan."
+                    },
+                    "billing_phases": {
+                      "type": "array",
+                      "description": "Solo está presente en suscripciones vinculadas a un plan cuyo plan tiene fases. Contiene únicamente las fases TRIAL iniciales, capturadas en la creación; la fase terminal REGULAR nunca se incluye, ya que su precio no se fija y se resuelve a partir del plan en cada facturación.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order": {
+                            "type": "integer"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Siempre TRIAL: la fase terminal REGULAR nunca está en este arreglo."
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "currency": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "frequency": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "start_cycle": {
+                            "type": "integer"
+                          },
+                          "end_cycle": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "subscription_agreement_id": {
+                      "type": "string",
+                      "example": "sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa",
+                      "nullable": true
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2024-09-30T12:04:23.265372Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "example": "2024-09-30T12:04:23.265372Z"
+                    },
+                    "current_period_start": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Inicio del período de facturación en el que está la suscripción actualmente, una cadencia antes de `current_period_end`. Dentro de una prueba o de cualquier otra fase del plan, sigue la cadencia de esa fase. Una suscripción terminal (`CANCELED` o `COMPLETED`) conserva su ventana final en lugar de pasar a null. Es null solo para una suscripción sin cadencia recurrente. Siempre se devuelve junto con current_period_end.",
+                      "example": "2023-01-16T20:00:00.912480Z"
+                    },
+                    "current_period_end": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Fin del período de facturación en el que está la suscripción actualmente. Es igual a billing_cycles.next_at. Siempre se devuelve junto con current_period_start.",
+                      "example": "2023-02-16T20:00:00.786342Z"
+                    },
+                    "billing_date": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "Solo está presente en suscripciones facturadas en una fecha fija en lugar de una frecuencia; es mutuamente excluyente con `frequency`.",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "DAY"
+                        },
+                        "day": {
+                          "type": "integer",
+                          "example": 2
+                        }
+                      }
+                    },
+                    "retries": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "La política de reintentos que se aplica cuando se rechaza un cobro recurrente. Consulta [Reintentos](/docs/payment-features/subscriptions/retries).",
+                      "properties": {
+                        "retry_on_decline": {
+                          "type": "boolean",
+                          "description": "Indica si los cobros rechazados se reintentan o no.",
+                          "example": true
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "description": "Cuántos reintentos tiene un ciclo de facturación. Limitado por la longitud del calendario de reintentos de tu entorno (6 en producción).",
+                          "example": 4
+                        },
+                        "strategy": {
+                          "type": "string",
+                          "description": "Cómo se decide el momento de cada reintento: `DEFAULT`, `SMART` o `CUSTOM_SCHEDULE`. Trátalo como un valor abierto: maneja los valores no reconocidos de forma adecuada.",
+                          "example": "DEFAULT"
+                        },
+                        "schedule": {
+                          "type": "array",
+                          "nullable": true,
+                          "description": "El calendario por intento, que solo se define cuando `strategy` es `CUSTOM_SCHEDULE`; en caso contrario es `null`.",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "stop_on_hard_decline": {
+                          "type": "boolean",
+                          "nullable": true,
+                          "description": "Cuando es true, un rechazo definitivo detiene los reintentos del ciclo de facturación actual."
+                        },
+                        "cancel_on_exhausted_retries": {
+                          "type": "boolean",
+                          "nullable": true,
+                          "description": "Cuando es true, la suscripción se cancela cuando terminan los reintentos de un ciclo sin un pago exitoso, con `cancellation_source` definido como `RETRIES_EXHAUSTED`."
+                        },
+                        "profile": {
+                          "type": "string",
+                          "description": "La escalera de reintentos fija que sigue la suscripción en lugar del calendario configurable. Siempre es `PIX_AUTOMATIC`. Este campo y los tres siguientes solo están presentes en las suscripciones `PIX_AUTOMATIC` que ejecuta Yuno; están ausentes, no son `null`, en cualquier otro método de pago. Consulta [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).",
+                          "example": "PIX_AUTOMATIC"
+                        },
+                        "max_attempts": {
+                          "type": "integer",
+                          "description": "Cuántos reintentos ejecuta la escalera de Pix. Siempre es 3, igual que el `amount` informado para estas suscripciones.",
+                          "example": 3
+                        },
+                        "min_gap_hours": {
+                          "type": "integer",
+                          "description": "Siempre 24: el intervalo entre las fechas de débito de la escalera (`D`, `D+1`, `D+2`, `D+3`), no entre los intentos de envío.",
+                          "example": 24
+                        },
+                        "until": {
+                          "type": "string",
+                          "description": "Cuándo se detiene la escalera: `billing_cycles.next_at` más 7 días. Se mueve con `next_at` en cada renovación."
+                        },
+                        "stopped": {
+                          "type": "boolean",
+                          "description": "Solo está presente cuando la suscripción está en PAST_DUE o tiene cancel_scheduled pendiente."
+                        },
+                        "attempts_made": {
+                          "type": "integer",
+                          "description": "Solo está presente cuando la suscripción está en PAST_DUE o tiene cancel_scheduled pendiente."
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "description": "RECOVERED, EXHAUSTED o ABANDONED. Solo está presente cuando la suscripción está en PAST_DUE o tiene cancel_scheduled pendiente."
+                        },
+                        "next_retry_at": {
+                          "type": "string",
+                          "description": "Solo está presente cuando la suscripción está en PAST_DUE o tiene cancel_scheduled pendiente."
+                        }
+                      }
+                    },
+                    "additional_data": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "El enriquecimiento opcional del pedido enviado en la creación, devuelto tal cual. Consulta [El objeto Suscripción](/reference/subscriptions/the-subscription-object) para ver su estructura completa."
+                    },
+                    "initial_payment_validation": {
+                      "type": "boolean",
+                      "description": "Indica si la suscripción esperó a que su primer pago fuera exitoso antes de activarse. Es `false` por defecto.",
+                      "example": false
+                    },
+                    "reason": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Motivo libre del estado actual de la suscripción, cuando se registró uno; `null` en caso contrario.",
+                      "example": "merchant request"
+                    },
+                    "renewal_notification_days": {
+                      "type": "integer",
+                      "nullable": true,
+                      "description": "Cuántos días antes de la próxima fecha de facturación se envía el webhook `subscription.close_to_renewal`. `null` significa que no se envía ninguna notificación de renovación.",
+                      "example": 3
+                    },
+                    "payments": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "5104911d-5df9-229e-8468-bd41abea1a4s"
+                      }
+                    },
+                    "cancellation_time": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cuándo se canceló la suscripción. Solo se define una vez que llega a `CANCELED`; `null` en caso contrario.",
+                      "example": "2023-12-16T20:46:54.786342Z"
+                    },
+                    "cancellation_source": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Qué desencadenó la cancelación: `MERCHANT`, `SYSTEM`, `PLAN_CHANGE` o `RETRIES_EXHAUSTED`. Solo se define una vez que la suscripción llega a `CANCELED`; `null` en caso contrario. Trátalo como un valor abierto: maneja los valores no reconocidos de forma adecuada.",
+                      "example": "MERCHANT"
+                    },
+                    "ending_time": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cuándo se completó o expiró la suscripción. Solo se define una vez que llega a `COMPLETED`; `null` en caso contrario.",
+                      "example": "2024-12-16T20:46:54.786342Z"
+                    },
+                    "phases": {
+                      "type": "array",
+                      "description": "Las definiciones de fases del plan vinculado, tal como las declara el plan, incluida la fase terminal `REGULAR`. Solo está presente en suscripciones vinculadas a un plan que tiene fases. Esta es la escalera propia del plan, no la instantánea de este suscriptor: para lo que se fijó para esta suscripción en la creación, usa `billing_phases`.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "`TRIAL` o `REGULAR`."
+                          },
+                          "duration": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "Cuánto dura la fase. `null` en la fase terminal `REGULAR`, que se ejecuta hasta que termina la suscripción.",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "frequency": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "Con qué frecuencia factura la fase. `null` en la fase terminal `REGULAR`, que factura con la frecuencia propia del plan.",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "amount": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "El precio de la fase. `null` en la fase terminal `REGULAR`, cuyo precio se resuelve a partir del plan en cada facturación.",
+                            "properties": {
+                              "currency": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "total_payments": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "country_prices": {
+                            "type": "array",
+                            "description": "Reemplazos del precio de la fase por país, vacío cuando la fase no tiene ninguno.",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "country": {
+                                  "type": "string"
+                                },
+                                "amount": {
+                                  "type": "object",
+                                  "properties": {
+                                    "currency": {
+                                      "type": "string"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "current_phase_end": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cuándo la fase indicada por `current_phase` pasa a la siguiente: para una suscripción en su prueba, cuándo cambia al precio regular. Es el fin del último período de facturación que cubre la fase, así que en el último período de una prueba es igual a `current_period_end`. Es null para una suscripción sin plan y para una que ya salió de la escalera de fases.",
+                      "example": "2023-03-16T20:00:00.786342Z"
+                    },
+                    "pending_plan_change": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "El cambio de plan programado para el próximo ciclo de facturación, o null cuando no hay ninguno pendiente. Programa uno con el bloque `plan_change` en Update Subscription.",
+                      "properties": {
+                        "plan_id": {
+                          "type": "string",
+                          "description": "El identificador del plan de destino.",
+                          "example": "1904911d-5df9-429e-8488-ad41abea1a4d"
+                        },
+                        "plan_name": {
+                          "type": "string",
+                          "description": "El nombre del plan de destino.",
+                          "example": "Pro"
+                        },
+                        "direction": {
+                          "type": "string",
+                          "enum": [
+                            "UPGRADE",
+                            "DOWNGRADE"
+                          ],
+                          "description": "Indica si el plan de destino es una mejora o una reducción de plan. Solo informativo.",
+                          "example": "UPGRADE"
+                        },
+                        "effective": {
+                          "type": "string",
+                          "enum": [
+                            "NEXT_BILLING_CYCLE"
+                          ],
+                          "description": "Cuándo se aplica el cambio.",
+                          "example": "NEXT_BILLING_CYCLE"
+                        },
+                        "phases_behavior": {
+                          "type": "string",
+                          "enum": [
+                            "START_FROM_REGULAR",
+                            "HONOR_PHASES"
+                          ],
+                          "description": "Qué ocurre cuando el plan de destino tiene fases.",
+                          "example": "START_FROM_REGULAR"
+                        },
+                        "applies_at": {
+                          "type": "string",
+                          "description": "El evento de facturación en el que el cambio entrará en vigor: la próxima fecha de facturación de la suscripción.",
+                          "example": "2023-02-16T20:00:00.786342Z"
+                        },
+                        "requested_at": {
+                          "type": "string",
+                          "description": "Cuándo se programó el cambio.",
+                          "example": "2023-01-20T10:12:31.786342Z"
+                        }
+                      }
+                    },
+                    "refund_rule": {
+                      "type": "object",
+                      "description": "La regla de reembolso almacenada que se usa para resolver un reembolso de cancelación CUSTOM cuando la solicitud de cancelación no envía su propio refund_amount. Solo está presente cuando hay una configurada; se omite, no es null, en caso contrario. Disponible para las organizaciones habilitadas; contacta a Yuno.",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "PERCENT",
+                            "FIXED"
+                          ],
+                          "description": "PERCENT resuelve el reembolso como un porcentaje del monto cobrado; FIXED lo resuelve como un monto fijo.",
+                          "example": "FIXED"
+                        },
+                        "percent": {
+                          "type": "number",
+                          "description": "Obligatorio, y solo se permite, cuando type es PERCENT (0-100).",
+                          "example": 50
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Obligatorio, y solo se permite, cuando type es FIXED.",
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "example": 10000
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "Debe coincidir con la moneda propia de la suscripción.",
+                              "example": "COP"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pause_until": {
+                      "type": "string",
+                      "description": "Cuándo está programado que la suscripción se reanude automáticamente. Solo está presente en una suscripción actualmente pausada con una duración (pause_cycles o pause_until enviados al pausar); está ausente, no es null, en cualquier otra lectura.",
+                      "example": "2026-10-15T15:54:22.780166Z"
+                    },
+                    "cancel_scheduled": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "null cuando no hay ninguna cancelación pendiente.",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "example": "AFTER_CYCLES"
+                        },
+                        "after_cycles": {
+                          "type": "integer",
+                          "example": 3
+                        },
+                        "at": {
+                          "type": "string"
+                        },
+                        "requested_at": {
+                          "type": "string"
+                        },
+                        "past_due_behavior": {
+                          "type": "string",
+                          "example": "EXHAUST_RETRIES"
+                        }
+                      }
+                    },
+                    "refund": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "null cuando refund fue NONE o se omitió. Está presente en la respuesta de cancelación y en cada lectura posterior una vez calculado.",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "example": "PRORATED"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "value": {
+                              "type": "number",
+                              "example": 20.0
+                            }
+                          }
+                        },
+                        "unused_days": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "period_days": {
+                          "type": "integer",
+                          "example": 30
+                        },
+                        "basis": {
+                          "type": "object",
+                          "properties": {
+                            "billing_cycle": {
+                              "type": "integer",
+                              "example": 4
+                            },
+                            "charged_amount": {
+                              "type": "object",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "example": 30.0
+                                }
+                              }
+                            },
+                            "payment_id": {
+                              "type": "string",
+                              "description": "null para una cotización de fase de $0 sin un pago capturado."
+                            },
+                            "charged_at": {
+                              "type": "string",
+                              "description": "null para una cotización de fase de $0 sin un pago capturado."
+                            }
+                          }
+                        },
+                        "execution": {
+                          "type": "string",
+                          "example": "MERCHANT"
+                        },
+                        "quoted_at": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "unpaid_cycle": {
+                      "type": "object",
+                      "description": "Solo está presente cuando el ciclo de facturación actual está en PAST_DUE y no se ha liquidado.",
+                      "properties": {
+                        "cycle_number": {
+                          "type": "integer"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "currency": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        "attempts": {
+                          "type": "integer"
+                        },
+                        "last_failure_code": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request."
+                      ]
+                    },
+                    "summary": "Result"
+                  },
+                  "PIX AUTOMATICO CADENCE NOT SUPPORTED": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with value 1."
+                      ]
+                    }
+                  },
+                  "INLINE YEAR WITHOUT A PLAN": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "YEAR is invalid for frequency.type field"
+                      ]
+                    }
+                  },
+                  "PLAN NOT FOUND": {
+                    "value": {
+                      "code": "PLAN_NOT_FOUND",
+                      "messages": [
+                        "Plan not found."
+                      ]
+                    },
+                    "summary": "The plan_id does not resolve to a plan on this account."
+                  },
+                  "REFUND RULE CURRENCY MISMATCH": {
+                    "value": {
+                      "code": "REFUND_RULE_CURRENCY_MISMATCH",
+                      "messages": [
+                        "refund_rule.amount.currency USD must match the subscription currency COP."
+                      ]
+                    },
+                    "summary": "A FIXED refund_rule must be denominated in the subscription's own currency."
+                  },
+                  "REFUND RULE PERCENT OUT OF RANGE": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": [
+                        "refund_rule.percent must be between 0 and 100."
+                      ]
+                    },
+                    "summary": "Same refund_rule validator as Update Subscription (captured there, row 154); the message text is shared."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-idempotency-key",
+            "schema": {
+              "type": "string",
+              "default": "{$randomUUID}"
+            },
+            "description": "Un identificador único para la solicitud. Debe ser diferente cada vez (UUID). Consulta [autenticación](/reference/authentication#idempotency)."
+          }
+        ]
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

@@ -1,0 +1,110 @@
+---
+title: "Listar la capa de proveedores white-label"
+description: "Devuelve la capa de tu organización sobre el catálogo de proveedores de Yuno: qué proveedores ofrece tu dashboard y los textos, enlaces y logos que definiste para ellos."
+openapi: "/openapi/es/organizations/whitelabel/list-providers.json GET /whitelabel/providers"
+---
+
+Devuelve la capa de tu organización sobre el catálogo de proveedores de Yuno: qué proveedores ofrece tu dashboard y los textos, enlaces y logos personalizados que definiste para ellos.
+
+Es una **capa, no el catálogo**. Consulta el catálogo de proveedores por separado y combina esta capa encima: esta respuesta solo cubre los proveedores sobre los que has definido algo.
+
+<Note>
+Esto filtra un selector. **No es autorización**: no impide que se cree una conexión con un proveedor que no ofreces.
+</Note>
+
+### Respuesta {#response}
+
+<ResponseField name="filtered" type="boolean">
+  Indica si tu organización tiene al menos una entrada en la lista de permitidos. `false` significa que una organización white-label no ofrece ningún proveedor por ahora (la lista de permitidos es opt-in), no que se ofrezca todo. **Decide según este campo, nunca según la longitud de `providers`**: la lista también tiene elementos cuando tus únicas entradas son reemplazos de instrucciones o de logos.
+</ResponseField>
+
+<ResponseField name="providers" type="object[]">
+  La unión de tu lista de permitidos, tus reemplazos de instrucciones y tus reemplazos de logos. Un proveedor puede tener textos o un logo personalizados sin ser ofrecido; en ese caso aparece aquí con `allowed: false`.
+  <Expandable title="elemento">
+    <ResponseField name="provider_id" type="string">
+      Id de proveedor del catálogo de Yuno, UPPER_SNAKE_CASE.
+    </ResponseField>
+    <ResponseField name="allowed" type="boolean">
+      Indica si tu organización ofrece este proveedor.
+    </ResponseField>
+    <ResponseField name="has_instruction_override" type="boolean">
+      Indica si existe algún reemplazo de instrucciones. Es un indicador económico para una insignia: redundante con los campos de contenido de abajo y no es autoritativo para mostrarlos.
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Nombre visible que reemplaza al del catálogo, cuando hay reemplazo. Si está ausente, se mantiene el del catálogo.
+    </ResponseField>
+    <ResponseField name="instructions" type="object[]">
+      Pasos de conexión que reemplazan a los del catálogo, cuando se personalizan.
+    </ResponseField>
+    <ResponseField name="setup_instructions" type="object[]">
+      Pasos de configuración agrupados que reemplazan a los del catálogo, cuando se personalizan.
+    </ResponseField>
+    <ResponseField name="more_info_url" type="string">
+      Enlace de documentación que reemplaza al del catálogo, cuando está personalizado. Siempre https.
+    </ResponseField>
+    <ResponseField name="logo_url" type="string">
+      Prefirmada en esta lectura y de corta duración. Nunca la almacenes: vuelve a leer para obtener una nueva.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/whitelabel/providers' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK — with an allowlist
+{
+  "filtered": true,
+  "providers": [
+    {
+      "provider_id": "ADYEN",
+      "allowed": true,
+      "has_instruction_override": false
+    },
+    {
+      "provider_id": "STRIPE",
+      "allowed": true,
+      "has_instruction_override": true,
+      "more_info_url": "https://docs.example.com/stripe"
+    },
+    {
+      "provider_id": "YUNO_3DS",
+      "allowed": false,
+      "has_instruction_override": false,
+      "logo_url": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+    }
+  ]
+}
+```
+
+```json 200 OK — no allowlist
+{
+  "filtered": false,
+  "providers": []
+}
+```
+
+```json 401 Unauthorized
+{
+  "code": "NOT_AUTHENTICATED",
+  "messages": ["Not authenticated"]
+}
+```
+</CodeGroup>
+
+<Note>
+`YUNO_3DS` en el ejemplo anterior **no se ofrece** (`allowed: false`) y aun así aparece, porque tiene un logo personalizado. Por eso `allowed` debe leerse por proveedor y no inferirse del contenido de la lista.
+</Note>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `401` | `NOT_AUTHENTICATED` | Claves de API ausentes o no válidas. |
+
+</div>

@@ -1,0 +1,363 @@
+---
+title: "Cancelar suscripción"
+openapi: "/openapi/es/subscriptions/cancel-subscription.json POST /subscriptions/{subscription_id}/cancel"
+description: "Cancela una suscripción de inmediato o programa la cancelación para una fecha futura o un ciclo de facturación."
+---
+
+Llamar a este endpoint con un cuerpo vacío (o sin cuerpo) cancela la suscripción de inmediato,
+cambiando su `status` a `CANCELED`. Esto no cambió y sigue siendo definitivo: una vez inmediata, no se puede
+revertir.
+
+Puedes cancelar desde `CREATED`, `ACTIVE`, `TRIALING`, `PAST_DUE` y `PAUSED`. `COMPLETED` y
+`CANCELED` son estados terminales, por lo que cancelar desde cualquiera de ellos devuelve `400 INVALID_STATE`, incluida una segunda
+cancelación sobre una suscripción que ya está cancelada. Consulta [Estado de la suscripción](/es/reference/subscriptions/status-subscriptions).
+
+## Reembolso en la cancelación inmediata {#refund-on-immediate-cancel}
+
+<Note>
+**Solo organizaciones en la lista de permitidos**
+
+La cotización de reembolsos se habilita por organización, independientemente de la cancelación programada. Si tus llamadas
+devuelven `400` `"Refund quote is not enabled for this organization."`, contacta a tu representante de Yuno
+para que la habilite.
+</Note>
+
+Envía un modo `refund` junto con una cancelación inmediata (sin `schedule`) para que Yuno calcule una
+cotización de reembolso para el ciclo de facturación actual. Yuno solo **calcula** la cotización, nunca mueve dinero.
+`refund.execution` en la respuesta siempre es `"MERCHANT"`: tú ejecutas el reembolso por tu
+propio canal de pago, usando el monto cotizado como dato de entrada.
+
+```json Cancel with a prorated refund
+{
+  "refund": "PRORATED"
+}
+```
+
+| Value | Behavior |
+|---|---|
+| `NONE` (default) | No se calcula ningún reembolso. Es idéntico a omitir la clave `refund`. |
+| `PRORATED` | Reembolsa la parte no usada del ciclo actual, según los días calendario. |
+| `FULL` | Reembolsa el monto completo cobrado por el ciclo actual. |
+| `CUSTOM` | Reembolsa un monto proporcionado por el comercio, con el tope de lo cobrado por el ciclo. |
+
+`refund` no se puede combinar con `schedule`: enviar ambos, o enviar `refund` junto con
+`"schedule": null`, se rechaza con `400` antes de escribir nada. `refund: NONE`, u omitir
+`refund` por completo, sigue funcionando con normalidad junto con `schedule`.
+
+### La base del reembolso {#the-refund-basis}
+
+Todos los modos de reembolso se calculan sobre la misma base: **el pago capturado más reciente de la
+suscripción**, nunca el precio de lista de la propia suscripción ni una estimación. Para un ciclo que
+incluyó una promoción, estos montos son el neto pagado después del descuento, y `basis.charged_amount`
+lo muestra. Si el ciclo actual no tiene ningún pago capturado (un rechazo, un pago aún pendiente,
+o un vacío), `PRORATED`, `FULL` y `CUSTOM` devuelven `400 REFUND_NOT_AVAILABLE`, excepto en una fase genuina
+de `$0` (una fase de prueba o promocional sin ningún cobro) o un ciclo cubierto por completo por una
+promoción, que devuelve `200` con `amount: 0.00`. No hay nada que reembolsar ahí, pero eso no es
+un error.
+
+Una suscripción `PAST_DUE` no tiene ningún pago capturado para el ciclo en curso, así que se aplica la misma regla:
+`refund: NONE` (o un `refund` ausente) sigue cancelando con normalidad, pero cualquier otro modo devuelve
+`400 REFUND_NOT_AVAILABLE` con `current_status: "PAST_DUE"`.
+
+### PRORATED {#prorated}
+
+Reembolsa los días no usados del ciclo actual, usando aritmética de fechas de calendario, nunca horas ni
+minutos:
+
+- `period_start`: la fecha en que se cobró el último pago capturado.
+- `period_end`: la fecha en que termina naturalmente el ciclo actual, limitada a `availability.finish_at` cuando
+  la suscripción lo tiene y es anterior.
+- `unused_days = period_days − used_days`, donde `used_days` cuenta el día en que cancelas como un día completo
+  usado: cancelar a cualquier hora del día 10 de un ciclo de 30 días cuenta igualmente 10 días usados.
+- `amount = charged_amount × unused_days / period_days`, redondeado `HALF_UP` a las
+  unidades menores de la moneda.
+
+Por ejemplo, un ciclo de 30 días cobrado por `$30.00`, cancelado el día 10: 10 días usados, 20 días sin usar,
+`amount = 30.00 × 20/30 = 20.00`.
+
+```json Cancel with a prorated refund — response
+{
+  "refund": {
+    "mode": "PRORATED",
+    "amount": { "value": 20.00, "currency": "USD" },
+    "unused_days": 20,
+    "period_days": 30,
+    "basis": {
+      "billing_cycle": 4,
+      "charged_amount": { "value": 30.00, "currency": "USD" },
+      "payment_id": "<example>",
+      "charged_at": "<example>"
+    },
+    "execution": "MERCHANT",
+    "quoted_at": "<example>"
+  }
+}
+```
+
+Una suscripción facturada por hora o por minuto no tiene una noción significativa de "día", por lo que `PRORATED`
+devuelve allí `400` `"proration is not available for sub-daily cadences"`. `FULL` y `CUSTOM` no
+se ven afectados: ambos siguen funcionando en una cadencia inferior a un día.
+
+### FULL {#full}
+
+Reembolsa el `basis.charged_amount` completo del ciclo actual: `amount` siempre es igual a
+`basis.charged_amount` exactamente, y `unused_days` es igual a `period_days` (todo el ciclo se trata
+como no usado).
+
+### CUSTOM {#custom}
+
+Un reembolso `CUSTOM` toma su monto de uno de dos lugares, en este orden:
+
+1. `refund_amount` en la solicitud de cancelación, si envías uno.
+2. De lo contrario, el `refund_rule` configurado en la suscripción.
+
+Si no existe ninguno, la cancelación se rechaza con `400` `BAD_REQUEST`:
+`"refund: CUSTOM requires refund_amount or a configured refund_rule."` `CUSTOM` nunca recurre a
+un monto calculado. `refund_rule` se define en [Crear](/es/reference/subscriptions/create-subscription#setting-a-refund-rule)
+o [Actualizar](/es/reference/subscriptions/update-subscription#setting-a-refund-rule) y se describe en
+[el objeto Subscription](/es/reference/subscriptions/the-subscription-object).
+
+```json Cancel G — the request's refund_amount wins over the configured refund_rule
+{
+  "refund": "CUSTOM",
+  "refund_amount": { "value": 5000, "currency": "COP" }
+}
+// refund.amount.value: 5000 — the configured refund_rule (a FIXED rule for 10000) is not used
+```
+
+```json Cancel H — no refund_amount sent, the configured refund_rule wins
+{
+  "refund": "CUSTOM"
+}
+// refund.amount.value: 10000 — the subscription's stored FIXED refund_rule
+```
+
+<Note>
+**Disponibilidad**
+
+Un `refund_rule` configurado está disponible para las organizaciones habilitadas; contacta a Yuno. Para una
+organización que aún no está habilitada, `CUSTOM` se comporta exactamente como hoy: `refund_amount` en
+la solicitud es obligatorio y nunca se puede configurar un `refund_rule` para esa organización
+en primer lugar.
+</Note>
+
+Envía `refund_amount` junto con `"refund": "CUSTOM"` para reembolsar un monto específico en lugar de uno
+calculado o basado en una regla:
+
+```json Cancel with a custom refund amount
+{
+  "refund": "CUSTOM",
+  "refund_amount": { "value": 5.00, "currency": "USD" }
+}
+```
+
+`amount` en la respuesta es tu `refund_amount` devuelto exactamente igual, sin recalcular ni redondear
+de nuevo. `refund_amount.value` debe ser mayor que `0` y no debe superar el monto
+cobrado del ciclo actual, y `refund_amount.currency` debe coincidir con la moneda de la propia suscripción.
+
+### Leer el objeto refund {#reading-the-refund-object}
+
+`refund` es `null` cuando `refund` fue `NONE` o se omitió. De lo contrario:
+
+| Field | Description |
+|---|---|
+| `mode` | `PRORATED`, `FULL` o `CUSTOM`, tal como se solicitó. |
+| `amount` | El monto de reembolso calculado (o el devuelto tal cual en `CUSTOM`). |
+| `unused_days` / `period_days` | Los datos de días a partir de los cuales se calculó el monto. En `FULL`, `unused_days` es igual a `period_days`: todo el ciclo cuenta como no usado. |
+| `basis.billing_cycle` | El ciclo de facturación sobre el que se calculó el reembolso. |
+| `basis.charged_amount` | El monto realmente cobrado por ese ciclo: el tope del reembolso. |
+| `basis.payment_id` | El id propio del pago capturado. `null` para una cotización de fase de `$0` sin pago al que hacer referencia. |
+| `basis.charged_at` | Cuándo se capturó ese pago. `null` para una cotización de fase de `$0` sin pago al que hacer referencia. |
+| `execution` | Siempre `"MERCHANT"`: Yuno calcula la cotización, tú ejecutas el reembolso. |
+| `quoted_at` | Cuándo se calculó esta cotización. |
+
+### Dónde aparece `refund` {#where-refund-appears}
+
+- **La respuesta `200` de cancelación** siempre incluye la clave `refund`: `null` cuando no se calculó ninguna cotización,
+  el objeto en caso contrario.
+- **`GET /v1/subscriptions/{id}`** y **`GET /v1/subscriptions?merchant_reference=...`** también incluyen el
+  `refund` *calculado por última vez*, una vez que existe: cancelar con una cotización de reembolso lo persiste, por lo que
+  sigue apareciendo en cada lectura posterior de esa suscripción a través de cualquiera de estos dos.
+- **`GET /v1/subscriptions`** (la lista paginada) **no** incluye `refund` en ninguna entrada, sin importar si
+  esa suscripción se canceló o no con una cotización: el elemento de la lista es una forma de resumen más pequeña que
+  el objeto de suscripción completo, y `refund` no es uno de los campos que incluye.
+- **El webhook `subscription.cancel`** incluye `refund` solo cuando realmente se calculó una cotización
+  (`PRORATED`/`FULL`/`CUSTOM`): está ausente, no `null`, en una cancelación `NONE` o sin reembolso.
+
+## Programar una cancelación en su lugar {#scheduling-a-cancellation-instead}
+
+<Note>
+**Solo organizaciones en la lista de permitidos**
+
+La cancelación programada se habilita por organización. Si tus llamadas devuelven `400` `"Scheduled
+cancellation is not enabled for this organization."`, contacta a tu representante de Yuno para que la
+habilite.
+</Note>
+
+Envía un objeto `schedule` para diferir la cancelación en lugar de aplicarla ahora. La suscripción
+permanece en su estado actual, y la facturación continúa con normalidad, hasta que se ejecute la programación.
+
+```json Schedule after 3 more billing cycles
+{
+  "schedule": {
+    "after_cycles": 3
+  }
+}
+```
+
+```json Schedule for a specific date
+{
+  "schedule": {
+    "at": "2026-11-01T00:00:00Z"
+  }
+}
+```
+
+`schedule` acepta exactamente uno de:
+
+| Field | Type | Rules |
+|---|---|---|
+| `after_cycles` | integer | De 1 a 60, y no puede superar los ciclos de facturación restantes de la suscripción (`billing_cycles.total − billing_cycles.current`, cuando el plan tiene un total). |
+| `at` | Timestamp | ISO-8601 con desfase UTC, debe estar en el futuro y debe ser anterior a `availability.finish_at` cuando la suscripción lo tiene. |
+
+Enviar ambos o ninguno devuelve `400`.
+
+Una suscripción `PIX_AUTOMATIC` facturada con `frequency.execution: MERCHANT` no puede programar una
+cancelación: prográmala como `at` o `after_cycles` en un tipo de método de pago distinto, o cancela
+de inmediato.
+
+### Comportamiento mientras se ejecutan los reintentos {#behavior-while-retries-are-running}
+
+<Note>
+**`past_due_behavior` se devuelve en `cancel_scheduled`, pendiente de confirmación de producto**
+
+Actualmente el motor registra el `past_due_behavior` que se resolvió para la programación (el valor explícito
+o el valor predeterminado `EXHAUST_RETRIES`) en el campo `cancel_scheduled.past_due_behavior` de cada
+respuesta. Trata este valor devuelto como provisional hasta que producto lo confirme como el contrato externo
+previsto: puede cambiar.
+</Note>
+
+`past_due_behavior` controla qué hace una cancelación programada si la suscripción está en `PAST_DUE`
+cuando la programación se ejecutaría de otro modo:
+
+| Value | Behavior |
+|---|---|
+| `EXHAUST_RETRIES` (default) | La cancelación programada espera: los reintentos siguen ejecutándose durante el ciclo en curso, y la cancelación solo se ejecuta cuando la suscripción sale de `PAST_DUE` (se recupera o se agotan los reintentos). |
+| `SKIP_RETRIES` | La cancelación programada se ejecuta de inmediato, sin esperar a que terminen los reintentos pendientes. |
+
+```json Schedule and skip retries if PAST_DUE when it fires
+{
+  "schedule": {
+    "after_cycles": 1,
+    "past_due_behavior": "SKIP_RETRIES"
+  }
+}
+```
+
+Independientemente de `past_due_behavior`, cancelar una suscripción `PAST_DUE`, ya sea de inmediato o
+porque una programación venció, nunca genera un error y siempre detiene los reintentos de ese ciclo. Consulta
+[Estado de la suscripción](/es/reference/subscriptions/status-subscriptions) y
+[Reintentos](/es/docs/payment-features/subscriptions/retries).
+
+<Note>
+El manejo de reembolsos solo está disponible en una cancelación **inmediata**; consulta
+[Reembolso en la cancelación inmediata](#refund-on-immediate-cancel). No se incluye con la cancelación
+programada: una solicitud con `schedule` no puede incluir también un modo `refund`.
+</Note>
+
+## Deshacer una cancelación programada {#undoing-a-scheduled-cancellation}
+
+Envía `"schedule": null` para borrar una programación pendiente. La suscripción no se ve afectada de otro modo: sin
+cambio de estado ni cobro.
+
+```json Undo a scheduled cancellation
+{
+  "schedule": null
+}
+```
+
+Enviar `"schedule": null` cuando no hay nada programado no hace nada: `200`, `cancel_scheduled` sigue
+siendo `null` y no se envía ningún webhook. Cuando se borra una programación, se envía en su lugar
+`subscription.cancel_schedule_canceled`.
+
+## Leer el resultado {#reading-the-result}
+
+La respuesta incluye la misma forma de [Subscription](/es/reference/subscriptions/the-subscription-object)
+que cualquier otro endpoint de suscripciones. Cuatro campos son relevantes aquí:
+
+- `cancel_scheduled`: `null` cuando no hay ninguna cancelación pendiente; de lo contrario, el `mode` de la programación,
+  `after_cycles`/`at`, `requested_at` y `past_due_behavior`.
+- `retries.stopped`, `retries.attempts_made`, `retries.outcome`, `retries.next_retry_at`: se completan
+  siempre que la suscripción está en `PAST_DUE` o tiene un `cancel_scheduled` pendiente; se omiten en los demás casos.
+- `unpaid_cycle`: está presente cuando el ciclo de facturación actual está en `PAST_DUE` y no se ha saldado.
+- `refund`: `null` (o ausente en lecturas que no son de cancelación) cuando no se calculó ninguna cotización de reembolso; de lo contrario, el
+  monto cotizado y su base. Consulta [Reembolso en la cancelación inmediata](#refund-on-immediate-cancel).
+
+<Note>
+**La persistencia de `retries` y `unpaid_cycle` después de la cancelación está pendiente de confirmación de producto**
+
+Ambos campos se calculan a partir del estado en vivo de la suscripción al momento de la solicitud. Si un `GET
+/v1/subscriptions/{id}` emitido después de que la suscripción llega a `CANCELED` sigue mostrando la
+instantánea de reintentos o el ciclo impago del ciclo que estaba en curso, o los omite una vez terminal, aún no
+está confirmado como un contrato estable: verifica con una respuesta en vivo antes de depender de ello.
+</Note>
+
+Consulta [el objeto Subscription](/es/reference/subscriptions/the-subscription-object) para ver la referencia
+completa de campos.
+
+## Programar una cancelación en una suscripción pausada {#scheduling-a-cancellation-on-a-paused-subscription}
+
+Una suscripción pausada aún se puede programar para cancelación. `schedule.after_cycles` se rechaza
+mientras la suscripción está en `PAUSED`, porque una pausa congela el reloj de facturación y no hay ningún
+límite de ciclo desde el cual contar:
+
+```json 400 — after_cycles on a paused subscription
+{
+  "code": "BAD_REQUEST",
+  "messages": [
+    "schedule.after_cycles cannot be resolved while the subscription is paused; use schedule.at instead."
+  ]
+}
+```
+
+`schedule.at` no tiene esa restricción: no necesita un reloj de ciclos, por lo que se acepta con normalidad en una
+suscripción `PAUSED`. Consulta [Pausar suscripción](/es/reference/subscriptions/pause-subscription).
+
+## Webhooks {#webhooks}
+
+- `subscription.cancel_scheduled`: se envía cuando se programa una cancelación mediante este endpoint.
+- `subscription.cancel_schedule_canceled`: se envía cuando se deshace una cancelación programada pendiente mediante
+  `"schedule": null`.
+
+Una cancelación inmediata (cuerpo vacío, o una programación que vence) sigue emitiendo `subscription.cancel`
+como antes: la programación emite sus propios eventos solo para las acciones de programar y deshacer.
+El payload de `subscription.cancel` también incluye `refund`, siguiendo la misma regla que la respuesta de
+cancelación: está presente solo cuando realmente se calculó una cotización (`PRORATED`/`FULL`/`CUSTOM`) y ausente en una
+cancelación `NONE` o sin reembolso.
+
+## Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `BAD_REQUEST` | Una clave de nivel superior no reconocida, o una clave no reconocida dentro de `schedule`. |
+| `400` | `BAD_REQUEST` | `schedule` incluye tanto `at` como `after_cycles`, o ninguno. |
+| `400` | `BAD_REQUEST` | `after_cycles` no es un entero entre 1 y 60, o supera los ciclos de facturación restantes. |
+| `400` | `BAD_REQUEST` | `after_cycles` se envía mientras la suscripción está en `PAUSED`: `"schedule.after_cycles cannot be resolved while the subscription is paused; use schedule.at instead."` |
+| `400` | `BAD_REQUEST` | `at` no es una fecha y hora ISO-8601 con desfase UTC, no está en el futuro, o cae en o después de `availability.finish_at`. |
+| `400` | `BAD_REQUEST` | `past_due_behavior` no es `EXHAUST_RETRIES` ni `SKIP_RETRIES`. |
+| `400` | `BAD_REQUEST` | La cancelación programada no está habilitada para esta organización. |
+| `400` | `BAD_REQUEST` | Una suscripción `PIX_AUTOMATIC` facturada con `frequency.execution: MERCHANT` no puede programar una cancelación. |
+| `400` | `BAD_REQUEST` | `refund` no es uno de `NONE`, `PRORATED`, `FULL`, `CUSTOM`. |
+| `400` | `BAD_REQUEST` | `refund` (cualquier modo distinto de `NONE`) se combina con `schedule`, incluido `"schedule": null`. |
+| `400` | `BAD_REQUEST` | La cotización de reembolsos no está habilitada para esta organización (`refund: NONE`/ausente nunca está restringido). |
+| `400` | `BAD_REQUEST` | `refund_amount` se envía sin `refund: CUSTOM`. |
+| `400` | `BAD_REQUEST` | `refund: CUSTOM` se envía sin `refund_amount` ni un `refund_rule` configurado en la suscripción: `"refund: CUSTOM requires refund_amount or a configured refund_rule."` |
+| `400` | `BAD_REQUEST` | `refund_amount.value` falta, no es mayor que `0` o supera el monto cobrado del ciclo actual (el tope). |
+| `400` | `BAD_REQUEST` | `refund_amount.currency` falta o no coincide con la moneda de la propia suscripción. |
+| `400` | `BAD_REQUEST` | `refund: PRORATED` en una cadencia inferior a un día (`HOUR`/`MINUTE`). |
+| `400` | `REFUND_NOT_AVAILABLE` | `refund` no es `NONE`, y el ciclo de facturación actual no tiene ningún pago capturado contra el cual reembolsar (incluye todos los casos `PAST_DUE`). Incluye `current_status`. |
+| `400` | `INVALID_STATE` | El estado de la suscripción no admite la cancelación (`COMPLETED` o ya `CANCELED`). |
+
+</div>

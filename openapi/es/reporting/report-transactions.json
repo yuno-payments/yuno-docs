@@ -1,0 +1,457 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Yuno Transaction Reporting API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/reporting/transactions": {
+      "post": {
+        "summary": "Reportar transacciones fuera de Yuno",
+        "description": "Reporta transacciones procesadas directamente con un proveedor (fuera de Yuno). Cada evento aceptado se guarda como un pago normal de Yuno con `origin: REPORTED`: es visible en el Dashboard, los listados y las analíticas, pero Yuno nunca lo enruta, reintenta ni cobra.",
+        "operationId": "report-transactions",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tu clave de API pública."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tu clave secreta privada. Nunca la expongas del lado del cliente."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "events"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "UUID de la cuenta de Yuno a la que pertenecen los pagos reportados."
+                  },
+                  "events": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 500,
+                    "description": "Un evento o un lote de hasta 500. Los eventos se procesan por elemento: un evento no válido nunca rechaza el lote.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "report_id",
+                        "merchant_order_id",
+                        "country",
+                        "payment_method_type",
+                        "result",
+                        "amount",
+                        "provider_id"
+                      ],
+                      "properties": {
+                        "report_id": {
+                          "type": "string",
+                          "maxLength": 255,
+                          "description": "Tu identificador único para este evento, la clave de deduplicación. Un evento con un `report_id` ya ingerido se cuenta como duplicado y nunca se ingiere dos veces, lo que hace seguros los reintentos.",
+                          "examples": [
+                            "merchant-rpt-000123"
+                          ]
+                        },
+                        "merchant_order_id": {
+                          "type": "string",
+                          "maxLength": 255,
+                          "description": "Tu referencia de pedido, que te permite encontrar el pago en el Dashboard.",
+                          "examples": [
+                            "order_45678"
+                          ]
+                        },
+                        "country": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 2,
+                          "description": "Código de país ISO 3166-1 alpha-2 de la transacción, en mayúsculas (por ejemplo, `US`); los códigos en minúsculas o desconocidos se rechazan.",
+                          "examples": [
+                            "US"
+                          ]
+                        },
+                        "payment_method_type": {
+                          "type": "string",
+                          "description": "Tipo de método de pago usado en el proveedor: debe ser uno de los tipos de método de pago de Yuno (por ejemplo, `CARD`, `PIX`); los tipos desconocidos se rechazan.",
+                          "examples": [
+                            "CARD"
+                          ]
+                        },
+                        "result": {
+                          "type": "string",
+                          "enum": [
+                            "SUCCEEDED",
+                            "DECLINED",
+                            "ERROR"
+                          ],
+                          "description": "El resultado que te dio el proveedor. Se asigna al estado del pago junto con el tipo de evento: `PURCHASE`+`SUCCEEDED` → pago `SUCCEEDED`; `AUTHORIZE`+`SUCCEEDED` → `PENDING`/`AUTHORIZED` (una autorización aprobada no es dinero capturado); `DECLINED` → `DECLINED`; `ERROR` → `ERROR`."
+                        },
+                        "amount": {
+                          "type": "object",
+                          "required": [
+                            "value",
+                            "currency"
+                          ],
+                          "description": "Monto de la transacción. Valor decimal: un pago de $99 es `99.00`, no `9900`.",
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "minimum": 0,
+                              "description": "Monto decimal, mayor o igual que cero. Un monto de `0` es típico de los eventos `VERIFY` (verificación de cero dólares).",
+                              "examples": [
+                                99.0
+                              ]
+                            },
+                            "currency": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3,
+                              "description": "Código de moneda ISO 4217 en mayúsculas (por ejemplo, `USD`); los códigos en minúsculas o desconocidos se rechazan.",
+                              "examples": [
+                                "USD"
+                              ]
+                            }
+                          }
+                        },
+                        "provider_id": {
+                          "type": "string",
+                          "description": "El proveedor con el que procesaste la transacción: debe ser uno de los ID de proveedor del catálogo de Yuno (por ejemplo, `ADYEN`); los proveedores desconocidos se rechazan. Se muestra en el pago y permite la segmentación por proveedor en el Dashboard y las analíticas.",
+                          "examples": [
+                            "ADYEN"
+                          ]
+                        },
+                        "latency_ms": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Opcional. El tiempo de respuesta del proveedor observado por ti, en milisegundos (ida y vuelta de la llamada de autorización). Alimenta las analíticas de latencia por proveedor y los objetivos LATENCY y BALANCED de las Routing Recommendations: los eventos sin este dato no aportan latencia para clasificar.",
+                          "examples": [
+                            180
+                          ]
+                        },
+                        "token_type_used": {
+                          "type": "string",
+                          "enum": [
+                            "FPAN",
+                            "DPAN",
+                            "PROVIDER_TOKEN"
+                          ],
+                          "description": "Opcional. La credencial que enviaste al proveedor para esta transacción: `FPAN`, el número real de la tarjeta (funding PAN); `DPAN`, el token de red de la tarjeta; `PROVIDER_TOKEN`, un token emitido por ese proveedor para la tarjeta almacenada (por ejemplo, un token de tarjeta guardada o de método de pago almacenado en el vault propio del proveedor). Habilita el análisis de la tasa de aprobación por tipo de token.",
+                          "examples": [
+                            "DPAN"
+                          ]
+                        },
+                        "initiation": {
+                          "type": "string",
+                          "enum": [
+                            "CIT",
+                            "MIT"
+                          ],
+                          "description": "Opcional. Cómo se inició la transacción en el proveedor: `CIT`, iniciada por el titular de la tarjeta (el cliente estaba presente en el checkout); `MIT`, iniciada por el comercio (por ejemplo, la renovación de una suscripción). Cualquier otro valor rechaza el evento con `INVALID_EVENT` y el mensaje \"The field 'initiation' must be CIT or MIT.\" Habilita las estadísticas de tasa de aprobación divididas por iniciación en las Routing Recommendations. Omítelo para dejar el evento exactamente como antes.",
+                          "examples": [
+                            "MIT"
+                          ]
+                        },
+                        "recommendation_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Opcional. El `recommendation_id` devuelto por `POST /v1/routing/recommendations` para este pago, para que Yuno pueda atribuir el resultado reportado a esa recomendación. Debe ser el valor exactamente como se devolvió: un UUID v4 en minúsculas. No se valida contra las recomendaciones existentes. Cualquier otro valor rechaza el evento con `INVALID_EVENT` y el mensaje \"The field 'recommendation_id' must be a UUID.\" Omítelo (o envía `null`) para dejar el evento exactamente como antes.",
+                          "examples": [
+                            "3f9c2a7e-1b7d-4c2a-9a1e-6e1f0c2b9d11"
+                          ]
+                        },
+                        "payment_method_details": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "description": "Opcional. Detalles del método de pago usado en el proveedor, indexados por el tipo de método de pago: hoy solo `card`, y solo en eventos cuyo `payment_method_type` es `CARD`. Un `card.bin` en un evento de otro tipo, o un contenedor con cualquier otra clave, rechaza el evento. Un contenedor vacío (`{}` o `{\"card\": {}}`) se trata como ausente.",
+                          "properties": {
+                            "card": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "bin": {
+                                  "type": "string",
+                                  "pattern": "^([0-9]{6}|[0-9]{8})$",
+                                  "description": "El BIN de la tarjeta: exactamente los primeros 6 u 8 dígitos del número de la tarjeta; cualquier otra longitud o un carácter que no sea un dígito rechaza el evento con `INVALID_EVENT`. No son datos del titular de la tarjeta. Se almacena en la transacción del pago reportado como `payment_method.detail.card.card_data.iin` y se usa para construir estadísticas a nivel de BIN para las Routing Recommendations. Omítelo para dejar el evento exactamente como antes.",
+                                  "examples": [
+                                    "45717360"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "event_type": {
+                          "type": "string",
+                          "enum": [
+                            "PURCHASE",
+                            "AUTHORIZE",
+                            "VERIFY"
+                          ],
+                          "default": "PURCHASE",
+                          "description": "Opcional. La operación que realizaste en el proveedor: `PURCHASE`, un cargo directo (autorización y captura en un solo paso; es el valor predeterminado cuando se omite); `AUTHORIZE`, una autorización que se capturará más tarde (el pago queda `PENDING` con el subestado `AUTHORIZED`); `VERIFY`, una verificación de tarjeta o autorización de cero dólares (el pago queda `SUCCEEDED` con el subestado `VERIFIED`)."
+                        },
+                        "occurred_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "Opcional. Cuándo ocurrió la transacción en el proveedor (RFC 3339, UTC). Por defecto, es el momento en que Yuno recibe el evento.",
+                          "examples": [
+                            "2026-08-14T10:41:07Z"
+                          ]
+                        },
+                        "raw_provider_response": {
+                          "type": "object",
+                          "description": "Opcional. La carga útil de respuesta del proveedor, tal cual (JSON, hasta 64 KB). Se almacena con una redacción defensiva de datos de tarjeta aplicada; ninguna API la devuelve nunca. Archivarla permite que Yuno enriquezca el pago más adelante sin pedirte nada nuevo."
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "minimal": {
+                  "summary": "Minimal event (required fields only)",
+                  "value": {
+                    "account_id": "3f2a1b6c-8d4e-4f5a-9b0c-1d2e3f4a5b6c",
+                    "events": [
+                      {
+                        "report_id": "merchant-rpt-000123",
+                        "merchant_order_id": "order_45678",
+                        "country": "US",
+                        "payment_method_type": "CARD",
+                        "result": "SUCCEEDED",
+                        "amount": {
+                          "currency": "USD",
+                          "value": 99.0
+                        },
+                        "provider_id": "ADYEN"
+                      }
+                    ]
+                  }
+                },
+                "full": {
+                  "summary": "Full event (all v1 fields)",
+                  "value": {
+                    "account_id": "3f2a1b6c-8d4e-4f5a-9b0c-1d2e3f4a5b6c",
+                    "events": [
+                      {
+                        "report_id": "merchant-rpt-000125",
+                        "merchant_order_id": "order_45679",
+                        "country": "US",
+                        "payment_method_type": "CARD",
+                        "result": "SUCCEEDED",
+                        "amount": {
+                          "currency": "USD",
+                          "value": 99.0
+                        },
+                        "provider_id": "ADYEN",
+                        "latency_ms": 180,
+                        "token_type_used": "DPAN",
+                        "initiation": "MIT",
+                        "recommendation_id": "3f9c2a7e-1b7d-4c2a-9a1e-6e1f0c2b9d11",
+                        "payment_method_details": {
+                          "card": {
+                            "bin": "45717360"
+                          }
+                        },
+                        "event_type": "PURCHASE",
+                        "occurred_at": "2026-08-14T10:41:07Z",
+                        "raw_provider_response": {
+                          "pspReference": "8815992887",
+                          "resultCode": "Authorised"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Lote aceptado y procesado por evento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accepted": {
+                      "type": "integer",
+                      "description": "Eventos ingeridos como pagos."
+                    },
+                    "duplicates": {
+                      "type": "integer",
+                      "description": "Eventos omitidos porque su `report_id` ya se había ingerido."
+                    },
+                    "rejected": {
+                      "type": "array",
+                      "description": "Eventos que no pasaron la validación, cada uno con su motivo. El resto del lote no se ve afectado.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "report_id": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string",
+                            "examples": [
+                              "INVALID_EVENT"
+                            ]
+                          },
+                          "messages": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "mixed": {
+                    "value": {
+                      "accepted": 2,
+                      "duplicates": 1,
+                      "rejected": [
+                        {
+                          "report_id": "merchant-rpt-000124",
+                          "code": "INVALID_EVENT",
+                          "messages": [
+                            "The field 'event_type' must be one of: PURCHASE, AUTHORIZE, VERIFY."
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Fallo de validación a nivel de solicitud: cuerpo mal formado, falta un campo obligatorio o un lote de más de 500 eventos. Un `account_id` que no existe o no pertenece a tu organización responde `INVALID_ACCOUNT_ID`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid_request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'events' must contain between 1 and 500 events."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado: `NOT_AUTHENTICATED` / `INVALID_CREDENTIALS` (faltan los encabezados `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` o no son válidos).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "not_authenticated": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Missing or invalid PUBLIC-API-KEY / PRIVATE-SECRET-KEY headers."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Prohibido: `PRODUCT_NOT_ENABLED` (el producto no está habilitado para tu organización).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "product_not_enabled": {
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "The Transaction Reporting API is enabled per organization. Contact your Key Account Manager (KAM) to activate it."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

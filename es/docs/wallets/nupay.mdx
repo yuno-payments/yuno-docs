@@ -1,0 +1,425 @@
+---
+title: "NuPay"
+description: "Acepta pagos con NuPay, el método de pago digital de NuBank, usando los flujos de Yuno SDK o de Direct API para pagos únicos, inscripción y modo 2FA."
+---
+
+Esta guía explica cómo integrar NuPay, el método de pago digital de NuBank, en tu checkout. Yuno admite los flujos de **Yuno SDK** (recomendado) y de **Direct API**. Aprenderás a:
+
+* Inscribir NuPay como método de pago de un cliente
+* Realizar pagos sin inscripción (modo 2FA)
+* Realizar pagos en cuotas (condiciones de pago)
+* Configurar suscripciones
+
+## Requisitos {#requirements}
+
+Antes de comenzar, necesitas:
+
+* Una cuenta de Yuno con acceso al Dashboard
+* Claves de API y un `account_id` (que encuentras en el Dashboard)
+* Un cliente creado en Yuno (o créalo en el Paso 1)
+
+## Crear y administrar clientes {#create-and-manage-customers}
+
+Crea el cliente una sola vez con tu `merchant_customer_id` externo y luego consúltalo por el `id` de Yuno o por `merchant_customer_id`, según necesites.
+
+1. Usa el endpoint [Create Customer](/es/reference/customers/create-customer) y proporciona tu propio `merchant_customer_id` (el id único del cliente en tu sistema). La respuesta devuelve `id`, que es el id de cliente de Yuno.
+2. Usa [Retrieve Customer](/es/reference/customers/retrieve-customer) con el `id` de Yuno.
+3. Usa [Retrieve Customer by External Id](/es/reference/customers/retrieve-customer-by-external-id) con el parámetro de consulta `merchant_customer_id`.
+
+## Inscribir el método de pago NuPay {#enroll-nupay-payment-method}
+
+Sigue los pasos a continuación para inscribir el método de pago `NU_PAY_ENROLLMENT` a un cliente.
+
+<Tabs>
+  <Tab title="Yuno SDK">
+    Con la integración del SDK, Yuno se encarga de mostrar el método de pago NuPay, redirigir al cliente a NuBank para la autenticación y gestionar el flujo de regreso.
+    
+    ### Paso 1: Crear un cliente
+    Crea un cliente y obtén su `id` de cliente de Yuno con el endpoint [Create Customer](/es/reference/customers/create-customer).
+    
+    ### Paso 2: crea una sesión de cliente
+    Usa el `id` del cliente y el endpoint [Create Customer Session](/es/reference/customer-sessions-enrollment/create-customer-session) para recibir un `customer_session`.
+    
+    ### Paso 3: Inicializar el SDK e inscribir
+    Inicializa el SDK de Yuno (Web, Android o iOS) con el `customer_session`. 
+    
+    Si usas el checkout del SDK o la integración headless, llama a [Inscribir un método de pago (Checkout)](/es/reference/payment-methods-checkout/enroll-payment-method-checkout) (`POST /customers/sessions/{customer_session}/payment-methods`) con `payment_method_type`: `NU_PAY_ENROLLMENT`.
+    
+    El SDK muestra automáticamente el método de pago NuPay, gestiona la redirección del cliente a NuBank y se encarga del flujo de autenticación.
+    
+    ### Paso 4: Confirmar la inscripción
+    Escucha los [webhooks](/docs/webhooks) o consulta los métodos de pago inscritos para verificar que el estado sea `ENROLLED`.
+  </Tab>
+  
+  <Tab title="Direct API">
+    Sigue estos pasos para inscribir `NU_PAY_ENROLLMENT` a un cliente usando el flujo Direct.
+    
+    ### Paso 1: crea un cliente
+    Si aún no tienes un cliente, créalo como se mostró antes. Usarás el `id` de cliente devuelto.
+    
+    ### Paso 2: Inscribir el método de pago
+    Usa [Enroll Payment Method](/es/reference/payment-methods-direct-workflow/enroll-payment-method-api) con los siguientes parámetros de la solicitud:
+    
+    * **type**: `NU_PAY_ENROLLMENT`
+    * **account\_id**: UUID de tu cuenta (desde el Dashboard de Yuno)
+    * **workflow**: `DIRECT`
+    
+    Campos esperados en la respuesta:
+    
+    * **vaulted\_token**: UUID del método de pago inscrito
+    * **status**: `READY_TO_ENROLL`
+    * **sub\_status**: `WAITING_ADDITIONAL_STEP`
+    * **action**: `REDIRECT_URL`
+    * **redirect\_url**: URL a la que redirigir al cliente para la autenticación en Nu
+    
+    ### Paso 3: Redirigir al cliente
+    Redirige al cliente a `redirect_url`. El cliente completa el flujo de Nu. Nu notifica a Yuno el estado final.
+    
+    ### Paso 4: Confirmar la inscripción
+    Usa [Retrieve Enrolled Payment Method by id](/es/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api) con el `vaulted_token`. Una inscripción exitosa devuelve:
+    
+    * **status**: `ENROLLED`
+    * **sub\_status**: `ENROLLED`
+    
+    <Warning>
+      La inscripción solo se completa después de que Yuno recibe la confirmación de Nu.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Pagos sin inscripción (modo 2FA) {#payments-without-enrollment-2fa-mode}
+
+Puedes aceptar pagos únicos con NuPay sin exigir que el cliente inscriba su método de pago. Esto suele llamarse **modo 2FA**, ya que el cliente autentica cada transacción de forma individual.
+
+<Tabs>
+  <Tab title="Yuno SDK">
+    Acepta pagos sin inscripción usando el SDK de Yuno. El SDK se encarga de mostrar NuPay y de redirigir al cliente para completar la autenticación.
+    
+    ### Paso 1: crea una sesión de checkout
+    Comienza creando una sesión de checkout con el endpoint [Create Checkout Session](/es/reference/checkout-sessions/create-checkout-session).
+    
+    ```json
+    {
+      "country": "BR",
+      "customer_id": "{{customer_id}}",
+      "merchant_order_id": "order-0000024",
+      "amount": {
+        "currency": "BRL",
+        "value": 15000
+      }
+    }
+    ```
+    
+    La respuesta devuelve un ID de `checkout_session`.
+    
+    ### Paso 2: inicializa el SDK
+    Inicializa el SDK de Yuno (Web, Android o iOS) con el ID de `checkout_session`. NuPay se mostrará automáticamente como una opción de pago disponible en la interfaz del SDK.
+    
+    ### Paso 3: El cliente completa el pago
+    Cuando el cliente selecciona NuPay:
+    1. El SDK solicita la autenticación al cliente.
+    2. El cliente es redirigido a Nu para la autenticación 2FA.
+    3. El SDK recibe el resultado y procesa el pago a través de Yuno.
+    
+    ### Paso 4: Gestionar pagos con el flujo SDK (opcional)
+    Si llamas directamente a la API de pagos de Yuno mientras usas el checkout del SDK, establece `workflow` en `SDK_CHECKOUT` y pasa el token `checkout.session`:
+    
+    ```json
+    {
+      "description": "One-time NuPay Payment via SDK",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000024",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 150
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "SDK_CHECKOUT",
+      "checkout": {
+        "session": "{{checkout_session_id}}"
+      },
+      "payment_method": {
+        "type": "NU_PAY"
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Direct API">
+    ### Paso 1: Crear un pago
+    Usa [Create payment](/es/reference/payments/create-payment) con el flujo Direct y el tipo de método de pago `NU_PAY`. En este modo, no necesitas un `vaulted_token`.
+    
+    ```json
+    {
+      "description": "One-time NuPay Payment",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000024",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 150
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "DIRECT",
+      "callback_url": "https://your-callback.com",
+      "payment_method": {
+        "type": "NU_PAY"
+      }
+    }
+    ```
+    
+    ### Paso 2: Gestionar la respuesta
+    Como este modo requiere la autenticación del cliente, la respuesta devolverá una acción para redirigir al usuario.
+    
+    *   **status**: `READY_TO_PAY`
+    *   **sub_status**: `WAITING_ADDITIONAL_STEP`
+    *   **action**: `REDIRECT_URL`
+    *   **redirect_url**: URL a la que redirigir al cliente para la autenticación 2FA en Nu.
+    
+    ### Paso 3: Confirmar el pago
+    Después de que el cliente complete la autenticación, usa [Retrieve payment by id](/reference/payments/retrieve-payment-by-id) para confirmar el estado final.
+  </Tab>
+</Tabs>
+
+## Pagos con condiciones de pago (cuotas) {#payments-with-payment-conditions-installments}
+
+NuPay admite cuotas tanto para métodos de pago inscritos como para pagos únicos (modo 2FA).
+
+<Tabs>
+  <Tab title="Yuno SDK">
+    NuPay admite cuotas para métodos de pago inscritos y pagos únicos (modo 2FA) dentro del SDK.
+    
+    ### Paso 1: Obtener las condiciones de pago
+    Solicita las opciones de cuotas disponibles con el endpoint [APM installments](/reference/installments/apm-installments), según el flujo:
+    
+    <Tabs>
+      <Tab title="Enrollment Flow">
+        ```bash
+        curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
+        --header 'public-api-key: {{your_public_api_key}}' \
+        --header 'private-secret-key: {{your_secret_api_key}}' \
+        --header 'X-account-code: {{your_account_id}}' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "country": "BR",
+          "amount": {
+            "currency": "BRL",
+            "value": "250"
+          },
+          "customer": {
+            "id": "{{customer_id}}"
+          },
+          "payment_method": "NU_PAY_ENROLLMENT",
+          "vaulted_token": "{{vaulted_token}}"
+        }'
+        ```
+      </Tab>
+      <Tab title="2FA Mode">
+        ```bash
+        curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
+        --header 'public-api-key: {{your_public_api_key}}' \
+        --header 'private-secret-key: {{your_secret_api_key}}' \
+        --header 'X-account-code: {{your_account_id}}' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "country": "BR",
+          "payment_method": "NU_PAY",
+          "amount": {
+            "currency": "BRL",
+            "value": "250"
+          },
+          "customer": {
+            "document": {
+              "document_type": "CPF",
+              "document_number": "52998224725"
+            },
+            "email": "customer@email.com"
+          }
+        }'
+        ```
+      </Tab>
+    </Tabs>
+    
+    Selecciona el `id` del plan y el número de cuotas de la respuesta.
+    
+    ### Paso 2: Crear el pago con el flujo del SDK
+    Crea el pago con el flujo del SDK estableciendo `workflow: "SDK_CHECKOUT"` y pasando `checkout.session` junto con los detalles del plan:
+    
+    ```json
+    {
+      "description": "NuPay Installment Payment via SDK",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000023",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 250
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "SDK_CHECKOUT",
+      "checkout": {
+        "session": "{{checkout_session_id}}"
+      },
+      "payment_method": {
+        "type": "NU_PAY_ENROLLMENT",
+        "vaulted_token": "{{vaulted_token}}",
+        "detail": {
+          "wallet": {
+            "card_data": {
+              "installments_plan_id": "{{plan_id}}",
+              "installments": 2
+            }
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Direct API">
+    ### Paso 1: Verificar los requisitos previos
+    Según el flujo, necesitarás:
+    *   **Enrollment Flow**: Un `id` de cliente de Yuno y un `vaulted_token` de NuPay inscrito.
+    *   **2FA Mode**: Los datos del cliente, específicamente su ID fiscal (CPF) y email.
+    
+    ### Paso 2: Obtener las condiciones de pago
+    Solicita las opciones de cuotas disponibles para NuPay con el endpoint [APM installments](/reference/installments/apm-installments). Los parámetros de la solicitud varían según el flujo de integración.
+    
+    <Tabs>
+      <Tab title="Enrollment Flow">
+        ```bash
+        curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
+        --header 'public-api-key: {{your_public_api_key}}' \
+        --header 'private-secret-key: {{your_secret_api_key}}' \
+        --header 'X-account-code: {{your_account_id}}' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "country": "BR",
+          "amount": {
+            "currency": "BRL",
+            "value": "250"
+          },
+          "customer": {
+            "id": "{{customer_id}}"
+          },
+          "payment_method": "NU_PAY_ENROLLMENT",
+          "vaulted_token": "{{vaulted_token}}"
+        }'
+        ```
+      </Tab>
+      <Tab title="2FA Mode">
+        ```bash
+        curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
+        --header 'public-api-key: {{your_public_api_key}}' \
+        --header 'private-secret-key: {{your_secret_api_key}}' \
+        --header 'X-account-code: {{your_account_id}}' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "country": "BR",
+          "payment_method": "NU_PAY",
+          "amount": {
+            "currency": "BRL",
+            "value": "250"
+          },
+          "customer": {
+            "document": {
+              "document_type": "CPF",
+              "document_number": "52998224725"
+            },
+            "email": "customer@email.com"
+          }
+        }'
+        ```
+      </Tab>
+    </Tabs>
+    
+    La respuesta devuelve un arreglo de planes de cuotas, que incluye `id`, las `installments` disponibles y los montos. Selecciona el `id` de un plan y un número de cuotas permitido.
+    
+    ### Paso 3: Crear el pago
+    Usa [Create payment](/es/reference/payments/create-payment) con el flujo Direct y el tipo NuPay. Incluye el id del plan seleccionado y las cuotas en el `card_data` de la billetera.
+    
+    ```json
+    {
+      "description": "test",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000023",
+      "country": "BR",
+      "merchant_reference": "ref-merchant-AA01",
+      "amount": {
+        "currency": "BRL",
+        "value": 250
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "DIRECT",
+      "callback_url": "https://your-callback.com",
+      "payment_method": {
+        "type": "NU_PAY_ENROLLMENT",
+        "vaulted_token": "{{vaulted_token}}",
+        "detail": {
+          "wallet": {
+            "card_data": {
+              "installments_plan_id": "{{plan_id}}",
+              "installments": 2
+            }
+          }
+        }
+      }
+    }
+    ```
+    
+    ### Paso 4: Consultar el pago
+    Usa [Retrieve payment by id](/reference/payments/retrieve-payment-by-id) para confirmar el estado final.
+  </Tab>
+</Tabs>
+
+## Subscription flow {#subscription-flow}
+
+Puedes usar NuPay para cargos recurrentes.
+
+<Tabs>
+  <Tab title="Yuno SDK">
+    Los pagos recurrentes y las suscripciones con NuPay se configuran fácilmente con el token de inscripción del SDK:
+    
+    1. Crea un cliente.
+    2. Inscribe NuPay mediante el SDK de Yuno (flujo Checkout) para obtener un `vaulted_token`.
+    3. Crea una suscripción con el `vaulted_token` inscrito usando el endpoint [Create subscription](/es/reference/subscriptions/create-subscription).
+    4. Consulta y administra el estado de la suscripción según necesites.
+  </Tab>
+  
+  <Tab title="API directa">
+    1. Crea un cliente
+    2. Inscribe NuPay como método de pago (consulta arriba)
+    3. Crea una suscripción con el `vaulted_token` inscrito usando [Create subscription](/es/reference/subscriptions/create-subscription)
+    4. Consulta la suscripción usando [Retrieve subscription](/es/reference/subscriptions/retrieve-subscription)
+  </Tab>
+</Tabs>
+
+<Info>
+**Limitaciones**
+
+* Las suscripciones con NuPay no admiten condiciones de pago (cuotas)
+* No se admite crear suscripciones directamente dentro de una solicitud de pago
+</Info>
+
+## Endpoints {#endpoints}
+
+* [Crear cliente](/es/reference/customers/create-customer)
+* [Consultar cliente](/es/reference/customers/retrieve-customer)
+* [Consultar cliente por ID externo](/es/reference/customers/retrieve-customer-by-external-id)
+* [Enroll payment method (Direct)](/es/reference/payment-methods-direct-workflow/enroll-payment-method-api)
+* [Enroll payment method (Checkout)](/es/reference/payment-methods-checkout/enroll-payment-method-checkout)
+* [Retrieve enrolled payment method by id](/es/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api)
+* [Crear pago](/es/reference/payments/create-payment)
+* [Consultar pago por ID](/reference/payments/retrieve-payment-by-id)
+* [APM installments](/reference/installments/apm-installments)
+* [Create subscription](/es/reference/subscriptions/create-subscription)
+* [Retrieve subscription](/es/reference/subscriptions/retrieve-subscription)

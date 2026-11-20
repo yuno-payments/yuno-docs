@@ -1,0 +1,194 @@
+---
+title: "Obtener transferencias"
+description: "Explica casos de uso comunes y códigos de error para el seguimiento de transferencias de destinatarios y de onboarding"
+---
+
+## Casos de uso {#use-cases}
+
+### Caso de uso 1: Verificar que la transferencia se completó {#use-case-1-verify-transfer-completion}
+
+Crea una transferencia y verifica que fue exitosa.
+
+1. **Iniciar la transferencia**
+
+```http
+   POST /v1/recipients/A/onboardings/O1/transfer
+```
+
+**Respuesta**
+
+```json
+{ "id": "T1", ... }
+```
+
+2. **Consultar el estado**
+
+```http
+   GET /v1/transfers/T1
+```
+
+Respuesta:
+
+```json
+   {
+     "id": "T1",
+     "destination_onboarding": { "status": "SUCCEEDED" }
+   }
+```
+
+3. **Resultado**: La transferencia fue exitosa ✓
+
+**Para determinar el éxito:**
+
+* Revisa `destination_onboarding.status`
+* `SUCCEEDED`: La transferencia se completó correctamente
+* `PENDING`: La transferencia sigue en curso
+* `FAILED`: La transferencia falló
+
+<br />
+
+### Caso de uso 2: Mostrar el historial de transferencias de un vendedor {#use-case-2-display-seller-transfer-history}
+
+Muestra todas las transferencias de un vendedor en un dashboard de marketplace.
+
+1. **Cargar la página de perfil del vendedor**: `seller_id = "770e8400-..."`
+2. **Obtener el historial de transferencias**
+
+```http
+GET /v1/recipients/770e8400-.../transfers
+```
+
+**Respuesta**
+
+```json
+[
+  { "id": "T1", "created_at": "2026-01-15T16:59:22Z", ... },
+  { "id": "T2", "created_at": "2026-01-10T08:30:00Z", ... }
+]
+```
+
+3. **Mostrar en la interfaz**
+
+<div className="dense-table">
+
+| Fecha      | Origen     | Destino    | Estado    |
+| ---------- | ---------- | ---------- | --------- |
+| 2026-01-15 | seller-123 | seller-456 | Succeeded |
+| 2026-01-10 | seller-123 | seller-789 | Succeeded |
+
+</div>
+
+<br />
+
+### Caso de uso 3: Auditar una cadena de transferencias con reversiones {#use-case-3-audit-transfer-chain-with-reversals}
+
+Haz el seguimiento de un onboarding que fue transferido y luego revertido.
+
+1. **Transferencia original**: O1 del destinatario A al destinatario B, se creó la transferencia T1
+2. **Revertida después**: O1 de vuelta del destinatario B al destinatario A, se creó la transferencia T2 (reversión)
+3. **Registro de auditoría**
+
+```http
+GET /v1/onboardings/O1/transfers
+```
+
+Respuesta:
+
+```json
+[
+  {
+    "id": "T1",
+    "origin_onboarding": { "id": "O1", "recipient": { "id": "A" } },
+    "destination_onboarding": { "id": "O2", "recipient": { "id": "B" } },
+    "created_at": "2026-01-15T10:00:00Z"
+  },
+  {
+    "id": "T2",
+    "origin_onboarding": { "id": "O2", "recipient": { "id": "B" } },
+    "destination_onboarding": { "id": "O1", "recipient": { "id": "A" } },
+    "created_at": "2026-01-16T11:00:00Z"
+  }
+]
+```
+
+4. **Análisis**: El onboarding se transfirió y luego se revirtió
+
+<br />
+
+### Caso de uso 4: Investigación de un ticket de soporte {#use-case-4-support-ticket-investigation}
+
+Busca una transferencia fallida para identificar y resolver la causa raíz.
+
+1. **"La transferencia T1 falló, ¿pueden ayudarme?"**
+2. **Buscar la transferencia**
+
+```http
+GET /v1/transfers/T1
+```
+
+**Respuesta**
+
+```json
+{
+  "id": "T1",
+  "origin_onboarding": {
+    "id": "O1",
+    "status": "TRANSFERRED",
+    "recipient": { "id": "A", "email": "seller@example.com" }
+  },
+  "destination_onboarding": {
+    "id": "O2",
+    "status": "FAILED",
+    "response_message": "Invalid bank account",
+    "recipient": { "id": "B", "email": "newseller@example.com" }
+  }
+}
+```
+
+3. **Causa raíz identificada**: Cuenta bancaria no válida en el destino
+4. **Acción**: Pedir al destinatario B que actualice sus datos bancarios
+
+<br />
+
+### Caso de uso 5: Auditoría de cumplimiento {#use-case-5-compliance-audit}
+
+Verifica todas las transferencias de un destinatario.
+
+1. **Solicitar el reporte de transferencias**
+
+```http
+GET /v1/recipients/770e8400-.../transfers
+```
+
+2. **El sistema devuelve todas las transferencias**
+
+```json
+[
+  { "id": "T1", "created_at": "...", ... },
+  { "id": "T2", "created_at": "...", ... },
+  { "id": "T3", "created_at": "...", ... }
+]
+```
+
+3. **Exportar a CSV para los registros de cumplimiento**
+4. **El reporte incluye**:
+   * Fechas de las transferencias
+   * Detalles de origen y destino
+   * Estado actual
+   * Información del proveedor
+
+## Referencia de códigos de error {#error-codes-reference}
+
+<div className="code-nowrap-table dense-table">
+
+|          Código        | Estado HTTP |                 Descripción                |
+| :--------------------: | :---------: | :----------------------------------------: |
+|  `TRANSFER_NOT_FOUND`  |     404     |         La transferencia no existe         |
+|  `RECIPIENT_NOT_FOUND` |     404     |         El destinatario no existe          |
+| `ONBOARDING_NOT_FOUND` |     404     |           El onboarding no existe          |
+|       `FORBIDDEN`      |     403     | El recurso pertenece a otra organización   |
+|     `UNAUTHORIZED`     |     401     |   Credenciales de autenticación no válidas |
+
+</div>
+
+<br />

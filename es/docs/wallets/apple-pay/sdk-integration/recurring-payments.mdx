@@ -1,0 +1,184 @@
+---
+title: "Pagos recurrentes"
+description: "Configura suscripciones de Apple Pay con el Yuno SDK: una transacción iniciada por el cliente que guarda el token en el vault y, luego, cobros iniciados por el comercio."
+---
+
+Los pagos recurrentes usan transacciones iniciadas por el cliente (CIT) y transacciones iniciadas por el comercio (MIT). El flujo general es:
+
+1. Crea una sesión de checkout con el objeto `recurring_payment`.
+2. Realiza una CIT para autorizar y guardar en el vault el método de pago del cliente.
+3. Luego usa el `vaulted_token` devuelto para los cobros MIT posteriores.
+
+## Crear la sesión de checkout para pagos recurrentes {#create-checkout-session-for-recurring-payments}
+
+Antes de crear la transacción, debes crear la sesión de checkout con el objeto `recurring_payment` completo en tu solicitud de sesión de checkout:
+
+**Prueba gratuita:** cuando ofrezcas un período de prueba gratuito, define el `amount.value` raíz como `0` e incluye el objeto `trial_billing` como se muestra en el ejemplo siguiente. El cobro recurrente real se define en `regular_billing`, que informa al cliente del monto que se le facturará cuando termine la prueba.
+
+```json
+{
+  "account_id": "123444",
+  "merchant_order_id": "12333",
+  "country": "US",
+  "callback_url": "https://your-callback-url.com",
+  "customer_id": "12333",
+  "amount": {
+    "currency": "EUR",
+    "value": 2000
+  },
+  "checkout_session": {
+    "payment_description": "Basic Plan — 3-day free trial",
+    "workflow": "SDK_CHECKOUT"
+  },
+  "recurring_payment": {
+    "description": "Basic Plan",
+    "management_url": "https://yourURL.com/subscriptions",
+    "billing_agreement": "After your 3-day free trial ends, you will be charged EUR 11.99/month until you cancel. Cancel anytime via account settings or by contacting support@test.com.",
+    "regular_billing": {
+      "label": "Monthly Plan",
+      "amount": 11.99,
+      "interval_unit": "month",
+      "interval_count": 1
+    },
+    "trial_billing": {
+      "label": "3-Day Free Trial",
+      "amount": 0,
+      "interval_unit": "day",
+      "interval_count": 3
+    },
+    "availability": {
+      "start_at": "2026-09-13T20:00:00Z",
+      "finish_at": "2026-09-30T16:10:00Z"
+    }
+  }
+}
+```
+
+## Transacción iniciada por el cliente (CIT) {#customer-initiated-transaction-cit}
+
+La CIT es la transacción inicial en la que el cliente autoriza los pagos recurrentes, por ejemplo, cuando se suscribe a un servicio mensual. Esta transacción requiere la interacción del cliente y genera un token para las futuras transacciones MIT.
+
+El siguiente ejemplo muestra una solicitud CIT completa:
+
+```json
+{
+  "account_id": "62fa3145-1408-4044-a599-caa0c2159782",
+  "amount": {
+    "currency": "USD",
+    "value": 2000
+  },
+  "checkout": {
+    "session": "0793c7a5-79c6-40d6-aa5f-13e4e9bdf169"
+  },
+  "payment_method": {
+    "vault_on_success": true,
+    "type": "APPLE_PAY",
+    "token": "684f1f66-5322-4c84-a0b63d",
+    "detail": {
+      "wallet": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "FIRST"
+        },
+        "verify": true
+      }
+    }
+  },
+  "customer_payer": {
+    "id": "070a34cb-4649-4a4e-b231-065a53060379",
+    "nationality": "CO",
+    "browser_info": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15",
+      "accept_header": "application/json",
+      "accept_content": "*/*",
+      "accept_browser": "*/*",
+      "color_depth": "5",
+      "screen_height": "8",
+      "screen_width": "8",
+      "javascript_enabled": true,
+      "java_enabled": false,
+      "browser_time_difference": "300",
+      "language": "en",
+      "platform": "WEB"
+    }
+  },
+  "merchant_order_id": "merchant-order-123",
+  "country": "US",
+  "description": "Apple Pay recurring setup",
+  "workflow": "SDK_CHECKOUT"
+}
+```
+
+Los parámetros clave de una CIT son:
+
+- **`vault_on_success: true`**: este parámetro indica que se trata de la configuración de un pago recurrente y genera el token para las futuras transacciones MIT
+- **`customer_payer.id`**: obligatorio junto con `vault_on_success`. Debe hacer referencia a un cliente existente (créalo primero con [Create Customer](/es/reference/customers/create-customer)). Sin él, el pago igualmente es exitoso, pero no se guarda nada en el vault: la respuesta trae un `vaulted_token` vacío y ningún error
+- **`detail.wallet.stored_credentials.usage: "FIRST"`**: indica que esta es la transacción inicial de una serie recurrente
+- **`verify`**: cuando es `true`, habilita un flujo de verificación de tarjeta a través de la wallet (por ejemplo, una autorización de cero dólares) en lugar de un cobro de pago regular.
+
+<Note>
+  Define `verify: true` en los flujos de prueba gratuita donde `amount` es `0`. Omite el campo en las CIT pagas estándar.
+</Note>
+
+<Warning>
+  No coloques `stored_credentials` bajo `detail.card` en la CIT. No se valida en un pago con wallet, y el flujo de Apple Pay de dos pasos no lo traslada al método de pago guardado, lo que deja el registro sin indicadores de credenciales almacenadas y sin `network_transaction_id`.
+</Warning>
+
+<Note>
+  El `vaulted_token` solo se devuelve en la respuesta del pago de la CIT. Los instrumentos de wallet guardados en el vault se excluyen intencionalmente de [Retrieve Enrolled Payment Methods](/es/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api), así que no dependas de la lista de métodos de pago del cliente para volver a encontrar el token: guárdalo (junto con los metadatos de visualización que necesites) cuando la CIT sea exitosa. Un token almacenado aún puede resolverse individualmente con [Retrieve Enrolled Payment Method by ID](/es/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api). Consulta [Stored Credentials](/es/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
+</Note>
+
+## Transacción iniciada por el comercio (MIT) {#merchant-initiated-transaction-mit}
+
+Las transacciones MIT se procesan automáticamente en los ciclos de facturación posteriores usando el token generado durante la CIT.
+
+El siguiente ejemplo muestra una solicitud MIT completa:
+
+```json
+{
+  "account_id": "account-id",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  },
+  "payment_method": {
+    "vaulted_token": "98c16e23-ebdd-4d0f-85bd-e0ba7d2fedf6",
+    "detail": {
+      "card": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED"
+        }
+      }
+    },
+    "type": "CARD"
+  },
+  "customer_payer": {
+    "id": "customer-id"
+  },
+  "merchant_order_id": "recurring-order-456",
+  "country": "US",
+  "description": "Apple Pay recurring payment",
+  "workflow": "DIRECT"
+}
+```
+
+Los parámetros clave de una MIT son:
+
+- **`vaulted_token`**: el token devuelto en la respuesta de la CIT; se usa para cobrar al cliente en los ciclos de facturación posteriores sin requerir una nueva autorización
+- **`type: "CARD"`**: el instrumento guardado en el vault es un registro de tarjeta. También se acepta `"APPLE_PAY"` junto con un `vaulted_token`
+- **`detail.card.stored_credentials.usage: "USED"`**: indica que esta es una transacción posterior de una serie recurrente
+- **`workflow: "DIRECT"`**: un cobro de servidor a servidor; no se necesitan sesión de checkout ni `payment_token`
+
+Monitorea el estado del pago mediante [webhooks](/docs/webhooks) para gestionar casos límite y enviar notificaciones al cliente.
+
+## URL de gestión de suscripciones {#subscription-management-url}
+
+Para los pagos recurrentes con el SDK, debes proporcionar una URL de gestión de suscripciones donde los clientes puedan administrar y cancelar su suscripción. Inclúyela en tus comunicaciones con el cliente.
+
+## Documentación relacionada {#related-documentation}
+
+- [Configuración y pagos únicos](/es/docs/wallets/apple-pay/apple-pay-sdk-integration)
+- [Stored credentials](/es/docs/payment-features/stored-credentials)
+- [Gestión de suscripciones](/es/docs/payment-features/subscriptions)
+- [Webhooks](/docs/webhooks)

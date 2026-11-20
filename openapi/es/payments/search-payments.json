@@ -1,0 +1,428 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "payment-api-search-payments",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "schemas": {
+      "PaymentSearchResult": {
+        "type": "object",
+        "required": [
+          "payments",
+          "next_cursor",
+          "has_more"
+        ],
+        "properties": {
+          "payments": {
+            "type": "array",
+            "description": "Los pagos de la página, ordenados por `created_at` ascendente.",
+            "items": {
+              "$ref": "#/components/schemas/PaymentSummary"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Cursor opaco de la página siguiente. Envíalo como `cursor` junto con los mismos filtros. `null` en la última página."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "`true` cuando existe otra página después de esta, `false` en la última página."
+          }
+        }
+      },
+      "PaymentSummary": {
+        "type": "object",
+        "description": "Fila resumida del pago. No incluye el arreglo `transactions`: obtén el pago por `id` para recibir el objeto completo.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "El identificador único del pago."
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "El identificador único de la cuenta a la que pertenece el pago."
+          },
+          "merchant_order_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "El identificador único de la orden del cliente."
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "La descripción del pago."
+          },
+          "country": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "El país del pago (ISO 3166-1 alpha-2)."
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "El estado del pago. Consulta [Estado del pago](/es/reference/payments/status-and-response-codes/payment)."
+          },
+          "sub_status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "El subestado del pago."
+          },
+          "amount": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "El monto del pago."
+              },
+              "currency": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "La moneda del pago (ISO 4217)."
+              }
+            }
+          },
+          "payment_method": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "El tipo de método de pago, por ejemplo `CARD` o `PIX`."
+              }
+            }
+          },
+          "customer_payer": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "El identificador único del cliente, cuando el pago tiene uno."
+              }
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha y hora de creación del pago (ISO 8601)."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha y hora de la última actualización del pago (ISO 8601)."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/payments/search": {
+      "get": {
+        "summary": "Buscar pagos",
+        "description": "Lista los pagos de la cuenta enviada en `X-Account-Code` que se crearon dentro de una ventana de `created_at` de hasta 1 día, con filtros opcionales y paginación por cursor. Las filas se ordenan por `created_at` ascendente.",
+        "operationId": "search-payments",
+        "parameters": [
+          {
+            "name": "X-Account-Code",
+            "in": "header",
+            "description": "La cuenta cuyos pagos se listan.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "created_at_from",
+            "in": "query",
+            "description": "Inicio de la ventana de creación, inclusivo (RFC 3339 con desplazamiento de zona horaria, por ejemplo `2026-11-03T00:00:00Z`). La ventana entre `created_at_from` y `created_at_to` es de hasta 1 día (24 horas).",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "created_at_to",
+            "in": "query",
+            "description": "Fin de la ventana de creación, exclusivo (RFC 3339 con desplazamiento de zona horaria). Debe ser posterior a `created_at_from` y como máximo 1 día (24 horas) después.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "updated_at_from",
+            "in": "query",
+            "description": "Solo pagos cuya última actualización es igual o posterior a esta fecha y hora (RFC 3339 con desplazamiento de zona horaria).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "updated_at_to",
+            "in": "query",
+            "description": "Solo pagos cuya última actualización es anterior a esta fecha y hora, exclusiva (RFC 3339 con desplazamiento de zona horaria). Debe ser posterior a `updated_at_from` cuando se envían ambas.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Estados de pago a buscar. Envía una lista separada por coma (`status=SUCCEEDED,DECLINED`) o repite el parámetro (`status=SUCCEEDED&status=DECLINED`).",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CREATED",
+                  "READY_TO_PAY",
+                  "PENDING",
+                  "SUCCEEDED",
+                  "VERIFIED",
+                  "DECLINED",
+                  "REJECTED",
+                  "ERROR",
+                  "EXPIRED",
+                  "CANCELED",
+                  "REFUNDED",
+                  "IN_DISPUTE",
+                  "CHARGEBACK"
+                ]
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "description": "Solo pagos de este cliente.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "description": "Solo pagos de este país (ISO 3166-1 alpha-2).",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "Solo pagos en esta moneda (ISO 4217).",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            }
+          },
+          {
+            "name": "merchant_order_id",
+            "in": "query",
+            "description": "Solo pagos con este ID de orden del comercio.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Cantidad de pagos por página, de 1 a 100.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "El `next_cursor` de la página anterior, sin modificar. Envíalo con el mismo `X-Account-Code` y los mismos filtros de la solicitud que lo devolvió.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentSearchResult"
+                },
+                "examples": {
+                  "Page with more results": {
+                    "value": {
+                      "payments": [
+                        {
+                          "id": "e3f397ed-b7d0-4816-ab75-8457b0a30ec1",
+                          "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                          "merchant_order_id": "0000022",
+                          "description": "Test payment",
+                          "country": "US",
+                          "status": "SUCCEEDED",
+                          "sub_status": "APPROVED",
+                          "amount": {
+                            "value": 100,
+                            "currency": "USD"
+                          },
+                          "payment_method": {
+                            "type": "CARD"
+                          },
+                          "customer_payer": {
+                            "id": "cfae0941-7234-427a-a739-ef4fce966c79"
+                          },
+                          "created_at": "2026-11-03T10:24:58.900553Z",
+                          "updated_at": "2026-11-03T10:25:13.447662Z"
+                        }
+                      ],
+                      "next_cursor": "c2FtcGxlLWN1cnNvcg.c2FtcGxlLXNpZ25hdHVyZQ",
+                      "has_more": true
+                    }
+                  },
+                  "Last page": {
+                    "value": {
+                      "payments": [],
+                      "next_cursor": null,
+                      "has_more": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "INVALID_PARAMETERS": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The query parameter 'created_at_from' is required."
+                      ]
+                    }
+                  },
+                  "DATE_RANGE_TOO_WIDE": {
+                    "value": {
+                      "code": "DATE_RANGE_TOO_WIDE",
+                      "messages": [
+                        "The range between 'created_at_from' and 'created_at_to' must be at most 1 day."
+                      ]
+                    }
+                  },
+                  "INVALID_CURSOR": {
+                    "value": {
+                      "code": "INVALID_CURSOR",
+                      "messages": [
+                        "The query parameter 'cursor' is invalid or does not match the filters of this search."
+                      ]
+                    }
+                  },
+                  "INVALID_ACCOUNT_ID": {
+                    "value": {
+                      "code": "INVALID_ACCOUNT_ID",
+                      "messages": [
+                        "Account id is invalid"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  }
+}

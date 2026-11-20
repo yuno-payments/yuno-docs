@@ -1,0 +1,164 @@
+---
+title: "Reemplazar el reemplazo de instrucciones de un proveedor"
+description: "Guarda tus propias instrucciones de conexión para un proveedor, reemplazando los textos del catálogo de Yuno donde las sobrescribas."
+openapi: "/openapi/es/organizations/whitelabel/replace-provider-instructions.json PUT /whitelabel/providers/{provider_id}/instructions"
+---
+
+Guarda tus propias instrucciones de conexión para este proveedor, reemplazando los textos del catálogo de Yuno donde las sobrescribas.
+
+<Warning>
+**El documento se guarda completo, no se combina.** Un campo que este cuerpo omite se borra, y el proveedor vuelve al valor del catálogo para ese campo. La edición segura es: leer el documento actual con [Obtener el reemplazo de instrucciones de un proveedor](/es/reference/organizations/whitelabel/retrieve-provider-instructions), cambiar el único campo y volver a enviar todo.
+</Warning>
+
+Debe estar presente al menos uno de `instructions`, `setup_instructions`, `more_info_url` y `name`. Las claves desconocidas de nivel superior se rechazan en lugar de ignorarse, y el documento serializado no puede superar los 64 KB.
+
+Sobrescribir los textos de un proveedor **no** lo agrega a tu lista de permitidos: editar texto nunca cambia lo que ofreces.
+
+### Parámetros de ruta {#path-parameters}
+
+<ParamField path="provider_id" type="string" required>
+  ID de proveedor del catálogo de Yuno en UPPER_SNAKE_CASE. No distingue mayúsculas de minúsculas: se normaliza a mayúsculas.
+</ParamField>
+
+### Cuerpo {#body}
+
+<ParamField body="instructions" type="object[]">
+  Los pasos de conexión que se muestran a tus propios usuarios.
+  <Expandable title="paso">
+    <ParamField body="step" type="integer">
+      Posición del paso.
+    </ParamField>
+    <ParamField body="text" type="string | object">
+      El texto del paso. Una cadena simple o un mapa de idiomas como `{"EN": "...", "ES": "..."}`.
+    </ParamField>
+    <ParamField body="text_link" type="string | object">
+      Etiqueta del enlace. Mismas reglas de forma que `text`.
+    </ParamField>
+    <ParamField body="link" type="string">
+      URL de destino. **Debe ser https**: el dashboard la muestra como href.
+    </ParamField>
+    <ParamField body="type" type="string">
+      Tipo de paso.
+    </ParamField>
+    <ParamField body="has_sub_instructions" type="boolean">
+      Indica si este paso incluye pasos anidados.
+    </ParamField>
+    <ParamField body="sub_instructions_type" type="string">
+      Tipo de los pasos anidados.
+    </ParamField>
+    <ParamField body="sub_instructions" type="object[]">
+      Pasos anidados, con la misma forma. Hasta 3 niveles de profundidad.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="setup_instructions" type="object[]">
+  Pasos de configuración agrupados.
+  <Expandable title="grupo">
+    <ParamField body="title" type="string">
+      Encabezado del grupo.
+    </ParamField>
+    <ParamField body="order" type="integer">
+      Posición del grupo.
+    </ParamField>
+    <ParamField body="instructions_type" type="string">
+      Tipo de los pasos de este grupo.
+    </ParamField>
+    <ParamField body="instructions" type="object[]">
+      Los pasos, con la misma forma que `instructions` más arriba.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="more_info_url" type="string">
+  Enlace a tu propia documentación sobre este proveedor. Debe ser una URL https.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Nombre para mostrar que reemplaza al del catálogo. Máximo 255 caracteres.
+
+  Se acepta **solo para proveedores propiedad de Yuno**: un ID de catálogo que contenga `YUNO`, como `YUNO_3DS` o `YUNO_FRAUD_SCREENING`. Cualquier otro proveedor se rechaza con `400`.
+</ParamField>
+
+### Respuesta {#response}
+
+El documento guardado, con la misma forma que [Obtener el reemplazo de instrucciones de un proveedor](/es/reference/organizations/whitelabel/retrieve-provider-instructions), incluidos los campos de solo lectura `created_at`, `updated_at`, `created_by` y `updated_by`.
+
+<CodeGroup>
+```bash cURL
+curl -X PUT 'https://api.y.uno/v1/whitelabel/providers/STRIPE/instructions' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "more_info_url": "https://docs.example.com/stripe",
+    "instructions": [
+      {
+        "step": 1,
+        "text": { "EN": "Open your Stripe dashboard.", "ES": "Abre tu panel de Stripe." },
+        "type": "TEXT"
+      },
+      {
+        "step": 2,
+        "text": "Copy the secret API key and paste it below.",
+        "text_link": "Where do I find my key?",
+        "link": "https://docs.example.com/stripe#api-keys",
+        "type": "LINK"
+      }
+    ]
+  }'
+```
+
+```json 200 OK
+{
+  "provider_id": "STRIPE",
+  "more_info_url": "https://docs.example.com/stripe",
+  "instructions": [
+    {
+      "step": 1,
+      "text": { "EN": "Open your Stripe dashboard.", "ES": "Abre tu panel de Stripe." },
+      "type": "TEXT"
+    },
+    {
+      "step": 2,
+      "text": "Copy the secret API key and paste it below.",
+      "text_link": "Where do I find my key?",
+      "link": "https://docs.example.com/stripe#api-keys",
+      "type": "LINK"
+    }
+  ],
+  "created_at": "2026-09-02T13:54:13Z",
+  "updated_at": "2026-09-02T13:54:13Z",
+  "created_by": "00000000-0000-0000-0000-000000000000",
+  "updated_by": "00000000-0000-0000-0000-000000000000"
+}
+```
+
+```json 400 — rename refused
+{
+  "title": "Invalid provider instructions",
+  "status": 400,
+  "detail": "The instruction override was rejected",
+  "violations": [
+    "name: only Yuno's own providers can be renamed; 'STRIPE' cannot"
+  ]
+}
+```
+</CodeGroup>
+
+<Note>
+`violations` enumera **todos** los problemas del documento a la vez: corrígelos juntos en lugar de reenviar para descubrir el siguiente.
+</Note>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | Envoltorio | Cuándo |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | `provider_id` no es un ID de catálogo válido. |
+| `400` | problem+json | Se rechazó el documento: una clave desconocida de nivel superior, un `link` o `more_info_url` que no es https, `name` en un proveedor que no es propiedad de Yuno, un documento vacío, o más de 64 KB. |
+| `401` | `NOT_AUTHENTICATED` | Claves de API ausentes o no válidas. |
+| `413` | — | Cuerpo de la solicitud mayor a 256 KB. |
+
+</div>

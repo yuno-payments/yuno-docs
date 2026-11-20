@@ -1,0 +1,159 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Account Groups API - Update",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/organizations/account-groups/{account_group_id}": {
+      "patch": {
+        "summary": "Actualizar un grupo de cuentas",
+        "operationId": "update-account-group",
+        "description": "Actualiza un grupo de cuentas. Todos los campos son opcionales y solo se modifican los campos presentes en el cuerpo.\n\n`parent_code` anida el grupo bajo otro grupo de la misma organización. Tiene tres estados: **ausente** deja el padre actual sin cambios; **`null`** desvincula el grupo y lo vuelve a promover a raíz, junto con los subgrupos que cuelgan de él; un **`id` de grupo** anida el grupo bajo ese grupo. El anidamiento es solo estructural: no concede ni revoca nada, por lo que mover un grupo deja intactos todos los permisos existentes.",
+        "parameters": [
+          {
+            "name": "account_group_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID del grupo de cuentas."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Nombre del grupo de cuentas (min=1, max=255)."
+                  },
+                  "merchant_id": {
+                    "type": "string",
+                    "description": "Identificador local (min=1, max=255)."
+                  },
+                  "parent_code": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "description": "El `id` del grupo bajo el cual se anidará este grupo. Omítelo para dejar el padre sin cambios; envía `null` para desvincular el grupo y convertirlo de nuevo en raíz. El padre debe pertenecer a la misma organización y no puede ser el propio grupo ni uno de sus descendientes."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Solicitud incorrecta. El campo `code` indica el motivo:\n\n- `PARENT_NOT_FOUND`: no hay ningún grupo con ese `parent_code` en esta organización.\n- `INVALID_PARENT`: el grupo se envió como su propio padre.\n- `PARENT_IS_DESCENDANT`: el padre de destino está dentro del propio subárbol de este grupo, por lo que el movimiento crearía un ciclo.\n- `MAX_NESTING_DEPTH`: el movimiento llevaría el árbol más allá de la profundidad máxima de 20 niveles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Código de error legible por máquina."
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Detalles legibles por personas."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "PARENT_IS_DESCENDANT",
+                  "messages": [
+                    "Account group [LATAM] is inside [Acme], so it cannot become its parent."
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No encontrado: no hay ningún grupo de cuentas con ese `account_group_id` en esta organización."
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "merchant_id": {
+                      "type": "string"
+                    },
+                    "parent_code": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid",
+                      "description": "El `id` del grupo bajo el cual se anida este grupo. `null` para un grupo raíz (de nivel superior)."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

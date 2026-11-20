@@ -1,0 +1,63 @@
+---
+title: "Códigos de error de promociones de suscripción"
+description: "Códigos de error y motivos para las promociones en planes de suscripción: asociar, aplicar, eliminar y cambios de plan"
+---
+
+Los errores de las promociones en planes de suscripción usan el formato de error estándar: un `code` y un arreglo `messages`. Los errores sobre el estado de la suscripción también incluyen `current_status`. Un `422` con el código `PROMOTION_NOT_APPLICABLE` también incluye un `reason`; los demás códigos `422` llevan solo un `code` y `messages`.
+
+```json 422 Not Applicable
+{
+  "code": "PROMOTION_NOT_APPLICABLE",
+  "messages": [
+    "The promotion cannot be applied to this subscription."
+  ],
+  "reason": "CONDITIONS_NOT_MET"
+}
+```
+
+## Códigos de error {#error-codes}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+| :--- | :----- | :--- |
+| `400` | `INVALID_PARAMETERS` | Una actualización envía `promotion` junto con `plan_change`. No se cambia nada. Envíalos en dos solicitudes. |
+| `400` | `BAD_REQUEST` | Una actualización envía `promotion` junto con cualquier otro campo, como `name` o `metadata`. No se cambia nada. Envía los demás cambios en una solicitud aparte. |
+| `404` | `PROMOTION_NOT_FOUND` | El ID o el código de la promoción es desconocido o pertenece a otra cuenta. |
+| `409` | `PROMOTION_ALREADY_ATTACHED` | El plan ya tiene esta promoción. |
+| `422` | `PROMOTION_NOT_ATTACHED_TO_PLAN` | La promoción se aplica a una suscripción cuyo plan no la tiene. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | No se puede asociar ni aplicar la promoción. El `reason` indica el motivo (consulta más abajo). |
+| `409` | `SUBSCRIPTION_STATUS_NOT_ELIGIBLE` | La suscripción no está `ACTIVE` ni `TRIALING`. La respuesta incluye `current_status`. |
+| `409` | `SUBSCRIPTION_PROMOTION_NOT_ACTIVE` | La solicitud elimina una promoción, pero la suscripción no tiene una promoción activa. La respuesta incluye `current_status`: el estado de la última promoción (`COMPLETED` o `ENDED`), o `null` si no hubo ninguna. |
+| `422` | `PROMOTION_ENGINE_UNAVAILABLE` | En el primer pago de un enlace de pago, no se pudo verificar la promoción. Se rechaza el pago y no se cobra nada. |
+| `422` | `PROMOTION_CONTEXT_MISMATCH` | En el primer pago de un enlace de pago, el monto o la promoción del pago no coincide con el primer cobro de la suscripción. Se rechaza el pago y no se cobra nada. |
+| `503` | `PROMOTION_ENGINE_UNAVAILABLE` | El motor de promociones no respondió cuando se asoció o se aplicó la promoción. |
+| `504` | `PROMOTION_ENGINE_TIMEOUT` | El motor de promociones no respondió a tiempo cuando se asoció o se aplicó la promoción. |
+
+</div>
+
+## Motivos de `PROMOTION_NOT_APPLICABLE` {#reasons-for-promotionnotapplicable}
+
+<div className="code-nowrap-table dense-table">
+
+| `reason` | Significado |
+| :------- | :------ |
+| `EXPIRED` | La promoción ha vencido. |
+| `DISABLED` | La promoción está deshabilitada. |
+| `NOT_STARTED` | Aún no llega la fecha de inicio de la promoción. |
+| `USAGE_LIMIT_REACHED` | La promoción no tiene usos disponibles. |
+| `CONDITIONS_NOT_MET` | La suscripción no cumple las condiciones de la promoción: país, moneda y monto, tipo de método de pago, BIN o tipo de tarjeta almacenada. Las condiciones se verifican solo cuando se aplica la promoción, no en las renovaciones. |
+| `CURRENCY_MISMATCH` | Una promoción de monto fijo no tiene un monto en la moneda de la suscripción. |
+| `PROMOTIONS_NOT_ENABLED` | Las promociones no están activadas para tu organización, o la región no las admite. Las promociones de suscripción funcionan solo en la región US. |
+| `EXECUTION_TYPE_NOT_SUPPORTED` | La suscripción tiene `frequency.execution` definido como `MERCHANT`. Esto incluye las suscripciones que administra un proveedor, como Pix Automático. |
+| `SUBSCRIPTION_NOT_ON_A_PLAN` | La suscripción no está en un plan. Las promociones se aplican solo a suscripciones que están en un plan. |
+| `ZERO_DISCOUNT` | La promoción no da ningún descuento sobre el precio de la suscripción. |
+| `IDEMPOTENCY_KEY_REUSED` | La suscripción ya usó esta promoción con un código diferente. |
+
+</div>
+
+## Relacionado {#related}
+
+* [Promociones en planes de suscripción](/es/docs/payment-features/subscriptions/promotions)
+* [Asociar promoción a un plan](/es/reference/plans/attach-plan-promotion)
+* [Eliminar promoción de una suscripción](/es/reference/subscriptions/remove-subscription-promotion)
