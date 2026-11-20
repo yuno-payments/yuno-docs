@@ -150,6 +150,9 @@ Each step is a **provider step** (`provider_id` + `connection_id`: a payment, fr
 | `SUCCEEDED_GROUP` | Success whose sub-status is in the group — today that is `PENDING_IN_REVIEW`, an authorization the provider holds for manual review. | `group_id` |
 | `PENDING` | A fraud, 3DS or authentication provider left the payment pending (a review to resolve, a challenge to complete). Only on those steps. See [Provider step kinds](#provider-step-kinds). | — |
 | `INTERNAL_ERROR` | The provider returned an error (5xx, connection failure, timeout) before reaching the issuer. | — |
+| `LIABILITY_SHIFTED` | A 3DS provider step succeeded and the authentication reports `liability_shift: true`. Refines `APPROVED`. Only on 3DS provider steps. See [Liability shift outputs](#liability-shift-outputs). | — |
+| `LIABILITY_NOT_SHIFTED` | A 3DS provider step succeeded and the authentication reports `liability_shift: false`. Refines `APPROVED`. Only on 3DS provider steps. See [Liability shift outputs](#liability-shift-outputs). | — |
+| `LIABILITY_NOT_REPORTED` | A 3DS provider step succeeded and the authentication reports no `liability_shift` value. Refines `APPROVED`. Only on 3DS provider steps. See [Liability shift outputs](#liability-shift-outputs). | — |
 
 </div>
 
@@ -167,12 +170,58 @@ The kind of a provider step is derived from its `provider_id` and returned as `p
 |---|---|---|---|
 | `PAYMENT` | Acquirers and PSPs (`STRIPE`, `ADYEN`, `DLOCAL`, …) | `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `MAC_CODE_GROUP`, `SUCCEEDED_GROUP`, `INTERNAL_ERROR` | The payment attempt. Approvals may continue to a `CAPTURE` / `HOLD_FOR_REVIEW` step or to a fraud step that runs after the payment. |
 | `FRAUD` | Fraud screening (`CYBERSOURCE`, `SIGNIFYD`, `FORTER`, `CLEAR_SALE`, `RISKIFIED`, `YUNO_FRAUD_SCREENING`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | **Before the payment** (the route enters on it, or it follows another fraud, 3DS or authentication step): `PENDING` may continue to another step. **After the payment** (reached from an output of a payment or smart routing step): `PENDING` is terminal and the step may continue to a `REVERT` action. |
-| `THREE_D_SECURE` | 3DS servers (`NETCETERA_3DS`, `CHECKOUT_3DS`, `CYBERSOURCE_3DS`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | `PENDING` is the challenge pending its result and may continue to another step. |
+| `THREE_D_SECURE` | 3DS servers (`NETCETERA_3DS`, `CHECKOUT_3DS`, `CYBERSOURCE_3DS`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR`, `LIABILITY_SHIFTED`, `LIABILITY_NOT_SHIFTED`, `LIABILITY_NOT_REPORTED` | `PENDING` is the challenge pending its result and may continue to another step. The three liability shift statuses refine `APPROVED`, see [Liability shift outputs](#liability-shift-outputs). |
 | `AUTHENTICATION` | `NETWORK_TOKEN_AUTHENTICATION` | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | Same rules as 3DS. |
 
 </div>
 
 `PENDING` on a `PAYMENT` or smart routing step is rejected with `400 INVALID_ROUTE_CONFIGURATION` (`output PENDING is only supported on fraud, 3DS and authentication provider steps`), and so is a `PENDING` that continues to another step on a fraud step that runs after the payment.
+
+### Liability shift outputs
+
+A 3DS provider step can branch on the [liability shift](/docs/security-and-compliance/3d-secure) of the authentication when it succeeds. The three statuses refine `APPROVED`:
+
+<div className="code-nowrap-table dense-table">
+
+| `status` | `liability_shift` of the authentication |
+|---|---|
+| `LIABILITY_SHIFTED` | `true` |
+| `LIABILITY_NOT_SHIFTED` | `false` |
+| `LIABILITY_NOT_REPORTED` | No value |
+
+</div>
+
+Rules:
+
+- They are allowed only on 3DS provider steps (`provider_type: THREE_D_SECURE`). On a payment, fraud, authentication or smart routing step the request is rejected with `400 INVALID_ROUTE_CONFIGURATION`, and `messages` names the step and the status.
+- `group_id`, `decline_types[]` and `retry: true` are not allowed on them: each is rejected with `400 INVALID_ROUTE_CONFIGURATION`. `retry: false` is accepted.
+- Any subset of the three is valid. When the output that matches the result is not on the step, the route follows `APPROVED`, as it does today. A missing value is never treated as not shifted: with `LIABILITY_NOT_SHIFTED` and no `LIABILITY_NOT_REPORTED`, an authentication that reports no value follows `APPROVED`.
+- An output with no `next` ends the route, and no payment provider is called.
+- A declined, failed or pending 3DS step keeps following `DECLINED`, its groups, `INTERNAL_ERROR` or `PENDING`, whatever the liability shift value.
+
+Example: authorize only when liability moved to the issuer, end the route otherwise.
+
+```json
+{
+  "account_id": "acc-uuid",
+  "payment_method": "CARD",
+  "name": "Card routing - liability shift only",
+  "default_route": {
+    "steps": [
+      { "index": 1, "provider_id": "NETCETERA_3DS", "connection_id": "a9b8c7d6-…",
+        "output": [
+          { "status": "APPROVED",               "next": 2 },
+          { "status": "LIABILITY_SHIFTED",      "next": 2 },
+          { "status": "LIABILITY_NOT_SHIFTED",  "next": null },
+          { "status": "LIABILITY_NOT_REPORTED", "next": null }
+        ] },
+      { "index": 2, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…" }
+    ]
+  }
+}
+```
+
+If `LIABILITY_NOT_REPORTED` were left out of this step, an authentication with no value would follow `APPROVED` and continue to `STRIPE`.
 
 **Fraud configuration.** A `FRAUD` step carries the same configuration the dashboard edits, in the `fraud` object:
 
