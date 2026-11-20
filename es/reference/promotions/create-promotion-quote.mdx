@@ -1,0 +1,124 @@
+---
+title: "Crear cotización de promoción"
+openapi: "/openapi/promotions/create-promotion-quote.json POST /promotions/quote"
+description: "Calcula el precio de un pago antes de crearlo. Devuelve una cotización firmada cuando se aplica una promoción, o una vista previa del precio de un código promocional."
+noindex: true
+---
+
+<Warning>
+**Las promociones se habilitan por organización**
+
+Hasta que Yuno habilite las promociones para tu organización, este endpoint responde `204` (no se aplica nada). Pídelo a tu Technical Account Manager o Key Account Manager. Consulta [Promociones](/es/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Warning>
+
+<Note>
+**¿Usas un enlace de pago o el SDK Web? No llamas a este endpoint**
+
+La página de checkout de un enlace de pago solicita la cotización por sí misma en cuanto identifica la tarjeta a partir de los primeros dígitos que escribe el cliente, y actualiza el precio y el descuento en su resumen de la orden. El SDK Web también la solicita por sí mismo, con tu clave pública, y entrega la cotización a tu página. Llama a este endpoint desde una integración directa por API: desde tu servidor con tu clave secreta, o desde el navegador con tu clave pública. Consulta [Promociones](/es/docs/payment-features/promotions).
+</Note>
+
+## Dos formas de llamarlo {#two-ways-to-call-it}
+
+* **Clave secreta, desde tu servidor.** Envía `amount` y `account_id`, y no `checkout_session`. Este es el flujo que se describe a continuación.
+* **Clave pública, desde el navegador.** Envía `checkout_session` en lugar de `amount`; el monto proviene de la sesión. Yuno toma la cuenta de la sesión de checkout, por lo que `account_id` es opcional aquí, y un valor que envíes debe coincidir con la cuenta de la sesión. `country` se sigue validando contra esa sesión. La sesión no debe haberse usado aún para pagar, debe tener como máximo 2 horas de antigüedad y debe pertenecer a tu organización.
+
+`payment_method` es obligatorio en ambas. Una cotización es válida durante 30 minutos desde que se emite, en ambas. `code` es opcional en ambas: envíalo para calcular el precio de un código promocional. Consulta [Calcular el precio de un código promocional](#price-a-promotion-code).
+
+```json Secret key (server)
+{
+    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+    "amount": { "currency": "USD", "value": 250.00 },
+    "country": "AR",
+    "payment_method": { "type": "CARD", "bin": "457896", "card_type": "CREDIT" }
+}
+```
+
+```json Public key (browser)
+{
+    "checkout_session": "3f0c2b1e-7d5a-4b1c-9e2f-8a6d4c1b0e77",
+    "country": "AR",
+    "payment_method": { "type": "CARD", "bin": "457896", "card_type": "CREDIT" }
+}
+```
+
+## Cómo usar la cotización {#how-to-use-the-quote}
+
+1. Envía el contexto del pago que estás a punto de crear. `amount` es el monto original, antes de cualquier promoción. Para una tarjeta, envía dentro de `payment_method` su `bin` (los primeros 6 a 8 dígitos) o un token (`token` o `vaulted_token`), nunca ambos.
+2. Con `200`, muestra `charge_amount` a tu cliente. Eso es lo que pagará. La respuesta incluye `quote_id`, `promotions` (una entrada por ahora: `id`, `name`, `description`, `discount`, `discount_amount`), los tres totales fuera de la lista (`original_amount`, `discount_amount`, `charge_amount`) y `expires_at`. El `quote_id` es largo, de unos 300 a 730 caracteres: guárdalo completo (hasta 1000 caracteres) y envíalo sin cambios. Una solicitud que lleva un `code` recibe en su lugar una vista previa, sin `quote_id` ni `expires_at`: consulta [Calcular el precio de un código promocional](#price-a-promotion-code).
+3. Crea el pago con el mismo `amount` original y `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": "<quote_id>" }]`. Consulta [Crear pago](/es/reference/payments/create-payment) y [Promociones](/es/docs/payment-features/promotions).
+
+Una promoción se aplica **solo** cuando el pago lleva ese `quote_id` en una línea de descuento. Un pago sin él se cobra completo.
+
+## Reglas {#rules}
+
+* **Gana el mayor ahorro.** Cuando coinciden dos o más promociones, la cotización es para la que más ahorra al cliente, luego la más antigua, luego el `id` más pequeño. Una promoción por pago; no se acumulan. Un `code` compite en la misma selección.
+* **30 minutos.** Una cotización es válida hasta `expires_at`, 30 minutos después de emitirse. Dentro de ese tiempo el pago cobra el precio cotizado, aunque la fecha de fin de la promoción haya pasado después de emitirse la cotización, o hayas deshabilitado la promoción después de emitirse la cotización.
+* **Todas las condiciones deben cumplirse ya.** Una cotización existe solo cuando todas las condiciones de la promoción se cumplen para el contexto que envías.
+* **Precio cotizado o ningún pago.** Si la cotización venció, o el monto, la moneda o la cuenta del pago difieren de lo que cotizaste, o el pago difiere en un detalle al que la cotización está ligada (el país, el método de pago, el tipo de tarjeta y el BIN de la tarjeta cuando las condiciones de la promoción los usan, y la sesión de checkout cuando la cotización se hizo con una), Yuno rechaza el pago con `422` y uno de los códigos `PROMOTION_*` enumerados en [Promociones](/es/docs/payment-features/promotions#the-customer-pays-the-quoted-price-or-the-payment-is-rejected). Nunca vuelve a calcular el precio. Obtén una cotización nueva y envía el reintento con un `X-Idempotency-Key` nuevo.
+* **No se consume nada.** Una cotización es una lectura. Preguntar de nuevo da el mismo precio; `expires_at`, y por tanto el `quote_id`, cambian con el momento en que preguntas, así que no uses el id como clave. Una cotización que nunca usas no requiere limpieza, y una cotización puede respaldar varios pagos.
+* **Que no haya coincidencia no es un error.** La respuesta es `204` cuando no se aplica nada. Crea el pago como de costumbre, sin `quote_id` en una línea de descuento. Un `204` también significa que las promociones no están habilitadas para tu organización o Yuno las deshabilitó temporalmente, que Yuno no pudo calcular el precio del pago a tiempo, o que una promoción automática dejaría el cobro en cero (una promoción nunca deja un cobro en cero; para un código, consulta [Calcular el precio de un código promocional](#price-a-promotion-code)). Si la solicitud misma falla (`408`, `5xx`, sin respuesta), crea el pago como de costumbre también: una cotización nunca bloquea un pago.
+* **BIN o token, nunca ambos, dentro de `payment_method`.** Un servidor que tiene el número de tarjeta envía `payment_method.bin`, los primeros 6 a 8 dígitos. Un servidor que tiene un token envía `payment_method.token` o `payment_method.vaulted_token`, y Yuno resuelve el BIN y el tipo de tarjeta a partir de la tarjeta, exactamente como lo hace en el pago. Cualquier combinación de dos entre `bin`, `token` y `vaulted_token` se rechaza con `400 INVALID_PARAMETERS`, así que no copies el `payment_method` de una solicitud de Crear pago que lleva ambos tokens. Una promoción con una condición `bins` necesita el BIN, y una con una condición `card_types` necesita el `card_type` (no el BIN); sin ellos no se aplica. Las billeteras (Apple Pay, Google Pay) no son un destino compatible en esta versión: no construyas aún sobre una cotización de billetera.
+* **Envía el BIN, nunca el número de tarjeta.** `payment_method.bin` son los primeros 6 a 8 dígitos de la tarjeta, solo dígitos. Menos de 6 dígitos, más de 8 (un prefijo de tarjeta más largo o el número completo de la tarjeta incluido), o cualquier cosa que no sean dígitos se rechaza con `400 INVALID_PARAMETERS`.
+
+## Calcular el precio de un código promocional {#price-a-promotion-code}
+
+Una promoción que requiere un código se aplica solo cuando el pago lleva ese código. Para mostrar el descuento antes de que el cliente pague, envía el código en `code` junto con el resto del contexto:
+
+```json Code (server)
+{
+    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+    "amount": { "currency": "USD", "value": 250.00 },
+    "country": "US",
+    "payment_method": { "type": "CARD" },
+    "code": "SUMMER10"
+}
+```
+
+Este endpoint no envía una clave de idempotencia, así que la respuesta es una **vista previa**: los mismos montos que una cotización, sin `quote_id` ni `expires_at`.
+
+```json Preview (200)
+{
+    "promotions": [
+        {
+            "id": "00000000-0000-4000-8000-0000000000b1",
+            "name": "Summer 10",
+            "description": null,
+            "discount": { "type": "PERCENTAGE", "value": 10 },
+            "discount_amount": { "currency": "USD", "value": 25.00 }
+        }
+    ],
+    "original_amount": { "currency": "USD", "value": 250.00 },
+    "discount_amount": { "currency": "USD", "value": 25.00 },
+    "charge_amount": { "currency": "USD", "value": 225.00 }
+}
+```
+
+* **Una vista previa muestra el precio y nada más.** Muestra `charge_amount` a tu cliente. Yuno no firma, almacena ni cuenta nada. Una vista previa no se puede pagar: no hay `quote_id` que poner en una línea de descuento. El pago lleva el código mismo, `additional_data.order.discounts: [{ "code": "SUMMER10" }]`. Consulta [Códigos promocionales](/es/docs/payment-features/promotion-codes#send-the-code-on-the-payment).
+* **El código tiene de 3 a 32 caracteres:** letras, dígitos, `_` y `-`. Yuno lo compara sin distinguir mayúsculas de minúsculas. Un código con otro carácter u otra longitud no encuentra ninguna promoción y responde `404 PROMOTION_NOT_FOUND`.
+* **`payment_method.type` sigue siendo obligatorio** en este endpoint, igual que sin un código.
+* **La vista previa no cuenta ningún uso del código.** Yuno cuenta un uso cuando un pago lleva el código. Consulta [Códigos promocionales](/es/docs/payment-features/promotion-codes#uses-and-limits).
+* **Un código que no se aplica se rechaza, no se muestra en vista previa.** Responde `404` o `422`, no `204`. La respuesta es `404 PROMOTION_NOT_FOUND` cuando ninguna promoción de la cuenta tiene el código o la promoción que lo tiene no ha comenzado, y `422 PROMOTION_NOT_APPLICABLE` con un `reason` cuando la tiene y no se aplica: `EXPIRED`, `DISABLED`, `USAGE_LIMIT_REACHED`, `CONDITIONS_NOT_MET`, `CURRENCY_MISMATCH`, `ZERO_DISCOUNT` o `ZERO_CHARGE`. [Códigos de error de promociones](/es/reference/promotions/promotion-error-codes) tiene el mensaje de cada uno.
+* **Un código que deja un cobro en cero responde `ZERO_CHARGE`.** Cuando el código gana y el cobro sería cero o menos (un descuento del 100 %, o un descuento fijo igual o superior al monto), la respuesta es `422 PROMOTION_NOT_APPLICABLE` con el motivo `ZERO_CHARGE`, como en un pago. El motivo va antes que `USAGE_LIMIT_REACHED`.
+* **La vista previa puede ser de otra promoción.** Cuando una promoción automática ahorra más al cliente que el código, la vista previa es de esa promoción, y `promotions[0].id` es su id. Una promoción automática que dejaría un cobro en cero responde `204`.
+* **Una solicitud sin `code` no cambia.** Recibe una cotización firmada, con `quote_id` y `expires_at`. Un pago que lleva un código se cotiza con su `X-Idempotency-Key`, y esa cotización se firma y cuenta un uso. Consulta [Códigos promocionales](/es/docs/payment-features/promotion-codes#uses-and-limits).
+
+```json Code that leaves a charge of zero (422)
+{
+    "code": "PROMOTION_NOT_APPLICABLE",
+    "messages": ["The promotion leaves a charge of zero on this amount."],
+    "reason": "ZERO_CHARGE"
+}
+```
+
+## Respuestas {#answers}
+
+| Estado | Significado |
+| --- | --- |
+| `200` | Se aplica una promoción: la cotización. Una solicitud con un `code` recibe una vista previa, sin `quote_id` ni `expires_at`. |
+| `204` | No se aplica nada (una solicitud con un `code` recibe un `404` o un `422` en su lugar), las promociones no están habilitadas para tu organización o Yuno las deshabilitó temporalmente, Yuno no pudo calcular el precio del pago a tiempo, o una promoción automática dejaría el cobro en cero. Sin cuerpo. |
+| `400` | La solicitud no es válida (`INVALID_PARAMETERS`, `INVALID_ACCOUNT_ID`, `CHECKOUT_SESSION_NOT_EXISTS` o `BAD_REQUEST`, con el motivo en `messages[]`), o la sesión de checkout ya se usó o venció. |
+| `401` | Las credenciales faltan o no son válidas. |
+| `404` | `PROMOTION_NOT_FOUND`: la solicitud lleva un `code`, y ninguna promoción de la cuenta lo tiene, o la promoción que lo tiene no ha comenzado, o el código tiene un carácter fuera de `A-Z`, `0-9`, `_` y `-` o una longitud fuera de 3 a 32. |
+| `422` | `PROMOTION_NOT_APPLICABLE`: la solicitud lleva un `code` que una promoción tiene y que no se aplica. El `reason` es `EXPIRED`, `DISABLED`, `USAGE_LIMIT_REACHED`, `CONDITIONS_NOT_MET`, `CURRENCY_MISMATCH`, `ZERO_DISCOUNT` o `ZERO_CHARGE`. |
+| `408` | Yuno tardó demasiado en responder. Trátalo como un `204`. |
+| `413` | El cuerpo es mayor que 16 KiB. |

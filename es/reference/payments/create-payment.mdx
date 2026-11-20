@@ -23,12 +23,18 @@ Consulta la página [3D Secure](/es/docs/security-and-compliance/3d-secure) para
 <Note>
 **Promociones**
 
-Para cobrar el precio de una promoción, envía el `amount` original y una línea de descuento en `additional_data.order.discounts` con `type: YUNO_PROMOTION` y el `quote_id` de una cotización de promoción. Yuno cobra el precio con descuento, mantiene el `amount` tal como lo enviaste y devuelve `discount_amount`. Para canjear un código de promoción en lugar de una cotización, envía `{ "code": "<code>" }` en la línea de descuento. Un dry run no admite código (consulta [Dry run](#dry-run)). Consulta [Códigos de promoción](#promotion-codes) y [Promociones](/docs/payment-features/promotions). El ejemplo de cotización de promoción necesita que Promotions esté habilitado para tu organización: hasta que Yuno lo habilite, [Create Promotion Quote](/reference/promotions/create-promotion-quote) responde 204 y no existe ningún `quote_id`.
+Para cobrar el precio de una promoción, envía el `amount` original y una línea de descuento en `additional_data.order.discounts` con `type: YUNO_PROMOTION` y el `quote_id` de una cotización de promoción. Yuno cobra el precio con descuento, mantiene el `amount` tal como lo enviaste y devuelve `discount_amount`. Para canjear un código de promoción en lugar de una cotización, envía `{ "code": "<code>" }` en la línea de descuento. Un dry run no admite código (consulta [Dry run](#dry-run)). Consulta [Códigos de promoción](#promotion-codes) y [Promociones](/es/docs/payment-features/promotions). El ejemplo de cotización de promoción necesita que Promotions esté habilitado para tu organización: hasta que Yuno lo habilite, [Create Promotion Quote](/es/reference/promotions/create-promotion-quote) responde 204 y no existe ningún `quote_id`.
 </Note>
 
 Para autorizar un pago sin capturarlo de inmediato (no se le cobra al cliente), envía `capture: false` dentro del detalle del método de pago, en el objeto que corresponde al tipo de método de pago: `payment_method.detail.card.capture` para tarjetas y `payment_method.detail.wallet.capture` para billeteras que admiten autorización (por ejemplo, PayPal con un billing agreement guardado en vault). Yuno solo lee el indicador en el objeto que corresponde al tipo de método de pago, así que `capture: false` dentro de `card` se ignora en un pago con billetera y el pago se captura de inmediato.
 
 Si quieres procesar pagos en un solo paso (autorización y captura al mismo tiempo), envía `capture` como `true` en ese mismo objeto.
+
+<Note>
+**Aprobaciones parciales**
+
+Para aceptar una aprobación por menos de `amount.value` en un pago con tarjeta, envía `payment_method.detail.card.partial_approval: true`. Se aplica a compras (`capture: true`) y autorizaciones (`capture: false`) y se ignora en verify. El monto que aprobó el proveedor se devuelve en `amount.authorized`, y el pago conserva el estado de una aprobación completa, por lo que está aprobado parcialmente cuando `amount.authorized` es menor que `amount.value` menos `discount_amount` (cuando no hay promoción, menor que `amount.value`). Sin el campo, o cuando el proveedor no admite aprobaciones parciales, el pago se procesa como un pago con tarjeta normal.
+</Note>
 
 Para probar en **Sandbox** todos los resultados posibles de una transacción en Yuno, consulta la [documentación de datos de prueba](/es/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway).
 
@@ -53,7 +59,7 @@ Esta solicitud requiere un `X-Idempotency-Key`. Consulta [Autenticación](/es/re
 <Note>
 **Promotions se habilita por organización**
 
-Un pago que lleva un código funciona solo después de que Yuno habilite Promotions para tu organización. Hasta entonces se rechaza con `422 PROMOTION_NOT_APPLICABLE` y el motivo `PROMOTIONS_NOT_ENABLED`, y no se crea ningún pago. Consulta [Promociones](/docs/payment-features/promotions#enable-promotions-for-your-organization).
+Un pago que lleva un código funciona solo después de que Yuno habilite Promotions para tu organización. Hasta entonces se rechaza con `422 PROMOTION_NOT_APPLICABLE` y el motivo `PROMOTIONS_NOT_ENABLED`, y no se crea ningún pago. Consulta [Promociones](/es/docs/payment-features/promotions#enable-promotions-for-your-organization).
 </Note>
 
 Para cobrar el precio de un código de promoción, coloca el código en una línea de descuento de `additional_data.order.discounts` en lugar de un `quote_id`. Envía el `amount` original, nunca el que tiene descuento.
@@ -71,7 +77,7 @@ Para cobrar el precio de un código de promoción, coloca el código en una lín
 }
 ```
 
-Esta es la parte de la solicitud que importa aquí; el resto es el cuerpo que ya envías. Yuno canjea el código por una cotización antes de crear el pago, y el pago continúa como un pago con cotización. La respuesta es la que aparece en [Qué lleva el pago](/docs/payment-features/promotions#what-the-payment-carries). Crea la promoción con [Create Promotion](/reference/promotions/create-promotion). [Códigos de promoción](/docs/payment-features/promotion-codes) describe todo el flujo.
+Esta es la parte de la solicitud que importa aquí; el resto es el cuerpo que ya envías. Yuno canjea el código por una cotización antes de crear el pago, y el pago continúa como un pago con cotización. La respuesta es la que aparece en [Qué lleva el pago](/es/docs/payment-features/promotions#what-the-payment-carries). Crea la promoción con [Create Promotion](/es/reference/promotions/create-promotion). [Códigos de promoción](/es/docs/payment-features/promotion-codes) describe todo el flujo.
 
 La línea de descuento sigue estas reglas. Una línea que incumple una de ellas se rechaza con `400 INVALID_PARAMETERS` antes de que ocurra cualquier otra cosa, y no se crea ningún pago.
 
@@ -154,4 +160,4 @@ Un código también se rechaza para estos pagos, y no se crea ningún pago:
 | Un pago que lleva una `external_subscription` o una `external_invoice` | `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED`: `Subscription payments cannot carry a promotion quote.` |
 | Un pago cuyo `amount` lleva una `currency_conversion` o una `merchant_currency_conversion` | `422 PROMOTION_CONTEXT_MISMATCH`: `The payment context does not match the promotion quote.` |
 
-[Promotion Error Codes](/reference/promotions/promotion-error-codes) enumera todas las respuestas, con el texto de cada mensaje.
+[Promotion Error Codes](/es/reference/promotions/promotion-error-codes) enumera todas las respuestas, con el texto de cada mensaje.

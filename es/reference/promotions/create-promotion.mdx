@@ -1,0 +1,38 @@
+---
+title: "Crear promoción"
+openapi: "/openapi/promotions/create-promotion.json POST /promotions"
+description: "Crea una promoción con código: un código que envías tú o que Yuno construye a partir de tu prefijo, un descuento, un rango de fechas, las condiciones que debe cumplir un pago y, opcionalmente, el máximo de usos."
+noindex: true
+---
+
+<Warning>
+**Promotions se habilita por organización**
+
+Este endpoint funciona solo después de que Yuno habilite Promotions para tu organización. Hasta entonces responde `404 PROMOTION_NOT_FOUND`. Pide la habilitación a tu Technical Account Manager o Key Account Manager. Consulta [Promotions](/es/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Warning>
+
+<Note>
+**Las promociones no se pueden editar**
+
+No existe un endpoint para actualizar ni para eliminar. Para cambiar un descuento, una fecha, una condición o el código, [deshabilita la promoción](/reference/promotions/disable-promotion) y crea una nueva.
+</Note>
+
+Este endpoint crea promociones con código. Un cliente canjea una cuando tu servidor envía su código en [Crear pago](/es/reference/payments/create-payment). Consulta [Códigos promocionales](/es/docs/payment-features/promotion-codes) para ver el flujo completo.
+
+## Qué necesita la solicitud {#what-the-request-needs}
+
+* **La cuenta se toma del encabezado `X-Account-Code`.** La promoción pertenece a esa cuenta. Un cuerpo que incluya `account_id` se rechaza con `400 INVALID_PARAMETERS`, y también un cuerpo que repita `redemption` o alguno de sus miembros (los nombres se comparan sin distinguir mayúsculas de minúsculas).
+* **`X-Idempotency-Key` es obligatorio.** Es cualquier texto de 1 a 64 caracteres. La misma clave en la misma cuenta devuelve la primera promoción con `201`, y Yuno no compara el cuerpo. Una solicitud sin una clave válida se rechaza con `400` antes de leer el cuerpo.
+* **`redemption.mode` es `CODE`** y envías exactamente uno de `redemption.code` y `redemption.prefix`. Si no envías ninguno, la respuesta es `400 INVALID_REQUEST` con `redemption: CODE_OR_PREFIX_REQUIRED`, y si envías ambos, la respuesta es `redemption: CODE_AND_PREFIX_EXCLUSIVE`. Cada respuesta agrega el mensaje `Send exactly one of redemption.code or redemption.prefix.`. Un `null`, un texto vacío y un texto con solo espacios cuentan como no enviados. Un `redemption.code` que no es válido, enviado junto con un prefijo, cuenta como ambos.
+* **Un código que envías tiene de 3 a 32 caracteres:** letras, dígitos, `_` y `-`, en mayúsculas o minúsculas. Yuno recorta los espacios alrededor y lo guarda en mayúsculas. Un código con un carácter fuera de ese conjunto responde `redemption.code: CODE_CHARACTERS`, y uno de longitud incorrecta responde `redemption.code: CODE_LENGTH`.
+* **Un prefijo construye el código.** El prefijo tiene de 1 a 8 letras o dígitos (`A-Z`, `a-z`, `0-9`). Yuno lo convierte a mayúsculas y construye el código con el prefijo y un sufijo aleatorio de 5 caracteres de `A-Z` y `2-9`, sin `0`, `O`, `1`, `I` y `L`. Por ejemplo, el prefijo `SUMMER` puede dar `SUMMERK7P2X`. El `201` muestra el código en `redemption.code`. Un carácter fuera de `A-Z`, `a-z` y `0-9` responde `redemption.prefix: FORMAT`, y más de 8 caracteres responde `redemption.prefix: LENGTH`. Yuno nunca construye un código que ya tenga otra promoción de tu cuenta, sin importar su estado. Una creación con prefijo nunca responde `409 CODE_ALREADY_EXISTS`. La misma `X-Idempotency-Key` devuelve la misma promoción con el mismo código. Si Yuno no puede construir un código, la creación falla con `500 INTERNAL_ERROR` y Yuno no guarda nada: reintenta la solicitud.
+* **Un código es único por cuenta.** Otra promoción de la cuenta que no esté deshabilitada, con un calendario que se superponga al de la nueva, no puede tener el mismo código, y ningún código de lote de la cuenta puede tenerlo tampoco: la solicitud responde `409 CODE_ALREADY_EXISTS`. Un código vuelve a estar libre cuando la promoción anterior se deshabilita, o cuando su calendario termina en el momento de inicio de la nueva o antes.
+* **Las condiciones son `countries` y `amounts`.** Un código se aplica a todo el pago, sin importar el método de pago. Una condición `bins`, `payment_methods` o `card_types` responde `400 INVALID_REQUEST` con `conditions.bins: FORBIDDEN`, `conditions.payment_methods: FORBIDDEN` o `conditions.card_types: FORBIDDEN`.
+* **`limits.total` es opcional.** Es el máximo de usos que acepta el código, un número entero de 1 a 2147483647. Una promoción sin `limits` no tiene tope, y su respuesta muestra `limits: null`. Yuno cuenta un uso cuando un pago toma el código. Consulta [Usos y límites](/es/docs/payment-features/promotion-codes#uses-and-limits).
+* **El cuerpo pesa como máximo 256 KiB.** Un cuerpo más grande responde `413 REQUEST_ENTITY_TOO_LARGE`.
+
+## Qué contiene la respuesta {#what-the-answer-holds}
+
+`201` devuelve la promoción, tal como la describe [El objeto Promotion](/reference/promotions/the-promotion-object), con `status` calculado a partir de `schedule` y con `limits.used` en `0`. Todos los miembros están presentes, con `null` para un valor ausente. `redemption.code` contiene el código, ya sea el que enviaste o el que Yuno construyó a partir de tu prefijo.
+
+Existen dos tipos de `400`. `INVALID_PARAMETERS` proviene de las comprobaciones que Yuno hace antes de leer la promoción: los encabezados, `account_id`, `redemption.mode`. `INVALID_REQUEST` proviene de las reglas de la promoción en sí, con un mensaje `path: RULE` por cada ruta que falla, en el orden de las comprobaciones. [Códigos de error de Promotion](/es/reference/promotions/promotion-error-codes) los enumera.
