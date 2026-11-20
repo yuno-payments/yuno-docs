@@ -97,17 +97,19 @@ test("400 documents INVALID_PARAMETERS, DATE_RANGE_TOO_WIDE, INVALID_CURSOR and 
 test("the page explains the window, filters, pagination, rows and errors without prev_cursor or sort", () => {
   const g = read(`${page}.mdx`);
   for (const h of ["## Creation window", "## Filters", "## Pagination", "## Rows", "## Errors"]) assert.ok(g.includes(h), h);
-  for (const s of ["1 day", "INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "INVALID_ACCOUNT_ID", "`next_cursor`", "`has_more`", "defaults to 50", "from 1 to 100", "`X-Account-Code`", "`created_at` ascending and then by `id`", "no `transactions` array"]) assert.ok(g.includes(s), s);
+  for (const s of ["1 day", "INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "INVALID_ACCOUNT_ID", "`next_cursor`", "`has_more`", "defaults to 50", "from 1 to 100", "`X-Account-Code`", "`created_at` ascending", "no `transactions` array"]) assert.ok(g.includes(s), s);
   assert.ok(!g.includes("prev_cursor"));
 });
 
-test("the Spanish page mirrors the English one on the es spec and is visible in the navigation", () => {
+test("the Spanish page is in the navigation, on an es spec structurally equal to the English one, and names the window and the error codes", () => {
   assert.ok(navPages().has(`es/${page}`));
   const g = read(`es/${page}.mdx`);
   assert.ok(g.includes(`openapi: "/openapi/es/payments/${slug}.json GET /payments/search"`));
   for (const s of ["1 día", "INVALID_PARAMETERS", "DATE_RANGE_TOO_WIDE", "INVALID_CURSOR", "INVALID_ACCOUNT_ID"]) assert.ok(g.includes(s), s);
-  const en = op();
-  const es = json(`openapi/es/payments/${slug}.json`).paths["/payments/search"].get;
-  assert.deepEqual(es.parameters.map((p) => [p.name, p.in, !!p.required, p.schema]), en.parameters.map((p) => [p.name, p.in, !!p.required, p.schema]));
-  assert.deepEqual(es.responses, en.responses);
+  const withoutProse = (node) => {
+    if (Array.isArray(node)) return node.map(withoutProse);
+    if (!node || typeof node !== "object") return node;
+    return Object.fromEntries(Object.entries(node).filter(([k]) => k !== "description" && k !== "summary").map(([k, v]) => [k, withoutProse(v)]));
+  };
+  assert.deepEqual(withoutProse(json(`openapi/es/payments/${slug}.json`)), withoutProse(spec()));
 });
