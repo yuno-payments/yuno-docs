@@ -1,0 +1,328 @@
+---
+title: "Facturación basada en el uso"
+description: "Mide cualquier acción que realice tu producto, fija su precio en un plan con créditos incluidos y un excedente por unidad, y deja que Yuno facture el uso en la renovación de cada suscripción"
+hidden: true
+---
+
+<Note>
+**Habilitado por organización**
+
+La facturación basada en el uso debe estar habilitada para tu organización antes de que estos endpoints acepten solicitudes. Contacta a tu gerente de cuenta de Yuno para habilitarla. Las solicitudes de una organización donde no está habilitada devuelven `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+Las suscripciones cobran un precio fijo con una periodicidad fija. La facturación basada en el uso agrega una parte variable encima: le indicas a Yuno *qué* contar (un **medidor**), *cuánto de eso* incluye un plan y cuánto cuestan las unidades adicionales (un **precio medido**), y luego reportas *cuánto consumió cada suscriptor* (**eventos de uso**). Yuno agrega el uso por suscripción y ciclo de facturación, y cobra lo que supere la cuota incluida junto con el cargo de renovación habitual de la suscripción.
+
+Usos típicos: un producto de IA que incluye 10,000 tokens al mes y cobra el resto por token, una API que incluye 1,000 solicitudes y cobra cada llamada adicional, un producto de almacenamiento que se cobra por gigabyte almacenado.
+
+## Cómo encajan las piezas {#how-the-pieces-fit}
+
+1. **Medidor**: una acción con nombre y contable: `ai_tokens`, `api_request`, `storage_gb`. Define el `event_name` que envían tus sistemas y la agregación (`SUM`, `COUNT` o `LAST`). Un medidor no tiene precio propio, como máximo un `default_price` en USD que los planes pueden heredar. Consulta [El objeto Meter](/reference/meters/the-meter-object).
+2. **Precio medido**: el medidor asociado a un [plan](/es/docs/payment-features/subscriptions/plans): cuántas unidades se incluyen por ciclo (`credits`) y cuánto cuesta cada unidad adicional (`price_per_credit`, opcionalmente por país). Un plan puede tener cualquier cantidad de precios medidos junto a su precio fijo. Consulta [El objeto Metered Price](/reference/meters/the-metered-price-object).
+3. **Suscripción**: se crea en ese plan como de costumbre. Hereda todos los precios medidos; nada cambia en [Crear suscripción](/es/reference/subscriptions/create-subscription).
+4. **Eventos de uso**: una llamada por unidad de trabajo, con el `event_name`, el `subscription_id`, un `value` y tu propio `event_id` para la idempotencia. Consulta [Reportar evento de uso](/reference/meters/report-usage-event).
+5. **Renovación**: al final del ciclo de facturación, Yuno calcula la cantidad facturable (`max(0, usage − credits)`) y suma `billable × price_per_credit` al cargo de renovación de la suscripción.
+
+<Note>
+**Los medidores son genéricos**
+
+Nada de esto es específico de la IA. Un medidor puede contar entregas, minutos, mensajes, asientos o gigabytes igual que tokens: `unit_label` / `plural_unit_label` del medidor son las etiquetas con las que se muestra el uso.
+</Note>
+
+## Inicio rápido {#quick-start}
+
+El ejemplo crea un plan "Max" de \$200 al mes que incluye 10,000 tokens de IA y cobra \$0.002 por cada token adicional. Las solicitudes usan los encabezados estándar `public-api-key` / `private-secret-key`. `X-Idempotency-Key` se acepta en todas las solicitudes, como en el resto de la API de Yuno, pero los eventos de uso tienen su propia clave de deduplicación dedicada: consulta [Idempotencia y marcas de tiempo](#idempotency-and-timestamps).
+
+<Steps>
+  <Step title="Crea el medidor">
+    Elige un `event_name` que enviarán tus sistemas (minúsculas, se permiten `_` y `.`) y la agregación. `default_price` es opcional y debe estar en USD; te evita repetir el precio unitario en cada plan en USD.
+
+    ```bash
+    curl -X POST https://api-sandbox.y.uno/v1/subscriptions/meters \
+      -H 'Content-Type: application/json' \
+      -H 'public-api-key: <Your public-api-key>' \
+      -H 'private-secret-key: <Your private-secret-key>' \
+      -H 'X-Idempotency-Key: 5f1c2c1e-1a2b-4c3d-9e8f-0a1b2c3d4e5f' \
+      -d '{
+        "account_id": "00000000-0000-4000-8000-000000000002",
+        "name": "AI tokens",
+        "description": "LLM tokens consumed by model responses, reported once per response",
+        "event_name": "ai_tokens",
+        "aggregation": "SUM",
+        "unit_label": "token",
+        "plural_unit_label": "tokens",
+        "default_price": { "currency": "USD", "value": 0.002 }
+      }'
+    ```
+
+    La respuesta es `201` con el medidor, siempre `ACTIVE`. Conserva su `id`: lo necesitas para asociar el medidor a un plan.
+  </Step>
+
+  <Step title="Asócialo a un plan">
+    Crea el plan con el medidor en línea, o asócialo a un plan que ya existe. Ambos reciben el mismo cuerpo de precio medido: `meter_id`, `credits` (unidades incluidas por ciclo), `pricing_strategy` y, si no se hereda, `price_per_credit`.
+
+    <CodeGroup>
+    ```bash New plan
+    curl -X POST https://api-sandbox.y.uno/v1/subscriptions/plans \
+      -H 'Content-Type: application/json' \
+      -H 'public-api-key: <Your public-api-key>' \
+      -H 'private-secret-key: <Your private-secret-key>' \
+      -H 'X-Idempotency-Key: 8d5c9a3e-4b7f-4a2c-b1d0-2e3f4a5b6c7d' \
+      -d '{
+        "account_id": "00000000-0000-4000-8000-000000000002",
+        "name": "Max",
+        "base_amount": { "currency": "USD", "value": 200.0 },
+        "frequency": { "type": "MONTH", "value": 1 },
+        "meters": [
+          {
+            "meter_id": "55555555-5555-5555-5555-555555555555",
+            "credits": 10000,
+            "pricing_strategy": "PER_UNIT"
+          }
+        ]
+      }'
+    ```
+
+    ```bash Existing plan
+    curl -X POST https://api-sandbox.y.uno/v1/subscriptions/plans/00000000-0000-4000-8000-000000000001/meters \
+      -H 'Content-Type: application/json' \
+      -H 'public-api-key: <Your public-api-key>' \
+      -H 'private-secret-key: <Your private-secret-key>' \
+      -H 'X-Idempotency-Key: 9e6d0b4f-5c8a-4b3d-a2e1-3f4a5b6c7d8e' \
+      -d '{
+        "meter_id": "55555555-5555-5555-5555-555555555555",
+        "credits": 10000,
+        "pricing_strategy": "PER_UNIT",
+        "price_per_credit": { "currency": "USD", "value": 0.002 }
+      }'
+    ```
+    </CodeGroup>
+
+    En el ejemplo "New plan" se omite `price_per_credit`: el plan es en USD y el medidor tiene un `default_price`, por lo que se aplica \$0.002 y el precio medido se devuelve con `price_per_credit: null`. La respuesta del plan y [Consultar plan](/es/reference/plans/retrieve-plan) ahora incluyen el precio medido en `meters[]` (un arreglo vacío en los planes sin medidores).
+
+    <Note>
+    Asociar un medidor a un plan activo no cambia el precio fijo del plan ni el monto base de ningún suscriptor existente: solo agrega una línea variable para el uso que supere `credits`. Enviar `{ "meters": [ ... ] }` a `PATCH /subscriptions/plans/{plan_id}` hace lo mismo para varios medidores a la vez, de forma atómica (si una entrada es incorrecta, no se asocia ninguna), e ignora todos los demás campos del plan.
+    </Note>
+  </Step>
+
+  <Step title="Suscribe a tus clientes al plan">
+    No hay nada nuevo aquí: llama a [Crear suscripción](/es/reference/subscriptions/create-subscription) con el `plan_id`. La suscripción hereda los precios medidos del plan. Guarda el `id` de la suscripción: todos los eventos de uso lo referencian.
+  </Step>
+
+  <Step title="Reporta el uso a medida que ocurre">
+    Envía un evento por unidad de trabajo. `event_id` es tu clave de idempotencia; `value` es obligatorio para los medidores `SUM` y `LAST`, y su valor predeterminado es 1 para `COUNT`. La suscripción debe estar `ACTIVE`, `TRIALING` o `PAST_DUE`.
+
+    ```bash
+    curl -X POST https://api-sandbox.y.uno/v1/subscriptions/meters/events \
+      -H 'Content-Type: application/json' \
+      -H 'public-api-key: <Your public-api-key>' \
+      -H 'private-secret-key: <Your private-secret-key>' \
+      -H 'X-Idempotency-Key: 3c7e8f10-2b4d-4e6a-9c1f-5a7b9d2e4f60' \
+      -d '{
+        "event_id": "11111111-1111-1111-1111-111111111111",
+        "event_name": "ai_tokens",
+        "subscription_id": "33333333-3333-3333-3333-333333333333",
+        "value": 1500,
+        "occurred_at": "2026-08-18T09:00:04Z",
+        "metadata": [{ "key": "model", "value": "llm-large" }]
+      }'
+    ```
+
+    Una respuesta `201` confirma que el evento se validó y se almacenó:
+
+    ```json
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "event_id": "11111111-1111-1111-1111-111111111111",
+      "event_name": "ai_tokens",
+      "meter_id": "55555555-5555-5555-5555-555555555555",
+      "subscription_id": "33333333-3333-3333-3333-333333333333",
+      "value": 1500,
+      "received_at": "2026-08-18T09:00:04.000000Z"
+    }
+    ```
+
+    Reintentar la misma solicitud (mismo `event_id`) devuelve esta misma respuesta y nunca cuenta los 1,500 tokens dos veces: aunque el reintento lleve un `value` distinto, se conserva el original.
+  </Step>
+</Steps>
+
+## Cómo elegir una agregación {#choosing-an-aggregation}
+
+La agregación se fija al crear el medidor y determina qué significa la cantidad de un ciclo:
+
+<Tabs>
+  <Tab title="SUM: consumo">
+    Suma el `value` de cada evento. Reporta la cantidad consumida por cada unidad de trabajo.
+
+    ```json
+    { "event_id": "resp_8f3k2", "event_name": "ai_tokens", "subscription_id": "3333…", "value": 1280 }
+    ```
+
+    Tres eventos de 1,280 / 640 / 2,100 tokens → cantidad del ciclo: 4,020 tokens. Úsalo para tokens, minutos transcritos, mensajes enviados, entregas completadas.
+  </Tab>
+  <Tab title="COUNT: por llamada">
+    Cuenta eventos; `value` se ignora (cada evento cuenta como 1, por lo que puedes omitirlo).
+
+    ```json
+    { "event_id": "req_01J5Y3Q9K8ZC5G6E4Y2W7X8N9M", "event_name": "api_request", "subscription_id": "3333…" }
+    ```
+
+    1,432 eventos → cantidad del ciclo: 1,432 solicitudes. Úsalo para llamadas a la API, tareas, exportaciones.
+  </Tab>
+  <Tab title="LAST: medición puntual">
+    Conserva el `value` más reciente del ciclo según `occurred_at`. Reporta el nivel actual, no la variación.
+
+    ```json
+    { "event_id": "storage-2026-08-18T09:00-sub-3333", "event_name": "storage_gb", "subscription_id": "3333…", "value": 128.4, "occurred_at": "2026-08-18T09:00:00Z" }
+    ```
+
+    Reportes de 96.0 → 110.2 → 128.4 GB → cantidad del ciclo: 128.4 GB. Úsalo para almacenamiento ocupado, asientos en uso, dispositivos activos.
+  </Tab>
+</Tabs>
+
+## Cómo fijar el precio de un medidor en un plan {#pricing-a-meter-on-a-plan}
+
+Un precio medido tiene tres parámetros de precio:
+
+- **`credits`**: las unidades incluidas en el plan en cada ciclo de facturación. Piénsalo como una "cuota": las primeras `credits` unidades quedan cubiertas por el precio fijo del plan. `0` factura todas las unidades. `credits` se mide en la unidad del medidor (tokens, solicitudes, GB) y se reinicia en cada ciclo: **no** es un saldo prepagado ni una billetera.
+- **`price_per_credit`**: el precio de cada unidad que supera `credits`, en la moneda base del plan. En un plan en USD puedes omitirlo si el medidor tiene un `default_price`; entonces se aplica el valor predeterminado del medidor y el precio medido se devuelve con `price_per_credit: null`. En un plan que no está en USD, o cuando el medidor no tiene valor predeterminado, es obligatorio. La moneda siempre debe coincidir con la moneda de `base_amount` del plan.
+- **`country_prices`**: precios por unidad opcionales según el país del suscriptor (una entrada por país), con la misma forma que los `country_prices` del propio plan. Un suscriptor cuyo país no figura en la lista paga `price_per_credit`. El país del suscriptor proviene de la suscripción (los eventos de uso no llevan `country` ni `account_id`), por lo que `country_prices` se resuelve automáticamente por suscriptor.
+
+`pricing_strategy` define cómo se tarifica el excedente, y cada estrategia tiene sus propios campos de configuración al momento de asociar:
+
+<Tabs>
+  <Tab title="PER_UNIT: tarifa fija">
+    Unidades facturables × `price_per_credit` (o la entrada de `country_prices` del suscriptor). La opción predeterminada para tokens, solicitudes y minutos.
+
+    ```json
+    { "pricing_strategy": "PER_UNIT", "credits": 10000, "price_per_credit": { "currency": "USD", "value": 0.002 } }
+    ```
+  </Tab>
+  <Tab title="PACKAGE: paquetes">
+    Las unidades facturables se redondean **hacia arriba** al múltiplo entero más cercano de `package_size` y se facturan a `package_price` por paquete: un paquete parcial se factura como uno completo. `package_size` acepta decimales, incluida la notación científica (`1e3` → `1000`); el valor almacenado se redondea a 4 decimales.
+
+    ```json
+    {
+      "pricing_strategy": "PACKAGE",
+      "credits": 10000,
+      "package_size": 1000,
+      "package_price": { "currency": "USD", "value": 1.50 },
+      "package_country_prices": [{ "country": "BR", "amount": { "currency": "BRL", "value": 7.50 } }]
+    }
+    ```
+
+    Ejemplo: 10,000 incluidas + paquete de 1,000 a \$1.50 → un suscriptor con 13,200 tokens tiene 3,200 unidades facturables → `ceil(3200 / 1000) = 4` paquetes → \$6.00 de uso.
+  </Tab>
+  <Tab title="TIERED: escalonado">
+    Las unidades facturables se reparten en tramos ascendentes (`tiers[]`), cada uno con su propia `rate`: el uso se cobra a la tarifa del tramo en el que cae, de forma marginal (las unidades del primer tramo a la tarifa del primer tramo, las del siguiente tramo a la siguiente tarifa, y así sucesivamente), no a una única tarifa combinada. Cada tramo, excepto el último, necesita un límite superior `up_to` (**exclusivo respecto del tramo anterior, inclusivo respecto de sí mismo**, estrictamente ascendente); el `up_to` del último tramo debe ser `null` (sin límite). Todos los tramos de un mismo precio medido deben tener precio en la misma moneda (o en el mismo conjunto de países, para `country_rates`).
+
+    ```json
+    {
+      "pricing_strategy": "TIERED",
+      "credits": 0,
+      "tiers": [
+        { "up_to": 1000, "rate": { "currency": "USD", "value": 0.01 } },
+        { "up_to": 5000, "rate": { "currency": "USD", "value": 0.008 } },
+        { "up_to": null, "rate": { "currency": "USD", "value": 0.005 } }
+      ]
+    }
+    ```
+
+    Ejemplo: 6,000 unidades facturables → 1,000 a \$0.01 + 4,000 a \$0.008 + 1,000 a \$0.005 = \$47.00.
+  </Tab>
+</Tabs>
+
+En las estrategias distintas de `PER_UNIT`, el medidor debe tener precio en cada moneda que admite el plan: se rechaza un plan con `country_prices` en monedas que el precio medido no cubre (`PLAN_METER_MISSING_CURRENCY`), y cada moneda con precio debe coincidir con una que el plan realmente use (`PLAN_METER_BASE_CURRENCY_MISMATCH`). Todos los montos de uso calculados (con cualquier estrategia) se redondean half-up a 4 decimales.
+
+<Warning>
+**La configuración de precios se define una sola vez, al asociar.** `credits`, `price_per_credit` y `country_prices` se pueden actualizar en un precio medido `PER_UNIT` activo con [Actualizar medidor del plan](/reference/meters/update-plan-meter): los nuevos valores se aplican al uso tarifado a partir del siguiente ciclo de facturación. `package_size`, `package_price`, `package_country_prices` y `tiers` no se pueden cambiar después de asociar: al cambiar el `pricing_strategy` de un precio medido se valida que la solicitud incluya la configuración obligatoria de la estrategia de destino y se borran los campos de la estrategia anterior que ya no aplican; un cambio sin configuración, o con la configuración de otra estrategia, se rechaza. No existe un endpoint para desasociar, así que para corregir una configuración `PACKAGE`/`TIERED` no puedes volver a asociar el mismo medidor: crea un medidor nuevo con un `event_name` nuevo, asócialo con la configuración corregida, apunta tu integración al nuevo `event_name` y archiva el medidor anterior. El precio fijo del plan sigue siendo [inmutable](/es/docs/payment-features/subscriptions/plans) como antes.
+</Warning>
+
+## Qué ocurre en la renovación {#what-happens-at-renewal}
+
+<Note>
+El uso se factura en el cargo de renovación de la suscripción, junto con el precio fijo del plan: no hay una factura de uso aparte.
+</Note>
+
+Para cada suscripción y cada precio medido de su plan, al final del ciclo de facturación:
+
+1. **Cantidad**: los eventos cuyo `occurred_at` cae dentro del ciclo se agregan con la `aggregation` del medidor (SUM / COUNT / LAST).
+2. **Unidades facturables**: `max(0, quantity − credits)`. Los créditos sin usar no se acumulan.
+3. **Monto**: `billable × price_per_credit` (o la entrada de `country_prices` del suscriptor).
+4. **Cargo**: el monto se suma al cargo de renovación de la suscripción junto con el precio fijo del plan. Un cargo, un pago, como hasta ahora. Una suscripción con un uso inferior a sus créditos paga solo el precio fijo.
+
+Ejemplo, en el plan Max (10,000 tokens incluidos, \$0.002 por token adicional): un suscriptor consume 13,500 tokens en agosto → 3,500 facturables → \$7.00 de uso, por lo que la renovación cobra \$207.00. Otro suscriptor consume 8,000 → \$200.00.
+
+## Idempotencia y marcas de tiempo {#idempotency-and-timestamps}
+
+- **`event_id` es obligatorio y es tu clave de idempotencia.** Hazlo único por evento (un UUID, o el id de la solicitud, respuesta o tarea de la que proviene) y reutilízalo en cada reintento. Yuno almacena el primer evento con ese id y responde a cada repetición con la misma respuesta, incluido el `value` original (un `value` distinto en el reintento se descarta). El uso nunca se cuenta dos veces, sin importar cuántas veces reintentes. Una solicitud sin `event_id` se rechaza con `400`.
+- **Reporta lo más cerca posible del tiempo real**, aunque puedes registrar eventos con fecha anterior. `occurred_at` toma por defecto la hora de recepción (devuelta como `received_at`) y puede ser hasta **35 días** anterior; los eventos más antiguos se rechazan con `400`. `occurred_at` (no la hora de recepción) decide en qué ciclo de facturación cae el evento.
+- **`X-Idempotency-Key`** se acepta, como en el resto de la API de Yuno (misma clave + mismo cuerpo → misma respuesta), pero aquí es opcional y no es lo que deduplica el uso: `event_id` es el mecanismo que protege la facturación, y es el único obligatorio.
+- **Un evento por solicitud.** Agrega en tu lado si generas muchos eventos pequeños (por ejemplo, suma los tokens por respuesta en lugar de por token): un medidor `SUM` está pensado para eso.
+- **La suscripción debe estar activa.** Las suscripciones `ACTIVE`, `TRIALING` y `PAST_DUE` aceptan uso (una suscripción en reintentos de pago sigue midiendo); los eventos de una suscripción `PAUSED`, `CANCELED` o `COMPLETED` se rechazan con `400 SUBSCRIPTION_NOT_ACTIVE` y no se cuenta nada.
+
+## Manejo de errores {#error-handling}
+
+La validación es síncrona: un evento rechazado devuelve `400` de inmediato (los fallos de búsqueda también son `400`, nunca `404`) y no se cuenta, así que trata cualquier respuesta distinta de `201` como "no registrado" y reintenta con el mismo `event_id` después de corregir la solicitud. Los códigos que encontrarás con más frecuencia:
+
+| Situación | Respuesta |
+| --- | --- |
+| `event_name` no coincide con un medidor `ACTIVE` de tu cuenta | `400 METER_NOT_FOUND` |
+| `subscription_id` desconocido | `400 SUBSCRIPTION_NOT_FOUND` |
+| La suscripción está `PAUSED`, `CANCELED`, `COMPLETED` o inactiva por otro motivo | `400 SUBSCRIPTION_NOT_ACTIVE`: "The subscription is not active" |
+| La facturación basada en el uso no está habilitada para tu organización | `403 PRODUCT_NOT_ENABLED` |
+| Falta `value` en un medidor `SUM`/`LAST` | `400 INVALID_PARAMETERS`: "The value is required for a SUM meter" / "…for a LAST meter" |
+| `occurred_at` con más de 35 días de antigüedad | `400 INVALID_PARAMETERS` |
+| Un segundo medidor con el mismo `event_name` (incluso si el primero está archivado) | `409 METER_EVENT_NAME_CONFLICT` |
+| El mismo medidor asociado dos veces a un plan | `409 PLAN_METER_ALREADY_ASSIGNED` |
+| Asociar un medidor archivado (`INACTIVE`) | `400 METER_NOT_FOUND` |
+| `price_per_credit` en la moneda incorrecta / ausente en un plan que no está en USD | `400 INVALID_PARAMETERS` |
+| `package_size`/`package_price`/`package_country_prices`/`tiers` enviados para un `pricing_strategy` incorrecto (o en Update Plan Meter, por ahora) | `400 PLAN_METER_PRICING_CONFIG_UNSUPPORTED`: "Package and tier pricing configuration is not supported for this meter's pricing strategy." |
+| Los límites de `tiers[]` no son estrictamente ascendentes, el `up_to` del último tramo no es `null`, o falta el `up_to` de un tramo anterior | `400 INVALID_PARAMETERS` |
+| Una moneda que admite el plan no tiene entrada correspondiente en `country_prices`/`package_country_prices`/`country_rates` en un precio medido distinto de `PER_UNIT` | `400 PLAN_METER_MISSING_CURRENCY` |
+| La moneda de `package_price`/`rate` del tramo no coincide con la moneda base del plan | `400 PLAN_METER_BASE_CURRENCY_MISMATCH` |
+
+La lista completa, con todos los mensajes, está en [Códigos de error de medidores](/reference/meters/meter-error-codes).
+
+## Preguntas frecuentes {#faq}
+
+<AccordionGroup>
+  <Accordion title="¿Necesito un plan nuevo para agregar precios por uso a uno existente?">
+    No. Asocia el medidor al plan activo con [Asociar medidor a un plan](/es/reference/meters/attach-meter-to-plan) (o con el `PATCH /subscriptions/plans/{plan_id}` solo de asociación con `meters[]`). El precio fijo y el monto base de los suscriptores existentes no cambian; el uso que supere `credits` empieza a facturarse en su siguiente renovación.
+  </Accordion>
+  <Accordion title="¿Un plan puede tener varios medidores?">
+    Sí, cualquier cantidad: por ejemplo tokens (`SUM`) más solicitudes a la API (`COUNT`) más almacenamiento (`LAST`), cada uno con sus propios `credits` y precio unitario. Cada medidor se puede asociar una sola vez a un plan determinado.
+  </Accordion>
+  <Accordion title="¿Los créditos se comparten entre suscripciones o entre medidores?">
+    Ninguno de los dos. `credits` se aplica por suscripción, por medidor y por ciclo de facturación. Dos suscriptores del mismo plan reciben cada uno la cuota completa; los créditos sin usar no se acumulan.
+  </Accordion>
+  <Accordion title="¿Qué pasa si reporto uso de una suscripción que no está en un plan con ese medidor?">
+    El evento se valida solo contra el medidor y la suscripción, por lo que se acepta y se almacena, pero únicamente el uso asociado a un precio medido del plan de la suscripción se tarifica y se factura. Revisa `meters[]` del plan si el uso no aparece en la renovación.
+  </Accordion>
+  <Accordion title="¿Puedo cambiar el event_name o la agregación de un medidor?">
+    No: ambos son inmutables porque tus sistemas y los eventos pasados dependen de ellos; un PATCH que los incluya se ignora en silencio. Crea un medidor nuevo (con un `event_name` nuevo: los nombres quedan reservados incluso después de archivar) y archiva el anterior con [Actualizar medidor](/reference/meters/update-meter) (`status: INACTIVE`). Los medidores archivados rechazan eventos nuevos con `400 METER_NOT_FOUND`, no se pueden asociar a planes y sus precios medidos existentes quedan congelados; puedes reactivar uno en cualquier momento con `status: ACTIVE`.
+  </Accordion>
+  <Accordion title="¿Puedo quitar un precio medido de un plan?">
+    No existe un endpoint para desasociar. Archiva el medidor para detener la ingesta, o aumenta `credits` para que no se facture excedente.
+  </Accordion>
+  <Accordion title="¿Puedo fijar el precio del medidor en una moneda distinta de USD?">
+    Sí, por plan. El `default_price` del medidor es solo en USD, pero un precio medido en un plan en BRL recibe `price_per_credit` en BRL (obligatorio: no se hereda nada en los planes que no están en USD), y `country_prices` te permite fijar precios unitarios por país en la moneda de cada país.
+  </Accordion>
+  <Accordion title="¿Qué pasa si reporto uso de una suscripción pausada o cancelada?">
+    El evento se rechaza con `400 SUBSCRIPTION_NOT_ACTIVE` y no se cuenta nada: solo las suscripciones `ACTIVE`, `TRIALING` y `PAST_DUE` aceptan uso. Reanuda primero la suscripción ([Reanudar suscripción](/es/reference/subscriptions/resume-subscription)) y luego reporta el uso; puedes registrar `occurred_at` con fecha anterior hasta 35 días.
+  </Accordion>
+  <Accordion title="¿Puedo medir el uso sin una suscripción?">
+    No. Cada evento necesita un `subscription_id`; el uso se factura en la renovación de esa suscripción.
+  </Accordion>
+</AccordionGroup>
+
+## Leer el uso {#reading-usage-back}
+
+Llama a [Consultar uso de la suscripción](/es/reference/subscriptions/retrieve-subscription-usage) para leer lo que una suscripción ha acumulado en su período de facturación actual antes de que la renovación lo tarife: un elemento por medidor, con la cantidad facturable, el precio unitario y el monto resultante, además de un total del período. Una suscripción cuyo plan no tiene medidores devuelve un arreglo `items` vacío y un total de cero. El reporte de uso es asíncrono, por lo que una lectura realizada poco después de reportar un evento puede ir por detrás.
+
+## Referencia {#reference}
+
+- [El objeto Meter](/reference/meters/the-meter-object) · [Crear](/reference/meters/create-meter) · [Listar](/reference/meters/list-meters) · [Consultar](/reference/meters/retrieve-meter) · [Actualizar](/reference/meters/update-meter)
+- [Reportar evento de uso](/reference/meters/report-usage-event)
+- [El objeto Metered Price](/reference/meters/the-metered-price-object) · [Asociar medidor a un plan](/es/reference/meters/attach-meter-to-plan) · [Listar medidores del plan](/reference/meters/list-plan-meters) · [Actualizar medidor del plan](/reference/meters/update-plan-meter)
+- [Códigos de error de medidores](/reference/meters/meter-error-codes)
+- [Planes](/es/docs/payment-features/subscriptions/plans) · [El objeto Plan](/es/reference/plans/the-plan-object)
