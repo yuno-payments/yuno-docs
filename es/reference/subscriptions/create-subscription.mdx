@@ -10,6 +10,18 @@ description: "Crea un plan de suscripción recurrente con ciclos de facturación
 Este endpoint inicia una suscripción a partir de un `vaulted_token` que ya tienes. Si el cliente se registra y paga al mismo tiempo, puedes enviar un bloque `subscription` en [Crear pago](/es/reference/payments/create-payment): una sola llamada cobra la tarjeta y crea la suscripción a partir de ese mismo cobro. Esa ruta está documentada solo para pagos con tarjeta sin fricción. Consulta [Inicia una suscripción con el primer pago](/es/docs/payment-features/subscriptions/start-with-payment).
 </Note>
 
+<Note>
+**Aplicar una promoción al crear la suscripción**
+
+Envía `promotion` con un `id` o un `code` para aplicar una promoción asociada al plan. El primer cobro lleva el descuento. La suscripción debe estar en un plan que tenga la promoción asociada. La suscripción almacena su propia copia de la promoción, que no se edita después. Consulta [Promociones en planes de suscripción](/es/docs/payment-features/subscriptions/promotions).
+
+```json
+{ "promotion": { "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10" } }
+```
+
+Una promoción `AUTOMATIC` asociada al plan se aplica por sí sola cuando la suscripción se crea en ese plan. Si la solicitud también envía una `promotion`, gana el descuento mayor; los dos no se acumulan.
+</Note>
+
 <Warning>
 **Finalización de la suscripción**
 
@@ -35,6 +47,20 @@ El payload requerido para suscripciones nuevas es:
 }
 ```
 </Warning>
+
+## Errores de promoción {#promotion-errors}
+
+Crear una suscripción con `promotion` puede fallar con los códigos de abajo. En cada caso, no se crea nada.
+
+| HTTP | `code` | Cuándo |
+| :--- | :----- | :--- |
+| `404` | `PROMOTION_NOT_FOUND` | El ID o código de `promotion` es desconocido o pertenece a otra cuenta. |
+| `422` | `PROMOTION_NOT_ATTACHED_TO_PLAN` | La promoción no está asociada al plan. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | La promoción no se puede aplicar. El `reason` dice por qué, por ejemplo `USAGE_LIMIT_REACHED`, `EXPIRED` o `PROMOTIONS_NOT_ENABLED` cuando las promociones no están activadas para tu organización. |
+| `503` | `PROMOTION_ENGINE_UNAVAILABLE` | El servicio de promociones no respondió. Reintenta la solicitud. |
+| `504` | `PROMOTION_ENGINE_TIMEOUT` | El servicio de promociones no respondió a tiempo. Reintenta la solicitud. |
+
+Una promoción `AUTOMATIC` asociada al plan se maneja de forma distinta. Si no se puede aplicar, porque está deshabilitada, venció o no tiene usos restantes, la suscripción se crea sin ella y la solicitud igualmente tiene éxito. Lo mismo ocurre cuando el servicio de promociones no encuentra la promoción asociada. Solo un `503` o `504` detiene la creación.
 
 Consulta la sección [Códigos de respuesta HTTP](/es/reference/getting-started/response-codes) para ver los detalles de los posibles resultados de error.
 

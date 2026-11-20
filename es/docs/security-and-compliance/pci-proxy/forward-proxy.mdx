@@ -106,7 +106,7 @@ Las solicitudes al proxy destokenizan en reversa los datos de tarjeta y solo deb
       }'
     ```
 
-    El método HTTP que uses es el método que recibe el destino. Los encabezados que establezcas para el destino (como `Authorization` arriba) pasan sin cambios; los encabezados de credenciales propios de Yuno y todos los encabezados `yuno-*` se eliminan antes de reenviar.
+    El método HTTP que uses es el método que recibe el destino. Los encabezados que establezcas para el destino (como `Authorization` arriba) pasan sin cambios; los encabezados de credenciales propios de Yuno, todos los encabezados `yuno-*` y los encabezados internos, de gateway y de salto a salto de Yuno se eliminan antes de reenviar (consulta [Autenticación en el destino](#authenticating-to-the-destination)).
 
     El encabezado `yuno-account-id` es opcional: inclúyelo cuando necesites limitar la solicitud a una cuenta específica. Como todos los encabezados `yuno-*`, se elimina antes de reenviar y nunca llega al destino. Limita **qué destinos de la lista de permitidos** están autorizados para la solicitud; no afecta la resolución de tokens, ya que los vaulted tokens siempre están limitados a tu organización.
 
@@ -115,8 +115,8 @@ Las solicitudes al proxy destokenizan en reversa los datos de tarjeta y solo deb
     Coloca la URL de destino **completa**, incluyendo su ruta y cualquier query string, en `yuno-proxy-destination-url` (por ejemplo `https://api.example-processor.com/charges/ch_123/capture?expand=true`). No agregues una ruta ni un query string a la solicitud `/v1/pci-proxy/forward` en sí; un query string en la solicitud al proxy se rechaza, para que los datos del comercio nunca se registren en logs.
   </Step>
 
-  <Step title="Leer la respuesta">
-    El código de estado, los encabezados y el cuerpo del destino se te devuelven sin cambios, salvo que cualquier número de tarjeta que el destino devuelva se redacta primero (consulta [Datos de tarjeta en las respuestas](#card-data-in-responses) más abajo). Las redirecciones **no** se siguen: un `3xx` del destino se te devuelve tal cual, para que tú decidas si seguirlo. El proxy agrega encabezados de diagnóstico:
+  <Step title="Lee la respuesta">
+    El código de estado y el cuerpo del destino se te devuelven sin cambios, salvo que cualquier número de tarjeta que el destino devuelva se redacta primero (consulta [Datos de tarjeta en las respuestas](#card-data-in-responses) más abajo). También se devuelven la mayoría de los encabezados del destino, pero no las cookies ni los encabezados de seguridad del navegador (consulta [Encabezados de respuesta](#response-headers) más abajo). Las redirecciones **no** se siguen: un `3xx` del destino se te devuelve tal cual, con su encabezado `Location`, para que tú decidas si seguirlo. El proxy agrega encabezados de diagnóstico:
 
     | Encabezado | Significado |
     |---|---|
@@ -124,6 +124,16 @@ Las solicitudes al proxy destokenizan en reversa los datos de tarjeta y solo deb
     | `yuno-proxy-destination-status` | El estado HTTP devuelto por el destino. **Presente solo cuando se llegó al destino**: si falta, la falla ocurrió dentro de Yuno. |
     | `yuno-proxy-replacements` | Cuántas expresiones se reemplazaron. `0` en una solicitud que esperabas que se tokenizara en reversa significa que tus expresiones no coincidieron. |
     | `yuno-proxy-response-redactions` | Cuántos números de tarjeta se redactaron de la respuesta del destino. Un valor distinto de cero significa que el destino devolvió datos de tarjeta. |
+
+    #### Encabezados de respuesta
+
+    | | Encabezados |
+    |---|---|
+    | **Se devuelven sin cambios** | `Content-Type`, `Location`, `Link`, `WWW-Authenticate` y los encabezados personalizados del destino |
+    | **No se retransmiten** | `Set-Cookie` / `Set-Cookie2`; encabezados de seguridad del navegador: `Content-Security-Policy` (y `-Report-Only`), `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`, `Access-Control-*`, `Cross-Origin-*`, `Permissions-Policy`, `Refresh`, `Clear-Site-Data`; encabezados de reporte como `Report-To` y `NEL`; `Alt-Svc`; `Server-Timing`; `Vary`; encabezados de caché (`Cache-Control`, `Expires`, `Pragma`, `Age`, `ETag`, `Last-Modified`) y cualquier encabezado `yuno-*` que envíe el destino |
+    | **Agregados por Yuno** | `Content-Security-Policy: default-src 'none'; sandbox`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Cache-Control: no-store` y `Pragma: no-cache` en cada respuesta de reenvío |
+
+    Si tu integración necesita una cookie del destino (por ejemplo, una cookie de sesión), ten en cuenta que no se devuelve a través del proxy.
   </Step>
 
   <Step title="Maneja los errores">
@@ -145,7 +155,7 @@ Las solicitudes al proxy destokenizan en reversa los datos de tarjeta y solo deb
     | `403` | `DESTINATION_NOT_ALLOWED` | El destino no es un nombre de host HTTPS público (se rechazan direcciones IP, puertos distintos de 443 y redes internas), o el host no está en tu [lista de destinos permitidos](/es/docs/security-and-compliance/pci-proxy/allowlist) |
     | `403` | `PRODUCT_NOT_ENABLED` | El PCI Proxy no está activado para tu organización. Esta restricción aplica solo en **producción**: contacta a tu Key Account Manager (KAM) para activarlo. El sandbox está abierto para pruebas |
     | `413` | `REQUEST_TOO_LARGE` | Cuerpo de la solicitud mayor a 1 MB |
-    | `429` | `TOO_MANY_REQUESTS` | Límite de solicitudes excedido |
+    | `429` | `TOO_MANY_REQUESTS` | Límite de tasa excedido |
     | `502` | `DESTINATION_UNREACHABLE` | No se pudo alcanzar el destino o este cerró la conexión |
     | `502` | `RESPONSE_BLOCKED` | La respuesta del destino contenía datos de tarjeta y Yuno está configurado a nivel de servicio para rechazar esas respuestas en lugar de redactarlas (la redacción es el comportamiento por defecto) |
     | `504` | `DESTINATION_TIMEOUT` | El destino no respondió dentro del tiempo de espera |
@@ -254,11 +264,17 @@ Envía el encabezado de autenticación que requiera tu destino: **no se limita a
 
 | Encabezado | ¿Se reenvía al destino? |
 |---|---|
-| `Authorization` (y cualquier otro encabezado del destino) | Sí, sin cambios |
+| `Authorization` (y cualquier otro encabezado del destino que no se indique más abajo) | Sí, sin cambios |
 | `Content-Type` | Sí |
 | `public-api-key`, `private-secret-key` | Eliminados por Yuno |
 | Cualquier encabezado `yuno-*` (p. ej. `yuno-proxy-destination-url`, `yuno-account-id`) | Eliminados por Yuno |
-| Encabezados internos de trazabilidad/infraestructura (`traceparent`, `x-datadog-*`, `x-envoy-*`, `x-forwarded-*`, …) | Eliminados por Yuno |
+| Encabezados internos de trazabilidad/infraestructura (`traceparent`, `tracestate`, `x-datadog-*`, `x-b3-*`, `X-Request-Id`, `X-Envoy-*`, `X-Forwarded-*`, `Forwarded`, `X-Real-IP`, `X-IP-Address`, …) | Eliminados por Yuno |
+| `X-Idempotency-Key` y cualquier encabezado `x-user-*` | Eliminados por Yuno |
+| `Accept-Encoding` | Eliminado por Yuno |
+| Encabezados internos de Yuno (`x-organization-code`, `x-account-code`, `X-Trace-Id`, `x-timer`, `x-origin-request`, los encabezados de mock de proveedor de Yuno, …) | Eliminados por Yuno |
+| Encabezados de salto a salto (`Connection`, `Keep-Alive`, `Upgrade`, `TE`, `Trailer`, `Proxy-Authorization`, `Proxy-Connection`) | Eliminados por Yuno |
+
+No dependas de enviar a tu destino ninguno de los nombres de encabezado eliminados: se descartan incluso cuando tu destino los espera. Los encabezados definidos por el proveedor, como `X-Provider-Api-Key`, no se ven afectados y pasan como cualquier otro encabezado del destino.
 
 **Nombres comunes de encabezados de autenticación por proveedor** (ejemplos: revisa siempre la documentación del destino):
 

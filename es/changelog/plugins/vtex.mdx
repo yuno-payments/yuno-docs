@@ -1,0 +1,1332 @@
+---
+title: "Changelog del plugin de VTEX"
+description: "Últimas actualizaciones e historial de versiones del plugin de Yuno para VTEX"
+---
+
+import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
+
+## v4.2.386
+*12 de noviembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Yuno cancela los pagos no completados que VTEX cancela**  
+  Cuando VTEX cancela un pago que el comprador nunca completó (por ejemplo, un pago NuPay que sigue esperando en la app del banco), ahora el conector le pide a Yuno que cancele el pago abierto antes de aprobar la cancelación, para que sea menos probable que se pague una vez que la orden ya no exista. La respuesta a VTEX no cambia: la cancelación se aprueba sin importar lo que responda Yuno.
+
+## v4.2.385
+*12 de noviembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Las órdenes ya no se cancelan mientras se reintenta un pago con tarjeta rechazado**  
+  Cuando un pago con tarjeta es rechazado pero Yuno sigue reintentando el cobro dentro del mismo pago (un reintento iniciado hace menos de 10 minutos que aún no tiene respuesta final), ahora el conector responde a VTEX que el pago está pendiente en lugar de denegado, rechaza las solicitudes de cancelación de VTEX por no ser cancelable y ya no cancela la orden desde el checkout de la Payment App. VTEX recibe la respuesta final cuando termina el reintento. Antes, una orden podía cancelarse segundos antes de que se aprobara el reintento, y el comprador quedaba con el cobro sin orden.
+
+## v4.2.384
+*11 de noviembre de 2026*
+
+**Reembolsos**
+
+- <ChangelogBadge type="fixed" /> **Los reembolsos fallidos ya no se informan como aprobados**  
+  Cuando Yuno responde un reembolso con `ERROR`, `REJECTED` o cualquier estado distinto de exitoso, pendiente o rechazado, ahora VTEX recibe una respuesta de reembolso manual (código `refund-manually`, que el protocolo de VTEX usa para notificar al comercio) en lugar de una aprobación. El estado y el código de Yuno aparecen al inicio del mensaje de la respuesta.
+
+## v4.2.374
+*26 de octubre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Artículos de la orden en pagos con billetera creados en la autorización**  
+  Los pagos con billetera creados cuando VTEX autoriza la orden, desde los botones de billetera exprés del checkout web y desde las apps de tienda, ahora envían a Yuno los artículos de la orden con sus marcas, envío, comisiones y canal de ventas, de modo que la canasta se muestra en el dashboard de Yuno y las reglas de enrutamiento y de fraude por SKU o marca evalúan estos pagos.  
+  *Migración:* No se requiere ninguna acción. La canasta se envía en los pagos con billetera creados después de la actualización; los pagos anteriores no la incluyen. Las condiciones de enrutamiento por SKU o marca comienzan a evaluar estos pagos con billetera, así que revisa cualquier ruta de este tipo que no deba aplicarse a ellos.
+
+## v4.2.373
+*22 de octubre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Ventana de pago por método de pago**  
+  Las tiendas pueden definir cuánto tiempo espera VTEX un pago pendiente antes de cancelar la orden, para cada método de pago o para todas las marcas de tarjeta a la vez, con el nuevo campo opcional Delay To Cancel de la afiliación de Yuno, por ejemplo para dar más tiempo a una revisión antifraude o para liberar antes el stock de un pago con billetera abandonado. PIX y Boleto Bancário siguen la expiración del código QR y la fecha de vencimiento, las tarjetas y los métodos renderizados por Yuno nunca esperan menos de una hora, un valor para tarjetas también limita cuánto puede tardar una revisión antifraude, y sin el campo cada método mantiene su ventana actual.  
+  *Migración:* El campo Delay To Cancel es opcional: las tiendas que lo dejan vacío conservan las ventanas de pago que tienen hoy. Un valor definido en la afiliación de Yuno se aplica a las siguientes autorizaciones. Pix y Boleto Bancário nunca se ven afectados por el campo.
+
+## v4.2.372
+*21 de octubre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Pagos rápidos con Mercado Pago**  
+  Ahora las tiendas pueden enrutar el método "Pagos rápidos con Mercado Pago" a su afiliación de Yuno en las condiciones de pago de VTEX. El comprador paga con las tarjetas y el saldo de cuenta que ya tiene guardados en su cuenta de Mercado Pago, en una pantalla de Mercado Pago renderizada por el Yuno SDK. El checkout con redirección (Legacy) aún no lo admite.  
+  *Migración:* Fast Payments existe desde la línea 1.11 del Yuno Web SDK. No habilites el método en las condiciones de pago de VTEX hasta que la Payment App de tu tienda cargue un Web SDK de la línea 1.11 o posterior: con un SDK anterior, el comprador no puede completar el pago.
+
+- <ChangelogBadge type="changed" /> **Etiqueta de cuotas sin interés**  
+  Los planes de cuotas de billeteras con interés cero ahora muestran "sem juros" / "sin interés" / "interest-free" en el selector y en el panel de detalle, se traduce la fila de intereses y las tasas usan el separador decimal de la configuración regional del comprador.
+
+- <ChangelogBadge type="changed" /> **Ventana de pago de una hora para billeteras y métodos dentro de la sesión**  
+  Apple Pay, Google Pay, Samsung Pay, Click to Pay y los demás métodos renderizados por Yuno, PicPay, Mercado Pago Checkout Pro, Nubank y Pagaleve ahora le indican a VTEX que espere una hora el pago y lo verifique cada hora, en lugar de unas 24 horas o ningún plazo. Una orden abandonada se cancela y su stock se libera dentro de la hora, y VTEX ya no verifica el pago mientras el comprador aún lo está completando.
+
+- <ChangelogBadge type="changed" /> **Ventana de pago de una hora para Pix, PicPay, Mercado Pago Checkout Pro y Nubank en el checkout con redirección**  
+  Las tiendas con checkout con redirección (Legacy) ahora tienen una ventana de una hora para los enlaces de pago de Pix, PicPay, Mercado Pago Checkout Pro y Nubank, en lugar de ningún plazo (Pix, PicPay, Mercado Pago Checkout Pro), que VTEX trataba como un ciclo de reintentos de unas 72 horas antes de cancelar una orden sin pagar, o 24 horas (Nubank).
+
+- <ChangelogBadge type="changed" /> **Los pagos pendientes tienen una ventana explícita**  
+  Cuando un pago creado por el conector sigue pendiente en la primera respuesta a VTEX, por ejemplo durante un desafío de tarjeta o una revisión antifraude, ahora VTEX espera una ventana explícita en lugar de recurrir a su ciclo de reintentos: tres días para una tarjeta en revisión y la ventana propia del método de pago para todo lo demás.
+
+## v4.2.370
+*16 de octubre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Tarjetas Discover, JCB y Aura**  
+  Ahora las tiendas pueden enrutar las tarjetas de crédito Discover, JCB y Aura a su afiliación de Yuno en las condiciones de pago de VTEX, y Yuno procesa estas tarjetas igual que las demás marcas de tarjetas de crédito.
+
+- <ChangelogBadge type="fixed" /> **Las órdenes con dos tarjetas asocian cada tarjeta con su propio pago**  
+  En las órdenes pagadas con dos tarjetas, ahora cada tarjeta que ingresa el comprador se guarda en la sesión de checkout del pago que VTEX está autorizando, sin importar en qué orden envíe VTEX las dos autorizaciones, de modo que cada tarjeta se cobra por su propio monto.
+
+## v4.2.353
+*1 de septiembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Los pagos exprés con Samsung Pay nunca llegaban a la autorización**  
+  Los pagos con Samsung Pay iniciados desde los botones del checkout exprés se rechazaban antes de que se generara la orden de la tienda: el comprador autorizaba el pago en la hoja de Samsung Pay, pero nunca se creaba una orden. Ahora Samsung Pay se completa mediante el mismo flujo que Apple Pay, Google Pay y Click to Pay, y el conector acepta las distintas grafías que VTEX usa para registrar el método de pago.
+
+- <ChangelogBadge type="fixed" /> **Los pagos con billetera digital podían fallar para compradores invitados por datos de comprador enmascarados**  
+  Para los compradores que no habían iniciado sesión, VTEX enmascara los datos del perfil en el navegador, y los pagos con billetera (Apple Pay, Google Pay, Samsung Pay, Click to Pay) podían enviarse a Yuno con un número de documento enmascarado y ser rechazados. Ahora el conector construye el pagador a partir de la información de comprador sin enmascarar de la orden, de modo que los pagos con billetera de invitados se procesan con la identidad correcta.
+
+- <ChangelogBadge type="fixed" /> **Los pagos podían rechazarse cuando la política comercial no tenía nombre**  
+  Cuando la política comercial de VTEX asociada con una orden no tenía un nombre configurado, Yuno podía rechazar el pago. Ahora las órdenes de políticas comerciales sin nombre se procesan con normalidad.
+
+## v4.2.350
+*26 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Identidad del comprador corporativo en compras de empresas brasileñas**  
+  Nuevo ajuste de afiliación "Use Corporate Buyer Data" (valor predeterminado: No). Cuando está habilitado y el comprador paga como empresa en Brasil, las tarjetas, boleto, PIX y los demás métodos de checkout se emiten a nombre de la empresa y con el CNPJ que envía VTEX, en lugar del nombre personal y el CPF del comprador, como exige la normativa brasileña para las compras corporativas. Habilítalo en la afiliación y no se necesita ningún cambio en la tienda. Las billeteras digitales cuyo pago se crea antes de generar la orden (Apple Pay, Google Pay, Click to Pay mediante preflight) conservan la identidad recopilada por la tienda.  
+  *Migración:* En VTEX Admin ve a Payments > Settings > Affiliations, abre la afiliación de Yuno, configura "Use Corporate Buyer Data" en Yes y guarda. El campo solo aparece cuando la tienda está en la versión 4.2.350 o posterior.
+
+## v4.2.349
+*26 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Identidad del vendedor y afiliado del marketplace en los metadatos del pago**  
+  Ahora cada pago incluye el ID de vendedor de VTEX (`seller_id`) y, en las tiendas que venden a través de un marketplace de VTEX en modo afiliado, el código de afiliado (`affiliate_id`), de modo que las transacciones puedan atribuirse al vendedor correcto en los reportes y las reglas de enrutamiento de Yuno. Las tiendas que no venden a través de un marketplace informan `NA` como código de afiliado y no cambia nada más.
+
+## v4.2.348
+*25 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Network tokens en tarjetas con 3DS y retenidas por antifraude**  
+  Las tarjetas cuya primera compra se aprobó solo después de un desafío 3DS o una revisión antifraude nunca se registraban para reutilizar network tokens, por lo que todas las compras posteriores con la misma tarjeta seguían procesándose con los datos de la tarjeta sin protección. Ahora el conector registra la tarjeta en el reintento de autorización que confirma la aprobación.
+
+## v4.2.347
+*24 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="changed" /> **Los cargos adicionales en órdenes modificadas requieren el campo Vault Card for Order Modification**  
+  Cuando Enable Network Tokens está activado, se almacena cada tarjeta, por lo que una orden cuyo total aumentaba podía recibir un cargo adicional aunque Vault Card for Order Modification estuviera en No. Ahora ese campo es el único interruptor para los cargos adicionales: con el campo desactivado, un aumento del total de la orden se rechaza en lugar de cobrarse, y habilitar Network Tokens ya no implica el consentimiento para cobrar más a los clientes.
+
+## v4.2.346
+*21 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Se aprueban las cancelaciones de un pago con tarjeta que nunca se completó**  
+  Cuando una orden pagada con dos tarjetas se cancela porque una tarjeta es rechazada, el pago de la otra tarjeta puede tener una sesión de checkout abierta pero ningún pago detrás. El conector respondía la cancelación de VTEX de ese pago con un error de "payment not found", por lo que, tras tres intentos, VTEX enviaba un correo a la tienda pidiendo la cancelación manual de un pago que nunca cobró nada. Ahora el conector reconoce este caso y confirma la cancelación, como ya hacía con los pagos que nunca llegaron a Yuno.
+
+## v4.2.345
+*20 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Compatibilidad con network tokens en pagos con tarjeta**  
+  Un nuevo ajuste "Enable Network Tokens" en la afiliación permite que el conector almacene de forma segura cada tarjeta en su primera compra y la reconozca en compras posteriores del mismo cliente, para que Yuno pueda procesar las compras recurrentes con un network token en lugar del número de tarjeta. Los network tokens mejoran de forma significativa las tasas de aprobación para compradores recurrentes. La función cubre todos los pagos con tarjeta, incluidos los de defensa contra fraude, las órdenes divididas de varios vendedores y las configuraciones en las que el pago se completa desde una cuenta de VTEX distinta de la que autorizó. Si la referencia almacenada no está disponible por cualquier motivo, el pago continúa exactamente como hoy, por lo que el checkout nunca se ve afectado. Las tiendas que mantienen el ajuste predeterminado no se ven afectadas.  
+  *Migración:* Para habilitarlo, abre la afiliación de Yuno en el admin de VTEX y configura "Enable Network Tokens" y "Create Customer" en Yes; luego confirma con Yuno que los network tokens estén habilitados en las rutas que usa la tienda. En configuraciones de franquicia o de varias tiendas, aplica los ajustes en la afiliación de cada tienda. No se requieren cambios en la tienda.
+
+## v4.2.344
+*19 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Cantidad de cuotas informada correctamente en pagos con billetera digital**  
+  Los pagos con Apple Pay y Google Pay creados mediante el flujo de sesión precreada informaban una sola cuota en los metadatos informativos del pago, incluso cuando el comprador seleccionaba más. El monto realmente cobrado y las cuotas enviadas al proveedor de pagos siempre fueron correctos; ahora el valor informado coincide con ellos, de modo que los dashboards y la conciliación ya no muestran una cantidad engañosa.
+
+## v4.2.343
+*12 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Compatibilidad con tiendas en el checkout Legacy de VTEX**  
+  Las tiendas que aún usan el checkout Legacy de VTEX, donde no se puede mostrar el formulario de pago incrustado, ahora pueden procesar pagos a través de Yuno. Un nuevo ajuste "Payment Mode" en la afiliación cambia esas tiendas a un flujo de redirección en el que el comprador completa el pago en una página de checkout alojada por Yuno y luego regresa a la tienda. Las tarjetas, Pix, boleto, billeteras digitales y los métodos alternativos ya compatibles funcionan a través de él, y el estado de la orden, la liquidación, la cancelación y los reembolsos se comportan exactamente como hoy. Las tiendas que mantienen el ajuste predeterminado no se ven afectadas.
+
+## v4.2.339
+*6 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Las órdenes pagadas con dos tarjetas se identifican en Yuno**  
+  Los pagos de una orden que el comprador dividió entre dos tarjetas ahora incluyen un indicador `two_card_payment`, para que las reglas de enrutamiento y los reportes puedan tratarlos de forma distinta a un pago que cubre todo el carrito por sí solo. Las dos tarjetas de la orden se marcan, y todos los demás pagos informan `false`.
+
+- <ChangelogBadge type="fixed" /> **Adquirente informado en pagos rechazados y pendientes**  
+  Ahora el adquirente que procesó un pago se devuelve también en las autorizaciones rechazadas y pendientes, no solo en las aprobadas. Los comercios pueden ver qué adquirente gestionó un rechazo directamente en los datos de pago de la orden, de modo que los rechazos puedan conciliarse y diagnosticarse sin abrir una solicitud de soporte. Los pagos que nunca llegaron a un adquirente mantienen el campo vacío, como antes.
+
+## v4.2.338
+*6 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Cuotas de Apple Pay resueltas por el conector**  
+  Un nuevo endpoint obtiene las opciones de cuotas que aplican a una sesión de checkout, con la elegibilidad y los montos por cuota calculados por Yuno. Cada opción se devuelve con textos localizados listos para mostrar (inglés, español y portugués), incluidos los montos formateados y cualquier detalle de costo financiero, de modo que las tiendas los muestran sin formato adicional. Si la consulta falla por cualquier motivo, la respuesta es una lista vacía para que el pago siempre continúe, como máximo sin opciones de cuotas.
+
+## v4.2.337
+*5 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Cancelación automática de órdenes sin pagar**  
+  Cuando se cancela una orden porque el comprador nunca completó el pago, la cancelación ahora se confirma en lugar de informarse como fallida. Los comercios ya no reciben solicitudes para cancelar o reembolsar pagos que nunca cobraron nada, y las órdenes se cierran solas. Las cancelaciones de pagos que sí retienen fondos no cambian, y si no se puede anular o reembolsar un pago, se sigue informando para poder gestionarlo manualmente.
+
+## v4.2.336
+*4 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Órdenes divididas cobradas en un solo pago**  
+  Cuando un carrito se divide entre vendedores o grupos de entrega pero el pago se autoriza una sola vez por el monto total, la orden ahora se procesa por el flujo de pago estándar. Los pagos con billeteras digitales como Apple Pay preparados en el checkout se completan, en lugar de solicitarse de nuevo y quedar sin pagar hasta que la orden vence. Las órdenes divididas cuyas subórdenes se autorizan por separado siguen funcionando exactamente igual que antes.
+
+## v4.2.335
+*29 de julio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Compatibilidad con Samsung Pay**  
+  Los compradores ahora pueden pagar con Samsung Pay en el checkout, junto con las billeteras digitales existentes. El conector enruta las autorizaciones de Samsung Pay al flujo de billetera para que la app de pago muestre el botón de Samsung Pay y complete el pago a través de Yuno.
+
+## v4.2.333
+*27 de julio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Sitio web del vendedor por tienda en los metadatos del pago**  
+  Los pagos ahora informan la tienda de la que realmente proviene la orden, en lugar del host predeterminado de la tienda, lo que mejora los reportes y la conciliación de los comercios que operan varias tiendas en una misma cuenta. Una nueva opción de afiliación, "Sales Channel Domains", permite asignar opcionalmente a cada canal de ventas su dominio público (por ejemplo `2:b2b.example.com;18:members.example.com`). Los canales sin asignar usan el host de la tienda de la orden, y las tiendas sin esta opción siguen funcionando sin cambios de configuración.
+
+- <ChangelogBadge type="added" /> **Secuencia de orden de VTEX como referencia de transacción del procesador**  
+  Una nueva opción de afiliación, Send Order Sequence as Merchant Reference, hace que los pagos lleven la secuencia de la orden de VTEX como referencia del comercio, de modo que los proveedores de pago configurados con una identificación de transacción personalizada (como Mercado Pago) reciban la secuencia como la referencia externa que se muestra en su panel, igual que el comportamiento previo a la migración de VTEX. La opción viene desactivada por defecto. Cuando está desactivada o la secuencia no está disponible, la referencia vuelve al VTEX Order ID, y las conexiones sin la opción de identificación personalizada no se ven afectadas.
+
+## v4.2.331
+*22 de julio de 2026*
+
+**Modificaciones de órdenes**
+
+- <ChangelogBadge type="added" /> **Cobros adicionales para órdenes modificadas**  
+  Cuando el total de una orden aumenta después del checkout (modificaciones de órdenes de VTEX, como artículos vendidos por peso), el conector ahora cobra la diferencia automáticamente con la tarjeta guardada en la orden original, sin que el comprador esté presente y sin código de seguridad. Actívalo por afiliación con la nueva opción "Vault Card for Order Modification" (requiere que "Create Customer" también esté activada). Las órdenes y afiliaciones sin ella no se ven afectadas.
+
+## v4.2.324
+*14 de julio de 2026*
+
+**Suscripciones**
+
+- <ChangelogBadge type="fixed" /> **Los cobros recurrentes de suscripción ahora están vinculados a la autorización original**  
+  El conector almacena de forma segura una referencia de la tarjeta después del primer cobro exitoso de la suscripción y la reutiliza en cada cobro recurrente, de modo que el network transaction id de la autorización original llega al emisor y los cobros iniciados por el comercio se aprueban con una tasa significativamente mayor.
+
+## v4.2.323
+*14 de julio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Las tarjetas de suscripción ahora se guardan para cobros recurrentes**  
+  En el primer cobro de una orden de suscripción de VTEX, el conector ahora solicita el almacenamiento seguro de la tarjeta cuando el pago es exitoso, para que los cobros recurrentes posteriores puedan reutilizar la tarjeta almacenada en lugar de fallar por no tener un método de pago guardado.
+
+## v4.2.307
+*11 de junio de 2026*
+
+- <ChangelogBadge type="added" /> **Compatibilidad con órdenes de suscripción (recurrentes) de VTEX**  
+  Agrega compatibilidad con órdenes creadas con suscripciones de VTEX. El primer cobro conserva el código de seguridad como hasta ahora, mientras que los cobros recurrentes posteriores se autorizan sin código de seguridad y se marcan ante el gateway como transacciones con credenciales almacenadas, de modo que las renovaciones automáticas ya no fallan. El checkout regular no cambia.
+
+## v4.2.304
+*28 de mayo de 2026*
+
+**Configuración**
+
+- <ChangelogBadge type="added" /> **Proveedor antifraude CIELO_CYBERSOURCE_FRAUD para órdenes divididas**  
+  Agrega CIELO_CYBERSOURCE_FRAUD como valor aceptado en la opción Antifraud Providers for Split Orders, junto con RISKIFIED, CYBERSOURCE y SIGNIFYD.
+
+## v4.2.302
+*26 de mayo de 2026*
+
+- <ChangelogBadge type="added" /> **Compatibilidad de pago con órdenes divididas**  
+  Agrega compatibilidad de pago con órdenes de VTEX que se dividen en varias subórdenes (carritos que combinan productos de distintos vendedores o franquicias). Ahora cada suborden se liquida en el gateway con una sesión antifraude compartida, en lugar de pagarse solo la primera.
+
+**Configuración**
+
+- <ChangelogBadge type="added" /> **Opción de proveedores antifraude para órdenes divididas**  
+  Agrega un campo de configuración para que los comercios elijan qué proveedores antifraude (RISKIFIED, CYBERSOURCE, SIGNIFYD) reciben la sesión compartida. Si se deja vacío, usa por defecto RISKIFIED + CYBERSOURCE.
+
+## v4.2.301
+*20 de mayo de 2026*
+
+**Observabilidad**
+
+- <ChangelogBadge type="changed" /> **Menos ruido en el monitoreo de errores por resultados esperados**  
+  Los resultados esperados (rechazos de cancelación, reintentos de callback) ahora se registran en nivel debug en lugar de como errores. Es un cambio interno de observabilidad, sin impacto en los flujos de cara al comercio.
+
+## v4.2.300
+*13 de mayo de 2026*
+
+**Rendimiento y latencia**
+
+- <ChangelogBadge type="added" /> **Optimización de la ruta crítica de autorización**  
+  Reduce la latencia de autorización al paralelizar llamadas que antes eran secuenciales, unificar solicitudes duplicadas en curso y ajustar el flujo de datos en torno al preflight, la persistencia y las llamadas a la API de Yuno. El comportamiento funcional se conserva de punta a punta.
+
+## v4.2.299
+*11 de mayo de 2026*
+
+**Apple Pay**
+
+- <ChangelogBadge type="added" /> **Endpoint del plan de cuotas**  
+  Expone un nuevo endpoint que devuelve el plan de cuotas configurado para una afiliación, usado por Apple Pay y Google Pay para mostrar las opciones de cuotas correctas en el checkout.
+
+## v4.2.298
+*27 de abril de 2026*
+
+**Configuración**
+
+- <ChangelogBadge type="added" /> **Elegir el ID de transacción de Yuno o del proveedor**  
+  Agrega la opción Transaction Identification From para que los comercios elijan si se devuelve a VTEX el TID de Yuno (por defecto) o el TID del proveedor subyacente.
+
+## v4.2.297
+*15 de abril de 2026*
+
+**Configuración**
+
+- <ChangelogBadge type="added" /> **Campo personalizado Transaction Identification From**  
+  Agrega la opción Transaction Identification From en el VTEX Admin para que los comercios elijan entre el TID de Yuno y el TID del proveedor subyacente como referencia de la transacción.
+
+## v4.2.296
+*14 de abril de 2026*
+
+**Configuración**
+
+- <ChangelogBadge type="added" /> **Se vuelve a agregar el campo Payment Mode a la configuración**  
+  Restaura la configuración Payment Mode con las mismas dos opciones de antes: Payment App (por defecto) y Redirect (heredado).
+
+## v4.2.295
+*12 de abril de 2026*
+
+**Configuración**
+
+- <ChangelogBadge type="fixed" /> **Se elimina la opción Payment Mode (restaurada después)**  
+  Elimina temporalmente el campo de configuración Payment Mode. La opción se restaura en la versión siguiente.
+
+## v4.2.294
+*10 de abril de 2026*
+
+**Configuración**
+
+- <ChangelogBadge type="added" /> **Opción Payment Mode para la redirección heredada**  
+  Agrega una configuración Payment Mode para que los comercios elijan entre el flujo predeterminado de Payment App y el flujo de redirección heredado.
+
+## v4.2.293
+*10 de abril de 2026*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza diff y cookie para corregir CVE-2026-24001 y CVE-2024-47764**  
+  Corrige dos vulnerabilidades de terceros reportadas: una denegación de servicio en la biblioteca diff y una inyección de atributos en cookie.
+
+## v4.2.292
+*6 de abril de 2026*
+
+- <ChangelogBadge type="fixed" /> **Reconoce los errores transitorios de VTEX IO**  
+  Trata los errores transitorios de infraestructura más comunes (tiempos de espera, conexiones interrumpidas, conexiones rechazadas) como recuperables, de modo que la autorización queda pendiente en lugar de fallar de inmediato.
+
+## v4.2.290
+*31 de marzo de 2026*
+
+**Apple Pay**
+
+- <ChangelogBadge type="added" /> **Preflight de pagos para Apple Pay y Google Pay**  
+  Agrega sesiones de checkout creadas previamente para Apple Pay y Google Pay, de modo que la hoja de la billetera pueda abrirse de inmediato cuando el comprador hace clic en pagar.
+
+## v4.2.288
+*26 de marzo de 2026*
+
+**Multicuenta**
+
+- <ChangelogBadge type="fixed" /> **Enruta los pagos de subcuentas de franquicia a la cuenta correcta**  
+  En las subcuentas de franquicia, el conector ahora enruta el pago con el identificador de comercio de la orden en lugar del hostname de la cuenta principal, de modo que los pagos llegan a la subcuenta correcta.
+
+## v4.2.287
+*18 de marzo de 2026*
+
+**Confiabilidad**
+
+- <ChangelogBadge type="added" /> **Endpoint de reintento de validación de pago**  
+  Agrega un endpoint que resuelve las órdenes "fantasma" reintentando la validación del pago, y restaura el comportamiento simple de callback de tipo fire-and-forget.
+
+## v4.2.286
+*17 de marzo de 2026*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Corrige la vulnerabilidad de qs (CVE-2026-2391)**  
+  Corrige una vulnerabilidad reportada en la dependencia qs para el análisis de query strings.
+
+## v4.2.285
+*12 de marzo de 2026*
+
+- <ChangelogBadge type="added" /> **Acción de botón externo para Yuno SDK v1.5**  
+  Agrega una opción de acción de botón externo orientada a Yuno SDK v1.5, usada en métodos de pago que muestran su propia interfaz fuera del SDK.
+
+## v4.2.284
+*10 de marzo de 2026*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Fija las versiones de minimatch y koa**  
+  Fija minimatch y koa en versiones corregidas para cerrar vulnerabilidades reportadas de expresiones regulares y manejo de solicitudes.
+
+## v4.2.283
+*4 de marzo de 2026*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Fija qs en 6.14.2**  
+  Fija qs en la versión corregida tanto en la raíz como en los workspaces de node para cerrar una vulnerabilidad reportada.
+
+## v4.2.282
+*27 de febrero de 2026*
+
+**Cliente y dirección**
+
+- <ChangelogBadge type="fixed" /> **Ciudad del pagador en Chile**  
+  Lee la ciudad del campo de barrio en las órdenes de Chile, donde VTEX la completa, de modo que los pagos ya no se rechazan por falta de datos de la ciudad.
+
+## v4.2.281
+*25 de febrero de 2026*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza dependencias vulnerables**  
+  Actualización masiva que corrige varias vulnerabilidades reportadas en dependencias de terceros.
+
+**Pagaleve**
+
+- <ChangelogBadge type="fixed" /> **Encabezados de metadatos OTT y opción para el botón de cierre de Pagaleve**  
+  Envía encabezados de metadatos OTT al secure-proxy y agrega una opción para que el checkout de Pagaleve Transparente oculte el botón de cierre de VTEX.
+
+## v4.2.280
+*23 de febrero de 2026*
+
+**Configuración**
+
+- <ChangelogBadge type="added" /> **Opción de URL de la página de orden realizada**  
+  Agrega una opción de configuración para la URL de la página de orden realizada de VTEX y la reenvía por el flujo de autorización pendiente.
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Corrige la vulnerabilidad de js-yaml**  
+  Fuerza js-yaml a una versión corregida para cerrar CVE-2024-4068.
+
+## v4.2.277
+*14 de enero de 2026*
+
+**Rendimiento y latencia**
+
+- <ChangelogBadge type="added" /> **Caché por cliente para las APIs de VTEX**  
+  Agrega cachés en memoria en los clientes de VTEX (Account, Affiliations, Catalog, Master Data) para reducir llamadas redundantes a la API y la latencia del checkout.
+
+## v4.2.273
+*7 de enero de 2026*
+
+**Identificaciones fiscales**
+
+- <ChangelogBadge type="fixed" /> **Asignación de identificación fiscal por comercio**  
+  Agrega una asignación de identificación fiscal (CNPJ) según el comercio, de modo que cada pago se etiqueta con el ID correcto y los metadatos del comercio para la conciliación posterior.
+
+## v4.2.272
+*6 de enero de 2026*
+
+**Identificaciones fiscales**
+
+- <ChangelogBadge type="added" /> **Agrega un CNPJ predeterminado para pruebas**  
+  Proporciona una identificación fiscal de comercio (CNPJ) predeterminada cuando la afiliación configurada no tiene una, de modo que los flujos de prueba puedan ejecutarse sin configuración manual.
+
+## v4.2.271
+*5 de enero de 2026*
+
+**Pagaleve**
+
+- <ChangelogBadge type="added" /> **Actualiza la etiqueta de integración de Pagaleve parcelado**  
+  Actualiza la etiqueta de configuración de Pix en cuotas de Pagaleve para que el conector apunte a la integración más reciente del proveedor.
+
+## v4.2.267
+*24 de diciembre de 2025*
+
+**Metadatos del pago**
+
+- <ChangelogBadge type="added" /> **Asigna campos de VTEX a los metadatos MDD de Cybersource**  
+  Asigna campos adicionales de la orden de VTEX a los metadatos de Yuno para que las reglas MDD (Merchant Defined Data) de Cybersource puedan usarlos en la verificación de fraude.
+
+## v4.2.266
+*24 de diciembre de 2025*
+
+**Pagaleve**
+
+- <ChangelogBadge type="added" /> **Pagaleve Transparente para Pix parcelado**  
+  Agrega Pagaleve Transparente como método compatible tanto para los flujos de Pix como de Pix en cuotas.
+
+## v4.2.264
+*24 de diciembre de 2025*
+
+**Click to Pay**
+
+- <ChangelogBadge type="added" /> **Oculta las cuotas para Click to Pay**  
+  Oculta la opción de cuotas cuando el comprador paga con Click to Pay, donde las redes de origen no admiten cuotas.
+
+## v4.2.263
+*15 de diciembre de 2025*
+
+**Flujo de cancelación**
+
+- <ChangelogBadge type="fixed" /> **Valida las transacciones antes de cancelar**  
+  Valida que las transacciones de VTEX existan en la orden antes de iniciar el flujo de cancelación, lo que evita fallas espurias.
+
+## v4.2.262
+*12 de diciembre de 2025*
+
+**PicPay**
+
+- <ChangelogBadge type="fixed" /> **Restaura la compatibilidad con PicPay**  
+  Restaura PicPay como método de pago compatible después de que se eliminó sin querer.
+
+## v4.2.260
+*11 de diciembre de 2025*
+
+- <ChangelogBadge type="added" /> **Manejo de órdenes agrupadas**  
+  Trata los grupos de órdenes de VTEX como un solo pago, lo que evita artefactos de pago parcial cuando se realizan varias órdenes juntas.
+
+**Apple Pay**
+
+- <ChangelogBadge type="added" /> **Planes de cuotas de Apple Pay**  
+  Agrega compatibilidad con planes de cuotas para Apple Pay, de modo que las opciones de cuotas configuradas por el comercio aparezcan en la hoja de Apple Pay.
+
+## v4.2.258
+*9 de diciembre de 2025*
+
+**Mercado Pago**
+
+- <ChangelogBadge type="added" /> **Agrega Mercado Pago Checkout Pro**  
+  Agrega Mercado Pago Checkout Pro como método de pago de tipo redirección. Los flujos de redirección existentes de Monnet y PicPay se unifican en el mismo flujo compartido y reenvían metadatos de pago adicionales, incluido el dominio del comercio.
+
+## v4.2.252
+*27 de noviembre de 2025*
+
+**Card Payments**
+
+- <ChangelogBadge type="added" /> **Respaldo en modo defensa para pagos con tarjeta demorados**  
+  Recurre al procesamiento directo de la tarjeta (modo defensa) cuando el flujo estándar se demora por la verificación de fraude, y completa el pago sin perder la orden.
+
+## v4.2.251
+*20 de noviembre de 2025*
+
+**Mercado Pago**
+
+- <ChangelogBadge type="added" /> **Mercado Pago Checkout Pro**  
+  Agrega Mercado Pago Checkout Pro como método de pago compatible de tipo redirección.
+
+## v4.2.250
+*19 de noviembre de 2025*
+
+**Card Payments**
+
+- <ChangelogBadge type="fixed" /> **Muestra la página de estado cuando hay una Gift Card**  
+  Muestra la página de estado estándar cuando la orden incluye un pago con tarjeta de regalo, lo que evita que el conector corte el flujo.
+
+## v4.2.248
+*12 de noviembre de 2025*
+
+**Configuración**
+
+- <ChangelogBadge type="added" /> **Opción para crear cliente**  
+  Agrega una opción opcional Create Customer para que el conector registre al comprador en el registro de clientes de Yuno antes del primer pago.
+
+## v4.2.247
+*11 de noviembre de 2025*
+
+**Fulfillment**
+
+- <ChangelogBadge type="fixed" /> **Verifica tracking_id y tracking_url en los eventos de fulfillment**  
+  Valida tracking_id y tracking_url antes de reenviar a Yuno los eventos de fulfillment del transportista, de modo que las actualizaciones con valores faltantes se omiten sin errores.
+
+## v4.2.244
+*31 de octubre de 2025*
+
+**Pix**
+
+- <ChangelogBadge type="added" /> **NSU en las respuestas de Pix**  
+  Incluye el identificador de transacción NSU en la respuesta de Pix para poder conciliarlo con el banco.
+
+## v4.2.242
+*22 de octubre de 2025*
+
+- <ChangelogBadge type="added" /> **Omite la llamada redundante de estado del pago**  
+  Omite la consulta del estado del pago cuando el estado local ya es PENDING, lo que reduce viajes redundantes al gateway.
+
+**Card Payments**
+
+- <ChangelogBadge type="added" /> **Consulta de IIN de la tarjeta y detección dinámica del tipo de tarjeta**  
+  Consulta el BIN (IIN) de la tarjeta en el checkout para que el conector detecte dinámicamente la marca y si es de crédito o débito, en lugar de depender de una configuración estática.
+
+- <ChangelogBadge type="added" /> **Configuración de Soft Descriptor**  
+  Agrega un campo de configuración Soft Descriptor para que los comercios controlen el texto que aparece en el estado de cuenta de la tarjeta del cliente.
+
+## v4.2.241
+*24 de septiembre de 2025*
+
+**Metadatos del pago**
+
+- <ChangelogBadge type="added" /> **Envía la referencia del pago en los metadatos**  
+  Envía la referencia de pago del comercio junto con los metadatos del pago para poder usarla en la conciliación posterior.
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Corrige la dependencia brace-expansion**  
+  Actualiza la dependencia brace-expansion a una versión corregida para cerrar una vulnerabilidad reportada.
+
+- <ChangelogBadge type="security" /> **Fija brace-expansion en todas las rutas transitivas**  
+  Fija brace-expansion en todas las rutas transitivas para que solo se resuelva la versión corregida.
+
+## v4.2.240
+*4 de septiembre de 2025*
+
+- <ChangelogBadge type="added" /> **Actualiza la dependencia koa**  
+  Actualiza el framework de servidor Koa a una línea de versiones más reciente.
+
+- <ChangelogBadge type="changed" /> **Revierte la actualización de Koa**  
+  Revierte la actualización del framework Koa publicada en la versión anterior mientras se resuelven problemas de compatibilidad.
+
+## v4.2.238
+*31 de julio de 2025*
+
+- <ChangelogBadge type="added" /> **Consulta de hostname sin bloqueo**  
+  Elimina la E/S bloqueante de la consulta de hostname del conector para que una respuesta lenta de DNS no detenga la solicitud.
+
+**Webhooks**
+
+- <ChangelogBadge type="fixed" /> **Compatibilidad con webhook v2**  
+  Agrega compatibilidad con webhook v2.
+
+## v4.2.235
+*7 de julio de 2025*
+
+**PSE**
+
+- <ChangelogBadge type="added" /> **PSE para Colombia**  
+  Agrega PSE (Pagos Seguros en Línea) como método de pago compatible para comercios de Colombia, mediante el flujo de redirección bancaria.
+
+## v4.2.234
+*7 de julio de 2025*
+
+**PCI y Secure Proxy**
+
+- <ChangelogBadge type="fixed" /> **Encabezado de autorización del proxy en las llamadas PCI**  
+  Agrega el encabezado Proxy-Authorization en las llamadas salientes que pasan por el proxy de VTEX IO, lo que corrige las respuestas 407 en solicitudes tokenizadas.
+
+## v4.2.231
+*27 de junio de 2025*
+
+- <ChangelogBadge type="fixed" /> **Reenvía los encabezados de proxy y protocolo**  
+  Reenvía los encabezados originales de la solicitud de VTEX (X-Forwarded-Proto y Port) para que los servicios posteriores vean correctamente el protocolo del comercio.
+
+## v4.2.230
+*18 de junio de 2025*
+
+- <ChangelogBadge type="added" /> **Identificador de plataforma en mayúsculas**  
+  Normaliza a mayúsculas el identificador de plataforma enviado a Yuno, para alinearlo con el valor de enum que espera el gateway.
+
+## v4.2.229
+*11 de junio de 2025*
+
+**Confiabilidad**
+
+- <ChangelogBadge type="fixed" /> **Tiempo de espera de solicitudes de Axios**  
+  Agrega un tiempo de espera explícito al cliente HTTP Axios para que las conexiones colgadas fallen rápido en lugar de detener el pago.
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Corrige la vulnerabilidad de tar-fs**  
+  Actualiza la dependencia tar-fs a una versión corregida para cerrar un aviso de seguridad reportado.
+
+## v4.2.227
+*14 de mayo de 2025*
+
+- <ChangelogBadge type="fixed" /> **Actualiza dependencias**  
+  Actualiza varias dependencias de terceros a sus últimas versiones corregidas, incluido el framework de servidor Koa.
+
+## v4.2.226
+*13 de mayo de 2025*
+
+**Captura**
+
+- <ChangelogBadge type="fixed" /> **Usa el monto proporcionado por VTEX en la captura**  
+  Captura el monto exacto que VTEX envía con la solicitud de captura, en lugar de recalcularlo a partir del total de la orden original. Esto evita discrepancias en la captura cuando el total de la orden cambió (reembolsos parciales, tarjetas de regalo, divisiones de marketplace).
+
+## v4.2.225
+*7 de mayo de 2025*
+
+**Confiabilidad**
+
+- <ChangelogBadge type="fixed" /> **Registra el agotamiento del límite de reintentos**  
+  Agrega una entrada de registro clara cuando el conector agota el límite de reintentos de una solicitud saliente, lo que facilita el diagnóstico de guardia.
+
+## v4.2.223
+*30 de abril de 2025*
+
+**Fulfillment**
+
+- <ChangelogBadge type="added" /> **Asignaciones adicionales de tipos de envío**  
+  Amplía la asignación de fulfillment con tipos de envío adicionales (como retiro en tienda y traspaso de marketplace) para que se informen más flujos de órdenes al gateway.
+
+## v4.2.222
+*29 de abril de 2025*
+
+**Metadatos del pago**
+
+- <ChangelogBadge type="added" /> **Valor total del carrito como metadato**  
+  Incluye el valor total del carrito como metadato en cada pago, útil para la puntuación de riesgo y los reportes.
+
+## v4.2.221
+*29 de abril de 2025*
+
+- <ChangelogBadge type="fixed" /> **Conserva las fechas originales de la orden**  
+  Deja de sobrescribir las fechas originales de la orden al actualizar un pago, y conserva las marcas de tiempo visibles para el comercio.
+
+## v4.2.218
+*11 de abril de 2025*
+
+**Confiabilidad**
+
+- <ChangelogBadge type="added" /> **Ventana de reintento de 4 horas para pagos atascados**  
+  Agrega una ventana de reintento de 4 horas antes de volver a intentar un pago atascado, lo que reduce la presión sobre el gateway.
+
+## v4.2.217
+*11 de abril de 2025*
+
+**Captura**
+
+- <ChangelogBadge type="added" /> **Captura de pagos con billetera**  
+  Activa la llamada de captura a Yuno para pagos con billetera, de modo que el momento de la captura coincida con la ventana de liquidación automática.
+
+## v4.2.216
+*10 de abril de 2025*
+
+**Flujo de cancelación**
+
+- <ChangelogBadge type="added" /> **Ventana de cancelación automática de 4 horas**  
+  Amplía la ventana de cancelación automática a 4 horas, para dar tiempo suficiente a que se liquiden los métodos de pago alternativos lentos.
+
+## v4.2.215
+*9 de abril de 2025*
+
+**Fulfillment**
+
+- <ChangelogBadge type="added" /> **Reenvía el estado del transportista**  
+  Obtiene el estado del transportista desde VTEX y lo reenvía a Yuno como parte de la actualización de fulfillment.
+
+## v4.2.214
+*9 de abril de 2025*
+
+**Fulfillment**
+
+- <ChangelogBadge type="added" /> **Envía el evento de fulfillment completado**  
+  Envía un evento de fulfillment completado a Yuno cuando la orden de VTEX se entregó por completo.
+
+## v4.2.213
+*28 de marzo de 2025*
+
+**Fulfillment**
+
+- <ChangelogBadge type="added" /> **Incluye la marca de tiempo de envío**  
+  Envía la marca de tiempo real del envío en las actualizaciones de fulfillment para que Yuno pueda calcular SLAs de entrega precisos.
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="changed" /> **Actualiza el cliente HTTP Axios**  
+  Actualiza el cliente HTTP Axios a la última versión estable, con correcciones de errores y parches de seguridad.
+
+## v4.2.210
+*21 de marzo de 2025*
+
+- <ChangelogBadge type="added" /> **Incluye la marca del producto en los artículos**  
+  Incluye la marca del producto en cada línea de artículo enviada a Yuno para poder generar reportes por marca.
+
+## v4.2.209
+*20 de marzo de 2025*
+
+**Multicuenta**
+
+- <ChangelogBadge type="fixed" /> **Omite la consulta de cuenta cuando hay una cuenta principal configurada**  
+  Omite la llamada de consulta de cuenta cuando ya hay una cuenta principal configurada, lo que elimina una solicitud redundante a la API de VTEX.
+
+## v4.2.204
+*17 de marzo de 2025*
+
+**Flujo de cancelación**
+
+- <ChangelogBadge type="added" /> **Omite la cancelación cuando el pago sigue pendiente**  
+  Omite la ruta de cancelación cuando aún no se realizó el pago y la orden está en un estado transitorio, lo que evita cancelaciones prematuras.
+
+## v4.2.202
+*14 de marzo de 2025*
+
+**Fulfillment**
+
+- <ChangelogBadge type="fixed" /> **URL e ID de seguimiento como arreglos**  
+  Envía la URL y el ID de seguimiento del envío como arreglos en las actualizaciones de fulfillment, según el esquema actualizado de Yuno.
+
+## v4.2.201
+*12 de marzo de 2025*
+
+- <ChangelogBadge type="added" /> **Rechaza IDs de orden no numéricos**  
+  Agrega validación del formato del ID de orden para rechazar identificadores no numéricos o mal formados antes de crear el pago.
+
+## v4.2.199
+*10 de marzo de 2025*
+
+- <ChangelogBadge type="added" /> **Verifica si ya existe un pago de Yuno antes de crearlo**  
+  Antes de crear una nueva sesión de Yuno, el conector primero verifica si la orden del comercio ya tiene un pago registrado, lo que evita duplicados.
+
+## v4.2.198
+*10 de marzo de 2025*
+
+- <ChangelogBadge type="added" /> **Valida y recupera el ID de orden**  
+  Valida el ID de orden antes de procesarlo y, si no es válido, intenta recuperar el ID de orden canónico desde VTEX.
+
+## v4.2.197
+*6 de marzo de 2025*
+
+**Cliente y dirección**
+
+- <ChangelogBadge type="added" /> **Envía la fecha de creación del cliente**  
+  Incluye la fecha de creación del cliente en el payload del pago para que Yuno pueda aplicar reglas basadas en la antigüedad del cliente.
+
+## v4.2.196
+*6 de marzo de 2025*
+
+**Monnet**
+
+- <ChangelogBadge type="added" /> **Compatibilidad con Monnet en Yuno VTEX SDK**  
+  Agrega compatibilidad con monnet en Yuno VTEX SDK.
+
+## v4.2.195
+*5 de marzo de 2025*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Corrige vulnerabilidades de dependencias (cross-spawn, koa)**  
+  Corrige vulnerabilidades reportadas en dos dependencias (cross-spawn y koa) en una sola actualización.
+
+**Fulfillment**
+
+- <ChangelogBadge type="added" /> **Envía eventos de fulfillment a Yuno**  
+  Reenvía a Yuno los eventos de fulfillment de VTEX (enviado, entregado) para que refleje el ciclo de vida de la orden.
+
+## v4.2.186
+*24 de febrero de 2025*
+
+**Multicuenta**
+
+- <ChangelogBadge type="changed" /> **Expone el nombre de la cuenta al front-end**  
+  Expone el nombre de la cuenta del conector al front-end para que los checkouts multicuenta se enruten correctamente.
+
+## v4.2.184
+*7 de febrero de 2025*
+
+**PicPay**
+
+- <ChangelogBadge type="added" /> **PicPay Wallet**  
+  Agrega la billetera digital PicPay como método de pago compatible mediante el flujo de redirección de billetera.
+
+## v4.2.182
+*30 de enero de 2025*
+
+- <ChangelogBadge type="fixed" /> **Manejo de cierres de socket en las llamadas a Yuno**  
+  Agrega manejo de cierres abruptos a nivel de socket al llamar a la API de Yuno, con reintentos en lugar de hacer fallar la transacción.
+
+## v4.2.176
+*20 de enero de 2025*
+
+- <ChangelogBadge type="added" /> **Total de cupones como línea de artículo separada**  
+  Envía el total de descuento de cupones como una línea de artículo separada a Yuno para que los totales de la orden concilien correctamente.
+
+## v4.2.175
+*17 de enero de 2025*
+
+**Multicuenta**
+
+- <ChangelogBadge type="added" /> **Enrutamiento de subtiendas y multicuenta**  
+  Agrega compatibilidad con subtiendas para que las franquicias puedan enrutar pagos por una cuenta principal cuando sea necesario.
+
+## v4.2.168
+*18 de diciembre de 2024*
+
+**Confiabilidad**
+
+- <ChangelogBadge type="added" /> **Reintentos en la tokenización de secure-proxy**  
+  Agrega reintentos en la llamada de tokenización de Yuno Secure Proxy para que las fallas transitorias del gateway PCI no hagan fallar el pago.
+
+## v4.2.155
+*16 de diciembre de 2024*
+
+**Multicuenta**
+
+- <ChangelogBadge type="added" /> **Resolución de la política de canal de ventas**  
+  Resuelve la política de canal de ventas para que el conector elija la política correcta cuando hay varias configuradas en la cuenta del comercio.
+
+## v4.2.146
+*9 de diciembre de 2024*
+
+- <ChangelogBadge type="added" /> **Espera antes de cancelar automáticamente**  
+  Agrega una ventana de espera antes de cancelar automáticamente un pago, para dar tiempo suficiente a que se completen las redirecciones de billeteras.
+
+## v4.2.144
+*6 de diciembre de 2024*
+
+**Flujo de cancelación**
+
+- <ChangelogBadge type="added" /> **Cancelación automática más rápida para el método genérico de Yuno**  
+  Reduce la demora de cancelación automática cuando el método de pago es la opción genérica de Yuno, lo que mejora la vista del comercio sobre las transacciones pendientes.
+
+## v4.2.141
+*4 de diciembre de 2024*
+
+- <ChangelogBadge type="fixed" /> **Actualiza semver-regex**  
+  Actualiza la dependencia semver-regex para corregir una vulnerabilidad reportada.
+
+- <ChangelogBadge type="fixed" /> **Corrige vulnerabilidades reportadas (grupo 1)**  
+  Actualización masiva de dependencias para corregir un conjunto de vulnerabilidades reportadas en dependencias de terceros.
+
+- <ChangelogBadge type="fixed" /> **Corrige vulnerabilidades reportadas (grupo 2)**  
+  Actualización masiva de dependencias para corregir otro conjunto de vulnerabilidades reportadas en dependencias de terceros.
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza el grupo npm_and_yarn en 2 directorios con 19 actualizaciones**  
+  Corrige 19 vulnerabilidades reportadas en dependencias de terceros en una sola actualización de seguridad masiva.
+
+- <ChangelogBadge type="security" /> **Actualiza el grupo npm_and_yarn en 2 directorios con 15 actualizaciones**  
+  Corrige 15 vulnerabilidades reportadas en dependencias de terceros en una sola actualización de seguridad masiva.
+
+- <ChangelogBadge type="security" /> **Actualiza el grupo npm_and_yarn en 2 directorios con 8 actualizaciones**  
+  Corrige 8 vulnerabilidades reportadas en dependencias de terceros en una sola actualización de seguridad masiva.
+
+**Card Payments**
+
+- <ChangelogBadge type="added" /> **Tarjetas de débito (Maestro, Voucher, Elo Débito)**  
+  Agrega Maestro, Visa Electron, Elo Débito, Mastercard Debit y Voucher como métodos de pago con tarjeta de débito compatibles.
+
+## v4.2.137
+*19 de noviembre de 2024*
+
+**Webhooks**
+
+- <ChangelogBadge type="added" /> **Registro de webhooks**  
+  Agrega registro estructurado al manejador de webhooks para poder rastrear los eventos entrantes de Yuno.
+
+## v4.2.136
+*14 de noviembre de 2024*
+
+**Fulfillment**
+
+- <ChangelogBadge type="changed" /> **Envía el estado del envío a Yuno**  
+  Reenvía el estado de envío de la orden como parte de la actualización de fulfillment para que Yuno tenga el contexto completo de la orden.
+
+## v4.2.135
+*8 de noviembre de 2024*
+
+- <ChangelogBadge type="added" /> **Asignación ampliada de estados de pago**  
+  Reconoce estados de pago adicionales de Yuno para que los estados finales se asignen correctamente de vuelta a VTEX.
+
+## v4.2.134
+*7 de noviembre de 2024*
+
+**Monnet**
+
+- <ChangelogBadge type="changed" /> **Efectivo y transferencia bancaria de Monnet**  
+  Agrega efectivo y transferencia bancaria de Monnet como métodos de pago compatibles mediante un flujo en iframe.
+
+## v4.2.133
+*22 de octubre de 2024*
+
+**Pix**
+
+- <ChangelogBadge type="changed" /> **Pix Parcelado**  
+  Agrega Pix Parcelado (Pix en cuotas) como método de pago compatible para comercios de Brasil.
+
+## v4.2.132
+*19 de septiembre de 2024*
+
+**Flujo de cancelación**
+
+- <ChangelogBadge type="changed" /> **Aprueba la cancelación cuando la orden ya es conocida**  
+  Devuelve una respuesta de cancelación aprobada cuando la orden del comercio ya está registrada, lo que evita fallas espurias de cancelación.
+
+## v4.2.131
+*5 de septiembre de 2024*
+
+**Pagaleve**
+
+- <ChangelogBadge type="changed" /> **Pix de pago único de Pagaleve**  
+  Agrega compatibilidad con la opción de Pix de pago único de Pagaleve (a vista).
+
+## v4.2.130
+*29 de agosto de 2024*
+
+**Pagaleve**
+
+- <ChangelogBadge type="changed" /> **Pix en cuotas de Pagaleve**  
+  Agrega compatibilidad con la oferta de Pix en cuotas de Pagaleve, que permite a los compradores dividir un pago con Pix en varias cuotas.
+
+## v4.2.129
+*29 de agosto de 2024*
+
+**Pagaleve**
+
+- <ChangelogBadge type="changed" /> **Agrega la compatibilidad inicial con Pagaleve**  
+  Agrega compatibilidad inicial con Pagaleve como opción de compre ahora y pague después para comercios de Brasil.
+
+## v4.2.128
+*28 de agosto de 2024*
+
+**Boleto**
+
+- <ChangelogBadge type="changed" /> **Boleto Banco do Brasil**  
+  Agrega Boleto Banco do Brasil como opción de pago compatible.
+
+## v4.2.127
+*28 de agosto de 2024*
+
+**Pix**
+
+- <ChangelogBadge type="changed" /> **Flujo de redirección de Pix**  
+  Agrega el flujo de redirección de Pix como alternativa al código QR, para que los comercios puedan llevar a los clientes a la página de pago del banco.
+
+## v4.2.126
+*19 de agosto de 2024*
+
+**Cliente y dirección**
+
+- <ChangelogBadge type="changed" /> **Registros más completos y extracción del barrio**  
+  Enriquece los registros del conector con más contexto y extrae el campo de barrio de las direcciones de VTEX para poder enviarlo al gateway.
+
+## v4.2.117
+*15 de agosto de 2024*
+
+**Cliente y dirección**
+
+- <ChangelogBadge type="changed" /> **Mejora el manejo de la dirección del cliente**  
+  Reenvía todos los subcampos de la dirección (estado, barrio, complemento) a Yuno para que los pagos incluyan la dirección completa del comprador.
+
+## v4.2.115
+*14 de agosto de 2024*
+
+**Alelo**
+
+- <ChangelogBadge type="changed" /> **Agrega la marca Alelo**  
+  Agrega la marca de tarjeta Alelo a la lista de métodos de pago compatibles en la configuración del proveedor.
+
+## v4.2.114
+*12 de agosto de 2024*
+
+**Reembolsos**
+
+- <ChangelogBadge type="changed" /> **Corrige un error tipográfico en la descripción del reembolso**  
+  Corrige un error tipográfico en el mensaje que se devuelve a VTEX después de procesar un reembolso.
+
+## v4.2.113
+*8 de agosto de 2024*
+
+- <ChangelogBadge type="changed" /> **Obtiene los detalles del pago desde VTEX**  
+  Consulta los detalles del pago en la API de transacciones de VTEX para que el conector tenga contexto preciso al gestionar capturas y reembolsos.
+
+## v4.2.107
+*18 de julio de 2024*
+
+**Configuración**
+
+- <ChangelogBadge type="changed" /> **Elimina un campo personalizado**  
+  Elimina un campo de configuración personalizado que ya no usaba ningún comercio.
+
+## v4.2.106
+*18 de julio de 2024*
+
+- <ChangelogBadge type="changed" /> **Restaura el cifrado de sesión AES**  
+  Restaura el cifrado AES-256-CBC de los datos sensibles de la sesión que se intercambian entre el front-end y el back-end, después de que una regresión lo eliminara.
+
+## v4.2.92
+*15 de julio de 2024*
+
+**Card Payments**
+
+- <ChangelogBadge type="changed" /> **Pagos divididos con dos tarjetas**  
+  Agrega compatibilidad para dividir un pago entre dos tarjetas en el mismo checkout de VTEX.
+
+## v4.2.91
+*10 de julio de 2024*
+
+**Alelo**
+
+- <ChangelogBadge type="changed" /> **Alelo (compatibilidad inicial)**  
+  Agrega las tarjetas de beneficios Alelo como método de pago compatible (integración inicial).
+
+## v4.2.90
+*5 de julio de 2024*
+
+**Apple Pay**
+
+- <ChangelogBadge type="changed" /> **Compatibilidad con Apple Pay**  
+  Agrega compatibilidad con Apple Pay, incluido el flujo de la hoja de Apple Pay en el checkout de VTEX.
+
+## v4.2.89
+*28 de junio de 2024*
+
+- <ChangelogBadge type="changed" /> **Validación del estado de métodos de pago alternativos**  
+  Agrega la validación del estado del pago para métodos de pago alternativos, de modo que el conector reporte a VTEX el estado final correcto.
+
+## v4.2.88
+*20 de junio de 2024*
+
+**Multicuenta**
+
+- <ChangelogBadge type="changed" /> **Reenvía la cuenta del comercio en los pagos**  
+  Envía el identificador de la cuenta del comercio con cada pago para que Yuno pueda resolver la afiliación correcta cuando hay varias configuradas.
+
+## v4.2.87
+*19 de junio de 2024*
+
+**Google Pay**
+
+- <ChangelogBadge type="changed" /> **Habilita Google Pay**  
+  Activa Google Pay como método de pago compatible en el checkout de VTEX.
+
+## v4.2.86
+*17 de junio de 2024*
+
+**Nubank**
+
+- <ChangelogBadge type="changed" /> **Compatibilidad con Nu Pay**  
+  Agrega Nu Pay (el pago con línea de crédito de Nubank) como método compatible para comercios de Brasil.
+
+## v4.2.85
+*13 de junio de 2024*
+
+**Boleto**
+
+- <ChangelogBadge type="changed" /> **Integración de Boleto Bancário**  
+  Agrega compatibilidad con Boleto Bancário, y devuelve el código de barras y la URL de pago para que los comercios puedan mostrarlos en el checkout.
+
+## v4.2.84
+*31 de mayo de 2024*
+
+**Card Payments**
+
+- <ChangelogBadge type="changed" /> **Mejora los registros de tarjetas**  
+  Agrega más contexto a los registros de pagos con tarjeta para agilizar el triaje de incidentes y las investigaciones de soporte a comercios.
+
+## v4.2.83
+*28 de mayo de 2024*
+
+**Webhooks**
+
+- <ChangelogBadge type="added" /> **Receptor de webhooks para el estado del pago**  
+  Agrega un receptor de webhooks para que el conector pueda actualizar el estado del pago en VTEX cuando Yuno publica eventos finales.
+
+## v4.2.81
+*30 de abril de 2024*
+
+**Nubank**
+
+- <ChangelogBadge type="changed" /> **Agrega Nubank**  
+  Agrega Nubank como método de pago compatible para comercios de Brasil.
+
+## v4.2.80
+*26 de abril de 2024*
+
+**PagoEfectivo y SafetyPay**
+
+- <ChangelogBadge type="added" /> **PagoEfectivo y SafetyPay**  
+  Agrega compatibilidad inicial con PagoEfectivo y SafetyPay como opciones de pago de tipo redirección para Perú.
+
+## v4.2.76
+*4 de abril de 2024*
+
+**Captura**
+
+- <ChangelogBadge type="changed" /> **Declara la compatibilidad con liquidación automática**  
+  Declara la compatibilidad con liquidación automática en la configuración del proveedor para que VTEX delegue correctamente al conector el momento de la captura.
+
+## v4.2.74
+*19 de marzo de 2024*
+
+**Apple Pay**
+
+- <ChangelogBadge type="changed" /> **Habilita Apple Pay**  
+  Activa Apple Pay como método de pago compatible en el checkout de VTEX para los comercios inscritos en el programa de Apple Pay.
+
+## v4.2.73
+*15 de marzo de 2024*
+
+**Pix**
+
+- <ChangelogBadge type="changed" /> **Compatibilidad con vtex pix**  
+  Agrega compatibilidad con vtex pix.
+
+## v4.2.72
+*11 de marzo de 2024*
+
+- <ChangelogBadge type="changed" /> **Identificador de transacción NSU**  
+  Incluye el NSU (número de secuencia de la transacción) en la respuesta del pago para que los comercios puedan conciliar las transacciones con el adquirente.
+
+## v4.2.71
+*4 de marzo de 2024*
+
+- <ChangelogBadge type="changed" /> **Envía la respuesta de pago sin procesar**  
+  Incluye la respuesta de pago sin procesar de Yuno en el callback de VTEX para que los comercios y los equipos de soporte tengan el contexto completo del proveedor al investigar.
+
+## v4.2.70
+*4 de octubre de 2023*
+
+**Observabilidad**
+
+- <ChangelogBadge type="changed" /> **Actualiza la biblioteca de registro de eventos a v1**  
+  Incorpora nuevos campos, correcciones de errores y mejor compatibilidad con trace ID de la versión v1 de la biblioteca de registro de eventos.
+
+## v4.2.69
+*4 de octubre de 2023*
+
+**Rendimiento y latencia**
+
+- <ChangelogBadge type="changed" /> **Mejora de rendimiento**  
+  Reduce la latencia en la ruta de autorización del pago mediante optimizaciones específicas en las partes más exigidas del código.
+
+## v4.2.67
+*20 de septiembre de 2023*
+
+**Observabilidad**
+
+- <ChangelogBadge type="changed" /> **Integración de la biblioteca de registro de eventos de Yuno**  
+  Incorpora la biblioteca de registro de eventos de Yuno para que los errores del conector se rastreen de forma centralizada con trace IDs que vinculan los registros del gateway y del comercio.
+
+## v4.2.55
+*13 de septiembre de 2023*
+
+**Observabilidad**
+
+- <ChangelogBadge type="changed" /> **Registros de eventos estructurados**  
+  Introduce el registro estructurado de eventos en todo el conector para facilitar la resolución de problemas en producción.
+
+## v4.2.35
+*17 de agosto de 2023*
+
+**3-D Secure**
+
+- <ChangelogBadge type="changed" /> **Compatibilidad con 3-D Secure**  
+  Agrega 3-D Secure de punta a punta para pagos con tarjeta, para que los comercios cumplan los requisitos de autenticación reforzada del cliente.
+
+## v3.0.0
+*26 de mayo de 2023*
+
+**Observabilidad**
+
+- <ChangelogBadge type="changed" /> **Corrige el error de análisis del registro de eventos**  
+  Corrige un error de análisis que impedía registrar algunas fallas en el registro de eventos.
+
+## v1.2.0
+*21 de diciembre de 2021*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza urijs de 1.19.6 a 1.19.11 en /node**  
+  Corrige varias vulnerabilidades reportadas en la dependencia urijs para el análisis de URL.
+
+## v1.1.0
+*21 de diciembre de 2021*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza minimatch de 3.0.4 a 3.1.2 en /node**  
+  Corrige un problema de denegación de servicio por expresiones regulares en la dependencia minimatch.
+
+## v1.0.6
+*18 de noviembre de 2021*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza @babel/traverse de 7.13.0 a 7.23.6 en /node**  
+  Corrige una vulnerabilidad de ejecución arbitraria de código en la dependencia de compilación @babel/traverse.
+
+- <ChangelogBadge type="security" /> **Actualiza async de 2.6.3 a 2.6.4 en /node**  
+  Corrige un problema de contaminación de prototipos en la dependencia async.
+
+## v1.0.5
+*20 de mayo de 2021*
+
+- <ChangelogBadge type="changed" /> **Devuelve undefined cuando el estado del pago es pendiente**  
+  Alinea la respuesta del conector para pagos pendientes con lo que espera VTEX, de modo que los pagos pendientes ya no se marquen como fallidos.
+
+## v1.0.4
+*17 de mayo de 2021*
+
+**3-D Secure**
+
+- <ChangelogBadge type="added" /> **Compatibilidad con el formulario de tarjeta de VTEX**  
+  Agrega compatibilidad completa con el formulario de pago con tarjeta de VTEX para todas las marcas principales, incluida la autenticación 3-D Secure.
+
+## v1.0.3
+*28 de abril de 2021*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza semver de 5.7.1 a 5.7.2 en /node**  
+  Corrige una vulnerabilidad de denegación de servicio reportada en la dependencia semver.
+
+## v1.0.2
+*2 de marzo de 2021*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza minimatch de 3.0.4 a 3.1.2**  
+  Corrige un problema de denegación de servicio por expresiones regulares en la dependencia minimatch.
+
+## v1.0.1
+*1 de marzo de 2021*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza path-parse de 1.0.6 a 1.0.7**  
+  Corrige una vulnerabilidad de denegación de servicio por expresiones regulares en la dependencia transitiva path-parse.
+
+## v1.0.0
+*27 de febrero de 2021*
+
+- <ChangelogBadge type="changed" /> **Corrige el manejo de descuentos**  
+  Corrige cómo se reenvían los montos de descuento al gateway para que los valores de cupones y promociones se reflejen con exactitud en el pago.
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza json5 de 1.0.1 a 1.0.2**  
+  Corrige una vulnerabilidad de contaminación de prototipos con __proto__ en la dependencia json5.
+
+**Fulfillment**
+
+- <ChangelogBadge type="added" /> **Eventos de orden**  
+  Agrega el seguimiento de eventos de orden para que las transiciones de estado de las órdenes de VTEX se propaguen a Yuno.
+
+## v0.0.2
+*28 de febrero de 2020*
+
+**Actualización de dependencias**
+
+- <ChangelogBadge type="security" /> **Actualiza minimist de 1.2.5 a 1.2.8**  
+  Corrige una vulnerabilidad reportada de contaminación de prototipos en la dependencia minimist.

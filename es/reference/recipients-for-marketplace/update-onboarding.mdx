@@ -12,6 +12,30 @@ Este endpoint actualiza un onboarding existente de un destinatario, lo que permi
 
 Este endpoint requiere un onboarding existente creado mediante [Create Onboarding](/reference/create-onboarding)
 
+## Cuentas con onboarding previo {#previously-onboarded-accounts}
+
+Para volver a registrar un onboarding `PREVIOUSLY_ONBOARDED` existente, por ejemplo después de que terminó en `ERROR` porque un id de cuenta era incorrecto, llama a `PATCH /v1/recipients/{recipient_id}/onboardings/{onboarding_id}` con el objeto `provider`: `provider.id`, `provider.connection_id` y los ids de cuenta.
+
+```json
+{
+  "provider": {
+    "id": "PROVIDER_ID",
+    "connection_id": "8fee3cc6-f3cb-455d-b139-973866111a03",
+    "recipient_id": "ACCOUNT_ID_AT_PROVIDER",
+    "balance_account_id": "BALANCE_ACCOUNT_ID_AT_PROVIDER"
+  }
+}
+```
+
+Los ids de cuenta son los mismos que al crear: `provider.recipient_id`, `provider.recipient_additional_id`, `provider.balance_account_id`, `provider.legal_entity` y `provider.recipient_type`. Cuáles de ellos necesita un proveedor lo define su integración. Se reenvían exactamente como se envían.
+
+* **La integración admite adoptar cuentas existentes**: Yuno repite el registro en el proveedor y aplica su respuesta. El onboarding pasa a `SUCCEEDED` (webhook `onboarding.succeeded`) o a `ERROR` con el mensaje del proveedor en `response_message` (webhook `onboarding.error`). Un onboarding en `ERROR` pasa a `SUCCEEDED` una vez que el proveedor acepta los ids corregidos.
+* **Cualquier otro proveedor**: los ids se almacenan y no se hace ninguna llamada al proveedor. No se validan en el proveedor.
+
+Una actualización sin ids del proveedor solo reenvía la notificación del estado actual; no vuelve a registrar la cuenta.
+
+Qué proveedores adoptan cuentas existentes es una configuración del lado de Yuno por entorno, no un campo de la API. Para saber si está disponible para tu conexión con el proveedor, contacta a tu Key Account Manager.
+
 ## Actualizar una cuenta bancaria {#updating-a-bank-account}
 
 Para los onboardings de Zoop y Pagar.me con un ID de destinatario del proveedor, una actualización explícita de `withdrawal_methods.bank` espera el resultado del proveedor. Actualiza solo el onboarding seleccionado; el valor predeterminado del destinatario y los demás onboardings permanecen sin cambios.
