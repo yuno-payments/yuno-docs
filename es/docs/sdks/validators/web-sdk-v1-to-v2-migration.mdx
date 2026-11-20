@@ -1,0 +1,335 @@
+---
+title: "Validador: migración del Web SDK de v1 a v2"
+sidebarTitle: "Migración del Web SDK de v1 a v2"
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Una lista de verificación de solo lectura para agentes de código con IA que indica qué debe cambiar una integración del Web SDK 1.11 de Yuno para pasar a v2 y qué flujos todavía no tienen equivalente en v2."
+---
+
+Coloca este archivo en la raíz de tu proyecto y pide a tu agente de programación:
+
+> Indica qué debo cambiar para pasar mi integración del Web SDK de Yuno a v2, siguiendo este archivo.
+
+Funciona como `CLAUDE.md`, `AGENTS.md` o como prompt pegado, con Claude Code, Cursor, Codex o Copilot. Es de
+solo lectura: analiza tu código y reporta, y no cambia nada a menos que lo pidas.
+
+**El destino.** v2 es la línea 2.x de sdk-web ("Yuno SDK 2.x", la Transaction API unificada). Consulta el
+[changelog del Web SDK](https://docs.y.uno/changelog/yuno-sdk/web) para ver la versión actual. Cada versión se sirve en una URL con la versión completa, por ejemplo
+`https://sdk-web.y.uno/v2.5.1/main.js`, y `v2.0.0`, `v2.1.0`, `v2.1.2`, `v2.2.0` también están disponibles. No hay una
+carpeta rolling: `/v2/`, `/v2.0/` y `/v2.2/` devuelven 404, por lo que debes fijar una versión completa y actualizarla a mano. La ruta SRI es
+`https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v2.5.1/main.js`. Documentación pública: la pestaña "SDK"
+(`docs/yuno-sdk/*`, serie de migración en `docs/yuno-sdk/migration/web/*`). La pestaña "SDKs" es la línea 1.x.
+v1.x sigue con soporte en paralelo hasta 2027.
+
+**El origen.** v1.11 (`window.Yuno`, `/v1.11/main.js` rolling), la línea 1.x actual.
+
+```
+v1.11                                              v2
+<script .../v1.11/main.js>                         <script .../v2.5.1/main.js>
+yuno = await Yuno.initialize(key)                  sdk = await SdkPayments.initialize(key)
+yuno.startCheckout(cfg)        (or Seamless)       tx = sdk.transaction(cfg)   (session, country, onStatus,
+yuno.mountCheckoutLite({...})                           createPayment present = manual, absent = managed)
+yuno.mountCheckout()                               tx.start({ paymentMethod })          form or headless
+yunoCreatePayment(ott, info, cs)                   tx.getPaymentMethodsViews({...}).paymentMethodList.mount()
+yuno.continuePayment()                             createPayment(token)  -> SDK continues by itself
+yunoPaymentResult(status) / yunoError(...)         onStatus({ status, substatus, message })
+yuno.unmountSdk()                                  await tx.unmount()
+```
+
+## Lo que v2 mantiene (no lo reportes como bloqueante) {#what-v2-keeps-do-not-report-these-as-blocking}
+
+- **v2 no mantiene ningún alias de v1.** Solo define `window.SdkPayments` y solo despacha `sdk-payments-ready`. No
+  define `window.Yuno` y nunca dispara `yuno-sdk-ready`. Todo uso de `window.Yuno` y `yuno-sdk-ready` debe cambiar.
+- **v1.11 ya expone los nombres de v2.** Define ambos globales y dispara ambos eventos. Por lo tanto,
+  `window.SdkPayments` y `sdk-payments-ready` en un repositorio con v1.11 ya son correctos. Ese cambio de nombre se puede publicar en 1.11
+  primero, antes de cambiar el script.
+- **Sin cambios en v2:** el prefijo CSS `sdk-payments-*`; las claves de opciones de `initialize` (`cookies`, `sdkType`,
+  `apiUrl`, `assetUrl`, `plugin`); `clearApiCache()` y `setCanaryMode()` en la instancia; `onChange(state)`;
+  las opciones `onPromotionQuoteUpdated`, `externalButtons`, `texts`, `issuersFormEnable`, `showPayButton`,
+  `deviceFingerprints`, `paymentListConfig`, `savePaymentMethodEnabled`; las claves de `card` `styles`, `type`
+  (excepto `'step'`), `vaultOnSuccess`, `texts`, `documentEnable`, `isCreditCardProcessingOnly`, `fonts`,
+  `onChange`, `onGetInstallments`, `onInstallmentSelected`.
+- **Claves silenciosas.** v2 reenvía claves de configuración desconocidas o exclusivas de v1 sin ningún error. La mayoría nunca se leen: la
+  funcionalidad que controlaban simplemente desaparece. Marca esas filas como SILENT. Tres claves de v1 todavía se leen en 2.2.0:
+  `onLoading` todavía se llama cuando no hay una función `showLoading`; `paymentMethodSelected` y
+  `yunoPaymentMethodSelected` todavía se disparan en cada selección de la lista, por lo que mantener una junto a `onPaymentSelected`
+  produce dos llamadas por selección; `yunoCreatePayment` se fusiona en `createPayment` en el estado. Renómbralas de todos modos.
+- **CSS.** v2 renderiza `yuno-container-spinner-content` y `yuno-container-spinner-ring` (el spinner de carga
+  de cada montaje) y define `data-yuno-placeholder`. Son nombres de v2: nunca reportes selectores sobre ellos.
+
+## Cómo usarlo {#how-to-use}
+
+1. **Encuentra la superficie de v1.** Ejecuta esto sobre el código fuente, las plantillas del servidor, los fragmentos del gestor de etiquetas y `package.json`:
+
+```
+grep -rnE "window\.Yuno\b|\bYuno\.initialize|yuno-sdk-ready|YunoSDK|sdk-web\.[a-z.]*y\.uno/v[0-9.]+/main\.js|sdk-static-bundles-ms/sdk-web/|loadScript\(|@yuno-payments/sdk-web(-types)?" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
+grep -rnE "\.(startCheckout|startSeamlessCheckout|mountCheckout|mountCheckoutLite|mountSeamlessCheckout|mountSeamlessCheckoutLite|mountSeamlessExternalButtons|mountExternalButtons|unmountExternalButton|unmountAllExternalButtons|unmountSeamlessExternalButtons?|mountEnrollmentLite|mountFraud|mountStatusPayment|startPayment|continuePayment|submitOneTimeTokenForm|unmountSdk|showLoader|hideLoader|notifyError|apiClientPayment|apiClientEnroll|continueEnrollment|clickToPay|executeFraudCheck|generateToken\w*|getThreeDSecureChallenge|getContinuePaymentAction|isPaymentMethodAvailable|updateCheckoutSession|refreshPromotionQuote)\(" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
+grep -rnE "yunoPaymentResult|paymentResult|yunoError|yunoEnrollmentStatus|enrollmentStatus|yunoCreatePayment|createPayment|yunoPaymentMethodSelected|paymentMethodSelected|onLoading|showLoading|showPaymentStatus|renderMode|viewContainer|onlyExpressPaymentMethods|stickyPayButton|__internal|cardSaveEnable|requiredFieldsOrderedEnabled|topLevelDomain|isRetrying|newCheckoutSession|payment_method\.card\.detail|holder_name|enableV2|enableMultiplesCard|\.render\(" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
+grep -rnE "'(FAIL|REJECT|PROCESSING|READY)'|\"(FAIL|REJECT|PROCESSING|READY)\"|type:\s*['\"]step['\"]|checkout/sessions|workflow" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
+```
+
+2. **Encuentra cualquier superficie de v2 que ya exista:** `grep -rnE "SdkPayments\.initialize|\.transaction\(|\.start\(\{|getPaymentMethodsViews|transactionStatus|\.antifraud\(|onStatus|saveCardEnabled|showStatusScreen|sdk-web\.[a-z.]*y\.uno/v2"`.
+   Un repositorio con ambas está en plena migración: reporta los restos de v1 en cada página que carga el script de v2. En
+   tiempo de ejecución, `typeof sdk.transaction === 'function'` indica v2; una instancia de v1 tiene `startCheckout` y no tiene `transaction`.
+3. **Clasifica cada flujo** (Lite, Full, Seamless, Seamless Lite, botones externos, headless, Secure Fields,
+   inscripción, fraude, pantalla de estado) como manual (el comercio crea el pago) o gestionado (el SDK lo crea).
+4. **Mapea cada coincidencia** con la tabla de abajo, ejecuta las verificaciones M1 a M25 y escribe el reporte.
+
+## Mapeo {#mapping}
+
+Las secciones siguen la tabla de investigación 3.A a 3.H. Tipo: KEEP, RENAME, MOVE, BEHAVIOUR, NEW REQUIRED,
+REMOVED (sin reemplazo), SILENT (v2 acepta e ignora la clave anterior), BLOCKED (brecha de paridad: reporta "bloqueado: brecha de paridad, no migres este flujo todavía", no como un cambio).
+
+### 3.A Arranque y globales {#3a-bootstrap-and-globals}
+
+| v1.11 | v2 | Tipo | Qué hacer | Evidencia |
+|---|---|---|---|---|
+| `window.Yuno`, `new Yuno`, `YunoSDK` | `window.SdkPayments` | RENAME | Reemplaza cada referencia | `src/main.ts` en 1.11 frente a 2.2.0 |
+| evento `yuno-sdk-ready` | `sdk-payments-ready` | RENAME | Escucha el evento nuevo; revisa también primero `window.SdkPayments` | igual |
+| `<script .../v1.11/main.js>` | `<script .../v2.x.y/main.js>` | BEHAVIOUR | Fija una versión completa; no hay carpeta rolling | Pruebas de CDN al momento de escribir |
+| npm `loadScript()` | `loadScript({ baseUrl: 'https://sdk-web.y.uno/v2.x.y' })` | BEHAVIOUR | Pasa `baseUrl`; elimina `sri: true` (su URL y sus hashes están fijados a v1.11) | loader de npm `get-url.ts`, `inject-script.ts` |
+| `@yuno-payments/sdk-web-types` | ninguno publicado | REMOVED | Escribe una declaración local a partir de las páginas públicas de migración a v2 | `@yuno-payments/sdk-web-types` declara `startCheckout`, no `transaction` |
+| `await Yuno.initialize(key, appSession?, opts?)` | `await SdkPayments.initialize(...)` | RENAME + BEHAVIOUR | Mismos argumentos; los mismos argumentos devuelven la misma instancia, argumentos nuevos reemplazan a la anterior | `sdk-payments.ts` |
+
+### 3.B Puntos de entrada y modos de flujo {#3b-entry-points-and-flow-modes}
+
+| v1.11 | v2 | Tipo | Qué hacer | Evidencia |
+|---|---|---|---|---|
+| `startCheckout(cfg)` + `mountCheckoutLite({paymentMethodType, vaultedToken})` | `sdk.transaction(cfg)` + `tx.start({paymentMethod:{type, vaultedToken}})` | RENAME | Mueve la configuración a `transaction()` | docs `migration/web/lite` |
+| `startCheckout(cfg)` + `mountCheckout()` | `transaction(cfg)` + `getPaymentMethodsViews({types:['paymentMethodList'], onPaymentSelected})` + `views.paymentMethodList.mount({elementSelector})` | RENAME + NEW REQUIRED | Tu botón de pago llama a `tx.start({paymentMethod: selected})` | docs `full` |
+| `startSeamlessCheckout` + `mountSeamlessCheckout()` + `startPayment()` | Flujo Full sin `createPayment`; `startPayment()` pasa a ser `start({paymentMethod})` | RENAME | Mantén `workflow: SDK_SEAMLESS` | docs `seamless` |
+| `startSeamlessCheckout` + `mountSeamlessCheckoutLite` + `startPayment()` | `transaction({...showPayButton:false})` + `start({paymentMethod})` + `tx.submit()` | RENAME | | docs `seamless-lite` |
+| `mountSeamlessExternalButtons([{elementSelector, paymentMethodType}])` | `getPaymentMethodsViews({types:[wallets]})` + `views.<wallet>.mount({elementSelector})` | RENAME | Claves `applePay googlePay samsungPay paypal paypalBraintree revolutPay` | docs `seamless` |
+| `apiClientPayment(...).generateToken(card)` + llamada al backend + `continuePayment()` | `start({paymentMethod:{type:'CARD', data:{card}}})` con `createPayment` | RENAME | | docs `headless` |
+| `getThreeDSecureChallenge`, `getContinuePaymentAction`, `generateHeadlessToken` | ninguno (3DS es interno) | REMOVED | Elimina el código personalizado de 3DS | docs `headless` |
+| `secureFields(args)` | `await tx.secureFields({installmentEnable?})` | MOVE | La sesión, el país, el idioma y los fingerprints van a `transaction()`; elimina `enableV2`, `enableMultiplesCard` | docs `secure-fields` |
+| `mountEnrollmentLite({customerSession,...})` | `transaction({customerSession,...}).start()` | RENAME | | docs `enrollment` |
+| `apiClientEnroll(...).continueEnrollment(...)` | `transaction({customerSession}).start({paymentMethod:{type, data}})` | RENAME | | docs `enrollment` |
+| `mountStatusPayment({checkoutSession, language, countryCode})` | `await sdk.transactionStatus({checkoutSession, elementSelector, ...})` | RENAME + NEW REQUIRED | `elementSelector` ahora es obligatorio | docs `status` |
+| `executeFraudCheck(args)` | `await sdk.antifraud(args)` | RENAME + BEHAVIOUR | Nunca rechaza; ramifica según `result.status` | docs `fraud` |
+| `mountFraud({checkoutSession, language, type, yunoCreatePayment, ...})`: una interfaz de tarjeta que crea el pago | `sdk.transaction({checkoutSession, countryCode, deviceFingerprints?, createPayment?, onStatus})` + `tx.start({paymentMethod:{type:'CARD'}})` | RENAME + BEHAVIOUR | No lo elimines: es un flujo de pago. `yunoCreatePayment(ott, info)` pasa a ser `createPayment(token)`; `yunoError` pasa a `onStatus`. La fila 16 de `docs/NEW_PUBLIC_API.md` del repositorio lo mapea a `sdk.antifraud` y no coincide; sigue la página pública | v1 `sdk/fraud/mount-fraud.ts`; docs `migration/web/fraud.mdx` |
+| `submitOneTimeTokenForm()` | `tx.submit()` | RENAME | Solo después de que `start()` se haya resuelto | docs `lite` |
+| `unmountSdk()` | `await tx.unmount()` | RENAME + BEHAVIOUR | Asíncrono; puede entregar `USER_CANCEL`; las wallets permanecen | `transaction.ts` |
+| `updateCheckoutSession(cs)` | `tx.updateCheckoutSession(cs)` | MOVE | Solo pago | código fuente del SDK |
+| `isPaymentMethodAvailable({paymentMethodType, checkoutSession?})` | `tx.isPaymentMethodAvailable({paymentMethodType})` | MOVE | La sesión viene de la configuración | código fuente del SDK |
+| `refreshPromotionQuote()` | `tx.refreshPromotionQuote()` | MOVE | @alpha, inerte por ahora | código fuente del SDK |
+| `continuePayment(options?)` | ninguno | REMOVED | Elimínalo; el SDK continúa cuando `createPayment` se resuelve | docs `lite` |
+| `notifyError()` | rechaza la promesa de `createPayment` | RENAME | Figura como funcionalidad exclusiva de v1, pero el rechazo la cubre | código fuente del SDK |
+
+### 3.C Nombres de opciones y callbacks {#3c-option-and-callback-names}
+
+| v1.11 | v2 | Tipo | Qué hacer | Evidencia |
+|---|---|---|---|---|
+| `yunoPaymentResult` / `paymentResult(status, subStatus, details)` | `onStatus({status, substatus, message})` | RENAME + SILENT | La clave anterior se ignora: nunca llega ningún resultado | docs `lite` |
+| estados `'FAIL' 'REJECT' 'PROCESSING' 'READY'` | estados del backend + `INTERNAL_ERROR` + `USER_CANCEL` | BEHAVIOUR | Reescribe cada comparación | código fuente del SDK v1 |
+| `details.isRetrying`, `details.newCheckoutSession` | `token.checkout_session` en `createPayment` | REMOVED | | docs `create-payment` |
+| `yunoError` / `error(message, data)` | `onStatus` `INTERNAL_ERROR` o un `start()` rechazado | REMOVED + SILENT | | v2 no lee `yunoError` |
+| `yunoEnrollmentStatus` / `enrollmentStatus({status, vaultedToken})` | `onStatus`; sin `vaultedToken` | RENAME + BEHAVIOUR | Obtén el token almacenado (vaulted) desde el servidor | docs `enrollment` |
+| `yunoCreatePayment` / `createPayment(ott, info, checkoutSession)` | `createPayment(token)`, devuelve una Promise | RENAME + BEHAVIOUR | `token.token` = el antiguo `ott`; `token.checkout_session` = el antiguo tercer argumento. Un `yunoCreatePayment` solo se fusiona en `createPayment`, pero renómbralo | core `types/handlers.ts` `CreatePaymentCallback`; `lib/callback-aliases.ts` |
+| `yunoPaymentMethodSelected` / `paymentMethodSelected({type,name})` | `onPaymentSelected` en `getPaymentMethodsViews` | RENAME + BEHAVIOUR | Guárdalo y pásalo a `start()`. Elimina la clave anterior: todavía se dispara en las selecciones de la lista, por lo que ambas producen dos llamadas | docs `full`; código fuente del SDK |
+| `onLoading({isLoading, type})` | `showLoading(isLoading)` | RENAME | No es silenciosa: v2 todavía llama a `onLoading` cuando no hay una función `showLoading`. Pasa a `showLoading`, que reemplaza el loader del SDK | docs `show-loading`; código fuente del SDK |
+| `showLoading: true/false` | `showLoading` debe ser una función | BEHAVIOUR | `true` lanza un TypeError que nombra una función minificada, no `showLoading`; `false` se trata como si no hubiera handler y trae de vuelta en silencio el loader del SDK | código fuente del SDK |
+| `showPaymentStatus` | `showStatusScreen` | RENAME + SILENT | | código fuente del SDK v2 |
+| `elementSelector` en `startCheckout` | en `transaction()`, `string \| HTMLElement` | MOVE | Obligatorio para un formulario, ignorado por headless | `view-bridge.ts` |
+| `language`, `countryCode`, `checkoutSession` | las mismas claves en `transaction()` | MOVE | `countryCode` es obligatorio; TypeScript también exige `language`, `showStatusScreen` | `transaction-config.ts` |
+| ninguno | `autoContinuePayment`, `cardFormUnfoldedEnable` | nuevas, opcionales | Sin acción | código fuente del SDK |
+| `enableRedesign`, `isDynamicViewEnabled`, `enabledRequiredFields` | no están en el tipo público de v2 | REMOVED (tipo) | Elimínalas para TypeScript | `PaymentOnlyConfigFields` |
+
+### 3.D Comportamiento obligatorio o nuevo {#3d-required-or-new-behaviour}
+
+| v1.11 | v2 | Tipo | Qué hacer | Evidencia |
+|---|---|---|---|---|
+| ninguno | exactamente una entre `checkoutSession` / `customerSession` | NEW REQUIRED | Ambas o ninguna lanza un error | `transaction.utils.ts` |
+| secure field `.render('#sel')` | `.mount('#sel')` | RENAME | | core 9.4.1 `SecureFieldV2Instance.mount` |
+| `generateTokenWithInformation` + POST + `continuePayment()` | `tx.start({paymentMethod:{type:'CARD', data:{card:{holderName}}}})` | RENAME | Sin claves PCI en `data.card` (lanza un error) | `transaction.utils.ts` |
+| `payment_method.card.detail.{holder_name,number,security_code,expiration_month,expiration_year}` | `paymentMethod.data.card.{holderName,number,securityCode,expirationMonth,expirationYear}` | RENAME | Envoltorio en camelCase | docs `headless` |
+| quién crea el pago: Seamless = el SDK, `startCheckout` + `yunoCreatePayment` = el comercio | la presencia de `createPayment` lo decide; el modo gestionado necesita que la sesión tenga `workflow: "SDK_SEAMLESS"` | NEW REQUIRED | Haz coincidir cada flujo con el workflow de su sesión | docs `create-payment.mdx` |
+| un pago nuevo en la misma sesión después de un resultado final | `The payment on this checkout session already finished...` | BEHAVIOUR | Sesión nueva y transacción nueva por cada reintento después de un resultado final | `settled-checkout-session.ts` |
+
+### 3.E CSS, DOM y marca blanca {#3e-css-dom-and-white-label}
+
+| v1.11 | v2 | Tipo | Qué hacer | Evidencia |
+|---|---|---|---|---|
+| prefijo de clase `sdk-payments-*` | `sdk-payments-*` | KEEP | Mantén los selectores; vuelve a revisar visualmente los overrides (solo se compararon tres clases) | el core del SDK `STYLE_CLASS_PREFIX` |
+| ninguna clase `yuno-*` en 1.11 | `yuno-container-spinner-content`, `yuno-container-spinner-ring`, `<style id="yuno-container-spinner-style">`, `data-yuno-placeholder` | KEEP (v2 los renderiza) | Nunca reportes selectores sobre estos. Una página de marca blanca en v2 siempre contiene estas cadenas `yuno` | código fuente del SDK |
+| contenedor `HTMLElement` sin `id` | recibe `yuno-view-<random>` | BEHAVIOUR | Dale un `id` en las páginas de marca blanca | código fuente del SDK |
+| `apiUrl`, `assetUrl` | las mismas claves | KEEP | Defínelas juntas; usa un proxy para `/sdk-static-bundles-ms/*` | `sdk-payments.ts`, documentación de marca blanca |
+
+### 3.F Opción `card` y configuración anidada {#3f-card-option-and-nested-config}
+
+| v1.11 | v2 | Tipo | Qué hacer | Evidencia |
+|---|---|---|---|---|
+| `card.cardSaveEnable` | `card.saveCardEnabled` | RENAME + SILENT | La clave anterior oculta la casilla para guardar la tarjeta | código fuente del SDK |
+| `card.requiredFieldsOrderedEnabled` | ninguno | REMOVED | Elimínala (no se lee en ninguna de las dos líneas) | core `CardStore` |
+| `externalButtons.applePay.topLevelDomain` | no está en el tipo público | REMOVED + SILENT | Se ignora: v2 siempre llama a `setApplePayTopLevelDomain({ option: undefined })` y detecta automáticamente el frame superior. Elimínala | `ApplePayButtonConfig`; código fuente del SDK |
+
+### 3.G Comportamiento que difiere y es fácil de pasar por alto {#3g-behaviour-that-differs-and-is-easy-to-miss}
+
+| v1.11 | v2 | Tipo | Qué hacer | Evidencia |
+|---|---|---|---|---|
+| el primer argumento de `createPayment` es un string | es un objeto; el string es `token.token` | BEHAVIOUR | Enviar el objeto como el token hace fallar Create Payment (inferido) | core `types/handlers.ts` `CreatePaymentCallback` |
+| la sesión es el tercer argumento de `createPayment` | `token.checkout_session`; la sesión de la configuración queda obsoleta después de un rechazo reintentable | BEHAVIOUR | Lee la sesión desde el token | código fuente del SDK |
+| el callback de resultado se dispara en los resultados finales | `onStatus` también se dispara en resultados reintentables no finales en modo manual | BEHAVIOUR | No redirijas en cada llamada | código fuente del SDK |
+| checkout en modal | formulario en línea en la página anfitriona | BEHAVIOUR | Define el tamaño del contenedor | código fuente del SDK |
+| el montaje se resuelve cuando se muestra | que `start()` se resuelva significa formulario montado, no pagado | BEHAVIOUR | Nunca muestres éxito después de `await start()` | `transaction.ts` |
+
+### 3.H Funcionalidades en v1 que no existen en v2 (BLOCKED: brecha de paridad) {#3h-features-in-v1-and-absent-from-v2-blocked-parity-gap}
+
+| v1.11 | v2 | Tipo | Qué hacer | Evidencia |
+|---|---|---|---|---|
+| `unmountSeamlessExternalButtons()`, `unmountSeamlessExternalButton(t)` | ninguno | BLOCKED si el flujo necesita quitar cada wallet por separado | De lo contrario, elimínalos; las wallets permanecen hasta que se quita el contenedor | docs `seamless` "Removed" |
+| `mountExternalButtons`, `unmountExternalButton`, `unmountAllExternalButtons` | ninguno | BLOCKED | Los botones de wallet no seamless no tienen forma en v2 | código fuente del SDK |
+| `showLoader()`, `hideLoader()` | ninguno | BLOCKED si el comercio maneja el loader a mano | `showLoading(handler)` es el único hook | código fuente del SDK |
+| `clickToPay(args)` independiente | ninguno | BLOCKED | Click to Pay dentro del formulario solo mediante la configuración `c2p` | código fuente del SDK |
+| `renderMode: {type:'modal'\|'element'}` | ninguno; los formularios se renderizan en línea en `elementSelector` | SILENT; BLOCKED si se requiere un modal | | código fuente del SDK |
+| `card.type: 'step'` (formulario paso a paso) | ninguno | BLOCKED | Eliminado; el core del SDK `CardDisplayMode` solo tiene `extends`. Verifica en tiempo de ejecución qué renderiza un `'step'` suelto | tipo core `CardDisplayMode` |
+| `onlyExpressPaymentMethods` | ninguno | BLOCKED | | cero lecturas en v2 |
+| `stickyPayButton`, botón de pago de Yuno único o fijo | ninguno | BLOCKED | | eliminado de v2 |
+| `__internal` | ninguno | BLOCKED | | código fuente del SDK |
+| `onChange` en el formulario de inscripción de tarjeta, `submit()` para la inscripción | nunca reporta; lanza un error | BLOCKED | | código fuente del SDK |
+| manejo del retorno de redirección, registro `PaymentStatus` | ninguno (`sdk.handleRedirect` se eliminó antes del lanzamiento) | BLOCKED | Verifica en tiempo de ejecución en qué llamada de v1 se apoya el comercio | código fuente del SDK |
+
+## Verificaciones {#checks}
+
+Reporta cada una como PASS / FAIL / N/A con archivo:línea y cita la línea. Cada título termina con el id de verificación de la investigación
+y una severidad: B bloqueante (sin pago o sin resultado), H alta (funcionalidad perdida en silencio o resultado incorrecto), M media
+(experiencia degradada), L baja (higiene), P brecha de paridad (repórtala como bloqueada, nunca como un cambio por hacer).
+
+### 1. Global y evento ready (M1, B) {#1-global-and-ready-event-m1-b}
+
+Busca: `window.Yuno`, `Yuno.initialize`, `yuno-sdk-ready`. Sigue en v1: cualquier coincidencia. Cambio: `window.SdkPayments`, `sdk-payments-ready`, revisa el global antes de escuchar. Síntoma: `Yuno is not defined`, la inicialización nunca se ejecuta.
+
+### 2. URL del script y loader (M2, B) {#2-script-url-and-loader-m2-b}
+
+Busca: etiquetas script, `loadScript`, `sdk-static-bundles-ms`. Sigue en v1: `/v1.11/`, `loadScript()` sin `baseUrl`, `sri: true`; también incorrecto: `/v2/`, `/v2.2/`. Cambio: URL completa `v2.x.y`; en las páginas de la UE, verifica que el host de la UE tenga la versión. Las versiones fijadas de v2 más antiguas, como `v2.0.0`, son válidas si la integración se probó con esa versión. Síntoma: `sdk.transaction is not a function`, o 404.
+
+### 3. Puntos de entrada de v1 (M3, B) {#3-v1-entry-points-m3-b}
+
+Busca: el segundo grep. Sigue en v1: cualquier llamada. Cambio: según el Mapeo; las filas REMOVED indican "sin reemplazo". Síntoma: `yuno.startCheckout is not a function`.
+
+### 4. Modo y workflow de la sesión (M4, B) {#4-mode-and-session-workflow-m4-b}
+
+Busca: el modo de v1 (Seamless = gestionado; `startCheckout` con `yunoCreatePayment` = manual) y el cuerpo de `POST /v1/checkout/sessions` del backend. Cambio: el modo gestionado no tiene `createPayment` y usa `workflow: "SDK_SEAMLESS"`; el modo manual tiene `createPayment` y el workflow por defecto. Síntoma: `onStatus` `INTERNAL_ERROR`.
+
+### 5. Firma de `createPayment` (M5, B) {#5-createpayment-signature-m5-b}
+
+Busca: `(yuno)?[cC]reatePayment`, `continuePayment`. Sigue en v1: dos o tres parámetros, el primero usado como string, la sesión de la configuración en uso, `continuePayment()`, `notifyError()`. Cambio: un solo `token`; envía `token.token` y `token.checkout_session`; devuelve una Promise que se resuelva en todas las rutas; rechaza ante un fallo. Renombra `yunoCreatePayment`: el código 2.2.0 mantiene un alias, pero la selección del modo lee solo `createPayment` (verifica en tiempo de ejecución). Síntoma: Create Payment 4xx, pago con sesión obsoleta, formulario atascado.
+
+### 6. Callbacks de resultado y estados (M6, B) {#6-result-callbacks-and-statuses-m6-b}
+
+Busca: `yunoPaymentResult`, `paymentResult`, `yunoError`, `enrollmentStatus`, los strings de estado de v1. Cambio: un solo `onStatus(result)` sobre los estados del backend más `INTERNAL_ERROR` y `USER_CANCEL`; los códigos de error del SDK (`FORM_INVALID`, `MERCHANT_CREATE_PAYMENT_FAILED`, `ELEMENT_NOT_FOUND`) están en `message.code` y `substatus` es `null`, por lo que nunca ramifiques según `substatus` para ellos; `FORM_INVALID` y los rechazos reintentables no son finales. Síntoma: no se maneja ningún resultado, la consola advierte `...created without an onStatus function...`.
+
+### 7. Modelo de renderizado (M7, H) {#7-rendering-model-m7-h}
+
+Busca: `renderMode`, `viewContainer`, CSS de overlay. Cambio: un contenedor con tamaño y `elementSelector` en `transaction()`. Síntoma: formulario en línea en lugar de modal; `Wrong element selector`. Bloqueado si el comercio requiere un modal.
+
+### 8. Opción de pantalla de estado (M8, H) {#8-status-screen-option-m8-h}
+
+Busca: `showPaymentStatus`. Cambio: `showStatusScreen`. Síntoma: la pantalla de resultado del SDK se muestra de todos modos y `onStatus` espera a que el comprador la cierre. El changelog público de v2.1.0 todavía dice `showPaymentStatus` (desfase de la documentación).
+
+### 9. Carga (M9, M) {#9-loading-m9-m}
+
+Busca: `onLoading`, `showLoading`, `showLoader`, `hideLoader`. Cambio: `showLoading: (isLoading) => void`, elimina `type`; un booleano debe desaparecer. Síntoma: un `onLoading` que se mantiene sigue ejecutándose, por lo que nada se rompe hasta que ambos están definidos; `showLoading: true` lanza un TypeError minificado; `showLoading: false` muestra en silencio el loader del SDK. Bloqueado donde el loader se maneja a mano con `showLoader`/`hideLoader`.
+
+### 10. Selección de la lista y pago (M10, B) {#10-list-selection-and-pay-m10-b}
+
+Busca: `paymentMethodSelected`, `startPayment`, `mountCheckout`. Cambio: `getPaymentMethodsViews`, guarda `onPaymentSelected`, el botón de pago llama a `start({paymentMethod: selected})`, ignora `selectionSource: 'auto'`. Síntoma: la lista se muestra y nada se paga.
+
+### 11. Botones externos (M11, H) {#11-external-buttons-m11-h}
+
+Busca: `mount(Seamless)?ExternalButtons`, `unmount*ExternalButton*`. Cambio: un `mount` de vista por wallet, con await o con catch. Síntoma: falta una wallet, rechazo no manejado. La familia no seamless está bloqueada.
+
+### 12. Claves de `card` (M12, H) {#12-card-keys-m12-h}
+
+Busca: `cardSaveEnable`, `requiredFieldsOrderedEnabled`, `type: 'step'`. Cambio: `saveCardEnabled`; elimina la otra. Síntoma: la casilla para guardar la tarjeta desaparece en silencio. `'step'` está bloqueado.
+
+### 13. Opciones eliminadas (M13, H) {#13-removed-options-m13-h}
+
+Busca: `onlyExpressPaymentMethods`, `stickyPayButton`, `__internal`, `renderMode`. Cambio: reporta cada una; decide con el comercio. Síntoma: falta comportamiento en silencio. `onLoading` no está en esta lista: todavía se llama (M9). Los elementos con brecha de paridad están bloqueados.
+
+### 14. Secure Fields (M14, B) {#14-secure-fields-m14-b}
+
+Busca: `secureFields(`, `.render(`, `generateToken*`, `enableV2`, `enableMultiplesCard`. Cambio: `tx.secureFields()`, `.mount`, paga con `start` y solo claves no PCI en `data.card` (`holderName`, `type`, `installment`, `customer`, `vaultOnSuccess`); condiciona el pago a `!error && isDirty`. Síntoma: `render is not a function`, error por claves PCI.
+
+### 15. Headless (M15, B) {#15-headless-m15-b}
+
+Busca: `apiClientPayment`, `generateToken`, `getThreeDSecureChallenge`, `payment_method.card.detail`, `holder_name`. Cambio: `data.card` en camelCase más `createPayment`; elimina el código de 3DS; un solo `start()` headless por transacción. Síntoma: error de tokenización, campos vacíos.
+
+### 16. Inscripción (M16, B) {#16-enrollment-m16-b}
+
+Busca: `mountEnrollmentLite`, `apiClientEnroll`, `continueEnrollment`, `vaultedToken` en los callbacks. Cambio: `transaction({customerSession}).start(...)`; el éxito es `ENROLLED` (UI) o `CREATED` (headless); el token almacenado (vaulted) viene del backend. Síntoma: se guarda un token `undefined`.
+
+### 17. Fraude y pantalla de estado (M17, H) {#17-fraud-and-status-screen-m17-h}
+
+Busca: `executeFraudCheck`, `mountFraud`, `mountStatusPayment`. Cambio: `executeFraudCheck` pasa a ser `sdk.antifraud`, verificado con `status === 'success'`; `mountFraud` es una interfaz de pago con tarjeta, por lo que pasa a ser un `transaction({...})` normal más `start({paymentMethod:{type:'CARD'}})`, con su `yunoCreatePayment` movido a `createPayment(token)`, según la página pública de migración de fraude; `transactionStatus` con `elementSelector`. Síntoma: se envían fingerprints indefinidos; `not a function`; eliminar `mountFraud` quita un flujo de pago.
+
+### 18. Llamadas de utilidad (M18, H) {#18-utility-calls-m18-h}
+
+Busca: `isPaymentMethodAvailable`, `updateCheckoutSession`, `refreshPromotionQuote`, `unmountSdk` en la instancia. Cambio: muévelas a la transacción; mantén `clearApiCache`, `setCanaryMode`. Síntoma: `... is not a function`.
+
+### 19. Ciclo de vida de `initialize` (M19, H) {#19-initialize-lifecycle-m19-h}
+
+Busca: dónde y con qué frecuencia se ejecuta `initialize` (cuerpos de render, efectos, por checkout, `applicationSession` cambiante). Cambio: una instancia por página con argumentos estables, una transacción por checkout. Síntoma: `This SdkPayments instance is no longer active: a later initialize() replaced it...` y el formulario desaparece. Dos llamadas sobre una instancia reemplazada no lanzan error: `antifraud()` se resuelve con `{status:'error'}` e `isPaymentMethodAvailable()` se resuelve con `false`.
+
+### 20. Desmontaje (M20, M) {#20-unmount-m20-m}
+
+Busca: `unmountSdk(`, limpiezas de efectos. Cambio: `await tx.unmount()`; trata el `USER_CANCEL` que entrega como desmontaje, no como abandono. Síntoma: pantalla de error al navegar. Los remontajes de React StrictMode no se han probado en v2: verifica en tiempo de ejecución.
+
+### 21. Reintento (M21, H) {#21-retry-m21-h}
+
+Busca: `isRetrying`, `newCheckoutSession`, código de reintento personalizado. Cambio: el modo manual mantiene el formulario después de un rechazo reintentable (sesión en `token.checkout_session`); después de un resultado final, sesión nueva y transacción nueva. Síntoma: reintento roto; `The payment on this checkout session already finished...`.
+
+### 22. CSS, DOM, marca blanca (M22, M) {#22-css-dom-white-label-m22-m}
+
+Busca: selectores CSS y JS sobre nombres de clase y atributos del SDK. Sigue en v1: un selector sobre un nombre de v1.11 que v2 no renderiza. Excepción: `yuno-container-spinner-content`, `yuno-container-spinner-ring` y `data-yuno-placeholder`, que v2 sí renderiza. Cambio: mantén `sdk-payments-`; vuelve a revisar visualmente cada override (solo se compararon tres clases); dale un `id` a un contenedor `HTMLElement`, o v2 agrega `yuno-view-<random>`. Una página de marca blanca en v2 siempre contiene los nombres `yuno` del spinner; repórtalo como una nota, no como un fallo. Síntoma: estilos perdidos.
+
+### 23. Tipos de TypeScript (M23, L) {#23-typescript-types-m23-l}
+
+Busca: `@yuno-payments/sdk-web-types`, tipos `YunoSDK`. Cambio: una declaración local de v2 escrita a partir de las páginas públicas de migración a v2. Síntoma: errores de compilación o `any` silencioso.
+
+### 24. Revisión de brechas de paridad (M24, P) {#24-parity-gap-review-m24-p}
+
+Busca: cada fila BLOCKED. Reporta el flujo como "bloqueado: brecha de paridad, no migres este flujo todavía" y mantenlo en v1.11. Pide a tu contacto en Yuno la lista actual de brechas de paridad y contrástala.
+
+### 25. Despliegue y reversión (M25, M) {#25-rollout-and-rollback-m25-m}
+
+Busca: un flag o un interruptor por entorno para la URL del script. Cambio: conserva la ruta de v1.11, despliega v2 mediante un flag, prueba primero en sandbox. Síntoma: no hay vuelta atrás.
+
+## Formato del reporte {#report-format}
+
+```
+PART 1  Migration list (B first, then H, M, L)
+B  M5   src/checkout/pay.ts:41    yunoCreatePayment(ott, info, cs) -> createPayment(token), send token.token
+B  M6   src/checkout/pay.ts:58    yunoPaymentResult -> onStatus; 'FAIL' -> DECLINED/REJECTED/INTERNAL_ERROR
+H  M12  src/checkout/config.ts:9  card.cardSaveEnable -> card.saveCardEnabled
+KEEP    src/index.html:12         window.SdkPayments / sdk-payments-ready already v2-compatible
+
+PART 2  Parity gaps (flows that cannot migrate yet)
+P  M11  src/wallets.ts:20  mountExternalButtons (non-seamless wallets): blocked: parity gap, do not migrate this flow yet
+P  M13  src/cart.ts:77     stickyPayButton: blocked: parity gap, do not migrate this flow yet
+```
+
+Una línea por hallazgo: severidad, verificación, archivo:línea, el cambio en una línea. Termina con las versiones de los scripts de v1 y v2
+encontradas y si el repositorio es solo v1 o mixto.
+
+## Diagnósticos por capturar {#diagnostics-to-capture}
+
+1. La URL del script realmente cargado (pestaña Network) y el valor de `typeof sdk.transaction` (`function` solo en v2).
+2. El id de la sesión de checkout, su `workflow` y la hora UTC del intento.
+3. Cada payload de `onStatus` recibido (`status`, `substatus`, `message.code`, `message.reason`).
+4. Las líneas de consola que empiezan con `SdkPayments` y cualquier mensaje lanzado por `transaction()`, `start()` o `mount()`.
+5. La solicitud de `createPayment` que envió tu backend (campo del token y sesión, sin datos personales).
+
+## Verifica en tiempo de ejecución {#verify-at-runtime}
+
+Esto no se pudo confirmar leyendo código; pruébalo antes de depender de ello:
+qué hace un `yunoCreatePayment` suelto (firma de v1) una vez fusionado en `createPayment`; qué renderiza
+`card.type: 'step'`; `transaction.unmount()` bajo un remontaje de React StrictMode; la lista completa de clases CSS;
+la disponibilidad de `v2.2.0` en la UE. Parte de esto se leyó de código de v2 no publicado, por lo que algunos comportamientos
+podrían no estar todavía en el bundle 2.2.0.
+
+Fuentes: el código fuente del Web SDK 1.11.47 y 2.2.0, el reporte de la API de v2, el loader de npm
+`@yuno-payments/sdk-web`, `@yuno-payments/sdk-web-types` y la documentación pública de Yuno (la pestaña "SDK", sus guías de migración
+y changelog, y la página de marca blanca); pruebas de CDN. Fecha de la investigación: 2026-10-29.

@@ -1,0 +1,146 @@
+---
+title: "External Native Modules (iOS)"
+sidebarTitle: "Descripción general (iOS)"
+description: "Agrega un SDK nativo de terceros (antifraude, 3DS, Revolut Pay) al Yuno iOS SDK sin cambiar tu código de pago."
+robots: index
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+El Yuno iOS SDK se mantiene pequeño a propósito: cada SDK nativo de terceros se entrega como un **módulo independiente y opcional**. Agregas solo los módulos que necesita tu integración, y el Yuno SDK los detecta automáticamente cuando un checkout usa el proveedor correspondiente. Tu código de pago e inscripción no cambia.
+
+<Note>
+  Instalar un módulo no hace que el SDK lo use: un módulo se ejecuta solo cuando el proveedor está habilitado para tu cuenta de Yuno y el backend lo solicita para la transacción actual.
+</Note>
+
+## Módulos disponibles {#available-modules}
+
+| Módulo | Qué agrega | iOS mínimo |
+|---|---|---|
+| ClearSale antifraud | Recopila el fingerprint del dispositivo de ClearSale y lo adjunta al pago | 14.0 |
+| Koin antifraud | Recopila el fingerprint del dispositivo de Koin y lo adjunta al pago | 14.0 |
+| Riskified antifraud | Inicia el beacon de Riskified con la sesión de checkout y adjunta esa sesión al pago | 14.0 |
+| [Signifyd antifraud](/es/docs/sdks/external-native-modules/signifyd-ios) | Perfila el dispositivo con el Profiling SDK de Signifyd y adjunta el ID de sesión al pago | 14.0 |
+| [Netcetera 3DS](/es/docs/sdks/external-native-modules/netcetera-3ds-ios) | Ejecuta los desafíos de 3D Secure de forma nativa en tu app, para pagos e inscripción | 14.0 |
+| Revolut Pay | Checkout nativo de Revolut Pay sobre el SDK oficial de Revolut | 15.0 |
+
+Nombres de los paquetes:
+
+| Módulo | Producto de Swift Package Manager | Soportado desde |
+|---|---|---|
+| Antifraude de ClearSale | `YunoAntifraudClearsale` | 2.25.0 |
+| Antifraude de Koin | `YunoAntifraudKoin` | 2.25.0 |
+| Antifraude de Riskified | `YunoAntifraudRiskified` | 2.29.0 |
+| Antifraude de Signifyd | `YunoAntifraudSignifyd` (paquete independiente) | 2.30.0 |
+| Netcetera 3DS | `Yuno3DSNetcetera` | 2.25.0 |
+| Revolut Pay | Pod de CocoaPods `YunoRevolutPay`, consulta [Revolut Pay (solo CocoaPods)](#revolut-pay-cocoapods-only) | 2.25.0 a 2.30.0 |
+
+Desde YunoSDK 2.31.0 los módulos se distribuyen solo mediante Swift Package Manager y funcionan con `YunoSDK` o con `YunoSDK-Static`.
+
+Netcetera tiene pasos de configuración adicionales (certificado de sandbox), que se explican en [Netcetera 3DS (iOS)](/es/docs/sdks/external-native-modules/netcetera-3ds-ios). Signifyd se entrega en su propio paquete y necesita un token de Signifyd, como se explica en [Signifyd antifraud (iOS)](/es/docs/sdks/external-native-modules/signifyd-ios).
+
+## Instalación {#installation}
+
+Cada módulo vive en el mismo paquete que el Yuno SDK, así que solo hay una URL que agregar. En Xcode ve a **File > Add Package Dependencies...** y agrega:
+
+```
+https://github.com/yuno-payments/yuno-sdk-ios
+```
+
+elige la regla **Up to Next Major Version** a partir de `2.31.0` y, en la lista de productos, marca `YunoSDK` (dinámico) o `YunoSDK-Static` (estático), nunca ambos, más los módulos que necesites (`YunoAntifraudClearsale`, `YunoAntifraudKoin`, `YunoAntifraudRiskified`, `Yuno3DSNetcetera`). No se requiere nada más: cada producto incluye su propio binario del proveedor.
+
+<Note>
+  Signifyd no está en este paquete: se entrega en `yuno-sdk-ios-signifyd` y necesita tu token de Signifyd para descargar el SDK de Signifyd. Consulta [Signifyd antifraud (iOS)](/es/docs/sdks/external-native-modules/signifyd-ios).
+</Note>
+
+### Revolut Pay (solo CocoaPods) {#revolut-pay-cocoapods-only}
+
+`YunoRevolutPay` está disponible solo como pod de CocoaPods y funciona con `YunoSDK` hasta la 2.30.0, la última versión publicada en CocoaPods. Agrégalo junto a `YunoSDK` en tu Podfile:
+
+```ruby
+platform :ios, '15.0'
+
+target 'YourApp' do
+  use_frameworks!
+
+  pod 'YunoSDK', '~> 2.25'
+  pod 'YunoRevolutPay', '~> 1.0'
+end
+
+# Revolut's dependencies declare an old deployment target that
+# Xcode 14.3 or later cannot build as-is.
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+    end
+  end
+end
+```
+
+Luego ejecuta:
+
+```bash
+pod install
+```
+
+<Note>
+  Revolut Pay instala `lottie-ios` como dependencia, en el rango de 4.4.1 a 4.5.x.
+</Note>
+
+<Note>
+  `YunoRevolutPay` fija `RevolutPayments/RevolutPay` en `~> 3.16.0`, porque el binario precompilado está ligado a esa API. Si tu Podfile ya declara `RevolutPayments`, alinéalo a ese rango.
+</Note>
+
+<Note>
+  Revolut Pay vuelve a tu aplicación mediante un deeplink: reenvíalo a `Yuno.receiveDeeplink(url)` como se describe en [Maneja el regreso desde el navegador externo](/docs/sdks/full-checkout/ios-payments#step-10-handle-external-browser-return-optional).
+</Note>
+
+## Activación de un módulo {#activating-a-module}
+
+Los módulos **se registran solos** cuando se inicia la aplicación, con `YunoSDK` o con `YunoSDK-Static`. No se requiere código adicional más allá de agregar el producto a tu target.
+
+Revolut Pay es la excepción: llama a `YunoRevolutPay.register()` **una sola vez**, antes de `Yuno.initialize(...)`, por ejemplo en `application(_:didFinishLaunchingWithOptions:)`:
+
+```swift
+import YunoSDK
+import YunoRevolutPay
+
+YunoRevolutPay.register()
+
+Yuno.initialize(apiKey: "YOUR_API_KEY", config: YunoConfig())
+```
+
+<Tip>
+  Una vez que un módulo está registrado, el Yuno SDK lo usa automáticamente. No necesitas cambiar ningún código de pago, inscripción ni 3DS.
+</Tip>
+
+## Solución de problemas {#troubleshooting}
+
+<AccordionGroup>
+  <Accordion title="Revolut Pay está instalado pero nada cambia">
+    Asegúrate de llamar a `YunoRevolutPay.register()` antes de `Yuno.initialize(...)`.
+  </Accordion>
+  <Accordion title="pod install: required a higher minimum deployment target">
+    La línea `platform` de tu Podfile está por debajo del mínimo del módulo. Usa `platform :ios, '15.0'` para `YunoRevolutPay`.
+  </Accordion>
+  <Accordion title="pod install: CocoaPods could not find compatible versions for pod YunoSDK">
+    `YunoRevolutPay` depende de `YunoSDK ~> 2.25`, y el último `YunoSDK` en CocoaPods es la 2.30.0. Si tu Podfile fija un SDK más antiguo (por ejemplo `'2.24.1'`), amplíalo a ese rango.
+  </Accordion>
+  <Accordion title="pod install: CocoaPods could not find compatible versions for pod RevolutPayments">
+    `YunoRevolutPay` requiere `RevolutPayments/RevolutPay ~> 3.16.0`. Si tu Podfile fija otra versión de `RevolutPayments`, alinéala a `'~> 3.16.0'` o quita la fijación y deja que `YunoRevolutPay` la incluya.
+  </Accordion>
+  <Accordion title="pod install: SDK does not contain 'libarclite' (YunoRevolutPay)">
+    Agrega el hook `post_install` que se muestra en [Revolut Pay (solo CocoaPods)](#revolut-pay-cocoapods-only) para que todos los targets de pods compilen para iOS 15.0.
+  </Accordion>
+  <Accordion title="Swift Package Manager: duplicate RiskifiedBeacon framework">
+    El producto `YunoAntifraudRiskified` ya incluye `RiskifiedBeacon` 1.6.4 de Riskified. Si tu aplicación también agrega el paquete propio de Riskified, quítalo y conserva solo el producto de Yuno.
+  </Accordion>
+  <Accordion title="Revolut Pay nunca se completa después de volver a la aplicación">
+    El deeplink de regreso no está llegando al Yuno SDK. Asegúrate de que tu aplicación declare un esquema de URL, de que las URL entrantes se reenvíen a `Yuno.receiveDeeplink(url)` y de que un `guard` sobre el esquema no esté descartando la URL de regreso de Revolut Pay (`yourscheme://revolut-pay`).
+  </Accordion>
+  <Accordion title="Swift Package Manager: no such module 'CSBehavior' when importing YunoAntifraudClearsale">
+    Afecta solo a `YunoAntifraudClearsale` 1.0.0. El módulo se registra solo, así que no necesitas importarlo desde Swift: quita la línea `import YunoAntifraudClearsale` y el proyecto compila.
+  </Accordion>
+</AccordionGroup>

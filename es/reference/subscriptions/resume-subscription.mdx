@@ -1,0 +1,73 @@
+---
+title: "Reanudar suscripción"
+openapi: "/openapi/es/subscriptions/resume-subscription.json POST /subscriptions/{subscription_id}/resume"
+description: "Reactiva una suscripción en pausa, devolviéndola al estado con el que se estaba facturando."
+---
+
+Llamar a este endpoint reactivará una suscripción. Cambiará una suscripción con `status` PAUSED de vuelta al estado con el que se estaba facturando: `ACTIVE`, o `TRIALING` si aún está dentro de una fase de prueba.
+
+También puedes enviar `reason`, una cadena de texto libre opcional de máximo 255 caracteres, que se almacena en el campo `reason` de la suscripción. Sobrescribe cualquier `reason` que haya registrado una pausa anterior.
+
+<Note>
+**Elegir qué ocurre con la fecha de facturación**
+
+`billing_cycle_behavior` es un campo opcional en esta llamada. Decide qué ocurre con el ancla de facturación (la fecha en `billing_cycles.next_at`) cuando la suscripción se reanuda:
+
+- `KEEP`: se conserva la fecha de facturación original. Si venció mientras la suscripción estaba en pausa, avanza por periodos de facturación completos hasta quedar en el futuro.
+- `RESTART`: el ciclo se vuelve a anclar al momento de la reanudación, más la frecuencia de la suscripción.
+
+Si omites el campo, se aplica el `billing_cycle_behavior` que se almacenó en la pausa, ya sea definido explícitamente allí o registrado como `KEEP` de forma predeterminada. Un valor explícito en esta llamada siempre prevalece sobre lo que almacenó la pausa. Una suscripción pausada antes de que esta función se habilitara para tu organización no tiene nada almacenado, y una reanudación sin cuerpo en una de ellas conserva el comportamiento predeterminado anterior: una fecha de facturación que aún está en el futuro no se modifica, y una que ya pasó se mueve un periodo de facturación a partir de la reanudación.
+
+No se emite ningún cobro durante la llamada en ninguno de estos casos. `billing_cycle_behavior` es **solo de escritura**: se acepta en la solicitud y nunca se devuelve en ninguna respuesta.
+</Note>
+
+<Note>
+**Disponibilidad**
+
+`billing_cycle_behavior` está disponible para las organizaciones habilitadas; contacta a Yuno. Para una organización que aún no está habilitada, enviar el campo devuelve `400`: `"billing_cycle_behavior is not enabled for this organization."`
+</Note>
+
+### Comparación de KEEP y RESTART {#keep-and-restart-compared}
+
+Una suscripción con un ancla de facturación futura se reanuda con cada valor:
+
+<CodeGroup>
+```json KEEP
+{ "billing_cycle_behavior": "KEEP" }
+
+// billing_cycles.next_at -> unchanged (the anchor already in the future is kept)
+```
+
+```json RESTART
+{ "billing_cycle_behavior": "RESTART" }
+
+// billing_cycles.next_at -> the resume instant plus one month
+// frequency.monthly_billing_day -> stamped to the day of the resume
+```
+</CodeGroup>
+
+Por ejemplo, reanudar una suscripción mensual el día 15 con `RESTART` mueve `billing_cycles.next_at` un mes hacia adelante y establece `frequency.monthly_billing_day` en `15`, tanto en la cadena directa del motor como en la del comercio. Una suscripción que ya declara un `monthly_billing_day` lo conserva: `RESTART` vuelve a anclar la fecha, pero no mueve el día en que cae.
+
+<Note>
+**RESTART y el día de facturación mensual**
+
+En una suscripción mensual creada sin un `frequency.monthly_billing_day` explícito, `RESTART` establece ese campo con el día del reinicio, y cada renovación futura lo lee. Una suscripción que ya declara un día de facturación lo conserva: la fecha no se mueve al día del reinicio, solo se vuelve a anclar la hora del día. `frequency.monthly_billing_day` se devuelve en el objeto de suscripción, por lo que el valor en el que se fijó un reinicio se puede leer desde cualquier respuesta de suscripción.
+
+La misma regla se aplica a un `RESTART` en [Actualizar suscripción](/es/reference/subscriptions/update-subscription): es una sola regla, en ambos endpoints.
+</Note>
+
+El webhook `subscription.resume` se dispara una vez y lleva `resume_reason: MERCHANT` cuando la reanudación la llamas tú mismo.
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `400` | `BAD_REQUEST` | `billing_cycle_behavior` no es `KEEP` ni `RESTART`: `"billing_cycle_behavior must be one of KEEP, RESTART."` |
+| `400` | `INVALID_PARAMETERS` | `billing_cycle_behavior` no es `KEEP` ni `RESTART`, detectado en el gateway: `"The field 'billing_cycle_behavior' has an invalid value."` |
+| `400` | `BAD_REQUEST` | La organización no está habilitada para `billing_cycle_behavior` y este se envía: `"billing_cycle_behavior is not enabled for this organization."` |
+| `400` | `INVALID_STATE` | La suscripción no está `PAUSED`. |
+| `400` | `INVALID_DATE` | `availability.finish_at` ya pasó. |
+
+</div>

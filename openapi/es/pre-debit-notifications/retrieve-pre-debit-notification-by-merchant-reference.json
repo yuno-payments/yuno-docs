@@ -1,0 +1,206 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "pre-debit-notifications",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/predebit-notify": {
+      "get": {
+        "summary": "Obtener notificación previa al débito por referencia del comercio",
+        "description": "Obtiene una notificación previa al débito por la referencia del comercio que se usó para crearla.",
+        "operationId": "retrieve-pre-debit-notification-by-merchant-reference",
+        "parameters": [
+          {
+            "name": "X-Account-Code",
+            "in": "header",
+            "required": true,
+            "description": "UUID de la cuenta a la que pertenece la notificación.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "merchant_reference",
+            "in": "query",
+            "required": true,
+            "description": "El merchant_reference que se usó al crearla.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "La notificación previa al débito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Identificador único de la notificación previa al débito. Haz referencia a él en el débito recurrente como payment_method.detail.bank_transfer.pre_debit_notification_id."
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "El ID de tu cuenta de Yuno."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "SENT",
+                        "REJECTED",
+                        "ERROR"
+                      ],
+                      "description": "SENT: el proveedor aceptó y entregó la notificación. REJECTED: el proveedor la rechazó. ERROR: no se pudo transmitir la notificación."
+                    },
+                    "merchant_reference": {
+                      "type": "string",
+                      "description": "Tu referencia única para esta notificación (idempotente por cuenta)."
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Texto que se muestra al cliente en la notificación."
+                    },
+                    "amount": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "value"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "description": "Código de moneda ISO 4217 del próximo débito (para UPI Autopay, INR).",
+                          "example": "INR"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Monto del próximo débito.",
+                          "example": "499.00"
+                        }
+                      }
+                    },
+                    "billing_date": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Fecha del próximo débito (YYYY-MM-DD)."
+                    },
+                    "origin_payment_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "El pago de creación del mandato que se usó para derivar el proveedor y la conexión, cuando se proporciona."
+                    },
+                    "provider_data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Proveedor que gestionó la notificación (por ejemplo, EBANX)."
+                        },
+                        "connection_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Conexión que se usó para enviar la notificación."
+                        },
+                        "provider_transaction_id": {
+                          "type": "string",
+                          "description": "Referencia de transacción del proveedor, cuando está disponible."
+                        },
+                        "provider_notification_id": {
+                          "type": "string",
+                          "description": "Referencia del proveedor de la notificación entregada. Yuno la resuelve y la reenvía al proveedor automáticamente cuando el débito recurrente hace referencia a esta notificación."
+                        },
+                        "raw_request": {
+                          "type": "object",
+                          "description": "Solicitud ofuscada al proveedor. Solo se devuelve para organizaciones en la lista de permitidos."
+                        },
+                        "raw_response": {
+                          "type": "object",
+                          "description": "Respuesta ofuscada del proveedor. Solo se devuelve para organizaciones en la lista de permitidos."
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe ninguna notificación con esta referencia del comercio para tu cuenta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PRE_DEBIT_NOTIFICATION_NOT_FOUND"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Pre-debit notification not found."
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "PRE_DEBIT_NOTIFICATION_NOT_FOUND",
+                  "messages": [
+                    "Pre-debit notification not found."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

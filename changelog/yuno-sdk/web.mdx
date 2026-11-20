@@ -5,6 +5,95 @@ description: "Latest updates and version history for the new Yuno SDK for Web"
 
 import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
+## v2.8.0
+*November 18, 2026*
+
+**Customer form**
+
+- <ChangelogBadge type="added" /> **Banks under maintenance stay visible but cannot be selected**  
+  When the issuers list marks a bank as offline, the bank selector shows it under a "Temporarily unavailable" group, labelled as offline and not selectable by click or keyboard. A bank that is offline cannot be submitted: the form asks the buyer to choose another bank. Lists without offline banks render exactly as before.
+
+**Lite Web SDK**
+
+- <ChangelogBadge type="added" /> **Enrollment popup window and KCP KakaoPay, PAYCO and card enrollment**  
+  When an enrollment's provider answers with a popup action, the enrollment now opens the provider page in a window owned by the SDK instead of replacing the page. The merchant page stays mounted behind an enrollment overlay, and the SDK resolves the enrollment status as before, so no integration change is needed. If the browser blocks the window, the shopper gets a Continue button. Enrollments answered with a plain redirect keep the same-tab redirect. A KCP card window opened in that popup no longer fails with a card integration error (신용카드 연동 오류) and completes in the popup. Enrollment also follows a REDIRECT_URL action that asks for a form POST to a KCP host (https, *.kcp.co.kr): the SDK submits a hidden form to init_url once per enrollment. Every other redirect keeps the GET. On desktop browsers, KakaoPay (`KAKAO_PAY`) and PAYCO (`KCP_PAYCO`) enrollment through KCP shows a button that opens KCP's window on click and forwards KCP's result to the enrollment result URL (only a Yuno host or the white-label apiUrl host), so the shopper lands on the merchant's success or error page. If KCP fails to load, the result post is blocked, or the shopper closes KCP without a result, the button is enabled again with an inline error so the shopper can retry. Unmounting the SDK closes KCP's window. Merchants with a strict Content Security Policy need the KCP hosts in script-src and frame-src, and form-action for the result URL host (*.y.uno, or the white-label apiUrl host) and *.kcp.co.kr.
+
+**Apple Pay**
+
+- <ChangelogBadge type="fixed" /> **Apple Pay Shows When The Shopper Has No Card In Wallet**  
+  The Apple Pay button is no longer hidden when the shopper has no card in Apple Wallet: it shows whenever the device supports Apple Pay, and Apple's sheet lets the shopper add a card during the purchase. This applies everywhere the SDK renders it (the payment method list and the Apple Pay wallet view from `getPaymentMethodsViews`), and `transaction.isPaymentMethodAvailable({ paymentMethodType: 'APPLE_PAY' })` now returns `true` for those shoppers. The SDK no longer calls `ApplePaySession.applePayCapabilities()`, which also removes a request to Apple's servers before the button renders.
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **No card form error after the page removes the SDK element**  
+  When the merchant's page removed the element it gave the SDK without calling `transaction.unmount()` (for example when the shopper pressed back while the checkout was loading), the SDK reported `Element card-form-<uuid> doesn't exist in the DOM` as an error status through `onStatus`. That error status is no longer delivered in this case. The payment method list that was rendering in the removed element stays as it was until the payment settles, the SDK is initialized again or the list is mounted again, as before.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Payment Method List Shows Its Methods Sooner**  
+  The payment method list shows its payment methods before the SDK downloads the payment forms. The forms download right after, in the background, and a form opened before its code arrives shows the loading placeholder the form already uses while it starts.
+
+## v2.7.2
+*November 12, 2026*
+
+**Card Payments**
+
+- <ChangelogBadge type="fixed" /> **A Saved Card No Longer Pays By Itself When Installments Fail**  
+  When the installments lookup for a saved credit card failed and installments was its only required field, the SDK created the one-time token and the payment with no click on pay. In the payment method list the preferred saved card is selected as the checkout loads, so it paid as soon as the SDK mounted, for example when the amount has no installment plan (`NO_INSTALLMENT_PLAN_AVAILABLE`). A failed lookup now means no installments: the saved card is shown with its pay button and nothing is paid until the shopper clicks pay or picks another payment method.
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Container Presence Logged On Mount**  
+  When the element passed to the SDK is not in the page at mount time, or left the page and was drawn again, the SDK now records whether the element was there when it started and how many milliseconds later it left. No change for the shopper.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Faster Payment Method List And Wallet Buttons**  
+  The payment method list and the wallet buttons load faster: the SDK downloads their code while it loads the checkout settings instead of after, and the wallet buttons reuse the payment methods the SDK already requested, so they make one request less. The express buttons above the list keep their place while they load, so the payment methods below do not move when a button appears.
+
+## v2.7.1
+*November 11, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Saved-card CVV and card PIN use the merchant font**  
+  The security code and card PIN fields of the saved-card form now load the fonts passed in `card.fonts`, like the new-card form, so they no longer fall back to the browser default font.
+
+- <ChangelogBadge type="added" /> **Mercado Pago Fast Payments In Headless start()**  
+  A headless `start()` with `MERCADO_PAGO_SUPERTOKEN` now sends the Mercado Pago wallet fields (`thirdPartyToken`, `providerMethodId`, `providerMethodType`) and the installments in the one-time token. If any wallet field is missing, `onStatus` reports `WALLET_DATA_MISSING` and no token is created.
+
+## v2.7.0
+*November 10, 2026*
+
+**PayPal**
+
+- <ChangelogBadge type="added" /> **Venmo Only Button**  
+  When Disable Funding Sources includes paypal and Enable Funding Sources includes venmo, checkout shows only the Venmo button. PayPal stays beside Venmo when paypal is not disabled. With paypal disabled and venmo not enabled, neither button is shown.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Apple Pay Merchant Session And PayPal Enrollment On Demand**  
+  When the configuration marks the Apple Pay merchant session or the PayPal enrollment as on demand, the SDK requests it from the sdk-provider endpoint when the shopper taps the button instead of reading it from the configuration, so no PayPal setup token is created for shoppers who never click PayPal. The PayPal button stays visible without a setup token in the configuration. If the request fails, the Apple Pay sheet or the PayPal window closes and the shopper can tap again while the rest of the checkout keeps working.
+
+## v2.6.0
+*November 6, 2026*
+
+**Card Payments**
+
+- <ChangelogBadge type="added" /> **Split One Payment Across Two Cards**  
+  `transaction.start([...])` takes an array of two card payment methods, each with its `data.amount`. The SDK creates one composite token, hands it to `createPayment`, runs each card's 3DS in turn and sends one `onStatus` for the whole payment. With `autoContinuePayment: false` it stops after `createPayment` and you continue each card on your side. An invalid array rejects `start()` with `INVALID_SPLIT_PAYMENT` before any request.
+
+## v2.5.1
+*November 5, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Click to Pay enrolment works again when the shopper ticks the consent box**  
+  In the Golden Flow card form, ticking "Save my information with Mastercard Click to Pay" showed a tick but the SDK received it as unticked, so the card was paid as a regular card and never enrolled in Click to Pay. "Remember me in this browser" and the mandate consent checkbox had the same problem. All three now report what the shopper sees.
+
+- <ChangelogBadge type="changed" /> **Every Express Wallet You Switch On Now Renders As A Button**  
+  With Horizontal express button stacking, every wallet whose Render as express button switch is on now renders as an express button, in your list order. Two rules used to pull wallets out of the row: Google Pay moved into the payment method list as soon as a second express wallet was on, and the row stopped at three buttons. Both are gone. Instead of dropping a wallet to make the rest fit, the row wraps: buttons keep an equal width, a row holds two on a phone and three when there is room, and a short last line is centred. The list order, the fallback to the list when a button does not load, and Vertical stacking behave as before. Merchants with two or more express wallets on will see Google Pay move from the list into the row, and merchants with more than three will see every wallet as a button over two or more lines.
+
 ## v2.5.0
 *November 3, 2026*
 

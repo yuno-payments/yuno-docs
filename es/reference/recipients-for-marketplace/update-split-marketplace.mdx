@@ -1,0 +1,48 @@
+---
+title: "Actualizar el split de una transacción pagada"
+openapi: "/openapi/es/recipients-for-marketplace/update-split-marketplace.json PUT /payments/{payment_id}/transactions/{transaction_id}/split-marketplace"
+description: "Reemplaza el split_marketplace de una transacción que ya está pagada, antes de que el proveedor la liquide"
+---
+
+Los marketplaces que redistribuyen una orden después del pago (otro vendedor la entrega, se cambia un artículo) pueden reemplazar el split de una transacción pagada en lugar de reembolsar y cobrar de nuevo. La actualización reemplaza el split **completo**: los tramos que envías pasan a ser el split, y los tramos que no envías se eliminan. El pago y la transacción conservan su estado, y no se crea ninguna transacción nueva.
+
+## Cuándo se acepta una actualización {#when-an-update-is-accepted}
+
+- La transacción es una `PURCHASE` con estado `SUCCEEDED`.
+- El proveedor aún lo permite: antes de la liquidación, y mientras no se alcance el límite de cambios de split por transacción del proveedor (cada actualización usa ese margen una vez por tramo). Ambas condiciones dependen del proveedor; cuando una falla recibes un `409` con `SPLIT_UPDATE_WINDOW_CLOSED` o `SPLIT_UPDATE_LIMIT_REACHED`, y el split no cambia. Yuno cuenta los cambios ya realizados y rechaza una actualización que superaría el límite antes de que llegue al proveedor.
+- El pago no tiene reembolso (parcial, total o uno en espera de reintento), ni contracargo ni reversión de transferencia. De lo contrario recibes un `409` con `SPLIT_UPDATE_NOT_ALLOWED`.
+- El proveedor de la transacción lo admite. La actualización del split está disponible solo para las combinaciones de proveedor y método de pago que el proveedor admite, y Yuno habilita cada combinación por entorno; contacta a Yuno para habilitar la tuya. Para una combinación que no está habilitada, la solicitud devuelve `409` `SPLIT_UPDATE_NOT_ALLOWED` con el mensaje "The split of this transaction cannot be updated: the provider and payment method of the transaction do not support it", antes de enviar nada al proveedor.
+
+Cada tramo debe indicar su destinatario (`recipient_id` o `provider_recipient_id`, nunca ambos) y su monto. Los montos no deben sumar más que el monto de la transacción, en la moneda del pago.
+
+## Idempotencia {#idempotency}
+
+`X-Idempotency-Key` es obligatoria. **Un timeout no es un fallo**: la actualización puede haberse aplicado en el proveedor aunque no hayas recibido la respuesta. Repite la solicitud con la **misma clave y el mismo cuerpo** y obtendrás el resultado del primer intento, sin un segundo cambio en el proveedor: el mismo estado, y el pago tal como está en ese momento (después de una actualización posterior, el split que se muestra es el actual). La misma clave con un cuerpo distinto se rechaza con `SPLIT_UPDATE_IDEMPOTENCY_CONFLICT`. Si repites la solicitud mientras el primer intento sigue en curso (por ejemplo, justo después de tu propio timeout), la respuesta es `400` `OPERATION_IN_PROCESS` y no cambia nada: espera unos segundos y repítela de nuevo con la misma clave. Usa una clave nueva solo para un cambio nuevo.
+
+## Dónde leer el split {#where-to-read-the-split}
+
+La respuesta es el pago, con la misma forma que [Retrieve payment by ID](/reference/retrieve-payment-by-id). Lee el split en `transactions.split_marketplace`; el arreglo `split_marketplace` a nivel de pago no lo incluye. Lo mismo ocurre con cada `GET /payments/{payment_id}` posterior.
+
+## Cuando el proveedor no confirma {#when-the-provider-does-not-confirm}
+
+Si el proveedor no confirma el resultado (un timeout en el proveedor, o un fallo mientras reemplazaba las reglas), la respuesta es un `502` con `PROVIDER_ERROR` y la actualización queda **en revisión** por parte de Yuno. No envíes una actualización nueva para esa transacción: se rechaza con `409` `SPLIT_UPDATE_NOT_ALLOWED` hasta que la revisión termine. Un reintento con la misma clave devuelve el mismo `502`. Los reembolsos de ese pago también se rechazan hasta que la revisión termine (siguiente sección).
+
+## Reembolsos mientras hay una actualización abierta {#refunds-while-an-update-is-open}
+
+Mientras una actualización de un pago está en curso o en revisión, los reembolsos de ese pago (incluido cancelar o reembolsar) se rechazan con `400` `OPERATION_IN_PROCESS`, la misma respuesta que para cualquier otra operación en curso sobre el pago. En revisión, el mensaje lo indica. No se registra nada del reembolso rechazado: repítelo con la **misma clave de idempotencia** cuando la actualización termine. Los reembolsos solicitados en lote no se reintentan automáticamente; solicítalos de nuevo.
+
+## Códigos de respuesta {#response-codes}
+
+| HTTP | `code` | Significado |
+|---|---|---|
+| 200 | — | El split fue reemplazado. La respuesta es el pago. |
+| 400 | `INVALID_PARAMETERS` | Falta un campo o es inválido: no hay clave de idempotencia, el split está vacío, un tramo sin destinatario o monto, ambos ids de destinatario en un tramo, montos superiores al monto de la transacción, otra moneda, una descripción de menos de 3 o más de 255 caracteres. |
+| 400 | `PAYMENT_NOT_FOUND`, `TRANSACTION_NOT_FOUND` | No se encuentra el pago, o la transacción de ese pago, para tu cuenta. |
+| 400 | `OPERATION_IN_PROCESS` | Ya hay otra operación en curso sobre el pago. Inténtalo de nuevo en unos segundos con la misma clave. |
+| 404 | `RECIPIENT_NOT_FOUND` | Un `recipient_id` es desconocido, o el destinatario no tiene onboarding con el proveedor de la transacción. |
+| 409 | `SPLIT_UPDATE_NOT_ALLOWED` | La transacción no es una compra exitosa, el proveedor no está habilitado, el pago tiene un reembolso (incluido uno en espera de reintento), contracargo o reversión de transferencia, o hay una actualización previa en revisión. |
+| 409 | `SPLIT_UPDATE_WINDOW_CLOSED` | El proveedor ya no acepta cambios para esta transacción. El split no cambió. |
+| 409 | `SPLIT_UPDATE_LIMIT_REACHED` | Se alcanzó el límite de cambios de split del proveedor para esta transacción. El split no cambió. |
+| 409 | `SPLIT_UPDATE_IN_PROGRESS` | Hay otra actualización de esta transacción en curso. Inténtalo de nuevo en unos segundos. |
+| 409 | `SPLIT_UPDATE_IDEMPOTENCY_CONFLICT` | La clave de idempotencia ya se usó con un cuerpo distinto. |
+| 502 | `PROVIDER_ERROR` | El proveedor no confirmó el resultado; la actualización está en revisión. |

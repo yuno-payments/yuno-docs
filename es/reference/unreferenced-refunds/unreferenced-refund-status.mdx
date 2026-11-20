@@ -1,0 +1,33 @@
+---
+title: "Estado del reembolso sin referencia"
+description: "Ciclo de vida y máquina de estados de los reembolsos sin referencia."
+---
+
+El campo `status` informa la etapa actual del ciclo de vida. El campo `sub_status` aporta un contexto más detallado dentro de cada estado de nivel superior.
+
+<div className="code-nowrap-table dense-table">
+
+| Estado      | Sub_status             | Descripción                                                                                                                                                                                                                                                                         |
+| ----------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CREATED`   | `CREATED`              | Estado temporal. Yuno guardó el reembolso después de la validación y está en proceso de enrutarlo a un proveedor.                                                                                                                                                                   |
+| `PENDING`   | `APPROVED`             | El proveedor aceptó el reembolso y está a la espera de la liquidación asíncrona de la red o del banco. Típico de ACH, SEPA, GoCardless.                                                                                                                                             |
+| `SUCCEEDED` | `SUCCEEDED`            | Terminal. El reembolso fue entregado al destino, ya sea liquidado de forma síncrona por el proveedor (reembolsos de tarjeta de Stripe, Nuvei) o confirmado de forma asíncrona mediante un webhook del proveedor (ACH, SEPA, GoCardless).                                              |
+| `FAILED`    | `DECLINED_BY_PROVIDER` | Terminal. El reembolso no se completó. Incluye rechazos síncronos, devoluciones asíncronas (códigos R de ACH, SEPA RJCT), bloqueos de OFAC, cuentas no válidas, saldo insuficiente del comercio, tiempos de espera de SLA y rechazos por fraude. El detalle está en `provider.raw_response_code` y `provider.raw_response_message`. |
+
+</div>
+
+## Eventos de webhook {#webhook-events}
+
+Los eventos de webhook se envían solo en las transiciones del `status` de nivel superior. Los cambios de `sub_status` dentro de `PENDING` no son observables externamente.
+
+<div className="code-nowrap-table dense-table">
+
+| Evento | Fires when `status` enters |
+|---|---|
+| `unreferenced_refund.created` | `CREATED` |
+| `unreferenced_refund.succeeded` | `SUCCEEDED` |
+| `unreferenced_refund.failed` | `FAILED` |
+
+</div>
+
+---

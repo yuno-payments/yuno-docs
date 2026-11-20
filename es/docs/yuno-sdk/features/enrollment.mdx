@@ -1,0 +1,135 @@
+---
+title: "Inscripción"
+sidebarTitle: "Guardar un método de pago"
+description: "Guarda el método de pago de un cliente para usarlo en el futuro, sin realizar un cobro."
+---
+
+La inscripción te permite tokenizar y guardar el método de pago de un cliente sin procesar un cobro. Úsala para registrar una tarjeta u otro método que el cliente podrá usar en pagos futuros.
+
+La misma clase `Transaction` gestiona la inscripción. Solo cambia el tipo de sesión. En Web, la transacción de inscripción expone `start()`, `secureFields()` y `unmount()`. Los métodos exclusivos de pago (`getPaymentMethodsViews`, `submit`, `updateCheckoutSession`) y los campos de configuración exclusivos de pago no están disponibles.
+
+<Note>
+El tipo de sesión es lo que selecciona el modo: si pasas `checkoutSession`, se ejecuta un **pago**, y si pasas `customerSession`, se ejecuta una **inscripción**. Debes proporcionar exactamente una de las dos. En iOS la elección se hace en tiempo de compilación: `TransactionConfig` tiene un inicializador por cada tipo de sesión, por lo que no se puede escribir una configuración con ambas o con ninguna. En Android y Web, proporcionar ambas, o ninguna, falla al construir con un error de validación. En Android el mensaje es `Exactly one of checkoutSession or customerSession must be provided`. En Web el mensaje es `Provide either checkoutSession or customerSession, not both.` o `A checkoutSession or customerSession is required.` En React Native, `new Transaction(config)` lanza `Exactly one of checkoutSession or customerSession must be provided`. Consulta [¿Por dónde empiezo?](/es/docs/yuno-sdk/where-do-i-start) para ver la guía de decisión completa.
+</Note>
+
+## Antes de empezar {#before-you-start}
+
+Tu backend debe crear los recursos necesarios para la inscripción:
+
+- Crea el cliente. Consulta [`POST /v1/customers`](https://docs.y.uno/reference/customers/the-customer-object).
+- Crea la sesión de cliente. Consulta [`POST /v1/customers/sessions`](https://docs.y.uno/reference/customer-sessions-enrollment/create-customer-session).
+- Crea el método de pago. Consulta [`POST /v1/customers/sessions/{customer_session}/payment-methods`](https://docs.y.uno/reference/payment-methods-checkout/enroll-payment-method-checkout). Esta llamada requiere un encabezado `X-Idempotency-Key`; sin él, la API devuelve `400 INVALID_PARAMETERS`.
+
+## Implementación {#implementation}
+
+Pasa el `customerSession` (en lugar de `checkoutSession`) en `TransactionConfig` y llama a `start()`. En Android, pasa el método que el cliente eligió en `paymentSelected`, igual que haces con un pago. En iOS, `start(paymentSelected:)` recibe el mismo objeto, pero el método que se inscribe es el que tu backend creó en la sesión de cliente: el SDK lo lee de la sesión y no usa `paymentMethodType` para seleccionarlo. En Web, `start()` muestra el formulario del SDK para el método que tu backend inscribió en la sesión de cliente, y `paymentMethod` solo se necesita para una inscripción headless (consulta Omitir el formulario). En React Native, `start(paymentSelected)` se comporta como el SDK nativo de la plataforma. El SDK entrega el estado final a `onStatus` cuando la inscripción se completa.
+
+Mostrar y seleccionar el método de pago que se va a inscribir es responsabilidad tuya. El SDK no presenta una lista de métodos inscribibles. Para obtener los métodos disponibles, llama a [`GET /v1/customers/sessions/{customer_session}/payment-methods`](https://docs.y.uno/reference/payment-methods-checkout/retrieve-payment-methods-to-enroll-checkout). En iOS y Web, la elección llega al SDK a través de la sesión de cliente, con la llamada `POST` de Antes de empezar.
+
+<Tabs>
+  <Tab title="Web">
+
+```typescript
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'US',
+    language: 'en', // optional, falls back to browser language
+    elementSelector: '#enrollment-form',
+    onStatus: (result) => {
+        console.log('Enrollment status:', result.status)
+    },
+})
+
+await transaction.start()
+// For headless enrollment, call start({ paymentMethod: { type: 'CARD', data } })
+// instead. The config's elementSelector is ignored. See "Skip the form" below.
+```
+
+`elementSelector` es opcional en Web. Sin él, el SDK agrega su propio contenedor al final de `<body>` y muestra el formulario allí.
+
+  </Tab>
+
+  <Tab title="iOS">
+
+```swift
+let config = SdkPayments.TransactionConfig(
+    customerSession: "session-from-backend",
+    countryCode: "US",
+    language: "en",          // optional, falls back to device language
+    appearance: nil,         // optional
+    controller: self
+)
+
+let paymentSelected = SdkPayments.PaymentMethodSelected(
+    paymentMethodType: "CARD"  // The customer session decides the method to enroll.
+    // transactionData: ...   // optional. See "Skip the form" below.
+)
+
+SdkPayments.Transaction(config: config)
+    .start(paymentSelected: paymentSelected)
+```
+
+  </Tab>
+
+  <Tab title="Android">
+
+```kotlin
+val config = TransactionConfig(
+    customerSession = "session-from-backend",
+    countryCode = "US",
+    language = "en",          // optional, falls back to device language
+    appearance = null,        // optional
+    controller = this
+)
+
+val paymentSelected = PaymentMethodSelected(
+    type = "CARD",
+    // transactionData = ... // optional. See "Skip the form" below.
+)
+
+Transaction(config)
+    .start(activity = this, paymentSelected = paymentSelected)
+```
+
+  </Tab>
+
+  <Tab title="React Native">
+
+```tsx
+const enrollment = new Transaction({
+  customerSession: 'session-from-backend',
+  countryCode: 'US',
+  language: 'en', // optional, falls back to device language
+  controller: {
+    onStatus: (status) => console.log('Enrollment status:', status.status),
+  },
+});
+
+await enrollment.start({
+  type: 'CARD',
+  // transactionData: ... // optional. See "Skip the form" below.
+});
+```
+
+  </Tab>
+</Tabs>
+
+### Omitir el formulario {#skip-the-form}
+
+Si recopilas los datos del cliente en tu propia interfaz, pásalos mediante `transactionData` (`data` en Web) en el `PaymentMethodSelected`. El SDK omitirá su formulario integrado y tokenizará directamente: un flujo headless, que ignora el `elementSelector` de la configuración de la transacción (solo se aplica a los flujos basados en formulario). Consulta [`TransactionData`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-data) para ver la estructura completa de los datos.
+
+<Note>
+`vaultedToken` en `PaymentMethodSelected` se ignora durante la inscripción. El propósito del flujo es producir un nuevo token almacenado, por lo que aún no hay nada vinculado a lo que hacer referencia.
+</Note>
+
+## Notas {#notes}
+
+- Puede ocurrir un desafío 3DS durante la inscripción.
+- `createPayment` no aplica porque no hay ningún pago que crear. En Web, la configuración de inscripción no lo acepta (TypeScript rechaza la propiedad). En iOS, Android y React Native no se invoca.
+- Cuando la inscripción es exitosa, `onStatus` entrega el estado final, con la misma estructura de payload que los flujos de pago (`status`, `substatus`, `message`). El token almacenado no se expone al cliente: recupéralo desde el endpoint de listado de métodos de pago del cliente de tu backend después de que llegue el estado de éxito, y guárdalo asociado a tu cliente para usarlo en pagos futuros.
+
+## Relacionado {#related}
+
+- [Sesiones](/es/docs/basic-concepts/sessions). Sesiones de checkout frente a sesiones de cliente.
+- [`TransactionConfig`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referencia completa.
+- [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). Recibe el estado final.

@@ -1,0 +1,114 @@
+---
+title: "onCardInfoChanged"
+sidebarTitle: "Card information (onCardInfoChanged)"
+description: "Invoked with the card brand, type, category, issuer and country while the shopper types the card number."
+---
+
+`onCardInfoChanged` is invoked with the card's brand, type, category, issuer and country while the shopper types the card number in the card form. You get these details before the shopper submits the form, so you can adapt your checkout in real time: show the card brand or issuing bank in your order summary, explain a promotion that applies only to credit cards, or adapt a message to the country of the issuing bank.
+
+It is informational: the payment works the same with or without it. The SDK already looks up the card details from the sixth digit to show the brand and load installments, and this controller hands you the result of that same lookup. It makes no extra network call and never includes the full card number, the security code, the expiry date or the cardholder name.
+
+Available on iOS and Android from SDK `3.1.0`. The SDK calls it from every card form it shows for a new card, in payments and in enrollments. It is not called for saved cards, because the shopper does not type a number.
+
+## What you receive
+
+A `CardInfo` object, or `null` (`nil` on iOS).
+
+| Field | Key | Type | Description |
+|---|---|---|---|
+| `iin` | `iin` | String (String? on Android) | First digits of the card number, between 6 and 8. Never the full number. |
+| `brand` | `brand` | String? | Card brand, for example `VISA` or `MASTERCARD`. |
+| `scheme` | `scheme` | String? | Card scheme. |
+| `type` | `type` | String? | Card type, typically `CREDIT` or `DEBIT`. |
+| `category` | `category` | String? | Card category or level, for example `GOLD` or `PREPAID`. Prepaid cards are flagged here, not in `type`. |
+| `issuerName` | `issuer_name` | String? | Name of the issuing bank. |
+| `issuerCode` | `issuer_code` | String? | Code of the issuing bank. |
+| `countryCode` | `country_code` | String? | ISO country code of the issuing bank, for example `BR`. |
+| `countryName` | `country_name` | String? | Country name of the issuing bank. |
+
+- Values are passed exactly as the card lookup returns them. The SDK does not translate or normalize them.
+- A value the lookup does not return is `null` (`nil` on iOS). Some fields, such as `issuerCode`, are often empty, so do not make them required in your logic.
+- The length of `iin` varies between 6 and 8 digits. Do not rely on it.
+- Each value is also available by key: `rawData` on iOS and `toMap()` on Android always return the nine keys above. On iOS, a missing value in `rawData` is `NSNull`.
+
+## When it is called
+
+- After the card lookup answers, once the shopper has typed at least 6 digits.
+- Again only when the result changes. Typing more digits of the same card does not call it again unless the lookup returns different details. On iOS, a new call can also arrive when the lookup matches a longer prefix of the same card, with only `iin` changed.
+- On the main thread, so you can update your UI directly.
+
+If the shopper keeps typing or edits the number while a lookup is in progress, outdated answers are discarded, so you never receive the details of a number the shopper already changed.
+
+Each card form starts fresh. If the shopper closes the form and opens it again, the first result in the new form is delivered even if it is the same card as before.
+
+| What the shopper does | What you receive |
+|---|---|
+| Types the first 5 digits | Nothing. |
+| Types the 6th digit | The card details, as soon as the lookup answers. |
+| Keeps typing the same card | Nothing, unless the lookup returns different details. |
+| Deletes digits until fewer than 6 remain | `null` (`nil` on iOS). |
+| Types the number of a different card | The details of the new card. |
+| The lookup fails, for example without connection | `null` (`nil` on iOS), if you had received a card before. |
+| Pays, closes the form or picks another method | Nothing more. The last value stands. |
+
+## The `null` delivery
+
+The controller receives `null` (`nil` on iOS) when a card you already received no longer applies: the number drops below 6 digits, the field is cleared, or the lookup fails. Clear or hide whatever you showed for the previous card. The first call is never `null`.
+
+Nothing is sent when the card form closes, when the shopper pays, or when the shopper picks another payment method. If your UI needs to reset in those cases, do it on your side.
+
+## Signature
+
+On iOS, implement the method on your `TransactionController`. On Android, chain `onCardInfoChanged` on the `TransactionConfig` of the payment or the enrollment: it returns a new config, so use the returned value.
+
+<Tabs>
+  <Tab title="iOS">
+
+```swift
+func onCardInfoChanged(_ cardInfo: CardInfo?) {
+    if let cardInfo {
+        orderSummary.showCardDetails(
+            brand: cardInfo.brand,
+            type: cardInfo.type,
+            issuer: cardInfo.issuerName,
+            country: cardInfo.countryCode
+        )
+    } else {
+        orderSummary.clearCardDetails()
+    }
+}
+```
+
+  </Tab>
+  <Tab title="Android">
+
+```kotlin
+val config = TransactionConfig(
+    countryCode = countryCode,
+    checkoutSession = checkoutSession,
+    controller = controller,
+).onCardInfoChanged { cardInfo ->
+    if (cardInfo != null) {
+        orderSummary.showCardDetails(cardInfo.brand, cardInfo.type, cardInfo.issuerName, cardInfo.countryCode)
+    } else {
+        orderSummary.clearCardDetails()
+    }
+}
+```
+
+  </Tab>
+</Tabs>
+
+On Android, each transaction uses the callback of its own config. A config built without `onCardInfoChanged`, or with `onCardInfoChanged(null)`, receives nothing.
+
+## Best practices
+
+- Keep the handler light. It runs on the main thread while the shopper is typing, so move any slow work, such as a call to your backend, off the main thread.
+- Treat each call as the current state of the form, not a final value. The shopper can still change the number before paying.
+- Do not block or delay the payment based on these values. The SDK validates the card on its own.
+
+## Related
+
+- [Listen to events](/docs/yuno-sdk/controllers/listen-to-events). The other informational controllers.
+- [`onInstallmentSelected`](/docs/yuno-sdk/controllers/on-installment-selected). The installment option the shopper picks in the same card form.
+- [Controllers overview](/docs/yuno-sdk/controllers/overview). How controllers are wired per platform.

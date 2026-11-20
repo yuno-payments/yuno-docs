@@ -1,0 +1,146 @@
+---
+title: "SDKs nativos de 3DS (Android)"
+sidebarTitle: "Netcetera 3DS (Android)"
+description: "Ejecuta desafíos de 3D Secure de forma nativa en tu app Android con el SDK de 3DS de Netcetera."
+robots: index
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+El Yuno Android SDK permite ejecutar desafíos de 3D Secure (3DS) de forma nativa dentro de tu app usando el **SDK de 3DS de Netcetera**. El 3DS nativo ofrece una UX más fluida que la alternativa basada en WebView (sin salto a un navegador dentro de la app) y algunos adquirentes pueden exigirlo para la autenticación sin fricción.
+
+<Note>
+  El 3DS nativo con Netcetera aplica tanto a los flujos de **pago** como de **inscripción** (la inscripción desde el Yuno Android SDK 2.22.0).
+</Note>
+
+<Note>
+  El 3DS nativo es **opcional**: solo necesitas instalar el módulo del proveedor si tu integración ejecuta desafíos de 3DS dentro de la app. Si no vas a habilitar 3DS, puedes omitir esta guía.
+</Note>
+
+<Note>
+  Este es un módulo independiente (de aproximadamente 3-4 MB), por lo que solo lo agregas si necesitas 3DS nativo. Si tu app ya personaliza los estilos del Yuno SDK, esos estilos se propagan automáticamente a la pantalla del desafío, no se necesita ninguna configuración adicional de UI.
+</Note>
+
+Esta guía cubre lo que es específico de Netcetera. La instalación y la activación siguen las mismas reglas que cualquier otro módulo, consulta [External Native Modules (Android)](/es/docs/sdks/external-native-modules/android-overview).
+
+## Requisitos {#requirements}
+
+- Android **6.0 (API level 23)** o superior, el mínimo del Yuno Android SDK desde la versión 2.24.0.
+- **Yuno Payments SDK 2.16.0 o superior** ya instalado en tu app (`com.yuno.payments:android-sdk`).
+- El módulo del proveedor de 3DS de Netcetera (`com.yuno.payments:yuno-sdk-3ds-netcetera`), instalado mediante Gradle (consulta más abajo).
+
+## Compatibilidad {#compatibility}
+
+Cada versión de este módulo se compila y se prueba contra una versión mínima del Yuno Payments SDK. El POM del módulo no fija una versión específica del núcleo. Las versiones inferiores al mínimo pueden no exponer las API en las que se apoya este módulo y pueden fallar en tiempo de ejecución con `NoSuchMethodError` / `NoSuchFieldError`.
+
+| Yuno 3DS Netcetera | Requiere Yuno Payments SDK |
+|---|---|
+| `1.0.1` | `≥ 2.16.0` |
+
+Al actualizar cualquiera de las dos dependencias, actualiza ambas a la vez para que la combinación se mantenga dentro de un par compatible.
+
+## Paso 1: declara el repositorio Maven de Netcetera {#step-1-declare-the-netcetera-maven-repository}
+
+El SDK de 3DS de Netcetera está alojado en el servidor Maven público de Netcetera. Como Gradle no propaga repositorios transitivos a través de los metadatos del POM, tu app debe declarar el repositorio explícitamente para poder resolver la dependencia del SDK de Netcetera.
+
+Agrega la entrada al archivo de configuración de tu proyecto dentro de `dependencyResolutionManagement.repositories`:
+
+<Tabs>
+  <Tab title="Groovy DSL">
+    En `settings.gradle`:
+
+    ```groovy
+    dependencyResolutionManagement {
+        repositories {
+            google()
+            mavenCentral()
+            maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+            // Required by Yuno 3DS Netcetera module
+            maven { url "https://nexus.extranet.netcetera.biz/nexus/repository/public-repository-maven/" }
+        }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Kotlin DSL">
+    En `settings.gradle.kts`:
+
+    ```kotlin
+    dependencyResolutionManagement {
+        repositories {
+            google()
+            mavenCentral()
+            maven { url = uri("https://yunopayments.jfrog.io/artifactory/snapshots-libs-release") }
+            // Required by Yuno 3DS Netcetera module
+            maven { url = uri("https://nexus.extranet.netcetera.biz/nexus/repository/public-repository-maven/") }
+        }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Info>
+  Es posible que todavía uses el bloque heredado `allprojects { repositories { … } }` en el `build.gradle` de tu raíz. Si es así, agrega allí la misma línea `maven { url "…" }` de Netcetera.
+</Info>
+
+## Paso 2: agrega la dependencia {#step-2-add-the-dependency}
+
+Agrega la dependencia de Yuno 3DS Netcetera al archivo de compilación del módulo de tu app:
+
+<Tabs>
+  <Tab title="Groovy DSL">
+    En `build.gradle`:
+
+    ```groovy
+    dependencies {
+        implementation "com.yuno.payments:android-sdk:2.27.0"
+        implementation "com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1"
+    }
+    ```
+  </Tab>
+
+  <Tab title="Kotlin DSL">
+    En `build.gradle.kts`:
+
+    ```kotlin
+    dependencies {
+        implementation("com.yuno.payments:android-sdk:2.27.0")
+        implementation("com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1")
+    }
+    ```
+  </Tab>
+</Tabs>
+
+El SDK de 3DS de Netcetera original que envuelve `yuno-sdk-3ds-netcetera` y su dependencia requerida `androidx.startup` se incorporan de forma transitiva. No necesitas declararlas tú mismo.
+
+## Activación del proveedor de 3DS {#activating-the-3ds-provider}
+
+El módulo se **registra automáticamente** en el Yuno Payments SDK cuando se inicia el proceso de tu app (mediante [Jetpack App Startup](https://developer.android.com/topic/libraries/app-startup)). **No se requiere código adicional**: solo inicializa el Yuno SDK como de costumbre:
+
+```kotlin
+import com.yuno.sdk.Yuno
+
+Yuno.initialize(
+    applicationContext = this,
+    apiKey = "YOUR_API_KEY",
+)
+```
+
+<Tip>
+  Una vez registrado, el Yuno Payments SDK enruta automáticamente cualquier desafío de 3DS durante el checkout o la inscripción a través del proveedor Netcetera.
+</Tip>
+
+### Permisos {#permissions}
+
+`android.permission.INTERNET` se declara en el manifiesto del módulo y se fusiona automáticamente en tu app. No se requiere ninguna acción.
+
+## Certificado de sandbox {#sandbox-certificate}
+
+Al probar contra el entorno sandbox de Yuno, el SDK de Netcetera requiere que haya un certificado de esquema de tarjeta en tu app.
+
+<Info>
+  **Contacta a tu TAM (Technical Account Manager) de Yuno para obtener el certificado.** No se distribuye públicamente.
+</Info>
+
+Esto solo se requiere para las pruebas en sandbox, no para producción.

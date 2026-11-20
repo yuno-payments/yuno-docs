@@ -1,0 +1,144 @@
+---
+title: "Inscripción Headless"
+description: "Migra la inscripción Headless de Android (Yuno.apiClientEnroll) a la API unificada Transaction."
+---
+
+La inscripción Headless era una API de tokenización pura: recopilabas los datos en tu propia interfaz, llamabas a `apiClient.continueEnrollment(collectedData, context)` y recibías un `Map<String, Any?>` con `vaultedToken`, `customerSession` y `status`.
+
+En la API unificada, la inscripción Headless ya no es un cliente separado. Es el mismo `Transaction.start(activity, paymentSelected)` con `transactionData` definido en el `PaymentMethodSelected`. El SDK ejecuta la inscripción internamente e informa la finalización mediante `onStatus`.
+
+## Antes de empezar {#before-you-start}
+
+- Reemplaza los imports `com.yuno.sdk.*` por sus equivalentes `com.yuno.payments.sdk.api.*` (la comparación lado a lado los enumera). Tu clave de API pública y las sesiones de cliente que crea tu backend no cambian ([Antes de comenzar](/es/docs/yuno-sdk/get-started#before-you-begin)).
+- No hay ningún pago que crear: `createPayment` no se invoca durante la inscripción, por lo que sobrescribirlo no tiene efecto.
+
+## Comparación lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```kotlin Before. Headless enrollment
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.ApiClientEnroll
+import com.yuno.sdk.ApiClientEnroll.Companion.continueEnrollment
+import com.yuno.sdk.enrollment.EnrollmentCollectedData
+import com.yuno.sdk.enrollment.EnrollmentMethod
+import com.yuno.sdk.payments.CardData
+import com.yuno.sdk.payments.Detail
+
+class EnrollmentActivity : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Yuno.initialize(applicationContext, apiKey = "your-public-api-key")
+    }
+
+    suspend fun enroll() {
+        val apiClient = Yuno.apiClientEnroll(
+            customerSession = "session-from-backend",
+            countryCode = "CO",
+            context = this,
+        )
+
+        val data = EnrollmentCollectedData(
+            customerSession = "session-from-backend",
+            paymentMethod = EnrollmentMethod(
+                type = "CARD",
+                card = CardData(
+                    detail = Detail(
+                        number = "4111...",
+                        securityCode = "123",
+                        expirationMonth = 12,
+                        expirationYear = 28,
+                        holderName = "John Doe",
+                    ),
+                ),
+            ),
+        )
+
+        val result = apiClient.continueEnrollment(data, context = this)
+        val vaultedToken = result["vaultedToken"]
+        val status = result["status"]
+    }
+}
+```
+
+```kotlin After. Unified Transaction
+import com.yuno.payments.sdk.api.SdkPayments
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
+import com.yuno.payments.sdk.api.models.TransactionData
+import com.yuno.payments.sdk.api.models.CardData
+
+class EnrollmentActivity : ComponentActivity(), TransactionController {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        SdkPayments.initialize(applicationContext, apiKey = "your-public-api-key")
+    }
+
+    override fun onStatus(status: TransactionStatus) {
+        // On a successful status, retrieve the vaulted token from your
+        // backend's "list customer payment methods" endpoint.
+    }
+
+    fun enroll(card: CardData) {
+        val paymentSelected = PaymentMethodSelected(
+            type = "CARD",
+            transactionData = TransactionData(card = card),
+        )
+
+        val config = TransactionConfig(
+            customerSession = "session-from-backend",
+            countryCode = "CO",
+            controller = this,
+        )
+
+        Transaction(config = config)
+            .start(activity = this, paymentSelected = paymentSelected)
+    }
+}
+```
+
+</CodeGroup>
+
+## Qué cambia {#what-changes}
+
+Agrupado en el orden en que editas el código. **Renombrado**: mismo rol, nombre nuevo. **Movido**: mismo valor, nuevo propietario. **Eliminado**: nada que llamar. **Nuevo**: sin equivalente anterior. La última columna es lo único que tienes que hacer además del cambio de nombre.
+
+### Inicialización y configuración {#initialization-and-config}
+
+| Headless | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `import com.yuno.sdk.*` | `import com.yuno.payments.sdk.api.*` | Renombrado | |
+| `Yuno.initialize(context, apiKey)` | `SdkPayments.initialize(context, apiKey)` | Renombrado | |
+| `EnrollmentCollectedData` / `EnrollmentMethod` | `PaymentMethodSelected` + `TransactionData` | Renombrado | El contenedor se divide en dos: el método va en `PaymentMethodSelected` y los datos recopilados en su `transactionData` (filas siguientes). |
+| `EnrollmentCollectedData.customerSession` y el argumento `customerSession` de `apiClientEnroll` | `TransactionConfig.customerSession` | Movido | Pasa a la configuración; pásalo una sola vez. |
+| Argumento `countryCode` de `apiClientEnroll` | `TransactionConfig.countryCode` | Movido | |
+| `EnrollmentMethod.type` | `PaymentMethodSelected.type` | Movido | Pasa al objeto padre. |
+| `EnrollmentMethod.card` (`CardData` con `Detail` anidado) | `TransactionData.card` (`CardData`) | Movido | Mismos campos, dentro de `transactionData` y sin anidar: no hay contenedor `detail`. Consulta [`TransactionData`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-data). |
+| *(ninguno)* | `PaymentMethodSelected.vaultedToken` | Nuevo | No se requiere nada. Se ignora durante la inscripción: la inscripción existe para producir un token almacenado, así que aún no hay nada vinculado a lo que hacer referencia. |
+
+### Controller {#controller}
+
+| Headless | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| *(ninguno)* | `TransactionController` | Nuevo | Impleméntalo en una clase y pásalo como `TransactionConfig.controller`. El SDK no lo retiene: mantenlo activo durante toda la transacción. |
+| Resultado `Map<String, Any?>` de `continueEnrollment` (`vaultedToken`, `customerSession`, `status`) | `onStatus(status: TransactionStatus)` | Movido | Ahora es el único callback de resultado, una vez por transacción. `status` y `substatus` provienen del backend; el SDK solo emite `INTERNAL_ERROR` y `USER_CANCEL`. **El vaulted token ya no se devuelve al cliente**: obtenlo desde el endpoint de listado de métodos de pago del cliente de tu backend después de que llegue el estado de éxito. Consulta [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Puntos de entrada {#entry-points}
+
+| Headless | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `Yuno.apiClientEnroll(customerSession, countryCode, context)` | `Transaction(config)` | Renombrado | El objeto de transacción reemplaza al cliente Headless. Crea la configuración y luego la transacción. El argumento `Context` desaparece de todas las llamadas: `SdkPayments.initialize` conserva el contexto de la aplicación. |
+| `continueEnrollment(data, context)` que devuelve `Map<String, Any?>` | `start(paymentSelected)` | Renombrado | Pasa los datos recopilados como `transactionData` en `PaymentMethodSelected`. La llamada ya no devuelve un resultado: el SDK ejecuta la inscripción internamente e informa la finalización mediante `onStatus`. |
+
+## Relacionado {#related}
+
+- [Función de inscripción](/es/docs/yuno-sdk/features/enrollment). Guía paso a paso de la inscripción con la API unificada.
+- [Inscripción Lite](/es/docs/yuno-sdk/migration/android/enrollment/lite). El SDK presenta el formulario por ti.
+- [Inscripción Render](/es/docs/yuno-sdk/migration/android/enrollment/render). Inserta tú mismo el formulario del SDK.
+- [Migración / Headless (pago)](/es/docs/yuno-sdk/migration/android/payment/headless). El equivalente de pago para el submodo Headless.
+- [`TransactionData`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-data). Estructura de los datos recopilados previamente.

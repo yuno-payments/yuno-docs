@@ -1,0 +1,275 @@
+---
+title: Headless SDK (inscripción en Android)
+description: "Inscribe métodos de pago con el Headless SDK en Android, generando un vaulted token para los datos de la tarjeta"
+robots: index
+---
+import GenericOrientation from '/snippets/es/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Esta página es una guía del Yuno Headless SDK para la inscripción en Android.
+
+El Yuno Headless SDK para Android ofrece una solución flexible y sin interfaz de usuario para inscribir métodos de pago y tokenizar tarjetas.
+
+Este SDK ofrece control total sobre el proceso de inscripción de métodos de pago, por lo que es ideal para los comercios que:
+
+* Necesitan control total sobre la interfaz y la experiencia de usuario
+* Quieren implementar flujos de inscripción personalizados
+* Requieren capacidades de integración avanzadas
+
+El Headless SDK incluye funciones principales como:
+
+* Tokenización de tarjetas
+* Inscripción segura de métodos de pago
+* Acceso directo a la API
+* Manejo de errores personalizado
+
+Si necesitas una solución con interfaz prediseñada o una integración más sencilla, considera usar otras implementaciones de SDK de Yuno:
+
+* [Full Checkout SDK](/docs/sdks/full-checkout/android-payments)
+* [Lite SDK](/es/docs/sdks/lite-android/enrollment)
+
+## Requisitos {#requirements}
+
+Antes de iniciar la integración del Yuno Android SDK, asegúrate de que tu proyecto cumpla los requisitos técnicos:
+
+* **Versión mínima del SDK**: `minSdkVersion` 23 o superior (Android 6.0). Obligatoria desde Yuno Android SDK 2.24.0
+* **Java**: Java 8 habilitado
+* **AndroidX**: usa AndroidX en lugar de las bibliotecas de soporte anteriores
+* **Android Gradle Plugin**: 4.0.0 o superior
+* **ProGuard**: 6.2.2 o superior
+* **Kotlin Gradle Plugin**: 1.4.0 o superior
+* **Compatibilidad con el tamaño de página ELF**: cumple los requisitos de alineación de página ELF de 16 KB de Google (listo para Android 15 / ARMv9)
+
+### Configuración de ProGuard / R8 {#proguard--r8-configuration}
+
+Si tu proyecto tiene `minifyEnabled = true`, agrega estas reglas a tu archivo `proguard-rules.pro` para que el SDK funcione correctamente, especialmente con el **modo completo de R8 de AGP 8.x+**.
+
+<Accordion title="Reglas oficiales de ProGuard / R8 de Yuno">
+  ```proguard
+  # Preserve generic type signatures and annotations
+  -keepattributes Signature
+  -keepattributes *Annotation*
+
+  # Yuno SDK
+  -keep class com.yuno.** { *; }
+  -dontwarn com.yuno.**
+
+  # Gson — R8 full mode compatibility
+  -keep class com.google.gson.** { *; }
+  -keep,allowobfuscation,allowshrinking,allowoptimization class * extends com.google.gson.reflect.TypeToken
+  -dontwarn com.google.gson.**
+
+  # Retrofit — R8 full mode compatibility
+  -keep,allowobfuscation,allowshrinking interface retrofit2.Call
+  -keep,allowobfuscation,allowshrinking class retrofit2.Response
+  -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+  -dontwarn retrofit2.**
+
+  # OkHttp + Okio — Suppress warnings
+  -dontwarn okhttp3.**
+  -dontwarn okio.**
+  ```
+
+  ### ¿Por qué son necesarias estas reglas?
+
+  AGP 8.x+ habilita por defecto el **modo completo de R8**, que elimina de forma agresiva las firmas de tipos genéricos. Sin `-keepattributes Signature`, el `TypeToken<T>` de Gson puede fallar en tiempo de ejecución con `java.lang.Class cannot be cast to java.lang.reflect.ParameterizedType`.
+</Accordion>
+
+<Info>
+**Información sobre la versión del SDK**
+
+Verifica la versión actual del SDK en las Notas de la versión o visitando el [repositorio del Yuno Android SDK](https://github.com/yuno-payments/yuno-sdk-android).
+</Info>
+
+## Paso 1: crea un cliente {#step-1-create-a-customer}
+
+Crea un cliente con el endpoint [Create Customer](/es/reference/customers/create-customer) antes de inscribir métodos de pago.
+
+## Paso 2: crea una sesión de cliente {#step-2-create-a-customer-session}
+
+Crea un nuevo `customer_session` con el endpoint [Create Customer Session](/es/reference/customer-sessions-enrollment/create-customer-session):
+
+* Incluye el ID del cliente en la solicitud
+* Guarda el ID de `customer_session` devuelto
+* Genera un nuevo `customer_session` para cada inscripción de método de pago.
+
+## Paso 3: agrega el SDK a tu proyecto {#step-3-add-the-sdk-to-your-project}
+
+1. Agrega la fuente del repositorio:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+2. Agrega la dependencia del SDK:
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:2.27.0'
+}
+```
+
+<Info>
+**Se requiere el permiso de Internet**
+
+El Yuno SDK incluye automáticamente el permiso `INTERNET`, necesario para las solicitudes de red. Asegúrate de que tu AndroidManifest.xml contenga:
+
+`<uses-permission android:name="android.permission.INTERNET" />`
+</Info>
+
+## Paso 4: inicializa el Headless SDK con la clave pública {#step-4-initialize-headless-sdk-with-the-public-key}
+
+Obtén tus claves de API públicas en el [Yuno Dashboard](https://dashboard.y.uno/).
+
+Si no has implementado una aplicación personalizada, crea una. En el método `onCreate()` de tu clase de aplicación, llama a la función de inicialización (`Yuno.initialize`):
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      PUBLIC_API_KEY,
+      config = YunoConfig(),
+    )
+  }
+}
+```
+
+## Paso 5: crea un objeto de método de pago de inscripción {#step-5-create-an-enrollment-payment-method-object}
+
+Crea un objeto de método de pago de inscripción con el endpoint [Enroll Payment Method](/es/reference/payment-methods-checkout/enroll-payment-method-checkout) para configurar la integración del Headless SDK para la inscripción. Al crear este objeto, especifica en qué tipo de método de pago puede inscribirse tu cliente. Actualmente, el Headless SDK solo admite el tipo de método de pago CARD.
+
+<Info>
+**Verificación de tarjeta**
+
+Para verificar tarjetas (autorización de valor cero) antes de la inscripción, incluye el objeto `verify` al crear el objeto de método de pago para la sesión de cliente.
+</Info>
+
+## Paso 6: inicia el proceso de inscripción {#step-6-start-the-enrollment-process}
+
+Usa la función `apiClientEnroll` para iniciar el proceso de inscripción. Esta función requiere parámetros de configuración que definen cómo se procesará la inscripción. La siguiente tabla describe los parámetros obligatorios:
+
+| Parámetro | Descripción |
+| --- | --- |
+| `country_code` | Este parámetro determina el país para el que se configura el proceso de pago. La lista completa de países compatibles y su `country_code` está disponible en la página [Cobertura por país](/es/docs/sdks/resources/country-coverage). |
+| `customer_session` | Hace referencia a la sesión de cliente de la inscripción actual, recibida como respuesta del endpoint [Create Customer Session](/es/reference/customer-sessions-enrollment/create-customer-session). Ejemplo: `438413b7-4921-41e4-b8f3-28a5a0141638` |
+
+El siguiente bloque de código muestra un ejemplo de la configuración de los parámetros:
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+	val apiClientEnroll = Yuno.apiClientEnroll(
+    countryCode = "CO",
+    customerSession = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+    context = this 
+  )
+ }
+```
+
+
+## Paso 7: genera un vaulted token {#step-7-generate-a-vaulted-token}
+
+Después de recopilar toda la información obligatoria del cliente, crea un `vaulted_token` con la función `apiClientEnroll.continueEnrollment`. Como es una función asíncrona, usa un bloque `try/catch` para gestionar los errores que puedan ocurrir. El siguiente ejemplo muestra cómo crear un `vaulted_token`:
+
+```kotlin
+apiClientEnroll.continueEnrollment( 
+ collectedData = EnrollmentCollectedData(
+    customerSession = "customer_session",
+    paymentMethod = EnrollmentMethod(
+           type = "CARD",
+           card = CardData(
+               save = true,
+               detail = Detail(
+                   expirationMonth = 11,
+                   expirationYear = 55,
+                   number = "4111111111111111",
+                   securityCode = "123",
+                   holderName = "Firstname Lastname",
+                   type = CardType.CREDIT
+               ),
+           ),
+           customer = Customer(
+               id = "id",
+               merchantCustomerId = "merchant_customer_id",
+               firstName = "firstName",
+               email = "email@email.com",
+               country = "CO",
+               document = Document(
+                   documentType = "PAS",
+                   documentNumber = "PAS12312"
+               ),
+             phone = Phone(
+                   number = "321123321123",
+                   countryCode = "57"
+               )
+            )
+      )
+  ),
+  context = this
+ )
+
+```
+
+`type` en `Detail` es opcional. Si lo omites, Yuno detecta el tipo de tarjeta a partir del número de tarjeta. Si lo envías, se guarda con la tarjeta y se usa en pagos posteriores, por lo que un tipo incorrecto puede causar rechazos.
+
+La función `apiClientEnroll.continueEnrollment` es una función `suspend`. Llámala desde una corrutina (por ejemplo, `lifecycleScope.launch`). Devuelve un `Map<String, Any?>` con la respuesta completa. A continuación se muestra un ejemplo de respuesta al llamar a `apiClientEnroll.continueEnrollment`:
+
+```json
+{
+  "vaulted_token": "9104911d-5df9-429e-8488-ad41abea1a4b",
+  "status": "SUCCEEDED",
+  "customer": {
+    "session": "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+  }
+}
+```
+
+El siguiente bloque de código muestra un ejemplo de cómo leer la respuesta. `continueEnrollment` se declara en el companion object de `ApiClientEnroll`, por lo que debes importarlo de forma explícita:
+
+```kotlin
+import com.yuno.sdk.ApiClientEnroll.Companion.continueEnrollment
+
+lifecycleScope.launch {
+   val response = apiClientEnroll.continueEnrollment(data, context)
+   val status = response["status"] as String?
+   val vaultedToken = response["vaulted_token"] as String?
+}
+```
+
+### Estados del flujo de inscripción {#enrollment-flow-states}
+
+La función `apiClientEnroll.continueEnrollment` devuelve una respuesta que incluye un campo `status` que indica el estado actual del proceso de inscripción. Estos son los posibles estados devueltos:
+
+```kotlin
+const val ENROLLMENT_STATE_SUCCEEDED = "SUCCEEDED"
+const val ENROLLMENT_STATE_FAIL = "FAIL"
+const val ENROLLMENT_STATE_PROCESSING = "PROCESSING"
+const val ENROLLMENT_STATE_REJECT = "REJECT"
+const val ENROLLMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
+const val ENROLLMENT_STATE_CANCELED_BY_USER = "CANCELED"
+```
+
+La siguiente tabla ofrece información adicional sobre los posibles estados:
+
+| Estado | Descripción | Acción adicional requerida |
+| --- | --- | --- |
+| `SUCCEEDED` | El proceso de inscripción se completó correctamente y sin errores. | No. |
+| `FAIL` | El intento de inscripción falló por errores como problemas de validación de datos, fallos de conexión con el servidor o problemas técnicos. | Sí. Investiga la causa de la falla (validación, red, servidor) y aplica medidas correctivas. |
+| `PROCESSING` | La inscripción está en curso, a la espera de aprobación o verificación. | No. |
+| `REJECT` | La inscripción fue rechazada por motivos como requisitos faltantes o inconsistencias detectadas. | Sí. Informa al usuario del rechazo, indica el motivo si es posible y sugiere los siguientes pasos. |
+| `INTERNAL_ERROR` | Ocurrió un error interno inesperado en el sistema que gestiona el proceso de inscripción. | Sí. Requiere intervención técnica para revisar el sistema, corregir los problemas internos y reintentar o informar al usuario. |
+| `CANCELED` | El usuario canceló voluntariamente el proceso de inscripción o salió antes de completarlo. | No. |
+
+<Info>
+**Seguimiento del estado mediante webhooks**
+
+Considera usar el estado de la inscripción recibido mediante [Webhooks](/docs/webhooks/index). Yuno recomienda basar siempre en este estado las decisiones de negocio en tu plataforma.
+</Info>
+
+## Manejo de errores {#error-handling}
+
+Gestiona en tu app los errores devueltos por el SDK, como pagos fallidos o errores de validación. Para los códigos de estado HTTP y de respuesta, consulta [Códigos de estado y de respuesta](/es/reference/payments/status-and-response-codes/payment) en la referencia de la API.

@@ -1,0 +1,202 @@
+---
+title: "Usa Yuno con asistentes de IA"
+description: "Conecta Yuno con el asistente de IA que ya usas (Claude, ChatGPT o Grok, próximamente) para analizar los datos de tus pagos, buscar en la documentación de la API de Yuno y operar pagos en tus cuentas de Yuno con lenguaje natural."
+---
+
+Conecta tu cuenta de Yuno con el asistente de IA que ya usas. Analiza los datos de tus pagos, busca en la documentación de la API de Yuno y opera pagos en las cuentas de Yuno a las que tienes acceso, todo con lenguaje natural. Inicias sesión con tu usuario de Yuno, por lo que el asistente solo ve y actúa sobre lo que tu usuario y tu organización tienen permitido.
+
+<Note>
+  Si eres desarrollador y quieres integrar flujos de pago en tu propio agente en lugar de usar este conector listo para usar, consulta [Creación de integraciones de IA con los LLM y el MCP de Yuno](/es/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) y el [Servidor MCP remoto de Yuno](/es/docs/ai-capabilities/remote-yuno-mcp-server).
+</Note>
+
+## Configuración {#setup}
+
+<Tabs>
+  <Tab title="Claude">
+    La forma más rápida de habilitar Yuno en Claude es a través del directorio de conectores.
+
+    <Steps>
+      <Step title="Abre la ficha del conector de Yuno">
+        Abre la [ficha del conector de Yuno](https://claude.ai/directory/connectors/yuno) en el directorio de Claude.
+      </Step>
+      <Step title="Conecta y autoriza">
+        Haz clic en **Connect** e inicia sesión con tus credenciales de Yuno para autorizar el acceso a tu cuenta.
+      </Step>
+      <Step title="Habilita Yuno en tu chat">
+        En cualquier chat, abre el menú de búsqueda y herramientas y asegúrate de que **Yuno** esté activado.
+      </Step>
+      <Step title="Haz tu primera pregunta">
+        Prueba con: *"¿Qué cuentas de Yuno puedo usar?"*
+      </Step>
+    </Steps>
+
+    <Note>
+      Los conectores agregados desde el directorio se sincronizan automáticamente en claude.ai, Claude Desktop y las apps móviles, por lo que solo necesitas conectarte una vez.
+    </Note>
+  </Tab>
+  <Tab title="ChatGPT">
+    Habilita la app de Yuno desde el directorio de apps de ChatGPT.
+
+    <Steps>
+      <Step title="Abre la ficha de la app de Yuno">
+        Abre la [ficha de la app de Yuno](https://chatgpt.com/plugins/plugin_asdk_app_6a3eabbf663c819186dda21300243f8e) en ChatGPT.
+      </Step>
+      <Step title="Agrega y vincula tu cuenta">
+        Haz clic en **Add** (o **Connect**) e inicia sesión con tus credenciales de Yuno para vincular tu cuenta.
+      </Step>
+      <Step title="Invoca la app">
+        En un chat nuevo, invoca la app por su nombre: escribe `@Yuno`, o simplemente haz una pregunta sobre pagos y ChatGPT llamará a las herramientas de Yuno cuando sea relevante.
+      </Step>
+      <Step title="Haz tu primera pregunta">
+        Prueba con: *"Usando Yuno, ¿qué cuentas puedo usar?"*
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Grok">
+    <Note>
+      **Próximamente.** El conector de Yuno para Grok está en desarrollo y aún no ha sido aprobado. Los pasos de configuración y un enlace a la ficha se agregarán aquí cuando esté disponible.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Cuentas {#accounts}
+
+Las acciones de pago se ejecutan en una de tus cuentas de Yuno. De forma predeterminada, el conector usa tu cuenta principal: la que está definida como predeterminada para tu usuario de Yuno en el dashboard o, si no hay ninguna, la primera cuenta a la que tienes acceso.
+
+* Pregunta **"¿Qué cuentas de Yuno puedo usar?"** para ver la lista de cuentas disponibles para ti y cuál es la predeterminada.
+* Indica al asistente qué cuenta usar en una solicitud determinada (por ejemplo, "usa la cuenta `<account>`") para cambiar la cuenta predeterminada.
+* Las cuentas a las que no tienes acceso se rechazan: el conector solo puede usar las cuentas a las que tu usuario de Yuno tiene derecho.
+
+## Modelo de seguridad {#safety-model}
+
+* **Analytics es de solo lectura**: las sentencias SQL que modifican datos o el esquema siempre se rechazan.
+* **Las herramientas de pago pueden escribir**: pueden crear y modificar datos. Según tu configuración de Claude o ChatGPT, el asistente puede pedir tu aprobación antes de ejecutarlas.
+* **Confirmación en producción**: en producción, las cancelaciones, los reembolsos y las eliminaciones devuelven primero una vista previa y solo se ejecutan después de que el asistente lo confirme en un plazo de 5 minutos.
+* Los permisos provienen del acceso y la organización de tu usuario de Yuno, no del asistente: solo puede hacer lo que tu cuenta ya tiene permitido hacer.
+
+## Qué puedes hacer {#what-you-can-do}
+
+El conector expone herramientas en cuatro grupos de capacidades: analytics, documentación de la API de Yuno, cuentas y pagos. El asistente elige automáticamente la herramienta adecuada, por lo que nunca tienes que llamarlas por su nombre, pero saber qué hay disponible te ayuda a saber qué pedir.
+
+### Analytics (SQL de solo lectura) {#analytics-read-only-sql}
+
+| Herramienta | Tipo | Descripción |
+| --- | --- | --- |
+| `read_query` | Read | Ejecuta SQL de solo lectura (`SELECT`, `WITH`, `SHOW`, `DESCRIBE`, `EXPLAIN`) sobre tus datos de analytics. Esto impulsa la mayoría de las preguntas: métricas, desgloses, tendencias, exportaciones. |
+| `table_overview` | Read | Describe las columnas y los tipos de una tabla y muestra algunas filas de ejemplo, para que el asistente conozca la forma de tus datos antes de consultarlos. |
+| `analyze_query` | Read | Devuelve el plan de ejecución de una consulta sin ejecutarla, para poder comprobar primero las consultas costosas. |
+
+### Documentación de la API de Yuno {#yuno-api-documentation}
+
+| Herramienta | Tipo | Descripción |
+| --- | --- | --- |
+| `docs__search_yuno_api_documentation` | Read | Busca en la documentación pública de la API de Yuno. |
+| `docs__query_docs_filesystem_yuno_api_documentation` | Read | Lee páginas de la documentación. |
+| `docs__submit_feedback` | Write | Informa al equipo de documentación sobre una página de la documentación incorrecta o desactualizada. |
+
+### Cuentas {#accounts-1}
+
+| Herramienta | Tipo | Descripción |
+| --- | --- | --- |
+| `yuno_list_accounts` | Read | Lista las cuentas de Yuno que puedes usar y marca la predeterminada. |
+
+### Pagos {#payments}
+
+Las herramientas de pago tienen el prefijo `pay__` y se agrupan por recurso a continuación. El asistente puede obtener por sí mismo los parámetros completos de cualquier herramienta de pago mediante `pay__describeTool`, por lo que esta página agrupa las herramientas por recurso en lugar de listar cada parámetro.
+
+| Recurso | Herramientas | Tipo |
+| --- | --- | --- |
+| Helper | `pay__describeTool` | Read (devuelve los parámetros completos de una herramienta de pago) |
+| [Pagos](/es/reference/payments/manage-payments) | `pay__paymentRetrieve`, `pay__paymentRetrieveByMerchantOrderId` | Read |
+| | `pay__paymentCreate`, `pay__paymentAuthorize` | Write |
+| | `pay__paymentCaptureAuthorization`, `pay__paymentCancel`, `pay__paymentRefund`, `pay__paymentCancelOrRefund`, `pay__paymentCancelOrRefundWithTransaction` | Destructive |
+| [Clientes](/es/reference/customers/the-customer-object) | `pay__customerRetrieve`, `pay__customerRetrieveByExternalId` | Read |
+| | `pay__customerCreate`, `pay__customerUpdate` | Write |
+| [Métodos de pago](/es/reference/payment-methods-direct-workflow/the-payment-method-object-api) | `pay__paymentMethodRetrieve`, `pay__paymentMethodRetrieveEnrolled` | Read |
+| | `pay__paymentMethodEnroll` | Write |
+| | `pay__paymentMethodUnenroll` | Destructive |
+| [Checkout](/es/reference/checkout-sessions/the-checkout-session-object) | `pay__checkoutSessionRetrievePaymentMethods` | Read |
+| | `pay__checkoutSessionCreate`, `pay__checkoutSessionCreateOtt` | Write |
+| [Suscripciones](/es/reference/subscriptions/the-subscription-object) | `pay__subscriptionRetrieve` | Read |
+| | `pay__subscriptionCreate`, `pay__subscriptionResume`, `pay__subscriptionUpdate` | Write |
+| | `pay__subscriptionPause`, `pay__subscriptionCancel` | Destructive |
+| [Enlaces de pago](/es/reference/payment-links/the-payment-link-object) | `pay__paymentLinkRetrieve` | Read |
+| | `pay__paymentLinkCreate` | Write |
+| | `pay__paymentLinkCancel` | Destructive |
+| [Destinatarios](/es/reference/recipients-for-marketplace/the-recipient-object) | `pay__recipientRetrieve` | Read |
+| | `pay__recipientCreate`, `pay__recipientUpdate` | Write |
+| | `pay__recipientDelete` | Destructive |
+| [Planes de cuotas](/es/reference/installments/create-installments-plan) | `pay__installmentPlanRetrieve`, `pay__installmentPlanRetrieveAll` | Read |
+| | `pay__installmentPlanCreate`, `pay__installmentPlanUpdate` | Write |
+| | `pay__installmentPlanDelete` | Destructive |
+
+**Read** = sin cambios. **Write** = crea o actualiza datos. **Destructive** = cancela, reembolsa o elimina; requiere confirmación en producción.
+
+## Pregunta en lenguaje natural {#ask-in-plain-language}
+
+* "¿Cuál fue mi tasa de aprobación de pagos por método de pago en los últimos 30 días?"
+* "Muestra el volumen de transacciones por país en julio y señala cualquier país que haya bajado más de un 10 % respecto a junio."
+* "¿Cuáles son los 5 principales motivos de rechazo de este mes y de qué proveedor provienen?"
+* "Compara la conversión entre tarjeta de crédito y PIX en Brasil este trimestre."
+* "Describe la tabla de transacciones y muéstrame algunas filas de ejemplo."
+* "Prepárame un resumen semanal: volumen, tasa de aprobación, tasa de reembolsos y ticket promedio."
+* "¿Cómo creo un pago con 3DS?"
+* "¿Qué cuentas de Yuno puedo usar?"
+* "Reembolsa el pago `<payment_id>`."
+* "Crea un enlace de pago por 50 USD."
+
+## Limitado a tu cuenta {#scoped-to-your-account}
+
+* **Limitado a tu cuenta**: el conector se autentica con tus credenciales de Yuno y solo puede ver y actuar sobre las cuentas a las que tu usuario tiene derecho. Consulta [Modelo de seguridad](#safety-model) para saber cómo se mantienen seguras las analíticas de solo lectura y las escrituras de pagos.
+* **Límites de consulta**: los conjuntos de resultados muy grandes se truncan en lugar de transmitirse completos, y las sesiones tienen un límite de velocidad para mantener sano el almacén de datos. Para exportaciones masivas, usa el dashboard o la API de Yuno.
+* **Interrupciones parciales**: si una capacidad (analytics, documentación o pagos) deja de estar disponible temporalmente, solo desaparecen sus herramientas; el resto sigue funcionando.
+
+## Solución de problemas {#troubleshooting}
+
+**Claude indica que el conector de Yuno está desconectado**
+
+Ve a Settings → Connectors, busca Yuno y haz clic en Reconnect; luego vuelve a autorizar. Si el conector no aparece en un chat, comprueba que esté habilitado en el menú de búsqueda y herramientas del chat.
+
+**ChatGPT no llama a la app de Yuno**
+
+Invócala de forma explícita escribiendo `@Yuno` al inicio de tu mensaje, o menciona "usando Yuno" en el prompt. Si sigue sin estar disponible, elimina la app y vuelve a agregarla desde su ficha del directorio.
+
+**Las consultas fallan con un error de "no database selected"**
+
+Pide al asistente que califique las tablas con el nombre de su base de datos (por ejemplo, `analytics.transactions`) o que indique qué base de datos usar. Preguntar primero "¿qué tablas hay disponibles?" suele resolver el problema.
+
+**Los resultados parecen truncados**
+
+Es lo esperado con salidas grandes. Pide al asistente que agregue los datos (totales, top-N, resúmenes agrupados) en lugar de listar filas sin procesar, o que reduzca el rango de fechas.
+
+**El asistente usó la cuenta equivocada**
+
+Pregunta "¿Qué cuentas de Yuno puedo usar?" e indícale cuál usar para la solicitud.
+
+**"Confirmation expired"**
+
+Las confirmaciones en producción duran 5 minutos. Pide al asistente que repita la acción para obtener una confirmación nueva.
+
+**Mensaje "Connect" o "consent required"**
+
+El asistente te está pidiendo que (re)autorices el conector de Yuno: tu sesión o un consentimiento previo caducó o no se completó. Vuelve a pasar por el paso de conexión (consulta Configuración arriba) y reintenta tu solicitud.
+
+## Preguntas frecuentes {#faq}
+
+<AccordionGroup>
+  <Accordion title="¿Los conectores de Claude, ChatGPT y Grok hacen lo mismo?">
+    Sí. Los tres exponen las mismas herramientas de Yuno: analytics, documentación y pagos. Elige el asistente que tu equipo ya usa, o conecta más de uno; el acceso y los permisos son idénticos porque los rige tu credencial de Yuno, no el asistente. (Grok llegará próximamente.)
+  </Accordion>
+  <Accordion title="¿Puede el conector mover dinero o cambiar la configuración de mis pagos?">
+    Puede ejecutar operaciones de pago (crear, capturar, cancelar y reembolsar pagos, y administrar clientes, suscripciones, enlaces de pago, destinatarios y planes de cuotas) en las cuentas de Yuno a las que tienes acceso. No puede cambiar la configuración de tu dashboard ni de enrutamiento de Yuno. Las acciones destructivas en producción requieren un paso de confirmación explícito. Para operaciones de pago programáticas desde tu propio agente, consulta [Creación de integraciones de IA con los LLM y el MCP de Yuno](/es/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp) y el [Servidor MCP remoto de Yuno](/es/docs/ai-capabilities/remote-yuno-mcp-server).
+  </Accordion>
+  <Accordion title="¿Se usan mis datos para entrenar modelos de IA?">
+    Tus datos se transfieren al asistente únicamente dentro de tu propia conversación, sujetos a las políticas de datos de Anthropic o de OpenAI según tu plan. Consulta la política de manejo de datos de IA de tu espacio de trabajo; los planes empresariales de ambos proveedores excluyen por defecto los datos de negocio del entrenamiento.
+  </Accordion>
+  <Accordion title="¿Puedo conectar Yuno a mi propio agente o IDE como desarrollador?">
+    Sí. Yuno publica un servidor MCP que puedes usar desde Cursor, Claude Code o cualquier cliente compatible con MCP. Consulta el [Servidor MCP remoto de Yuno](/es/docs/ai-capabilities/remote-yuno-mcp-server) y [Creación de integraciones de IA con los LLM y el MCP de Yuno](/es/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp).
+  </Accordion>
+  <Accordion title="¿A quién contacto si algo no funciona?">
+    Comunícate con tu gerente de cuenta de Yuno o abre un ticket desde el dashboard de Yuno. Para problemas de desarrolladores con el servidor MCP, repórtalos en [GitHub](https://github.com/yuno-payments/yuno-mcp).
+  </Accordion>
+</AccordionGroup>

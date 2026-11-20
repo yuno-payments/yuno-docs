@@ -1,0 +1,136 @@
+---
+title: "Inscribir métodos de pago"
+description: "Almacena el método de pago de un cliente en el vault de Yuno para habilitar cobros recurrentes y reintentos entre proveedores"
+---
+
+La inscripción te permite almacenar de forma segura el método de pago de un cliente en el vault de Yuno para usarlo en el futuro. Cuando inscribes un método de pago, Yuno genera un `vaulted_token` que hace referencia a los datos de pago sin exponer información sensible. Esto habilita pagos recurrentes, suscripciones y reintentos entre proveedores, manteniendo el cumplimiento de PCI.
+
+<Note>
+**Vaulted Token**
+
+Un Vaulted Token se crea una vez que se inscribe un método de pago y se almacena con la información del cliente. Puedes usar el Vaulted Token creado para identificar el método de pago en pagos futuros.
+</Note>
+
+## Métodos de pago disponibles para la inscripción {#available-payment-methods-for-enrollment}
+
+| Método de pago             | Tipo                   |
+| -------------------------- | ---------------------- |
+| **Cards**                  | `CARD`                 |
+| **Nupay**                  | `NU_PAY_ENROLLMENT`    |
+| **PayPal**                 | `PAYPAL_ENROLLMENT`    |
+| **Daviplata**              | `DAVIPLATA_ENROLLMENT` |
+| **MercadoPago Wallet**     | `WALLET_CONNECT`       |
+| **dLocal Yape**            | `YAPE_ENROLLMENT`      |
+| **dLocal Smart PIX**       | `SMART_PIX`            |
+| **Astropay**               | `ASTROPAY_ENROLLABLE`  |
+| **Nequi**\*                | `NEQUI`                |
+| **Bancolombia Tokenbox**\* | `BANCOLOMBIA_TOKENBOX` |
+| **Adyen PIX Biométrico**   | `PIX_BIOMETRICO`       |
+| **DolarApp**               | `DOLARAPP`             |
+| **KCP KakaoPay**\*\*       | `KAKAO_PAY`            |
+| **KCP PAYCO**\*\*          | `KCP_PAYCO`            |
+
+(\*) Solo SDK. Consulta la [documentación del SDK](/es/docs/sdks/overview/quickstart) para conocer los detalles de integración.
+(\*\*) Solo Web SDK. Consulta la [documentación de inscripción de Lite Web](/es/docs/sdks/lite-web/enrollment) para conocer los detalles de integración.
+
+## Requisitos {#requirements}
+
+* Reúne tus [credenciales de API](/es/docs/using-yuno/settings/developers-credentials) desde el [Yuno Dashboard](https://dashboard.y.uno/developers):
+  * `public-api-key`
+  * `private-secret-key`
+  * `account_id`
+* [Configura conexiones](/es/docs/using-yuno/dashboard-overview/connections) en tu Yuno Dashboard. Agrega un método de pago que requiera inscripción.
+* [Crea una ruta](/es/docs/using-yuno/dashboard-overview/routing#configuring-the-dynamic-routing) para el método de pago y define cómo se procesará.
+* [Configura el checkout builder](/es/docs/using-yuno/dashboard-overview/checkout-builder) para que tus pagos conectados estén disponibles.
+
+## Resumen de pasos {#steps-summary}
+
+Para inscribir un método de pago en la cuenta de un cliente:
+
+1. [Crear un cliente](/es/reference/customers/create-customer)
+2. [Crea una sesión de cliente](/es/reference/customer-sessions-enrollment/create-customer-session) (solo para el flujo de Checkout)
+3. (Opcional) Obtén los métodos de pago disponibles para inscribir - [Flujo de Checkout](/es/reference/payment-methods-checkout/retrieve-payment-methods-to-enroll-checkout)
+4. Inscribe el método de pago [Flujo de Checkout](/es/reference/payment-methods-checkout/enroll-payment-method-checkout)/[Flujo Direct](/es/reference/payment-methods-direct-workflow/enroll-payment-method-api)
+5. Obtén los métodos de pago - [Flujo Direct](/es/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api)
+
+## Inscribir un método de pago {#enroll-a-payment-method}
+
+### Paso 1: crea un cliente {#step-1-create-a-customer}
+
+Registra la información del cliente con el endpoint [Create Customer](/es/reference/customers/create-customer). Además, proporciona el `merchant_customer_id`, un identificador único del cliente usado en tu sistema.
+
+<Note>
+**Información complementaria del cliente**
+
+Los detalles opcionales, como el teléfono, la dirección de facturación y la dirección de envío, no son necesarios para inscribir un método de pago, pero algunos proveedores los usan en las verificaciones de fraude. Si incluyes estos campos, ciertos subcampos pasan a ser obligatorios.
+</Note>
+
+Después de crear el cliente, recibirás un `id` que lo identifica en Yuno. Si tu cliente ya tiene un `id`, omite este paso.
+
+### Paso 2: crea una sesión de cliente {#step-2-create-a-customer-session}
+
+<Warning>
+**Requisitos del flujo**
+
+El flujo de inscripción varía según el tipo de método de pago:
+
+* **Flujo de Checkout**: requiere una sesión de cliente para la mayoría de los métodos de pago (Cards, Nupay, PayPal, Daviplata, métodos de dLocal, Astropay, Adyen PIX Biométrico)
+* **Flujo Direct**: disponible solo para Cards (comercios que cumplen con PCI). Continúa directamente en el Paso 3 con el `id` del cliente generado en el Paso 1.
+* **Flujo de SDK**: métodos de pago como Nequi y Bancolombia Tokenbox requieren una implementación con SDK. WALLET\_CONNECT (MercadoPago) admite tanto el flujo de SDK como el de Checkout. Consulta la [documentación del SDK](/es/docs/sdks/overview/quickstart) para conocer los detalles.
+* **Flujo de SDK Seamless**: puedes inscribir métodos de pago durante el flujo de pago seamless configurando `vault_on_success: true` al crear el pago. El método de pago se inscribirá automáticamente si el pago es exitoso. En el caso de las billeteras (Apple Pay / Google Pay), el instrumento se almacena en el vault como un registro oculto: el `vaulted_token` se devuelve en la respuesta del pago, pero no aparece en el listado de métodos de pago del cliente. Consulta la nota en el [Paso 5](#step-5-retrieve-payment-methods).
+</Warning>
+
+Crea una sesión de cliente para almacenar las preferencias de pago del cliente con el endpoint [Create Customer Session](/es/reference/customer-sessions-enrollment/create-customer-session). Usa el `id` del Paso 1 como `customer_id`.
+
+La respuesta devuelve un `customer_session`, que usarás para inscribir el método de pago.
+
+### Paso 3: obtén los métodos de pago para inscribir {#step-3-retrieve-payment-methods-to-enroll}
+
+Este **paso opcional** muestra todos los métodos de pago disponibles que el cliente puede inscribir. Si ya sabes qué método de pago inscribir, continúa con el [Paso 4](#step-4-enroll-a-payment-method).
+
+Para listar los métodos de pago disponibles, usa el endpoint Retrieve Payment Methods To Enroll. Para el [flujo de Checkout](/es/reference/payment-methods-checkout/retrieve-payment-methods-to-enroll-checkout), incluye el `customer_session` en la solicitud. El flujo Direct actualmente no admite obtener los métodos de pago para inscribir.
+
+La respuesta devuelve un arreglo `payment_methods` con todos los métodos de pago disponibles para inscribir. Usa el campo `type` de esta respuesta en el siguiente paso.
+
+<Note>
+**Métodos de pago disponibles**
+
+Solo aparecerán en la respuesta los métodos de pago que hayas conectado, enrutado y agregado a tu checkout.
+</Note>
+
+### Paso 4: inscribe un método de pago {#step-4-enroll-a-payment-method}
+
+Inscribe el método de pago con uno de los siguientes endpoints:
+
+* [**Flujo de Checkout**](/es/reference/payment-methods-checkout/enroll-payment-method-checkout): pasa el `type` del método de pago al parámetro `payment_method_type`. Los tipos admitidos son: `CARD`, `NU_PAY_ENROLLMENT`, `PAYPAL_ENROLLMENT`, `DAVIPLATA_ENROLLMENT`, `WALLET_CONNECT`, `YAPE_ENROLLMENT`, `SMART_PIX`, `ASTROPAY_ENROLLABLE`, `PIX_BIOMETRICO`.
+* [**Flujo Direct**](/es/reference/payment-methods-direct-workflow/enroll-payment-method-api): pasa el `type` del método de pago al parámetro `type`. (Solo disponible para métodos de pago `CARD` usados por comercios que cumplen con PCI)
+* [**Flujo de SDK**](/es/docs/sdks/overview/quickstart): métodos de pago como `NEQUI` y `BANCOLOMBIA_TOKENBOX` requieren una implementación con SDK. `WALLET_CONNECT` (MercadoPago) admite tanto el flujo de SDK como el de Checkout.
+
+La respuesta de la inscripción incluye una URL de redirección a la página del proveedor de pago. El Paso 5 explica dónde encontrarla y cómo completar la inscripción.
+
+### Paso 5: obtén los métodos de pago {#step-5-retrieve-payment-methods}
+
+El cliente debe dar su autorización en la página del proveedor de pago. Obtén la URL de autorización según tu flujo:
+
+* **Flujo de Checkout**: la URL de inscripción aparece en la respuesta de la inscripción del Paso 4. Encuéntrala en `provider.redirect.init_url`.
+* **Flujo Direct**: recibirás el estado final en el Paso 4 (solo Cards).
+
+Redirige al usuario para que complete la autorización. Una vez que la inscripción esté completa, continúa con el siguiente paso.
+
+Para confirmar la inscripción, obtén los métodos de pago inscritos y verifica que el `status` sea `ENROLLED`.
+
+<Note>
+**Los instrumentos almacenados mediante billeteras no se listan**
+
+Los instrumentos almacenados en el vault mediante un pago con billetera (Apple Pay / Google Pay con `vault_on_success: true`) se guardan como registros ocultos: no aparecen en el listado de métodos de pago inscritos, aunque su `vaulted_token` es válido y se puede cobrar. Guarda ese token de la respuesta del pago y, si lo necesitas, resuélvelo individualmente con [Retrieve Enrolled Payment Method by ID](/es/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api). Consulta [Credenciales almacenadas](/es/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
+</Note>
+
+<Note>
+**Fingerprint**
+
+Cuando se inscribe una tarjeta de crédito, la respuesta incluye un campo `fingerprint` que representa la tarjeta de tu cliente en toda tu organización. Si un cliente inscribe la misma tarjeta varias veces, se generan varios valores de `vaulted_token`, pero el `fingerprint` se mantiene igual, lo que te permite deduplicar de tu lado. Consulta [Fingerprint de la tarjeta](/es/docs/security-and-compliance/fingerprint).
+
+El fingerprint está disponible después de la inscripción, pero puede ser `null` para algunos proveedores. Verifica siempre que exista antes de usarlo para deduplicar.
+
+El fingerprint también aparece en las respuestas de pago cuando una transacción usa una tarjeta de crédito inscrita.
+</Note>

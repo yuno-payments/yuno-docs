@@ -1,0 +1,228 @@
+---
+title: "Secure Fields"
+description: "Recopila datos de tarjeta en campos que cumplen PCI, que colocas y estilizas individualmente, y luego paga o inscribe con start()."
+---
+
+Los secure fields son entradas de tarjeta que cumplen PCI (número de tarjeta, vencimiento, CVV) que el SDK renderiza dentro de iframes aislados. A diferencia del formulario integrado del SDK, **creas y colocas cada campo de forma independiente** en tu propio diseño, con tus propias etiquetas y estilos. Los datos sin procesar de la tarjeta nunca tocan tu página.
+
+<Note>
+Esta es la API granular por campo, **solo para Web**. Si prefieres que el SDK renderice su propio formulario de tarjeta prediseñado en lugar de armar cada entrada tú mismo, usa la [Lista de métodos de pago](/es/docs/yuno-sdk/features/payment-methods-list): el SDK compone y renderiza el formulario en tu `elementSelector`, con las mismas garantías PCI y menos trabajo de diseño.
+</Note>
+
+Los secure fields funcionan tanto para el pago (`checkoutSession`) **como** para la inscripción (`customerSession`). Los campos heredan todo (sesión, país, idioma, callbacks) del `Transaction` que los crea. No hay una segunda superficie de configuración.
+
+## Inicio rápido {#quick-start}
+
+```typescript
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    onStatus: (result) => showResult(result),
+})
+
+const secureFields = await transaction.secureFields()
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).mount('#pan')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).mount('#expiration')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).mount('#cvv')
+
+payButton.addEventListener('click', () => {
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { card: { holderName: nameInput.value } } },
+    })
+})
+```
+
+`start()` tokeniza los campos montados, crea el pago, gestiona 3DS e informa el resultado mediante [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). Los campos aportan el número de tarjeta, el vencimiento y el CVV. Estos nunca salen de los iframes. Los detalles que no son PCI (`holderName` y, opcionalmente, `installment`, `customer` o `vaultOnSuccess`) viajan en `start()` mediante `paymentMethod.data`.
+
+<Note>
+Pasar `number`, `expirationMonth`, `expirationYear` o `securityCode` en `paymentMethod.data.card` mientras hay secure fields montados genera un error: los iframes son dueños de los datos PCI.
+</Note>
+
+## Administrado vs manual {#managed-vs-manual}
+
+De forma predeterminada, el SDK crea el pago. Proporciona [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment) en la configuración para hacer POST del token desde tu propio backend:
+
+```typescript
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    createPayment: async (token) => {
+        await myBackend.pay({
+            oneTimeToken: token.token,
+            checkoutSession: token.checkout_session,
+        })
+    },
+    onStatus: (result) => showResult(result),
+})
+```
+
+<Warning>
+Lee siempre `token.checkout_session` del token en lugar de reutilizar la sesión con la que creaste la transacción. Después de un pago rechazado, el SDK rota la sesión automáticamente. El token siempre lleva la sesión contra la que realmente tokenizó.
+</Warning>
+
+En ambos casos, el SDK gestiona 3DS e informa mediante `onStatus`.
+
+## Pagos rechazados y reintento {#declined-payments-and-retry}
+
+Cuando un pago con tarjeta es **DECLINED** o falla con **ERROR** y la respuesta permite reintentar, el SDK prepara el reintento por ti:
+
+1. La sesión de checkout se clona en el servidor y se rota hacia los campos montados automáticamente.
+2. Los errores a nivel de campo (número de tarjeta inválido, CVV inválido, fondos insuficientes) se muestran dentro de los iframes correspondientes.
+3. En modo manual (`createPayment` en la configuración), `onStatus` recibe el resultado `DECLINED` / `ERROR` para que tu página pueda volver a habilitar su botón de pago. En modo administrado, el SDK no llama a `onStatus` para ese intento. El comprador ve los errores de los campos y puede enviar de nuevo.
+
+Un rechazo que no permite reintentar llega a `onStatus` en ambos modos y cierra la sesión de checkout.
+
+Los campos permanecen montados con lo que escribió el usuario. Para reintentar, simplemente llama a `start()` de nuevo: es **repetible** mientras haya secure fields montados, y el nuevo intento tokeniza contra la sesión rotada. No tienes que gestionar la sesión.
+
+Una vez que el pago es final (aprobado, o rechazado sin reintento), la sesión de checkout se cierra y `start()` genera un error. Para cobrar otro pago, crea una nueva sesión de checkout en tu backend y llama a `transaction.updateCheckoutSession(newSession)`. Los campos montados la toman y `start()` vuelve a funcionar.
+
+Vuelve a habilitar tu botón de pago cuando la promesa de `start()` se resuelva. Funciona en ambos modos:
+
+```typescript
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    onStatus: (result) => showResult(result),
+})
+
+payButton.addEventListener('click', async () => {
+    payButton.disabled = true
+    try {
+        await transaction.start({
+            paymentMethod: { type: 'CARD', data: { card: { holderName: nameInput.value } } },
+        })
+    } finally {
+        payButton.disabled = false
+    }
+})
+```
+
+<Note>
+Deshabilita tu botón de pago mientras un `start()` está en curso. Llamar a `start()` de nuevo antes de que termine el intento anterior genera un error: dos tokenizaciones significarían dos pagos.
+</Note>
+
+## Inscripción {#enrollment}
+
+Con una `customerSession`, los secure fields guardan una tarjeta en el vault en lugar de cobrarla. El flujo es idéntico: `create`, `mount`, `start()`.
+
+```typescript
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'CO',
+    onStatus: (result) => showResult(result),
+})
+
+const secureFields = await transaction.secureFields()
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).mount('#pan')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).mount('#expiration')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).mount('#cvv')
+
+saveButton.addEventListener('click', () => {
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { card: { holderName: nameInput.value } } },
+    })
+})
+```
+
+## Cuotas {#installments}
+
+Habilita las cuotas al crear los campos:
+
+```typescript
+const secureFields = await transaction.secureFields({ installmentEnable: true })
+```
+
+Pasa la opción en la primera llamada a `secureFields()`. La transacción mantiene una sola instancia de secure fields. Las llamadas posteriores la devuelven, y una llamada con un `installmentEnable` distinto genera un error. Para cambiar la opción, llama a `transaction.unmount()` y crea los campos de nuevo.
+
+Los planes disponibles llegan en el `onChange` del campo `pan` mientras el usuario escribe: `data.installments`, `data.fullInstallmentsInfo` y `data.isInstallmentLoading`. Renderiza tu propio selector a partir de esos datos y pasa el plan elegido en `start()`:
+
+```typescript
+transaction.start({
+    paymentMethod: {
+        type: 'CARD',
+        data: {
+            card: { holderName: nameInput.value },
+            installment: { id: selected.id, value: selected.value },
+        },
+    },
+})
+```
+
+## Campos {#fields}
+
+Crea cada campo por nombre y luego móntalo en cualquier elemento de tu diseño.
+
+| Nombre | Qué es |
+|---|---|
+| `pan` | Número de tarjeta. Emite marca, IIN y datos de cuotas mediante `onChange`. |
+| `expiration` | Fecha de vencimiento. |
+| `cvv` | Código de seguridad. |
+| `cardLoadPreview` | Vista previa animada opcional de la tarjeta. |
+| `cardPin` | Ingreso de PIN, para los mercados que lo requieren. |
+
+## Opciones de los campos {#field-options}
+
+Pasa `options` a `create` para etiquetar, estilizar y observar un campo.
+
+| Opción | Tipo | Propósito |
+|---|---|---|
+| `label` | string | Etiqueta accesible. |
+| `placeholder` | string | Texto de marcador de posición. |
+| `styles` | string | CSS inyectado dentro del iframe del campo, donde el CSS de tu página no puede llegar. |
+| `externalFonts` | array | Fuentes que se cargan dentro del iframe del campo: `[{ family_name, files: [{ weight, url }] }]`. Referencia `family_name` desde `font-family` en `styles`. El host de la fuente debe permitir solicitudes de origen cruzado. Consulta [Estilos](/es/docs/yuno-sdk/features/styling#secure-fields-styling). |
+| `designType` | string | Diseño de la etiqueta: `float-label`, `float-label-static` o `label-placeholder`. |
+| `showError` | boolean | Muestra los errores de validación debajo del campo. |
+| `errorMessage` | string | Mensaje que se muestra cuando el valor no es válido. |
+| `requiredErrorMessage` | string | Mensaje que se muestra cuando el campo es obligatorio y está vacío. |
+| `validationType` | string | Cuándo validar (p. ej. `on_blur_full`). |
+| `inputMode` | string | Sugerencia de teclado virtual para la entrada, como en el atributo `inputmode`. |
+| `onRenderedSecureField` | function | Se dispara una vez que el iframe del campo se ha renderizado. |
+| `onChange` | function | `({ error, errorMessage, data, isDirty, isFieldComplete })`. Para `pan`, `data` incluye marca, IIN y cuotas. |
+| `onBlur` / `onFocus` | function | Ciclo de vida del foco (p. ej. para voltear una vista previa de la tarjeta). |
+
+## Métodos de los campos {#field-methods}
+
+Cada campo devuelto por `create` (o recuperado después con `getElement({ name })`) expone:
+
+| Método | Propósito |
+|---|---|
+| `mount('#sel')` | Monta el iframe del campo en un elemento. |
+| `focus()` | Da el foco al campo. |
+| `validate()` | Valida a demanda; se resuelve en un booleano. |
+| `clearValue()` | Borra la entrada. |
+| `setError(message)` / `clearError()` | Muestra o borra un error personalizado debajo del campo. |
+| `hide()` / `show()` | Alterna la visibilidad sin desmontar. |
+| `updateProps(props)` | Actualiza la etiqueta, el marcador de posición o los estilos en el lugar. |
+| `setCardType(type)` | Fuerza crédito o débito en tarjetas de doble marca. |
+| `setCardHolderName(name)` | Establece el nombre del titular en la vista previa de la tarjeta. |
+| `toggleFrontCardVisibility(visible)` | Voltea la vista previa de la tarjeta. |
+| `unmountSync()` | Elimina el iframe del campo. |
+
+## Miembros de la instancia {#instance-members}
+
+| Miembro | Propósito |
+|---|---|
+| `create({ name, options })` | Crea un campo. |
+| `getElement({ name })` | Recupera un campo creado previamente. |
+| `unmountSync()` | Elimina todos los iframes de los campos. `transaction.unmount()` lo llama por ti. |
+
+<Note>
+Para apuntar la transacción a una nueva sesión de checkout, llama a `transaction.updateCheckoutSession()`: los campos montados la toman automáticamente.
+</Note>
+
+## Notas {#notes}
+
+- **Una sola ruta de finalización.** La tokenización, la creación del pago, 3DS y el estado ocurren dentro de `start()`: no hay un `generateToken` ni un `continuePayment()` que debas secuenciar tú. Para crear el pago desde tu propio backend, usa el modo manual ([`createPayment`](/es/docs/yuno-sdk/controllers/create-payment)). El SDK sigue encargándose de 3DS y del resultado.
+- **El alcance de PCI no cambia.** Los datos sin procesar de la tarjeta permanecen dentro de los iframes del SDK; tu código nunca los lee.
+- **Una superficie de tarjeta por página.** Crea secure fields en una transacción a la vez. Los botones de billetera y la lista de métodos de pago de [`getPaymentMethodsViews`](/es/docs/yuno-sdk/features/payment-methods-list) pueden compartir la página y la transacción: un `start()` de `CARD` se dirige a tus campos, y los botones de billetera funcionan por sí solos.
+
+## Relacionado {#related}
+
+- [Migración: Secure Fields](/es/docs/yuno-sdk/migration/web/secure-fields). Si vienes de `yuno.secureFields` v1.
+- [Lista de métodos de pago](/es/docs/yuno-sdk/features/payment-methods-list). Widgets prediseñados: billeteras y la lista de métodos.
+- [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). Toma el control de la creación del pago (modo manual).
+- [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). Recibe el resultado final.

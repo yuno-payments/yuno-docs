@@ -1,0 +1,105 @@
+---
+title: "Reportar transacciones fuera de Yuno"
+openapi: "/openapi/es/reporting/report-transactions.json POST /reporting/transactions"
+description: "Reporta las transacciones procesadas directamente con tus proveedores para que aparezcan en Yuno como pagos: dashboard, listados y analíticas incluidos."
+---
+
+Este endpoint le da a Yuno visibilidad sobre el tráfico que procesas **directamente con tus proveedores**, fuera de la ruta de transacciones de Yuno. Cada evento aceptado se guarda como un **pago normal de Yuno**, diferenciado por el campo `origin`:
+
+- `origin: YUNO`: pagos procesados por Yuno (todos los pagos existentes).
+- `origin: REPORTED`: pagos que ingresaron a través de esta API.
+
+Los pagos reportados aparecen en el dashboard, en `GET /v1/payments` y en las analíticas (filtrados por `origin`), pero Yuno **nunca los procesa**: sin enrutamiento, sin llamadas a proveedores, sin reintentos y sin movimiento de dinero. El dinero ya se movió en tu proveedor; Yuno registra el hecho.
+
+<Note>
+**Habilitado por organización**
+
+Esta API requiere activación para tu organización. Contacta a tu Key Account Manager (KAM) para habilitarla.
+</Note>
+
+## Cómo funciona {#how-it-works}
+
+1. Procesas una transacción directamente con tu proveedor (por ejemplo, una compra en tu propia cuenta de Adyen).
+2. La reportas aquí: un evento o un lote de hasta 500. Para integraciones sensibles a la latencia, se recomiendan lotes de hasta 100 eventos. El lote completo de 500 eventos se procesa de forma síncrona y puede tardar varios segundos.
+3. Cada evento aceptado crea **un pago** con una transacción, con el estado derivado de `result` y del tipo de evento:
+   - Un `PURCHASE` con resultado `SUCCEEDED` deja el pago en `SUCCEEDED`.
+   - Un `AUTHORIZE` con resultado `SUCCEEDED` queda en `PENDING` con subestado `AUTHORIZED`. Una autorización aprobada no es dinero capturado; refleja cómo se comportan las autorizaciones procesadas por Yuno.
+   - Un `VERIFY` con resultado `SUCCEEDED` queda en `SUCCEEDED` con subestado `VERIFIED`. La verificación se completó y no se mueve dinero; refleja cómo se guardan las verificaciones procesadas por Yuno.
+   - `DECLINED` queda en `DECLINED`, y `ERROR` queda en `ERROR`.
+
+En esta versión, las operaciones admitidas son `PURCHASE` (predeterminada), `AUTHORIZE` y `VERIFY`. Un `VERIFY` reporta una verificación de tarjeta (autorización de cero dólares), que normalmente se reporta con `amount.value: 0`. Los eventos del ciclo de vida (capturas, reembolsos, contracargos) están en la hoja de ruta.
+
+## Reintentos y deduplicación {#retries-and-deduplication}
+
+**No hay encabezado de idempotencia en este endpoint, ni se necesita.** El `report_id` que generas por evento es la clave de deduplicación. Un evento cuyo `report_id` ya fue ingerido se cuenta en `duplicates` y nunca se ingiere dos veces, sin importar cuándo ni en qué lote llegue. Reintentar un lote completo después de una falla de red siempre es seguro.
+
+Como solo el `report_id` decide, un evento que reutiliza un `report_id` ya ingerido con un payload *distinto* también se cuenta como duplicado y se descarta en silencio: nunca reutilices un `report_id` en transacciones diferentes.
+
+El lote se procesa **por evento**: un evento inválido queda en `rejected[]` con su motivo, y el resto del lote no se ve afectado.
+
+## BIN de la tarjeta para estadísticas de enrutamiento por BIN {#card-bin-for-bin-level-routing-statistics}
+
+En los eventos `CARD` puedes enviar el BIN de la tarjeta en `payment_method_details.card.bin`: exactamente los primeros **6 u 8 dígitos** del número de la tarjeta. El BIN no es dato del titular de la tarjeta: identifica al emisor y el rango de la tarjeta, nunca la tarjeta.
+
+Cuando está presente, Yuno lo guarda en el pago reportado (`payment_method.detail.card.card_data.iin` en la transacción) y lo usa para segmentar tus estadísticas por BIN en la [API de recomendaciones de enrutamiento](/es/reference/organizations/routing/get-routing-recommendations), de modo que un pago con el mismo BIN se pueda clasificar según el historial propio de ese BIN en lugar del de todo el país.
+
+- `payment_method_details` se identifica por el tipo de método de pago: hoy solo `card`, y solo en eventos cuyo `payment_method_type` es `CARD`. Un `card.bin` en un evento de cualquier otro tipo, o un contenedor con cualquier otra clave, rechaza el evento.
+- El BIN debe tener exactamente 6 u 8 dígitos. Un valor de 7 dígitos, un valor más largo o cualquier cosa que no sean solo dígitos rechaza el evento con `INVALID_EVENT`.
+- Omitir `payment_method_details`, o enviarlo vacío (`{}` o `{"card": {}}`), deja el evento exactamente como antes: no se guarda ningún BIN y el evento alimenta solo las estadísticas de país y método de pago.
+
+## Iniciación CIT / MIT para estadísticas de enrutamiento por iniciación {#cit--mit-initiation-for-initiation-level-routing-statistics}
+
+Puedes indicarle a Yuno cómo se inició cada transacción enviando `initiation` a nivel de evento: `CIT` (iniciada por el titular de la tarjeta: el cliente estaba presente en el checkout) o `MIT` (iniciada por el comercio, por ejemplo la renovación de una suscripción). CIT y MIT se aprueban de forma muy distinta según el proveedor, por lo que dividir tu historial reportado por iniciación permite que la [API de recomendaciones de enrutamiento](/es/reference/organizations/routing/get-routing-recommendations) clasifique un pago según el historial de su propio tipo de iniciación.
+
+- `initiation` es opcional y va al nivel plano del evento, igual que `token_type_used`. Solo acepta `CIT` o `MIT`; cualquier otro valor rechaza ese evento con `INVALID_EVENT` y el mensaje `The field 'initiation' must be CIT or MIT.`
+- Omitir `initiation` deja el evento exactamente como antes: alimenta solo las estadísticas sin iniciación, y una solicitud de recomendación que no lleva `payment.initiation` no se ve afectada.
+
+## ID de recomendación para la atribución de resultados {#recommendation-id-for-outcome-attribution}
+
+Si enrutas con la [API de recomendaciones de enrutamiento](/es/reference/organizations/routing/get-routing-recommendations), envía el `recommendation_id` que devolvió para el pago en el evento que reportas. Yuno lo usa para atribuir el resultado reportado a la recomendación exacta, en lugar de hacer la coincidencia por `merchant_order_id`.
+
+- `recommendation_id` es opcional y va al nivel plano del evento, igual que `initiation`. Envíalo exactamente como se devolvió: un UUID v4 en minúsculas. Cualquier otro valor, incluida una cadena vacía, rechaza ese evento con `INVALID_EVENT` y el mensaje `The field 'recommendation_id' must be a UUID.`
+- Yuno solo verifica el formato. No comprueba que la recomendación exista ni que pertenezca a tu cuenta, por lo que un valor desconocido se guarda pero no atribuye nada.
+- Envíalo con el primer reporte del evento. Volver a enviar un `report_id` que ya fue ingerido cuenta como duplicado y no agrega ni cambia el `recommendation_id`.
+- Omitir `recommendation_id`, o enviar `null`, deja el evento exactamente como antes.
+
+## La respuesta sin procesar del proveedor {#the-raw-provider-response}
+
+Si incluyes `raw_provider_response` (el payload de respuesta del proveedor, textual, de hasta 64 KB), Yuno lo guarda aplicando una redacción defensiva de datos de tarjeta: los números de cuenta principales y los códigos de seguridad se eliminan antes de guardar nada. Ninguna API lo devuelve nunca.
+
+Se recomienda enviarlo: permite que Yuno enriquezca el pago reportado más adelante (referencias de transacción de la red, motivos de rechazo) sin pedirte nada nuevo.
+
+<Warning>
+**Nunca envíes datos de tarjeta en los campos del evento.** Los eventos reportados llevan referencias y resultados, no datos del titular de la tarjeta. El BIN en `payment_method_details.card.bin` es el único valor derivado de la tarjeta que se acepta, y no es un número de tarjeta. El único lugar por donde puede pasar un número de tarjeta es dentro de `raw_provider_response`, donde se redacta al ingerirse.
+</Warning>
+
+## Operaciones sobre pagos reportados {#operations-on-reported-payments}
+
+Los pagos reportados no se pueden operar a través de Yuno: una solicitud de reembolso o de captura sobre un pago con `origin: REPORTED` devuelve `403 OPERATION_NOT_ALLOWED_FOR_REPORTED_PAYMENT`. Realiza la operación en tu proveedor y repórtala como un evento nuevo cuando los eventos del ciclo de vida estén disponibles.
+
+## Errores {#errors}
+
+Los errores devuelven un `code` y un arreglo `messages`.
+
+| HTTP | `code` | Cuándo |
+| ---- | ------ | ---- |
+| 400 | `INVALID_REQUEST` | Cuerpo mal formado, falta un campo obligatorio o un lote de más de 500 eventos. |
+| 400 | `INVALID_ACCOUNT_ID` | El `account_id` no existe o no pertenece a tu organización. |
+| 401 | `NOT_AUTHENTICATED` / `INVALID_CREDENTIALS` | Faltan los encabezados `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` o no son válidos. |
+| 403 | `PRODUCT_NOT_ENABLED` | "La API Transaction Reporting está habilitada por organización. Contacta a tu gerente de cuenta clave (KAM) para activarla." |
+
+### Rechazos por evento: `INVALID_EVENT` {#per-event-rejections-invalidevent}
+
+`INVALID_EVENT` no es un error HTTP: el lote en sí se acepta (`202`), y cada evento inválido se devuelve individualmente dentro de `rejected[]` con este código y su motivo, mientras el resto del lote se ingiere con normalidad:
+
+```json
+{
+  "accepted": 2,
+  "duplicates": 0,
+  "rejected": [
+    { "report_id": "merchant-rpt-000124", "code": "INVALID_EVENT", "messages": ["The field 'event_type' must be one of: PURCHASE, AUTHORIZE, VERIFY."] }
+  ]
+}
+```
+
+Causas: valor de enum inválido, tipo de campo incorrecto, campo desconocido, un `payment_method_details.card.bin` que no tiene exactamente 6 u 8 dígitos (o que se envía en un evento que no es `CARD`), o `raw_provider_response` de más de 64 KB.
