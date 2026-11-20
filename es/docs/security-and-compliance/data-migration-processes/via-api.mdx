@@ -1,0 +1,75 @@
+---
+title: "Mediante API"
+description: "Explica paso a paso cómo migrar clientes e inscribir métodos de pago mediante los endpoints de la API de Yuno."
+---
+
+Esta guía ofrece un proceso paso a paso para migrar tokens usando los endpoints de la API de Yuno. Al seguir los pasos descritos, compilarás una lista de clientes con sus métodos de pago inscritos.
+
+## Requisitos {#requirements}
+
+Antes de continuar con los pasos de esta guía, asegúrate de haber:
+
+* Completado los tres pasos relacionados con el proceso de [importación de tarjetas desde una cuenta de gateway](/es/docs/security-and-compliance/data-migration-processes/token-migration-process#importing-cards-from-a-gateway-account-steps-1-and-2).
+* Accedido a tus [credenciales de API](/es/docs/using-yuno/settings/developers-credentials) en el Dashboard de Yuno, que incluyen:
+  * `public-api-key`
+  * `private-secret-key`
+  * `account_id`
+
+Asegúrate de haber completado estos pasos y de contar con los datos necesarios antes de continuar con la guía.
+
+## Migra tokens mediante la API {#migrate-tokens-via-api}
+
+### Paso 1: Crea clientes {#step-1-create-customers}
+
+Para comenzar el proceso de migración de tokens, usarás el endpoint [Create Customer](/es/reference/customers/create-customer) para agregar clientes al sistema de Yuno. Es importante tener en cuenta que no se pueden inscribir métodos de pago para clientes que no existen en el sistema de Yuno. Si los clientes ya existen en Yuno, puedes omitir este paso.
+
+Para registrar nuevos clientes, proporciona su información personal. Además, debes enviar el `merchant_customer_id`, que es un identificador único del cliente en tu sistema.
+
+<Note>
+**Información complementaria del cliente**
+
+Al crear un cliente, cierta información es opcional pero puede mejorar la experiencia de pago del usuario si se proporciona. Ejemplos de datos no obligatorios incluyen el número de teléfono, la dirección de facturación y la dirección de envío.
+
+Si decides agregar información opcional, asegúrate de proporcionar también todos los campos obligatorios requeridos.
+</Note>
+
+Al completar el proceso de creación del cliente, recibirás un `id` que identifica al usuario dentro del sistema de Yuno. Usa este `id` para inscribir los métodos de pago existentes.
+
+### Paso 2: Verifica los datos del cliente (opcional) {#step-2-check-the-customer-data-optional}
+
+En este paso, tienes la opción de verificar la información de cada cliente registrado. Usa el endpoint [Retrieve Customer](/es/reference/customers/retrieve-customer) para acceder a los datos del cliente. Para ello, proporciona el `id` que se generó cuando el cliente fue creado inicialmente.
+
+### Paso 3: Inscribe un método de pago {#step-3-enroll-a-payment-method}
+
+Para completar el proceso de migración, debes inscribir métodos de pago para cada cliente usando los datos del vault o gateway de terceros.
+
+Utiliza el endpoint [Enroll Payment Method](/es/reference/payment-methods-direct-workflow/enroll-payment-method-api) para registrar los métodos de pago. Recuerda que el `customer_id` requerido para esta solicitud es el `id` obtenido durante la creación del cliente en el [Paso 1](/es/docs/security-and-compliance/data-migration-processes/via-api#step-1-create-customers). Además, incluye el objeto `provider_data` que contiene el token del proveedor externo, como se muestra en el siguiente fragmento de código:
+
+```sh Request
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/customers/{{customer_id}}/payment-methods \
+     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'accept: application/json' \
+     --header 'charset: utf-8' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>' \
+     --data '
+{
+  "country": "BR",
+  "type": "CARD",
+  "workflow": "DIRECT",
+  "provider_data": {
+    "id": "MERCADO_PAGO",
+    "payment_method_token": "{{provider_card_token}}"
+  },
+  "account_id": "{{account_id}}" 
+}
+'
+```
+
+En la respuesta del endpoint, recibirás un `vaulted_token` que identifica el método de pago inscrito. Este `vaulted_token` se usará para pagos futuros, lo que elimina la necesidad de proporcionar datos adicionales del método de pago.
+
+### Paso 4: Verifica el método de pago inscrito (opcional) {#step-4-check-the-enrolled-payment-method-optional}
+
+Una vez inscrito el método de pago, puedes verificar que la inscripción se haya realizado correctamente usando el endpoint [retrieve enrolled payment methods](/es/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api). Recuerda que el `customer_id` necesario para esta solicitud es el `id` obtenido durante la creación del cliente en el [Paso 1](/es/docs/security-and-compliance/data-migration-processes/via-api#step-1-create-customers).

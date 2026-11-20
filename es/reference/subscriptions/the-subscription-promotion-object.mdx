@@ -1,0 +1,118 @@
+---
+title: "El objeto de promoción de suscripción"
+description: "Describe el objeto de promoción de una suscripción: el descuento, los ciclos usados, el comportamiento en pausa y cómo terminó la promoción"
+---
+
+Cuando se aplica una promoción a una suscripción, Yuno guarda una copia en la suscripción. La copia es el objeto `promotion`. [Crear suscripción](/es/reference/subscriptions/create-subscription) y [Actualizar suscripción](/es/reference/subscriptions/update-subscription) lo devuelven. La copia nunca se edita: cambiar después la asociación del plan o la promoción no la modifica. Consulta [Promociones en planes de suscripción](/es/docs/payment-features/subscriptions/promotions).
+
+## Atributos {#attributes}
+
+<ParamField body="id" type="string">
+  El ID de la promoción (UUID).
+
+  Ejemplo: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+</ParamField>
+
+<ParamField body="name" type="string">
+  El nombre de la promoción.
+
+  Ejemplo: Welcome 20% x3
+</ParamField>
+
+<ParamField body="discount" type="object">
+  El descuento. Los campos dependen de `type`.
+
+  <Expandable title="propiedades">
+    <ParamField body="type" type="enum">
+      `PERCENTAGE` o `FIXED`.
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      Solo `PERCENTAGE`. El porcentaje, de 0 a 100, con un máximo de 2 decimales.
+
+      Ejemplo: 20
+    </ParamField>
+
+    <ParamField body="amount" type="number">
+      Solo `FIXED`. El monto, con los decimales de la moneda.
+
+      Ejemplo: 15.00
+    </ParamField>
+
+    <ParamField body="currency" type="string">
+      Solo `FIXED`. La moneda ISO 4217 de `amount`.
+
+      Ejemplo: USD
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="cycles" type="object">
+  El número de cobros que cubre el descuento.
+
+  <Expandable title="propiedades">
+    <ParamField body="total" type="integer">
+      El número de ciclos que cubre la promoción, definido cuando se asoció al plan.
+    </ParamField>
+
+    <ParamField body="used" type="integer">
+      Ciclos contados desde que se aplicó: cobros aprobados, ciclos de prueba y ciclos al 100%. Un cobro rechazado no cuenta. Un reintento del mismo cobro cuenta una sola vez.
+    </ParamField>
+
+    <ParamField body="remaining" type="integer">
+      `total` menos `used`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="on_pause" type="enum">
+  Qué efecto tiene una pausa sobre la promoción: `KEEP` (sus ciclos restantes continúan al reanudar) o `END` (la promoción termina con el motivo `PAUSE`). Se copia de la asociación del plan cuando se aplica la promoción.
+</ParamField>
+
+<ParamField body="status" type="enum">
+  `ACTIVE`, mientras queden ciclos. `COMPLETED`, cuando se usan todos los ciclos. `ENDED`, cuando la promoción termina antes de tiempo.
+</ParamField>
+
+<ParamField body="applied_at" type="timestamp">
+  Cuándo se aplicó la promoción (ISO 8601).
+
+  Ejemplo: 2026-11-02T14:00:00Z
+</ParamField>
+
+<ParamField body="ended_at" type="timestamp">
+  Cuándo terminó la promoción. `null` mientras está activa.
+</ParamField>
+
+<ParamField body="end_reason" type="enum">
+  `null` mientras la promoción está activa. En otro caso, uno de estos: `REPLACED` (se aplicó otra promoción), `REMOVED` (se eliminó de la suscripción), `PLAN_CHANGE` (el plan cambió y la promoción terminó), `PAUSE` (la suscripción se pausó y `on_pause` es `END`) o `CANCELED` (la suscripción se canceló).
+</ParamField>
+
+## Ejemplo {#example}
+
+Una suscripción con una promoción de porcentaje, 2 de 3 ciclos usados:
+
+```json Promotion object
+{
+  "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+  "name": "Welcome 20% x3",
+  "discount": { "type": "PERCENTAGE", "value": 20 },
+  "cycles": { "total": 3, "used": 2, "remaining": 1 },
+  "on_pause": "KEEP",
+  "status": "ACTIVE",
+  "applied_at": "2026-11-02T14:00:00Z",
+  "ended_at": null,
+  "end_reason": null
+}
+```
+
+Una promoción de monto fijo:
+
+```json Fixed discount
+{
+  "discount": { "type": "FIXED", "amount": 15.00, "currency": "USD" }
+}
+```
+
+## En webhooks {#in-webhooks}
+
+[`subscription.cycle_executed`](/es/docs/webhooks/object-and-examples#subscription-cycle_executed) incluye un objeto `promotion` más corto en cada ciclo con descuento, con `id`, `discount_amount` y `cycles_remaining`.

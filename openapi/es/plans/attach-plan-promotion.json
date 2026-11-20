@@ -1,0 +1,283 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "plans",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/subscriptions/plans/{plan_id}/promotions": {
+      "post": {
+        "summary": "Asociar promoción al plan",
+        "description": "Asocia una promoción existente al plan durante `cycles` cobros. Las suscripciones del plan podrán recibirla cuando se creen o se actualicen. Las asociaciones no se editan: para cambiar `cycles` o `on_pause`, elimina la asociación y vuelve a asociar la promoción.",
+        "operationId": "attach-plan-promotion",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "El `account_id` que se encuentra en tu [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Obligatorio: si lo omites, se devuelve `400 BAD_REQUEST` (\"Invalid x-account-code header.\")."
+          },
+          {
+            "name": "plan_id",
+            "in": "path",
+            "description": "El identificador único del plan.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "promotion_id",
+                  "cycles"
+                ],
+                "properties": {
+                  "promotion_id": {
+                    "type": "string",
+                    "description": "El ID de una promoción existente (UUID)."
+                  },
+                  "cycles": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "El número de cobros que cubre el descuento. Mínimo 1."
+                  },
+                  "on_pause": {
+                    "type": "string",
+                    "enum": [
+                      "KEEP",
+                      "END"
+                    ],
+                    "default": "KEEP",
+                    "description": "Qué hace una pausa con la promoción una vez que se aplica a una suscripción. `KEEP` (predeterminado) conserva sus ciclos restantes para cuando la suscripción se reanude. `END` termina la promoción con `end_reason` `PAUSE`."
+                  }
+                }
+              },
+              "examples": {
+                "Request": {
+                  "value": {
+                    "promotion_id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+                    "cycles": 3
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201. La promoción se asocia al plan.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "promotion_id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+                      "name": "Welcome 20% x3",
+                      "type": "AUTOMATIC",
+                      "status": "ENABLED",
+                      "cycles": 3,
+                      "attached_at": "2026-11-02T14:00:00Z",
+                      "on_pause": "KEEP"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "promotion_id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "El modo de canje de la promoción. Las promociones `AUTOMATIC` se aplican solas cuando se crea una suscripción en el plan. Las promociones `CODE` se aplican cuando el comercio envía el código.",
+                      "enum": [
+                        "AUTOMATIC",
+                        "CODE"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "`ENABLED` cuando se crea la asociación."
+                    },
+                    "cycles": {
+                      "type": "integer"
+                    },
+                    "attached_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "on_pause": {
+                      "type": "string",
+                      "enum": [
+                        "KEEP",
+                        "END"
+                      ],
+                      "description": "Qué hace una pausa con la promoción una vez que se aplica a una suscripción."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404. La promoción no existe o pertenece a otra cuenta.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "PROMOTION_NOT_FOUND",
+                      "messages": [
+                        "Promotion not found."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409. El plan ya tiene esta promoción.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "PROMOTION_ALREADY_ATTACHED",
+                      "messages": [
+                        "The promotion is already attached to this plan."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422. No se puede asociar la promoción. `reason` indica el motivo, por ejemplo `EXPIRED`, o `PROMOTIONS_NOT_ENABLED` cuando las promociones no están activadas para la organización.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "PROMOTION_NOT_APPLICABLE",
+                      "messages": [
+                        "The promotion cannot be applied."
+                      ],
+                      "reason": "EXPIRED"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "reason": {
+                      "type": "string",
+                      "description": "Por qué no se puede asociar o aplicar la promoción."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

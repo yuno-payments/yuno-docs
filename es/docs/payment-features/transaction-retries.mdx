@@ -1,0 +1,94 @@
+---
+title: "Reintentos de transacciones"
+description: "Reintenta automáticamente las transacciones de captura o reembolso fallidas hasta siete veces en una ventana de 96 horas"
+---
+
+Yuno ofrece a los comercios la posibilidad de reintentar las transacciones de captura y reembolso que presentaron errores o fueron rechazadas por el proveedor. Esta función busca mejorar las tasas de éxito de las transacciones y la experiencia del usuario. Al configurar el campo `simplified_mode` en `true` en las solicitudes de [captura](/es/reference/payments/capture-authorization) y [reembolso](/es/reference/payments/refund-payment), Yuno reintentará automáticamente las transacciones fallidas hasta siete veces en un período de 96 horas. El sistema maneja los siguientes escenarios durante el proceso de reintento:
+
+#### Transacciones de captura {#capture-transactions}
+
+Las transacciones de captura pueden tener varios estados durante y después del proceso de reintento. La tabla siguiente detalla esos estados:
+
+| Pago mientras el reintento está en curso | Pago después de reintentos exitosos                                  | Pago después de reintentos fallidos         |
+| :-------------------------------------- | :------------------------------------------------------------------- | :------------------------------------------ |
+| SUCCEEDED / CAPTURE\_RETRY\_IN\_PROCESS | SUCCEEDED / CAPTURED o PARTIALLY\_CAPTURED según el monto. | SUCCEEDED / CAPTURE\_RETRY\_PROCESS\_FAILED |
+
+#### Transacciones de reembolso {#refund-transactions}
+
+Las transacciones de reembolso también tienen estados específicos durante y después del proceso de reintento. La tabla siguiente describe esos estados:
+
+| Pago mientras el reintento está en curso | Pago después de reintentos exitosos                                             | Pago después de reintentos fallidos |
+| :------------------------------------- | :------------------------------------------------------------------------------ | :--------------------------- |
+| SUCCEEDED / REFUND\_RETRY\_IN\_PROCESS | REFUNDED / REFUNDED o SUCCEEDED / PARTIALLY\_REFUNDED según el monto. | SUCCEEDED / APPROVED         |
+
+## Beneficios {#benefits}
+
+Esta función ofrece varias ventajas:
+
+* **Mejores tasas de éxito de las transacciones**: los reintentos automáticos aumentan la probabilidad de que las transacciones se completen con éxito, lo que lleva a tasas de aprobación más altas.
+* **Mejor experiencia del usuario**: al reintentar automáticamente las transacciones fallidas, se reduce la fricción del usuario, lo que mejora la satisfacción y la retención de los clientes.
+* **Eficiencia operativa**: automatizar los intentos de reintento optimiza el tiempo y los recursos al minimizar la intervención manual en las transacciones fallidas, lo que permite a los equipos concentrarse en tareas estratégicas.
+
+## Esquema de reintentos {#retry-scheme}
+
+El esquema de reintentos está diseñado para maximizar el éxito de las transacciones programando los reintentos en intervalos estratégicos.
+
+La tabla siguiente describe los intervalos entre cada reintento. Ten en cuenta que cada reintento se programa según el momento del último intento, por lo que el tiempo entre reintentos es acumulativo:
+
+| Evento           | Plazo después del primer intento |
+| :---------- | :--------------------------- |
+| Primer intento   | -                            |
+| Segundo intento  | 5 minutos                    |
+| Tercer intento   | 50 minutos                   |
+| Cuarto intento   | 6 horas                      |
+| Quinto intento   | 24 horas                     |
+| Sexto intento    | 48 horas                     |
+| Séptimo intento  | 96 horas                     |
+
+Esta tabla muestra que cada reintento se realiza según el tiempo transcurrido desde el intento anterior, no desde el intento inicial. Por ejemplo, el cuarto reintento ocurre 6 horas después del tercer reintento y no 6 horas después del primer intento. El cronograma completo abarca 7 días y 7 horas en total.
+
+## Ejemplos {#examples}
+
+A continuación hay ejemplos de solicitudes de captura de autorización y de reembolso con el modo simplificado.
+
+```Text Capture
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/payments/id/transactions/transaction_id/capture \
+     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'accept: application/json' \
+     --header 'charset: utf-8' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>' \
+     --data '
+{
+  "amount": {
+    "currency": "JPY",
+    "value": 300
+  },
+  "simplified_mode": true,
+  "description": "Confirmed",
+  "reason": "PRODUCT_CONFIRMED",
+  "merchant_reference": "AAB01-432245"
+}
+'
+```
+
+```sh Refund
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/payments/id/transactions/transaction_id/refund \
+     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'accept: application/json' \
+     --header 'charset: utf-8' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>' \
+     --data '
+{
+  "simplified_mode": true,
+  "description": "Refund",
+  "reason": "REQUESTED_BY_CUSTOMER",
+  "merchant_reference": "AAB01-432245"
+}
+'
+```

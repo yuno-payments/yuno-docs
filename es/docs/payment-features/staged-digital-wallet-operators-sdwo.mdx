@@ -1,0 +1,205 @@
+---
+title: "Operadores de billeteras digitales por etapas (SDWO)"
+description: "Marca las transacciones de carga de saldo en billetera y de compra financiada con billetera como tráfico de operadores de billeteras digitales por etapas mediante la API de Payments"
+---
+
+## Introducción {#introduction}
+
+Una **billetera digital por etapas** es una billetera en la que el cliente primero carga un saldo y luego lo gasta, en dos transacciones de tarjeta separadas. Ambas transacciones las cobra el **operador de la billetera**, la empresa que la administra, y no la tienda en la que el cliente compra finalmente. Por eso, las redes de tarjetas exigen que cada transacción se marque como tráfico **SDWO (Staged Digital Wallet Operators)**. Marcarla correctamente es lo que le da a la transacción el interchange adecuado, el tratamiento de cumplimiento correcto y una tasa de aprobación limpia.
+
+SDWO no es un método de pago nuevo. En ambas transacciones el método de pago sigue siendo la tarjeta del cliente, y envías la misma solicitud [Create payment](/es/reference/payments/create-payment) que ya envías. Lo que cambia son los datos que le adjuntas, que Yuno traduce a la estructura de billetera que espera el proveedor.
+
+## Las dos operaciones {#the-two-operations}
+
+| Operación | Qué es | Cómo la indicas |
+| --- | --- | --- |
+| **Cash-in** | El cliente carga el saldo de su propia billetera con su tarjeta. | Envía el objeto `additional_data.order.account_funding`. |
+| **Compra** | La billetera paga a un submerchant con el saldo que el cliente cargó. | No envíes `account_funding`. Envía el submerchant en `additional_data.seller_details`. |
+
+**La presencia del objeto `account_funding` es el único campo que diferencia las dos operaciones.** No envías un tipo de operación, un código de procesamiento ni un ID de billetera: Yuno deriva los valores específicos del proveedor a partir del objeto que envías y de la configuración de tu conexión.
+
+<Note>
+Este es el mismo objeto `account_funding` descrito en [Account Funding Transactions (AFTs)](/es/docs/payment-features/account-funding-transactions-afts). SDWO es el caso de billetera por etapas de una AFT: el cash-in *es* una transacción de fondeo de cuenta, y la compra es la segunda transacción, que solo existe en las billeteras por etapas.
+</Note>
+
+## Proveedores compatibles {#supported-providers}
+
+| Proveedor | País | Cash-in | Compra |
+| --- | --- | --- | --- |
+| Rede (e.Rede) | Brasil | Sí | Sí |
+
+Rede es el único proveedor con compatibilidad con SDWO hoy. El objeto `account_funding` es el mismo que lee toda integración de fondeo de cuenta de Yuno, por lo que habilitar otro proveedor más adelante no cambia tu integración.
+
+## Crear un cash-in {#creating-a-cash-in}
+
+Envía un pago normal con tarjeta más el objeto `account_funding`, que identifica quién fondea la operación y quién recibe el saldo, y `seller_details`, que identifica al operador de la billetera.
+
+```json Cash-in request
+{
+  "account_id": "d2b7e0f2-1c3a-4f6b-9f2a-8e1d4c5b6a70",
+  "merchant_order_id": "ORDER-91827",
+  "description": "Wallet cash-in",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 100.00
+  },
+  "customer_payer": {
+    "merchant_customer_id": "CUSTOMER-5521",
+    "first_name": "Marina",
+    "last_name": "Ribeiro",
+    "document": {
+      "document_type": "CPF",
+      "document_number": "06202173165"
+    }
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "50bae77e-c65c-11ec-9d64-0242ac120002",
+    "detail": {
+      "card": {
+        "soft_descriptor": "MYWALLET*CASHIN",
+        "stored_credentials": {
+          "reason": "UNSCHEDULED_CARD_ON_FILE",
+          "usage": "USED",
+          "network_transaction_id": "016153570198200"
+        }
+      }
+    }
+  },
+  "additional_data": {
+    "order": {
+      "account_funding": {
+        "sender": {
+          "first_name": "Marina",
+          "last_name": "Ribeiro",
+          "country": "BR",
+          "document": {
+            "document_type": "CPF",
+            "document_number": "06202173165"
+          },
+          "address": {
+            "address_line_1": "Rua Sebastiana Muller Pimentel",
+            "building_number_1": "260",
+            "city": "Sorriso",
+            "country": "BRA"
+          }
+        },
+        "beneficiary": {
+          "first_name": "Marina",
+          "last_name": "Ribeiro",
+          "country": "BR",
+          "document": {
+            "document_type": "CPF",
+            "document_number": "06202173165"
+          },
+          "account_number": "1111111"
+        }
+      }
+    },
+    "seller_details": {
+      "name": "My Wallet",
+      "merchant_category_code": "6051",
+      "document": {
+        "document_type": "CNPJ",
+        "document_number": "16577631000299"
+      },
+      "address": {
+        "address_line_1": "Rua Funchal 418",
+        "city": "Sao Paulo",
+        "state": "SP",
+        "country": "BRA",
+        "zip_code": "04551-060"
+      }
+    }
+  }
+}
+```
+
+### Campos del cash-in {#cash-in-fields}
+
+| Campo | Obligatorio | Descripción |
+| --- | --- | --- |
+| `additional_data.order.account_funding.beneficiary` | Obligatorio | El titular de la cuenta de la billetera que recibe el saldo. Su presencia es lo que convierte el pago en un cash-in. |
+| `account_funding.beneficiary.first_name`, `last_name` | Opcional | Nombre del titular de la cuenta, tal como está registrado en tu billetera. |
+| `account_funding.beneficiary.country` | Opcional | Código de país ISO del titular de la cuenta. |
+| `account_funding.beneficiary.document.document_number` | Obligatorio | Identificación fiscal del titular de la cuenta (CPF o CNPJ en Brasil). Los proveedores rechazan el cash-in sin ella. |
+| `account_funding.beneficiary.account_number` | Obligatorio | El identificador de la cuenta del cliente **dentro de tu billetera**. No es la identificación fiscal: es la cuenta de la billetera en la que se acredita el saldo, y las redes de tarjetas lo exigen en el cash-in. Máximo 255 caracteres. |
+| `account_funding.sender.country` | Opcional | Código de país ISO de la persona que fondea la operación. |
+| `account_funding.sender.document.document_number` | Obligatorio | Identificación fiscal de la persona que fondea la operación. |
+| `account_funding.sender.first_name`, `last_name`, `address` | Opcional | Identificación de la persona que fondea la operación. Se envía a Visa, Elo y American Express. Mastercard no incluye los datos del remitente, y Yuno los descarta por ti. |
+| `additional_data.seller_details.merchant_category_code` | Obligatorio | MCC de la operación de la billetera. El cash-in normalmente usa `6051`; usa el MCC acordado con tu proveedor para tu negocio. |
+| `additional_data.seller_details.document.document_number` | Obligatorio | CNPJ del operador de la billetera. |
+| `additional_data.seller_details.name`, `address` | Opcional | Identificación del operador de la billetera. Algunas redes de tarjetas exigen la dirección completa. |
+| `payment_method.detail.card.soft_descriptor` | Opcional | Lo que el cliente ve en el estado de cuenta de la tarjeta. SDWO lo limita a 18 caracteres, con el formato `WalletName*Recipient`. |
+| `payment_method.detail.card.stored_credentials` | Condicional | Obligatorio cuando el cash-in es un cobro recurrente automático sobre una tarjeta almacenada. Consulta [Credenciales almacenadas](/es/docs/payment-features/stored-credentials). |
+
+## Crear una compra {#creating-a-purchase}
+
+La compra es un pago estándar con tarjeta con el submerchant en `seller_details` y **sin** el objeto `account_funding`.
+
+```json Purchase request
+{
+  "account_id": "d2b7e0f2-1c3a-4f6b-9f2a-8e1d4c5b6a70",
+  "merchant_order_id": "ORDER-91828",
+  "description": "Purchase paid with wallet balance",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 59.90
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "50bae77e-c65c-11ec-9d64-0242ac120002",
+    "detail": {
+      "card": {
+        "soft_descriptor": "MYWALLET*STORE"
+      }
+    }
+  },
+  "additional_data": {
+    "seller_details": {
+      "name": "Store Name",
+      "merchant_category_code": "5814",
+      "document": {
+        "document_type": "CNPJ",
+        "document_number": "16577631000299"
+      },
+      "address": {
+        "address_line_1": "Rua Funchal 418",
+        "city": "Sao Paulo",
+        "state": "SP",
+        "country": "BRA",
+        "zip_code": "04551-060"
+      }
+    }
+  }
+}
+```
+
+Aquí `seller_details` describe al **submerchant que recibe el pago**, no al operador de la billetera.
+
+## Respuesta {#response}
+
+SDWO no agrega campos a la respuesta. Recibes el [objeto de pago](/es/reference/payments/the-payment-object) estándar y sigues el estado del pago exactamente como lo haces con cualquier pago con tarjeta. Los datos de la billetera que enviaste se usan para construir la solicitud al proveedor; no se devuelven en el pago ni en llamadas `GET` posteriores, así que conserva tu propio registro de la cuenta de billetera que fondeó cada pago.
+
+## Lo que Yuno gestiona por ti {#what-yuno-handles-for-you}
+
+Nunca envías valores de billetera específicos del proveedor. Yuno los deriva de tu conexión y de la red de tarjetas:
+
+* **El código de operación.** Para Rede, el `processingType` que marca la transacción como `01` compra o `02` cash-in.
+* **El ID de la billetera.** Se registra en cada red de tarjetas y se almacena en tu conexión, con un formato distinto para cada una.
+* **El destino del pago.** El código que le indica al proveedor qué tipo de cash-in es. Se define en tu conexión, no en cada solicitud. Consulta la limitación más abajo.
+* **Las reglas de cada red de tarjetas.** Qué datos incluye cada una: Mastercard no admite los datos del remitente, Elo exige la dirección completa del submerchant y el soft descriptor se trunca a 18 caracteres.
+
+## Antes de salir a producción {#before-you-go-live}
+
+1. **Registra tu ID de billetera en cada red de tarjetas que vayas a procesar.** Tu proveedor lo solicita para Mastercard y Visa; Elo lo solicitas tú directamente a la red. Sin un ID de billetera registrado, el proveedor rechaza la transacción de billetera.
+2. **Pide a tu proveedor que habilite el alcance de billetera en tu cuenta de comercio.** Las operaciones de billetera se habilitan por cuenta de comercio, y una cuenta que no las tiene devuelve un error de parámetro no permitido incluso cuando la solicitud es correcta.
+3. **Usa una conexión dedicada para el tráfico SDWO.** SDWO se habilita a nivel de conexión, por lo que una conexión con SDWO activado marca todos los pagos con tarjeta que se enrutan por ella. Mantén tus ventas regulares con tarjeta en una conexión separada.
+
+## Limitaciones {#limitations}
+
+* **Una variante de cash-in por conexión.** El destino del pago se configura en tu conexión en el dashboard de Yuno, no se envía en cada solicitud, por lo que una sola conexión siempre produce el mismo tipo de cash-in. Si tu negocio necesita más de una variante, pide a tu contacto de Yuno una conexión por variante.
+* **Consumer Bill Payment Service (CBPS) no es compatible.** Pagar una factura o un boleto con saldo de billetera como programa de pago de facturas de una red de tarjetas no está disponible hoy.
+* **El campo `funding_type` no se usa.** La API acepta `account_funding.funding_type`, pero ninguna integración con proveedores lo lee todavía, por lo que no cambia cómo se procesa la operación.

@@ -11684,6 +11684,19 @@ paths:
                     Per-card control for Card Account Updater. When set to `false`, this card is excluded from Card
                     Account Updater and will not receive automatic card-detail updates. When omitted, the card follows
                     your account's Account Updater configuration. Applies at enrollment.
+                payment_method:
+                  type: object
+                  description: Optional enrollment options for the payment method.
+                  properties:
+                    network_token:
+                      type: boolean
+                      description: >-
+                        Optional. `CARD` only. Per-card control for [network
+                        tokens](/docs/security-and-compliance/network-tokens#choose-per-card). `false`: Yuno does not
+                        provision a network token for this card, including cards enrolled without CVV. `true` or
+                        omitted: Yuno provisions one as today. Requires your organization to be onboarded to network
+                        tokens for the card's network; when it is not, no token is provisioned and the enrollment does
+                        not fail.
                 verify:
                   type: object
                   description: >-
@@ -14229,6 +14242,15 @@ paths:
                     vault_on_success:
                       type: boolean
                       description: When `true`, the payment method is vaulted (saved) after a successful enrollment.
+                    network_token:
+                      type: boolean
+                      description: >-
+                        Optional. `CARD` only. Per-card control for [network
+                        tokens](/docs/security-and-compliance/network-tokens#choose-per-card). `false`: Yuno does not
+                        provision a network token for this card, including cards enrolled without CVV. `true` or
+                        omitted: Yuno provisions one as today. Requires your organization to be onboarded to network
+                        tokens for the card's network; when it is not, no token is provisioned and the enrollment does
+                        not fail.
                     vault_only:
                       type: boolean
                       description: >-
@@ -15919,6 +15941,208 @@ paths:
           description: Rate limit exceeded
       tags:
         - Dry Run
+  /external-subscriptions/{external_subscription_id}/payment-method:
+    post:
+      summary: Change External Subscription Payment Method
+      description: >-
+        Moves an external subscription (a Stripe Billing subscription linked through the billing bridge) to another
+        payment method the customer already enrolled in Yuno, without a payment.
+
+
+        No payment is made: Yuno does not charge the customer and does not run a $0 verification or 3DS. The next
+        renewals charge the new payment method.
+
+
+        `customer_payer.id` is the Yuno customer ID, not the Stripe customer ID (`cus_...`). Sending the payment method
+        the subscription already charges returns `200` and changes nothing.
+
+
+        This API is enabled per account: contact your Key Account Manager to request access.
+      operationId: change-external-subscription-payment-method
+      parameters:
+        - name: external_subscription_id
+          in: path
+          description: >-
+            The ID of the subscription in the billing platform, for example the Stripe subscription ID (`sub_...`).
+            Between 3 and 255 characters.
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 255
+          required: true
+          example: sub_1QF2abc
+        - name: X-Idempotency-Key
+          in: header
+          description: >-
+            Unique key for this change, for example a UUID. Required: a request without it returns `400`
+            `INVALID_PARAMETERS`. Replaying the same key with the same request returns the result of the first request.
+            Reusing a key for another subscription or payment method returns `400` `INVALID_PARAMETERS`. To retry after
+            a `502`, send a new key.
+          schema:
+            type: string
+          required: true
+          example: 7c2e0a4b-3f5d-4c1e-9b8a-6d2f1e0c9a77
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account_id
+                - customer_payer
+                - vaulted_token
+              properties:
+                account_id:
+                  type: string
+                  format: uuid
+                  description: The unique identifier (UUID) of the Yuno account onboarded to the billing bridge.
+                  examples:
+                    - 9104911d-5df9-429e-8488-ad41abea1a4b
+                customer_payer:
+                  type: object
+                  required:
+                    - id
+                  description: The customer who owns the subscription and the payment method.
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      description: >-
+                        The Yuno customer ID (UUID) that owns the subscription. This is not the Stripe customer ID
+                        (`cus_...`).
+                      examples:
+                        - cfae0941-7234-427a-a739-ef4fce966c79
+                vaulted_token:
+                  type: string
+                  format: uuid
+                  description: >-
+                    The vaulted token (UUID) of one of the customer's enrolled payment methods. The subscription charges
+                    it from now on.
+                  examples:
+                    - 2deff5c9-da62-4888-8f05-df76ab2967a5
+            examples:
+              Change the payment method:
+                value:
+                  account_id: 9104911d-5df9-429e-8488-ad41abea1a4b
+                  customer_payer:
+                    id: cfae0941-7234-427a-a739-ef4fce966c79
+                  vaulted_token: 2deff5c9-da62-4888-8f05-df76ab2967a5
+      responses:
+        '200':
+          description: >-
+            The subscription now uses the payment method in `vaulted_token`. Also returned, with no change, when that
+            payment method is the one the subscription already uses.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  external_subscription_id:
+                    type: string
+                    description: The ID of the subscription in the external billing platform.
+                  account_id:
+                    type: string
+                    format: uuid
+                    description: The Yuno account ID from the request.
+                  customer_payer:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        description: The Yuno customer ID from the request.
+                  vaulted_token:
+                    type: string
+                    format: uuid
+                    description: The vaulted token the subscription charges from now on.
+              examples:
+                Payment method changed:
+                  value:
+                    external_subscription_id: sub_1QF2abc
+                    account_id: 9104911d-5df9-429e-8488-ad41abea1a4b
+                    customer_payer:
+                      id: cfae0941-7234-427a-a739-ef4fce966c79
+                    vaulted_token: 2deff5c9-da62-4888-8f05-df76ab2967a5
+        '400':
+          description: >-
+            The request is invalid, or the customer, the payment method or the subscription was not found or does not
+            match.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_3'
+              examples:
+                INVALID_PARAMETERS:
+                  value:
+                    code: INVALID_PARAMETERS
+                    messages:
+                      - The field 'customer_payer.id' is required and must be a UUID.
+                CUSTOMER_NOT_FOUND:
+                  value:
+                    code: CUSTOMER_NOT_FOUND
+                    messages:
+                      - The customer does not exist in the account.
+                VAULTED_TOKEN_NOT_FOUND:
+                  value:
+                    code: VAULTED_TOKEN_NOT_FOUND
+                    messages:
+                      - The vaulted_token is not one of the customer's payment methods.
+                EXTERNAL_SUBSCRIPTION_NOT_FOUND:
+                  value:
+                    code: EXTERNAL_SUBSCRIPTION_NOT_FOUND
+                    messages:
+                      - No active external subscription with this id for the account.
+                CUSTOMER_MISMATCH:
+                  value:
+                    code: CUSTOMER_MISMATCH
+                    messages:
+                      - The external subscription belongs to another customer.
+        '403':
+          description: 'PRODUCT_NOT_ENABLED: the account is not enabled for the billing bridge. Contact your Key Account Manager.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_3'
+              examples:
+                PRODUCT_NOT_ENABLED:
+                  value:
+                    code: PRODUCT_NOT_ENABLED
+                    messages:
+                      - >-
+                        External subscriptions are not enabled for this account. Please contact your Key Account
+                        Manager.
+        '409':
+          description: 'CONCURRENT_CHANGE: another payment method change for this subscription completed first.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_3'
+              examples:
+                CONCURRENT_CHANGE:
+                  value:
+                    code: CONCURRENT_CHANGE
+                    messages:
+                      - Another payment method change for this subscription completed first.
+        '502':
+          description: >-
+            BILLING_PLATFORM_ERROR: the billing platform could not confirm the change. The previous payment method
+            stays. Retry with a new idempotency key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error_3'
+              examples:
+                BILLING_PLATFORM_ERROR:
+                  value:
+                    code: BILLING_PLATFORM_ERROR
+                    messages:
+                      - >-
+                        The billing platform could not confirm the change. The previous payment method stays. Retry with
+                        a new idempotency key.
+      deprecated: false
+      tags:
+        - Subscriptions
   /fx-rates:
     get:
       summary: Get FX rates
@@ -25138,6 +25362,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -25384,6 +25616,15 @@ paths:
                                               acquirer_reference_number:
                                                 type: string
                                                 example: ''
+                                              par:
+                                                type: string
+                                                description: >-
+                                                  The Payment Account Reference (PAR) of the card, as the provider
+                                                  returns it. A PAR identifies the cardholder account across the card
+                                                  number and its network tokens. Returned for card payments with or
+                                                  without a network token, and omitted when the provider does not send
+                                                  it.
+                                                example: V0010013019000000000000000001
                                               voucher: {}
                                               card_data:
                                                 type: object
@@ -25658,6 +25899,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -26270,6 +26519,15 @@ paths:
                                               acquirer_reference_number:
                                                 type: string
                                                 example: ''
+                                              par:
+                                                type: string
+                                                description: >-
+                                                  The Payment Account Reference (PAR) of the card, as the provider
+                                                  returns it. A PAR identifies the cardholder account across the card
+                                                  number and its network tokens. Returned for card payments with or
+                                                  without a network token, and omitted when the provider does not send
+                                                  it.
+                                                example: V0010013019000000000000000001
                                               voucher: {}
                                               redirect_url:
                                                 type: string
@@ -26629,6 +26887,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -26876,6 +27142,15 @@ paths:
                                               acquirer_reference_number:
                                                 type: string
                                                 example: ''
+                                              par:
+                                                type: string
+                                                description: >-
+                                                  The Payment Account Reference (PAR) of the card, as the provider
+                                                  returns it. A PAR identifies the cardholder account across the card
+                                                  number and its network tokens. Returned for card payments with or
+                                                  without a network token, and omitted when the provider does not send
+                                                  it.
+                                                example: V0010013019000000000000000001
                                               voucher: {}
                                               card_data:
                                                 type: object
@@ -27155,6 +27430,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -27448,6 +27731,15 @@ paths:
                                               acquirer_reference_number:
                                                 type: string
                                                 example: ''
+                                              par:
+                                                type: string
+                                                description: >-
+                                                  The Payment Account Reference (PAR) of the card, as the provider
+                                                  returns it. A PAR identifies the cardholder account across the card
+                                                  number and its network tokens. Returned for card payments with or
+                                                  without a network token, and omitted when the provider does not send
+                                                  it.
+                                                example: V0010013019000000000000000001
                                               voucher: {}
                                               card_data:
                                                 type: object
@@ -27727,6 +28019,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -28065,6 +28365,15 @@ paths:
                                               acquirer_reference_number:
                                                 type: string
                                                 example: ''
+                                              par:
+                                                type: string
+                                                description: >-
+                                                  The Payment Account Reference (PAR) of the card, as the provider
+                                                  returns it. A PAR identifies the cardholder account across the card
+                                                  number and its network tokens. Returned for card payments with or
+                                                  without a network token, and omitted when the provider does not send
+                                                  it.
+                                                example: V0010013019000000000000000001
                                               voucher: {}
                                               card_data:
                                                 type: object
@@ -28344,6 +28653,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -28591,6 +28908,15 @@ paths:
                                               acquirer_reference_number:
                                                 type: string
                                                 example: ''
+                                              par:
+                                                type: string
+                                                description: >-
+                                                  The Payment Account Reference (PAR) of the card, as the provider
+                                                  returns it. A PAR identifies the cardholder account across the card
+                                                  number and its network tokens. Returned for card payments with or
+                                                  without a network token, and omitted when the provider does not send
+                                                  it.
+                                                example: V0010013019000000000000000001
                                               voucher: {}
                                               card_data:
                                                 type: object
@@ -28870,6 +29196,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -29119,6 +29453,15 @@ paths:
                                               acquirer_reference_number:
                                                 type: string
                                                 example: ''
+                                              par:
+                                                type: string
+                                                description: >-
+                                                  The Payment Account Reference (PAR) of the card, as the provider
+                                                  returns it. A PAR identifies the cardholder account across the card
+                                                  number and its network tokens. Returned for card payments with or
+                                                  without a network token, and omitted when the provider does not send
+                                                  it.
+                                                example: V0010013019000000000000000001
                                               voucher: {}
                                               card_data:
                                                 type: object
@@ -29398,6 +29741,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -29652,6 +30003,15 @@ paths:
                                               acquirer_reference_number:
                                                 type: string
                                                 example: ''
+                                              par:
+                                                type: string
+                                                description: >-
+                                                  The Payment Account Reference (PAR) of the card, as the provider
+                                                  returns it. A PAR identifies the cardholder account across the card
+                                                  number and its network tokens. Returned for card payments with or
+                                                  without a network token, and omitted when the provider does not send
+                                                  it.
+                                                example: V0010013019000000000000000001
                                               voucher: {}
                                               card_data:
                                                 type: object
@@ -29934,6 +30294,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -30188,6 +30556,15 @@ paths:
                                               acquirer_reference_number:
                                                 type: string
                                                 example: ''
+                                              par:
+                                                type: string
+                                                description: >-
+                                                  The Payment Account Reference (PAR) of the card, as the provider
+                                                  returns it. A PAR identifies the cardholder account across the card
+                                                  number and its network tokens. Returned for card payments with or
+                                                  without a network token, and omitted when the provider does not send
+                                                  it.
+                                                example: V0010013019000000000000000001
                                               voucher: {}
                                               card_data:
                                                 type: object
@@ -34715,6 +35092,20 @@ paths:
                               description: >-
                                 Complete wallet response payload as a JSON string, exactly as returned by the wallet
                                 provider
+                            provider_payment_token:
+                              type: string
+                              minLength: 1
+                              maxLength: 2048
+                              description: >-
+                                Single-use nonce returned by the provider's client SDK, such as a Braintree PayPal
+                                nonce. DIRECT workflow only. Yuno forwards it to the provider connection and does not
+                                store it. Cannot be combined with `payment_token`, `cryptogram`, `payment_method.token`
+                                or `payment_method.vaulted_token`. With `vault_on_success`, the create and Retrieve
+                                Payment responses return the vaulted provider id in
+                                `payment_method.payment_method_detail.wallet.provider_token`, and [Retrieve Payment
+                                Method](/reference/payment-methods-checkout/retrieve-payment-method-by-id-checkout)
+                                returns it as `provider.token`. See [PayPal direct integration with a Braintree
+                                nonce](/docs/wallets/paypal#direct-integration-with-a-braintree-nonce).
                             expires_at:
                               type: string
                               description: >-
@@ -35068,6 +35459,19 @@ paths:
                         Per-card control for Card Account Updater. When set to `false`, the card enrolled or used in
                         this payment is excluded from Card Account Updater and will not receive automatic card-detail
                         updates. When omitted, the card follows your account's Account Updater configuration.
+                    network_token:
+                      type: boolean
+                      description: >-
+                        Optional. Per-card control for [network
+                        tokens](/docs/security-and-compliance/network-tokens#choose-per-card). `false`: Yuno never
+                        requests or reuses a network token, so the PAN goes to the provider even when the route has the
+                        network token toggle on; a token already stored for the card is not deleted. `true`: on a
+                        vaulted card (`vaulted_token`, or `vault_on_success: true`), Yuno uses the card's network token,
+                        or provisions one, even when the route has the toggle off. Omitted: the route decides, as today.
+                        Requires your organization to be onboarded to network tokens and a provider that supports them;
+                        when it is not, `true` has no effect and the request does not fail. No effect on guest
+                        (non-vaulted) cards, wallets (Apple Pay, Google Pay, Samsung Pay) or network tokens you send
+                        with their cryptogram.
                     otp:
                       type: object
                       properties:
@@ -42944,6 +43348,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -43441,6 +43853,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -43668,6 +44088,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -44013,6 +44441,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -44202,6 +44638,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -44415,6 +44859,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -44793,6 +45245,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -45159,6 +45619,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -45372,6 +45840,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -45750,6 +46226,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -46004,6 +46488,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -46217,6 +46709,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -46595,6 +47095,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -46899,6 +47407,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -47112,6 +47628,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -47431,6 +47955,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -47685,6 +48217,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -47898,6 +48438,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -48217,6 +48765,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -48471,6 +49027,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -48684,6 +49248,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -49003,6 +49575,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -49257,6 +49837,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -49482,6 +50070,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -49813,6 +50409,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -50064,6 +50668,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -50277,6 +50889,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -50596,6 +51216,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -50852,6 +51480,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -51065,6 +51701,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -51384,6 +52028,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -51643,6 +52295,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -51859,6 +52519,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -52640,6 +53308,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -52949,6 +53625,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -53162,6 +53846,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -53480,6 +54172,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   network_token:
                                     type: object
@@ -53714,6 +54414,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       network_token:
                                         type: object
@@ -54269,6 +54977,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -54470,6 +55186,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -54686,6 +55410,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: ''
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -55091,6 +55823,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: '2206177255'
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -55406,6 +56146,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: '2206177255'
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -56147,6 +56895,14 @@ paths:
                                         acquirer_reference_number:
                                           type: string
                                           example: '2206177255'
+                                        par:
+                                          type: string
+                                          description: >-
+                                            The Payment Account Reference (PAR) of the card, as the provider returns it.
+                                            A PAR identifies the cardholder account across the card number and its
+                                            network tokens. Returned for card payments with or without a network token,
+                                            and omitted when the provider does not send it.
+                                          example: V0010013019000000000000000001
                                         voucher: {}
                                         card_data:
                                           type: object
@@ -60955,6 +61711,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -61233,6 +61997,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             card_data:
                                               type: object
@@ -61528,6 +62300,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -61975,6 +62755,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             card_data:
                                               type: object
@@ -62420,6 +63208,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             redirect_url:
                                               type: string
@@ -62807,6 +63603,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -63086,6 +63890,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             card_data:
                                               type: object
@@ -63399,6 +64211,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -63724,6 +64544,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             card_data:
                                               type: object
@@ -64037,6 +64865,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -64316,6 +65152,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             card_data:
                                               type: object
@@ -64629,6 +65473,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -64908,6 +65760,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             card_data:
                                               type: object
@@ -65221,6 +66081,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -65502,6 +66370,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             card_data:
                                               type: object
@@ -65815,6 +66691,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -66101,6 +66985,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             card_data:
                                               type: object
@@ -66417,6 +67309,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -66703,6 +67603,14 @@ paths:
                                             acquirer_reference_number:
                                               type: string
                                               example: ''
+                                            par:
+                                              type: string
+                                              description: >-
+                                                The Payment Account Reference (PAR) of the card, as the provider returns
+                                                it. A PAR identifies the cardholder account across the card number and
+                                                its network tokens. Returned for card payments with or without a network
+                                                token, and omitted when the provider does not send it.
+                                              example: V0010013019000000000000000001
                                             voucher: {}
                                             card_data:
                                               type: object
@@ -80109,6 +81017,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -80348,6 +81264,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -80625,6 +81549,14 @@ paths:
                                   acquirer_reference_number:
                                     type: string
                                     example: ''
+                                  par:
+                                    type: string
+                                    description: >-
+                                      The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR
+                                      identifies the cardholder account across the card number and its network tokens.
+                                      Returned for card payments with or without a network token, and omitted when the
+                                      provider does not send it.
+                                    example: V0010013019000000000000000001
                                   voucher: {}
                                   card_data:
                                     type: object
@@ -80864,6 +81796,14 @@ paths:
                                       acquirer_reference_number:
                                         type: string
                                         example: ''
+                                      par:
+                                        type: string
+                                        description: >-
+                                          The Payment Account Reference (PAR) of the card, as the provider returns it. A
+                                          PAR identifies the cardholder account across the card number and its network
+                                          tokens. Returned for card payments with or without a network token, and
+                                          omitted when the provider does not send it.
+                                        example: V0010013019000000000000000001
                                       voucher: {}
                                       card_data:
                                         type: object
@@ -87348,8 +88288,18 @@ paths:
                     - ONE_STEP_ONBOARDING
                     - TWO_STEP_ONBOARDING
                   description: >-
-                    Type of onboarding flow. PREVIOUSLY_ONBOARDED for pre-existing accounts, ONE_STEP_ONBOARDING for
-                    account creation + KYC in one step, TWO_STEP_ONBOARDING for account creation first then KYC later
+                    Type of onboarding flow. PREVIOUSLY_ONBOARDED attaches an account that already exists at the
+                    provider, ONE_STEP_ONBOARDING for account creation + KYC in one step, TWO_STEP_ONBOARDING for
+                    account creation first then KYC later.
+
+
+                    For PREVIOUSLY_ONBOARDED, when the provider integration supports adopting existing accounts, Yuno
+                    registers the account with the provider using the ids in `provider`: the response is 201 with status
+                    `CREATED`, and the onboarding then becomes `SUCCEEDED` (webhook `onboarding.succeeded`) or `ERROR`
+                    with the provider's message in `response_message` (webhook `onboarding.error`). For any other
+                    provider, the onboarding is recorded as `SUCCEEDED` immediately, no call is made to the provider and
+                    the ids are not validated. Which providers adopt existing accounts is Yuno-side configuration per
+                    environment, not an API field; ask your Key Account Manager.
                   example: PREVIOUSLY_ONBOARDED
                 workflow:
                   type: string
@@ -87370,6 +88320,10 @@ paths:
                   example: https://www.google.com
                 provider:
                   type: object
+                  description: >-
+                    Provider of the onboarding. For PREVIOUSLY_ONBOARDED, the provider account ids are forwarded to the
+                    provider integration exactly as sent; which ids a provider needs is defined by the provider
+                    integration.
                   required:
                     - id
                     - connection_id
@@ -87392,6 +88346,24 @@ paths:
                         otherwise the API returns 400 with "Provider recipient ID must be provided for previously
                         onboarded type."
                       example: AAAAA01
+                    recipient_additional_id:
+                      type: string
+                      description: >-
+                        Additional identifier of the provider's recipient, for providers that identify an account with
+                        more than one id. Whether it is needed is defined by the provider integration.
+                      example: AAAAA01-SUB
+                    balance_account_id:
+                      type: string
+                      description: >-
+                        Identifier of the recipient's balance account at the provider. Whether it is needed is defined
+                        by the provider integration.
+                      example: BA00000000000000000000001
+                    legal_entity:
+                      type: string
+                      description: >-
+                        Identifier of the recipient's legal entity at the provider. Whether it is needed is defined by
+                        the provider integration.
+                      example: LE00000000000000000000001
                     recipient_type:
                       type: string
                       description: The type of recipient for the provider.
@@ -88153,8 +89125,18 @@ paths:
                     - ONE_STEP_ONBOARDING
                     - TWO_STEP_ONBOARDING
                   description: >-
-                    Type of onboarding flow. PREVIOUSLY_ONBOARDED for pre-existing accounts, ONE_STEP_ONBOARDING for
-                    account creation + KYC in one step, TWO_STEP_ONBOARDING for account creation first then KYC later
+                    Type of onboarding flow. PREVIOUSLY_ONBOARDED attaches an account that already exists at the
+                    provider, ONE_STEP_ONBOARDING for account creation + KYC in one step, TWO_STEP_ONBOARDING for
+                    account creation first then KYC later.
+
+
+                    To re-register a PREVIOUSLY_ONBOARDED onboarding, send `provider.id`, `provider.connection_id` and
+                    the provider account ids. When the provider integration supports adopting existing accounts, Yuno
+                    repeats the registration and applies the answer: the onboarding becomes `SUCCEEDED` or `ERROR` with
+                    the provider's message in `response_message`. For any other provider the ids are stored and no call
+                    is made to the provider. An update without provider ids only re-sends the notification of the
+                    current status. Which providers adopt existing accounts is Yuno-side configuration per environment;
+                    ask your Key Account Manager.
                   example: PREVIOUSLY_ONBOARDED
                 workflow:
                   type: string
@@ -88171,6 +89153,10 @@ paths:
                   example: https://www.google.com
                 provider:
                   type: object
+                  description: >-
+                    Provider of the onboarding. For PREVIOUSLY_ONBOARDED, the provider account ids are forwarded to the
+                    provider integration exactly as sent; which ids a provider needs is defined by the provider
+                    integration. Send `id` and `connection_id` together with the ids to re-register the account.
                   properties:
                     id:
                       type: string
@@ -88184,6 +89170,24 @@ paths:
                       type: string
                       description: The unique identifier of the provider's recipient.
                       example: AAAAA01
+                    recipient_additional_id:
+                      type: string
+                      description: >-
+                        Additional identifier of the provider's recipient, for providers that identify an account with
+                        more than one id. Whether it is needed is defined by the provider integration.
+                      example: AAAAA01-SUB
+                    balance_account_id:
+                      type: string
+                      description: >-
+                        Identifier of the recipient's balance account at the provider. Whether it is needed is defined
+                        by the provider integration.
+                      example: BA00000000000000000000001
+                    legal_entity:
+                      type: string
+                      description: >-
+                        Identifier of the recipient's legal entity at the provider. Whether it is needed is defined by
+                        the provider integration.
+                      example: LE00000000000000000000001
                     recipient_type:
                       type: string
                       description: The type of recipient for the provider.
@@ -91532,8 +92536,9 @@ paths:
                                   example: COUNTRY
                                   description: >-
                                     See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT,
-                                    CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
-                                    TIME_PERIOD, VOLUME_PAYMENTS_LIMIT.
+                                    CURRENCY, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA,
+                                    ADDITIONAL_FIELD, ORDER_ITEMS_AMOUNT, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT,
+                                    SUBSCRIPTION_RETRY, SUBSCRIPTION_RETRY_COUNT.
                                 conditional:
                                   type: string
                                   example: ONE_OF
@@ -91545,15 +92550,35 @@ paths:
                                     - US
                                     - CA
                                   description: >-
-                                    Empty only on an AMOUNT condition with currency, which then matches any amount in
-                                    that currency.
+                                    On CURRENCY, uppercase ISO 4217 codes (not XXX, no repeats): exactly 1 with EQUAL or
+                                    NOT_EQUAL, 1 or more with ONE_OF or NOT_ONE_OF. Empty only on an AMOUNT condition
+                                    with currency, which then matches any amount in that currency. On
+                                    ORDER_ITEMS_AMOUNT, the numeric threshold for the summed items: 1 value, 2 with
+                                    BETWEEN.
                                 key:
                                   type: string
-                                  description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                                  description: >-
+                                    METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.
+                                    ORDER_ITEMS_AMOUNT: the order item field item_values is matched against, sku_code
+                                    (default), category or brand.
+                                item_values:
+                                  type: array
+                                  items:
+                                    type: string
+                                  example:
+                                    - GC-50
+                                    - GC-100
+                                    - GC-200
+                                  description: >-
+                                    ORDER_ITEMS_AMOUNT only, and required on it: non-empty list of order item values
+                                    (exact, case-sensitive) whose quantity × unit_amount is added up. Rejected on any
+                                    other condition_type.
                                 currency:
                                   type: string
                                   example: USD
-                                  description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                                  description: >-
+                                    ISO 4217. Required on AMOUNT, on ORDER_ITEMS_AMOUNT and on VOLUME_PAYMENTS_LIMIT
+                                    with limit_by = VOLUME. Not sent on CURRENCY, whose currencies go in values.
                                 time_period_repeat_amount:
                                   type: integer
                                   example: 1
@@ -91786,15 +92811,18 @@ paths:
                                   description: >-
                                     Id of a decline, Merchant Advice Code or succeeded group of the account (see List
                                     Decline Groups and List Succeeded Groups). Required on MAC_CODE_GROUP and
-                                    SUCCEEDED_GROUP, optional on DECLINE_GROUP, not allowed otherwise. Must be of the
-                                    kind the status expects.
+                                    SUCCEEDED_GROUP, optional on DECLINE_GROUP, not allowed otherwise. MAC_CODE_GROUP
+                                    takes a Merchant Advice Code group; DECLINE_GROUP takes a decline group or a
+                                    Merchant Advice Code group.
                                 retry:
                                   type: boolean
                                   example: false
                                   description: >-
                                     true attempts the same provider once more when this outcome happens, before
-                                    following next. Only on DECLINED, INTERNAL_ERROR and DECLINE_GROUP. On update, an
-                                    omitted retry keeps the stored value.
+                                    following next. Only on DECLINED, INTERNAL_ERROR and DECLINE_GROUP; on a
+                                    DECLINE_GROUP entry that references a Merchant Advice Code group, only where the
+                                    stored routing already retries that group on the same step, so always rejected on
+                                    create. On update, an omitted retry keeps the stored value.
                                 next:
                                   type: integer
                                   example: 2
@@ -91942,9 +92970,10 @@ paths:
                               type: string
                               example: COUNTRY
                               description: >-
-                                See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CARD_TYPE,
-                                CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, TIME_PERIOD,
-                                VOLUME_PAYMENTS_LIMIT.
+                                See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CURRENCY,
+                                CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
+                                ORDER_ITEMS_AMOUNT, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT, SUBSCRIPTION_RETRY,
+                                SUBSCRIPTION_RETRY_COUNT.
                             conditional:
                               type: string
                               example: ONE_OF
@@ -91956,15 +92985,34 @@ paths:
                                 - US
                                 - CA
                               description: >-
-                                Empty only on an AMOUNT condition with currency, which then matches any amount in that
-                                currency.
+                                On CURRENCY, uppercase ISO 4217 codes (not XXX, no repeats): exactly 1 with EQUAL or
+                                NOT_EQUAL, 1 or more with ONE_OF or NOT_ONE_OF. Empty only on an AMOUNT condition with
+                                currency, which then matches any amount in that currency. On ORDER_ITEMS_AMOUNT, the
+                                numeric threshold for the summed items: 1 value, 2 with BETWEEN.
                             key:
                               type: string
-                              description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                              description: >-
+                                METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.
+                                ORDER_ITEMS_AMOUNT: the order item field item_values is matched against, sku_code
+                                (default), category or brand.
+                            item_values:
+                              type: array
+                              items:
+                                type: string
+                              example:
+                                - GC-50
+                                - GC-100
+                                - GC-200
+                              description: >-
+                                ORDER_ITEMS_AMOUNT only, and required on it: non-empty list of order item values (exact,
+                                case-sensitive) whose quantity × unit_amount is added up. Rejected on any other
+                                condition_type.
                             currency:
                               type: string
                               example: USD
-                              description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                              description: >-
+                                ISO 4217. Required on AMOUNT, on ORDER_ITEMS_AMOUNT and on VOLUME_PAYMENTS_LIMIT with
+                                limit_by = VOLUME. Not sent on CURRENCY, whose currencies go in values.
                             time_period_repeat_amount:
                               type: integer
                               example: 1
@@ -92329,8 +93377,9 @@ paths:
                                 example: COUNTRY
                                 description: >-
                                   See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT,
-                                  CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
-                                  TIME_PERIOD, VOLUME_PAYMENTS_LIMIT.
+                                  CURRENCY, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA,
+                                  ADDITIONAL_FIELD, ORDER_ITEMS_AMOUNT, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT,
+                                  SUBSCRIPTION_RETRY, SUBSCRIPTION_RETRY_COUNT.
                               conditional:
                                 type: string
                                 example: ONE_OF
@@ -92342,15 +93391,34 @@ paths:
                                   - US
                                   - CA
                                 description: >-
-                                  Empty only on an AMOUNT condition with currency, which then matches any amount in that
-                                  currency.
+                                  On CURRENCY, uppercase ISO 4217 codes (not XXX, no repeats): exactly 1 with EQUAL or
+                                  NOT_EQUAL, 1 or more with ONE_OF or NOT_ONE_OF. Empty only on an AMOUNT condition with
+                                  currency, which then matches any amount in that currency. On ORDER_ITEMS_AMOUNT, the
+                                  numeric threshold for the summed items: 1 value, 2 with BETWEEN.
                               key:
                                 type: string
-                                description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                                description: >-
+                                  METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.
+                                  ORDER_ITEMS_AMOUNT: the order item field item_values is matched against, sku_code
+                                  (default), category or brand.
+                              item_values:
+                                type: array
+                                items:
+                                  type: string
+                                example:
+                                  - GC-50
+                                  - GC-100
+                                  - GC-200
+                                description: >-
+                                  ORDER_ITEMS_AMOUNT only, and required on it: non-empty list of order item values
+                                  (exact, case-sensitive) whose quantity × unit_amount is added up. Rejected on any
+                                  other condition_type.
                               currency:
                                 type: string
                                 example: USD
-                                description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                                description: >-
+                                  ISO 4217. Required on AMOUNT, on ORDER_ITEMS_AMOUNT and on VOLUME_PAYMENTS_LIMIT with
+                                  limit_by = VOLUME. Not sent on CURRENCY, whose currencies go in values.
                               time_period_repeat_amount:
                                 type: integer
                                 example: 1
@@ -93192,8 +94260,9 @@ paths:
                                 example: COUNTRY
                                 description: >-
                                   See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT,
-                                  CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
-                                  TIME_PERIOD, VOLUME_PAYMENTS_LIMIT.
+                                  CURRENCY, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA,
+                                  ADDITIONAL_FIELD, ORDER_ITEMS_AMOUNT, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT,
+                                  SUBSCRIPTION_RETRY, SUBSCRIPTION_RETRY_COUNT.
                               conditional:
                                 type: string
                                 example: ONE_OF
@@ -93205,15 +94274,34 @@ paths:
                                   - US
                                   - CA
                                 description: >-
-                                  Empty only on an AMOUNT condition with currency, which then matches any amount in that
-                                  currency.
+                                  On CURRENCY, uppercase ISO 4217 codes (not XXX, no repeats): exactly 1 with EQUAL or
+                                  NOT_EQUAL, 1 or more with ONE_OF or NOT_ONE_OF. Empty only on an AMOUNT condition with
+                                  currency, which then matches any amount in that currency. On ORDER_ITEMS_AMOUNT, the
+                                  numeric threshold for the summed items: 1 value, 2 with BETWEEN.
                               key:
                                 type: string
-                                description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                                description: >-
+                                  METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.
+                                  ORDER_ITEMS_AMOUNT: the order item field item_values is matched against, sku_code
+                                  (default), category or brand.
+                              item_values:
+                                type: array
+                                items:
+                                  type: string
+                                example:
+                                  - GC-50
+                                  - GC-100
+                                  - GC-200
+                                description: >-
+                                  ORDER_ITEMS_AMOUNT only, and required on it: non-empty list of order item values
+                                  (exact, case-sensitive) whose quantity × unit_amount is added up. Rejected on any
+                                  other condition_type.
                               currency:
                                 type: string
                                 example: USD
-                                description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                                description: >-
+                                  ISO 4217. Required on AMOUNT, on ORDER_ITEMS_AMOUNT and on VOLUME_PAYMENTS_LIMIT with
+                                  limit_by = VOLUME. Not sent on CURRENCY, whose currencies go in values.
                               time_period_repeat_amount:
                                 type: integer
                                 example: 1
@@ -93452,15 +94540,18 @@ paths:
                                   description: >-
                                     Id of a decline, Merchant Advice Code or succeeded group of the account (see List
                                     Decline Groups and List Succeeded Groups). Required on MAC_CODE_GROUP and
-                                    SUCCEEDED_GROUP, optional on DECLINE_GROUP, not allowed otherwise. Must be of the
-                                    kind the status expects.
+                                    SUCCEEDED_GROUP, optional on DECLINE_GROUP, not allowed otherwise. MAC_CODE_GROUP
+                                    takes a Merchant Advice Code group; DECLINE_GROUP takes a decline group or a
+                                    Merchant Advice Code group.
                                 retry:
                                   type: boolean
                                   example: false
                                   description: >-
                                     true attempts the same provider once more when this outcome happens, before
-                                    following next. Only on DECLINED, INTERNAL_ERROR and DECLINE_GROUP. On update, an
-                                    omitted retry keeps the stored value.
+                                    following next. Only on DECLINED, INTERNAL_ERROR and DECLINE_GROUP; on a
+                                    DECLINE_GROUP entry that references a Merchant Advice Code group, only where the
+                                    stored routing already retries that group on the same step, so always rejected on
+                                    create. On update, an omitted retry keeps the stored value.
                                 next:
                                   type: integer
                                   example: 2
@@ -93608,9 +94699,10 @@ paths:
                               type: string
                               example: COUNTRY
                               description: >-
-                                See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CARD_TYPE,
-                                CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, TIME_PERIOD,
-                                VOLUME_PAYMENTS_LIMIT.
+                                See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CURRENCY,
+                                CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
+                                ORDER_ITEMS_AMOUNT, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT, SUBSCRIPTION_RETRY,
+                                SUBSCRIPTION_RETRY_COUNT.
                             conditional:
                               type: string
                               example: ONE_OF
@@ -93622,15 +94714,34 @@ paths:
                                 - US
                                 - CA
                               description: >-
-                                Empty only on an AMOUNT condition with currency, which then matches any amount in that
-                                currency.
+                                On CURRENCY, uppercase ISO 4217 codes (not XXX, no repeats): exactly 1 with EQUAL or
+                                NOT_EQUAL, 1 or more with ONE_OF or NOT_ONE_OF. Empty only on an AMOUNT condition with
+                                currency, which then matches any amount in that currency. On ORDER_ITEMS_AMOUNT, the
+                                numeric threshold for the summed items: 1 value, 2 with BETWEEN.
                             key:
                               type: string
-                              description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                              description: >-
+                                METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.
+                                ORDER_ITEMS_AMOUNT: the order item field item_values is matched against, sku_code
+                                (default), category or brand.
+                            item_values:
+                              type: array
+                              items:
+                                type: string
+                              example:
+                                - GC-50
+                                - GC-100
+                                - GC-200
+                              description: >-
+                                ORDER_ITEMS_AMOUNT only, and required on it: non-empty list of order item values (exact,
+                                case-sensitive) whose quantity × unit_amount is added up. Rejected on any other
+                                condition_type.
                             currency:
                               type: string
                               example: USD
-                              description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                              description: >-
+                                ISO 4217. Required on AMOUNT, on ORDER_ITEMS_AMOUNT and on VOLUME_PAYMENTS_LIMIT with
+                                limit_by = VOLUME. Not sent on CURRENCY, whose currencies go in values.
                             time_period_repeat_amount:
                               type: integer
                               example: 1
@@ -93993,8 +95104,9 @@ paths:
                                 example: COUNTRY
                                 description: >-
                                   See Routing Conditions for the catalog: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT,
-                                  CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD,
-                                  TIME_PERIOD, VOLUME_PAYMENTS_LIMIT.
+                                  CURRENCY, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA,
+                                  ADDITIONAL_FIELD, ORDER_ITEMS_AMOUNT, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT,
+                                  SUBSCRIPTION_RETRY, SUBSCRIPTION_RETRY_COUNT.
                               conditional:
                                 type: string
                                 example: ONE_OF
@@ -94006,15 +95118,34 @@ paths:
                                   - US
                                   - CA
                                 description: >-
-                                  Empty only on an AMOUNT condition with currency, which then matches any amount in that
-                                  currency.
+                                  On CURRENCY, uppercase ISO 4217 codes (not XXX, no repeats): exactly 1 with EQUAL or
+                                  NOT_EQUAL, 1 or more with ONE_OF or NOT_ONE_OF. Empty only on an AMOUNT condition with
+                                  currency, which then matches any amount in that currency. On ORDER_ITEMS_AMOUNT, the
+                                  numeric threshold for the summed items: 1 value, 2 with BETWEEN.
                               key:
                                 type: string
-                                description: 'METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.'
+                                description: >-
+                                  METADATA: the metadata key. ADDITIONAL_FIELD: the supported field name.
+                                  ORDER_ITEMS_AMOUNT: the order item field item_values is matched against, sku_code
+                                  (default), category or brand.
+                              item_values:
+                                type: array
+                                items:
+                                  type: string
+                                example:
+                                  - GC-50
+                                  - GC-100
+                                  - GC-200
+                                description: >-
+                                  ORDER_ITEMS_AMOUNT only, and required on it: non-empty list of order item values
+                                  (exact, case-sensitive) whose quantity × unit_amount is added up. Rejected on any
+                                  other condition_type.
                               currency:
                                 type: string
                                 example: USD
-                                description: ISO 4217. Required on AMOUNT and on VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME.
+                                description: >-
+                                  ISO 4217. Required on AMOUNT, on ORDER_ITEMS_AMOUNT and on VOLUME_PAYMENTS_LIMIT with
+                                  limit_by = VOLUME. Not sent on CURRENCY, whose currencies go in values.
                               time_period_repeat_amount:
                                 type: integer
                                 example: 1
@@ -96712,6 +97843,22 @@ paths:
                           type: string
                           description: Must match the subscription's own currency.
                           example: COP
+                promotion:
+                  type: object
+                  description: >-
+                    Applies a promotion attached to the plan this subscription is created on. Send exactly one of `id`
+                    or `code`. The promotion starts with the subscription and discounts the first charge. If it cannot
+                    be applied (it is not attached to the plan, has expired, is disabled, has not started, or has no
+                    uses left), the request is rejected and nothing is created. If the plan also has an automatic
+                    promotion, the larger discount on the first charge applies, and the promotion you send wins a tie.
+                    See [Promotions on subscription plans](/docs/payment-features/subscriptions/promotions).
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the promotion (UUID). Use `id` or `code`, not both.
+                    code:
+                      type: string
+                      description: The code of a promotion that has one. Use `id` or `code`, not both.
             examples:
               Subscription:
                 value:
@@ -98122,6 +99269,14 @@ paths:
                         amount: null
                         total_payments: null
                         country_prices: []
+                    promotions:
+                      - promotion_id: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+                        name: Welcome 20% x3
+                        type: AUTOMATIC
+                        status: ENABLED
+                        cycles: 3
+                        on_pause: KEEP
+                        attached_at: '2026-11-02T14:00:00Z'
                     created_at: '2024-01-15T10:30:00.000000Z'
                     updated_at: '2024-01-15T10:30:00.000000Z'
                     account_ids:
@@ -98216,6 +99371,49 @@ paths:
                     description: >-
                       The metered prices attached to this plan. Empty when the plan has no usage-based pricing; see
                       [Attach Meter to Plan](/reference/meters/attach-meter-to-plan).
+                  promotions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        promotion_id:
+                          type: string
+                          description: The ID of the attached promotion (UUID).
+                        name:
+                          type: string
+                          description: The name of the promotion.
+                        type:
+                          type: string
+                          enum:
+                            - AUTOMATIC
+                            - CODE
+                          description: >-
+                            The redemption mode of the promotion. `AUTOMATIC` promotions apply by themselves when a
+                            subscription is created on the plan. `CODE` promotions apply when the merchant sends the
+                            code.
+                        status:
+                          type: string
+                          enum:
+                            - ENABLED
+                            - DISABLED
+                            - UNKNOWN
+                          description: Read from the promotions engine. `UNKNOWN` when the engine does not respond.
+                        cycles:
+                          type: integer
+                          description: The number of charges the promotion covers on this plan.
+                        on_pause:
+                          type: string
+                          enum:
+                            - KEEP
+                            - END
+                          description: 'What a pause does to a copy of this promotion: `KEEP` (default) or `END`.'
+                        attached_at:
+                          type: string
+                          format: date-time
+                          description: When the promotion was attached to the plan.
+                    description: >-
+                      The promotions attached to this plan. Empty when none is attached. See [Promotions on subscription
+                      plans](/docs/payment-features/subscriptions/promotions).
         '404':
           description: '404'
           content:
@@ -98240,6 +99438,238 @@ paths:
       deprecated: false
       tags:
         - Plans
+  /subscriptions/plans/{plan_id}/promotions:
+    post:
+      summary: Attach Promotion to Plan
+      description: >-
+        Attaches an existing promotion to the plan for `cycles` charges. Subscriptions on the plan can then receive it
+        when they are created or updated. Attachments are not edited: to change `cycles` or `on_pause`, remove the
+        attachment and attach the promotion again.
+      operationId: attach-plan-promotion
+      parameters:
+        - in: header
+          name: X-Account-Code
+          required: true
+          schema:
+            type: string
+          description: >-
+            The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required —
+            omitting it returns `400 BAD_REQUEST` ("Invalid x-account-code header.").
+        - name: plan_id
+          in: path
+          description: The unique identifier of the plan.
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - promotion_id
+                - cycles
+              properties:
+                promotion_id:
+                  type: string
+                  description: The ID of an existing promotion (UUID).
+                cycles:
+                  type: integer
+                  minimum: 1
+                  description: The number of charges the discount covers. At least 1.
+                on_pause:
+                  type: string
+                  enum:
+                    - KEEP
+                    - END
+                  default: KEEP
+                  description: >-
+                    What a pause does to the promotion once it is applied to a subscription. `KEEP` (default) keeps its
+                    remaining cycles for when the subscription resumes. `END` ends the promotion with `end_reason`
+                    `PAUSE`.
+            examples:
+              Request:
+                value:
+                  promotion_id: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+                  cycles: 3
+      responses:
+        '201':
+          description: 201. The promotion is attached to the plan.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    promotion_id: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+                    name: Welcome 20% x3
+                    type: AUTOMATIC
+                    status: ENABLED
+                    cycles: 3
+                    attached_at: '2026-11-02T14:00:00Z'
+                    on_pause: KEEP
+              schema:
+                type: object
+                properties:
+                  promotion_id:
+                    type: string
+                  name:
+                    type: string
+                  type:
+                    type: string
+                    description: >-
+                      The redemption mode of the promotion. `AUTOMATIC` promotions apply by themselves when a
+                      subscription is created on the plan. `CODE` promotions apply when the merchant sends the code.
+                    enum:
+                      - AUTOMATIC
+                      - CODE
+                  status:
+                    type: string
+                    description: '`ENABLED` when the attachment is created.'
+                  cycles:
+                    type: integer
+                  attached_at:
+                    type: string
+                    format: date-time
+                  on_pause:
+                    type: string
+                    enum:
+                      - KEEP
+                      - END
+                    description: What a pause does to the promotion once it is applied to a subscription.
+        '404':
+          description: 404. The promotion does not exist, or belongs to another account.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: PROMOTION_NOT_FOUND
+                    messages:
+                      - Promotion not found.
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+        '409':
+          description: 409. The plan already has this promotion.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: PROMOTION_ALREADY_ATTACHED
+                    messages:
+                      - The promotion is already attached to this plan.
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+        '422':
+          description: >-
+            422. The promotion cannot be attached. `reason` says why, for example `EXPIRED`, or `PROMOTIONS_NOT_ENABLED`
+            when promotions are not turned on for the organization.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: PROMOTION_NOT_APPLICABLE
+                    messages:
+                      - The promotion cannot be applied.
+                    reason: EXPIRED
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  reason:
+                    type: string
+                    description: Why the promotion cannot be attached or applied.
+      tags:
+        - Plans
+      servers:
+        - url: https://api-sandbox.y.uno/v1
+          description: Sandbox
+        - url: https://api.y.uno/v1
+          description: Production (US)
+        - url: https://api.eu.y.uno/v1
+          description: Production (EMEA)
+  /subscriptions/plans/{plan_id}/promotions/{promotion_id}:
+    delete:
+      summary: Remove Promotion from Plan
+      description: >-
+        Removes the attachment of a promotion from the plan. Subscriptions that already have the promotion are not
+        changed: they keep their copy until it is `COMPLETED` or `ENDED`.
+      operationId: remove-plan-promotion
+      parameters:
+        - in: header
+          name: X-Account-Code
+          required: true
+          schema:
+            type: string
+          description: >-
+            The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required —
+            omitting it returns `400 BAD_REQUEST` ("Invalid x-account-code header.").
+        - name: plan_id
+          in: path
+          description: The unique identifier of the plan.
+          schema:
+            type: string
+          required: true
+        - name: promotion_id
+          in: path
+          description: The ID of the promotion to remove from the plan (UUID).
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: 204. The promotion was removed from the plan. The response has no body.
+        '404':
+          description: >-
+            404. The plan does not exist (`PLAN_NOT_FOUND`), or the promotion is not attached to this plan
+            (`PROMOTION_NOT_FOUND`).
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: PROMOTION_NOT_FOUND
+                    messages:
+                      - Promotion not found.
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+      tags:
+        - Plans
+      servers:
+        - url: https://api-sandbox.y.uno/v1
+          description: Sandbox
+        - url: https://api.y.uno/v1
+          description: Production (US)
+        - url: https://api.eu.y.uno/v1
+          description: Production (EMEA)
   /subscriptions/plans/{plan_id}/status:
     post:
       summary: Cancel Plan
@@ -99407,6 +100837,21 @@ paths:
                         status survive. RESTART requires `effective: IMMEDIATE` and returns 400 with a scheduled change;
                         KEEP alongside a scheduled change is accepted and simply schedules the change as usual.
                         Write-only: this field is never echoed in any response.
+                    promotion_behavior:
+                      type: string
+                      enum:
+                        - KEEP
+                        - END
+                      description: >-
+                        What happens to the active promotion when the plan changes. `KEEP` (default) keeps it, with its
+                        remaining cycles, on the new plan. `END` ends it with `end_reason` `PLAN_CHANGE`. Ignored when
+                        there is no active promotion.
+                    apply_new_plan_promotion:
+                      type: boolean
+                      description: >-
+                        Whether the new plan's `AUTOMATIC` promotion applies when the plan changes. `true` (default)
+                        applies it and ends the current promotion with `PLAN_CHANGE`. `false` leaves it unapplied, and
+                        `promotion_behavior` decides what happens to the current promotion.
                 billing_cycle_behavior:
                   type: string
                   enum:
@@ -99469,6 +100914,21 @@ paths:
                           type: string
                           description: Must match the subscription's own currency.
                           example: COP
+                promotion:
+                  type: object
+                  description: >-
+                    Applies a promotion attached to the subscription's plan. Send exactly one of `id` or `code`. The
+                    subscription must be `ACTIVE` or `TRIALING`, and the discount takes effect from the next charge.
+                    Applying a promotion while another one is active replaces it: the current one ends with `end_reason`
+                    `REPLACED`, and the new one starts at 0 cycles used. See [Promotions on subscription
+                    plans](/docs/payment-features/subscriptions/promotions).
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the promotion (UUID). Use `id` or `code`, not both.
+                    code:
+                      type: string
+                      description: The code of a promotion that has one. Use `id` or `code`, not both.
             examples:
               Update card usage:
                 summary: Mark the card as already used, so rebills are sent as subsequent payments
@@ -100189,6 +101649,75 @@ paths:
                         type: integer
                       last_failure_code:
                         type: string
+                  promotion:
+                    type: object
+                    description: >-
+                      The copy of the promotion stored on the subscription. See [The Subscription Promotion
+                      Object](/reference/subscriptions/the-subscription-promotion-object).
+                    properties:
+                      id:
+                        type: string
+                        description: The ID of the promotion (UUID).
+                      name:
+                        type: string
+                      discount:
+                        type: object
+                        description: '`PERCENTAGE` with `value`, or `FIXED` with `amount` and `currency`.'
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - PERCENTAGE
+                              - FIXED
+                          value:
+                            type: number
+                            description: '`PERCENTAGE` only. From 0 to 100, with at most 2 decimals.'
+                          amount:
+                            type: number
+                            description: '`FIXED` only. With the currency''s decimals.'
+                          currency:
+                            type: string
+                            description: '`FIXED` only. ISO 4217 code.'
+                      cycles:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          used:
+                            type: integer
+                            description: 'Cycles counted since it was applied: approved charges, trial cycles and 100% cycles.'
+                          remaining:
+                            type: integer
+                      on_pause:
+                        type: string
+                        enum:
+                          - KEEP
+                          - END
+                      status:
+                        type: string
+                        enum:
+                          - ACTIVE
+                          - COMPLETED
+                          - ENDED
+                      applied_at:
+                        type: string
+                        format: date-time
+                      ended_at:
+                        type:
+                          - string
+                          - 'null'
+                        format: date-time
+                      end_reason:
+                        type:
+                          - string
+                          - 'null'
+                        enum:
+                          - REPLACED
+                          - REMOVED
+                          - PLAN_CHANGE
+                          - PAUSE
+                          - CANCELED
+                          - null
         '400':
           description: '400'
           content:
@@ -102600,6 +104129,16 @@ paths:
                               type: number
                         currency:
                           type: string
+                        discount_amount:
+                          type: number
+                          description: >-
+                            The discount applied to this charge, in the currency's decimals. Present only when the
+                            charge had a promotion.
+                        net_amount:
+                          type: number
+                          description: >-
+                            `amount` minus `discount_amount`: what the customer pays for this charge. `0` for a 100%
+                            cycle. Present only when the charge had a promotion.
                         subtotal:
                           type: number
                         total:
@@ -103615,6 +105154,159 @@ paths:
       deprecated: false
       tags:
         - Subscriptions
+  /subscriptions/{subscription_id}/promotion:
+    delete:
+      summary: Remove Promotion from Subscription
+      description: >-
+        Ends the active promotion on the subscription. The promotion's `status` becomes `ENDED` and its `end_reason`
+        becomes `REMOVED`. The next charge is the full price.
+      operationId: remove-subscription-promotion
+      parameters:
+        - name: subscription_id
+          in: path
+          description: The unique identifier of the subscription.
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: 200. The subscription, with its promotion in status `ENDED` and `end_reason` `REMOVED`.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    id: e98ef674-9baa-4f7a-8da4-4c812c4749a4
+                    status: ACTIVE
+                    promotion:
+                      id: 8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10
+                      name: Welcome 20% x3
+                      discount:
+                        type: PERCENTAGE
+                        value: 20
+                      cycles:
+                        total: 3
+                        used: 1
+                        remaining: 2
+                      on_pause: KEEP
+                      status: ENDED
+                      applied_at: '2026-11-02T14:00:00Z'
+                      ended_at: '2026-11-10T09:00:00Z'
+                      end_reason: REMOVED
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+                  promotion:
+                    type: object
+                    description: >-
+                      The copy of the promotion stored on the subscription. See [The Subscription Promotion
+                      Object](/reference/subscriptions/the-subscription-promotion-object).
+                    properties:
+                      id:
+                        type: string
+                        description: The ID of the promotion (UUID).
+                      name:
+                        type: string
+                      discount:
+                        type: object
+                        description: '`PERCENTAGE` with `value`, or `FIXED` with `amount` and `currency`.'
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - PERCENTAGE
+                              - FIXED
+                          value:
+                            type: number
+                            description: '`PERCENTAGE` only. From 0 to 100, with at most 2 decimals.'
+                          amount:
+                            type: number
+                            description: '`FIXED` only. With the currency''s decimals.'
+                          currency:
+                            type: string
+                            description: '`FIXED` only. ISO 4217 code.'
+                      cycles:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          used:
+                            type: integer
+                            description: 'Cycles counted since it was applied: approved charges, trial cycles and 100% cycles.'
+                          remaining:
+                            type: integer
+                      on_pause:
+                        type: string
+                        enum:
+                          - KEEP
+                          - END
+                      status:
+                        type: string
+                        enum:
+                          - ACTIVE
+                          - COMPLETED
+                          - ENDED
+                      applied_at:
+                        type: string
+                        format: date-time
+                      ended_at:
+                        type:
+                          - string
+                          - 'null'
+                        format: date-time
+                      end_reason:
+                        type:
+                          - string
+                          - 'null'
+                        enum:
+                          - REPLACED
+                          - REMOVED
+                          - PLAN_CHANGE
+                          - PAUSE
+                          - CANCELED
+                          - null
+        '409':
+          description: >-
+            409. The subscription has no active promotion. The response includes `current_status`: the status of its
+            latest promotion (`COMPLETED` or `ENDED`), or `null` if the subscription never had one.
+          content:
+            application/json:
+              examples:
+                Result:
+                  value:
+                    code: SUBSCRIPTION_PROMOTION_NOT_ACTIVE
+                    messages:
+                      - The subscription has no active promotion.
+                    current_status: COMPLETED
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  current_status:
+                    type:
+                      - string
+                      - 'null'
+                    description: >-
+                      The status of the subscription's latest promotion, `COMPLETED` or `ENDED`. `null` if the
+                      subscription never had a promotion.
+      tags:
+        - Subscriptions
+      servers:
+        - url: https://api-sandbox.y.uno/v1
+          description: Sandbox
+        - url: https://api.y.uno/v1
+          description: Production (US)
+        - url: https://api.eu.y.uno/v1
+          description: Production (EMEA)
   /subscriptions/{subscription_id}/reactivate:
     post:
       summary: Reactivate Subscription
@@ -106846,6 +108538,14 @@ paths:
                           account_updater:
                             type: boolean
                             description: Optional.
+                          network_token:
+                            type: boolean
+                            description: >-
+                              Optional. Per-card control for [network
+                              tokens](/docs/security-and-compliance/network-tokens#choose-per-card). `false` never uses
+                              a network token for this card; `true` uses or provisions one when the card is vaulted,
+                              even when the route has the network token toggle off; omitted keeps the route behaviour.
+                              Requires network token onboarding; no effect on guest cards.
                 customer_payer:
                   type: object
                   description: >-
@@ -112241,6 +113941,17 @@ components:
           type: array
           items:
             type: string
+    Error_3:
+      type: object
+      properties:
+        code:
+          type: string
+          description: The error code.
+        messages:
+          type: array
+          items:
+            type: string
+          description: Human-readable details about the error.
     Event:
       type: object
       required:
@@ -116722,6 +118433,7 @@ components:
               - PLAN_CHANGE_CANCELED
               - PLAN_CHANGE_SCHEDULED
               - PLAN_CHANGED
+              - PROMOTION_APPLIED
               - RESUME
           example:
             - CREATE
@@ -116911,6 +118623,7 @@ components:
               - PLAN_CHANGE_CANCELED
               - PLAN_CHANGE_SCHEDULED
               - PLAN_CHANGED
+              - PROMOTION_APPLIED
               - RESUME
           example:
             - CREATE

@@ -1,0 +1,215 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "White-label Providers API - Update Visibility",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/whitelabel/providers/{provider_id}": {
+      "patch": {
+        "summary": "Actualizar la visibilidad de un proveedor",
+        "operationId": "update-whitelabel-provider-visibility",
+        "description": "Activa o desactiva un solo proveedor. Es idempotente, y al desactivarlo se conserva su anulación de instrucciones, de modo que tu redacción sobrevive al cambio.\n\nLa respuesta es la superposición actualizada del proveedor, con `allowed` reflejando el valor de `visible` que enviaste.",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "description": "ID del proveedor del catálogo de Yuno en UPPER_SNAKE_CASE. No distingue mayúsculas de minúsculas; se normaliza a mayúsculas.",
+            "schema": {
+              "type": "string",
+              "example": "STRIPE"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Indica si la organización ofrece este proveedor.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "visible"
+                ],
+                "properties": {
+                  "visible": {
+                    "type": "boolean",
+                    "description": "Indica si la organización ofrece este proveedor. `true` lo agrega a la lista de permitidos, `false` lo quita. Quitarlo conserva cualquier anulación de instrucciones. Obligatorio: un `visible` omitido o nulo devuelve `400`, nunca se asume `false` por defecto.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "La superposición actualizada del proveedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider_id": {
+                      "type": "string",
+                      "description": "ID del proveedor del catálogo de Yuno, UPPER_SNAKE_CASE.",
+                      "example": "STRIPE"
+                    },
+                    "allowed": {
+                      "type": "boolean",
+                      "description": "Indica si la organización ofrece este proveedor.",
+                      "example": true
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Nombre visible que reemplaza al del catálogo, cuando se personaliza. Solo los proveedores propiedad de Yuno pueden tener uno.",
+                      "example": "Acme Risk"
+                    },
+                    "instructions": {
+                      "type": "array",
+                      "description": "Pasos de conexión que reemplazan a los del catálogo, cuando se personalizan. Si está ausente, se conservan los del catálogo.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Un paso de instrucciones. Acepta `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` y `sub_instructions` (anidados hasta 3 niveles). `text` y `text_link` son una cadena simple o un mapa de idiomas como `{\"EN\": \"...\", \"ES\": \"...\"}`. Todo `link` debe ser https."
+                      }
+                    },
+                    "setup_instructions": {
+                      "type": "array",
+                      "description": "Pasos de configuración agrupados que reemplazan a los del catálogo, cuando se personalizan. Si está ausente, se conservan los del catálogo.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Un grupo de configuración. Acepta `title`, `order`, `instructions_type` e `instructions` (la misma estructura de paso)."
+                      }
+                    },
+                    "more_info_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "Enlace a la documentación que reemplaza al del catálogo, cuando se personaliza. Siempre https.",
+                      "example": "https://docs.example.com/stripe"
+                    },
+                    "logo_url": {
+                      "type": "string",
+                      "readOnly": true,
+                      "description": "Solo lectura y efímera: una URL prefirmada generada en esta lectura y válida solo durante una ventana corta. Nunca la almacenes: vuelve a leer el proveedor para obtener una nueva.",
+                      "example": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "provider_id o cuerpo inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "provider_id is invalid"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado: las claves de API no son válidas o faltan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "El cuerpo de la solicitud supera los 256 KB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "VALIDATION_ERROR"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Request body is too large"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

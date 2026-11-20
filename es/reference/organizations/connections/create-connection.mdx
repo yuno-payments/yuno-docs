@@ -1,0 +1,241 @@
+---
+title: "Crear una conexión"
+description: "Crea una conexión en estado ACTIVE a partir de las credenciales y la configuración que completas según el catálogo del proveedor."
+openapi: "/openapi/es/organizations/connections/create-connection.json POST /connections"
+---
+
+Crea una conexión en estado `ACTIVE` a partir de las credenciales y la configuración que completas según el catálogo del proveedor. La respuesta incluye el `connection_id` que usarás para referenciar esta conexión desde las reglas de enrutamiento.
+
+### Encabezados {#headers}
+
+<ParamField header="X-account-code" type="string" required>
+  Código de la cuenta bajo la cual se crea la conexión. La cuenta proviene de este encabezado, no del cuerpo de la solicitud.
+</ParamField>
+
+<ParamField header="X-Idempotency-Key" type="string" required>
+  UUID, con alcance de 24 horas. Reenviar la misma clave y el mismo cuerpo devuelve la respuesta en caché; la misma clave con un cuerpo distinto devuelve un `409`.
+</ParamField>
+
+### Cuerpo {#body}
+
+<ParamField body="merchant_connection_id" type="string" required>
+  Tu etiqueta para esta conexión. Debe ser única dentro de la cuenta. Formato libre (por ejemplo, `"adyen-us-prod-001"`, `"stripe-eu-test"`).
+</ParamField>
+
+<ParamField body="provider_id" type="string" required>
+  Identificador del proveedor en Yuno (por ejemplo, `"STRIPE"`, `"ADYEN"`). Debe existir en el catálogo.
+</ParamField>
+
+<ParamField body="flow_type" type="enum">
+  Opcional. Por defecto es `"PAYIN"`, el único valor admitido.
+</ParamField>
+
+<ParamField body="payment_methods" type="string[]">
+  Opcional. Subconjunto de los `payment_method_type[]` del proveedor (del catálogo).
+
+  Omite este campo para habilitar todos los métodos de pago que admite el proveedor. Los métodos de pago que el proveedor agregue más adelante también se agregan a la conexión.
+
+  Si lo envías, incluye al menos un método de pago. Un arreglo vacío (`[]`) se rechaza con `400 VALIDATION_ERROR`: omite el campo o envíalo con valores.
+</ParamField>
+
+<ParamField body="params" type="object[]" required>
+  Un par `{param_id, value}` por cada parámetro que proporcionas. **Arreglo plano**: incluso los parámetros anidados del catálogo se envían en el nivel superior; Yuno resuelve la jerarquía a partir del árbol del catálogo. 
+  
+  Los parámetros obligatorios (donde el catálogo tiene `optional: false`) deben estar presentes y no vacíos. Activar un padre `boolean` (`"value": true`) hace obligatorios a sus hijos con `optional: false`.
+  
+  <Expandable title="elemento">
+    <ParamField body="param_id" type="string" required>
+      El `param_id` exacto del catálogo. Las mayúsculas y minúsculas importan.
+    </ParamField>
+    <ParamField body="value" type="string | boolean | number | array" required>
+      Debe coincidir con el `field_type` del catálogo. Los valores numéricos se envían como números JSON (o como cadenas si el catálogo indica `field_type: "string"`). Para `field_type: "array"`, envía un arreglo JSON.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="costs" type="object[]">
+  Opcional. Configuración de costos por conexión. Omítela para una conexión sin costos. `currency` debe ser una admitida por el proveedor.
+  <Expandable title="elemento">
+    <ParamField body="sort_number" type="integer">
+      Orden de prioridad de la entrada de costo.
+    </ParamField>
+    <ParamField body="cost_name" type="string">
+      Etiqueta de la entrada de costo.
+    </ParamField>
+    <ParamField body="currency" type="string">
+      Código de moneda ISO 4217.
+    </ParamField>
+    <ParamField body="cost_values" type="object">
+        <Expandable title="successful | unsuccessful">
+            <ParamField body="fixed_fee" type="number">
+                Monto de la tarifa fija.
+            </ParamField>
+            <ParamField body="percentage" type="number">
+                Tarifa porcentual.
+            </ParamField>
+        </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Respuesta {#response}
+
+<ResponseField name="connection_id" type="string">
+  Identificador único de la conexión. **Guarda este valor** para referenciarla desde las reglas de enrutamiento.
+</ResponseField>
+<ResponseField name="merchant_connection_id" type="string">
+  Tu etiqueta interna para esta conexión.
+</ResponseField>
+<ResponseField name="provider_id" type="string">
+  El proveedor al que pertenece esta conexión (por ejemplo, `ADYEN`).
+</ResponseField>
+<ResponseField name="status" type="string">
+  Estado actual (siempre `ACTIVE` al crear).
+</ResponseField>
+<ResponseField name="flow_type" type="string">
+  Siempre `PAYIN`.
+</ResponseField>
+<ResponseField name="payment_methods" type="string[]">
+  Lista de métodos de pago admitidos.
+</ResponseField>
+<ResponseField name="params" type="object[]">
+  Parámetros devueltos como eco. Los valores sensibles se enmascaran como `***`.
+</ResponseField>
+<ResponseField name="costs" type="object[]">
+  Configuración de costos de la conexión.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  Marca de tiempo ISO 8601.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  Marca de tiempo ISO 8601.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST 'https://api.y.uno/v1/connections' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'X-account-code: <ACCOUNT_CODE>' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Idempotency-Key: <UUID>' \
+  -d '{
+    "merchant_connection_id": "stripe-us-prod-001",
+    "provider_id": "STRIPE",
+    "flow_type": "PAYIN",
+    "payment_methods": ["CARD"],
+    "params": [
+      { "param_id": "INTEGRATION_TYPE",             "value": "STRIPE_CHARGES" },
+      { "param_id": "SECRET_KEY",                   "value": "sk_live_..." },
+      { "param_id": "RADAR_FRAUD_ANALYSIS",         "value": false },
+      { "param_id": "SEND_RECEIPT_EMAIL_PARAMETER", "value": false },
+      { "param_id": "SETUP_FUTURE_USAGE",           "value": false },
+      { "param_id": "ORDER_ID",                     "value": "DEFAULT" }
+    ],
+    "costs": [
+      {
+        "sort_number": 1,
+        "cost_name": "Transaction Fee",
+        "currency": "USD",
+        "cost_values": {
+          "successful":   { "fixed_fee": 0.30, "percentage": 2.9 },
+          "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
+        }
+      }
+    ]
+  }'
+```
+
+```json 201 Created — Stripe
+{
+  "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+  "merchant_connection_id": "stripe-us-prod-001",
+  "provider_id": "STRIPE",
+  "status": "ACTIVE",
+  "flow_type": "PAYIN",
+  "payment_methods": ["CARD"],
+  "params": [
+    { "param_id": "INTEGRATION_TYPE",             "value": "STRIPE_CHARGES" },
+    { "param_id": "SECRET_KEY",                   "value": "***" },
+    { "param_id": "RADAR_FRAUD_ANALYSIS",         "value": false },
+    { "param_id": "SEND_RECEIPT_EMAIL_PARAMETER", "value": false },
+    { "param_id": "SETUP_FUTURE_USAGE",           "value": false },
+    { "param_id": "ORDER_ID",                     "value": "DEFAULT" }
+  ],
+  "costs": [
+    {
+      "sort_number": 1,
+      "cost_name": "Transaction Fee",
+      "currency": "USD",
+      "cost_values": {
+        "successful":   { "fixed_fee": 0.30, "percentage": 2.9 },
+        "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
+      }
+    }
+  ],
+  "created_at": "2026-05-12T10:24:00Z",
+  "updated_at": "2026-05-12T10:24:00Z"
+}
+```
+
+```json 201 Created — Adyen
+{
+  "connection_id": "b2c4d5e6-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+  "merchant_connection_id": "adyen-eu-prod-001",
+  "provider_id": "ADYEN",
+  "status": "ACTIVE",
+  "flow_type": "PAYIN",
+  "payment_methods": ["CARD", "GOOGLE_PAY"],
+  "params": [
+    { "param_id": "merchantAccount",        "value": "ACME_LIVE" },
+    { "param_id": "x-api-key",              "value": "***" },
+    { "param_id": "transaction-identifier", "value": "MERCHANT_REFERENCE" }
+  ],
+  "created_at": "2026-05-12T10:31:42Z",
+  "updated_at": "2026-05-12T10:31:42Z"
+}
+```
+
+```json 400 — Missing Param
+{
+  "type": "validation_error",
+  "code": "MISSING_REQUIRED_PARAM",
+  "message": "Required param 'SECRET_KEY' is missing for provider 'STRIPE'",
+  "details": { "provider_id": "STRIPE", "param_id": "SECRET_KEY" }
+}
+```
+
+```json 409 — Conflict
+{
+  "type": "conflict",
+  "code": "CONNECTION_MERCHANT_ID_CONFLICT",
+  "message": "A connection with merchant_connection_id 'stripe-us-prod-001' already exists in this account",
+  "details": { "merchant_connection_id": "stripe-us-prod-001" }
+}
+```
+</CodeGroup>
+
+<Note>
+Yuno valida los valores de `param_id`, los parámetros obligatorios y `costs[].currency` contra el catálogo del proveedor. No llama al proveedor para verificar las credenciales, por lo que una clave incorrecta se acepta con `201`.
+</Note>
+
+<Note>
+**Manejo de secretos:** cualquier parámetro marcado como `secret: true` en el catálogo se devuelve como `"value": "***"`. Tu secreto enviado se almacena cifrado y nunca se devuelve.
+</Note>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` |
+| --- | --- |
+| `400` | `PROVIDER_NOT_FOUND`<br />`provider_id` desconocido. |
+| `400` | `MISSING_REQUIRED_PARAM`<br />Falta un parámetro obligatorio. `details.param_id` indica cuál. |
+| `400` | `UNSUPPORTED_PAYMENT_METHOD`<br />`payment_methods` contiene un método que el proveedor no admite. |
+| `400` | `NO_SUPPORTED_PAYMENT_METHODS`<br />Se omitió `payment_methods` y el proveedor no tiene ningún método de pago disponible para el tipo de integración de la conexión. |
+| `400` | `VALIDATION_ERROR`<br />El cuerpo no pasó la validación, por ejemplo `payment_methods` enviado como un arreglo vacío. `details` indica el campo. |
+| `400` | `UNSUPPORTED_CURRENCY`<br />Un `costs[].currency` no está en la lista de monedas admitidas por el proveedor. |
+| `401` | `NOT_AUTHENTICATED`<br />Clave de API ausente o no válida. |
+| `409` | `CONNECTION_MERCHANT_ID_CONFLICT`<br />`merchant_connection_id` ya existe en esta cuenta. |
+
+</div>

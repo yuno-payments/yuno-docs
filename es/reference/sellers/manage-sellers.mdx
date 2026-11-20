@@ -1,0 +1,49 @@
+---
+title: Sellers (franquicia)
+sidebarTitle: Descripción general
+description: Gestiona las identidades de comercios franquiciados y las credenciales específicas de cada proveedor.
+---
+
+La API de Sellers permite a los comercios franquiciados registrar identidades de seller por proveedor, de modo que el `merchant_id` correcto se resuelva automáticamente al momento del pago. 
+
+Un comercio que opera varias tiendas franquiciadas puede asignar credenciales de proveedor distintas (por ejemplo, `CIELO_456` para Cielo, `ADYEN_789` para Adyen) a cada tienda, y el sistema elegirá la correcta según el proveedor que procese el pago.
+
+## Conceptos clave {#key-concepts}
+
+- **Alcance organizacional:** un seller se crea bajo un `account_code` específico, pero está disponible en toda la organización: cualquier cuenta de la misma organización puede hacer referencia a ese seller en las solicitudes de pago.
+- **Resolución sin bloqueo:** la resolución de franquicia nunca bloquea un pago. Si no existe ningún mapeo o el servicio no está disponible, el pago continúa con el `merchant_id` predeterminado de la conexión.
+- **Detalle polimórfico:** el arreglo `payment_method` usa una estructura `detail` polimórfica. La forma del objeto detail depende del campo `payment_method_type` (`CARD` → `detail.card.provider`, `APPLE_PAY` → `detail.wallet.provider`).
+- **Eliminación lógica:** eliminar un seller realiza una eliminación lógica del registro y de todos los datos de método de pago asociados. Los pagos anteriores no se ven afectados.
+
+## Autenticación {#authentication}
+
+Todos los endpoints de la API de Sellers requieren los siguientes encabezados:
+
+| Encabezado | Obligatorio | Descripción |
+| :---- | :---- | :---- |
+| `public-api-key` | Sí | Tu clave de API pública de Yuno. |
+| `private-secret-key` | Sí | Tu clave secreta privada de Yuno. |
+| `X-Account-Code` | Sí | El identificador UUID de la cuenta. |
+| `X-Idempotency-Key` | Recomendado (POST) | UUID único para reintentos seguros. |
+
+## Reglas de negocio {#business-rules}
+
+1. **Unicidad:** un seller por `(account_code, merchant_seller_id)`. Dentro de un seller, cada `(provider.id, payment_method_type)` debe ser único.
+2. **Varias tiendas:** un comercio puede registrar varios valores de `merchant_seller_id` (uno por tienda franquiciada).
+3. **Varios proveedores:** cada seller puede tener entradas de `payment_method` para varios proveedores y tipos de método de pago.
+4. **Referencia al seller:** los pagos hacen referencia a los sellers mediante `seller_id` (UUID de Yuno) o `merchant_seller_id` (identificador del comercio), mutuamente excluyentes.
+5. **Sobrescritura de campos:** los campos del seller enviados en una solicitud de pago sobrescriben los valores almacenados solo para ese pago, sin guardarse de nuevo.
+6. **Prioridad de resolución:** el mapeo del seller tiene prioridad sobre el `merchant_id` de la conexión. Si no existe ningún mapeo, se usa el `merchant_id` original.
+7. **Alcance organizacional:** los mapeos de sellers están disponibles a nivel de organización: cualquier cuenta de la organización puede usar cualquier seller registrado bajo esa organización.
+8. **Indicador "Operates as Franchise":** cuando está habilitado en una conexión, la lógica de integración usa el `merchant_id` del mapeo de franquicia en lugar del `merchant_id` de la conexión.
+9. **Eliminación lógica:** eliminar un seller realiza una eliminación lógica del registro y de todos los datos de método de pago. Los pagos anteriores no se ven afectados. Los pagos futuros recurren al `merchant_id` predeterminado de la conexión.
+10. **Compatibilidad con versiones anteriores:** cuando ninguno de los dos campos de referencia al seller está presente, la función se omite por completo.
+
+<CardGroup cols={2}>
+  <Card title="El objeto Seller" icon="cube" href="/es/reference/sellers/the-seller-object">
+    Comprende la estructura y los atributos de una identidad de seller.
+  </Card>
+  <Card title="Uso de sellers en pagos" icon="money-bill-transfer" href="/es/reference/sellers/using-sellers-in-payments">
+    Aprende a hacer referencia a los sellers en tus solicitudes de pago.
+  </Card>
+</CardGroup>

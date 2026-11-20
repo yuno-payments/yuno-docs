@@ -1,0 +1,50 @@
+---
+title: "Registrar un evento de proveedor en dry-run"
+description: "Registra payloads de solicitud, respuesta o webhook del proveedor para validación previa a producción."
+openapi: "/openapi/es/dry-run/register-dry-run-provider-event.json POST /dry-run/provider-events"
+---
+
+Dry-run es una superficie de validación previa a producción. Recibe las llamadas a la API que tu integración envía a un proveedor de pagos (payloads de solicitud, respuesta y webhook). Las correlaciona con la llamada equivalente a la API pública de Yuno que haces **en paralelo** con el encabezado `X-Dry-Run: true`.
+
+Yuno ejecuta entonces un pipeline de validación automatizado que califica la calidad de la solicitud a la API pública frente al payload del proveedor: campos faltantes, diferencias de estructura, valores de enum incorrectos, metadata sin mapear y cualquier otra inconsistencia que haría que el pago real falle o se comporte de forma distinta una vez que salgas a producción.
+
+### Cómo funciona el par {#how-the-pair-works}
+
+1. Tu integración hace su llamada normal al proveedor (por ejemplo Stripe, Adyen, dlocal).
+2. Tu integración también llama al endpoint correspondiente de la API pública de Yuno (por ejemplo `POST /v1/payments`) con el encabezado **`X-Dry-Run: true`**. Yuno acepta la solicitud, no la enruta a ningún proveedor y la almacena para compararla.
+3. Tu integración llama a `POST /v1/dry-run/provider-events` con el intercambio original con el proveedor (solicitud, respuesta, webhook) que acaba de realizar, correlacionado con el mismo `merchant_reference`.
+4. Yuno empareja los dos registros por `merchant_reference` + `account_id` y ejecuta el pipeline de validación. Los resultados están disponibles en el dashboard y mediante `GET /v1/dry-run/provider-events/{id}` (API de lectura, referencia aparte).
+
+El resultado te indica si la solicitud a la API pública que estás construyendo hoy produciría el mismo comportamiento del proveedor una vez que Yuno empiece a enrutarla, sin tocar dinero de producción ni enviar una transacción real al proveedor a través de Yuno.
+
+### Cuándo usarlo {#when-to-use-it}
+
+- **Antes del lanzamiento**: certifica tu integración con la API pública frente al comportamiento del proveedor que ya tienes funcionando.
+- **Migraciones de proveedor**: verifica que un nuevo proveedor acepte los campos que Yuno reenvía antes de cambiar el tráfico.
+- **Pruebas de regresión**: vuelve a ejecutar dry-runs en CI para detectar desviaciones cuando cambian tu integración o el contrato del proveedor.
+
+<Note>
+Una llamada puede incluir hasta **10** entradas de evento (REQUEST, RESPONSE y/o WEBHOOK), todas vinculadas al mismo pago mediante `merchant_reference`. Consulta las [reglas de correlación](#correlation).
+</Note>
+
+<Note>
+Este endpoint tiene un complemento: `POST /v1/payments` acepta un encabezado de solicitud `X-Dry-Run: true` que le indica a Yuno que valide en lugar de enrutar. Ambas partes deben compartir el mismo `merchant_reference` para que la validación pueda emparejarlas.
+</Note>
+
+<Note>
+Usa `X-Idempotency-Key` para reintentos seguros. La misma clave con el mismo payload devuelve la respuesta original; la misma clave con un payload distinto devuelve `409`.
+</Note>
+
+<Warning>
+**Límite de PCI**
+
+`headers` y `body` se envían **codificados en base64**. Yuno decodifica el base64 al recibirlos, aplica una redacción determinista de PAN/CVV/tokens de autenticación y conserva únicamente la forma redactada. Consulta [Cumplimiento de PCI](/es/docs/security-and-compliance/pci-compliance).
+</Warning>
+
+---
+
+## Correlation {#correlation}
+
+- `merchant_reference` siempre es obligatorio e identifica de forma única la orden de tu lado. Yuno lo usa para asociar el evento con un pago de forma asíncrona cuando no se envía `payment_id`.
+- `payment_id`, si se envía, se resuelve de inmediato. Si el id es desconocido para tu cuenta, la solicitud devuelve `404 PAYMENT_NOT_FOUND`.
+- `provider_id` + `payment_method_type` identifican de forma opcional qué superficie de integración ejercita el dry-run (por ejemplo `stripe` + `CREDIT_CARD`). Si se omiten, Yuno usa la información del pago asociado.

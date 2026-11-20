@@ -1,0 +1,131 @@
+---
+title: "Modo Full"
+description: "Migra las integraciones Web Full (yuno.startCheckout con la lista de métodos de pago integrada) a la API unificada Transaction."
+---
+
+El modo Full mostraba el panel de métodos de pago del SDK dentro de tu diseño. El usuario elegía un método, el SDK mostraba el formulario correspondiente, tokenizaba, procesaba el pago e informaba el resultado. En la API unificada el mismo flujo usa una sola `Transaction` más `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`. El `views.paymentMethodList` devuelto expone un método `.mount({ elementSelector })`.
+
+## Antes de empezar {#before-you-start}
+
+- Carga el bundle unificado del SDK en lugar del anterior e inicialízalo como muestra la comparación lado a lado: `window.Yuno.initialize(...)` pasa a ser `SdkPayments.initialize(...)`. Tu clave de API pública y las sesiones de checkout que crea tu backend no cambian ([Antes de comenzar](/es/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide quién crea el pago. El `workflow` de la sesión de checkout debe coincidir con esa decisión:
+
+| Quién crea el pago | En Full tenías | En la API unificada | `workflow` de la sesión |
+|---|---|---|---|
+| Tu backend | `yunoCreatePayment` implementado | Sobrescribe `createPayment` | Predeterminado (`SDK_CHECKOUT`) |
+| El SDK | Sin `yunoCreatePayment` | Sin sobrescritura | `SDK_SEAMLESS` |
+
+<Warning>
+Una sesión con el workflow predeterminado y sin la sobrescritura de `createPayment` termina en `INTERNAL_ERROR`: el backend rechaza la creación del pago del SDK. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Comparación lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```typescript Before. Full mode
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+await yuno.startCheckout({
+    checkoutSession: 'session-from-backend',
+    elementSelector: '#root',
+    countryCode: 'CO',
+    language: 'en',
+    renderMode: { type: 'modal' },
+    paymentListConfig: {
+        scrollContainerSelector: '#scroll-container',
+        bottomOffsetPx: 0,
+    },
+    yunoPaymentMethodSelected: ({ type, name }) => {
+        console.log('selected:', type, name)
+    },
+    yunoPaymentResult: (status, subStatus) => {
+        console.log('Final status:', status, subStatus)
+    },
+    yunoError: (error) => {
+        console.log('Error', error)
+    },
+})
+
+await yuno.mountCheckout()
+```
+
+```typescript After. Unified Transaction
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    elementSelector: '#payment-form', // form container for the selected method
+    paymentListConfig: {
+        scrollContainerSelector: '#scroll-container',
+        bottomOffsetPx: 0,
+    },
+    onStatus: (result) => {
+        console.log('Final status:', result.status, result.substatus)
+    },
+})
+
+let selectedPaymentMethod: PaymentMethodSelected | null = null
+
+const views = transaction.getPaymentMethodsViews({
+    types: ['paymentMethodList'],
+    onPaymentSelected: (paymentMethod) => {
+        selectedPaymentMethod = paymentMethod
+    },
+})
+
+views.paymentMethodList?.mount({ elementSelector: '#root' })
+
+// Your Pay button. With forms unfolded in the list, start() submits the form the shopper filled.
+// With folded forms, start() mounts the form into #payment-form and the shopper pays from it.
+document.getElementById('pay').addEventListener('click', () => {
+    if (selectedPaymentMethod) transaction.start({ paymentMethod: selectedPaymentMethod })
+})
+```
+
+</CodeGroup>
+
+## Qué cambia {#what-changes}
+
+Agrupado en el orden en que editas el código. **Renombrado**: mismo rol, nuevo nombre. **Movido**: mismo valor, nuevo responsable. **Eliminado**: no hay nada que llamar. La última columna es lo único que debes hacer además del cambio de nombre.
+
+### Inicialización y configuración {#initialization-and-config}
+
+| Full | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renombrado | El global es `window.SdkPayments`. Como antes, usa `await`: se resuelve en la instancia de `SdkPayments` desde la que creas las transacciones. |
+| `checkoutSession`, `countryCode`, `language` en la configuración de `startCheckout` | Los mismos campos en la configuración de la transacción | Movido | Mismos campos, una sola fábrica: `sdkPayments.transaction({ checkoutSession, countryCode, language, … })`. |
+| `paymentListConfig` | `paymentListConfig` en la configuración de la transacción | Movido | Misma forma, mismos campos. |
+| `renderMode: { type, elementSelector }` | `elementSelector` en la configuración de la transacción | Movido | El modo modal ya no existe. Define `elementSelector` en la configuración de la transacción para mostrar el formulario del método seleccionado. Es obligatorio cuando `start({ paymentMethod })` muestra un formulario y los flujos headless lo ignoran. La lista de métodos de pago se muestra donde pasas `elementSelector` a `views.paymentMethodList.mount({ elementSelector })` (consulta Vistas). |
+| `yuno.mountStatusPayment(...)` | `sdkPayments.transactionStatus({ checkoutSession, elementSelector })` | Renombrado | Consulta [Estado del pago](/es/docs/yuno-sdk/migration/web/status). Dentro de una transacción, la pantalla de resultado se controla con `showStatusScreen`, que es `true` de forma predeterminada. Define `showStatusScreen: false` para mostrar el resultado tú mismo a partir de `onStatus`. |
+
+### Callbacks {#callbacks}
+
+| Full | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Renombrado | Sigue siendo el único callback de resultado, ahora como campo de la configuración de la transacción. Recibe un solo objeto `TransactionStatus` con `.status`, `.substatus` y `.message`. Convención de nombres en los nuevos callbacks: las sobrescrituras no llevan el prefijo `on` (`createPayment`, `showLoading`), los observadores sí (`onStatus`, `onPaymentSelected`). Consulta [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `yunoCreatePayment(ott, info)` | `createPayment(token)` | Renombrado | Opcional. Basado en Promise, con un solo argumento. Crea el pago y resuelve: resolver es lo que antes era `continuePayment()`. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). |
+| `yunoError(message, data?)` | *(eliminado)* | Eliminado | Los errores fluyen por `onStatus` o por una Promise de `start()` rechazada. |
+| `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Renombrado | Opcional. Solo una señal Boolean. Consulta [`showLoading`](/es/docs/yuno-sdk/controllers/show-loading). |
+| `yunoPaymentMethodSelected({ type, name })` (notificación a nivel de sesión) | `onPaymentSelected(paymentMethod)` dentro de `getPaymentMethodsViews` | Renombrado | Opcional en el tipo, pero sin él la lista no puede iniciar un pago. El callback anterior era una notificación. En la API unificada, guarda el [`PaymentMethodSelected`](/es/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) que recibe y pásalo a `transaction.start({ paymentMethod })` desde tu botón de pago. Cuando la lista abrió el formulario de ese método en línea, `start()` lo envía. En una fila de billetera exprés, el botón de la billetera paga y `start()` no hace nada. |
+
+### Vistas {#views}
+
+| Full | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `yuno.startCheckout({ elementSelector: '#root' })` + `yuno.mountCheckout()` | `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })`, luego `views.paymentMethodList?.mount({ elementSelector: '#root' })` | Renombrado | `mountCheckout()` mostraba la lista en el `elementSelector` de `startCheckout`. La API unificada te entrega un identificador de vista y llamas a `.mount(...)` con el selector más cualquier configuración por vista. Así la intención ("muestra el panel aquí") queda visible en el punto de la llamada. Consulta [Lista de métodos de pago](/es/docs/yuno-sdk/features/payment-methods-list). |
+
+### Puntos de entrada {#entry-points}
+
+| Full | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `yuno.startCheckout(config)` | `sdkPayments.transaction(config)` | Renombrado | Fábrica única: crea la transacción con la configuración (campos y callbacks anteriores), luego monta la lista (consulta Vistas) y llama a `start` desde tu botón de pago con el método seleccionado (consulta Callbacks). |
+| `yuno.continuePayment()` | *(eliminado)* | Eliminado | Elimina la llamada: el SDK orquesta 3DS y el sondeo del estado internamente una vez que `createPayment` se resuelve. |
+
+## Relacionado {#related}
+
+- [Lista de métodos de pago](/es/docs/yuno-sdk/features/payment-methods-list). Referencia completa de `getPaymentMethodsViews` por plataforma.
+- [`TransactionConfig`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referencia completa de campos.
+- [`PaymentMethodSelected`](/es/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected). El objeto que pasas a `start()`.

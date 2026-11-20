@@ -18,36 +18,20 @@ The iOS SDK makes it easy to integrate payment flows into your iOS app.
 
 ## Requirements
 
-* [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/)
+* [Swift Package Manager](https://www.swift.org/package-manager/)
 * iOS 14.0 or above
 * Active Yuno account; API credentials (obtain from the [Yuno Dashboard](https://dashboard.y.uno/) → **Developers** > **Credentials**)
 * Create `checkout_session` and payment via the API; create a customer using the [Create customer endpoint](/reference/customers/create-customer) before creating a payment
 
-The first step is including the library in your project. You can add the Yuno iOS SDK using CocoaPods or Swift Package Manager.
-
-**Option 1: CocoaPods**
-
-Add to your Podfile:
-
-```ruby
-pod 'YunoSDK', '~> 2.29.0'
-```
-
-Then run:
-
-```ruby
-pod install
-```
-
-**Option 2: Swift Package Manager**
-
-Add the package dependency:
+The first step is including the library in your project. YunoSDK is no longer published on CocoaPods; the last CocoaPods version is 2.30.0. Add the Yuno iOS SDK with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.29.0"))
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.31.0"))
 ]
 ```
+
+Add `YunoSDK` (dynamic) or `YunoSDK-Static` (static, what CocoaPods shipped) to your app target, never both.
 
 Once Step 1 is complete, continue with the full-checkout integration.
 
@@ -439,14 +423,17 @@ This ensures that the backend payment remains in a pending state and can be prop
 
 ##### Async payment methods (PIX, QR codes)
 
-For asynchronous payment methods like PIX, when a user closes the QR window:
+For asynchronous payment methods, when a user closes the payment window before completing the payment:
 
-* **SDK Status**: Returns `processing`, optionally with a sub-status such as `CLOSED_BY_USER`
-* **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
-* **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
-* **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+* **SDK Status**: Returns `userCancelled`\*.
+* **Backend payment status**: Remains `PENDING` and the payment code remains valid until expiry.
+* **Checkout session reuse**: Re-opening the same checkout session can display the same valid payment code.
+* **No automatic cancellation**: The payment is not automatically cancelled on the backend when the user closes the window.
+* **Confirming status**: `userCancelled` means the shopper left the screen, not that the payment failed. Confirm the final state via webhook or `GET /v1/payments/{payment_id}` before you show a cancellation.
 
-This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
+<Note>
+\* Payment methods that show a payment code or voucher (PIX QR code, boleto, OXXO and similar), and Pix Parcelado, return `processing` with sub-status `CLOSED_BY_USER` instead of `userCancelled` when the user closes the screen. The payment stays `PENDING` on the backend and can still be completed.
+</Note>
 
 ##### Expired async payments
 

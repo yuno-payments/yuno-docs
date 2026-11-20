@@ -1,0 +1,70 @@
+---
+title: "Web SDK: Migración a v1.1"
+description: "Actualiza el Yuno Web SDK de v1.0 a v1.1.0 en tu checkout"
+---
+
+# Migración a Web SDK v1.1 {#migrating-to-web-sdk-v11}
+
+La versión 1.1.0 hace que `initialize()`, `mountCheckout()` y `startCheckout()` sean asíncronos e introduce `continuePayment()` como un paso obligatorio para los flujos de pago dinámicos (3DS, redirecciones de PayPal y similares).
+
+## Qué cambió {#what-changed}
+
+- `Yuno.initialize()`, `yuno.mountCheckout()` y `yuno.startCheckout()` ahora devuelven Promises y deben esperarse con await.
+- `continuePayment()` ahora es obligatorio cuando la API de pagos devuelve `checkout.sdk_action_required: true`.
+- Ya no se necesitan llamadas separadas al servicio de configuración de 3DS: la configuración de 3DS ahora está integrada en la creación del pago.
+
+## Pasos {#steps}
+
+### 1. Actualiza la etiqueta script {#1-update-the-script-tag}
+
+```html
+<script src="https://sdk-web.y.uno/v1.1/main.js"></script>
+```
+
+### 2. Espera con await todas las llamadas a métodos del SDK {#2-await-all-sdk-method-calls}
+
+**Antes:**
+```js
+const yuno = Yuno.initialize(publicApiKey, config)
+yuno.mountCheckout({ checkoutSession, elementSelector: '#root', countryCode: 'US' })
+yuno.startCheckout({ checkoutSession, countryCode: 'US' })
+```
+
+**Después:**
+```js
+const yuno = await Yuno.initialize(publicApiKey, config)
+await yuno.mountCheckout({ checkoutSession, elementSelector: '#root', countryCode: 'US' })
+await yuno.startCheckout({ checkoutSession, countryCode: 'US' })
+```
+
+### 3. Implementa `continuePayment` para los flujos dinámicos {#3-implement-continuepayment-for-dynamic-flows}
+
+Después de crear un pago desde tu backend, verifica si el SDK necesita continuar el flujo (por ejemplo, un desafío 3DS o una redirección de PayPal):
+
+```js
+// After payment creation
+if (paymentResponse.checkout?.sdk_action_required) {
+  const result = await yuno.continuePayment({
+    checkoutSession,
+    showPaymentStatus: true,
+    yunoPaymentResult,
+    yunoError,
+    countryCode: 'US',
+  })
+  // result may contain a redirect object; handle appropriately
+}
+```
+
+Si `checkout.sdk_action_required` no es `true`, no es necesario llamar a `continuePayment`.
+
+### 4. Elimina las llamadas separadas de configuración de 3DS {#4-remove-separate-3ds-setup-calls}
+
+Si tu integración de la v1.0 llamaba a un servicio de configuración de 3DS por separado antes de crear el pago, elimina esa llamada. En la v1.1, la recopilación de datos de 3DS se maneja automáticamente durante la creación del pago.
+
+## Lista de verificación {#checklist}
+
+- [ ] Actualicé la etiqueta script a v1.1
+- [ ] Agregué `await` a `Yuno.initialize()`, `yuno.mountCheckout()` y `yuno.startCheckout()`
+- [ ] Implementé el manejo de `continuePayment()` para los flujos dinámicos
+- [ ] Confirmé que el callback `yunoPaymentResult()` está configurado correctamente
+- [ ] Eliminé cualquier llamada independiente al servicio de configuración de 3DS

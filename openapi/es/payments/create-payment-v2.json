@@ -1,0 +1,1118 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "payments-v2",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v2",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v2",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "schemas": {
+      "PaymentV2": {
+        "type": "object",
+        "description": "Un pago financiado con dos tarjetas.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "Estado agregado del pago. Consulta [Pagar con dos tarjetas](/docs/payment-features/pay-with-two-cards#statuses)."
+          },
+          "sub_status": {
+            "type": "string",
+            "description": "Subestado agregado, por ejemplo `APPROVED`, `AUTHORIZED`, `PARTIALLY_CAPTURED`, `PARTIALLY_REFUNDED`, `REFUND_RETRY_IN_PROCESS` o `CANCEL_RETRY_IN_PROCESS`."
+          },
+          "merchant_order_id": {
+            "type": "string"
+          },
+          "merchant_reference": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "split_payment_methods": {
+            "type": "boolean",
+            "description": "`true` para un pago financiado con dos tarjetas."
+          },
+          "payment_methods_count": {
+            "type": "integer",
+            "description": "Número de tarjetas que financian el pago: `2`."
+          },
+          "sdk_action_required": {
+            "type": "boolean",
+            "description": "`true` cuando el SDK debe continuar el pago, por ejemplo para ejecutar un desafío 3DS."
+          },
+          "amount": {
+            "type": "object",
+            "description": "Total del pago.",
+            "required": [
+              "currency",
+              "value"
+            ],
+            "properties": {
+              "currency": {
+                "type": "string",
+                "description": "Código de moneda ISO 4217 (3 caracteres).",
+                "example": "BRL"
+              },
+              "value": {
+                "type": "number",
+                "description": "Monto en unidades mayores (múltiplo de 0.0001).",
+                "example": 300
+              }
+            }
+          },
+          "checkout": {
+            "type": "object",
+            "properties": {
+              "session": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "payment_method": {
+            "type": "object",
+            "properties": {
+              "capture": {
+                "type": "boolean",
+                "description": "Configuración de captura compartida por ambas tarjetas."
+              },
+              "account_updater": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "payment_methods": {
+                "type": "array",
+                "description": "Una entrada por tarjeta. No hay un estado por tarjeta: lee el resultado de cada tarjeta en sus `transactions`.",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "sequence": {
+                      "type": "integer",
+                      "description": "Posición de la tarjeta: `1` o `2`."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "CARD"
+                      ]
+                    },
+                    "amount": {
+                      "type": "object",
+                      "description": "Parte del total que paga esta tarjeta.",
+                      "required": [
+                        "currency",
+                        "value"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "description": "Código de moneda ISO 4217 (3 caracteres).",
+                          "example": "BRL"
+                        },
+                        "value": {
+                          "type": "number",
+                          "description": "Monto en unidades mayores (múltiplo de 0.0001).",
+                          "example": 300
+                        }
+                      }
+                    },
+                    "payment_method_detail": {
+                      "type": "object",
+                      "description": "Detalles de la tarjeta, como en el objeto de pago v1."
+                    },
+                    "payment_method_owner": {
+                      "type": "object",
+                      "description": "Titular de la tarjeta, cuando se envía en la solicitud."
+                    },
+                    "transactions": {
+                      "type": "array",
+                      "description": "Transacciones de esta tarjeta. Una tarjeta que pasó por 3DS muestra `THREE_D_SECURE` seguido de `PURCHASE` o `AUTHORIZE`.",
+                      "items": {
+                        "type": "object",
+                        "description": "Una transacción de la tarjeta. Lee el resultado de la tarjeta en sus transacciones.",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Id de la transacción. Úsalo en las operaciones por transacción."
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Tipo de transacción, por ejemplo `THREE_D_SECURE`, `PURCHASE`, `AUTHORIZE`, `CAPTURE`, `CANCEL` o `REFUND`."
+                          },
+                          "status": {
+                            "type": "string",
+                            "description": "Estado de esta transacción, por ejemplo `SUCCEEDED`, `DECLINED`, `PENDING` o `ERROR`."
+                          },
+                          "category": {
+                            "type": "string",
+                            "example": "CARD"
+                          },
+                          "amount": {
+                            "type": "number",
+                            "description": "Monto de esta transacción."
+                          },
+                          "provider_id": {
+                            "type": "string",
+                            "description": "Proveedor que procesó la transacción."
+                          },
+                          "response_code": {
+                            "type": "string",
+                            "description": "Código de respuesta de Yuno de la transacción."
+                          },
+                          "response_message": {
+                            "type": "string"
+                          },
+                          "reason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "description": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "merchant_reference": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "three_d_secure_action_required": {
+                            "type": [
+                              "boolean",
+                              "null"
+                            ]
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updated_at": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "customer_payer": {
+            "type": "object",
+            "description": "El pagador, tal como se envió en la solicitud."
+          },
+          "additional_data": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "callback_url": {
+            "type": "string"
+          },
+          "workflow": {
+            "type": "string",
+            "enum": [
+              "DIRECT",
+              "REDIRECT",
+              "SDK_CHECKOUT"
+            ]
+          },
+          "metadata": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/payments": {
+      "post": {
+        "summary": "Crear pago (dos tarjetas)",
+        "description": "Crea un pago financiado por exactamente dos tarjetas. Cada tarjeta paga su parte de `amount`. Si una tarjeta falla, Yuno revierte la otra antes de responder.",
+        "operationId": "create-payment-v2",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "Clave única de esta solicitud. Obligatoria en cada solicitud de pago v2. Si el resultado no es claro, reintenta con la misma clave. Sin ella, la solicitud se rechaza con `400 INVALID_PARAMETERS`: \"The header 'x-idempotency-key' is required.\"",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "merchant_order_id",
+                  "description",
+                  "country",
+                  "amount",
+                  "workflow",
+                  "payment_method",
+                  "customer_payer"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "El id de tu cuenta de Yuno."
+                  },
+                  "merchant_order_id": {
+                    "type": "string",
+                    "description": "El id de tu pedido (MIN 3; MAX 255)."
+                  },
+                  "merchant_reference": {
+                    "type": "string",
+                    "description": "Tu referencia del pago (MIN 3; MAX 255)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Descripción del pago (MIN 3; MAX 255)."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Código de país ISO 3166-1 alpha-2."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Total del pago. Debe ser igual a la suma de los montos de las dos tarjetas. No se permite `amount.currency_conversion`.",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "Código de moneda ISO 4217 (3 caracteres).",
+                        "example": "BRL"
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "Monto en unidades mayores (múltiplo de 0.0001).",
+                        "example": 300
+                      }
+                    }
+                  },
+                  "workflow": {
+                    "type": "string",
+                    "enum": [
+                      "DIRECT",
+                      "REDIRECT",
+                      "SDK_CHECKOUT"
+                    ],
+                    "description": "`DIRECT` o `REDIRECT` con `payment_method.payment_methods`, o `SDK_CHECKOUT` con `checkout.session` y el `payment_method.token` compuesto."
+                  },
+                  "checkout": {
+                    "type": "object",
+                    "description": "Obligatorio para `SDK_CHECKOUT`.",
+                    "properties": {
+                      "session": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "La sesión de checkout para la que se creó el token compuesto."
+                      }
+                    }
+                  },
+                  "payment_method": {
+                    "type": "object",
+                    "properties": {
+                      "capture": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Compartido por ambas tarjetas. `true` (por defecto) cobra ambas tarjetas; `false` las autoriza y tú capturas cada una más tarde."
+                      },
+                      "token": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Solo `SDK_CHECKOUT`: el token de un solo uso compuesto del SDK Web. No envíes `payment_methods` junto con él."
+                      },
+                      "payment_methods": {
+                        "type": "array",
+                        "description": "Solo `DIRECT` y `REDIRECT`: exactamente dos elementos, ambos `type: CARD`.",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "type",
+                            "amount"
+                          ],
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "CARD"
+                              ]
+                            },
+                            "amount": {
+                              "type": "object",
+                              "description": "Parte del total que paga esta tarjeta. `value` mayor que 0; `currency` igual a `amount.currency`.",
+                              "required": [
+                                "currency",
+                                "value"
+                              ],
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "description": "Código de moneda ISO 4217 (3 caracteres).",
+                                  "example": "BRL"
+                                },
+                                "value": {
+                                  "type": "number",
+                                  "description": "Monto en unidades mayores (múltiplo de 0.0001).",
+                                  "example": 300
+                                }
+                              }
+                            },
+                            "vaulted_token": {
+                              "type": "string",
+                              "format": "uuid",
+                              "description": "Token almacenado de una tarjeta inscrita. Envíalo o envía `detail.card`."
+                            },
+                            "detail": {
+                              "type": "object",
+                              "properties": {
+                                "card": {
+                                  "type": "object",
+                                  "description": "Datos de la tarjeta. No envíes `capture` aquí: usa `payment_method.capture`.",
+                                  "properties": {
+                                    "number": {
+                                      "type": "string",
+                                      "example": "4111111111111111"
+                                    },
+                                    "expiration_month": {
+                                      "type": "integer",
+                                      "example": 11
+                                    },
+                                    "expiration_year": {
+                                      "type": "integer",
+                                      "example": 2029
+                                    },
+                                    "security_code": {
+                                      "type": "string",
+                                      "example": "123"
+                                    },
+                                    "holder_name": {
+                                      "type": "string",
+                                      "example": "ANA SOUZA"
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "payment_method_owner": {
+                              "type": "object",
+                              "description": "Opcional. El titular de la tarjeta, cuando no es el pagador. Mismos campos que `customer_payer`."
+                            },
+                            "account_updater": {
+                              "type": "boolean",
+                              "description": "Opcional."
+                            },
+                            "network_token": {
+                              "type": "boolean",
+                              "description": "Opcional. Control por tarjeta para los [network tokens](/docs/security-and-compliance/network-tokens#choose-per-card). `false` nunca usa un network token para esta tarjeta; `true` usa o aprovisiona uno cuando la tarjeta se almacena, incluso cuando la ruta tiene desactivado el interruptor de network token; si se omite, se mantiene el comportamiento de la ruta. Requiere la incorporación a network tokens; no tiene efecto en tarjetas de invitado."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "customer_payer": {
+                    "type": "object",
+                    "description": "Obligatorio. El pagador, compartido por ambas tarjetas. Mismos campos que en [Crear pago](/reference/payments/create-payment)."
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "description": "Opcional. Dónde se devuelve al cliente después de un desafío 3DS o una redirección."
+                  },
+                  "additional_data": {
+                    "type": "object",
+                    "description": "Opcional, como en v1."
+                  },
+                  "metadata": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "DIRECT: two new cards": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "merchant_order_id": "order-10045",
+                    "description": "Order paid with two cards",
+                    "country": "BR",
+                    "amount": {
+                      "currency": "BRL",
+                      "value": 300
+                    },
+                    "workflow": "DIRECT",
+                    "customer_payer": {
+                      "id": "cfae0941-7234-427a-a739-ef4fce966c79",
+                      "first_name": "Ana",
+                      "last_name": "Souza",
+                      "email": "ana.souza@example.com",
+                      "document": {
+                        "document_type": "CPF",
+                        "document_number": "12345678909"
+                      }
+                    },
+                    "payment_method": {
+                      "capture": true,
+                      "payment_methods": [
+                        {
+                          "type": "CARD",
+                          "amount": {
+                            "currency": "BRL",
+                            "value": 200
+                          },
+                          "detail": {
+                            "card": {
+                              "number": "4111111111111111",
+                              "expiration_month": 11,
+                              "expiration_year": 2029,
+                              "security_code": "123",
+                              "holder_name": "ANA SOUZA"
+                            }
+                          }
+                        },
+                        {
+                          "type": "CARD",
+                          "amount": {
+                            "currency": "BRL",
+                            "value": 100
+                          },
+                          "detail": {
+                            "card": {
+                              "number": "5555555555554444",
+                              "expiration_month": 3,
+                              "expiration_year": 2030,
+                              "security_code": "456",
+                              "holder_name": "ANA SOUZA"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "DIRECT: one vaulted card and one new card": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "merchant_order_id": "order-10046",
+                    "description": "Order paid with two cards",
+                    "country": "BR",
+                    "amount": {
+                      "currency": "BRL",
+                      "value": 300
+                    },
+                    "workflow": "DIRECT",
+                    "customer_payer": {
+                      "id": "cfae0941-7234-427a-a739-ef4fce966c79"
+                    },
+                    "payment_method": {
+                      "capture": false,
+                      "payment_methods": [
+                        {
+                          "type": "CARD",
+                          "amount": {
+                            "currency": "BRL",
+                            "value": 120
+                          },
+                          "vaulted_token": "aad8578e-ac2f-40a0-8065-25b5957f6555"
+                        },
+                        {
+                          "type": "CARD",
+                          "amount": {
+                            "currency": "BRL",
+                            "value": 180
+                          },
+                          "detail": {
+                            "card": {
+                              "number": "4111111111111111",
+                              "expiration_month": 11,
+                              "expiration_year": 2029,
+                              "security_code": "123",
+                              "holder_name": "JOAO SOUZA"
+                            }
+                          },
+                          "payment_method_owner": {
+                            "first_name": "Joao",
+                            "last_name": "Souza",
+                            "email": "joao.souza@example.com"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "SDK_CHECKOUT: composite token": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "merchant_order_id": "order-10047",
+                    "description": "Order paid with two cards",
+                    "country": "BR",
+                    "amount": {
+                      "currency": "BRL",
+                      "value": 300
+                    },
+                    "workflow": "SDK_CHECKOUT",
+                    "checkout": {
+                      "session": "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+                    },
+                    "customer_payer": {
+                      "id": "cfae0941-7234-427a-a739-ef4fce966c79"
+                    },
+                    "payment_method": {
+                      "token": "ee78bc2a-63b4-45bb-bd28-3e6829ab1c3d",
+                      "capture": true
+                    },
+                    "callback_url": "https://merchant.example.com/checkout/return"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pago creado. Lee `status` y `sub_status`, y luego las `transactions` de cada tarjeta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentV2"
+                },
+                "examples": {
+                  "Both cards charged": {
+                    "value": {
+                      "id": "7c1b6e2a-5f3d-4a8e-9b21-3e4f5a6b7c8d",
+                      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                      "description": "Order paid with two cards",
+                      "country": "BR",
+                      "status": "SUCCEEDED",
+                      "sub_status": "APPROVED",
+                      "merchant_order_id": "order-10045",
+                      "created_at": "2026-10-27T14:02:11.120Z",
+                      "updated_at": "2026-10-27T14:02:12.300Z",
+                      "split_payment_methods": true,
+                      "payment_methods_count": 2,
+                      "sdk_action_required": false,
+                      "amount": {
+                        "currency": "BRL",
+                        "value": 300
+                      },
+                      "checkout": {
+                        "session": null
+                      },
+                      "payment_method": {
+                        "capture": true,
+                        "account_updater": false,
+                        "payment_methods": [
+                          {
+                            "sequence": 1,
+                            "type": "CARD",
+                            "amount": {
+                              "currency": "BRL",
+                              "value": 200
+                            },
+                            "transactions": [
+                              {
+                                "id": "d2a4f6b8-1c3e-4a5b-8d7f-9e0a1b2c3d4e",
+                                "type": "PURCHASE",
+                                "status": "SUCCEEDED",
+                                "category": "CARD",
+                                "amount": 200,
+                                "provider_id": "YUNO_TEST_PAYMENT_GATEWAY",
+                                "response_code": "SUCCEEDED",
+                                "response_message": "Transaction successful",
+                                "reason": null,
+                                "description": null,
+                                "merchant_reference": null,
+                                "three_d_secure_action_required": false,
+                                "created_at": "2026-10-27T14:02:11.402Z",
+                                "updated_at": "2026-10-27T14:02:12.118Z"
+                              }
+                            ]
+                          },
+                          {
+                            "sequence": 2,
+                            "type": "CARD",
+                            "amount": {
+                              "currency": "BRL",
+                              "value": 100
+                            },
+                            "transactions": [
+                              {
+                                "id": "e3b5a7c9-2d4f-4b6c-9e8a-0f1b2c3d4e5f",
+                                "type": "PURCHASE",
+                                "status": "SUCCEEDED",
+                                "category": "CARD",
+                                "amount": 100,
+                                "provider_id": "YUNO_TEST_PAYMENT_GATEWAY",
+                                "response_code": "SUCCEEDED",
+                                "response_message": "Transaction successful",
+                                "reason": null,
+                                "description": null,
+                                "merchant_reference": null,
+                                "three_d_secure_action_required": false,
+                                "created_at": "2026-10-27T14:02:11.402Z",
+                                "updated_at": "2026-10-27T14:02:12.118Z"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "customer_payer": {
+                        "id": "cfae0941-7234-427a-a739-ef4fce966c79",
+                        "first_name": "Ana",
+                        "last_name": "Souza",
+                        "email": "ana.souza@example.com"
+                      },
+                      "workflow": "DIRECT",
+                      "callback_url": "https://merchant.example.com/checkout/return",
+                      "metadata": []
+                    }
+                  },
+                  "Both cards authorized (capture false)": {
+                    "value": {
+                      "id": "7c1b6e2a-5f3d-4a8e-9b21-3e4f5a6b7c8d",
+                      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                      "description": "Order paid with two cards",
+                      "country": "BR",
+                      "status": "PENDING",
+                      "sub_status": "AUTHORIZED",
+                      "merchant_order_id": "order-10045",
+                      "created_at": "2026-10-27T14:02:11.120Z",
+                      "updated_at": "2026-10-27T14:02:12.300Z",
+                      "split_payment_methods": true,
+                      "payment_methods_count": 2,
+                      "sdk_action_required": false,
+                      "amount": {
+                        "currency": "BRL",
+                        "value": 300
+                      },
+                      "checkout": {
+                        "session": null
+                      },
+                      "payment_method": {
+                        "capture": false,
+                        "account_updater": false,
+                        "payment_methods": [
+                          {
+                            "sequence": 1,
+                            "type": "CARD",
+                            "amount": {
+                              "currency": "BRL",
+                              "value": 200
+                            },
+                            "transactions": [
+                              {
+                                "id": "d2a4f6b8-1c3e-4a5b-8d7f-9e0a1b2c3d4e",
+                                "type": "AUTHORIZE",
+                                "status": "SUCCEEDED",
+                                "category": "CARD",
+                                "amount": 200,
+                                "provider_id": "YUNO_TEST_PAYMENT_GATEWAY",
+                                "response_code": "SUCCEEDED",
+                                "response_message": "Transaction successful",
+                                "reason": null,
+                                "description": null,
+                                "merchant_reference": null,
+                                "three_d_secure_action_required": false,
+                                "created_at": "2026-10-27T14:02:11.402Z",
+                                "updated_at": "2026-10-27T14:02:12.118Z"
+                              }
+                            ]
+                          },
+                          {
+                            "sequence": 2,
+                            "type": "CARD",
+                            "amount": {
+                              "currency": "BRL",
+                              "value": 100
+                            },
+                            "transactions": [
+                              {
+                                "id": "e3b5a7c9-2d4f-4b6c-9e8a-0f1b2c3d4e5f",
+                                "type": "AUTHORIZE",
+                                "status": "SUCCEEDED",
+                                "category": "CARD",
+                                "amount": 100,
+                                "provider_id": "YUNO_TEST_PAYMENT_GATEWAY",
+                                "response_code": "SUCCEEDED",
+                                "response_message": "Transaction successful",
+                                "reason": null,
+                                "description": null,
+                                "merchant_reference": null,
+                                "three_d_secure_action_required": false,
+                                "created_at": "2026-10-27T14:02:11.402Z",
+                                "updated_at": "2026-10-27T14:02:12.118Z"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "customer_payer": {
+                        "id": "cfae0941-7234-427a-a739-ef4fce966c79",
+                        "first_name": "Ana",
+                        "last_name": "Souza",
+                        "email": "ana.souza@example.com"
+                      },
+                      "workflow": "DIRECT",
+                      "callback_url": "https://merchant.example.com/checkout/return",
+                      "metadata": []
+                    }
+                  },
+                  "One card declined, the other refunded": {
+                    "value": {
+                      "id": "7c1b6e2a-5f3d-4a8e-9b21-3e4f5a6b7c8d",
+                      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                      "description": "Order paid with two cards",
+                      "country": "BR",
+                      "status": "DECLINED",
+                      "sub_status": "DECLINED",
+                      "merchant_order_id": "order-10045",
+                      "created_at": "2026-10-27T14:02:11.120Z",
+                      "updated_at": "2026-10-27T14:02:12.300Z",
+                      "split_payment_methods": true,
+                      "payment_methods_count": 2,
+                      "sdk_action_required": false,
+                      "amount": {
+                        "currency": "BRL",
+                        "value": 300
+                      },
+                      "checkout": {
+                        "session": null
+                      },
+                      "payment_method": {
+                        "capture": true,
+                        "account_updater": false,
+                        "payment_methods": [
+                          {
+                            "sequence": 1,
+                            "type": "CARD",
+                            "amount": {
+                              "currency": "BRL",
+                              "value": 200
+                            },
+                            "transactions": [
+                              {
+                                "id": "d2a4f6b8-1c3e-4a5b-8d7f-9e0a1b2c3d4e",
+                                "type": "PURCHASE",
+                                "status": "SUCCEEDED",
+                                "category": "CARD",
+                                "amount": 200,
+                                "provider_id": "YUNO_TEST_PAYMENT_GATEWAY",
+                                "response_code": "SUCCEEDED",
+                                "response_message": "Transaction successful",
+                                "reason": null,
+                                "description": null,
+                                "merchant_reference": null,
+                                "three_d_secure_action_required": false,
+                                "created_at": "2026-10-27T14:02:11.402Z",
+                                "updated_at": "2026-10-27T14:02:12.118Z"
+                              },
+                              {
+                                "id": "f4c6b8d0-3e5a-4c7d-8f9b-1a2b3c4d5e6f",
+                                "type": "REFUND",
+                                "status": "SUCCEEDED",
+                                "category": "CARD",
+                                "amount": 200,
+                                "provider_id": "YUNO_TEST_PAYMENT_GATEWAY",
+                                "response_code": "SUCCEEDED",
+                                "response_message": "Transaction successful",
+                                "reason": null,
+                                "description": null,
+                                "merchant_reference": null,
+                                "three_d_secure_action_required": false,
+                                "created_at": "2026-10-27T14:02:11.402Z",
+                                "updated_at": "2026-10-27T14:02:12.118Z"
+                              }
+                            ]
+                          },
+                          {
+                            "sequence": 2,
+                            "type": "CARD",
+                            "amount": {
+                              "currency": "BRL",
+                              "value": 100
+                            },
+                            "transactions": [
+                              {
+                                "id": "e3b5a7c9-2d4f-4b6c-9e8a-0f1b2c3d4e5f",
+                                "type": "PURCHASE",
+                                "status": "DECLINED",
+                                "category": "CARD",
+                                "amount": 100,
+                                "provider_id": "YUNO_TEST_PAYMENT_GATEWAY",
+                                "response_code": "DECLINED_BY_ISSUER",
+                                "response_message": "Declined by issuer",
+                                "reason": null,
+                                "description": null,
+                                "merchant_reference": null,
+                                "three_d_secure_action_required": false,
+                                "created_at": "2026-10-27T14:02:11.402Z",
+                                "updated_at": "2026-10-27T14:02:12.118Z"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "customer_payer": {
+                        "id": "cfae0941-7234-427a-a739-ef4fce966c79",
+                        "first_name": "Ana",
+                        "last_name": "Souza",
+                        "email": "ana.souza@example.com"
+                      },
+                      "workflow": "DIRECT",
+                      "callback_url": "https://merchant.example.com/checkout/return",
+                      "metadata": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitud no válida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Missing idempotency key": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The header 'x-idempotency-key' is required."
+                      ]
+                    }
+                  },
+                  "Workflow not allowed": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'workflow' has an invalid value for /v2/payments, the allowed values are: 'DIRECT', 'REDIRECT', 'SDK_CHECKOUT'."
+                      ]
+                    }
+                  },
+                  "SDK_CHECKOUT without session or token": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'checkout.session' is required for the SDK_CHECKOUT workflow.",
+                        "The field 'payment_method.token' is required for the SDK_CHECKOUT workflow."
+                      ]
+                    }
+                  },
+                  "SDK_CHECKOUT token is not a UUID": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'payment_method.token' must be a valid UUID."
+                      ]
+                    }
+                  },
+                  "payment_methods with SDK_CHECKOUT": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'payment_method.payment_methods' is not allowed for the SDK_CHECKOUT workflow, the one-time token carries the payment methods."
+                      ]
+                    }
+                  },
+                  "token with DIRECT": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'payment_method.token' is only allowed for the SDK_CHECKOUT workflow, not for DIRECT."
+                      ]
+                    }
+                  },
+                  "Field not allowed with two methods": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'split_marketplace' is not allowed with more than one payment method.",
+                        "The field 'external_subscription' is not allowed with more than one payment method.",
+                        "The field 'amount.currency_conversion' is not allowed with more than one payment method."
+                      ]
+                    }
+                  },
+                  "Capture per card": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'payment_method.payment_methods[0].detail.card.capture' is not allowed, use 'payment_method.capture' for every payment method."
+                      ]
+                    }
+                  },
+                  "Invalid card item": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The field 'payment_method.payment_methods[1].type' must be 'CARD'.",
+                        "The field 'payment_method.payment_methods[0].amount.value' must be greater than 0.",
+                        "The field 'payment_method.payment_methods[1].amount.currency' must match 'amount.currency'."
+                      ]
+                    }
+                  },
+                  "Amounts do not add up": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The sum of 'payment_method.payment_methods[].amount.value' must equal 'amount.value'."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales no válidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "INVALID_CREDENTIALS",
+                  "messages": [
+                    "Invalid credentials"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Los pagos con dos tarjetas no están habilitados para la organización (solo producción)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "PRODUCT_NOT_ENABLED",
+                  "messages": [
+                    "Payments with more than one payment method are enabled per account. Contact your Key Account Manager (KAM) to activate it."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,486 @@
+---
+title: Headless SDK (Payment Android)
+description: "Crea pagos con el Headless SDK en Android, generando tokens de un solo uso y gestionando acciones de 3DS"
+robots: index
+---
+import GenericOrientation from '/snippets/es/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Esta página es una guía del Yuno Headless Android SDK para pagos.
+
+Este SDK es ideal para comercios que:
+
+* Necesitan control total sobre la interfaz de pago y la experiencia del usuario
+* Quieren crear flujos de pago personalizados
+* Requieren capacidades de integración avanzadas
+
+El Headless SDK incluye funciones principales como:
+
+* Acceso directo a la API para el procesamiento de pagos
+* Generación de tokens para métodos de pago
+* Gestión de la autenticación 3DS
+* Recopilación de datos para la prevención de fraude
+
+Si prefieres una solución con interfaz prediseñada, considera usar el [Full Checkout SDK](/docs/sdks/full-checkout/android-payments) o el [Lite SDK](/es/docs/sdks/lite-android/checkout) de Yuno.
+
+## Requisitos {#requirements}
+
+Antes de comenzar la integración del Yuno Android SDK, asegúrate de que tu proyecto cumpla los requisitos técnicos. Asegúrate también de contar con los siguientes prerrequisitos:
+
+* **Minimum SDK Version**: `minSdkVersion` 23 o superior (Android 6.0). Requerido desde Yuno Android SDK 2.24.0
+* **Java**: Java 8 habilitado
+* **AndroidX**: usa AndroidX en lugar de las bibliotecas de soporte anteriores
+* **Android Gradle Plugin**: 4.0.0 o superior
+* **ProGuard**: 6.2.2 o superior
+* **Kotlin Gradle Plugin**: 1.4.0 o superior
+* **ELF Page Size Support**: cumple los requisitos de alineación de página ELF de 16 KB de Google (compatible con Android 15 / ARMv9)
+
+### Configuración de ProGuard / R8 {#proguard--r8-configuration}
+
+Si tu proyecto tiene `minifyEnabled = true`, agrega estas reglas a tu archivo `proguard-rules.pro` para garantizar que el SDK funcione correctamente, especialmente con el **modo completo de R8 en AGP 8.x+**.
+
+<Accordion title="Reglas oficiales de Yuno para ProGuard / R8">
+  ```proguard
+  # Preserve generic type signatures and annotations
+  -keepattributes Signature
+  -keepattributes *Annotation*
+
+  # Yuno SDK
+  -keep class com.yuno.** { *; }
+  -dontwarn com.yuno.**
+
+  # Gson — R8 full mode compatibility
+  -keep class com.google.gson.** { *; }
+  -keep,allowobfuscation,allowshrinking,allowoptimization class * extends com.google.gson.reflect.TypeToken
+  -dontwarn com.google.gson.**
+
+  # Retrofit — R8 full mode compatibility
+  -keep,allowobfuscation,allowshrinking interface retrofit2.Call
+  -keep,allowobfuscation,allowshrinking class retrofit2.Response
+  -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+  -dontwarn retrofit2.**
+
+  # OkHttp + Okio — Suppress warnings
+  -dontwarn okhttp3.**
+  -dontwarn okio.**
+  ```
+
+  ### ¿Por qué son necesarias estas reglas?
+
+  AGP 8.x+ habilita por defecto el **modo completo de R8**, que elimina de forma agresiva las firmas de tipos genéricos. Sin `-keepattributes Signature`, el `TypeToken<T>` de Gson puede fallar en tiempo de ejecución con `java.lang.Class cannot be cast to java.lang.reflect.ParameterizedType`.
+</Accordion>
+
+<Info>
+**Última versión del SDK**
+
+Consulta las notas de la versión o visita el [repositorio del Yuno Android SDK](https://github.com/yuno-payments/yuno-sdk-android) para verificar la versión actual del SDK disponible.
+</Info>
+
+## Paso 1: crea un cliente {#step-1-create-a-customer}
+
+Crea un cliente con el [endpoint Create customer](/es/reference/customers/create-customer) antes de iniciar los pagos. Este paso es necesario para:
+
+* Identificar a la persona que realiza el pago
+* Habilitar la función de métodos de pago guardados (si está habilitada)
+* Hacer seguimiento del historial de pagos
+
+El ID del cliente devuelto por este endpoint se usará al crear la `checkout_session`.
+
+## Paso 2: crear una sesión de checkout {#step-2-create-a-checkout-session}
+
+Crea una nueva `checkout_session` con el endpoint [Create checkout session](/es/reference/checkout-sessions/create-checkout-session) para inicializar el flujo de pago. Asegúrate de:
+
+* Incluir el ID del cliente que obtuviste en el paso anterior
+* Guardar el ID de la `checkout_session` devuelto para usarlo en los pasos posteriores
+
+La `checkout_session` es única para cada intento de pago y no se puede reutilizar.
+
+## Paso 3: incluye la biblioteca en tu proyecto {#step-3-include-the-library-in-your-project}
+
+Incluye el Yuno SDK en tu proyecto mediante Gradle. Agrega el origen del repositorio:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+Agrega la dependencia del Yuno SDK a tu aplicación en el archivo `build.gradle`:
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:2.27.0'
+}
+```
+
+Yuno SDK incluye, por defecto, el permiso `INTERNET`, necesario para realizar solicitudes de red.
+
+`<uses-permission android:name="android.permission.INTERNET" />`
+
+## Paso 4: inicializar el headless SDK con la clave pública {#step-4-initialize-headless-sdk-with-the-public-key}
+
+Importa Yuno y proporciona una **PUBLIC_API_KEY** válida para inicializar el Headless SDK. Si no tienes tus credenciales de API, consulta la página [Developers (Credentials)](/es/docs/using-yuno/settings/developers-credentials) para ver cómo obtenerlas desde el Dashboard.
+
+Crea una aplicación personalizada si aún no lo has hecho. En el método `onCreate()` de la clase de tu aplicación, inicializa el SDK llamando a la función `Yuno.initialize()`:
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      PUBLIC_API_KEY,
+      config = YunoConfig(
+        keepLoader = true,
+      ),
+    )
+  }
+}
+```
+
+<Info>
+  Para una explicación detallada del parámetro `keepLoader` y del manejo de errores obligatorio, consulta la [Android Reference Guide](/es/docs/sdks/resources/references/android#keeploader-parameter).
+</Info>
+
+## Paso 5: inicia el proceso de checkout {#step-5-start-the-checkout-process}
+
+Llama a la función `apiClientPayment` después de que tu cliente seleccione un método de pago para iniciar el proceso de checkout. Esta función requiere parámetros de configuración e inicia la recopilación de la información necesaria para la autenticación 3DS y las herramientas de prevención de fraude configuradas en tu enrutamiento.
+
+La siguiente tabla describe los parámetros requeridos:
+
+| Parámetro | Descripción |
+| --- | --- |
+| `country_code` | Este parámetro determina el país para el que se configura el proceso de pago. La lista completa de países compatibles y su `country_code` está disponible en la página [Country coverage](/es/docs/sdks/resources/country-coverage). |
+| `checkout_session` | Hace referencia a la sesión de checkout del pago actual, creada con el endpoint [Create Checkout Session](/es/reference/checkout-sessions/create-checkout-session). Ejemplo: `'438413b7-4921-41e4-b8f3-28a5a0141638'` |
+
+El siguiente bloque de código muestra un ejemplo de la configuración de los parámetros:
+
+```kotlin
+ val apiClientPayment = Yuno.apiClientPayment(
+   countryCode = "US",
+   checkoutSession = "74bf4b96-6b35-42a6-8c73-2fe094c34ca9",
+   context = this
+)
+
+```
+
+## Paso 6: generar el token {#step-6-generate-token}
+
+Después de recopilar la información del usuario, crea un token de un solo uso (OTT) con la función `apiClientPayment.generateToken`. Como es una función asíncrona, usa un bloque `try/catch` para gestionar los errores que puedan ocurrir. Los siguientes ejemplos muestran dos escenarios distintos para crear un token de un solo uso:
+
+1. **Ejemplo 1**: crea un token de un solo uso usando una tarjeta como método de pago e incluyendo toda la información requerida de la tarjeta.
+2. **Ejemplo 2**: crea un token de un solo uso usando la información de `vaulted_token`.
+
+### Beneficios de usar un vaulted token {#benefits-of-using-a-vaulted-token}
+
+Cuando usas un vaulted token con el SDK, se recopila toda la información de fraude de los proveedores que configuraste en el enrutamiento de tarjetas. Esta información se adjunta al token de un solo uso. También puedes agregar información de cuotas y un código de seguridad si el proveedor lo requiere.
+
+Ambos ejemplos llaman a `generateToken`, que está declarado en el companion object de `ApiClientPayment`. Agrega `import com.yuno.sdk.ApiClientPayment.Companion.generateToken` a tu archivo.
+
+```kotlin Example 1
+apiClientPayment.generateToken(
+   collectedData = TokenCollectedData(
+       checkoutSession = "checkout_session",
+       paymentMethod = PaymentMethod (
+           type = "CARD",
+           vaultedToken = null,
+           card = CardData(
+               save = true,
+               detail = Detail(
+                   expirationMonth = 11,
+                   expirationYear = 55,
+                   number = "4111111111111111",
+                   securityCode = "123",
+                   holderName = "Firstname Lastname",
+                   type = CardType.CREDIT
+               ),
+               installment = Installment(
+                   id = "id",
+                   value = 12
+               )
+           ),
+           customer = Customer(
+               id = "id",
+               merchantCustomerId = "merchant_customer_id",
+               firstName = "firstName",
+               lastName = "lastName",
+               dateOfBirth = "DD/MM/YYYY",
+               email = "email@email.com",
+               country = "US",
+               document = Document(
+                   documentType = "PAS",
+                   documentNumber = "PAS12312"
+               ),
+               phone = Phone(
+                   number = "321123321123",
+                   countryCode = "1"
+               )
+           )
+       )
+   ),
+   context = this
+)
+
+```
+```kotlin Example 2
+apiClientPayment.generateToken(
+   collectedData = TokenCollectedData(
+       checkoutSession = "checkout_session",
+       paymentMethod = PaymentMethod(
+           type = "CARD",
+           vaultedToken = "a1c7c5d1-b260-4dc6-909a-8368704233cf",
+           card = CardData(
+               save = true,
+               detail = Detail(
+                   expirationMonth = 11,
+                   expirationYear = 55,
+                   number = "4111111111111111",
+                   securityCode = "123",
+                   holderName = "Firstname Lastname",
+                   type = CardType.CREDIT
+               ),
+               installment = Installment(
+                   id = "id",
+                   value = 12
+               )
+           ),
+           customer = Customer(
+               id = "id",
+               merchantCustomerId = "merchant_customer_id",
+               firstName = "firstName",
+               lastName = "lastName",
+               dateOfBirth = "DD/MM/YYYY",
+               email = "email@email.com",
+               country = "CO",
+               document = Document(
+                   documentType = "PAS",
+                   documentNumber = "PAS12312"
+               ),
+               phone = Phone(
+                   number = "321123321123",
+                   countryCode = "57"
+               )
+           )
+       )
+   ),
+   context = this
+)
+
+```
+
+`type` en `Detail` es opcional. Si lo omites, Yuno detecta el tipo de tarjeta a partir del número de tarjeta. Envíalo solo si estás seguro, porque un tipo incorrecto puede causar un rechazo.
+
+La función **apiClientPayment.generateToken** es una función `suspend`. Llámala desde una corrutina (por ejemplo, `lifecycleScope.launch`). Devuelve un `Map<String, Any?>` que contiene la respuesta completa. El siguiente bloque de código muestra ejemplos de respuestas después de llamar a la función `apiClientPayment.generateToken`.
+
+```json Example 1
+["token": "9ee44ac7-9134-4598-ae28-a26fec03099d",
+     "type": "CARD",
+     "customer": ["billing_address": null,
+                  "first_name": null,
+                  "gender": "",
+                  "phone": nil,
+                  "browser_info": ["color_depth": null,
+                                   "language": "en",
+                                   "accept_header": "*/*",
+                                   "browser_time_difference": null,
+                                   "accept_content": null,
+                                   "accept_browser": null,
+                                   "java_enabled": null,
+                                   "user_agent": "YunoSDK_Example/1 CFNetwork/1406.0.4 Darwin/22.6.0",
+                                   "screen_height": "844.0",
+                                   "screen_width": "390.0",
+                                   "javascript_enabled": null],
+                  "document": null,
+                  "last_name": null,
+                  "device_fingerprint":null,
+                  "email": null],
+     "country": "US",
+     "vaulted_token": null,
+     "installment": ["rate": "",
+                     "id": "cca80084-961b-4212-9c34-54f03f4f10ae",
+                     "value": 24,
+                     "amount": null],
+     "card_data": null]
+
+```
+```json Example 2
+["token": "9ee44ac7-9134-4598-ae28-a26fec03099d",
+     "type": "CARD",
+     "customer": ["billing_address": null,
+                  "first_name": null,
+                  "gender": "",
+                  "phone": nil,
+                  "browser_info": ["color_depth": null,
+                                   "language": "en",
+                                   "accept_header": "*/*",
+                                   "browser_time_difference": null,
+                                   "accept_content": null,
+                                   "accept_browser": null,
+                                   "java_enabled": null,
+                                   "user_agent": "YunoSDK_Example/1 CFNetwork/1406.0.4 Darwin/22.6.0",
+                                   "screen_height": "844.0",
+                                   "screen_width": "390.0",
+                                   "javascript_enabled": null],
+                  "document": null,
+                  "last_name": null,
+                  "device_fingerprint":null,
+                  "email": null],
+     "country": "BR",
+     "vaulted_token":"a1c7c5d1-b260-4dc6-909a-8368704233cf",
+     "installment": ["rate": "",
+                     "id": "cca80084-961b-4212-9c34-54f03f4f10ae",
+                     "value": 24,
+                     "amount": null],
+     "card_data": null]
+
+```
+
+La respuesta del endpoint incluye el parámetro `sdk_action_required`, que define si son necesarias acciones adicionales.
+
+El siguiente bloque de código muestra un ejemplo de cómo leer la respuesta. `generateToken` y `continueCardPayment` están declarados en el companion object de `ApiClientPayment`, así que impórtalos de forma explícita:
+
+```kotlin
+import com.yuno.sdk.ApiClientPayment.Companion.continueCardPayment
+import com.yuno.sdk.ApiClientPayment.Companion.generateToken
+
+lifecycleScope.launch {
+   val response = apiClientPayment.generateToken(data, context)
+   val token = response["token"] as String?
+   val error = response["error"] as String?
+}
+
+```
+
+## Paso 7: crea el pago {#step-7-create-the-payment}
+
+Después de generar el token de un solo uso, crea el pago llamando al [endpoint Create Payment](/es/reference/payments/create-payment). Incluye el token de un solo uso obtenido en el Paso 6 en el parámetro `payment_method.token` de tu solicitud. El siguiente bloque de código muestra un ejemplo de una solicitud de creación de pago:
+
+```json
+{
+  "merchant_order_id": "0000022",
+  "country": "US",
+  "account_id": "<Your account_id>",
+  "description": "Test",
+  "amount": {
+    "currency": "USD",
+    "value": 500
+  },
+  "customer_payer": {
+    "id": "cfae0941-7234-427a-a739-ef4fce966c79"
+  },
+  "checkout": {
+    "session": "<checkout session>"
+  },
+  "workflow": "SDK_CHECKOUT",
+  "payment_method": {
+    "type":"CARD",
+    "token": "2cd31999-e44e-4de3-bbe4-179981ff4295"
+  }
+}
+```
+
+La respuesta del endpoint incluye el parámetro `sdk_action_required`, que indica si se necesitan acciones adicionales para completar el pago:
+
+* En los métodos de pago síncronos, el pago se completa al instante. En este caso, `sdk_action_required` será `false` en la respuesta de la API y el proceso de pago termina
+* En los flujos de pago que requieren interacción adicional con el SDK, `sdk_action_required` será `true`. Cuando esto ocurra, continúa con el Paso 8 para conocer los siguientes pasos
+
+## Paso 8: continuar el pago (si es necesario) {#step-8-continue-the-payment-if-required}
+
+Cuando un pago creado desde tu backend requiere un paso adicional, como un desafío 3DS, la respuesta del endpoint Create Payment incluye:
+
+* Estado `PENDING` y subestado `WAITING_ADDITIONAL_STEP`
+* `sdk_action_required = true`
+
+Llama a `continueCardPayment` para que el SDK reanude el pago. El SDK ejecuta internamente la acción pendiente, incluida la presentación del desafío 3DS, espera el resultado y entrega el estado final del pago a tu callback.
+
+### Firma de la función {#function-signature}
+
+```kotlin
+fun ApiClientPayment.continueCardPayment(
+    activity: ComponentActivity,
+    showPaymentStatus: Boolean = true,
+    callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null,
+)
+```
+
+### Parámetros {#parameters}
+
+| Parámetro | Tipo | Descripción |
+| :--- | :--- | :--- |
+| `activity` | `ComponentActivity` | La activity que el SDK usa para presentar la acción pendiente. |
+| `showPaymentStatus` | `Boolean` | Si es `true`, el SDK muestra su pantalla de estado del pago cuando el flujo termina. Configúralo en `false` para usar solo el callback. |
+| `callbackPaymentState` | `((String?, String?, StatusMessage?) -> Unit)?` | Se invoca en el hilo principal con el estado final del pago, su subestado y, en los resultados de error, un [`StatusMessage?`](/es/docs/sdks/resources/references/android#statusmessage-error-details). El tercer parámetro se agregó en el SDK `2.22.0`. |
+
+### Uso {#usage}
+
+```kotlin
+Yuno.apiClientPayment(
+    checkoutSession = checkoutSession,
+    countryCode = countryCode,
+    context = this,
+).continueCardPayment(
+    activity = this,
+    showPaymentStatus = false,
+) { paymentState, paymentSubState, message ->
+    when (paymentState) {
+        "SUCCEEDED" -> { }
+        "PROCESSING" -> { }
+        "REJECT", "FAIL" -> {
+            // message is present when the backend returned a response_code
+            val declineCode = message?.code
+        }
+        "CANCELED_BY_USER" -> { }
+        "INTERNAL_ERROR" -> {
+            // message is always present: source "sdk" or "backend", code, reason, context
+            val failure = message
+        }
+        else -> { }
+    }
+}
+```
+
+### Estados del pago {#payment-states}
+
+| Estado | Significado |
+| :--- | :--- |
+| `SUCCEEDED` | El pago se completó correctamente. |
+| `PROCESSING` | El pago todavía se está procesando. |
+| `REJECT` | El proveedor rechazó el pago. |
+| `FAIL` | El pago falló. |
+| `CANCELED_BY_USER` | El cliente abandonó el paso adicional. |
+| `INTERNAL_ERROR` | Ocurrió un error inesperado al reanudar el pago. |
+
+`continueCardPayment` es compatible solo con pagos `CARD`.
+
+## Funciones complementarias {#complementary-features}
+
+Yuno Android SDK ofrece servicios y configuraciones adicionales que puedes usar para mejorar la experiencia de tus clientes. Usa la [personalización del SDK](/es/docs/sdks/customization/android) para cambiar la apariencia del SDK y que coincida con tu marca, o para configurar el loader.
+
+### Loader {#loader}
+
+La funcionalidad del loader se controla mediante el parámetro `keepLoader` en la data class `YunoConfig`, que está documentada en línea en la sección anterior de configuración del SDK.
+
+### Personalización del SDK {#sdk-customization}
+
+Puedes cambiar la apariencia del SDK para que coincida con tu marca. Para más información, consulta la página de [personalización del SDK](/es/docs/sdks/customization/android).
+
+<Info>
+**Accede a la app de demostración**
+
+Además de los ejemplos de código proporcionados, puedes consultar el [repositorio de Yuno](https://github.com/yuno-payments/yuno-sdk-android/tree/master) para completar la implementación de los Yuno Android SDK.
+</Info>
+
+## Paso 9: continuar el pago (no compatible) {#step-9-continue-payment-not-supported}
+
+<Warning>
+**Falta de compatibilidad con dispositivos móviles**
+
+El método `getContinuePaymentAction` y la configuración "Continue Payment" (necesarios para funciones como Passkey SCOF) **no son compatibles** actualmente con el Headless Android SDK. 
+
+Si tu integración requiere estas funciones, considera usar el [Full Checkout SDK](/docs/sdks/full-checkout/android-payments) o el [Web Headless SDK](/es/docs/sdks/headless-web/payment) como alternativa.
+</Warning>
+
+## Gestión de errores {#error-handling}
+
+Gestiona en tu app los errores devueltos por el SDK, como pagos fallidos o errores de validación. Para los códigos de estado y de respuesta HTTP, consulta [Status and response codes](/es/reference/payments/status-and-response-codes/payment) en la referencia de la API.

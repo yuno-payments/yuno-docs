@@ -1,0 +1,1503 @@
+---
+title: "Changelog del Android SDK"
+description: "Últimas actualizaciones e historial de versiones del Android SDK de Yuno"
+---
+
+import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
+
+## v2.29.0
+*10 de noviembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Módulo antifraude opcional de Signifyd**  
+  La verificación de fraude de Signifyd desde las apps Android ahora se distribuye como un módulo independiente y opcional (com.yuno.payments:yuno-sdk-antifraud-signifyd). Agrega el registro de Signifyd con tu token de descarga y agrega el módulo. El SDK registra el proveedor Signifyd automáticamente, ejecuta el perfilado de dispositivo de Signifyd siempre que la configuración de tu checkout habilite Signifyd, y envía el ID de sesión de Signifyd como huella digital del dispositivo para que Signifyd evalúe la orden con información del dispositivo, para cualquier método de pago. Reemplaza el antiguo paquete com.yuno.fraud-signifyd:yunosignifyd, que ya no es compatible.
+
+- <ChangelogBadge type="added" /> **Callback de información de la tarjeta mientras el comprador escribe**  
+  Registra el callback opcional `setOnCardInfoChanged` antes de iniciar el checkout para recibir la marca, el tipo, el emisor y el país de la tarjeta mientras el comprador escribe el número. Recibe `null` cuando el número se borra por debajo de 6 dígitos o falla la consulta de la tarjeta.
+
+- <ChangelogBadge type="added" /> **Logotipo de la marca de tarjeta desde los primeros dígitos**  
+  Cuando está habilitado para la cuenta, el campo del número de tarjeta muestra el logotipo de la marca desde los primeros dígitos, antes de que responda la consulta de la tarjeta. El logotipo es solo visual: la validación, las longitudes, las cuotas, el selector de red y el pago siguen usando la marca de la consulta de la tarjeta, cuyo logotipo reemplaza al anticipado en cuanto responde con una marca. Las marcas sin logotipo no muestran nada hasta entonces. El formulario de tarjeta paso a paso y las cuentas que no lo tienen conservan el comportamiento actual.
+
+- <ChangelogBadge type="fixed" /> **Las apps que reducen el código con R8 en modo full llegan a la API de Yuno**  
+  En las compilaciones de release con R8 en modo full (el predeterminado desde Android Gradle Plugin 8) y sin Retrofit 2.10 o posterior en la app, todas las solicitudes del SDK fallaban con un error de red. Las reglas ProGuard de consumidor del SDK ahora conservan lo que Retrofit necesita, por lo que tu app no necesita reglas para ello.
+
+- <ChangelogBadge type="changed" /> **Las huellas digitales del dispositivo se recopilan de cada proveedor de fraude configurado**  
+  El SDK ahora recopila una huella digital del dispositivo de cada proveedor de fraude de la configuración del checkout y no solo del primero, y siempre las envía atribuidas al proveedor como payment_method.device_fingerprints, igual que el SDK web: un arreglo con un elemento cuando hay un solo proveedor configurado. La huella recopilada ya no va en customer_payer.device_fingerprint. Esto se aplica por igual a tarjetas, APM y billeteras, de modo que el pago lleva una huella utilizable sin importar qué proveedor seleccione el enrutamiento. Los módulos antifraude nativos se ejecutan en paralelo, cada uno dentro de su tiempo límite configurado, y la recopilación completa nunca espera más que el ajuste max_fraud_timeout_ms del checkout (6 segundos cuando no está definido). Se inicia cada proveedor de scripts web (CyberSource, Airwallex, ClearSale web) en lugar de solo el primero. Un proveedor que falla, agota el tiempo o no devuelve nada se omite y se registra, y el pago continúa. Cada proveedor y cada recopilación se reportan como los eventos fraud_provider.completed y fraud_collection.completed.
+
+## v2.28.0
+*30 de octubre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="changed" /> **Los campos del formulario siguen el color de campo del Checkout Builder**  
+  Cuando el color de campo del Checkout Builder se define con un color distinto del blanco, los campos del formulario, las listas desplegables y sus listas de opciones, el buscador de direcciones, el selector de marca de tarjeta para tarjetas co-badged, el selector de tipo de tarjeta, los cuadros de código OTP y PIN y los tooltips de ayuda ahora usan ese color de campo, con el color de acento en el campo y el cursor enfocados, de modo que los valores escritos y prellenados sigan siendo legibles sobre fondos oscuros. El título de la sección de dirección de envío y los títulos de sección del formulario compacto también toman el color de texto del Checkout Builder. Los colores de error no cambian. Con un color de campo blanco o sin definir, o cuando se usa el tema oscuro del SDK, los campos se ven exactamente como antes. Para usarlo, define el color de campo en el Checkout Builder; no se requieren cambios de código.
+
+- <ChangelogBadge type="fixed" /> **El checkout y la inscripción se abren con normalidad cuando los ajustes de estilo están guardados parcialmente**  
+  El checkout y el formulario de inscripción ya no cierran la app cuando los ajustes de estilo del dashboard están guardados solo parcialmente, por ejemplo sin los estilos de botón, globales o de encabezado, o con una fuente personalizada sin archivos. Las partes que faltan usan la apariencia predeterminada.
+
+- <ChangelogBadge type="fixed" /> **Revolut Pay se registra en apps compiladas con reducción de código (R8/minify)**  
+  Con yuno-sdk-revolut-pay 1.0.0, las apps compiladas con la reducción de código habilitada (minifyEnabled true) nunca registraban Revolut Pay y todos los pagos con Revolut Pay terminaban en INTERNAL_ERROR. La versión 1.0.1 lo corrige: actualiza solo esa dependencia; android-sdk 2.24.0 o posterior no necesita actualización.
+
+- <ChangelogBadge type="fixed" /> **Abrir una app de banco o billetera ya no cierra la app**  
+  Un enlace no válido a una app de banco o billetera, o uno que ninguna app ni navegador pueden abrir, ya no cierra la app durante un pago o una inscripción de Nupay: se abre la página de respaldo del navegador cuando el enlace la proporciona; de lo contrario, el pago se reporta como pendiente.
+
+- <ChangelogBadge type="added" /> **PayPal mediante Braintree**  
+  Los compradores pueden pagar con PayPal procesado por Braintree (PAYPAL_BRAINTREE) desde la lista de métodos de pago. El SDK abre la página de aprobación de PayPal en una Chrome Custom Tab, envía la cuenta aprobada en el token de un solo uso y recopila los datos de dispositivo de Braintree para pagos posteriores con la cuenta guardada. Requiere el nuevo módulo opcional com.yuno.payments:yuno-sdk-paypal-braintree:1.0.0; como las clases de datos de dispositivo de PayPal se incluyen tanto en el núcleo como en Braintree, agrega también `configurations.all { exclude group: 'com.paypal.android', module: 'fraud-protection' }` a la app. La misma exclusión se aplica a cualquier app que ya incluya Braintree. Disponible en Full, Lite, Seamless y Render.
+
+- <ChangelogBadge type="changed" /> **Error más claro cuando falta un módulo de pago opcional**  
+  Cuando un método de pago necesita un módulo opcional que la app no incluye (Revolut Pay, PayPal mediante Braintree), el pago igualmente termina con INTERNAL_ERROR, y el mensaje de error ahora indica la dependencia de Gradle que se debe agregar.
+
+- <ChangelogBadge type="fixed" /> **Los datos de dispositivo de PayPal ya no cierran la app cuando se excluye fraud-protection**  
+  Las apps que excluyen com.paypal.android:fraud-protection sin tener Braintree ya no se cierran al pagar con un método que recopila datos de dispositivo de PayPal ni al abrir una cuenta guardada de PayPal; el pago continúa sin esos datos de dispositivo.
+
+- <ChangelogBadge type="changed" /> **El borde del campo y la fila resaltada siguen los colores enviados con el checkout**  
+  El borde de los campos del formulario, los divisores y la fila resaltada de las listas que abren ahora usan los colores que llegan con los ajustes del checkout. Cuando esos colores no se proporcionan, los campos conservan su borde y resaltado habituales. No se requieren cambios de código.
+
+## v2.27.0
+*16 de octubre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Texto de autorización para métodos de pago guardados**  
+  El SDK ahora muestra el texto de autorización proporcionado por Yuno en la parte inferior del formulario del método de pago cuando el método se va a guardar: en las sesiones de inscripción y suscripción, y en los pagos con tarjeta mientras la opción de guardar tarjeta está marcada. Llega localizado y no requiere configuración. Las billeteras y los métodos ya inscritos no lo muestran.
+
+- <ChangelogBadge type="added" /> **Texto de autorización de débito directo y casilla de aceptación**  
+  Cuando un método de pago con cuenta bancaria (por ejemplo ACH, SEPA, Bacs o PAD) requiere un mandato, el formulario ahora muestra el texto de autorización proporcionado por Yuno debajo de los campos y, para los esquemas que lo exigen, una casilla de aceptación que debe marcarse antes de continuar. La aceptación se envía junto con los datos de la cuenta bancaria para que se registre el mandato. No cambia nada para los métodos que no requieren un mandato.
+
+- <ChangelogBadge type="changed" /> **La opción de guardar tarjeta comienza sin marcar**  
+  La opción de guardar tarjeta en el formulario de tarjeta ahora comienza sin marcar, de modo que el comprador debe elegir activamente guardar la tarjeta. Antes comenzaba marcada. Solo se aplica cuando saveCardEnabled es true.
+
+- <ChangelogBadge type="fixed" /> **El checkout Full reporta una falla al cargar la lista de métodos de pago**  
+  Cuando la lista de métodos de pago embebida no se puede cargar porque falla el servicio de métodos de pago, el SDK ahora entrega INTERNAL_ERROR a callbackPaymentState con un StatusMessage que describe la falla (el código de error del backend cuando lo devolvió, o un UNEXPECTED_ERROR interno del SDK con el contexto paymentMethodList.getPaymentMethods). Antes la falla se ignoraba: la lista quedaba vacía y el comercio no recibía ningún callback.
+
+- <ChangelogBadge type="added" /> **Etiqueta de cuenta guardada para cuentas bancarias y billeteras almacenadas**  
+  Los métodos de pago almacenados que no son tarjetas (cuentas de débito directo, billeteras, PayPal) ahora muestran una etiqueta localizada "Cuenta guardada" debajo de su nombre en la lista de métodos de pago, para que el comprador distinga una cuenta almacenada de la opción de pagar con una nueva, incluso cuando ambas comparten el mismo nombre. El nombre de una cuenta almacenada también se divide en dos líneas en lugar de cortarse con tamaños de fuente grandes. Las tarjetas conservan su apariencia actual. Se aplica automáticamente; no requiere configuración.
+
+- <ChangelogBadge type="fixed" /> **Logotipo oficial de Cartes Bancaires en la selección de marca de tarjeta**  
+  Las tarjetas francesas co-badged ahora muestran el logotipo oficial de Cartes Bancaires (diseño azul, blanco y rojo de 2024) al elegir la red de la tarjeta, en reemplazo del diseño desactualizado. Los logotipos de las marcas de tarjeta en el formulario también pueden servirse de forma remota, por lo que las futuras actualizaciones de marca ya no requieren actualizar el SDK; si no se puede cargar un logotipo remoto, se muestra el logotipo integrado.
+
+- <ChangelogBadge type="added" /> **Textos del formulario controlados por el backend**  
+  Los formularios de pago e inscripción leen las etiquetas de los campos, los placeholders, los tooltips, los mensajes de error y las etiquetas de las opciones del objeto ui que entrega payment-methods, en el idioma de Accept-Language. Solo los formularios de pago usan además el título y el botón de envío entregados, incluidos el botón de retroceso y el botón de envío del último paso del formulario de tarjeta paso a paso. La inscripción conserva sus textos nativos.
+
+- <ChangelogBadge type="changed" /> **La presencia de campos del formulario recurre a ui.required_fields cuando faltan los campos heredados**  
+  Los formularios de pago usan los booleanos heredados de required_fields siempre que el backend los incluya. Cuando required_fields no está presente, el SDK deriva la presencia de los campos de ui.required_fields, incluidos el nombre del titular de la tarjeta, el tipo de cuenta y el tipo de titular de la cuenta. Los formularios de inscripción siempre usan los booleanos heredados.
+
+- <ChangelogBadge type="changed" /> **Los encabezados de los formularios usan el título entregado**  
+  Los encabezados de los formularios de tarjeta, método de pago alternativo y tarjeta paso a paso ahora muestran el título entregado por el backend (por ejemplo "Pay with card" o "Pay with alternative payment method") en lugar del nombre del método de pago, igual que en iOS. El botón de retroceso del paso a paso y el botón de envío del último paso también usan los textos entregados cuando están disponibles. El nombre del método se sigue usando cuando no se entrega ningún título.
+
+- <ChangelogBadge type="changed" /> **Los selectores de tipo de tarjeta y de tipo de beneficio siempre emiten el código del valor**  
+  Los selectores públicos de pago de tipo de tarjeta y tipo de beneficio ahora pasan el código del valor a onSelect (CREDIT/DEBIT y PRIVATE/JUNAEB) en lugar de la etiqueta localizada de la opción, por lo que las integraciones que comparaban el valor del callback con una etiqueta traducida deben compararlo con estos códigos.
+
+- <ChangelogBadge type="fixed" /> **El módulo antifraude de ClearSale funciona junto con play-services-location 21+**  
+  Con yuno-sdk-antifraud-clearsale 1.0.0, las apps que resolvían play-services-location 21 o posterior (por ejemplo, mediante react-native-maps) no enviaban la huella digital del dispositivo de ClearSale. La versión 1.0.1 lo corrige: actualiza solo esa dependencia; android-sdk 2.25.0 o posterior no necesita actualización.
+
+- <ChangelogBadge type="added" /> **Guardar métodos de pago alternativos para pagos futuros**  
+  Los compradores ahora pueden elegir guardar un método de pago alternativo, como una cuenta bancaria, para pagos futuros. Habilítalo con YunoConfig.withSavePaymentMethodEnabled(true) al inicializar el SDK: cuando Yuno permite guardar el método seleccionado y la sesión de checkout pertenece a un cliente, el formulario de pago muestra una opción sin marcar 'Guardar método de pago para pagos futuros'. Si el comprador la marca, el método se almacena una vez que el pago es exitoso y el texto de autorización mostrado en el formulario lo refleja. La opción está desactivada por defecto, y el formulario de tarjeta, las billeteras y los métodos ya guardados conservan su comportamiento actual. YunoConfig.copy() no conserva esta opción: si construyes la configuración con copy(), llama a withSavePaymentMethodEnabled sobre el resultado.
+
+- <ChangelogBadge type="fixed" /> **La longitud del código de seguridad sigue al servicio de tarjetas**  
+  El formulario de tarjeta ahora acepta exactamente la longitud del código de seguridad devuelta para la tarjeta (3 para todas las marcas excepto Amex), tanto en tarjetas nuevas como guardadas, incluso cuando el código se escribe antes que el número de tarjeta. Las tarjetas sin una longitud conocida siguen aceptando 3 o 4 dígitos.
+
+- <ChangelogBadge type="fixed" /> **La página del proveedor de Pix parcelado permanece abierta mientras el pago está pendiente**  
+  Cuando un comprador paga con Pix parcelado, la página del proveedor ahora permanece abierta mientras el pago está pendiente. Se cierra cuando el proveedor redirige de vuelta o cuando llega un estado final (aprobado, rechazado o expirado), y entonces el SDK devuelve ese resultado.
+
+- <ChangelogBadge type="changed" /> **Al retroceder en Pix parcelado se devuelve PROCESSING en lugar de CANCELED_BY_USER**  
+  Cuando un comprador presiona retroceso mientras la página del proveedor de Pix parcelado está abierta, el resultado cambia de CANCELED_BY_USER a PROCESSING con el subestado CLOSED_BY_USER, porque el pago aún se puede pagar en el proveedor. Usa el webhook para obtener el estado final. Esto se aplica a continuePayment en Full y Lite, con la pantalla de estado del SDK activada y desactivada, y a render. Seamless y la opción keep-loader siguen devolviendo CANCELED_BY_USER. Los demás métodos de pago no cambian.
+
+- <ChangelogBadge type="fixed" /> **Sin socket de estado del pago para pagos que ya tienen un estado final**  
+  El SDK ya no abre el WebSocket de estado del pago cuando el pago obtenido ya tiene un estado final (SUCCEEDED, CANCELED o EXPIRED). Esto elimina un resultado final duplicado entregado a YunoPaymentRenderListener.returnStatus en modo render con la pantalla de estado desactivada.
+
+- <ChangelogBadge type="fixed" /> **El modo render maneja la redirección del proveedor una sola vez**  
+  En modo render con la pantalla de estado del SDK desactivada, la redirección del proveedor ahora se maneja una sola vez para cada método de pago, de modo que el pago se continúa una vez en lugar de dos. En Pix parcelado, la página del proveedor también termina una sola vez entre la redirección, un estado final del pago y un retroceso: YunoPaymentRenderListener.returnStatus se llama una vez, y un retroceso posterior al resultado ya no devuelve un segundo resultado. En los demás métodos de pago, un estado final recibido por el socket sigue sin cerrar la página del proveedor.
+
+- <ChangelogBadge type="changed" /> **La hoja de Google Pay muestra una etiqueta Total localizada**  
+  La hoja de pago de Google Pay ahora etiqueta el monto como "Total", traducido al idioma del SDK (o al del dispositivo cuando no hay ninguno configurado), en lugar de `Pay <merchant name>`. Esto se aplica a los pagos con tarjeta, a Pix mediante Google Pay y a cada actualización del monto durante los cambios de dirección y de opción de envío. Cuando la sesión de checkout proporciona elementos de resumen, se sigue usando la etiqueta del último elemento como antes.
+
+- <ChangelogBadge type="added" /> **Descripción del Checkout Builder debajo del nombre del método de pago**  
+  Cuando el comercio define una descripción para un método de pago en el Checkout Builder, la lista de métodos de pago la muestra como una línea secundaria debajo del nombre del método, con sus saltos de línea. Los métodos de pago guardados y los métodos sin descripción se ven igual que antes.
+
+- <ChangelogBadge type="added" /> **Módulo antifraude opcional de Riskified**  
+  La detección de fraude de Riskified desde apps Android ahora se distribuye como un módulo opcional independiente (com.yuno.payments:yuno-sdk-antifraud-riskified). Agrégalo a tu app y el SDK registra el proveedor de Riskified automáticamente al iniciar, inicia el beacon de dispositivo de Riskified siempre que tu configuración de checkout habilite Riskified, y envía el token de sesión del beacon como fingerprint del dispositivo para que Riskified pueda correlacionar la orden, con cualquier método de pago, incluido Google Pay.
+
+**Core**
+
+- <ChangelogBadge type="added" /> **Modo canary para enrutar el tráfico del SDK a despliegues canary**  
+  Yuno.setCanaryMode(true) hace que cada solicitud que el SDK envía a Yuno, incluido el WebSocket del estado del pago, lleve el encabezado X-Canary-Traffic para que Yuno la enrute a la versión canary de sus servicios. Está desactivado por defecto, vuelve a desactivarse en cada Yuno.initialize y está pensado para validar los despliegues canary de Yuno desde un cliente Android real, no para tráfico de producción. Yuno.isCanaryModeEnabled() devuelve el estado actual.
+
+- <ChangelogBadge type="added" /> **Taxonomía de eventos de checkout compartida con el Web SDK**  
+  El SDK ahora emite la misma taxonomía de eventos de analítica que el Web SDK (nombres con puntos como checkout.opened, payment_method.selected, form.submitted, token.created, three_ds.completed, payment.resolved y checkout.completed, con los mismos atributos y envoltorio), de modo que los embudos móvil y web se puedan comparar directamente. Los eventos siguen fluyendo por el endpoint de analítica existente del SDK; no se requiere ningún cambio en la integración. sdk_initialized ahora se reporta una sola vez por punto de entrada público (Full, Lite, Seamless, Render e inscripción) en lugar de dos veces en los flujos alojados por el SDK.
+
+- <ChangelogBadge type="changed" /> **Nuevo permiso normal ACCESS_NETWORK_STATE en el manifiesto del SDK**  
+  El manifiesto del SDK ahora declara android.permission.ACCESS_NETWORK_STATE, un permiso normal que se concede al instalar, para que los eventos de analítica puedan reportar el tipo de conexión efectivo. No se muestra ningún aviso en tiempo de ejecución ni se requiere ningún cambio en la integración.
+
+- <ChangelogBadge type="fixed" /> **Los lotes de analítica se reintentan cuando falla el endpoint de eventos**  
+  Ahora se reintenta la publicación fallida del lote de analítica del SDK, y el último lote de un checkout se envía cuando el checkout termina, de modo que los eventos finales ya no se pierden cuando la solicitud falla o la sesión del SDK se cierra justo después.
+
+- <ChangelogBadge type="changed" /> **Envoltorio de eventos y contrato de abandono alineados con el Web SDK**  
+  Ahora cada evento de checkout registrado también incluye sdk_version_external (la versión pública del SDK, el mismo valor que sdk_version en Android) y original_checkout_session del primer intento (su propia sesión de checkout, la raíz de la cadena en los reintentos, omitida en los eventos de inscripción). checkout.abandoned incluye los contadores de interacción (click_count, keystroke_count, scroll_distance_px), y tanto checkout.abandoned como checkout.completed incluyen fields_errored, que se incrementa una vez por cada campo que falló la validación y se reinicia cuando comienza un nuevo checkout.
+
+## v2.26.1
+*15 de octubre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **La longitud del código de seguridad sigue al servicio de tarjetas**  
+  El formulario de tarjeta ahora acepta exactamente la longitud del código de seguridad devuelta para la tarjeta (3 para todas las marcas excepto Amex), tanto en tarjetas nuevas como guardadas, incluso cuando el código se escribe antes que el número de tarjeta. Las tarjetas sin una longitud conocida siguen aceptando 3 o 4 dígitos.
+
+## v2.26.0
+*6 de octubre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Opción Voucher para tarjetas multibeneficio de Brasil**  
+  Cuando un comprador ingresa una tarjeta de crédito o débito de Brasil que también se puede usar como voucher, el formulario de tarjeta ahora ofrece Voucher junto a Crédito y Débito, y la elección del comprador se envía con el pago como el tipo de tarjeta, igual que Crédito y Débito hoy. Elegir Voucher quita el selector de cuotas, ya que los vouchers se pagan en un solo cargo. Los comercios configurados para procesar solo crédito ven Crédito y Voucher para estas tarjetas, con Crédito preseleccionado. Las tarjetas que no se pueden usar como voucher mantienen el comportamiento actual, y las tarjetas inscritas siguen usando el tipo con el que se guardaron. La misma opción se ofrece cuando un comprador inscribe una de estas tarjetas.
+
+- <ChangelogBadge type="fixed" /> **Las cuotas se ofrecen solo para tarjetas de crédito inscritas**  
+  Cuando un comprador paga con una tarjeta guardada, el selector de cuotas ahora se muestra, y las cuotas elegidas se envían con el pago, solo si la tarjeta se guardó como tarjeta de crédito. Las tarjetas guardadas de cualquier otro tipo, como voucher, débito o prepago, se cobran en un solo pago: no se solicitan ni se muestran cuotas, y no se envía ninguna con el pago. Las tarjetas de crédito guardadas mantienen el comportamiento actual.
+
+## v2.25.0
+*15 de septiembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Mensaje al presionar Pagar sin un método de pago**  
+  Presionar Pagar sin un método seleccionado ahora resalta la lista en lugar de abrir el checkout; si la lista no está en pantalla, callbackPaymentState recibe INTERNAL_ERROR con el código PAYMENT_METHOD_NOT_SELECTED (no se intenta ningún pago).
+
+- <ChangelogBadge type="fixed" /> **Las tarjetas inscritas ya no se expanden en un área vacía cuando no se pueden cargar las opciones de cuotas**  
+  Una tarjeta inscrita en la lista desplegada ya no se expande en una franja en blanco cuando fallan las cuotas al cargar.
+
+- <ChangelogBadge type="added" /> **Módulo antifraude de Koin opcional**  
+  El fingerprint de Koin pasa al módulo opcional com.yuno.payments:yuno-sdk-antifraud-koin, que se registra automáticamente al iniciar.
+
+- <ChangelogBadge type="added" /> **Módulo antifraude de ClearSale opcional**  
+  El fingerprint de ClearSale pasa al módulo opcional com.yuno.payments:yuno-sdk-antifraud-clearsale (Behavior SDK nativo), que se registra automáticamente al iniciar.
+
+- <ChangelogBadge type="removed" /> **Módulo ClearSale heredado (com.yuno.fraud-prevention:clearsale)**  
+  El módulo ClearSale heredado con hooks de ciclo de vida manuales ya no se publica.  
+  *Migración:* Cambia a com.yuno.payments:yuno-sdk-antifraud-clearsale y elimina las llamadas onCreate/onResume/onStopYunoClearSale y merchantSessionId.
+
+- <ChangelogBadge type="changed" /> **PIX_PARCELADO se maneja como un APM de redirección estándar**  
+  PIX_PARCELADO ahora es un APM de redirección estándar, como en iOS; el formulario nativo de PIX Parcelado de Koin se elimina de Android.  
+  *Migración:* Desactiva Koin PIX_PARCELADO en el Dashboard antes de actualizar; para el antifraude de Koin agrega yuno-sdk-antifraud-koin.
+
+## v2.24.0
+*18 de septiembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="breaking" /> **Versión mínima de Android elevada a 6.0 (API 23) y Google Play services Wallet actualizado a 20.0.0**  
+  El SDK ahora requiere Android 6.0 (API nivel 23) o superior e incluye Google Play services Wallet 20.0.0, que habilita los nuevos callbacks de envío de Google Pay en tiempo real. Los dispositivos con Android 5.0 y 5.1 (API 21-22) ya no son compatibles.  
+  *Migración:* Establece minSdkVersion en 23 o superior en el build.gradle de tu app. Si tu app aún declara minSdkVersion 21 o 22, la compilación falla en el paso de fusión del manifiesto con un error claro que nombra al SDK de Yuno; al subir minSdkVersion se resuelve. Si tu app fija com.google.android.gms:play-services-wallet en una versión inferior a 20.0.0, elimina la fijación o alinéala a 20.0.0 o superior. Si llamas a startCheckout, startPayment, startPaymentLite, startPaymentSeamlessLite o continuePayment pasando todos los argumentos por posición, ajusta la llamada: el nuevo parámetro opcional del callback de envío se ubica antes del último parámetro de callback. Las llamadas con argumentos con nombre o con una lambda final no requieren cambios.
+
+- <ChangelogBadge type="fixed" /> **Falta el fingerprint del dispositivo para tarjetas nuevas ingresadas en la lista de métodos de pago**  
+  Cuando el formulario de tarjeta se mostraba en línea en la lista de métodos de pago, pagar con una tarjeta nueva no ejecutaba la recolección del fingerprint antifraude del dispositivo, por lo que proveedores de fraude como Cybersource recibían el pago sin datos del dispositivo. Ahora el SDK recolecta el fingerprint del dispositivo para las tarjetas nuevas en el formulario en línea exactamente igual que en el formulario de tarjeta independiente.
+
+- <ChangelogBadge type="fixed" /> **La pantalla de estado del pago ya no se muestra en árabe a compradores de otros idiomas**  
+  Se unificaron los textos de las pantallas de estado de pago e inscripción en todos los idiomas compatibles y se completaron las traducciones que faltaban en 17 idiomas cuyas pantallas de estado antes recurrían al texto en árabe.
+
+- <ChangelogBadge type="fixed" /> **Íconos de los pasos de instrucciones estirados y desalineados en pasos que ocupan varias líneas**  
+  Los íconos junto a cada paso de las instrucciones de pago se forzaban a un cuadrado fijo y se centraban respecto a todo el paso. Ahora cada ícono conserva sus propias proporciones, solo se reduce cuando excede la fila y queda alineado con la primera línea de texto en los pasos que ocupan varias líneas.
+
+- <ChangelogBadge type="fixed" /> **Google Pay solicitaba un email y una dirección de facturación que no eran necesarios**  
+  Cuando un pago con Google Pay se iniciaba con continuePayment(), la hoja de Google Pay pedía al comprador una dirección de email y una dirección de facturación completa aunque los campos requeridos del método de pago no los solicitaran. Ahora la hoja solo pide los campos marcados como requeridos, igual que el flujo de checkout.
+
+**Métodos de pago**
+
+- <ChangelogBadge type="added" /> **Revolut Pay como método de pago nativo**  
+  Los compradores ahora pueden pagar con Revolut Pay de forma nativa dentro de tu app. Después de crear el pago y llamar a continuePayment(), el SDK transfiere al comprador a Revolut (la app de Revolut si está instalada, de lo contrario el flujo web de Revolut) y lo devuelve automáticamente. El estado final del pago siempre lo confirma Yuno: si la confirmación de Revolut aún se está procesando cuando el comprador regresa, el SDK reporta PROCESSING y el estado final llega por el webhook de pago. Para activarlo, agrega el módulo yuno-sdk-revolut-pay; es compatible con los flujos de checkout Full, Lite, Seamless y Render.
+
+**Interno**
+
+- <ChangelogBadge type="added" /> **Salvaguardas de estabilidad de la API pública**  
+  Salvaguardas internas que mantienen estable la API pública del SDK entre versiones. No hay cambios en el comportamiento del SDK ni en cómo lo integras.
+
+## v2.23.0
+*14 de septiembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Falta el fingerprint del dispositivo para tarjetas nuevas ingresadas en la lista de métodos de pago**  
+  Cuando el formulario de tarjeta se mostraba en línea en la lista de métodos de pago, pagar con una tarjeta nueva no ejecutaba la recolección del fingerprint antifraude del dispositivo, por lo que proveedores de fraude como Cybersource recibían el pago sin datos del dispositivo. Ahora el SDK recolecta el fingerprint del dispositivo para las tarjetas nuevas en el formulario en línea exactamente igual que en el formulario de tarjeta independiente.
+
+## v2.22.0
+*24 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="breaking" /> **Mensaje de error estructurado en los estados de error y error interno**  
+  Los resultados de error y error interno ahora incluyen un StatusMessage opcional, para que puedas distinguir un rechazo del backend de una falla del SDK y leer su código y motivo. Siempre es null en caso de éxito, abandono y cancelación del usuario. Cambio incompatible: el callback de estado de pago y el returnStatus de los listeners de render ahora incluyen un nuevo parámetro StatusMessage?.  
+  *Migración:* Agrega el nuevo parámetro StatusMessage? a tus callbacks de estado (callbackPaymentState / callbackEnrollmentState) y a tus overrides de returnStatus, y luego recompila con 2.22.0. Leer el mensaje es opcional.
+
+## v2.21.1
+*10 de agosto de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Los menús desplegables nativos ahora se abren dentro de los WebViews del checkout**  
+  Los WebViews del checkout ahora conservan la Activity anfitriona para que los menús desplegables nativos se abran correctamente.
+
+## v2.21.0
+*6 de julio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="changed" /> **El menú desplegable de cuotas ahora muestra el valor por cuota y el monto total**  
+  Se alineó el menú desplegable de cuotas de la tarjeta con el Web SDK: cada opción ahora muestra el valor por cuota y el monto total (por ejemplo '2x of R$ 500,31 - Total R$ 1.000,61'). Se aplica la misma plantilla a cada opción, tenga o no financial_costs, ya que su monto ya está reflejado en el total mostrado. Si el total no está disponible, la opción vuelve al formato anterior por cuota, y si no hay ningún monto disponible, vuelve a mostrar solo la cantidad de cuotas.
+
+- <ChangelogBadge type="added" /> **NuPay se muestra expandido en la lista desplegada de métodos de pago**  
+  Cuando la lista desplegada de métodos de pago está habilitada, NuPay ahora se expande directamente en la lista como otros métodos de pago alternativos, igual que en el SDK de iOS. El formulario en línea muestra los campos del comprador junto con el banner de tipos de pago de NuPay, que carga las opciones disponibles en cuanto el comprador ingresa su documento. Con la configuración desactivada, NuPay sigue abriendo su pantalla de formulario independiente como antes.
+
+- <ChangelogBadge type="added" /> **NuPay one-click se muestra expandido en la lista desplegada de métodos de pago**  
+  La experiencia de NuPay one-click ahora también se expande directamente en la lista de métodos de pago cuando la lista desplegada está habilitada, lo que completa la paridad con el SDK de iOS. El formulario en línea muestra el selector de crédito o débito y las condiciones de pago seleccionables con sus opciones de cuotas; la condición elegida viaja con el pago exactamente igual que desde la pantalla de formulario completo, y pagar sin elegir una condición se bloquea con un mensaje en línea. Con la configuración desactivada, el flujo one-click sigue abriendo su pantalla de formulario independiente como antes.
+
+- <ChangelogBadge type="added" /> **Lista desplegada de métodos de pago para métodos de pago alternativos**  
+  La lista de métodos de pago ahora puede mostrar el formulario de pago de los métodos de pago alternativos (como PSE, Nequi o Boleto) expandido directamente en la lista, igual que el comportamiento existente para tarjetas y el Web SDK. Cuando un comprador selecciona uno de estos métodos, sus campos se despliegan en línea, y startPayment() cobra con los datos ingresados en la lista sin abrir una pantalla de formulario independiente. Los métodos guardados (inscritos) y los métodos sin formulario mantienen su comportamiento colapsado actual. Esto reutiliza la configuración existente de lista desplegada de métodos de pago y Yuno la activa por cuenta; cuando está desactivada, la lista se comporta exactamente como antes.
+
+- <ChangelogBadge type="breaking" /> **El indicador de selección del método de pago se movió al borde inicial de cada fila**  
+  El indicador de selección en la lista de métodos de pago ahora aparece en el borde inicial de cada fila (antes del logo del método de pago) en lugar del borde final, igual que la ubicación usada por los principales checkouts. La posición se invierte automáticamente en idiomas de derecha a izquierda como el árabe y el urdu, mientras que los campos de número de tarjeta, fecha de vencimiento y CVC conservan el formato de izquierda a derecha. Además, cada fila ahora se anuncia a los lectores de pantalla como una opción seleccionable dentro de la lista, lo que mejora la accesibilidad. Este es un cambio visual global que se aplica por defecto a todos los comercios en todos los SDK de Yuno.  
+  *Migración:* No se requieren cambios de código. Si tus pruebas de UI o snapshots visuales verifican la posición del indicador de selección en la lista de métodos de pago, actualízalos para que esperen el indicador en el borde inicial de la fila.
+
+- <ChangelogBadge type="added" /> **Los códigos OTP recibidos por SMS se pueden completar automáticamente**  
+  Cuando a un comprador se le pide una contraseña de un solo uso durante un pago o una inscripción, el SDK ahora puede leer el código del SMS entrante y completar el campo OTP por él, igual que la experiencia que ya se ofrece en iOS. El comprador ve un aviso del sistema de un solo toque que pide permiso antes de leer cualquier mensaje, por lo que no ocurre nada sin su consentimiento, y un código que ya haya empezado a escribir nunca se sobrescribe. El SDK no solicita ningún permiso de SMS, funciona con códigos enviados desde cualquier remitente y vuelve silenciosamente al ingreso manual en dispositivos sin Google Play services.
+
+- <ChangelogBadge type="changed" /> **El texto de la insignia de pago seguro cambió a "Powered by Yuno"**  
+  La insignia que se muestra en las superficies de checkout e inscripción ahora dice "Powered by" seguido del logo con el wordmark de Yuno, en lugar de "Secure payment with YUNO". El texto está traducido en todos los idiomas que ya tenían la insignia localizada; los pocos idiomas que nunca la localizaron mantienen su texto de respaldo en inglés.
+
+- <ChangelogBadge type="added" /> **Enlace de privacidad junto a la insignia Powered by Yuno**  
+  Un enlace "Privacidad" localizado se muestra junto al wordmark de Powered by Yuno y abre la URL de la política de privacidad de la configuración de la cuenta en una Chrome Custom Tab (con un navegador integrado como alternativa); cuando la configuración no proporciona ninguna URL, el enlace no realiza ninguna acción. El enlace se anuncia a los lectores de pantalla como un botón y se oculta junto con la insignia cuando la configuración del comercio deshabilita la etiqueta.
+
+- <ChangelogBadge type="removed" /> **Aviso de privacidad de datos en línea eliminado de todos los formularios de pago**  
+  La frase "Al pagar, aceptas la Política de Tratamiento de Datos Personales" ya no aparece en ningún lugar: se eliminó de los formularios de tarjeta de un solo paso, de tarjeta inscrita y paso a paso, y de todos los formularios de métodos de pago alternativos. El aviso de privacidad ahora es el enlace "Privacidad" que se muestra junto a la insignia Powered by Yuno en el formulario de pago y en las superficies de lista. Las pantallas heredadas de acción intermedia (las vistas de OTP e instrucciones bancarias, que nunca incluyeron el aviso en línea) mantienen la insignia sin el enlace.  
+  *Migración:* Si tus pruebas de UI verifican la etiqueta de prueba terms_and_conditions_text, elimina esa verificación; la etiqueta ya no existe en ningún formulario.
+
+- <ChangelogBadge type="added" /> **Señal de consentimiento privacy_tag_displayed en la telemetría de finalización**  
+  La telemetría de finalización del SDK ahora incluye params.privacy_tag_displayed=true cuando la insignia Powered by Yuno realmente se mostró durante la sesión (el parámetro se omite cuando la insignia estaba oculta), y la finalización de la inscripción ahora emite el evento enrollCheckoutSdk_completed con enrollment_status. Esto respalda el reporte de cumplimiento de privacidad; el comportamiento visible para los comercios y los contratos de integración no cambian.
+
+- <ChangelogBadge type="added" /> **Insignia Powered by Yuno debajo de la lista de métodos de pago y en los formularios render**  
+  El componente de lista de métodos de pago ahora muestra la insignia Powered by Yuno con el enlace de Privacidad una sola vez, centrada debajo de la lista completa de métodos (nunca dentro de cada fila de método ni de un formulario expandido). Los formularios renderizados con un botón de pago del lado del comercio (flujos render) también muestran la insignia debajo del formulario, donde antes aparecía el aviso en línea eliminado. Ambas ubicaciones siguen la configuración existente de etiqueta de pago seguro del comercio: al deshabilitarla se ocultan la insignia y el enlace en todas partes.
+
+- <ChangelogBadge type="fixed" /> **La app anfitriona ya no se cierra inesperadamente cuando un resultado de Google Pay Pix llega después de cerrar la pantalla del checkout**  
+  Se corrigió un cierre inesperado que podía ocurrir durante los pagos de Google Pay Pix cuando el callback de disponibilidad del pago o de resultado del pago llegaba después de que el usuario ya hubiera salido de la pantalla del checkout (por ejemplo, al volver atrás mientras el pago se procesaba). Ahora el SDK ignora silenciosamente los resultados entregados después de que la pantalla ya no existe, en lugar de lanzar una excepción en la app anfitriona.
+
+- <ChangelogBadge type="added" /> **Campos de tipo de cuenta y tipo de titular de la cuenta para transferencias bancarias ACH**  
+  El formulario de transferencia bancaria ACH ahora muestra dos menús desplegables adicionales: tipo de cuenta (corriente o ahorros) y tipo de titular de la cuenta (individual o empresa), ubicados entre el número de ruta y el nombre del beneficiario. Además, todo el bloque de transferencia bancaria (número de cuenta, número de ruta, tipo de cuenta, tipo de titular de la cuenta, nombre del beneficiario) ahora se muestra en la parte superior del formulario, antes de los campos del cliente, para cualquier método de pago cuya configuración requiera esos campos bancarios. Los nuevos menús desplegables aparecen solo cuando la configuración del comercio los requiere, y los valores seleccionados se envían con los datos de bank_transfer tanto en el token de creación de pago como en la solicitud de inscripción. Los formularios cuya configuración no requiere ninguno de los campos de transferencia bancaria no cambian.
+
+**Inscripción**
+
+- <ChangelogBadge type="fixed" /> **enrollment_status ya no se omite en la telemetría de inscripción**  
+  El reportero de eventos omitía silenciosamente params.enrollment_status al reconstruir los payloads de eventos, por lo que los eventos enrollStatus_* llegaban al backend sin él. Ahora el campo se reenvía.
+
+## v2.20.1
+*28 de julio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Cierre inesperado por callback tardío de Google Pay Pix**  
+  Se corrigió un cierre inesperado de la app anfitriona cuando un resultado de Google Pay Pix llegaba después de cerrar la pantalla del checkout; los callbacks tardíos ahora se ignoran de forma segura.
+
+## v2.20.0
+*22 de julio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Callback de tarjeta onInstallmentSelected (paridad con Web)**  
+  `startCheckout` ahora acepta un callback opcional `onInstallmentSelected` que se ejecuta cada vez que el comprador selecciona o cambia una opción de cuotas en el formulario de tarjeta, incluida la preselección por defecto al renderizar y los recálculos tras un cambio de BIN, para que los comercios puedan mantener sincronizado el total del carrito con las cuotas seleccionadas. El payload refleja el `OnInstallmentSelectedArgs` del Web SDK: `installment` (Int), `label` (String), `amount` { `currency`, `value`, `totalValue` } como strings, `additionalData` (reservado) e `isMerchantInstallment` (nullable, reservado para la función de cuotas del comercio). Cuando las cuotas dejan de estar disponibles después de reportar una selección (por ejemplo, si el comprador cambia a una tarjeta sin cuotas), el callback se ejecuta una vez con null para que el comercio sepa que la información de cuotas anterior ya no es válida. Totalmente retrocompatible: sin callback registrado no hay ningún cambio de comportamiento, y una excepción dentro del callback del comercio nunca afecta el flujo de pago.
+
+## v2.19.1
+*28 de julio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Cierre inesperado por callback tardío de Google Pay Pix**  
+  Se corrigió un cierre inesperado de la app anfitriona cuando un resultado de Google Pay Pix llegaba después de cerrar la pantalla del checkout; los callbacks tardíos ahora se ignoran de forma segura.
+
+## v2.19.0
+*9 de julio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **El largo del número de tarjeta ahora se valida por marca de tarjeta**  
+  Los números de tarjeta ahora se validan contra el largo esperado de cada marca de tarjeta, además de las verificaciones existentes, de modo que un número con un largo inválido se detecta mientras el cliente escribe y nuevamente al enviar, antes de enviar el pago.
+
+- <ChangelogBadge type="changed" /> **Las tarjetas guardadas ahora muestran un resumen compacto en lugar de la ilustración completa de la tarjeta**  
+  Las tarjetas guardadas ahora muestran un resumen compacto (logo de la marca, nombre de la marca, últimos 4 dígitos, nombre del titular y fecha de vencimiento) en lugar de la ilustración grande de la tarjeta, lo que mantiene visible el campo CVV sin necesidad de desplazarse.
+
+- <ChangelogBadge type="changed" /> **Validación más estricta de la fecha de vencimiento de la tarjeta con formato automático**  
+  El campo de vencimiento de la tarjeta ahora da formato automático a la fecha mientras se escribe, muestra un mensaje claro "Card has expired" para fechas pasadas y distingue mejor los meses inválidos.
+
+- <ChangelogBadge type="changed" /> **Validación más sólida de los campos de documento y teléfono**  
+  Los campos de documento y teléfono ahora usan teclados solo numéricos cuando corresponde, admiten muchos más tipos de documento nacional, muestran mensajes de error más claros y rellenan de forma confiable los valores guardados sin sobrescribir lo que el cliente ya escribió.
+
+- <ChangelogBadge type="fixed" /> **Los códigos de barras en las acciones de pago flexibles ahora se muestran en horizontal**  
+  Se corrigió un problema por el cual los códigos de barras en las acciones de pago flexibles (como Boleto e INDOMARET) no se mostraban en horizontal con las proporciones correctas. Ahora coinciden con iOS y Web, por lo que son más claros y fáciles de escanear. Los métodos basados en QR no cambian.
+
+- <ChangelogBadge type="fixed" /> **Click to Pay ya no se detiene sin una URL de callback**  
+  Se corrigió un problema por el cual Click to Pay se detenía cuando la sesión de checkout se creaba sin una URL de callback. Ahora el pago continúa sin problemas con el flujo estándar.
+
+- <ChangelogBadge type="fixed" /> **Los pagos con Google Pay ahora incluyen el idioma del cliente para 3DS**  
+  Se corrigió un problema por el cual los pagos con Google Pay dejaban vacío el idioma del cliente en la información del navegador usada para la autenticación 3DS y la evaluación de riesgo. Ahora el idioma se incluye correctamente.
+
+- <ChangelogBadge type="fixed" /> **Los pagos con tarjeta con plan de cuotas ahora devuelven el token de un solo uso**  
+  Se corrigió una regresión por la cual los pagos con tarjeta con plan de cuotas no devolvían correctamente el token de un solo uso, lo que impedía completar esos pagos.
+
+- <ChangelogBadge type="fixed" /> **El campo de número de tarjeta ya no avanza demasiado pronto con números de tarjeta más largos**  
+  Se corrigió un problema por el cual el campo de número de tarjeta pasaba el foco al siguiente campo demasiado pronto en tarjetas que aceptan más de un largo, lo que impedía a los clientes terminar de escribir un número más largo.
+
+## v2.18.0
+*5 de julio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **El selector de tipo de tarjeta ya no se muestra en el formulario de tarjeta desplegado cuando credit_card_only_processing está habilitado**  
+  Se corrigió un problema por el cual el selector de tipo de tarjeta crédito/débito se mostraba para tarjetas de Brasil en el formulario de tarjeta desplegado (lista de métodos de pago) incluso cuando el comercio tenía credit_card_only_processing habilitado. El formulario de tarjeta de pantalla completa recibía el flag a través de su cadena de llamadas, pero el punto de llamada desplegado no lo propagaba, por lo que el composable recurría a su valor por defecto y siempre mostraba el selector. Ahora la verificación de visibilidad también resuelve el flag directamente desde la configuración del SDK, de modo que todos los formularios de tarjeta lo respetan sin importar desde dónde se llamen.
+
+- <ChangelogBadge type="changed" /> **El menú desplegable de cuotas ahora muestra el valor por cuota y el monto total**  
+  Se alineó el menú desplegable de cuotas de la tarjeta con el Web SDK: cada opción ahora muestra el valor por cuota y el monto total (por ejemplo '2x of R$ 500,31 - Total R$ 1.000,61'). Se aplica la misma plantilla a cada opción, tenga o no financial_costs, ya que su monto ya está reflejado en el total mostrado. Si el total no está disponible, la opción vuelve al formato anterior por cuota, y si no hay ningún monto disponible, vuelve a mostrar solo la cantidad de cuotas.
+
+## v2.17.3
+*30 de junio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **La app anfitriona ya no falla cuando no se puede abrir el deeplink de retorno del pago**  
+  Se corrigió un problema para que los WebViews ya no fallen al intentar abrir un deeplink si la app de destino no está instalada.
+
+## v2.17.2
+*26 de junio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Los callbacks del comercio registrados antes de initialize ya no se pierden**  
+  Se corrigió una regresión por la cual los callbacks de token de un solo uso y de estado de pago se descartaban silenciosamente en integraciones que registran sus callbacks una sola vez y luego llaman a Yuno.initialize después (por ejemplo, wrappers multiplataforma que se registran en el onCreate de la Activity anfitriona e inicializan más tarde). La inicialización borraba incondicionalmente los callbacks registrados previamente, por lo que el comercio nunca recibía el token ni el estado final o de cancelación aunque el pago se hubiera completado. Ahora la inicialización ya no borra estos callbacks; las integraciones nativas que se vuelven a registrar en cada llamada no se ven afectadas.
+
+- <ChangelogBadge type="added" /> **startPayment y startPaymentLite aceptan un callback de estado de pago opcional**  
+  Se agregó un parámetro opcional callbackPaymentState a startPayment y startPaymentLite, alineándolos con startPaymentSeamlessLite y continuePayment. Ahora los integradores pueden volver a proporcionar el callback de estado de pago en cada llamada, lo que da una vía de registro por llamada para el estado entregado a través del flujo de start-payment, como la cancelación reportada cuando el usuario cierra la hoja de pago. El parámetro es opcional y por defecto es null, por lo que las llamadas existentes no se ven afectadas.
+
+## v2.17.1
+*22 de junio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Los pagos con tarjeta con plan de cuotas ahora devuelven el token de un solo uso**  
+  Se corrigió una regresión por la cual al seleccionar una tarjeta con plan de cuotas no se generaba ningún token de un solo uso en el callback del comercio, por lo que el pago no se podía completar. La respuesta del endpoint de tokens se rechazaba al analizarla porque el monto de la cuota se entrega como un objeto de dinero (currency + value); ahora el SDK lo lee correctamente y entrega el token mediante callbackOTT / callBackTokenWithInformation como antes. Los demás métodos de pago no se vieron afectados.
+
+## v2.17.0
+*12 de junio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Headless SDK: reanuda pagos con tarjeta con continueCardPayment**  
+  Los comercios que integran el Headless SDK ahora pueden reanudar un pago CARD creado desde su backend llamando a `continueCardPayment`. El SDK ejecuta internamente cualquier acción pendiente, como el desafío 3DS, espera el resultado final y entrega cada estado y subestado del pago mediante un callback, de modo que los comercios mantienen el control total de la UI de su checkout sin renderizar el desafío ellos mismos. El método funciona en integraciones headless puras: no se requiere ningún flujo previo de UI de checkout de Yuno.
+
+- <ChangelogBadge type="breaking" /> **Se eliminó getThreeDSecureChallenge del Headless SDK**  
+  Se eliminaron el método headless `getThreeDSecureChallenge` y su tipo `ThreeDSecureChallengeResponse`. Devolvía la URL sin procesar del desafío 3DS y obligaba a los comercios a renderizar y completar el desafío ellos mismos. Migra a `continueCardPayment`, que ejecuta el desafío internamente y reporta los estados de pago resultantes mediante un callback.  
+  [Guía de migración →](https://docs.y.uno/docs/sdks/headless-android/checkout)
+
+## v2.16.2
+*22 de junio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Los pagos con tarjeta con plan de cuotas ahora devuelven el token de un solo uso**  
+  Se corrigió una regresión por la cual al seleccionar una tarjeta con plan de cuotas no se generaba ningún token de un solo uso en el callback del comercio, por lo que el pago no se podía completar. La respuesta del endpoint de tokens se rechazaba al analizarla porque el monto de la cuota se entrega como un objeto de dinero (currency + value); ahora el SDK lo lee correctamente y entrega el token mediante callbackOTT / callBackTokenWithInformation como antes. Los demás métodos de pago no se vieron afectados.
+
+## v2.16.1
+*2 de junio de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **El gesto o botón de retroceso ahora cancela el desafío 3DS en modo render**  
+  En modo render, presionar el botón de retroceso o usar el gesto de retroceso durante un desafío 3D Secure ahora cierra el desafío y devuelve al comercio un resultado de cancelación (CANCELED_BY_USER), igual que en iOS. Antes se ignoraba el retroceso y el pago quedaba colgado hasta el tiempo de espera del desafío del lado del servidor. Ya no se recorre el historial del WebView del desafío al retroceder (lo que podía dejar una pantalla en blanco); retroceder siempre cancela.
+
+## v2.16.0
+*13 de mayo de 2026*
+
+**3DS**
+
+- <ChangelogBadge type="added" /> **3DS nativo mediante el módulo opcional Yuno3DSNetcetera**  
+  Un nuevo módulo complementario opcional que ejecuta desafíos 3DS nativos y la recolección de datos del dispositivo dentro de tu app. Agrega la dependencia junto con el SDK principal y se detecta automáticamente, sin configuración adicional. Publicado como Yuno3DSNetcetera 1.0.1 en JFrog y compatible con el SDK principal desde la versión 2.16.0.
+
+**Formularios**
+
+- <ChangelogBadge type="added" /> **Validación de formularios en tiempo real**  
+  Los formularios de tarjeta y de métodos de pago alternativos ahora validan cada campo mientras el comprador escribe, en lugar de solo al enviar. Los errores se muestran en línea, en el propio campo, en el momento en que la entrada deja de ser válida.
+
+- <ChangelogBadge type="added" /> **Nuevo formulario de tarjeta compacto (flag slimmerFormEnabled controlado desde el servidor)**  
+  Cuando el flag `slimmerFormEnabled` se activa para tu cuenta, el formulario de tarjeta (tarjeta nueva, métodos alternativos y tarjeta inscrita) cambia a un estilo visual más compacto: los campos de tarjeta y dirección se muestran como filas agrupadas con un único mensaje de error consolidado por grupo. Cuando el flag está desactivado, el visual anterior se conserva exactamente igual.
+
+- <ChangelogBadge type="added" /> **Avance automático en el formulario de tarjeta inscrita**  
+  Cuando el comprador ingresa datos válidos en el flujo de tarjeta inscrita, el foco ahora salta automáticamente al siguiente campo, igual que el comportamiento que ya existe en el formulario de tarjeta nueva.
+
+- <ChangelogBadge type="added" /> **Autocompletado de Google en los campos de tarjeta**  
+  Los campos de número de tarjeta, nombre del titular, vencimiento y CVV ahora son elegibles para el Autocompletado de Google, de modo que los compradores pueden completarlos con una tarjeta guardada de Google en Android.
+
+**Google Pay**
+
+- <ChangelogBadge type="added" /> **Google Pay: recolecta dirección de facturación, dirección de envío y nombre del titular de la tarjeta**  
+  Google Pay ahora solicita al comprador la dirección de facturación, la dirección de envío y el nombre del titular de la tarjeta siempre que el método de pago seleccionado los requiera, y elige automáticamente el formato de dirección correcto (solo nombre o dirección completa). Los valores recolectados se reenvían al backend junto con el payload de la billetera.
+
+- <ChangelogBadge type="added" /> **Google Pay: recolecta email y teléfono del comprador**  
+  Google Pay ahora solicita el email y el teléfono del comprador siempre que el método de pago los requiera, y los valores se reenvían al backend como parte del pagador del cliente.
+
+**UI del checkout**
+
+- <ChangelogBadge type="added" /> **Oculta la insignia 'secure' mediante un flag**  
+  La insignia 'secure' que se muestra en la UI del checkout ahora se puede ocultar mediante un flag controlado desde el servidor.
+
+**Antifraude**
+
+- <ChangelogBadge type="fixed" /> **Fingerprint de dispositivo de ClearSale**  
+  En versiones anteriores, el fingerprint antifraude de ClearSale fallaba silenciosamente al registrar el dispositivo del comprador. Ahora el fingerprint se recolecta y se envía correctamente.
+
+**Payments**
+
+- <ChangelogBadge type="fixed" /> **Se selecciona el plan de cuotas correcto cuando el backend envía ids por cuota**  
+  En algunas configuraciones se podía seleccionar el plan de cuotas incorrecto cuando el backend devolvía tanto un código genérico como un id por cuota. Ahora el SDK usa de forma consistente el id por cuota, de modo que el plan elegido por el comprador coincide con lo que se envía al backend.
+
+- <ChangelogBadge type="fixed" /> **Se muestran todos los códigos en las pantallas de código de pago**  
+  En los métodos de pago donde la pantalla posterior al pago presenta más de un código al comprador (por ejemplo, un código de barras más una línea digitable), solo se mostraba el primero. Ahora se muestran todos los códigos devueltos por el backend.
+
+- <ChangelogBadge type="fixed" /> **Separador visible en la pantalla de código de pago**  
+  En la pantalla de código posterior al pago (flujos como PIX, OXXO, boleto y similares), la línea horizontal que separa el área del código de los botones de copiar / descargar se mostraba en un color tan cercano al fondo que resultaba prácticamente invisible. Ahora usa un tono con contraste tanto en modo claro como oscuro.
+
+## v2.15.1
+*19 de mayo de 2026*
+
+- <ChangelogBadge type="fixed" /> **Cierre inesperado por el ciclo de vida del plugin de Flutter**  
+  Se corrigió un cierre inesperado causado por una incompatibilidad del ciclo de vida del plugin de Flutter con el SDK de Android al terminar el proceso.
+
+## v2.15.0
+*8 de mayo de 2026*
+
+- <ChangelogBadge type="added" /> **Acciones flexibles en la inscripción**  
+  La inscripción ahora admite las mismas pantallas de acción dinámicas usadas en los pagos, incluidas las pantallas de PIN, imagen, código de pago, OTP e información.
+
+- <ChangelogBadge type="added" /> **Detalles de cuotas en la tokenización**  
+  Cuando una tarjeta se tokeniza con cuotas seleccionadas, la información de cuotas (plan, tasa, monto y opción seleccionada) ahora se devuelve junto con el token de un solo uso.
+
+## v2.14.0
+*30 de abril de 2026*
+
+- <ChangelogBadge type="added" /> **Formularios separados de dirección de facturación y de envío**  
+  Se agregaron secciones separadas de dirección de facturación y de envío con una casilla de igual al envío, incluido un tipo de sección `BILLING_ONLY` y un orden de campos y comportamiento de foco refinados.
+
+- <ChangelogBadge type="added" /> **Avance automático entre los campos de la tarjeta**  
+  El formulario de tarjeta ahora avanza el foco automáticamente al siguiente campo cuando la entrada es válida, incluido el manejo correcto cuando el campo CVV está oculto, cuando está presente la casilla de guardar tarjeta y dentro del formulario de tarjeta desplegado.
+
+- <ChangelogBadge type="added" /> **Límite dinámico de CVV para tarjetas inscritas**  
+  El campo CVV ahora aplica el límite de largo correcto para las tarjetas inscritas según el `securityCodeLength` de la tarjeta, en lugar del límite por defecto de 3 dígitos.
+
+- <ChangelogBadge type="added" /> **Modo de automatización del flujo Seamless**  
+  Se agregó un flujo de checkout seamless diseñado para el modo de automatización, con el fin de admitir escenarios de pruebas de extremo a extremo.
+
+- <ChangelogBadge type="added" /> **Indicador de carga del WebView de 3DS**  
+  Se agregó un indicador de progreso de carga al `WebView` de 3DS para comunicar el estado durante la autenticación.
+
+- <ChangelogBadge type="changed" /> **Limpieza de MVVM y arquitectura**  
+  Se refactorizó a MVVM usando casos de uso y `StateFlow`, se migraron los usos de `BehaviorSubject` a `StateFlow`, se descompuso `ContinueCheckoutFragment`, se eliminó el service locator y se depuró la capa de dominio eliminando `Parcelable` y las dependencias del framework de Android. No se requieren cambios en la API pública.
+
+- <ChangelogBadge type="changed" /> **Sesión de cliente para la información de tarjeta en la inscripción**  
+  La API de información de tarjeta ahora recibe `customer_session` en los flujos de inscripción para mejorar las señales de fraude y riesgo. No se requieren cambios en la integración.
+
+- <ChangelogBadge type="changed" /> **Secciones de dirección en el flujo de tarjeta inscrita**  
+  Se migró el flujo de tarjeta inscrita para usar las nuevas secciones de dirección de facturación y de envío, y se completa el envío con la facturación cuando está vacío.
+
+- <ChangelogBadge type="fixed" /> **Foco de validación de envío y facturación**  
+  Al enviar, ahora se desplaza y enfoca el primer campo de envío o facturación inválido, y el botón `Next` del teclado avanza correctamente por los campos de dirección.
+
+- <ChangelogBadge type="fixed" /> **Monto en el menú desplegable de cuotas**  
+  El menú desplegable de cuotas ahora muestra el monto para los elementos que no tienen `financial_costs`, lo que garantiza una visualización consistente.
+
+- <ChangelogBadge type="fixed" /> **Actualización del singleton CheckoutModel**  
+  Se corrigió que `updateCheckoutSession` reemplazaba el singleton `CheckoutModel` por una copia, lo que rompía las referencias capturadas en todo el SDK.
+
+- <ChangelogBadge type="fixed" /> **Edge-to-edge en SeamlessCheckoutActivity**  
+  Se aplicó la corrección de edge-to-edge a `SeamlessCheckoutActivity` y se corrigió el doble relleno de las barras del sistema tras los flujos de WebView y 3DS en dispositivos Samsung.
+
+- <ChangelogBadge type="fixed" /> **Cobertura de la familia de fuentes personalizada**  
+  El `YunoConfig.styles.fontFamily` definido por el comercio ahora se aplica en todos los componentes del SDK.
+
+- <ChangelogBadge type="fixed" /> **Ofuscación del fingerprint de Mercado Pago**  
+  Se serializaron los campos del fingerprint del SDK de Mercado Pago y se agregaron reglas ProGuard para el consumidor, de modo que el fingerprint sobreviva a la ofuscación de R8 en las compilaciones de release de los comercios.
+
+- <ChangelogBadge type="fixed" /> **Reconexión del WebSocket en el flujo de 3DS**  
+  Se corrigió la reconexión del WebSocket cuando la app vuelve del segundo plano durante un flujo de 3DS.
+
+- <ChangelogBadge type="fixed" /> **Autocompletado de la casilla de facturación y envío**  
+  Se corrigió el comportamiento de autocompletado de la casilla de igual al envío según los datos del cliente prellenados.
+
+- <ChangelogBadge type="fixed" /> **Traducciones de idiomas**  
+  Se agregaron las traducciones que faltaban para los idiomas hindi (`hi`), bengalí (`bn`), malayalam (`ml`) y urdu (`ur`).
+
+## v2.13.4
+*20 de abril de 2026*
+
+- <ChangelogBadge type="changed" /> **Personalización de la familia de fuentes**  
+  El `fontFamily` definido por el comercio en `YunoConfig.styles` ahora se aplica en todos los componentes del SDK. No se requieren cambios en la API.
+
+## v2.13.3
+*5 de abril de 2026*
+
+- <ChangelogBadge type="changed" /> **Estado del WebView**  
+  Se mejoró el manejo del estado de carga durante las transiciones del WebView para una experiencia de checkout más fluida. No se requieren cambios en la API.
+
+## v2.13.2
+*20 de marzo de 2026*
+
+- <ChangelogBadge type="fixed" /> **Manejo de redirecciones 3DS**  
+  Se mejoró el manejo de las redirecciones 3DS para una mayor compatibilidad con proveedores. No se requieren cambios en la API.
+
+## v2.13.1
+*5 de marzo de 2026*
+
+- <ChangelogBadge type="changed" /> **Comportamiento de los tiempos del loader**  
+  Se ajustó el comportamiento de los tiempos del loader en flujos de pago extendidos para una experiencia de usuario más consistente. No se requieren cambios en la API.
+
+## v2.13.0
+*15 de febrero de 2026*
+
+- <ChangelogBadge type="added" /> **Compatibilidad con Keeploader**  
+  Se agregó compatibilidad de integración con Keeploader. Contacta a tu gerente de cuenta técnico de Yuno para habilitar esta función en tu cuenta.
+
+## v2.12.1
+*29 de abril de 2026*
+
+- <ChangelogBadge type="fixed" /> **Alineación del WebSocket con iOS**  
+  Se portó desde la línea 2.6 el hotfix de alineación del WebSocket: la conexión del socket ahora reenvía `code`, `public-api-key`, `x-version` y `x-platform`, y propaga el código de pago al reconectar.
+
+## v2.12.0
+*10 de enero de 2026*
+
+**Mejoras**
+
+- <ChangelogBadge type="added" /> **URLs base regionales dinámicas**  
+  El SDK ahora selecciona su URL base de forma dinámica según el prefijo de la región, lo que mejora la confiabilidad del enrutamiento en despliegues multirregión. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Validación de CNPJ alfanumérico**  
+  Se agregó compatibilidad con la validación de CNPJ alfanumérico en los flujos de pago de Brasil. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Largo dinámico del CVV por tipo de tarjeta**  
+  Ahora el SDK obtiene de la API el largo máximo del CVV por tipo de tarjeta y asigna los valores `security_code_length` por marca. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Aumento del límite del nombre del titular**  
+  El largo máximo permitido para `cardholderName` aumentó de 50 a 255 caracteres. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Visualización del tipo de método de pago OTT**  
+  El campo `payment_parent_method_type` ahora se muestra en el componente OTT y se incluye en la respuesta de OTT. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Banner de advertencia en la acción dinámica**  
+  Se agregó un banner de advertencia a la pantalla de acción dinámica para mostrar mensajes importantes a los usuarios durante los flujos de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Migración del flujo headless a corrutinas**  
+  Los flujos de pago headless se migraron de callbacks a corrutinas de Kotlin para mejorar el rendimiento y la confiabilidad. No se requieren cambios en la API.
+
+**Correcciones de errores**
+
+- <ChangelogBadge type="fixed" /> **Superposición de la barra de herramientas del WebView en Android 15**  
+  Se corrigió un problema de diseño por el cual la barra de herramientas de `WebViewActivity` se superponía con la barra de estado del sistema en dispositivos con Android 15 o superior. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Cierre inesperado por respuesta nula de emisores de PSE**  
+  Se corrigió un cierre inesperado que ocurría cuando el endpoint de emisores de PSE devolvía una respuesta nula o vacía. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Desincronización del estado del CVV al cambiar de marca**  
+  Se corrigió un problema de desincronización del estado del CVV que ocurría al cambiar de marca de tarjeta en el formulario de tarjeta paso a paso. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Error de omisión del formulario en la tarjeta inscrita**  
+  Se corrigió un error por el cual una tarjeta inscrita omitía el paso de ingreso del formulario cuando `billingAddress` o `cardholderName` eran campos requeridos. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Formulario vacío con todos los campos en falso**  
+  Se corrigió un error por el cual el formulario de tarjeta se mostraba vacío cuando todos los flags de `FieldsRequired` estaban en false. No se requieren cambios en la API.
+
+## v2.11.3
+*31 de marzo de 2026*
+
+- <ChangelogBadge type="fixed" /> **Ofuscación R8 del fingerprint de Mercado Pago**  
+  Se agregaron anotaciones `@SerializedName` a las clases del fingerprint de Mercado Pago para evitar que R8 ofuscara los nombres de campo, lo que causaba transacciones rechazadas en las compilaciones de release de los comercios.
+
+## v2.11.2
+*18 de diciembre de 2025*
+
+- <ChangelogBadge type="changed" /> **Control de visibilidad del nombre del titular**  
+  El campo del nombre del titular ahora se muestra u oculta según la respuesta del backend, en lugar de la lógica de visualización estática anterior. No se requieren cambios en la API.
+
+## v2.11.1
+*1 de diciembre de 2025*
+
+- <ChangelogBadge type="added" /> **Aviso en el quiosco de Punto Pago**  
+  Se agregó un mensaje de aviso a la pantalla del quiosco de Punto Pago para comunicar a los usuarios los términos de pago relevantes. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Actualizaciones de UI de Cartes Bancaires**  
+  Se actualizó la presentación visual de la opción de pago Cartes Bancaires para alinearla con los estándares de diseño actuales. No se requieren cambios en la API.
+
+## v2.11.0
+*10 de noviembre de 2025*
+
+- <ChangelogBadge type="breaking" /> **Migración a CheckoutBuilder**  
+  Se eliminó `cardFlow` de `YunoConfig`. La configuración del flujo de tarjeta ahora se maneja exclusivamente mediante el Checkout Builder del Dashboard. Actualiza tu integración antes de actualizar el SDK.  
+  [Guía de migración →](/changelog/migration-guides/android/v2-10-to-v2-11)
+
+## v2.10.2
+*26 de febrero de 2026*
+
+- <ChangelogBadge type="fixed" /> **Cierre inesperado en el flujo Seamless**  
+  Se corrigió un cierre inesperado en el flujo de checkout seamless.
+
+- <ChangelogBadge type="fixed" /> **Manejo de nulos en la descarga de URL**  
+  Se corrigieron cierres inesperados cuando la descarga de una URL falla o devuelve null, lo que mejora la robustez de la obtención de recursos.
+
+- <ChangelogBadge type="fixed" /> **Superposición edge-to-edge en Android 16**  
+  Se portó desde 2.9.4 la corrección edge-to-edge de Android 16: se corrigió la superposición de la UI causada por los cambios de diseño edge-to-edge.
+
+- <ChangelogBadge type="fixed" /> **Estado habilitado de la lista de métodos de pago**  
+  Se portó desde 2.9.4 la corrección del estado habilitado para que los métodos de pago en `PaymentMethodListViewModel` se habiliten o deshabiliten correctamente según su disponibilidad.
+
+## v2.10.1
+*10 de febrero de 2026*
+
+- <ChangelogBadge type="changed" /> **Se eliminó la dependencia del SDK de Mercado Libre**  
+  Se portó desde el hotfix 2.9.3 la eliminación de la dependencia del SDK de Mercado Libre: `PaypalMagnesFraud` ahora usa una dependencia remota en lugar de la biblioteca embebida.
+
+## v2.10.0
+*27 de enero de 2026*
+
+- <ChangelogBadge type="added" /> **Callback de método de pago seleccionado**  
+  Se agregó un callback de método de pago seleccionado al composable de lista de métodos de pago para que los comercios puedan reaccionar cuando el usuario elige un método de pago.
+
+- <ChangelogBadge type="added" /> **Callback de tamaño para la lista de métodos de pago**  
+  Se agregó un callback de tamaño al composable de la lista de métodos de pago, que permite a los comercios adaptar su diseño a las dimensiones de la lista renderizada.
+
+- <ChangelogBadge type="added" /> **Compatibilidad con árabe**  
+  Se agregaron traducciones al árabe en todo el SDK, incluidas las pantallas de estado de inscripción, con el manejo correcto de plurales.
+
+## v2.9.4
+*12 de febrero de 2026*
+
+- <ChangelogBadge type="fixed" /> **Superposición edge-to-edge en Android 16**  
+  Corrige la superposición de la interfaz en Android 16 causada por los cambios de edge-to-edge en `BaseActivity`, `ContinueCheckoutActivity` y `ScaffoldComponent`.
+
+- <ChangelogBadge type="fixed" /> **Estado habilitado de la lista de métodos de pago**  
+  Corrige las condiciones de estado habilitado en `PaymentMethodListViewModel` para que los métodos de pago se habiliten o deshabiliten correctamente según su disponibilidad.
+
+## v2.9.3
+*3 de febrero de 2026*
+
+- <ChangelogBadge type="changed" /> **Se eliminó la dependencia del SDK de Mercado Libre**  
+  Elimina la dependencia incluida del SDK de Mercado Libre y actualiza `PaypalMagnesFraud` para usar la dependencia remota en lugar de la biblioteca embebida, lo que reduce el tamaño del SDK y facilita la gestión de dependencias.
+
+## v2.9.2
+*22 de enero de 2026*
+
+- <ChangelogBadge type="changed" /> **Consulta del estado de inscripción**  
+  Mejora el manejo de estados en `GetStatusEnrollmentViewModel` y `EnrollmentHeadlessViewModel` para una entrega más confiable del resultado de la inscripción en flujos headless. No se requieren cambios en la API.
+
+## v2.9.1
+*19 de enero de 2026*
+
+- <ChangelogBadge type="removed" /> **JAR incluidos de PayPal Magnes y Mercado Pago**  
+  Elimina los binarios embebidos `magnes-paypal.jar` y `sdk-3.1.0.jar`, junto con los proveedores locales `PaypalMagnesFraud` y `MercadoPagoFraud` y sus rutas de inicialización. El fingerprinting ahora se obtiene mediante dependencias remotas, lo que reduce el tamaño del SDK.
+
+## v2.9.0
+*15 de septiembre de 2025*
+
+- <ChangelogBadge type="added" /> **Parámetro subPaymentState**  
+  Agrega un parámetro `subPaymentState` al callback `callbackPaymentState` en `startCheckout()` y `continuePayment()`, que ofrece un reporte más detallado del estado del pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Google Pay en startPayment**  
+  Google Pay ahora es compatible con el flujo `startPayment`, además de `startCheckout`. No se requieren cambios en la API.
+
+## v2.8.1
+*20 de agosto de 2025*
+
+- <ChangelogBadge type="changed" /> **Campo de tipo de tarjeta en Google Pay**  
+  Agrega un nuevo campo de tipo de tarjeta al objeto de respuesta de Google Pay para mejorar la identificación de la tarjeta en los flujos de pago. No se requieren cambios en la API.
+
+## v2.8.0
+*5 de agosto de 2025*
+
+- <ChangelogBadge type="added" /> **Escaneo de tarjetas con OCR**  
+  Agrega la función de escaneo de tarjetas (OCR) con la solución de Google Pay, que permite a los usuarios escanear sus tarjetas de crédito o débito con la cámara del dispositivo durante el checkout. No se requieren cambios de integración adicionales, solo habilitar la función.
+
+## v2.7.0
+*10 de julio de 2025*
+
+- <ChangelogBadge type="changed" /> **Mejoras de arquitectura**  
+  Mejoras internas de arquitectura para aumentar la estabilidad y el mantenimiento del SDK. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Diseño de WebView con EdgeToEdge**  
+  Corrige un problema de renderizado de EdgeToEdge en `WebViewActivity` que causaba superposición del diseño en dispositivos con el modo de pantalla edge-to-edge habilitado. No se requieren cambios en la API.
+
+## v2.6.7
+*12 de mayo de 2026*
+
+- <ChangelogBadge type="fixed" /> **Alineación del WebSocket con iOS**  
+  Alinea el comportamiento de `SocketManager` en Android con iOS: reenvía `code`, `public-api-key`, `x-version` y `x-platform` al conectar el socket y propaga el código de pago al reconectar. Mejora la estabilidad de los flujos basados en el código de pago.
+
+## v2.6.6
+*3 de noviembre de 2025*
+
+- <ChangelogBadge type="added" /> **Compatibilidad con passkey en Click to Pay**  
+  Agrega compatibilidad con passkey para el flujo de Click to Pay, incluido el manejo de `FLAG_ACTIVITY_CLEAR_TASK` en la sesión del navegador integrado en la app.
+
+- <ChangelogBadge type="fixed" /> **Renderizado edge-to-edge en WebView**  
+  Corrige un problema de renderizado edge-to-edge que afectaba el contenido de `WebView` en dispositivos con el modelo de pantalla más reciente de Android.
+
+## v2.6.5
+*27 de octubre de 2025*
+
+- <ChangelogBadge type="changed" /> **Actualizaciones internas del proceso de lanzamiento**  
+  Versión de mantenimiento con actualizaciones internas de compilación y versionado. No hay cambios en la API para los comercios.
+
+## v2.6.4
+*13 de noviembre de 2025*
+
+- <ChangelogBadge type="added" /> **Flujo directo de Google Pay PIX**  
+  Agrega compatibilidad con el flujo directo de Google Pay PIX, que permite a los comercios ofrecer pagos con PIX mediante la integración de Google Pay.
+
+- <ChangelogBadge type="fixed" /> **merchantName en Google Pay PIX**  
+  Corrige el parámetro `merchantName`, que se pasaba de forma incorrecta en el flujo de Google Pay PIX.
+
+## v2.6.0
+*10 de junio de 2025*
+
+- <ChangelogBadge type="added" /> **Google Pay PIX directo**  
+  Agrega compatibilidad con la integración directa de Google Pay PIX, que habilita pagos con PIX mediante el flujo de Google Pay. No se requieren cambios en la API.
+
+## v2.5.0
+*25 de abril de 2025*
+
+- <ChangelogBadge type="added" /> **Compatibilidad con tarjetas híbridas de Brasil**  
+  Agrega compatibilidad con las tarjetas híbridas de Brasil, que se procesan como crédito de forma predeterminada y se pueden guardar para uso futuro. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Localización en chino (zh-CN)**  
+  Agrega la localización completa en chino simplificado (zh-CN) en los flujos de pago, mensajes de error, indicadores de carga y pantallas de APM. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Navegador externo para enlaces de APM**  
+  Los enlaces de pago de APM ahora se abren en el navegador externo del dispositivo, lo que mejora la compatibilidad y la seguridad de los flujos de pago de terceros. No se requieren cambios en la API.
+
+## v2.4.2
+*20 de marzo de 2025*
+
+- <ChangelogBadge type="changed" /> **Procesamiento como crédito predeterminado para tarjetas híbridas**  
+  Las tarjetas híbridas de Brasil ahora se procesan como crédito de forma predeterminada en los flujos de pago e inscripción, y las tarjetas se pueden guardar. Este comportamiento depende del país; asegúrate de que tu flujo de 3DS sea compatible antes de actualizar.
+
+## v2.4.0
+*5 de marzo de 2025*
+
+- <ChangelogBadge type="fixed" /> **Visibilidad de la pantalla de OTP en el modo de renderizado de APM**  
+  Corrige un problema por el cual la pantalla de OTP en el modo de renderizado de APM aparecía cortada y los campos de ingreso de dígitos no eran visibles para el usuario. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Actualizaciones de endpoints de Checkout Builder**  
+  Actualiza las firmas de los endpoints de Checkout Builder y alinea los estilos y el renderizado de acciones con el esquema más reciente del builder. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Campos de nombre en formularios de tarjeta**  
+  Los campos `first_name` y `last_name` ahora se incluyen en los formularios de tarjeta One Step, Step-by-Step y Enrolled Payment cuando la configuración de pago lo requiere. No se requieren cambios en la API.
+
+## v2.3.0
+*5 de febrero de 2025*
+
+- <ChangelogBadge type="added" /> **Geolocalización en customer_payer**  
+  Agrega compatibilidad con los campos `latitude` y `longitude` en `customer_payer` para recopilar datos de geolocalización con fines de análisis de fraude. Envía las coordenadas al inicializar el checkout.
+
+- <ChangelogBadge type="added" /> **Compatibilidad con renderMode en inscripción**  
+  Agrega compatibilidad con `renderMode` en los flujos de inscripción de Mobile Lite, lo que permite el control manual del renderizado mediante Checkout Builder. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Mejoras en la validación del CVV**  
+  La validación del CVV para tarjetas UATP ya no se aplica cuando el campo CVV está oculto en los formularios One Step y Step-by-Step. El tooltip del CVV ya no reaparece al cerrar el teclado. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Fecha de vencimiento obligatoria para marcas de vales**  
+  El campo `expirationDate` ahora es obligatorio para las marcas de vales que lo requieren (Sodexo, VR, Elo, Alelo, Ticket), según la detección de card-iin. No se requieren cambios en la API.
+
+## v2.2.2
+*15 de enero de 2025*
+
+- <ChangelogBadge type="changed" /> **Se restablece la validación de Luhn**  
+  Revierte la validación de tarjetas para usar el algoritmo de Luhn en todos los tipos de tarjeta. Este cambio restablece el comportamiento de validación anterior y mejora la coherencia entre las marcas de tarjeta. No se requieren cambios en la API.
+
+## v2.2.1
+*5 de enero de 2025*
+
+- <ChangelogBadge type="fixed" /> **Correcciones y actualizaciones menores**  
+  Aplica correcciones menores de errores y actualizaciones internas de estabilidad. No se requieren cambios en la API.
+
+## v2.2.0
+*10 de diciembre de 2024*
+
+- <ChangelogBadge type="added" /> **Compatibilidad con íconos SVG para marcas**  
+  Agrega compatibilidad con íconos SVG en los encabezados de los formularios en los modos full, lite, seamless y list para marcas como Sodexo, Elo, Alelo, Bradexco y Cartes Bancaires. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Compatibilidad con inscripción de PayPal**  
+  Agrega compatibilidad para inscribir PayPal como método de pago mediante el flujo de inscripción del SDK. No se requieren cambios en la API.
+
+## v2.1.0
+*10 de noviembre de 2024*
+
+- <ChangelogBadge type="added" /> **13 nuevos idiomas de localización**  
+  Agrega compatibilidad con 13 nuevos idiomas: indonesio, malayo, tailandés, filipino, chino tradicional, francés, polaco, italiano, alemán, ruso, turco, neerlandés y sueco. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Integración de PagBank**  
+  Integra PagBank como nuevo método de pago, que se abre mediante Chrome Custom Tab. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Campos mejorados de tarjetas inscritas**  
+  Las tarjetas inscritas ahora se expanden al instante y muestran todos los campos de pago desplegados, lo que mejora la experiencia de checkout. No se requieren cambios en la API.
+
+## v2.0.0
+*1 de octubre de 2024*
+
+- <ChangelogBadge type="added" /> **Condiciones de pago de NuPay**  
+  Agrega las condiciones de pago y las opciones de cuotas de NuPay, incluidos los flujos de débito, crédito y límite adicional. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Integración de renderizado para controlar el indicador de carga**  
+  Agrega un modo de integración de renderizado que permite a los comercios controlar manualmente la visibilidad del indicador de carga del SDK durante los flujos de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Inscripción de Astropay**  
+  Agrega compatibilidad para inscribir Astropay como método de pago mediante el flujo de inscripción del SDK. No se requieren cambios en la API.
+
+## v1.24.0
+*15 de agosto de 2024*
+
+- <ChangelogBadge type="added" /> **MODO APM**  
+  Agrega compatibilidad con MODO como método de pago alternativo mediante el flujo de deeplink.
+
+- <ChangelogBadge type="changed" /> **Navegador externo para Mercado Pago**  
+  Mercado Pago Checkout Pro ahora se abre en el navegador externo del dispositivo en lugar de un WebView. No se requieren cambios de integración.
+
+- <ChangelogBadge type="deprecated" /> **Flujo de WebView de Mercado Pago**  
+  El flujo de WebView dentro del SDK para Mercado Pago Checkout Pro está obsoleto y se eliminará en una versión futura. Migra al flujo del navegador externo, que ahora es el comportamiento predeterminado.
+
+## v1.20.2
+*10 de abril de 2024*
+
+- <ChangelogBadge type="added" /> **Callback tokenWithInformation**  
+  Agrega un nuevo callback `tokenWithInformation` para exponer los datos del token de la tarjeta durante los flujos de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Problema de redirección de NuPay**  
+  Corrige un problema por el cual las redirecciones de pago de NuPay no se completaban correctamente. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Validación del CVV en la inscripción**  
+  Corrige la lógica de validación incorrecta del CVV durante el flujo de inscripción de tarjetas. No se requieren cambios en la API.
+
+## v1.17.0
+*20 de enero de 2024*
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de Nubank**  
+  Mejora el flujo de pago de Nubank para ofrecer una experiencia de usuario más confiable y coherente. No se requieren cambios en la API.
+
+## v1.16.0
+*5 de diciembre de 2023*
+
+- <ChangelogBadge type="added" /> **Motor antifraude FAC en 3DS**  
+  Agrega compatibilidad con el motor antifraude FAC en los flujos de autenticación 3DS. Contacta a tu gerente de cuenta de Yuno para habilitar esta función.
+
+## v1.15.1
+*15 de noviembre de 2023*
+
+- <ChangelogBadge type="fixed" /> **Compatibilidad con versiones de Java**  
+  Corrige un problema de compatibilidad que afectaba las compilaciones dirigidas a versiones específicas de Java. No se requieren cambios en la API.
+
+## v1.15.0
+*1 de noviembre de 2023*
+
+- <ChangelogBadge type="changed" /> **UI/UX de tarjetas y Nubank**  
+  Mejora el diseño visual y la experiencia de usuario de los formularios de pago con tarjeta y del flujo de Nubank. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Validación de RUT de Chile**  
+  Mejora la lógica de validación del RUT (identificación tributaria de Chile) para manejar con mayor precisión los casos límite. No se requieren cambios en la API.
+
+## v1.14.0
+*10 de octubre de 2023*
+
+- <ChangelogBadge type="changed" /> **Se elimina el campo CNPJ de Nubank**  
+  Elimina el campo de ingreso de CNPJ del flujo de pago de Nubank para simplificar la experiencia de checkout. No se requieren cambios en la API.
+
+## v1.13.0
+*15 de septiembre de 2023*
+
+- <ChangelogBadge type="changed" /> **Diseño y UX de formularios de tarjeta**  
+  Renueva el diseño y mejora la experiencia de usuario en todos los formularios de pago con tarjeta. No se requieren cambios en la API.
+
+## v1.12.2
+*25 de agosto de 2023*
+
+- <ChangelogBadge type="added" /> **Motor antifraude Netcetera en 3DS**  
+  Agrega compatibilidad con el motor antifraude Netcetera en los flujos de autenticación 3DS. Contacta a tu gerente de cuenta de Yuno para habilitar esta función.
+
+## v1.12.1
+*10 de agosto de 2023*
+
+- <ChangelogBadge type="changed" /> **Rendimiento del SDK de MercadoPago**  
+  Mejora el rendimiento de inicialización y renderizado del SDK de MercadoPago. No se requieren cambios en la API.
+
+## v1.12.0
+*25 de julio de 2023*
+
+- <ChangelogBadge type="added" /> **Método de pago PIX Santander**  
+  Agrega compatibilidad con pagos PIX mediante Santander como nueva opción de método de pago. No se requieren cambios en la API.
+
+## v1.11.4
+*10 de julio de 2023*
+
+- <ChangelogBadge type="changed" /> **Rendimiento del SDK de MercadoPago**  
+  Más mejoras de rendimiento en el SDK de MercadoPago embebido. No se requieren cambios en la API.
+
+## v1.11.3
+*25 de junio de 2023*
+
+- <ChangelogBadge type="fixed" /> **Anulación de estilos**  
+  Corrige un problema por el cual las anulaciones de estilo personalizadas no se aplicaban correctamente en todos los componentes del SDK. No se requieren cambios en la API.
+
+## v1.11.2
+*10 de junio de 2023*
+
+- <ChangelogBadge type="changed" /> **UX de la fecha de vencimiento en el flujo de tarjeta**  
+  Mejora la experiencia de ingreso de la fecha de vencimiento en los flujos de pago con tarjeta para una captura de datos más intuitiva. No se requieren cambios en la API.
+
+## v1.11.1
+*25 de mayo de 2023*
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de tarjeta**  
+  Mejoras generales en el flujo de pago con tarjeta para aumentar la estabilidad y la facilidad de uso. No se requieren cambios en la API.
+
+## v1.11.0
+*10 de mayo de 2023*
+
+- <ChangelogBadge type="added" /> **Método de pago DeUna**  
+  Agrega compatibilidad con DeUna como nueva opción de método de pago. No se requieren cambios en la API.
+
+## v1.10.1
+*20 de abril de 2023*
+
+- <ChangelogBadge type="changed" /> **Rendimiento del SDK y del flujo de tarjeta**  
+  Mejoras de rendimiento en el núcleo del SDK y en los flujos de pago con tarjeta. No se requieren cambios en la API.
+
+## v1.10.0
+*5 de abril de 2023*
+
+- <ChangelogBadge type="added" /> **Método de pago Pluxe**  
+  Agrega compatibilidad con Pluxe como nueva opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de Google Pay**  
+  Mejora la confiabilidad y la experiencia de usuario del flujo de Google Pay. No se requieren cambios en la API.
+
+## v1.8.0
+*15 de febrero de 2023*
+
+- <ChangelogBadge type="added" /> **URL del desafío 3DS en modo headless**  
+  Agrega un flujo headless para obtener la URL del desafío 3DS en escenarios de integración personalizada de 3DS. No se requieren cambios en la API.
+
+## v1.7.0
+*20 de enero de 2023*
+
+- <ChangelogBadge type="added" /> **Flujo headless de OTT y 3DS**  
+  Agrega un flujo headless para generar un token de un solo uso (OTT) y obtener la URL del desafío 3DS, lo que permite implementar interfaces de pago totalmente personalizadas. No se requieren cambios en la API.
+
+## v1.6.1
+*15 de diciembre de 2022*
+
+- <ChangelogBadge type="fixed" /> **Bloqueo antifraude en la generación de OTT**  
+  Corrige un problema por el cual el módulo antifraude bloqueaba incorrectamente la generación del token de un solo uso. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Se agregó el argumento showPaymentStatus**  
+  Agrega el argumento booleano `showPaymentStatus` a `startPaymentLite` y `startPayment` para controlar si el SDK muestra la pantalla de error después de un pago fallido. Pasa `false` para suprimir la pantalla de error del SDK y manejarla por tu cuenta.
+
+## v1.6.0
+*1 de diciembre de 2022*
+
+- <ChangelogBadge type="added" /> **Antifraude de Mercado Pago**  
+  Agrega la integración de antifraude de Mercado Pago para reforzar la prevención de fraude en los flujos de pago de Mercado Pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de Click to Pay**  
+  Mejora el flujo de Click to Pay para ofrecer mayor confiabilidad y una mejor experiencia de usuario. No se requieren cambios en la API.
+
+## v1.5.14-HF
+*20 de noviembre de 2022*
+
+- <ChangelogBadge type="added" /> **OTT con información de la tarjeta**  
+  Agrega una función para crear un token de un solo uso que incluye la información completa de la tarjeta tanto en los flujos de inscripción como en los de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Fallo por permisos de ubicación**  
+  Corrige un fallo que ocurría cuando el usuario no otorgaba los permisos de ubicación. No se requieren cambios en la API.
+
+## v1.5.14
+*10 de noviembre de 2022*
+
+- <ChangelogBadge type="changed" /> **Mejoras en las tarjetas Step-by-Step y One-Step**  
+  Mejora los flujos de pago con tarjeta paso a paso y de un solo paso para ofrecer mayor confiabilidad y una mejor experiencia de usuario. No se requieren cambios en la API.
+
+## v1.5.13
+*25 de octubre de 2022*
+
+- <ChangelogBadge type="added" /> **Inscripción de Mercado Pago Wallet**  
+  Agrega compatibilidad para inscribir Mercado Pago Wallet mediante deeplink y Chrome Custom Tab. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Motores antifraude 3DS y Cybersource**  
+  Agrega compatibilidad con los motores antifraude 3DS y Cybersource para reforzar la prevención de fraude en los flujos de pago con tarjeta. Contacta a tu gerente de cuenta de Yuno para habilitar estas funciones.
+
+## v1.5.12
+*10 de octubre de 2022*
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de pagos con tarjeta**  
+  Mejora el flujo de pagos con tarjeta para aumentar la estabilidad y la confiabilidad. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Consolidación de componentes de SecureFields**  
+  Reemplaza los componentes separados `CardExpiryDate` `EditText` y `TextField` `ItemView` (CVV) por un único componente `CardDataStackView` para la integración de SecureFields. Actualiza tu diseño para usar `CardDataStackView`.
+
+## v1.5.11
+*25 de septiembre de 2022*
+
+- <ChangelogBadge type="fixed" /> **Validación de tarjetas Discover**  
+  Corrige la validación del número de tarjeta para las tarjetas Discover, que rechazaba por error números válidos. No se requieren cambios en la API.
+
+## v1.5.0
+*1 de septiembre de 2022*
+
+- <ChangelogBadge type="added" /> **Antifraude en el flujo de tarjetas**  
+  Agrega la integración antifraude para los flujos de pago con tarjeta para mejorar la detección de fraude durante el checkout. Contacta a tu gerente de cuenta de Yuno para habilitar esta función.
+
+- <ChangelogBadge type="added" /> **Método de pago Click 2 Pay**  
+  Agrega compatibilidad con Click 2 Pay como nueva opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Métodos de idioma compatibles**  
+  Agrega métodos programáticos de selección de idioma, que permiten definir la configuración regional del SDK en tiempo de ejecución. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Renovación del diseño del SDK**  
+  Introduce un nuevo diseño visual del SDK en las pantallas de pago e inscripción. No se requieren cambios en la API.
+
+## v1.4.12
+*20 de agosto de 2022*
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de pagos con tarjeta**  
+  Mejora el flujo de pagos con tarjeta para ofrecer mayor estabilidad y una mejor experiencia de usuario. No se requieren cambios en la API.
+
+## v1.4.11
+*5 de agosto de 2022*
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de inscripción de tarjetas**  
+  Mejora el flujo de inscripción de tarjetas para ofrecer mayor confiabilidad y una mejor experiencia de usuario. No se requieren cambios en la API.
+
+## v1.4.10
+*20 de julio de 2022*
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de Google Pay**  
+  Mejora el rendimiento y la confiabilidad del flujo de Google Pay. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Estado del SDK después de que el sistema cierra la app**  
+  Corrige un problema por el cual el SDK no restauraba correctamente su estado después de que el sistema cerrara la app anfitriona. No se requieren cambios en la API.
+
+## v1.4.9
+*5 de julio de 2022*
+
+**Nuevos métodos de pago**
+
+- <ChangelogBadge type="added" /> **Método de pago Google Pay**  
+  Agrega Google Pay como método de pago compatible. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago con tarjeta de vales**  
+  Agrega compatibilidad con pagos con tarjetas VOUCHER. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago SafetyPay**  
+  Agrega compatibilidad con SafetyPay como método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Efecty**  
+  Agrega compatibilidad con Efecty como método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Nequi**  
+  Agrega compatibilidad con Nequi como método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Yappy**  
+  Agrega compatibilidad con Yappy como método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Sencillito**  
+  Agrega compatibilidad con Sencillito como método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Cuotas en pagos con tarjeta**  
+  Agrega compatibilidad con cuotas en los pagos con tarjeta, para que los clientes puedan dividir el pago en varias cuotas. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Generación del ID de sesión antifraude**  
+  Agrega la generación de `sessionId` para los proveedores antifraude mediante `startCheckout()`. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Opción de indicador de carga persistente**  
+  Agrega una opción para mantener el indicador de carga del SDK entre los pasos del pago y lograr una transición más fluida. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Campos de CVV en la inscripción paso a paso**  
+  Corrige los campos de CVV y vencimiento que faltaban en el flujo de inscripción de tarjetas paso a paso. No se requieren cambios en la API.
+
+## v1.4.8
+*20 de junio de 2022*
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de Google Pay**  
+  Mejora el rendimiento y la confiabilidad del flujo de Google Pay. No se requieren cambios en la API.
+
+## v1.4.7
+*5 de junio de 2022*
+
+- <ChangelogBadge type="fixed" /> **Campos de CVV en la inscripción paso a paso**  
+  Corrige los campos de CVV y vencimiento que faltaban en el flujo de inscripción de tarjetas paso a paso. No se requieren cambios en la API.
+
+## v1.4.6
+*25 de mayo de 2022*
+
+- <ChangelogBadge type="added" /> **Método de pago con tarjeta de vales**  
+  Agrega compatibilidad con pagos con tarjetas VOUCHER. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo de Google Pay**  
+  Mejora el rendimiento y la confiabilidad del flujo de Google Pay. No se requieren cambios en la API.
+
+## v1.4.5
+*10 de mayo de 2022*
+
+- <ChangelogBadge type="changed" /> **Diseño de los flujos de tarjeta y PIX**  
+  Mejora el diseño visual de los flujos de tarjeta paso a paso y de pago con PIX. No se requieren cambios en la API.
+
+## v1.4.4
+*25 de abril de 2022*
+
+- <ChangelogBadge type="changed" /> **Mejoras en el flujo 3DS para tarjetas**  
+  Mejora el flujo de autenticación 3DS para pagos con tarjeta para ofrecer mayor confiabilidad y compatibilidad. No se requieren cambios en la API.
+
+## v1.4.3
+*10 de abril de 2022*
+
+- <ChangelogBadge type="changed" /> **Navegación entre campos en la tarjeta paso a paso**  
+  Mejora la navegación entre campos y el manejo del foco en el formulario de tarjeta paso a paso para una captura de datos más fluida. No se requieren cambios en la API.
+
+## v1.4.2
+*25 de marzo de 2022*
+
+- <ChangelogBadge type="changed" /> **Diseño de la tarjeta paso a paso**  
+  Mejora el diseño visual del formulario de pago con tarjeta paso a paso. No se requieren cambios en la API.
+
+## v1.4.1
+*10 de marzo de 2022*
+
+- <ChangelogBadge type="added" /> **Método de pago Google Pay**  
+  Agrega Google Pay como método de pago compatible. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Sencillito**  
+  Agrega compatibilidad con Sencillito como método de pago. No se requieren cambios en la API.
+
+## v1.4.0
+*20 de febrero de 2022*
+
+**Nuevos métodos de pago**
+
+- <ChangelogBadge type="added" /> **Método de pago SafetyPay**  
+  Agrega compatibilidad con SafetyPay como método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Efecty**  
+  Agrega compatibilidad con Efecty como método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Nequi**  
+  Agrega compatibilidad con Nequi como método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Yappy**  
+  Agrega compatibilidad con Yappy como método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Cuotas en pagos con tarjeta**  
+  Agrega compatibilidad con cuotas en los pagos con tarjeta, para que los clientes puedan dividir el pago en varias cuotas. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Generación del ID de sesión antifraude**  
+  Agrega la generación de `sessionId` para los proveedores antifraude mediante `startCheckout()`. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Opción de indicador de carga persistente**  
+  Agrega una opción para mantener el indicador de carga del SDK entre los pasos del pago y lograr una transición más fluida. No se requieren cambios en la API.
+
+## v1.3.9
+*5 de febrero de 2022*
+
+- <ChangelogBadge type="added" /> **Diseño de la pantalla de carga**  
+  Agrega un nuevo diseño de pantalla de carga para una experiencia del SDK más pulida. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Mercado Pago Checkout Pro sin formulario**  
+  Mercado Pago Checkout Pro ya no requiere completar un formulario antes de redirigir, lo que simplifica la experiencia de checkout. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Corrección del flujo de tarjeta paso a paso**  
+  Corrige un problema en el flujo de pago con tarjeta paso a paso que causaba un comportamiento incorrecto en ciertos escenarios. No se requieren cambios en la API.
+
+## v1.3.8
+*20 de enero de 2022*
+
+- <ChangelogBadge type="fixed" /> **Fallo por documento nulo del cliente**  
+  Corrige un fallo que ocurría cuando el objeto del cliente tenía el campo de documento en null. No se requieren cambios en la API.
+
+## v1.3.7
+*5 de enero de 2022*
+
+- <ChangelogBadge type="changed" /> **Mejoras en los flujos de tarjeta**  
+  Mejoras generales en los flujos de pago e inscripción con tarjeta para ofrecer mayor estabilidad y una mejor experiencia de usuario. No se requieren cambios en la API.
+
+## v1.3.6
+*15 de diciembre de 2021*
+
+- <ChangelogBadge type="changed" /> **Requisito dinámico de CVV para tarjetas inscritas**  
+  Elimina la bandera estática que exigía el CVV en las tarjetas inscritas. Ahora el requisito de CVV se determina de forma dinámica según la configuración del método de pago. No se requieren cambios en la API.
+
+## v1.3.5
+*1 de diciembre de 2021*
+
+- <ChangelogBadge type="added" /> **Método de pago en efectivo**  
+  Agrega compatibilidad con CASH como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago por transferencia bancaria**  
+  Agrega compatibilidad con BANK_TRANSFER como opción de método de pago. No se requieren cambios en la API.
+
+## v1.3.4
+*15 de noviembre de 2021*
+
+- <ChangelogBadge type="added" /> **Método de pago Unlimint**  
+  Agrega compatibilidad con Unlimint como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago PagSeguro**  
+  Agrega compatibilidad con PagSeguro como opción de método de pago. No se requieren cambios en la API.
+
+## v1.3.3
+*1 de noviembre de 2021*
+
+- <ChangelogBadge type="fixed" /> **Diseño del formulario de tarjeta paso a paso**  
+  Corrige problemas de diseño visual en el formulario de pago con tarjeta paso a paso. No se requieren cambios en la API.
+
+## v1.3.2
+*15 de octubre de 2021*
+
+**Nuevos métodos de pago**
+
+- <ChangelogBadge type="added" /> **Método de pago Tarjeta Clave**  
+  Agrega compatibilidad con Tarjeta Clave como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Kushki**  
+  Agrega compatibilidad con Kushki como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Khipu**  
+  Agrega compatibilidad con Khipu como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Indicador para solicitar el CVV en tarjetas inscritas**  
+  Agrega `requestSecurityCode` a `YunoConfig` para habilitar la solicitud del CVV en los pagos con tarjetas inscritas al inicializar el SDK. Establece `requestSecurityCode = true` en tu `YunoConfig` para solicitar el CVV a los usuarios cuando paguen con tarjetas inscritas.
+
+<Accordion title="Habilitar el CVV para tarjetas inscritas">
+
+```kotlin
+data class YunoConfig(
+  val cardFlow: CardFormType = CardFormType.ONE_STEP,
+  val saveCardEnabled: Boolean = false,
+  val requestSecurityCode: Boolean = false
+)
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Temporizador de vencimiento en la pantalla de OTP**  
+  Agrega un temporizador de cuenta regresiva a la pantalla de OTP para informar a los usuarios el tiempo de vencimiento del pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Componente EnrollmentMethodsListView**  
+  Agrega el componente `EnrollmentMethodsListView()` para mostrar los métodos de pago disponibles para inscripción. No se requieren cambios en la API.
+
+## v1.3.1
+*1 de octubre de 2021*
+
+- <ChangelogBadge type="added" /> **Método de pago Paga con Rappi**  
+  Agrega compatibilidad con Paga con Rappi como opción de método de pago. No se requieren cambios en la API.
+
+## v1.3.0
+*15 de septiembre de 2021*
+
+**Nuevos métodos de pago**
+
+- <ChangelogBadge type="added" /> **Método de pago Arcus Cash**  
+  Agrega compatibilidad con Arcus Cash como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago Daviplata**  
+  Agrega compatibilidad con Daviplata como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago CoDi**  
+  Agrega compatibilidad con CoDi como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Método de pago PayValida**  
+  Agrega compatibilidad con PayValida como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Guardar tarjeta mediante YunoConfig**  
+  Agrega `saveCardEnabled` a `YunoConfig` para habilitar o deshabilitar la opción de guardar tarjeta durante el pago. Establece `saveCardEnabled = true` en tu `YunoConfig` durante `initialize` para permitir que los usuarios guarden sus tarjetas.
+
+<Accordion title="Habilitar guardar tarjeta en YunoConfig">
+
+```kotlin
+data class YunoConfig(
+  val cardFlow: CardFormType = CardFormType.ONE_STEP,
+  val saveCardEnabled: Boolean = false
+)
+```
+
+</Accordion>
+
+## v1.2.5
+*1 de septiembre de 2021*
+
+- <ChangelogBadge type="fixed" /> **Estado de cancelación en pago e inscripción**  
+  Corrige el estado incorrecto que se reportaba cuando un usuario cancelaba durante los flujos de pago o inscripción. No se requieren cambios en la API.
+
+## v1.2.4
+*15 de agosto de 2021*
+
+- <ChangelogBadge type="added" /> **Método de pago SPEI**  
+  Agrega compatibilidad con SPEI como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Inscripción y pago con tarjeta paso a paso**  
+  Agrega un formulario de tarjeta paso a paso tanto para los flujos de inscripción como para los de pago, que permite a los usuarios ingresar los datos de la tarjeta campo por campo. No se requieren cambios en la API.
+
+## v1.2.2
+*1 de agosto de 2021*
+
+- <ChangelogBadge type="added" /> **Callback de estado de inscripción**  
+  Agrega un callback de estado de inscripción a `startEnrollment`, que permite responder a los eventos del ciclo de vida de la inscripción sin usar `onActivityResult`. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Callback de estado de pago en continuePayment**  
+  Agrega un callback de estado de pago a `continuePayment`, que permite manejar los eventos de continuación del pago sin usar `onActivityResult`. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Callback de token de un solo uso en startPayment**  
+  Agrega un callback de token de un solo uso a `startPayment`, que permite recibir el OTT directamente sin usar `onActivityResult`. No se requieren cambios en la API.
+
+## v1.2.1
+*20 de julio de 2021*
+
+- <ChangelogBadge type="fixed" /> **Error tipográfico en español en el pago con tarjeta**  
+  Corrige un error tipográfico en la localización en español del título de la pantalla de pago con tarjeta. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Mensaje de error del campo de número de documento**  
+  Corrige un mensaje de error incorrecto que se mostraba en el campo de ingreso del número de documento. No se requieren cambios en la API.
+
+## v1.2.0
+*5 de julio de 2021*
+
+- <ChangelogBadge type="changed" /> **Migración del callback de startPayment**  
+  Agrega un parámetro de callback directo a `startPayment` para reemplazar `onActivityResult` al recibir los resultados del pago. Actualiza tu integración para usar el nuevo parámetro de callback en lugar de `onActivityResult`.
+
+- <ChangelogBadge type="changed" /> **Migración del callback de initEnrollment**  
+  Agrega el método `initEnrollment` con un callback directo para reemplazar `onActivityResult` al recibir los resultados de la inscripción. Actualiza tu integración para usar `initEnrollment` con el parámetro de callback en lugar de `onActivityResult`.
+
+## v1.1.1
+*20 de junio de 2021*
+
+- <ChangelogBadge type="fixed" /> **Etiqueta de entorno oculta en producción**  
+  Corrige un problema por el cual se mostraba la etiqueta de entorno con claves de API de producción. Ahora la etiqueta se oculta en las compilaciones de producción. No se requieren cambios en la API.
+
+## v1.1.0
+*5 de junio de 2021*
+
+**Nuevas funciones**
+
+- <ChangelogBadge type="added" /> **Flujo de inscripción de tarjetas de crédito**  
+  Agrega un flujo completo de inscripción de tarjetas de crédito al SDK, que permite a los usuarios guardar tarjetas para pagos futuros. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Componente EnrollmentPaymentMethodListView**  
+  Agrega los componentes `EnrollmentPaymentMethodListView()` y `UnEnrolledPaymentMethodListView()` para mostrar por separado los métodos de pago inscritos y no inscritos. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Evento onSelected de PaymentMethodListView**  
+  Agrega un evento `onSelected` a `PaymentMethodListView` para responder a la selección del método de pago por parte del usuario. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **startEnrollment requiere el código de país**  
+  `startEnrollment` ahora requiere un parámetro de código de país (por ejemplo, `"CO"`). Agrega el argumento del código de país a todas las llamadas a `startEnrollment` en tu integración.
+
+- <ChangelogBadge type="removed" /> **Se eliminan las opciones de testResult**  
+  Elimina las opciones de configuración `testResult` del SDK. Elimina cualquier referencia a `testResult` del código de tu integración.
+
+- <ChangelogBadge type="fixed" /> **Validación de la fecha de vencimiento**  
+  Mejora la validación de la fecha de vencimiento en el formulario de tarjeta de crédito para rechazar con mayor precisión las fechas no válidas. No se requieren cambios en la API.
+
+## v1.0.11
+*20 de mayo de 2021*
+
+- <ChangelogBadge type="fixed" /> **UX de inscripción después de una app externa**  
+  Corrige un problema de UX en el flujo de inscripción que ocurría al regresar de una interacción con una app externa, como una redirección a la app de un banco. No se requieren cambios en la API.
+
+## v1.0.10
+*10 de mayo de 2021*
+
+- <ChangelogBadge type="fixed" /> **Error 404 después de la inscripción**  
+  Corrige un error 404 que se producía después de completar el flujo de inscripción de tarjetas. No se requieren cambios en la API.
+
+## v1.0.9
+*25 de abril de 2021*
+
+- <ChangelogBadge type="fixed" /> **Indicador de carga infinito en el flujo Payment Lite**  
+  Corrige un problema por el cual el indicador de carga no se cerraba durante el flujo Payment Lite y bloqueaba la interacción del usuario. No se requieren cambios en la API.
+
+## v1.0.8
+*10 de abril de 2021*
+
+- <ChangelogBadge type="changed" /> **Se reemplaza Moshi por Gson**  
+  Reemplaza la dependencia de serialización JSON Moshi por Gson para reducir el tamaño del SDK y mejorar la compatibilidad. No se requieren cambios en la API.
+
+## v1.0.7
+*25 de marzo de 2021*
+
+- <ChangelogBadge type="changed" /> **Tipo de hint de Android en atributos**  
+  Actualiza la declaración del tipo de hint de Android en los atributos que usan referencias a recursos para garantizar un renderizado correcto en todos los niveles de API. No se requieren cambios en la API.
+
+## v1.0.6
+*10 de marzo de 2021*
+
+- <ChangelogBadge type="fixed" /> **Diseño de los elementos de método de pago**  
+  Corrige problemas de diseño visual en los elementos de la lista de métodos de pago en la variante completa del SDK. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Visibilidad del campo de teléfono**  
+  Corrige un problema por el cual el campo de número de teléfono se ocultaba incorrectamente en algunos flujos de pago. No se requieren cambios en la API.
+
+## v1.0.5
+*25 de febrero de 2021*
+
+- <ChangelogBadge type="added" /> **Método de pago SafetyPay**  
+  Agrega compatibilidad con SafetyPay como opción de método de pago. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Notificaciones de estado del pago por WebSocket**  
+  Agrega compatibilidad con WebSocket para recibir notificaciones del estado del pago en tiempo real durante el flujo de checkout. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Validadores de expresiones regulares de CustomerForm**  
+  Corrige errores de validación con expresiones regulares en CustomerForm que rechazaban entradas válidas en ciertos campos. No se requieren cambios en la API.
+
+## v1.0.4
+*10 de febrero de 2021*
+
+- <ChangelogBadge type="changed" /> **Estado de la transacción en pendiente al iniciar**  
+  El estado de la transacción ahora se establece en pendiente inmediatamente al iniciar el pago, lo que permite un seguimiento más preciso del estado. No se requieren cambios en la API.
+
+## v1.0.3
+*25 de enero de 2021*
+
+- <ChangelogBadge type="added" /> **Callback de estado de error interno**  
+  Agrega un callback de estado de error interno para exponer los errores a nivel del SDK a la aplicación que lo integra. No se requieren cambios en la API.
+
+## v1.0.2
+*15 de enero de 2021*
+
+- <ChangelogBadge type="fixed" /> **Reinicio de la regex del CVV al borrar el número de tarjeta**  
+  Corrige un problema por el cual el validador de expresión regular del CVV no se reiniciaba al borrar el número de tarjeta en el formulario de pago, lo que causaba estados de validación del CVV no válidos. No se requieren cambios en la API.
+
+## v1.0.1
+*5 de enero de 2021*
+
+- <ChangelogBadge type="added" /> **Filtro de transferencia bancaria y pago con tarjeta**  
+  Agrega un filtro por tipo de pago para mostrar solo los métodos de transferencia bancaria o de pago con tarjeta en la vista de lista de pagos. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Pruebas de los view models de pago**  
+  Agrega funciones de prueba para los view models de pago y facilitar las pruebas de integración. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Nombre del tipo de pago de PIX y NuPay**  
+  Corrige los nombres de tipo de pago incorrectos que se mostraban para los métodos PIX y NuPay en la lista de pagos. No se requieren cambios en la API.
+
+- <ChangelogBadge type="changed" /> **Zona horaria UTC en DateExtension**  
+  Actualiza `DateExtension` para usar la zona horaria UTC en todas las operaciones de formato de fechas y garantizar un manejo coherente de las fechas entre regiones. No se requieren cambios en la API.
+
+## v1.0.0
+*15 de diciembre de 2020*
+
+**Lanzamiento inicial**
+
+- <ChangelogBadge type="added" /> **Payment Methods**  
+  Lanzamiento inicial del SDK de Yuno para Android con compatibilidad con varios métodos de pago, incluidos Mercado Pago Checkout Pro y pagos con tarjeta de débito y crédito.
+
+- <ChangelogBadge type="added" /> **Inscripción de Mercado Pago**  
+  Agrega compatibilidad con la inscripción del método Mercado Pago en el lanzamiento inicial del SDK. No se requieren cambios en la API.
+
+- <ChangelogBadge type="added" /> **Pagos con tarjeta de débito y crédito**  
+  Agrega compatibilidad con pagos con tarjeta de débito y crédito con interfaz completa del formulario de tarjeta. No se requieren cambios en la API.
+
+- <ChangelogBadge type="fixed" /> **Correcciones iniciales de errores**  
+  Corrige problemas iniciales, como el hint del campo de texto de la ciudad, el tipo PIX en el flujo de pagos, la información de la tarjeta en `startCheckout` y la traducción al inglés en el título del formulario de pago. No se requieren cambios en la API.

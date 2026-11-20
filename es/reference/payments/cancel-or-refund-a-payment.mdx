@@ -1,0 +1,30 @@
+---
+title: "Cancelar o reembolsar un pago"
+openapi: "/openapi/es/payments/cancel-or-refund-a-payment.json POST /payments/{payment_id}/cancel-or-refund"
+description: "Cancela o reembolsa un pago existente de forma automática según el estado actual de su transacción."
+---
+
+<Warning>
+No ejecutes un reembolso mientras otro está en curso. Espera a que la operación actual termine antes de iniciar una nueva.
+</Warning>
+
+Este servicio te permite cancelar o reembolsar un pago existente. Nuestro sistema identificará si es necesaria una cancelación o un reembolso según el pago, en este caso no se necesita un `transaction_id`. Este servicio realiza las siguientes funciones según el estado de la transacción:
+
+* **Cancela** el pago si no ha sido capturado.
+* **Reembolsa** el pago si ha sido capturado.
+
+<Note>
+**Reembolsos**
+
+Si completas el campo amount, el reembolso será parcial. De lo contrario, se creará un reembolso completo. Los fondos se reembolsarán al método de pago que se cargó originalmente.
+
+La respuesta devuelve una transacción `REFUND` con su propio `status`: `SUCCEEDED` cuando el reembolso es aprobado, o `PENDING` mientras el proveedor lo confirma. `REFUNDED` es un estado del pago, no de una transacción. Después de que un reembolso completo es exitoso, el `status` y el `sub_status` del pago son `REFUNDED`.
+</Note>
+
+<Note>
+**Pagos con una promoción de Yuno**
+
+Un reembolso se calcula sobre lo que pagó el cliente, `amount.value` menos `discount_amount`. Un reembolso completo devuelve ese monto, y un `amount` superior a lo que queda por reembolsar se rechaza con `400 INVALID_PARAMETERS`. Cancelar anula la autorización por ese monto. Consulta [Promotions](/docs/payment-features/promotions#refunds-captures-and-cancellations).
+</Note>
+
+Ten en cuenta que esta solicitud requiere un `X-Idempotency-Key`. Consulta la página [Authentication](/reference/authentication#idempotency) para obtener más información.
