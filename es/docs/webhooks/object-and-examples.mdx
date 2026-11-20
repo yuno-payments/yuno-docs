@@ -32,7 +32,7 @@ A continuación se listan los atributos JSON de los webhooks de Yuno. Consulta [
 
   <Expandable title="propiedades">
     <ParamField body="idempotency_key" type="string">
-      Identificador que se usa para omitir entregas duplicadas. Se mantiene estable en todos los reintentos del mismo evento. Su ubicación depende del evento: los eventos de pago ordinarios (incluidos reembolso y contracargo) lo incluyen en `data.payment.idempotency_key`, `payment.split_update` lo incluye en `data.split_update.idempotency_key` y los eventos de suscripción lo incluyen en `data.idempotency_key`. En los eventos `subscription.*` identifica la suscripción y no el evento, por lo que debes eliminar los duplicados de esos eventos usando `type_event` junto con esta clave. Consulta [De-duplication](/docs/webhooks#de-duplication) para ver los detalles de cobertura.
+      Identificador que se usa para omitir entregas duplicadas. Se mantiene estable en todos los reintentos del mismo evento. Su ubicación depende del evento: los eventos de pago ordinarios (incluidos reembolso y contracargo) lo incluyen en `data.payment.idempotency_key`, `payment.split_update` lo incluye en `data.split_update.idempotency_key` y los eventos de suscripción lo incluyen en `data.idempotency_key`. En los eventos `subscription.*` identifica la suscripción y no el evento, por lo que debes eliminar los duplicados de esos eventos usando `type_event` junto con esta clave. Consulta [De-duplication](/es/docs/webhooks#de-duplication) para ver los detalles de cobertura.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -95,7 +95,7 @@ Si `transactions_history` está habilitado, su entrada para la transacción afec
 
 No se garantiza que la instantánea de la operación se serialice igual que una lectura posterior del pago. La escala numérica puede variar (por ejemplo, `5` frente a `5.0`) y un objeto de responsabilidad que contenga solo `chargebacks` puede representarse de forma distinta en el mapeo del pago activo. Compara los valores y su significado, en lugar de exigir igualdad byte por byte del JSON. Estas diferencias de representación no identifican una nueva operación de split.
 
-Solo este evento agrega `split_update`; los payloads de compra y de reembolso no incorporan el bloque. Consulta [Split update notifications](/docs/webhooks#split-update-notifications) para conocer el comportamiento de suscripción, emisión, orden y entrega.
+Solo este evento agrega `split_update`; los payloads de compra y de reembolso no incorporan el bloque. Consulta [Split update notifications](/es/docs/webhooks#split-update-notifications) para conocer el comportamiento de suscripción, emisión, orden y entrega.
 
 ## Ejemplos {#examples}
 
@@ -155,6 +155,10 @@ Payload de ejemplo:
   Nombre de los campos: la geolocalización del cliente se serializa como `geo_location` en los payloads de webhook y como `geolocation` en los endpoints de consulta de pagos. Procesa cada superficie según corresponda.
 </Info>
 
+<Info>
+  `payment.amount.authorized` es el monto que aprobó el proveedor, neto de cualquier promoción de Yuno, igual que en [el objeto de pago](/es/reference/payments/the-payment-object). Un pago con tarjeta enviado con `partial_approval: true` conserva el estado de una aprobación completa después de una aprobación parcial, por lo que está aprobado parcialmente cuando `payment.amount.authorized` es menor que `payment.amount.value` menos `payment.discount_amount` (cuando no hay promoción, menor que `payment.amount.value`). El campo se omite para pagos que no fueron aprobados o que se crearon antes de que se introdujera. Ambas versiones de webhook incluyen el campo.
+</Info>
+
 ```json
 {
     "type": "payment",
@@ -179,7 +183,8 @@ Payload de ejemplo:
                 "currency": "UYU",
                 "value": 1458,
                 "refunded": 0,
-                "captured": 0
+                "captured": 0,
+                "authorized": 1458
             },
             "checkout": {
                 "session": "2f3423dd-1234-1234-1234-2c7da5ad1caf",
@@ -492,7 +497,7 @@ Payload de ejemplo:
 </Info>
 
 <Info>
-  Cuando el pago incluye una [promoción de Yuno](/docs/payment-features/promotions), el payload también incluye `payment.discount_amount` (`currency` y `value`, el descuento total), ubicado justo después de `amount`. La línea de descuento de Yuno aparece primero en `payment.additional_data.order.discounts` (`type: YUNO_PROMOTION`, `quote_id`, `id`, `unit_amount` y `name` cuando Yuno lo tiene), y tus propias líneas de descuento van a continuación con `type: MERCHANT`. `payment.amount.value` sigue siendo el monto que enviaste, y `payment.transactions.amount` es el monto cobrado. Sin una promoción, `discount_amount` se omite y las líneas de descuento son exactamente las que enviaste. Ambas versiones del webhook incluyen el campo. El extracto siguiente muestra solo los campos que cambian.
+  Cuando el pago incluye una [promoción de Yuno](/es/docs/payment-features/promotions), el payload también incluye `payment.discount_amount` (`currency` y `value`, el descuento total), ubicado justo después de `amount`. La línea de descuento de Yuno aparece primero en `payment.additional_data.order.discounts` (`type: YUNO_PROMOTION`, `quote_id`, `id`, `unit_amount` y `name` cuando Yuno lo tiene), y tus propias líneas de descuento van a continuación con `type: MERCHANT`. `payment.amount.value` sigue siendo el monto que enviaste, y `payment.transactions.amount` es el monto cobrado. Sin una promoción, `discount_amount` se omite y las líneas de descuento son exactamente las que enviaste. Ambas versiones del webhook incluyen el campo. El extracto siguiente muestra solo los campos que cambian.
 </Info>
 
 ```json Payment with a Yuno promotion (excerpt)
@@ -508,7 +513,8 @@ Payload de ejemplo:
                 "currency": "USD",
                 "value": 250.0,
                 "refunded": 0.0,
-                "captured": 0.0
+                "captured": 0.0,
+                "authorized": 225.0
             },
             "discount_amount": {
                 "currency": "USD",
@@ -572,7 +578,8 @@ Payload de ejemplo:
          "currency":"COP",
          "value":2000.0,
          "refunded":0.0,
-         "captured":0.0
+         "captured":0.0,
+         "authorized":2000.0
       },
       "checkout":{
          "session":"fb98b19d-39c0-42d2-bed6-438605458964",
@@ -798,6 +805,7 @@ Payload de ejemplo:
             "value":418.0,
             "refunded":0.0,
             "captured":0.0,
+            "authorized":418.0,
             "currency_conversion": {
                "code": "ccv_01HVK3Z9M2...",
                "cardholder_currency": "QAR",
@@ -1324,7 +1332,8 @@ Payload de ejemplo:
          "currency":"COP",
          "value":2000.0,
          "refunded":0.0,
-         "captured":0.0
+         "captured":0.0,
+         "authorized":2000.0
       },
       "checkout":{
          "session":"fb98b19d-39c0-42d2-bed6-438605458964",
@@ -1493,6 +1502,7 @@ Se envía cuando se recibe un aviso de precontracargo o una alerta de fraude par
         "value": 24.9,
         "refunded": 0.0,
         "captured": 0.0,
+        "authorized": 24.9,
         "currency_conversion": null
       },
       "workflow": "DIRECT",
@@ -1602,7 +1612,7 @@ El siguiente objeto JSON presenta un ejemplo de una estructura de datos relacion
 ```
 
 <Info>
-  Cuando una inscripción se crea con `verify.external_subscription` (consulta [Enroll payment method](/es/reference/payment-methods-direct-workflow/enroll-payment-method-api)), el objeto se devuelve en la **respuesta de la inscripción** y se conserva en el **pago de verificación**; no forma parte del payload del webhook de inscripción. Para correlacionarlo después, usa el pago de verificación: su id viene en la respuesta de la inscripción (`verify.payment.id`) y el objeto se devuelve en [Retrieve payment](/reference/payments/retrieve-payment-by-id) y en los webhooks de pago.
+  Cuando una inscripción se crea con `verify.external_subscription` (consulta [Enroll payment method](/es/reference/payment-methods-direct-workflow/enroll-payment-method-api)), el objeto se devuelve en la **respuesta de la inscripción** y se conserva en el **pago de verificación**; no forma parte del payload del webhook de inscripción. Para correlacionarlo después, usa el pago de verificación: su id viene en la respuesta de la inscripción (`verify.payment.id`) y el objeto se devuelve en [Retrieve payment](/es/reference/payments/retrieve-payment-by-id) y en los webhooks de pago.
 </Info>
 
 ## Payouts {#payouts}
@@ -3174,6 +3184,7 @@ El siguiente objeto JSON presenta un ejemplo de una estructura de datos relacion
       "value": 30000,
       "refunded": 30000,
       "captured": 0,
+      "authorized": 30000,
       "currency_conversion": {
         "code": "ccv_01HVK3Z9M2...",
         "cardholder_currency": "USD",

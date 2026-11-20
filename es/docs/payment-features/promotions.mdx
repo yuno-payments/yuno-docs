@@ -1,0 +1,232 @@
+---
+title: "Promociones"
+description: "Define un descuento una sola vez y deja que Yuno lo aplique a los pagos que califican, con el precio que el cliente vio en el checkout"
+noindex: true
+---
+
+Una promoción es un descuento que defines una sola vez, por ejemplo "10% de descuento con tarjetas de crédito en octubre". Yuno revisa un pago contra tus promociones cuando pides una cotización y cobra exactamente el precio cotizado cuando el pago lleva esa cotización. En la página de checkout de un enlace de pago, Yuno hace todo por ti y muestra el precio con descuento.
+
+<Warning>
+**Las promociones se habilitan por organización**
+
+Las promociones están desactivadas por defecto. Yuno las activa para tu **organización**, y entonces funcionan en las cuentas de esa organización. Pide a tu Technical Account Manager o Key Account Manager que las habilite, primero en sandbox y luego en producción.
+
+Hasta que se habiliten, ninguna promoción se aplica a tus pagos: [Create Promotion Quote](/es/reference/promotions/create-promotion-quote) responde `204` y el checkout muestra el precio regular.
+</Warning>
+
+## Cómo funciona {#how-it-works}
+
+Una promoción llega a un pago en tres pasos. La **cotización** es el vínculo entre ellos: es el precio que el cliente vio, y el pago cobra ese precio.
+
+1. **Crea la promoción.** Usa el Dashboard de Yuno. Defines el descuento, las fechas y las condiciones que debe cumplir un pago (BIN o rango de BIN de la tarjeta, tipo de tarjeta, método de pago, país, moneda, monto mínimo o máximo). Para dar un código a tus clientes, crea una promoción con código mediante la API. Consulta [Códigos de promoción](/es/docs/payment-features/promotion-codes).
+2. **Obtén una cotización.** Antes del pago, Yuno le pone precio: qué promoción aplica, el monto original, el descuento y el cobro. La respuesta incluye `quote_id`, `promotions` (una entrada por ahora, con `id`, `name`, `description`, `discount` y `discount_amount`), `original_amount`, `discount_amount`, `charge_amount` y `expires_at`. En la página de checkout de un enlace de pago esto ocurre automáticamente. Con el SDK Web, el SDK la pide y entrega la cotización a tu página. Con una integración directa por API, llamas a [Create Promotion Quote](/es/reference/promotions/create-promotion-quote).
+3. **Crea el pago con la cotización.** Envía el `amount` original y `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": "qte_…" }]` en [Create Payment](/es/reference/payments/create-payment). Yuno cobra el total cotizado y devuelve el desglose. La página de checkout de un enlace de pago agrega la línea automáticamente; con el SDK Web o la API, la agrega tu servidor.
+
+| Integración | Pide la cotización | Muestra el precio | Envía la línea `YUNO_PROMOTION` |
+| --- | --- | --- | --- |
+| Enlace de pago (página de checkout alojada por Yuno) | El checkout | El checkout | El checkout |
+| SDK Web (checkout Full y Lite) | El SDK | Tu página, desde `onPromotionQuoteUpdated` | Tu servidor, desde `tokenWithInformation.quote` |
+| API directa | Tu servidor | Tu app | Tu servidor |
+| Seamless | No compatible | No compatible | No compatible |
+
+<Note>
+**Una promoción solo se aplica cuando el pago lleva un id de cotización o un código en una línea de descuento**
+
+Yuno nunca aplica un descuento a un pago por sí mismo. Un pago sin `quote_id` ni `code` en `additional_data.order.discounts` se cobra completo, exactamente como hoy, aunque una promoción hubiera coincidido. Un id de cotización enviado en cualquier otro lugar se ignora, y el pago se cobra completo.
+</Note>
+
+## Habilita las promociones para tu organización {#enable-promotions-for-your-organization}
+
+1. Pide a tu Technical Account Manager o Key Account Manager que habilite las promociones para tu organización. Empieza con sandbox.
+2. Una vez activadas, da a los miembros del equipo que trabajan con promociones el permiso **Manage promotions** (para crearlas y deshabilitarlas) y el permiso **View promotions** (para verlas), y luego crea tus promociones desde el Dashboard. Cada promoción pertenece a un `account_id`, la cuenta que tienes seleccionada cuando la creas. Si ejecutas la misma campaña en varias cuentas, créala una vez por cuenta.
+3. Prueba un pago en sandbox con una tarjeta que cumpla las condiciones y luego solicita producción.
+
+Yuno también puede desactivar las promociones para una organización. Cuando están desactivadas, las cotizaciones responden `204` y el checkout muestra el precio regular, así que el cliente nunca ve un descuento que el pago no respeta. Yuno también puede deshabilitar temporalmente las promociones para todas las organizaciones. Mientras estén deshabilitadas, las cotizaciones también responden `204`, y un pago que aún lleva una cotización se rechaza con `422 PROMOTION_ENGINE_UNAVAILABLE`: crea el pago de nuevo sin la promoción. Un pago que lleva un código se rechaza con `422 PROMOTION_NOT_APPLICABLE` y el motivo `ENGINE_UNAVAILABLE`.
+
+## Crea una promoción {#create-a-promotion}
+
+Crea promociones en el Dashboard de Yuno, o crea promociones con código mediante la API ([Create Promotion](/es/reference/promotions/create-promotion)). Defines el nombre, una descripción opcional (el checkout muestra ambos), el calendario, el descuento y las condiciones. [El objeto Promotion](/reference/promotions/the-promotion-object) describe cada campo y sus límites.
+
+Cosas que debes saber antes de crear una:
+
+* **Las promociones no se pueden editar.** El único cambio es deshabilitarla, y es definitivo. Para cambiar un descuento, deshabilita la promoción y crea una nueva. Así cada pago pasado sigue siendo explicable.
+* **No se pueden eliminar.** Una promoción deshabilitada o vencida permanece en tu lista.
+* **El estado sigue las fechas.** `SCHEDULED` antes de `starts_at`, `ACTIVE` dentro de la ventana, `EXPIRED` después de `ends_at` y `DISABLED` una vez que la deshabilitas. Las fechas son UTC.
+* **Deben cumplirse todas las condiciones.** AND entre las claves de condición, OR dentro de la lista `values` de cada clave. Omite una clave para no tener condición en esa dimensión.
+* **Los descuentos fijos tienen una moneda.** Un descuento `FIXED` lista un monto por moneda (cada uno mayor que cero). Cuando también defines una condición de monto, ambas deben listar las mismas monedas, o Yuno rechaza la promoción.
+
+## Códigos de promoción {#promotion-codes}
+
+Una promoción puede requerir un código. Créala con la API, con `redemption.mode` en `CODE`. Envía un código propio, o un prefijo y Yuno construye el código a partir de él. Luego envía el código en una línea de descuento de [Create Payment](/es/reference/payments/create-payment): `additional_data.order.discounts: [{ "code": "SUMMER10" }]`. Yuno intercambia el código por una cotización, cuenta un uso del código y cobra el monto con descuento. Una promoción con código puede limitar sus usos con `limits.total`. Consulta [Códigos de promoción](/es/docs/payment-features/promotion-codes) para ver el flujo completo, y [Create Promotion Quote](/es/reference/promotions/create-promotion-quote#price-a-promotion-code) para mostrar el precio de un código antes del pago. Esa respuesta es una vista previa, sin `quote_id`: el pago lleva el código. Un pago enviado con `X-Dry-Run: true` no puede llevar un código.
+
+## Cuando coinciden varias promociones {#when-more-than-one-promotion-matches}
+
+Un pago recibe **una** promoción. Las promociones no se acumulan.
+
+Cuando dos o más promociones coinciden con el mismo pago, Yuno elige **la que más ahorra al cliente**. Si dos ahorran el mismo monto, gana la más antigua (el `created_at` más temprano); si también hay empate, gana el `id` más pequeño. El resultado es el mismo cada vez que lo pides.
+
+Un código compite en la misma selección. Cuando un pago lleva un código, la promoción del código y las promociones automáticas que coinciden con el pago compiten, y el código no tiene ventaja. Un código que falla se rechaza con su propio motivo, y ninguna promoción automática ocupa su lugar. Consulta [Códigos de promoción](/es/docs/payment-features/promotion-codes#when-a-code-and-an-automatic-promotion-both-apply).
+
+| Pago de USD 250 | Ahorro | Resultado |
+| --- | --- | --- |
+| Promoción A: 10% de descuento | USD 25 | |
+| Promoción B: USD 30 de descuento | USD 30 | **Se aplica** |
+
+Un descuento fijo está limitado al monto del pago, pero una promoción nunca hace que un cobro sea cero: una cotización cuyo cobro sería cero responde `204` (no se aplica nada), y un pago cuya cotización cobraría cero se rechaza con `422 PROMOTION_QUOTE_INVALID`. Un pago o una solicitud de cotización que lleva un código y cobraría cero se rechaza con `422 PROMOTION_NOT_APPLICABLE` y el motivo `ZERO_CHARGE`; consulta [Códigos de promoción](/es/docs/payment-features/promotion-codes#uses-and-limits). Un descuento porcentual se redondea hacia arriba en la mitad a la unidad más pequeña de la moneda, y una promoción cuyo descuento es cero no se aplica.
+
+## Lo que el cliente ve en el checkout {#what-the-customer-sees-at-checkout}
+
+En la página de checkout de un enlace de pago no construyes nada. En cuanto el checkout identifica la tarjeta a partir de los primeros dígitos que escribe el cliente, pide la cotización a Yuno. Cuando una promoción aplica, el checkout:
+
+1. Muestra el nombre de la promoción sobre las filas de precio.
+2. **Actualiza el resumen de la orden**: el precio original, el descuento y el nuevo total. El botón de pago sigue diciendo "Pagar": el nuevo total está en el resumen.
+
+Si el cliente cambia la tarjeta, o cambia a un método de pago que no califica, el resumen vuelve al precio regular. Cuando ninguna promoción aplica, el checkout se ve exactamente como hoy. Si Yuno rechaza el pago por causa de la cotización (un error `PROMOTION_*`, consulta [más abajo](#the-customer-pays-the-quoted-price-or-the-payment-is-rejected)), el checkout muestra "El precio cambió. Revísalo y paga de nuevo.", se monta otra vez y el cliente ingresa la tarjeta de nuevo; las promociones quedan desactivadas durante el resto de ese checkout, así que el resumen de la orden muestra el precio regular y el cliente lo paga.
+
+| Resumen de la orden | USD |
+| --- | --- |
+| Precio original | 250.00 |
+| Descuento | − 25.00 |
+| **Total a pagar** | **225.00** |
+
+Solo los enlaces de pago tienen esto. Con el SDK Web el checkout no cambia el precio: lo hace tu página, como se describe a continuación.
+
+## Integración con el SDK Web {#web-sdk-integration}
+
+Con el SDK Web (checkout Full y Lite), el SDK pide la cotización a Yuno con tu clave pública en cuanto identifica la tarjeta a partir de los primeros dígitos que escribe el cliente, y para cada una de las tarjetas guardadas del cliente. Cuando una promoción aplica, muestra una etiqueta junto a la tarjeta ("10% de descuento"), pero no cambia el precio: tú muestras el precio y envías la cotización en el pago. Las promociones no se aplican en Seamless. Las wallets aún no están incluidas (consulta [más abajo](#whats-not-included-yet)), así que los botones externos nunca reciben una cotización por ahora.
+
+1. **Muestra el precio.** Pasa `onPromotionQuoteUpdated` a `startCheckout`. Recibe la promoción que aplica al método de pago que el cliente seleccionó, y `null` cuando no hay ninguna: ninguna promoción aplica, el cliente cambió la tarjeta o el método de pago, o la cotización venció. Entonces el SDK pide de nuevo y llega una nueva promoción si alguna aplica, así que `null` puede llegar justo antes. Muestra su `computed.total` (lo que paga el cliente), `computed.discount` y `name`, y vuelve al precio regular con `null`. La [referencia del SDK Web](/es/docs/sdks/resources/references/web#promotions) lista cada campo.
+2. **Envía la cotización en el pago.** Cuando el cliente paga, tu callback `yunoCreatePayment` recibe `tokenWithInformation`. Cuando hay una cotización vigente para esa tarjeta, `tokenWithInformation.quote` contiene la línea de descuento, `{ "type": "YUNO_PROMOTION", "quote_id": "…" }`. Desde tu servidor, crea el pago con el `amount` original y `additional_data.order.discounts: [tokenWithInformation.quote]`, como se muestra [más abajo](#create-the-payment-with-the-quote). Sin la línea, el pago se cobra completo.
+
+Una cotización nunca bloquea el checkout: un `204`, un error o un tiempo de espera agotado deja el precio regular y el SDK no muestra etiqueta. La [referencia del SDK Web](/es/docs/sdks/resources/references/web) lista los callbacks.
+
+## Integración directa con la API {#direct-api-integration}
+
+Sin la página de checkout de un enlace de pago ni el SDK Web, tú pides la cotización y la envías en el pago. Llama a [Create Promotion Quote](/es/reference/promotions/create-promotion-quote) desde tu servidor con tu clave secreta (`amount` en el cuerpo), o desde el navegador con tu clave pública (`checkout_session` en lugar de `amount`; Yuno toma la cuenta de la sesión de checkout, así que `account_id` es opcional ahí, y un valor que envíes debe coincidir con la cuenta de la sesión; `country` se sigue validando contra la sesión). En una integración con el SDK Web, el SDK ya hace lo segundo por ti.
+
+1. **Obtén la cotización.** Envía el contexto del pago: cuenta, país y `payment_method`. Para una tarjeta, envía dentro de `payment_method` su `bin` (los primeros 6 a 8 dígitos de la tarjeta) con `card_type`, o un token (`token` o `vaulted_token`) a partir del cual Yuno resuelve la tarjeta. Nunca ambos: un `bin` junto con un token, un `bin` junto con un token del vault, o un `token` junto con un `vaulted_token` se rechaza con `400 INVALID_PARAMETERS`, y también un `bin` con menos de 6 dígitos, más de 8 (nunca envíes el número completo de la tarjeta) o cualquier cosa que no sean dígitos. Una promoción con una condición `bins` necesita el BIN, y una con una condición `card_types` necesita el `card_type` (no el BIN); sin ellos no se aplica. Un BIN de 6 dígitos solo coincide con condiciones que cubren todo su bloque de 6 dígitos, así que envía 8 dígitos cuando una promoción lista prefijos de 8 dígitos o rangos estrechos. Las wallets (Apple Pay, Google Pay) no son un destino compatible en esta versión (consulta [más abajo](#whats-not-included-yet)): no construyas todavía sobre una cotización de wallet.
+2. **Muestra el precio.** Con `200`, muestra `charge_amount` a tu cliente. Con `204`, crea el pago como de costumbre, sin `quote_id` en una línea de descuento. Un `204` también significa que Yuno no pudo poner precio al pago a tiempo, que Yuno deshabilitó temporalmente las promociones, o que una promoción automática haría que el cobro fuera cero. Si la solicitud falla (`408`, `5xx` o sin respuesta), crea el pago también al precio completo: un pago nunca depende de una cotización.
+3. **Crea el pago con la cotización.** Envía el `amount` original y `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": "<quote_id>" }]`, como se muestra a continuación.
+
+### Crea el pago con la cotización {#create-the-payment-with-the-quote}
+
+Envía el monto **original** y una línea de descuento con `type: YUNO_PROMOTION` y el `quote_id` en [Create Payment](/es/reference/payments/create-payment). Yuno rechaza un pago que envía el monto con descuento en lugar del original. Cada línea tiene un `type`: `MERCHANT` (el valor por defecto) para un descuento que calculaste tú, con `id`, `name` y `unit_amount`; `YUNO_PROMOTION` para una cotización, solo con `quote_id`. Escribe el `type` exactamente como se muestra, en mayúsculas: cualquier otra grafía, como `yuno_promotion`, devuelve `400`. Una línea `YUNO_PROMOTION` rechaza `id`, `name` y `unit_amount`; una línea `MERCHANT` rechaza `quote_id`; cualquier mezcla devuelve `400`. Una línea con `quote_id` y sin `type` se interpreta como `YUNO_PROMOTION`, y también una línea con `code` y sin `type` (consulta [Códigos de promoción](/es/docs/payment-features/promotion-codes#send-the-code-on-the-payment)). Una línea de promoción por pago, un id de cotización o un código, y como máximo 10 líneas de descuento en total.
+
+El `quote_id` es opaco y largo: unos 300 a 730 caracteres, así que guárdalo completo, hasta 1000 caracteres, y nunca lo analices ni lo acortes. Yuno rechaza un `quote_id` de más de 1000 caracteres, o con espacios o caracteres de control, con `422 PROMOTION_QUOTE_INVALID`. La línea `YUNO_PROMOTION` se acepta solo en Create Payment (`POST /v1/payments`).
+
+Esta es la parte de la solicitud que importa aquí; el resto es el cuerpo de [Create Payment](/es/reference/payments/create-payment) que ya envías.
+
+```json Request
+{
+    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+    "country": "AR",
+    "amount": { "currency": "USD", "value": 250.00 },
+    "additional_data": {
+        "order": {
+            "discounts": [{ "type": "YUNO_PROMOTION", "quote_id": "qte_eyJ2IjoxLCJrIjoi…" }]
+        }
+    }
+}
+```
+
+<Warning>
+**No restes el descuento tú mismo**
+
+Envía el `amount` original y el `quote_id` en una línea de descuento. Yuno calcula el cobro.
+</Warning>
+
+### Lo que lleva el pago {#what-the-payment-carries}
+
+`amount` en la respuesta y en cada webhook `payment.*` es el monto que enviaste, nunca reescrito. El monto neto cobrado está en la transacción (`transactions.amount`, un número en la moneda del pago). El descuento total de Yuno es un nuevo `discount_amount`, la suma de las líneas `YUNO_PROMOTION`. Yuno completa tu línea de descuento `YUNO_PROMOTION` (`quote_id`, `id` = el id de la promoción, `unit_amount` = el descuento en la moneda del pago y, cuando Yuno lo tiene, `name`). Tus propias líneas `MERCHANT` conservan su `id`, `name` y `unit_amount`. Yuno pide al proveedor que cobre el monto neto; la línea de descuento llega a un proveedor, sin su `quote_id`, solo cuando su conector asigna los descuentos de la orden.
+
+```json Response
+{
+    "id": "b2c9d0e1-6f0e-4c2a-9c55-7d8a0b311f2e",
+    "status": "SUCCEEDED",
+    "amount": { "currency": "USD", "value": 250.00 },
+    "discount_amount": { "currency": "USD", "value": 25.00 },
+    "additional_data": {
+        "order": {
+            "discounts": [
+                {
+                    "type": "YUNO_PROMOTION",
+                    "quote_id": "qte_eyJ2IjoxLCJrIjoi…",
+                    "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
+                    "name": "10% off with credit cards - Mother's Day",
+                    "unit_amount": 25.00,
+                    "discount_indicator": null,
+                    "discount_rate": null
+                },
+                {
+                    "type": "MERCHANT",
+                    "id": "LOYALTY-5",
+                    "name": "Loyalty 5%",
+                    "unit_amount": 12.50,
+                    "discount_indicator": null,
+                    "discount_rate": null
+                }
+            ]
+        }
+    },
+    "transactions": {
+        "type": "PURCHASE",
+        "amount": 225.00
+    }
+}
+```
+
+| Campo | Significado |
+| --- | --- |
+| `amount` | El monto que enviaste. Nunca se reescribe. |
+| `discount_amount` | Descuento total de Yuno en este pago (suma de las líneas `YUNO_PROMOTION`), como `currency` y `value`. En el nivel superior en las respuestas de Create Payment y Refund; dentro de `payment` en los webhooks, en Retrieve Payment y en las respuestas de captura y cancelación. Ausente cuando no se aplicó ninguna promoción. |
+| `additional_data.order.discounts[]` con `type: YUNO_PROMOTION` | Tu línea de cotización, completada por Yuno después de la verificación: `quote_id`, `id` (el id de la promoción), `unit_amount` (el descuento en la moneda del pago) y `name` cuando Yuno lo tiene. |
+| `additional_data.order.discounts[]` con `type: MERCHANT` | Tus propios descuentos, con el `id`, `name` y `unit_amount` que enviaste. En un pago con promoción van después de la línea de Yuno y llevan `type: MERCHANT`, igual en la respuesta de Create Payment, en Retrieve Payment y en los webhooks. |
+| `transactions.amount` | El monto neto cobrado: `amount` menos `discount_amount`. Create Payment y los webhooks llevan un objeto `transactions`; Retrieve Payment devuelve `transactions[]`. |
+
+* `amount − discount_amount` = el monto de la transacción.
+* `discount_amount` y la línea de descuento de Yuno describen la promoción adjunta cuando se creó el pago, sea cual sea el resultado: Retrieve Payment y los webhooks de un pago rechazado, cancelado o reembolsado siguen mostrándolos (las respuestas de cancelación y reembolso llevan solo `discount_amount`), y los reembolsos nunca los reducen. Usa `status`, `sub_status` y la transacción para saber si se cobró el neto.
+* Un pago sin promoción es exactamente la respuesta de hoy, byte por byte.
+* Cada webhook `payment.*` lleva el mismo `discount_amount` y la misma línea de descuento completada.
+
+### Reembolsos, capturas y cancelaciones {#refunds-captures-and-cancellations}
+
+Las operaciones trabajan sobre el monto neto que pagó el cliente, mientras que `amount.value` sigue siendo el original. En el ejemplo anterior, `amount` es 250.00 y el neto es 225.00:
+
+* **Reembolso.** Deja `amount` vacío para reembolsar lo que el cliente pagó y aún no se ha reembolsado (225.00). Un reembolso mayor que eso se rechaza con `400 INVALID_PARAMETERS`. El pago llega a `REFUNDED` cuando se reembolsa el neto, así que `amount.refunded` es entonces igual a 225.00, no a `amount.value`; antes de eso su `sub_status` es `PARTIALLY_REFUNDED`.
+* **Captura.** Deja `amount` vacío para capturar lo que se autorizó (el neto). `amount.captured` pasa a ser 225.00 y el `sub_status` `CAPTURED`; un monto menor lo deja en `PARTIALLY_CAPTURED`.
+* **Cancelación.** Anula la autorización por el neto; el pago conserva su `discount_amount`.
+* **Todo lo que lee el monto usa el neto**: reglas de enrutamiento, fraude, 3D Secure y recibos. Un pago dividido no puede asignar más que el neto (`400`). Las cuotas no son una combinación compatible en esta versión (consulta [más abajo](#whats-not-included-yet)).
+
+### El cliente paga el precio cotizado, o el pago se rechaza {#the-customer-pays-the-quoted-price-or-the-payment-is-rejected}
+
+Una cotización es válida durante **30 minutos** después de emitirse (`expires_at`), en todas las rutas. Dentro de ese tiempo el pago cobra el precio cotizado, incluso si la fecha de fin de la promoción pasó después de emitirse la cotización. Un pago que ya se creó se completa al precio cotizado, incluso si `expires_at` pasa mientras tanto.
+
+Si Yuno no puede respetar la cotización, **rechaza el pago**: no se crea ningún pago y nunca cobra el precio completo en silencio. Vuelve a cotizar y muestra el nuevo precio, o confirma el precio completo con el cliente. Una cotización no se consume, así que un reintento después de un rechazo puede reutilizarla mientras sea válida, y una cotización puede respaldar varios pagos. El reintento es una solicitud nueva: envía un nuevo `X-Idempotency-Key`. Un rechazo que proviene de verificar la cotización consume su clave, y reutilizarla devuelve `400 IDEMPOTENCY_DUPLICATED`. Cada rechazo en Create Payment usa el cuerpo de error estándar (`code` y `messages[]`), sin campo `reason`. Decide según `code`: `messages[]` es texto informativo cuya redacción puede variar para el mismo código y puede cambiar, así que nunca lo analices.
+
+| HTTP | Código | Cuándo | Qué hacer |
+| --- | --- | --- | --- |
+| `422` | `PROMOTION_QUOTE_INVALID` | El id de cotización tiene un formato incorrecto (más de 1000 caracteres, o con espacios o caracteres de control), no es uno emitido por Yuno (su firma no se verifica), Yuno no puede aplicarlo como una sola promoción, o la promoción haría que el cobro fuera cero. | Obtén una nueva cotización. |
+| `422` | `PROMOTION_QUOTE_EXPIRED` | La cotización superó `expires_at`. | Obtén una nueva cotización. |
+| `422` | `PROMOTION_ACCOUNT_MISMATCH` | El pago está en una cuenta distinta a la de la cotización. | Usa la cotización en la cuenta para la que se hizo. |
+| `422` | `PROMOTION_AMOUNT_MISMATCH` | El monto o la moneda difieren de la cotización. | Envía el monto original cotizado. |
+| `422` | `PROMOTION_CONTEXT_MISMATCH` | El país, el método de pago, el tipo de tarjeta o el BIN de la tarjeta (primeros 6 a 8 dígitos) difieren de la cotización, en los campos que usan las condiciones de la promoción, o la sesión de checkout difiere de aquella con la que se hizo la cotización. También se devuelve para un pago de PayPal con un monto alternativo en otra moneda, y para un pago que lleva una conversión de moneda: una promoción se cotiza en la moneda propia del pago. | Obtén una nueva cotización para el contexto real. Para usar una promoción, envía el pago en su propia moneda, sin conversión. |
+| `422` | `PROMOTION_ENGINE_UNAVAILABLE` | Yuno no pudo verificar la cotización a tiempo (después de un reintento), o Yuno deshabilitó temporalmente las promociones. No se cobró nada. | La misma acción cubre ambos casos: muestra el precio regular y crea el pago de nuevo sin la promoción (sin línea `YUNO_PROMOTION`, con un nuevo `X-Idempotency-Key`). No adivines un precio. Una nueva solicitud de cotización responde `204` mientras esto dure. |
+| `422` | `PROMOTION_SUBSCRIPTION_UNSUPPORTED` | El pago lleva una `subscription`, una `external_subscription` o una `external_invoice`. Las promociones se aplican a pagos únicos. | Envía el pago sin la línea de cotización. |
+| `400` | `INVALID_PARAMETERS` | Una línea de descuento rompe las reglas: mezcla campos de `MERCHANT` y `YUNO_PROMOTION`, tiene un `type` distinto de exactamente `MERCHANT` o `YUNO_PROMOTION`, o un `quote_id` en blanco, el pago lleva dos líneas de cotización o más de 10 líneas, o la línea está en una ruta que no la admite (pagos multimétodo, enlaces de pago, sesiones de checkout, captura). | Corrige la línea; `messages[]` nombra el campo. |
+| `400` | `IDEMPOTENCY_DUPLICATED` | Reutilizaste el `X-Idempotency-Key` de un pago que se rechazó mientras se verificaba su cotización. | Usa una clave nueva. |
+
+La verificación compara la cuenta, el monto, el vencimiento y la sesión de checkout cuando ambas partes la tienen, además de los datos del pago que participan en las condiciones de la promoción: país, método de pago, tipo de tarjeta y BIN de la tarjeta (un BIN que el pago no lleva no se compara). Un monto modificado u otra cuenta nunca paga con la cotización, y tampoco una tarjeta con otro BIN u otro tipo de tarjeta cuando la promoción tiene una condición de tarjeta. Una promoción sin condición de tarjeta acepta cualquier tarjeta.
+
+## Qué no está incluido todavía {#whats-not-included-yet}
+
+* **Suscripciones y pagos recurrentes.** Las promociones se aplican a pagos únicos; un pago que lleva una `subscription`, una `external_subscription` o una `external_invoice` se rechaza con `PROMOTION_SUBSCRIPTION_UNSUPPORTED`, y la página de checkout de un enlace de pago de suscripción no muestra ninguna promoción y cobra el precio regular.
+* **Otras rutas de pago.** La línea de cotización se acepta solo en Create Payment, no en pagos multimétodo, enlaces de pago ni sesiones de checkout creados mediante la API, ni en captura. Una línea de código sigue la misma regla. Un enlace de pago abierto en su página de checkout recibe el descuento cuando el cliente paga.
+* **Conversión de moneda.** Una promoción se cotiza en la moneda propia del pago y Yuno no convierte un pago con promoción. Un pago con una promoción de Yuno y una conversión de moneda se rechaza con `422 PROMOTION_CONTEXT_MISMATCH`: define tu precio en cada moneda y envía el pago sin la conversión.
+* **Seamless.** El SDK crea el pago por sí mismo, así que no se pide ni se aplica ninguna promoción.
+* **Métodos de pago.** Esta versión es solo para tarjetas. PSE, transferencias bancarias, métodos de efectivo y de voucher, y otros métodos de pago alternativos no son un destino compatible: no configures las condiciones de una promoción para uno, y no pidas una cotización para un pago que use uno.
+* **Wallets.** Apple Pay y Google Pay no son un destino compatible en esta versión. No configures una promoción para un método de pago de wallet, y no construyas sobre los botones externos del SDK Web pidiendo una cotización. Yuno no lo bloquea hoy: una promoción de tarjeta sigue aplicándose a un pago de wallet que llega a Yuno tipificado como tarjeta, así que se cotiza y recibe descuento como cualquier otro pago con tarjeta.
+* **Cuotas.** Pagar un monto con promoción en cuotas no es compatible en esta versión, y Yuno tampoco lo bloquea hoy: un pago con promoción enviado con cuotas recibe el descuento, pero el plan de cuotas que se muestra al cliente se calcula sobre el monto original, sin descuento.
+* **Combinar promociones.** Una promoción por pago.
+* **Límites de uso en promociones automáticas.** Solo una promoción con código puede limitar sus usos (`limits.total`). Una promoción automática no tiene límite de canjes, y una cotización no se consume. Ninguna promoción limita el monto total que descuenta.
+* **Editar una promoción.** Deshabilita y crea una nueva.
+* **Cupones.**

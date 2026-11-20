@@ -1,0 +1,449 @@
+---
+title: Pagos en iOS
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Integra flujos de pago con full-checkout en iOS, desde la creación de la sesión de checkout hasta el manejo del resultado del pago"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+El SDK de iOS facilita la integración de flujos de pago en tu app de iOS.
+
+## Recursos adicionales {#additional-resources}
+
+* Accede a las [Notas de la versión](/es/changelog/ios) o al [repositorio del SDK de Yuno para iOS](https://github.com/yuno-payments/yuno-sdk-ios) para verificar la última versión disponible del SDK.
+
+## Requisitos {#requirements}
+
+* [Swift Package Manager](https://www.swift.org/package-manager/)
+* iOS 14.0 o superior
+* Cuenta de Yuno activa; credenciales de API (obtenlas en el [Yuno Dashboard](https://dashboard.y.uno/) → **Developers** > **Credentials**)
+* Crea la `checkout_session` y el pago mediante la API; crea un cliente con el [endpoint Create customer](/es/reference/customers/create-customer) antes de crear un pago
+
+El primer paso es incluir la biblioteca en tu proyecto. YunoSDK ya no se publica en CocoaPods; la última versión en CocoaPods es la 2.30.0. Agrega el SDK de Yuno para iOS con Swift Package Manager:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.31.0"))
+]
+```
+
+Agrega `YunoSDK` (dinámico) o `YunoSDK-Static` (estático, el que distribuía CocoaPods) al target de tu app, nunca ambos.
+
+Una vez completado el Paso 1, continúa con la integración de full-checkout.
+
+## Parámetros {#parameters}
+
+Para ver la lista completa de parámetros y YunoConfig, consulta la [Referencia común del SDK de iOS](/es/docs/sdks/resources/references/ios).
+
+| Parámetro                  | Descripción                                                                                                                                                            |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`          | ID de la sesión de checkout de tu backend (API Create checkout session). Obligatorio.                                                                                  |
+| `countryCode`              | Código de país ISO (p. ej., `BR`). Obligatorio.                                                                                                                        |
+| `language`                 | Código de idioma de la interfaz. Opcional.                                                                                                                             |
+| `viewController`           | UIViewController que presenta el flujo de pago. Obligatorio para el delegate.                                                                                          |
+| `yunoCreatePayment(with:)` | Delegate: crea el pago en tu backend con el token de un solo uso.                                                                                                      |
+| `yunoPaymentResult(_:)`    | Delegate: el pago finalizó. Recibe un valor `Yuno.Result` (p. ej., `.succeeded`, `.fail`, `.processing`). Consulta la [referencia de estados de pago](/es/reference/getting-started/response-codes) para ver la correspondencia de estados. |
+| `YunoConfig` (initialize)  | Opcional: `appearance`, `saveCardEnabled`. Consulta la Referencia común.                               |
+
+## full-checkout {#full-checkout}
+
+Implementa el SDK completo de iOS: una solución de pago completa con visualización automática de métodos de pago y personalización mínima de la interfaz. Consulta los [Requisitos](#requirements) más arriba.
+
+### Paso 1: incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+Sigue los pasos de [Incluye la biblioteca en tu proyecto](#include-the-library-in-your-project) más arriba.
+
+### Paso 2: inicializa el SDK con la clave pública {#step-2-initialize-sdk-with-the-public-key}
+
+Obtén tus claves públicas de API en el [Yuno Dashboard](https://dashboard.y.uno/).
+
+Para comenzar a usar el full checkout de Yuno para iOS, importa e inicializa Yuno:
+
+```swift
+import YunoSDK
+
+Yuno.initialize(
+    apiKey: "PUBLIC_API_KEY",
+    config: YunoConfig(),
+    callback: { print("Yuno SDK initialized") }
+)
+```
+
+El full checkout te permite configurar la apariencia y el proceso mediante la clase `YunoConfig`. Las opciones disponibles son:
+
+```swift
+struct YunoConfig {
+    var appearance: Appearance? = nil
+    var saveCardEnabled: Bool = false
+}
+```
+
+#### Opciones {#options}
+
+Opciones de personalización:
+
+| Opción de personalización | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `appearance`            | Habilita la personalización de la interfaz en todo el SDK. Úsala para definir estilos visuales globales como colores, fuentes y la apariencia de los botones. Para más información, consulta la página de personalizaciones del SDK.                                                                                                                                                                                                                                         |
+| `saveCardEnabled`       | Habilita la casilla Save card en los flujos de tarjeta. Consulta la sección Save card para más información.                                                                                                                                                                                                                                                                                                                                                                  |
+| `language`              | Define el idioma que se usará en los formularios de pago. Puedes configurarlo con una de las opciones de idioma disponibles: `ar` (árabe), `en` (inglés), `es` (español), `pt` (portugués), `fil` (filipino), `id` (indonesio), `ms` (malayo), `th` (tailandés), `zh-TW` (chino tradicional), `zh-CN` (chino simplificado), `vi` (vietnamita), `fr` (francés), `pl` (polaco), `it` (italiano), `de` (alemán), `ru` (ruso), `tr` (turco), `nl` (neerlandés), `sv` (sueco), `ko` (coreano), `ja` (japonés), `hi` (hindi), `bn` (bengalí), `ml` (malayalam), `ur` (urdu). |
+
+### Paso 3: crea la sesión de checkout {#step-3-create-the-checkout-session}
+
+Cada pago requiere una nueva `checkout_session`. Usa el endpoint [Create checkout session](/es/reference/checkout-sessions/create-checkout-session) para crear una; usa esa sesión para iniciar el pago.
+
+Si tu flujo de pago envía a los usuarios a un navegador externo (p. ej., para la autenticación 3DS o redirecciones bancarias), configura el `callback_url` al crear tu sesión de checkout. Consulta [Maneja el regreso desde el navegador externo](#step-6-handle-external-browser-return-optional) para más detalles.
+
+#### Opciones de la sesión de checkout {#checkout-session-options}
+
+| Parámetro            | Obligatorio | Descripción                                                                                                      |
+| -------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| `amount`             | Sí          | El objeto del monto principal de la transacción, que contiene `currency` (código ISO 4217) y `value` (monto numérico). |
+| `alternative_amount` | No          | Una representación alternativa en otra moneda con la misma estructura que `amount`. Útil para escenarios multimoneda. |
+| `callback_url`       | Recomendado | URL a la que se redirige a los usuarios de vuelta a tu app después de los flujos en navegador externo (3DS, redirecciones bancarias). |
+| `customer_id`        | Sí          | El ID del cliente obtenido del endpoint Create customer.                                                         |
+
+<Info>
+**Auth vs capture**
+
+Controla la autorización y la captura enviando `payment_method.detail.card.capture` en la sesión de checkout: `false` = solo autorizar, `true` = capturar de inmediato.
+</Info>
+
+### Paso 4: implementa el delegate de pago {#step-4-implement-the-payment-delegate}
+
+Crea una clase que adopte el protocolo `YunoPaymentDelegate`:
+
+<Info>
+**Requisitos de concurrencia de Swift 6**
+
+Si usas Swift 6, deberás implementar el protocolo `YunoPaymentDelegate` con consideraciones específicas de concurrencia. Consulta la guía [Concurrencia en Swift 6](/es/docs/sdks/resources/swift-6-concurrency) para ver las opciones de implementación detalladas y las mejores prácticas.
+</Info>
+
+```swift
+protocol YunoPaymentDelegate: AnyObject {
+    var checkoutSession: String { get }
+    var countryCode: String { get }
+    var language: String? { get }
+    var viewController: UIViewController? { get }
+
+    func yunoCreatePayment(with token: String)
+    func yunoCreatePayment(with token: String, information: [String: Any])
+    func yunoPaymentResult(_ result: Yuno.Result)
+}
+
+class ViewController: UIViewController, @preconcurrency YunoPaymentDelegate {
+    var checkoutSession: String { "438413b7-4921-41e4-b8f3-28a5a0141638" }
+    var countryCode: String { "BR" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
+
+    func yunoCreatePayment(with token: String) {
+        // Create payment on your backend
+    }
+
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        // Create payment with additional information
+    }
+
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        // Handle payment result
+    }
+}
+```
+
+#### Opciones {#options-1}
+
+| Parámetro                              | Descripción                                                                                                                                     |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`                      | El identificador único de la sesión de checkout.                                                                                                |
+| `countryCode`                          | Código del país donde se realiza el pago. Consulta [Cobertura por país](/es/docs/sdks/resources/country-coverage) para ver los países compatibles.                                  |
+| `language`                             | Código de idioma de los formularios de pago (p. ej., `"en"`, `"es"`, `"pt"`). Consulta [Idiomas compatibles](/es/docs/sdks/resources/languages-supported).                             |
+| `viewController`                       | El `UIViewController` usado para presentar el flujo de pago. Obligatorio para una presentación correcta de la interfaz.                         |
+| `yunoCreatePayment(with:)`             | Se llama cuando se genera un token de un solo uso. Crea el pago en tu backend.                                                                  |
+| `yunoCreatePayment(with:information:)` | Callback alternativo que incluye información adicional del token. Usa solo una de las versiones. Consulta [Información adicional del OTT](#ott-additional-information) para más detalles. |
+| `yunoPaymentResult(_:)`                | Se llama cuando finaliza el proceso de pago. Recibe un valor del enum `Yuno.Result`. Consulta la [referencia de estados de pago](/es/reference/getting-started/response-codes) para ver la correspondencia de estados. |
+
+<Danger>
+**Nota importante**
+
+Usa `yunoCreatePayment(with:)` **O** `yunoCreatePayment(with:information:)` según tus necesidades, pero no ambos. Llamar a ambos puede causar problemas.
+</Danger>
+
+#### Información adicional del OTT {#ott-additional-information}
+
+El callback `yunoCreatePayment(with:information:)` proporciona información detallada sobre el token de un solo uso a través del diccionario `information`. Esto es especialmente útil para obtener datos relacionados con la tarjeta, como el BIN del DPAN.
+
+| Clave | Descripción |
+| :--- | :--- |
+| `token` | El token de un solo uso (OTT). |
+| `vaulted_token` | El token almacenado en el vault, si aplica. |
+| `vault_on_success` | Boolean que indica si la tarjeta debe almacenarse en el vault tras un resultado exitoso. |
+| `type` | Tipo de método de pago (p. ej., `CARD`). |
+| `card_data` | Diccionario que contiene la información relacionada con la tarjeta. |
+
+**Atributos de Card Data**
+
+El diccionario `card_data` contiene los siguientes atributos:
+
+| Atributo  | Descripción |
+| :--- | :--- |
+| `iin` | El número de identificación del emisor (primeros 8 dígitos), también conocido como BIN del DPAN en Apple Pay/Google Pay. |
+| `lfd` | Los últimos cuatro dígitos de la tarjeta. |
+| `brand` | Marca de la tarjeta (p. ej., `VISA`, `MASTERCARD`). |
+| `type` | Tipo de tarjeta (p. ej., `CREDIT`, `DEBIT`). |
+| `issuer_name` | Nombre del emisor de la tarjeta. |
+| `country_code` | Código de país ISO del emisor. |
+| `category` | Categoría de la tarjeta (p. ej., `CLASSIC`, `PLATINUM`). |
+
+### Paso 5: monta el SDK con visualización automática de métodos de pago {#step-5-mount-the-sdk-with-automatic-payment-method-display}
+
+Usa `getPaymentMethodViewAsync()` para mostrar automáticamente todos los métodos de pago disponibles. Implementa el protocolo `YunoPaymentFullDelegate`:
+
+```swift
+protocol YunoPaymentFullDelegate: YunoPaymentDelegate {
+    func yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected)
+    func yunoDidUnenrollSuccessfully(_ success: Bool)
+    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)
+}
+
+class ViewController: UIViewController, @preconcurrency YunoPaymentFullDelegate {
+    // ... YunoPaymentDelegate implementation ...
+
+    func yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected) {
+        print("Payment method selected: \(paymentMethod.paymentMethodType)")
+    }
+
+    func yunoDidUnenrollSuccessfully(_ success: Bool) {
+        if success {
+            print("Payment method removed successfully")
+        }
+    }
+
+    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) {
+        // Update container height if needed
+    }
+}
+```
+
+Luego llama a `getPaymentMethodViewAsync()` para obtener la vista de métodos de pago:
+
+```swift
+let paymentMethodsView: UIView = await Yuno.getPaymentMethodViewAsync(delegate: self)
+
+// Add the view to your UI
+// For UIKit:
+view.addSubview(paymentMethodsView)
+
+// For SwiftUI:
+// Annotate the result as `some View` instead of `UIView`
+```
+
+El SDK devuelve el tipo de vista que coincide con la anotación de tipo:
+
+* **UIKit**: devuelve un `UIView`
+* **SwiftUI**: devuelve un `some View`
+
+<Danger>
+**Importante**
+
+Asegúrate siempre de que el contenedor de la vista de métodos de pago tenga restricciones o una configuración de diseño adecuadas. El SDK te notificará los cambios de altura mediante `yunoUpdatePaymentMethodsViewHeight(_:)` si es necesario.
+</Danger>
+
+#### Lista de métodos de pago desplegada {#unfolded-payment-method-list}
+
+Cuando **Unfolded display** está habilitado en el Checkout Builder ([Estilo de la lista de métodos de pago](/es/docs/using-yuno/dashboard-overview/checkout-builder#payment-method-list-style)), el formulario del método de pago seleccionado se abre en línea, debajo de su fila en la lista devuelta por `getPaymentMethodViewAsync()`, en lugar de abrirse en una pantalla aparte. El SDK lee esta configuración desde tu configuración de checkout, por lo que no necesitas cambiar el código para activarla.
+
+| Versión del SDK  | Formulario en línea                                                                                 |
+| :--------------- | :-------------------------------------------------------------------------------------------------- |
+| Antes de 2.22.0  | Solo tarjeta. Los demás métodos de pago abren su formulario en una pantalla aparte.                 |
+| 2.22.0 y posteriores | Tarjeta y métodos de pago alternativos (por ejemplo PIX, PSE o Boleto).                         |
+
+Apple Pay, Click to Pay y Revolut Pay mantienen su propia hoja de pago, y los métodos de pago que no recopilan datos omiten el formulario.
+
+Con la lista desplegada, tu botón de pago llama a `startPayment()` para cada método de pago. El SDK valida el formulario en línea, muestra los errores de los campos en su lugar si faltan datos y continúa el flujo (token de un solo uso, redirecciones y `continuePayment()`) una vez que el formulario es válido.
+
+<Warning>
+No combines la lista completa de métodos de pago con el flujo de renderizado (`startPaymentRenderFlow`) para mostrar el formulario del método de pago seleccionado en esa lista. Con la visualización desplegada activada, el formulario ya se muestra en línea en la lista, por lo que el cliente lo ve dos veces. Usa el flujo de renderizado solo en integraciones [Lite](/es/docs/sdks/lite-ios/checkout), donde creas tu propia lista de métodos de pago. Para saber cómo funciona el flujo de renderizado, consulta [Modo de renderizado](/es/docs/yuno-sdk/migration/ios/payment/render).
+</Warning>
+
+### Paso 6: inicia el proceso de pago {#step-6-start-the-payment-process}
+
+Después de mostrar los métodos de pago, llama a `startPayment()`:
+
+```swift
+Yuno.startPayment(showPaymentStatus: true)
+```
+
+#### Opciones {#options-2}
+
+| Parámetro           | Descripción                                                                                                                                                                                                         |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `showPaymentStatus` | Un booleano que especifica si el estado del pago debe mostrarse dentro de la interfaz de Yuno. Cuando es `true`, el SDK muestra las pantallas de estado predeterminadas. Cuando es `false`, tú manejas la visualización del estado mediante callbacks. |
+
+### Paso 7: obtén el token de un solo uso (OTT) {#step-7-get-the-one-time-token-ott}
+
+Después de que el cliente complete los datos solicitados en los formularios de pago de Yuno, obtendrás el token de un solo uso, un parámetro obligatorio para crear un pago con la API de Yuno.
+
+Yuno compartirá el token de un solo uso mediante la función `yunoCreatePayment` que proporcionaste en el Paso 4 al implementar el delegate. El token de un solo uso estará disponible en el callback.
+
+Se puede mostrar un indicador de carga mientras se genera el token de un solo uso. Usa el predeterminado de Yuno o implementa el tuyo con la configuración requerida.
+
+### Paso 8: crea el pago {#step-8-create-the-payment}
+
+Después de recibir el token de un solo uso del [Paso 7](#step-7-get-the-one-time-token-ott), crea el pago con el [endpoint Create payment](/es/reference/payments/create-payment). Usa la `checkout_session` del [Paso 3](#step-3-create-the-checkout-session) y el token de un solo uso para crear el pago.
+
+```swift
+func yunoCreatePayment(with token: String) {
+    // Call your backend to create the payment
+    createPaymentOnBackend(token: token) { result in
+        switch result {
+        case .success:
+            // Payment created successfully
+            // Call continuePayment() if needed
+            Yuno.continuePayment()
+        case .failure(let error):
+            // Handle error
+            print("Payment creation failed: \(error)")
+        }
+    }
+}
+```
+
+En tu backend, llama al endpoint Create payment:
+
+```http
+POST /v1/payments
+
+{
+  "payment_method": {
+    "token": "9ee44ac7-9134-4598-ae28-a26fec03099d"
+  },
+  "checkout_session": "438413b7-4921-41e4-b8f3-28a5a0141638"
+}
+```
+
+La respuesta del endpoint Create payment incluirá el parámetro `sdk_action_required`, que define si se requieren acciones adicionales para finalizar el pago según el tipo de pago.
+
+<Warning>
+**Obligatorio:** integra el método `continuePayment` después de crear el pago. Algunos métodos de pago asíncronos requieren acciones adicionales del cliente. Cuando la respuesta de la API establece `sdk_action_required` en `true`, llama a `Yuno.continuePayment()` para mostrar las pantallas necesarias.
+</Warning>
+
+### Paso 9: continúa el pago {#step-9-continue-payment}
+
+Yuno requiere integrar el método `continuePayment` del SDK después de crear el pago, ya que ciertos métodos de pago asíncronos requieren acciones adicionales del cliente para completarse. La respuesta del [endpoint Create payment](/es/reference/payments/create-payment), del Paso 8, incluirá un campo `sdk_action_required`. Si devuelve `TRUE`, debes llamar a la función `continuePayment()` para mostrar pantallas adicionales que permitan al cliente completar el pago. De lo contrario, este paso no es necesario.
+
+```swift
+Yuno.continuePayment()
+```
+
+Para mostrar tus propias pantallas de estado de pago, maneja el estado mediante el método delegate `yunoPaymentResult(_:)` en lugar de usar la visualización de estado predeterminada del SDK.
+
+### Paso 10: maneja el regreso desde el navegador externo (opcional) {#step-10-handle-external-browser-return-optional}
+
+<Danger>
+**Deep links y Mercado Pago Checkout Pro**
+
+Este paso solo es necesario si usas un método de pago que depende de deep links o de Mercado Pago Checkout Pro. Si tus métodos de pago no usan deep links, puedes omitir este paso.
+</Danger>
+
+Algunos métodos de pago sacan a los usuarios de tu app para completar la transacción. Una vez finalizado el pago, el usuario es redirigido de vuelta mediante un deep link. Actualiza tu `AppDelegate` para pasar la URL entrante al SDK de Yuno:
+
+```swift
+func application(_ app: UIApplication,
+                 open url: URL,
+                 options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+
+    guard url.scheme == "yunoexample" else { return false }
+
+    return Yuno.receiveDeeplink(url)
+}
+```
+
+Asegúrate de que el `url.scheme` coincida con el `callback_url` que proporcionaste al crear la `checkout_session`.
+
+### Paso 11: maneja el resultado del pago {#step-11-handle-payment-result}
+
+El SDK devuelve el resultado del pago mediante el método delegate `yunoPaymentResult(_:)`:
+
+```swift
+func yunoPaymentResult(_ result: Yuno.Result) {
+    switch result.status {
+    case .succeeded:
+        print("Payment succeeded")
+        // Navigate to success screen
+    case .fail:
+        print("Payment failed")
+        // Show error message
+    case .processing:
+        print("Payment is processing")
+        // Show processing message
+    case .reject:
+        print("Payment was rejected")
+        // Show rejection message
+    case .userCancelled:
+        print("User canceled payment")
+        // Handle cancellation
+    case .internalError:
+        print("Internal error occurred")
+        // Show error message
+    @unknown default:
+        break
+    }
+}
+```
+
+#### Estados del pago {#payment-states}
+
+| Estado          | Descripción                                                    | Acción requerida                      |
+| --------------- | -------------------------------------------------------------- | ------------------------------------- |
+| `succeeded`     | Pago completado correctamente                                  | No                                    |
+| `fail`          | El pago falló por problemas de validación, de red o técnicos   | Sí - Investigar y reintentar          |
+| `processing`    | Pago en curso, pendiente de aprobación                         | No                                    |
+| `reject`        | Pago rechazado (fondos insuficientes, detección de fraude, etc.) | Sí - Informar al usuario y sugerir acciones |
+| `internalError` | Ocurrió un error interno inesperado                            | Sí - Se requiere intervención técnica |
+| `userCancelled` | El usuario canceló el pago                                     | No                                    |
+
+#### Validación del estado del pago {#payment-status-validation}
+
+Esta sección explica cómo maneja el SDK el estado del pago cuando los usuarios cancelan o abandonan los flujos de pago, y cómo se relaciona el estado del SDK con el estado del pago en el backend en estos escenarios.
+
+##### Métodos de pago síncronos (Apple Pay) {#sync-payment-methods-apple-pay}
+
+Para métodos de pago síncronos como Apple Pay, cuando un usuario cancela antes de la respuesta del PSP:
+
+* **Estado del SDK**: devuelve `userCancelled` (CANCELLED_BY_USER)
+* **Estado del pago en el backend**: permanece en `PENDING` hasta el timeout del PSP o la cancelación por parte del comercio
+* **Importante**: el SDK no devolverá `reject` ni `processing` en este escenario
+
+Esto garantiza que el pago en el backend permanezca en estado pendiente y que el sistema del comercio pueda manejarlo correctamente.
+
+##### Métodos de pago asíncronos (PIX, códigos QR) {#async-payment-methods-pix-qr-codes}
+
+Para los métodos de pago asíncronos, cuando un usuario cierra la ventana de pago antes de completarlo:
+
+* **Estado del SDK**: devuelve `userCancelled`\*.
+* **Estado del pago en el backend**: permanece en `PENDING` y el código de pago sigue siendo válido hasta que expire.
+* **Reutilización de la sesión de checkout**: al reabrir la misma sesión de checkout se puede mostrar el mismo código de pago válido.
+* **Sin cancelación automática**: el pago no se cancela automáticamente en el backend cuando el usuario cierra la ventana.
+* **Confirmación del estado**: `userCancelled` significa que el comprador abandonó la pantalla, no que el pago haya fallado. Confirma el estado final mediante webhook o `GET /v1/payments/{payment_id}` antes de mostrar una cancelación.
+
+<Note>
+\* Los métodos de pago que muestran un código de pago o un comprobante (código QR de PIX, boleto, OXXO y similares), y Pix Parcelado, devuelven `processing` con el subestado `CLOSED_BY_USER` en lugar de `userCancelled` cuando el usuario cierra la pantalla. El pago permanece en `PENDING` en el backend y aún se puede completar.
+</Note>
+
+##### Pagos asíncronos expirados {#expired-async-payments}
+
+Si un código QR de PIX expira de forma natural:
+
+* **Estado en el backend**: se actualiza a `EXPIRED`
+* **Estado del SDK**: los callbacks del SDK y los endpoints de polling devuelven `EXPIRED` de forma consistente
+
+Esto garantiza que los comercios reciban información de estado precisa cuando un método de pago ha expirado
+
+## Referencia común {#common-reference}
+
+Para ver los detalles completos de parámetros y personalización, consulta la [Referencia común del SDK de iOS](/es/docs/sdks/resources/references/ios).

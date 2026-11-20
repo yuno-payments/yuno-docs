@@ -77,6 +77,28 @@ Las capturas manuales ofrecen la máxima flexibilidad, ya que te dan control tot
 Si necesitas capturar un monto distinto al autorizado originalmente, debes usar la captura manual. Los modos de captura en tiempo real y diferida siempre capturarán el monto autorizado inicialmente.
 </Warning>
 
+### Retenciones de preautorización (`authorization_type`) {#pre-authorization-holds-authorizationtype}
+
+Cuando autorizas un pago con `capture: false`, puedes definir `payment_method.detail.card.authorization_type` para indicar el tipo de retención que quieres. `STANDARD` (el valor por defecto, también usado cuando se omite el campo) crea una autorización normal. `PRE_AUTHORIZATION` solicita una retención de preautorización extendida, que algunos proveedores exigen antes de poder aumentar después el monto retenido con las [autorizaciones incrementales](/es/reference/payments/increment-authorization).
+
+```json
+{
+  "payment_method": {
+    "type": "CARD",
+    "detail": {
+      "card": {
+        "capture": false,
+        "authorization_type": "PRE_AUTHORIZATION"
+      }
+    }
+  }
+}
+```
+
+- `authorization_type` solo se aplica cuando `capture` es `false`. Enviar `PRE_AUTHORIZATION` con `capture: true`, o sin `capture` (porque por defecto es `true`), devuelve un error `400` con el código `INVALID_PARAMETERS`.
+- Los proveedores sin un equivalente de preautorización procesan el pago como una autorización estándar (en la medida de lo posible).
+- Cuando envías el campo, su valor se devuelve en las respuestas de consulta del pago, en `payment_method.detail.card.authorization_type` de la transacción. Si lo omites, el pago se procesa como `STANDARD`, pero no se guarda ningún valor, por lo que el campo no aparece en las respuestas de consulta.
+
 ### Captura diferida {#delayed-capture}
 
 Configura `capture: false` junto con `delayed_capture_settings` para programar la captura del pago para más adelante, según lo especificado en el campo `delay`.
@@ -84,7 +106,7 @@ Configura `capture: false` junto con `delayed_capture_settings` para programar l
 <Warning>
 **Solo capturas del monto completo**
 
-La captura diferida solo se aplica cuando se captura el **monto completo** de la autorización. Si necesitas capturar un monto parcial, debes usar la [captura manual](/es/docs/direct-integration-use-cases/capture-payments).
+La captura diferida solo se aplica cuando se captura el **monto completo** de la autorización. Si necesitas capturar un monto parcial, debes usar la [captura manual](/es/docs/direct-integration-use-cases/capture-payments). En un pago con tarjeta enviado con `partial_approval: true` y aprobado por menos de lo solicitado, el monto completo de la autorización es `amount.authorized`.
 </Warning>
 
 <Note>
@@ -463,6 +485,7 @@ Al cliente nunca se le cobra un pago que rechazas, y no se necesita ningún reem
 | Campo                                      | Tipo      | Descripción                                                                                                                                                                                                                                          |
 | ------------------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `capture`                                  | `boolean` | Determina si el pago con tarjeta se captura de inmediato (`true`, compra) o solo se autoriza (`false`, requiere captura o cancelación).                                                                                                              |
+| `authorization_type`                       | `string`  | Opcional, se aplica solo cuando `capture` es `false`. `STANDARD` (por defecto) crea una autorización normal; `PRE_AUTHORIZATION` solicita una retención de preautorización extendida para [autorizaciones incrementales](/es/reference/payments/increment-authorization) posteriores. `PRE_AUTHORIZATION` con `capture: true` (o sin `capture`, que por defecto es `true`) devuelve un `400` (`INVALID_PARAMETERS`). |
 | `delayed_capture_settings.delay`           | `string`  | Demora antes de que Yuno capture el pago. Debe seguir el <a label="formato de duración ISO 8601" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">formato de duración ISO 8601</a> (p. ej., "P7D" para 7 días, "PT3H" para 3 horas). |
 | `delayed_capture_settings.simplified_mode` | `boolean` | Si es `true`, Yuno reintenta la captura si falla.                                                                                                                                                                                                    |
 | `delayed_cancel_settings.delay`            | `string`  | Demora antes de que Yuno cancele la autorización. Debe seguir el <a label="formato de duración ISO 8601" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">formato de duración ISO 8601</a> (p. ej., "P30D" para 30 días).       |
