@@ -114,7 +114,7 @@ Cada paso es un **paso de proveedor** (`provider_id` + `connection_id`: un prove
 | `three_d_secure_exemptions` | string[] | no | Solo en pasos de proveedor de 3DS. Las [exenciones de SCA](/es/docs/payment-features/sca-exemptions#allowed-values) que este paso puede aplicar. Consulta [Ajustes del paso de proveedor](#provider-step-settings). |
 | `timeout` | int | solo respuesta | Pasos de proveedor. El tiempo de espera en segundos del proveedor, tomado del catálogo de proveedores de Yuno. Se ignora al escribir. |
 | `network_token_enable` | boolean | solo respuesta | Pasos de proveedor de pago. Indica si `network_token_on` puede ser `true` en este paso: la organización está incorporada a los network tokens y el proveedor los admite. Se ignora al escribir. |
-| `smart_routing` | object | pasos de enrutamiento inteligente | `type`, `providers[]`, `no_retry_decline_types[]` y `no_retry_failure_causes[]`. Consulta [Pasos de enrutamiento inteligente](#smart-routing-steps). |
+| `smart_routing` | object | pasos de enrutamiento inteligente | `type`, `providers[]`, `no_retry_decline_types[]`, `no_retry_decline_group_ids[]` y `no_retry_failure_causes[]`. Consulta [Pasos de enrutamiento inteligente](#smart-routing-steps). |
 | `action` | enum | pasos de acción | `CANCEL`, `CAPTURE`, `HOLD_FOR_REVIEW` o `REVERT`. Consulta [Pasos de acción](#action-steps). Omítelo en los pasos de proveedor. |
 | `action_delay` | string | no | Duración ISO-8601, solo con `action = CAPTURE`. Cuánto tiempo después de la aprobación captura Yuno. Consulta [Pasos de acción](#action-steps). |
 | `output[]` | object[] | no | Manejadores por resultado de un paso de proveedor. **Omítelo en pasos terminales sin encadenamiento ni personalización por rechazo**: la ruta ejecutará el paso y terminará con lo que haya devuelto el proveedor. No se permite en un paso de acción; las respuestas lo devuelven como un arreglo vacío allí. |
@@ -128,10 +128,10 @@ Cada paso es un **paso de proveedor** (`provider_id` + `connection_id`: un prove
 | Campo | Tipo | Obligatorio | Notas |
 |---|---|---|---|
 | `status` | enum | sí | A qué resultado reacciona esta entrada. Consulta el enum más abajo. |
-| `decline_types[]` | string[] | ver [Grupos de resultados](#outcome-groups) | Subestados de rechazo a los que reacciona la entrada. En `DECLINE_GROUP` es obligatorio a menos que se envíe `group_id`. Las respuestas lo devuelven en las entradas `DECLINE_GROUP` y `MAC_CODE_GROUP`. |
-| `group_id` | int | ver [Grupos de resultados](#outcome-groups) | Id de un grupo de rechazo, de un grupo de Merchant Advice Code o de un grupo de resultados exitosos de la cuenta. Obligatorio en `MAC_CODE_GROUP` y `SUCCEEDED_GROUP`; opcional en `DECLINE_GROUP`. No se permite en otros estados. |
+| `decline_types[]` | string[] | ver [Grupos de resultados](#outcome-groups) | Subestados de rechazo a los que reacciona la entrada, o códigos de respuesta ISO 8583 en `ISO_CODE_GROUP`. En `DECLINE_GROUP` e `ISO_CODE_GROUP` es obligatorio a menos que se envíe `group_id`. Las respuestas lo devuelven en las entradas `DECLINE_GROUP`, `MAC_CODE_GROUP` e `ISO_CODE_GROUP`. |
+| `group_id` | int | ver [Grupos de resultados](#outcome-groups) | Id de un grupo de rechazo, de un grupo de Merchant Advice Code, de un grupo de códigos ISO o de un grupo de resultados exitosos de la cuenta. Obligatorio en `MAC_CODE_GROUP` y `SUCCEEDED_GROUP`; opcional en `DECLINE_GROUP` e `ISO_CODE_GROUP`. No se permite en otros estados. |
 | `group_name` | string | solo respuesta | Nombre del grupo detrás de `group_id`, tal como se muestra en el dashboard. Se ignora al escribir. |
-| `retry` | boolean | no | `true` ejecuta una vez más el mismo proveedor antes de que se aplique el destino de esta entrada. Solo en `DECLINED`, `INTERNAL_ERROR` y `DECLINE_GROUP`. Las respuestas siempre lo devuelven. Consulta [Reintento](#retry). |
+| `retry` | boolean | no | `true` ejecuta una vez más el mismo proveedor antes de que se aplique el destino de esta entrada. Solo en `DECLINED`, `INTERNAL_ERROR`, `DECLINE_GROUP` e `ISO_CODE_GROUP`. Las respuestas siempre lo devuelven. Consulta [Reintento](#retry). |
 | `next` | int \| null | no | Índice del paso al que saltar, o `null` para terminar. Cuando `next_split` está definido, Yuno devuelve `next` como su primera entrada y lo acepta solo con ese valor. |
 | `next_split[]` | object[] | no | Divide el salto entre varios pasos por porcentaje en lugar de un único `next`. Consulta [Divisiones por porcentaje](#percentage-splits). |
 
@@ -147,6 +147,7 @@ Cada paso es un **paso de proveedor** (`provider_id` + `connection_id`: un prove
 | `DECLINED` | Cualquier rechazo (comodín). Colócalo al final del arreglo. | — |
 | `DECLINE_GROUP` | Rechazo cuyo subestado normalizado, o cuyo [Merchant Advice Code](/es/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac) normalizado, está en el grupo. | `group_id` y/o `decline_types[]` |
 | `MAC_CODE_GROUP` | Rechazo cuyo [Merchant Advice Code](/es/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac) normalizado está en el grupo. El subestado no se compara. | `group_id` |
+| `ISO_CODE_GROUP` | Rechazo de tarjeta cuyo código de respuesta ISO 8583 del emisor está en el grupo. No se comparan ni el subestado ni el Merchant Advice Code. Solo pagos con tarjeta. Consulta [Grupos de códigos ISO](#iso-code-groups). | `group_id` y/o `decline_types[]` |
 | `SUCCEEDED_GROUP` | Resultado exitoso cuyo subestado está en el grupo; hoy es `PENDING_IN_REVIEW`, una autorización que el proveedor retiene para revisión manual. | `group_id` |
 | `PENDING` | Un proveedor de fraude, 3DS o autenticación dejó el pago pendiente (una revisión por resolver, un desafío por completar). Solo en esos pasos. Consulta [Tipos de paso de proveedor](#provider-step-kinds). | — |
 | `INTERNAL_ERROR` | El proveedor devolvió un error (5xx, falla de conexión, tiempo de espera agotado) antes de llegar al emisor. | — |
@@ -165,7 +166,7 @@ El tipo de un paso de proveedor se deriva de su `provider_id` y se devuelve como
 
 | `provider_type` | Proveedores | Resultados | Notas |
 |---|---|---|---|
-| `PAYMENT` | Adquirentes y PSPs (`STRIPE`, `ADYEN`, `DLOCAL`, …) | `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `MAC_CODE_GROUP`, `SUCCEEDED_GROUP`, `INTERNAL_ERROR` | El intento de pago. Las aprobaciones pueden continuar hacia un paso `CAPTURE` / `HOLD_FOR_REVIEW` o hacia un paso de fraude que se ejecuta después del pago. |
+| `PAYMENT` | Adquirentes y PSPs (`STRIPE`, `ADYEN`, `DLOCAL`, …) | `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `MAC_CODE_GROUP`, `ISO_CODE_GROUP`, `SUCCEEDED_GROUP`, `INTERNAL_ERROR` | El intento de pago. Las aprobaciones pueden continuar hacia un paso `CAPTURE` / `HOLD_FOR_REVIEW` o hacia un paso de fraude que se ejecuta después del pago. |
 | `FRAUD` | Análisis de fraude (`CYBERSOURCE`, `SIGNIFYD`, `FORTER`, `CLEAR_SALE`, `RISKIFIED`, `YUNO_FRAUD_SCREENING`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | **Antes del pago** (la ruta entra por él, o sigue a otro paso de fraude, 3DS o autenticación): `PENDING` puede continuar hacia otro paso. **Después del pago** (se alcanza desde un output de un paso de pago o de enrutamiento inteligente): `PENDING` es terminal y el paso puede continuar hacia una acción `REVERT`. |
 | `THREE_D_SECURE` | Servidores 3DS (`NETCETERA_3DS`, `CHECKOUT_3DS`, `CYBERSOURCE_3DS`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | `PENDING` es el desafío a la espera de su resultado y puede continuar hacia otro paso. |
 | `AUTHENTICATION` | `NETWORK_TOKEN_AUTHENTICATION` | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | Las mismas reglas que 3DS. |
@@ -206,7 +207,7 @@ Omitir un ajuste no es lo mismo que borrarlo. En [Actualizar un enrutamiento](/e
 
 1. La ruta entra en `index: 1`, a menos que `start_split` esté definido: entonces Yuno sortea un paso de entrada por cada pago según los porcentajes. Si el paso de entrada es un paso `CANCEL`, el pago se rechaza y la ruta termina.
 2. Se ejecuta la llamada al proveedor.
-3. Yuno recorre `output[]` de arriba abajo; gana la primera entrada cuyo `status` (más el predicado de grupo en `DECLINE_GROUP`, `MAC_CODE_GROUP` y `SUCCEEDED_GROUP`) coincide con el resultado. Una entrada con `retry: true` primero ejecuta una vez más el mismo proveedor; decide el resultado de ese segundo intento.
+3. Yuno recorre `output[]` de arriba abajo; gana la primera entrada cuyo `status` (más el predicado de grupo en `DECLINE_GROUP`, `MAC_CODE_GROUP`, `ISO_CODE_GROUP` y `SUCCEEDED_GROUP`) coincide con el resultado. Una entrada con `retry: true` primero ejecuta una vez más el mismo proveedor; decide el resultado de ese segundo intento.
 4. Si la entrada coincidente tiene `next`, salta a ese paso. Si tiene `next_split`, Yuno sortea uno de sus pasos por cada pago según los porcentajes y salta allí. Si ninguno está definido o ninguna entrada coincide, la ruta termina con el resultado real del proveedor.
 5. Un salto a un paso de acción ejecuta la acción (`CANCEL`, `CAPTURE`, `HOLD_FOR_REVIEW`) y termina la ruta.
 
@@ -220,25 +221,90 @@ Un grupo es un conjunto con nombre de resultados que mantienes en la cuenta, de 
 |---|---|---|---|
 | `DECLINE_GROUP` | Grupo de rechazo | Subestados de rechazo, como `DECLINED_BY_BANK` o `INSUFFICIENT_FUNDS`. Lista completa en [Estado rechazado](/es/reference/payments/status-and-response-codes/transaction#declined-status). | `group_id` de un grupo existente, o solo `decline_types[]` para que Yuno cree uno. |
 | `MAC_CODE_GROUP` | Grupo de Merchant Advice Code | Valores MAC normalizados, como `NO_RETRY_POLICY` o `RETRY_AFTER_24_H`. Lista completa en [Merchant Advice Codes](/es/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac). | `group_id` de un grupo existente. |
+| `ISO_CODE_GROUP` | Grupo de códigos ISO | Códigos de respuesta ISO 8583 del emisor, como `51`, `05` o `9G`. Solo pagos con tarjeta. Consulta [Grupos de códigos ISO](#iso-code-groups). | `group_id` de un grupo existente, o solo `decline_types[]` para que Yuno cree uno. |
 | `SUCCEEDED_GROUP` | Grupo de resultados exitosos | Subestados de éxito. Hoy el único miembro es `PENDING_IN_REVIEW`. | `group_id` de un grupo existente. |
 
 </div>
 
 Reglas:
 
-- `group_id` debe ser un grupo de la cuenta del enrutamiento. `MAC_CODE_GROUP` acepta un grupo de Merchant Advice Code; `DECLINE_GROUP` acepta un grupo de rechazo o un grupo de Merchant Advice Code. Un id desconocido, un id de otra cuenta, o un grupo de rechazo enviado como `MAC_CODE_GROUP` se rechaza con `400 INVALID_ROUTE_CONFIGURATION`; `messages` nombra el `group_id` y el tipo que realmente es.
+- `group_id` debe ser un grupo de la cuenta del enrutamiento. `MAC_CODE_GROUP` acepta un grupo de Merchant Advice Code; `DECLINE_GROUP` acepta un grupo de rechazo o un grupo de Merchant Advice Code; `ISO_CODE_GROUP` acepta solo un grupo de códigos ISO, y un grupo de códigos ISO solo se acepta bajo `ISO_CODE_GROUP`. Un id desconocido, un id de otra cuenta, un grupo de rechazo enviado como `MAC_CODE_GROUP`, o un grupo enviado bajo un estado que no acepta su tipo se rechaza con `400 INVALID_ROUTE_CONFIGURATION`; `messages` nombra el `group_id` y el tipo que realmente es.
 - Un grupo de Merchant Advice Code se comporta de forma distinta bajo cada estado, y el estado se conserva tal como lo envías. Como `MAC_CODE_GROUP`, la entrada coincide con un rechazo solo cuando su Merchant Advice Code está en el grupo. Como `DECLINE_GROUP`, también coincide con un rechazo cuyo subestado es uno de los valores del grupo, incluidos los rechazos que no llevan Merchant Advice Code. El dashboard guarda los grupos de Merchant Advice Code como `DECLINE_GROUP`, y un enrutamiento recuperado los devuelve así, por lo que envíalos de vuelta sin cambios para conservar cómo se enrutan. Cambiar el estado cambia qué rechazos atrapa la entrada.
 - `DECLINE_GROUP` con `decline_types[]` y sin `group_id` sigue funcionando como antes: Yuno crea un grupo de rechazo llamado `auto_…` con esos subestados en cada guardado. Prefiere `group_id` cuando el grupo ya existe, para que la cuenta no acumule grupos automáticos.
 - `DECLINE_GROUP` con `group_id` y `decline_types[]` a la vez se acepta solo cuando la lista es igual a los miembros del grupo como conjunto (el orden no importa). Esto es lo que te permite enviar de vuelta un enrutamiento recuperado sin cambios, ya que las respuestas devuelven ambos. Una lista distinta se rechaza: edita el grupo en el dashboard en su lugar.
 - `MAC_CODE_GROUP` y `SUCCEEDED_GROUP` requieren `group_id`; `SUCCEEDED_GROUP` no acepta `decline_types[]`. Crea esos grupos primero en el dashboard.
 - El mismo `group_id` no puede aparecer dos veces en el `output[]` de un paso.
-- Las respuestas devuelven `group_id` y `group_name` en cada entrada de grupo, y `decline_types[]` en las entradas `DECLINE_GROUP` y `MAC_CODE_GROUP`, con el mismo vocabulario de subestados que usan los endpoints de listado.
+- Las respuestas devuelven `group_id` y `group_name` en cada entrada de grupo, y `decline_types[]` en las entradas `DECLINE_GROUP`, `MAC_CODE_GROUP` e `ISO_CODE_GROUP`, con el mismo vocabulario que usan los endpoints de listado.
+
+### Grupos de códigos ISO {#iso-code-groups}
+
+Un grupo de códigos ISO contiene códigos de respuesta del emisor del estándar ISO 8583 (campo 39), como `51` (fondos insuficientes) o `05` (no aprobar). Una salida `ISO_CODE_GROUP` permite que una ruta reaccione al código que devolvió el emisor, sin importar a qué subestado de Yuno lo asignó la conexión, de modo que un mismo rechazo del emisor se comporta igual en todos los adquirentes.
+
+`ISO_CODE_GROUP` aplica solo a pagos con tarjeta. Se evalúa solo cuando un paso de pago queda `DECLINED` y la conexión devolvió el código ISO del emisor. Un rechazo sin código ISO, o con un código que no está en el grupo, omite la entrada y continúa por `output[]`, de modo que la entrada `DECLINED` del paso se aplica como antes.
+
+- **Con qué coincide.** Solo con el código de respuesta ISO 8583 del rechazo. No se comparan el subestado ni el Merchant Advice Code, y los grupos de rechazo (referenciados como `DECLINE_GROUP`) y los grupos de Merchant Advice Code (referenciados como `MAC_CODE_GROUP`) nunca coinciden por el código ISO.
+- **Formato del código.** Un código es un texto libre de 1 a 30 caracteres después de quitar los espacios, sin restricción de caracteres: `51`, `100`, `9G` y `R1` son válidos. Los espacios alrededor se eliminan. Un código vacío, un código de solo espacios o un código de más de 30 caracteres se rechaza con `400`.
+- **Mayúsculas y minúsculas.** Los códigos se comparan sin distinguir mayúsculas de minúsculas: un grupo que contiene `9G` coincide con un rechazo con `9g`.
+- **Cómo se selecciona en la salida Declined de un paso.** Agrega una entrada `ISO_CODE_GROUP` al `output[]` del paso de pago, antes de la entrada comodín `DECLINED` del paso. Referencia un grupo guardado con `group_id`, o envía los códigos en `decline_types[]` sin `group_id` para que Yuno cree con ellos un grupo de códigos ISO `auto_…`, igual que en `DECLINE_GROUP`.
+- **Reintento.** `retry: true` se permite en una entrada `ISO_CODE_GROUP`, igual que en `DECLINE_GROUP`: el mismo proveedor se ejecuta una vez más antes de que se aplique el `next` de la entrada. `MAC_CODE_GROUP` conserva su regla actual. Consulta [Reintento](#retry).
+- **Precedencia.** Cuando un paso tiene varias entradas de grupo, los grupos de rechazo (referenciados como `DECLINE_GROUP`), los grupos de Merchant Advice Code (referenciados como `MAC_CODE_GROUP`) y los grupos de códigos ISO (referenciados como `ISO_CODE_GROUP`) se comparan en el orden de `output[]` y gana la primera que coincide, sin importar su tipo. Coloca la entrada `ISO_CODE_GROUP` por encima de una entrada `DECLINE_GROUP` o `MAC_CODE_GROUP` para que decida primero el código ISO, o por debajo para que decidan primero el subestado o el Merchant Advice Code.
+- **Grupos guardados.** Los grupos de códigos ISO guardados se crean en el dashboard, no a través de la API pública; los únicos grupos de códigos ISO que crea una solicitud de enrutamiento son los grupos `auto_…` de un `decline_types[]` enviado sin `group_id`. Lístalos con [Listar grupos de rechazo](/es/reference/organizations/routing/list-decline-groups), donde tienen `type: "ISO_CODE_GROUP"`.
+- El `sub_status` del paso sigue informando el subestado de rechazo de la conexión después de una coincidencia ISO; el código ISO no se guarda como subestado.
+
+Una salida que lleva sus códigos en `decline_types[]`, en [Crear un enrutamiento](/es/reference/organizations/routing/create-routing) o [Actualizar un enrutamiento](/es/reference/organizations/routing/update-routing):
+
+```json
+{
+  "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
+  "payment_method": "CARD",
+  "name": "Card routing",
+  "default_route": {
+    "steps": [
+      { "index": 1, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…",
+        "output": [
+          { "status": "ISO_CODE_GROUP", "decline_types": ["51", "9G"], "retry": true, "next": 2 },
+          { "status": "DECLINED",       "next": 3 }
+        ] },
+      { "index": 2, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-…" },
+      { "index": 3, "action": "CANCEL" }
+    ]
+  }
+}
+```
+
+La misma salida referenciando un grupo de códigos ISO guardado por `group_id`:
+
+```json
+{
+  "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
+  "payment_method": "CARD",
+  "name": "Card routing",
+  "default_route": {
+    "steps": [
+      { "index": 1, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…",
+        "output": [
+          { "status": "ISO_CODE_GROUP", "group_id": 5120, "next": 2 },
+          { "status": "DECLINED",       "next": 3 }
+        ] },
+      { "index": 2, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-…" },
+      { "index": 3, "action": "CANCEL" }
+    ]
+  }
+}
+```
+
+Un enrutamiento recuperado devuelve la entrada con el nombre y los códigos del grupo, y puede enviarse de vuelta sin cambios:
+
+```json
+{ "status": "ISO_CODE_GROUP", "group_id": 5120, "group_name": "Insufficient funds (ISO)",
+  "decline_types": ["51", "9G"], "retry": false, "next": 2 }
+```
 
 ### Reintento {#retry}
 
-`retry: true` en una entrada `DECLINED`, `INTERNAL_ERROR` o `DECLINE_GROUP` le indica a Yuno que intente **el mismo proveedor una vez más** cuando ocurre ese resultado, antes de seguir el `next` / `next_split` de la entrada. El segundo intento usa los demás outputs del paso como de costumbre: si se aprueba, se aplica la ruta `APPROVED`; si vuelve a fallar, se aplica el destino original de la entrada. Hay como máximo un reintento por entrada y por pago.
+`retry: true` en una entrada `DECLINED`, `INTERNAL_ERROR`, `DECLINE_GROUP` o `ISO_CODE_GROUP` le indica a Yuno que intente **el mismo proveedor una vez más** cuando ocurre ese resultado, antes de seguir el `next` / `next_split` de la entrada. El segundo intento usa los demás outputs del paso como de costumbre: si se aprueba, se aplica la ruta `APPROVED`; si vuelve a fallar, se aplica el destino original de la entrada. Hay como máximo un reintento por entrada y por pago.
 
-- `retry: true` en `APPROVED`, `MAC_CODE_GROUP` o `SUCCEEDED_GROUP` se rechaza con `400 INVALID_ROUTE_CONFIGURATION`; `retry: false` se acepta en cualquier lugar, lo que te permite enviar de vuelta un enrutamiento recuperado sin cambios.
+- `retry: true` en `APPROVED`, `MAC_CODE_GROUP` o `SUCCEEDED_GROUP` se rechaza con `400 INVALID_ROUTE_CONFIGURATION`; `MAC_CODE_GROUP` conserva esta regla, mientras que `ISO_CODE_GROUP` acepta `retry: true` como `DECLINE_GROUP`; `retry: false` se acepta en cualquier lugar, lo que te permite enviar de vuelta un enrutamiento recuperado sin cambios.
 - `retry: true` en una entrada `DECLINE_GROUP` que referencia un grupo de Merchant Advice Code se acepta solo cuando el enrutamiento almacenado ya reintenta ese grupo en el mismo paso, de modo que un enrutamiento recuperado hace el viaje de ida y vuelta, pero una actualización no puede empezar a reintentar por Merchant Advice Codes. De lo contrario se rechaza con `400 INVALID_ROUTE_CONFIGURATION`. Esto también aplica cuando el reintento se conservaría de la entrada almacenada porque la solicitud omite `retry`: envía `retry: false`.
 - Las respuestas siempre devuelven `retry` en cada entrada (`false` cuando no está definido), para que puedas ver qué ramas reintentan.
 - En [Actualizar un enrutamiento](/es/reference/organizations/routing/update-routing), una entrada enviada **sin** `retry` conserva el valor ya almacenado para esa posición; envía `retry: false` explícitamente para desactivar un reintento.
@@ -299,6 +365,7 @@ Un paso de enrutamiento inteligente permite que Yuno elija el proveedor por cada
 | `type` | enum | sí | `COSTS` (primero la conexión más barata) o `LATENCY` (primero la más rápida). `COSTS` requiere que todas las conexiones listadas estén activas con sus costos configurados, incluido el costo de "All other payments". |
 | `providers[]` | object[] | sí | De dos a cuatro proveedores de pago, cada uno `{ provider_id, connection_id, network_token_on }`, con conexiones distintas. No se permiten aquí proveedores de fraude, 3DS ni autenticación. `network_token_on` requiere que la organización esté incorporada a los network tokens y que el proveedor los admita. |
 | `no_retry_decline_types[]` | string[] | no | Subestados de rechazo después de los cuales Yuno no prueba el siguiente proveedor del conjunto. Un grupo de rechazo elegido en el dashboard se devuelve expandido en sus subestados, y una actualización almacena la lista tal como se envía. |
+| `no_retry_decline_group_ids[]` | int[] | no | Ids de grupos de rechazo de la cuenta, de [Listar grupos de rechazo](/es/reference/organizations/routing/list-decline-groups), cuyos rechazos Yuno no reintenta en el siguiente proveedor del conjunto. Se aceptan grupos de códigos ISO: un rechazo cuyo código de respuesta ISO 8583 está en uno de esos grupos no se reintenta en el siguiente proveedor de Smart Routing. Al actualizar, si se omite el campo se conservan los grupos almacenados y `[]` los borra. |
 | `no_retry_failure_causes[]` | string[] | no | Causas de falla (por ejemplo `PROVIDER_TIMEOUT`) después de las cuales Yuno no prueba el siguiente proveedor del conjunto. |
 
 </div>

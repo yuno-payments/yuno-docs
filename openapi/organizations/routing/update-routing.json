@@ -81,14 +81,14 @@
                                 "type": "object",
                                 "required": ["status"],
                                 "properties": {
-                                  "status": { "type": "string", "example": "DECLINED", "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (fraud, 3DS and authentication steps only) or INTERNAL_ERROR." },
+                                  "status": { "type": "string", "example": "DECLINED", "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, ISO_CODE_GROUP, SUCCEEDED_GROUP, PENDING (fraud, 3DS and authentication steps only) or INTERNAL_ERROR." },
                                   "decline_types": {
                                     "type": "array",
                                     "items": { "type": "string" },
-                                    "description": "Decline sub-statuses. On DECLINE_GROUP, required unless group_id is sent; with group_id it must equal the group's members. Not allowed on SUCCEEDED_GROUP."
+                                    "description": "Decline sub-statuses, or ISO 8583 response codes on ISO_CODE_GROUP (card payments only; each code 1 to 30 characters after trimming, compared without case). On DECLINE_GROUP and ISO_CODE_GROUP, required unless group_id is sent; with group_id it must equal the group's members. Not allowed on SUCCEEDED_GROUP."
                                   },
-                                  "group_id": { "type": "integer", "example": 1044, "description": "Id of a decline, Merchant Advice Code or succeeded group of the account (see List Decline Groups and List Succeeded Groups). Required on MAC_CODE_GROUP and SUCCEEDED_GROUP, optional on DECLINE_GROUP, not allowed otherwise. MAC_CODE_GROUP takes a Merchant Advice Code group; DECLINE_GROUP takes a decline group or a Merchant Advice Code group." },
-                                  "retry": { "type": "boolean", "example": false, "description": "true attempts the same provider once more when this outcome happens, before following next. Only on DECLINED, INTERNAL_ERROR and DECLINE_GROUP; on a DECLINE_GROUP entry that references a Merchant Advice Code group, only where the stored routing already retries that group on the same step, so always rejected on create. On update, an omitted retry keeps the stored value." },
+                                  "group_id": { "type": "integer", "example": 1044, "description": "Id of a decline, Merchant Advice Code, ISO code or succeeded group of the account (see List Decline Groups and List Succeeded Groups). Required on MAC_CODE_GROUP and SUCCEEDED_GROUP, optional on DECLINE_GROUP and ISO_CODE_GROUP, not allowed otherwise. MAC_CODE_GROUP takes a Merchant Advice Code group; DECLINE_GROUP takes a decline group or a Merchant Advice Code group; ISO_CODE_GROUP takes only an ISO code group." },
+                                  "retry": { "type": "boolean", "example": false, "description": "true attempts the same provider once more when this outcome happens, before following next. Only on DECLINED, INTERNAL_ERROR, DECLINE_GROUP and ISO_CODE_GROUP (MAC_CODE_GROUP keeps rejecting retry: true); on a DECLINE_GROUP entry that references a Merchant Advice Code group, only where the stored routing already retries that group on the same step, so always rejected on create. On update, an omitted retry keeps the stored value." },
                                   "next": { "type": "integer", "example": 2 },
                                   "next_split": {
                                     "type": "array",
@@ -144,6 +144,12 @@
                                   "type": "array",
                                   "items": { "type": "string" },
                                   "description": "Decline sub-statuses after which the next provider of the set is not tried."
+                                },
+                                "no_retry_decline_group_ids": {
+                                  "type": "array",
+                                  "items": { "type": "integer" },
+                                  "example": [5120],
+                                  "description": "Ids of decline groups of the account (List Decline Groups) whose declines are not retried on the next provider of the set. ISO code groups are accepted: a decline whose ISO 8583 response code is in one of them is not retried on the next Smart Routing provider. Omitted on update keeps the stored groups; [] clears them."
                                 },
                                 "no_retry_failure_causes": {
                                   "type": "array",
@@ -336,13 +342,13 @@
                                   "type": "object",
                                   "required": ["status"],
                                   "properties": {
-                                    "status": { "type": "string", "example": "DECLINED", "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (fraud, 3DS and authentication steps only) or INTERNAL_ERROR." },
+                                    "status": { "type": "string", "example": "DECLINED", "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, ISO_CODE_GROUP, SUCCEEDED_GROUP, PENDING (fraud, 3DS and authentication steps only) or INTERNAL_ERROR." },
                                     "decline_types": {
                                       "type": "array",
                                       "items": { "type": "string" },
-                                      "description": "Members of the group on DECLINE_GROUP (decline sub-statuses) and MAC_CODE_GROUP (Merchant Advice Codes) outputs."
+                                      "description": "Members of the group on DECLINE_GROUP (decline sub-statuses), MAC_CODE_GROUP (Merchant Advice Codes) and ISO_CODE_GROUP (ISO 8583 response codes) outputs."
                                     },
-                                    "group_id": { "type": "integer", "example": 1044, "description": "Id of the group behind a DECLINE_GROUP, MAC_CODE_GROUP or SUCCEEDED_GROUP output." },
+                                    "group_id": { "type": "integer", "example": 1044, "description": "Id of the group behind a DECLINE_GROUP, MAC_CODE_GROUP, ISO_CODE_GROUP or SUCCEEDED_GROUP output." },
                                     "group_name": { "type": "string", "example": "Soft declines", "description": "Name of the group behind group_id. Ignored on write." },
                                     "retry": { "type": "boolean", "example": false, "description": "Whether this output retries the same provider once before following next. Always returned." },
                                     "next": { "type": "integer", "example": 2 },
@@ -397,6 +403,12 @@
                                     "type": "array",
                                     "items": { "type": "string" },
                                     "description": "Decline sub-statuses after which the next provider of the set is not tried."
+                                  },
+                                  "no_retry_decline_group_ids": {
+                                    "type": "array",
+                                    "items": { "type": "integer" },
+                                    "example": [5120],
+                                    "description": "Ids of decline groups of the account (List Decline Groups) whose declines are not retried on the next provider of the set. ISO code groups are accepted: a decline whose ISO 8583 response code is in one of them is not retried on the next Smart Routing provider. Omitted on update keeps the stored groups; [] clears them."
                                   },
                                   "no_retry_failure_causes": {
                                     "type": "array",

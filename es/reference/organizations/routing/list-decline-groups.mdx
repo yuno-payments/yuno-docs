@@ -1,12 +1,12 @@
 ---
 title: "Listar grupos de rechazo"
-description: "Lista los grupos de rechazo y los grupos de Merchant Advice Code de una cuenta, para referenciarlos por group_id desde las salidas de enrutamiento."
+description: "Lista los grupos de rechazo, los grupos de Merchant Advice Code y los grupos de códigos ISO 8583 de una cuenta, para referenciarlos por group_id desde las salidas de enrutamiento."
 openapi: "/openapi/es/organizations/routing/list-decline-groups.json GET /routing/decline-groups"
 ---
 
-Lista los grupos de rechazo guardados en una cuenta: los grupos de subestados de rechazo que referencias con `status: "DECLINE_GROUP"` y los grupos de Merchant Advice Codes que referencias con `status: "MAC_CODE_GROUP"`. Usa el `id` de un grupo como `group_id` en una salida de enrutamiento; consulta [Grupos de resultados](/es/reference/organizations/routing/routing-resource-shape#outcome-groups).
+Lista los grupos de rechazo guardados en una cuenta: los grupos de subestados de rechazo que referencias con `status: "DECLINE_GROUP"`, los grupos de Merchant Advice Codes que referencias con `status: "MAC_CODE_GROUP"` y los grupos de códigos de respuesta ISO 8583 del emisor que referencias con `status: "ISO_CODE_GROUP"`. Usa el `id` de un grupo como `group_id` en una salida de enrutamiento; consulta [Grupos de resultados](/es/reference/organizations/routing/routing-resource-shape#outcome-groups).
 
-El endpoint es de solo lectura. Los grupos se crean en el dashboard, o automáticamente cuando se guarda una salida `DECLINE_GROUP` con `decline_types` y sin `group_id` (esos se nombran `auto_…`).
+El endpoint es de solo lectura. Los grupos se crean en el dashboard, o automáticamente cuando se guarda una salida `DECLINE_GROUP` o `ISO_CODE_GROUP` con `decline_types` y sin `group_id` (esos se nombran `auto_…`). Los grupos de códigos ISO guardados se crean en el dashboard, no a través de la API pública: los únicos grupos de códigos ISO que crea una solicitud de enrutamiento son esos grupos `auto_…`.
 
 ### Parámetros de consulta {#query-parameters}
 
@@ -25,10 +25,10 @@ Un arreglo con los grupos de la cuenta, o un arreglo vacío si no tiene ninguno.
   El nombre del grupo, tal como se muestra en el dashboard y se devuelve como `group_name` en las salidas de enrutamiento.
 </ResponseField>
 <ResponseField name="type" type="enum">
-  El tipo del grupo, según el `status` de salida con el que coincide: `DECLINE_GROUP` para un grupo de subestados de rechazo, `MAC_CODE_GROUP` para un grupo de Merchant Advice Codes. Un grupo de Merchant Advice Codes también puede referenciarse desde una salida `DECLINE_GROUP`, que coincide de otra forma; consulta [Grupos de resultados](/es/reference/organizations/routing/routing-resource-shape#outcome-groups).
+  El tipo del grupo, según el `status` de salida con el que coincide: `DECLINE_GROUP` para un grupo de subestados de rechazo, `MAC_CODE_GROUP` para un grupo de Merchant Advice Codes, `ISO_CODE_GROUP` para un grupo de códigos de respuesta ISO 8583 del emisor (solo pagos con tarjeta). Un grupo de Merchant Advice Codes también puede referenciarse desde una salida `DECLINE_GROUP`, que coincide de otra forma; un grupo de códigos ISO solo puede referenciarse desde una salida `ISO_CODE_GROUP`. Consulta [Grupos de resultados](/es/reference/organizations/routing/routing-resource-shape#outcome-groups).
 </ResponseField>
 <ResponseField name="decline_types" type="string[]">
-  Los miembros del grupo, en el mismo vocabulario que usan las salidas de enrutamiento: subestados de rechazo como `DECLINED_BY_BANK` para `DECLINE_GROUP`, Merchant Advice Codes normalizados como `NO_RETRY_POLICY` para `MAC_CODE_GROUP`. Consulta [Códigos de transacción](/es/reference/payments/status-and-response-codes/transaction#declined-status).
+  Los miembros del grupo, en el mismo vocabulario que usan las salidas de enrutamiento: subestados de rechazo como `DECLINED_BY_BANK` para `DECLINE_GROUP`, Merchant Advice Codes normalizados como `NO_RETRY_POLICY` para `MAC_CODE_GROUP`, códigos de respuesta ISO 8583 como `51` o `9G` para `ISO_CODE_GROUP` (de 1 a 30 caracteres después de quitar los espacios, comparados sin distinguir mayúsculas de minúsculas). Consulta [Códigos de transacción](/es/reference/payments/status-and-response-codes/transaction#declined-status).
 </ResponseField>
 
 <CodeGroup>
@@ -51,6 +51,12 @@ curl -X GET 'https://api.y.uno/v1/routing/decline-groups?account_id=7825fc5e-e50
     "name": "Do not retry",
     "type": "MAC_CODE_GROUP",
     "decline_types": ["NO_RETRY_POLICY", "NO_RETRY_SECURITY"]
+  },
+  {
+    "id": 5120,
+    "name": "Insufficient funds (ISO)",
+    "type": "ISO_CODE_GROUP",
+    "decline_types": ["51", "9G"]
   }
 ]
 ```

@@ -155,24 +155,24 @@
                                   "status": {
                                     "type": "string",
                                     "example": "DECLINED",
-                                    "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (solo en pasos de fraude, 3DS y autenticación) o INTERNAL_ERROR."
+                                    "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, ISO_CODE_GROUP, SUCCEEDED_GROUP, PENDING (solo en pasos de fraude, 3DS y autenticación) o INTERNAL_ERROR."
                                   },
                                   "decline_types": {
                                     "type": "array",
                                     "items": {
                                       "type": "string"
                                     },
-                                    "description": "Subestados de rechazo. En DECLINE_GROUP, es obligatorio a menos que se envíe group_id; con group_id debe ser igual a los miembros del grupo. No se permite en SUCCEEDED_GROUP."
+                                    "description": "Subestados de rechazo, o códigos de respuesta ISO 8583 en ISO_CODE_GROUP (solo pagos con tarjeta; cada código de 1 a 30 caracteres después de quitar los espacios, comparado sin distinguir mayúsculas de minúsculas). En DECLINE_GROUP e ISO_CODE_GROUP, es obligatorio a menos que se envíe group_id; con group_id debe ser igual a los miembros del grupo. No se permite en SUCCEEDED_GROUP."
                                   },
                                   "group_id": {
                                     "type": "integer",
                                     "example": 1044,
-                                    "description": "Id de un grupo de rechazo, de Merchant Advice Code o de éxito de la cuenta (consulta Listar grupos de rechazo y Listar grupos de éxito). Obligatorio en MAC_CODE_GROUP y SUCCEEDED_GROUP, opcional en DECLINE_GROUP, no permitido en los demás casos. MAC_CODE_GROUP recibe un grupo de Merchant Advice Code; DECLINE_GROUP recibe un grupo de rechazo o un grupo de Merchant Advice Code."
+                                    "description": "Id de un grupo de rechazo, de Merchant Advice Code, de códigos ISO o de éxito de la cuenta (consulta Listar grupos de rechazo y Listar grupos de éxito). Obligatorio en MAC_CODE_GROUP y SUCCEEDED_GROUP, opcional en DECLINE_GROUP e ISO_CODE_GROUP, no permitido en los demás casos. MAC_CODE_GROUP recibe un grupo de Merchant Advice Code; DECLINE_GROUP recibe un grupo de rechazo o un grupo de Merchant Advice Code; ISO_CODE_GROUP recibe solo un grupo de códigos ISO."
                                   },
                                   "retry": {
                                     "type": "boolean",
                                     "example": false,
-                                    "description": "true intenta una vez más con el mismo proveedor cuando ocurre este resultado, antes de seguir con next. Solo en DECLINED, INTERNAL_ERROR y DECLINE_GROUP; en una entrada DECLINE_GROUP que referencia un grupo de Merchant Advice Code, solo cuando el enrutamiento guardado ya reintenta ese grupo en el mismo paso, por lo que siempre se rechaza al crear. Al actualizar, si se omite retry se conserva el valor guardado."
+                                    "description": "true intenta una vez más con el mismo proveedor cuando ocurre este resultado, antes de seguir con next. Solo en DECLINED, INTERNAL_ERROR, DECLINE_GROUP e ISO_CODE_GROUP (MAC_CODE_GROUP sigue rechazando retry: true); en una entrada DECLINE_GROUP que referencia un grupo de Merchant Advice Code, solo cuando el enrutamiento guardado ya reintenta ese grupo en el mismo paso, por lo que siempre se rechaza al crear. Al actualizar, si se omite retry se conserva el valor guardado."
                                   },
                                   "next": {
                                     "type": "integer",
@@ -296,6 +296,16 @@
                                     "type": "string"
                                   },
                                   "description": "Subestados de rechazo después de los cuales no se prueba el siguiente proveedor del conjunto."
+                                },
+                                "no_retry_decline_group_ids": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer"
+                                  },
+                                  "example": [
+                                    5120
+                                  ],
+                                  "description": "Ids de grupos de rechazo de la cuenta (Listar grupos de rechazo) cuyos rechazos no se reintentan en el siguiente proveedor del conjunto. Se aceptan grupos de códigos ISO: un rechazo cuyo código de respuesta ISO 8583 está en uno de ellos no se reintenta en el siguiente proveedor de Smart Routing. Si se omite al actualizar, se conservan los grupos almacenados; [] los borra."
                                 },
                                 "no_retry_failure_causes": {
                                   "type": "array",
@@ -676,19 +686,19 @@
                                     "status": {
                                       "type": "string",
                                       "example": "DECLINED",
-                                      "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (solo en pasos de fraude, 3DS y autenticación) o INTERNAL_ERROR."
+                                      "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, ISO_CODE_GROUP, SUCCEEDED_GROUP, PENDING (solo en pasos de fraude, 3DS y autenticación) o INTERNAL_ERROR."
                                     },
                                     "decline_types": {
                                       "type": "array",
                                       "items": {
                                         "type": "string"
                                       },
-                                      "description": "Miembros del grupo en las salidas DECLINE_GROUP (subestados de rechazo) y MAC_CODE_GROUP (Merchant Advice Codes)."
+                                      "description": "Miembros del grupo en las salidas DECLINE_GROUP (subestados de rechazo), MAC_CODE_GROUP (Merchant Advice Codes) e ISO_CODE_GROUP (códigos de respuesta ISO 8583)."
                                     },
                                     "group_id": {
                                       "type": "integer",
                                       "example": 1044,
-                                      "description": "Id del grupo detrás de una salida DECLINE_GROUP, MAC_CODE_GROUP o SUCCEEDED_GROUP."
+                                      "description": "Id del grupo detrás de una salida DECLINE_GROUP, MAC_CODE_GROUP, ISO_CODE_GROUP o SUCCEEDED_GROUP."
                                     },
                                     "group_name": {
                                       "type": "string",
@@ -798,6 +808,16 @@
                                       "type": "string"
                                     },
                                     "description": "Subestados de rechazo después de los cuales no se prueba el siguiente proveedor del conjunto."
+                                  },
+                                  "no_retry_decline_group_ids": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "integer"
+                                    },
+                                    "example": [
+                                      5120
+                                    ],
+                                    "description": "Ids de grupos de rechazo de la cuenta (Listar grupos de rechazo) cuyos rechazos no se reintentan en el siguiente proveedor del conjunto. Se aceptan grupos de códigos ISO: un rechazo cuyo código de respuesta ISO 8583 está en uno de ellos no se reintenta en el siguiente proveedor de Smart Routing. Si se omite al actualizar, se conservan los grupos almacenados; [] los borra."
                                   },
                                   "no_retry_failure_causes": {
                                     "type": "array",
