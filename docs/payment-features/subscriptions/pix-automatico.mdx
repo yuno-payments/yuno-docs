@@ -184,11 +184,22 @@ created, before the customer approves it. Its token is in
 right away, and in `transactions[].payment_method.vaulted_token` from
 [Retrieve Payment](/reference/payments/retrieve-payment-by-id-v2) once the payment reaches
 `SUCCEEDED`. Charge it only after this payment is `SUCCEEDED`: until the customer approves, a charge
-with the token is declined.
+with the token is declined. If the customer had already paid with Pix without `vault_on_success`,
+Retrieve Enrolled Payment Methods does not return the saved Pix: read the token from Retrieve
+Payment.
 
-Each customer has one saved Pix payment method. A new first payment with `vault_on_success`
-replaces its authorization with the new one and keeps the same `vaulted_token`, so charges with
-that token are declined until the customer approves the new payment.
+Each customer has one saved Pix payment method, and its `vaulted_token` does not change. A new
+first payment with `vault_on_success` does not replace the saved authorization while that payment
+is pending or after it is declined: charges with the token keep debiting the authorization the
+customer already approved. When the new payment reaches `SUCCEEDED`, the saved Pix switches to its
+authorization, and later charges debit that one.
+
+In the EBANX sandbox, an authorization that is not approved within about three minutes of the
+payment's creation stops being pending: EBANX reports it as `cancelled` or `revoked`. A payment
+approved after that still reaches `SUCCEEDED`, but its authorization is not accepted, so charges
+with the token are declined with `BP-DR-182` in the transaction's `response_message` until the
+customer approves a new first payment. When you test, approve the first payment within three
+minutes.
 
 **3. Later charges.** Charge the stored authorization with the vaulted token. No QR code and no
 customer approval are needed:
