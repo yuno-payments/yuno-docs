@@ -16,10 +16,10 @@ It works as `CLAUDE.md`, `AGENTS.md` or a pasted prompt, with Claude Code, Curso
 read-only: it scans your code and reports, and it changes nothing unless you ask.
 
 **The target.** v2 is the sdk-web 2.x line ("Yuno SDK 2.x", the unified Transaction API). Check the
-[Web SDK changelog](https://docs.y.uno/changelog/yuno-sdk/web) for the current version. Each release is served at a full version URL, for example
-`https://sdk-web.y.uno/v2.5.1/main.js`, and `v2.0.0`, `v2.1.0`, `v2.1.2`, `v2.2.0` are also live. There is no rolling
-folder: `/v2/`, `/v2.0/` and `/v2.2/` return 404, so you pin a full version and bump it by hand. The SRI path is
-`https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v2.5.1/main.js`. Public docs: the "SDK" tab
+[Web SDK changelog](https://docs.y.uno/changelog/yuno-sdk/web) for the current version. Load
+`https://sdk-web.y.uno/v2/main.js` to stay on the current 2.x release. That URL serves the entry file only. The SDK then loads the rest of the build from the exact version path baked into it. Pin a full version, for example
+`https://sdk-web.y.uno/v2.7.1/main.js`, to stay on one release. Older pins such as `v2.0.0`, `v2.1.0`, `v2.1.2` and `v2.2.0` stay published. A minor-only path such as `/v2.0/` or `/v2.2/` is not published and returns 404. Subresource Integrity needs the full version, because the rolling file changes. The SRI path for the current pin is
+`https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v2.7.1/main.js`. Public docs: the "SDK" tab
 (`docs/yuno-sdk/*`, migration series in `docs/yuno-sdk/migration/web/*`). The "SDKs" tab is the 1.x line.
 v1.x stays supported side by side until 2027.
 
@@ -27,7 +27,7 @@ v1.x stays supported side by side until 2027.
 
 ```
 v1.11                                              v2
-<script .../v1.11/main.js>                         <script .../v2.5.1/main.js>
+<script .../v1.11/main.js>                         <script .../v2/main.js>
 yuno = await Yuno.initialize(key)                  sdk = await SdkPayments.initialize(key)
 yuno.startCheckout(cfg)        (or Seamless)       tx = sdk.transaction(cfg)   (session, country, onStatus,
 yuno.mountCheckoutLite({...})                           createPayment present = manual, absent = managed)
@@ -88,8 +88,8 @@ REMOVED (no replacement), SILENT (v2 accepts and ignores the old key), BLOCKED (
 |---|---|---|---|---|
 | `window.Yuno`, `new Yuno`, `YunoSDK` | `window.SdkPayments` | RENAME | Replace every reference | `src/main.ts` on 1.11 vs 2.2.0 |
 | `yuno-sdk-ready` event | `sdk-payments-ready` | RENAME | Listen to the new event; also check `window.SdkPayments` first | same |
-| `<script .../v1.11/main.js>` | `<script .../v2.x.y/main.js>` | BEHAVIOUR | Pin a full version; no rolling folder | CDN probes at the time of writing |
-| npm `loadScript()` | `loadScript({ baseUrl: 'https://sdk-web.y.uno/v2.x.y' })` | BEHAVIOUR | Pass `baseUrl`; drop `sri: true` (its URL and hashes are fixed to v1.11) | npm loader `get-url.ts`, `inject-script.ts` |
+| `<script .../v1.11/main.js>` | `<script .../v2/main.js>` | BEHAVIOUR | Rolling 2.x entry. Pin `/v2.<m>.<p>/main.js` to stay on one build. `/v2.0/` and `/v2.2/` are not published | CDN, 2026-11-11 |
+| npm `loadScript()` on 9.x | `@yuno-payments/sdk-web@^10` and `loadScript()` | BEHAVIOUR | 10.x loads one exact 2.x build, not `/v2/main.js`. Use the script tag for the rolling entry. Drop `sri: true` on 9.x: those hashes are the v1.11 bundle | npm package 10.1.0 |
 | `@yuno-payments/sdk-web-types` | none published | REMOVED | Write a local declaration from the public v2 migration pages | `@yuno-payments/sdk-web-types` declares `startCheckout`, no `transaction` |
 | `await Yuno.initialize(key, appSession?, opts?)` | `await SdkPayments.initialize(...)` | RENAME + BEHAVIOUR | Same args; same args return the same instance, new args supersede the old one | `sdk-payments.ts` |
 
@@ -203,7 +203,7 @@ Look: `window.Yuno`, `Yuno.initialize`, `yuno-sdk-ready`. Still v1: any hit. Cha
 
 ### 2. Script URL and loader (M2, B)
 
-Look: script tags, `loadScript`, `sdk-static-bundles-ms`. Still v1: `/v1.11/`, `loadScript()` without `baseUrl`, `sri: true`; also wrong: `/v2/`, `/v2.2/`. Change: full `v2.x.y` URL; EU pages check the EU host has the version. Older v2 pins like `v2.0.0` are valid if the integration was tested with that version. Symptom: `sdk.transaction is not a function`, or 404.
+Look: script tags, `loadScript`, `sdk-static-bundles-ms`. Still v1: `/v1.11/`, `loadScript()` on 9.x without `baseUrl`, `sri: true` on 9.x. Also wrong: a minor-only path such as `/v2.0/` or `/v2.2/`. `/v2/main.js` is the current 2.x entry and is valid, including on the EU host. A full `v2.x.y` URL pins one release. Older v2 pins like `v2.0.0` are valid if the integration was tested with that version. Symptom: `sdk.transaction is not a function`, or 404.
 
 ### 3. v1 entry points (M3, B)
 
