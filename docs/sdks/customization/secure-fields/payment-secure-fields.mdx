@@ -55,7 +55,7 @@ Configure the secure fields with the following options:
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `countryCode`       | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](/docs/sdks/resources/country-coverage) page. |
 | `checkoutSession`   | Refers to the current payment's [checkout session](/reference/checkout-sessions/create-checkout-session). `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                            |
-| `installmentEnable` | Optional, defaults to `false`. When `true`, after the customer enters a credit card number the SDK fetches the installment plans configured for the account and returns them in the `data` of the `pan` field's `onChange` callback. The SDK doesn't render an installments field: show your own selector and send the selected plan in `installment` when you generate the token. See [Data available in onChange callback](#data-available-in-onchange-callback). |
+| `installmentEnable` | Optional, defaults to `false`. When `true`, the `pan` field returns the installment plans available for the card in its `onChange` callback, so you can render your own installment selector. See [Data available in onChange callback](#data-available-in-onchange-callback). |
 
 ```javascript
 const secureFields = await yuno.secureFields({
@@ -98,13 +98,13 @@ Once you have set the parameter, you will render the created Secure Field with t
 
 When the `onChange` callback of the `pan` field is triggered, the `data` parameter contains:
 
-* `cardIIN`: Card issuer details, including scheme, brand, type, and issuer information.
-* `isCardIINLoading`: `true` while the SDK looks up the card IIN.
-* `installments`: The installment plans for the card. Each item has `installmentId`, `installment` (number of installments), `amount` (`currency`, `value`, `total_value`), and `type`. Only present when `installmentEnable` is `true`, the card is a credit card, and the account has installment plans configured.
-* `fullInstallmentsInfo`: The complete installments response, for when you need more detail than `installments` gives.
-* `isInstallmentLoading`: `true` while the SDK fetches the installment plans.
+* `cardIIN`: Card issuer details, including scheme, brand, type, and issuer.
+* `isCardIINLoading`: `true` while the card IIN loads.
+* `installments`: Installment plans for credit cards when `installmentEnable` is `true`. Each item has `installmentId`, `installment` (number of installments), `amount`, and `type`.
+* `fullInstallmentsInfo`: The full installments response, including the plan `id`.
+* `isInstallmentLoading`: `true` while the installment plans load.
 
-The SDK only fetches the installment plans. It doesn't display them, so render your own selector with `data.installments` and pass the selected plan to `generateToken` or `generateTokenWithInformation`:
+Use `installments` to render your own installment selector, then send the selected plan when you generate the token:
 
 ```javascript
 let selectedInstallment
@@ -134,7 +134,7 @@ const oneTimeToken = await secureFields.generateToken({
 })
 ```
 
-`renderInstallmentSelector` stands for your own UI code. In `installment`, `id` is the installment plan ID (`data.fullInstallmentsInfo.id`), `value` is the number of installments, and `installment_selected_id` is the `installmentId` of the option the customer picked.
+In `installment`, `id` is the plan ID from `fullInstallmentsInfo`, `value` is the number of installments, and `installment_selected_id` is the selected option's `installmentId`.
 
 Example with three secure fields:
 
