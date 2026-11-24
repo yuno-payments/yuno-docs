@@ -448,8 +448,11 @@ function buildUrl(method, rootPath, op) {
     const q = { key: p.name, value: String(value ?? "") };
     if (p.description) q.description = p.description;
     // a lookup with a single query parameter is unusable without it
-    // account_id stays on: endpoints that take it need an account selector
-    if (!p.required && p.name !== "account_id" && (queryParams.length > 1 || variable.length)) q.disabled = true;
+    // Where an endpoint accepts the account either as this query parameter or
+    // as the X-Account-Code header, one of the two has to be sent: keep it on.
+    // Anywhere else account_id is an optional filter and stays off.
+    const accountSelector = p.name === "account_id" && params.some((h) => h.in === "header" && h.name.toLowerCase() === "x-account-code");
+    if (!p.required && !accountSelector && (queryParams.length > 1 || variable.length)) q.disabled = true;
     query.push(q);
   }
   const enabled = query.filter((q) => !q.disabled).map((q) => `${q.key}=${q.value}`);
@@ -482,7 +485,8 @@ function captures(method, rootPath) {
       // account_id, org_code and the keys belong to the environment
       if (!list.some(([name]) => name === v) && !ENV_OWNED.has(v)) {
         const field = segs[segs.length - 1].slice(1, -1);
-        const own = v === field ? `body[${JSON.stringify(field)}] || body.id` : "body.id";
+        // only a renamed variable (banking_account_id) must skip the field of the same name
+        const own = v === field || field === "code" || field === "id" ? `body[${JSON.stringify(field)}] || body.id` : "body.id";
         list.push([v, `${own} || body.code`]);
       }
       break;
@@ -744,8 +748,11 @@ const prerequest = [
   "const retryKey = pm.collectionVariables.get(\"retry_idempotency_key\");",
   "const idempotencyKey = retryKey || pm.variables.replaceIn(\"{{$guid}}\");",
   "pm.variables.set(\"idempotency_key\", idempotencyKey);",
-  "pm.collectionVariables.set(\"last_idempotency_key\", idempotencyKey);",
-  "if (retryKey) console.warn(\"Yuno: reusing X-Idempotency-Key \" + retryKey + \" (retry_idempotency_key is set).\");",
+  "// Only a request that sends the header updates last_idempotency_key, so a",
+  "// lookup in between never replaces the key of the request you want to retry.",
+  "const sendsKey = pm.request.headers.has(\"X-Idempotency-Key\");",
+  "if (sendsKey) pm.collectionVariables.set(\"last_idempotency_key\", idempotencyKey);",
+  "if (retryKey && sendsKey) console.warn(\"Yuno: reusing X-Idempotency-Key \" + retryKey + \" (retry_idempotency_key is set).\");",
   "",
   "const missing = [\"public_api_key\", \"private_secret_key\"].filter(function (k) { return !pm.variables.get(k); });",
   "if (missing.length) {",
