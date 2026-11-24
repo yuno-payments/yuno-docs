@@ -1,0 +1,83 @@
+---
+title: "Local price and taxes (Stripe Billing)"
+description: "Charge the first payment of a Stripe Billing subscription in the customer's currency and with the tax of their address, on a hosted payment link or with the Lite SDK"
+---
+
+With [Stripe Billing](/docs/payment-features/subscriptions/stripe-billing) as your subscription system, Yuno can show the price in the customer's local currency and add the tax of their address before the first payment. When the payment is approved, Yuno creates the subscription in Stripe with that tax on its first invoice. Renewals are billed by Stripe in the currency of your prices and charged by Yuno.
+
+You choose how the customer pays:
+
+- **Hosted payment link:** Yuno hosts the whole page. You only create the link.
+- **Lite SDK:** you render the checkout in your page and quote the tax from your backend.
+
+<Warning>
+**Enabled per organization**
+
+Local price (FX quotes) and tax collection are off by default. Ask your Technical Account Manager or Key Account Manager to enable them, in sandbox first and then in production. Your account also needs the [Stripe Billing onboarding](/docs/payment-features/subscriptions/stripe-billing#prerequisites) with Stripe Tax active in your Stripe account.
+</Warning>
+
+## How it works
+
+1. **You create the link or the checkout session** with `external_subscription`: the Stripe customer and the prices to sell. Yuno does not create anything in Stripe yet.
+2. **The customer sees the local price.** When the customer's country has a published rate, the page opens in the local currency with the rate, and the customer can switch to the price's currency and back. Only USD prices are converted.
+3. **The customer gives the billing address.** The country is always asked. The postal code is asked for the United States and Canada. A business can add its name and tax ID to get the business treatment (for example, reverse charge in the EU).
+4. **Yuno quotes the tax** with Stripe Tax every time the country, postal code or tax ID changes, and shows the total. A tax quote is valid for 30 minutes; after that the page quotes again before charging.
+5. **The customer pays the quoted total,** in the selected currency, through your routing.
+6. **Yuno creates the subscription in Stripe:** the customer, the prices, the card as the default payment method, and the first invoice marked paid with the quoted tax. A declined payment creates nothing in Stripe.
+
+## Before you start
+
+- **Prices in USD** if you use local price: FX quotes only convert from USD.
+- **Stripe Tax registrations** where you collect tax. Without a registration Stripe answers that no tax applies. To charge VAT to consumers in the EU, Stripe needs an OSS registration.
+- **A Yuno customer** for the buyer (`customer_payer.id`): Yuno uses its country to choose the local currency.
+
+## Option 1: hosted payment link
+
+Create the link with `local_pricing`, `tax_collection` and `external_subscription`. See [Create payment link](/reference/payment-links/create-payment-link).
+
+```json
+{
+  "account_id": "<your_account_id>",
+  "description": "Pro plan, monthly",
+  "country": "US",
+  "amount": { "currency": "USD", "value": 29 },
+  "payment_method_types": ["CARD"],
+  "one_time_use": true,
+  "customer_payer": { "id": "<yuno_customer_id>" },
+  "local_pricing": true,
+  "tax_collection": true,
+  "external_subscription": {
+    "provider": "STRIPE_BILLING",
+    "customer_id": "cus_RplXYZ",
+    "items": [{ "price": "price_1QwAbc", "quantity": 1 }]
+  }
+}
+```
+
+- `amount.value` must be the subtotal of the prices, in their currency (price times quantity, added up). If it is not, the link opens but the payment is refused with `TAX_QUOTE_INVALID` when the customer pays.
+- The local currency comes from the customer's country, then from the country of their billing address. Without a country, the link opens in the price's currency.
+- `local_pricing` and `tax_collection` are independent: you can use one without the other.
+- A link that collects taxes never applies a [promotion](/docs/payment-features/promotions).
+
+Send the `checkout_url` of the response to the customer. The errors the page can show are listed in [Hosted checkout errors](/reference/payment-links/hosted-checkout-errors).
+
+## Option 2: Lite SDK
+
+1. **Create the checkout session** with `tax_collection: true` and `external_subscription` (`customer_id` and `items`). See [Create checkout session](/reference/checkout-sessions/create-checkout-session).
+2. **Start the checkout with `onBillingAddressChanged`.** The SDK calls it when the billing changes; your backend quotes the tax with [Create tax quote](/reference/taxes/create-tax-quote) and you return the total. See [Checkouts with taxes](/docs/sdks/lite-web/payment#checkouts-with-taxes).
+3. **Create the payment** in `createPayment` with the quoted total as `amount`, `vault_on_success: true`, `customer_payer.id`, `external_subscription.customer_id`, and the tax line with `source: YUNO_TAX_QUOTE` and the last `tax_quote_id`.
+
+To show a local price in your own page, quote it with [Create FX quote](/reference/fx-rates/create-fx-quote) and charge the local amount before the quote expires.
+
+## Testing in sandbox
+
+- Use your Stripe test account with Stripe Tax active and at least one registration, for example New York: a buyer with postal code `10001` gets 8.875% sales tax.
+- A buyer in a country without registration gets `NO_TAX`.
+- Check the result in Stripe: a new subscription in the price's currency and its first invoice paid, with the tax.
+
+## Good to know
+
+- **Quotes expire.** The tax quote lasts 30 minutes and the FX quote until its `expires_at`. An expired quote is never charged: the page quotes again and the customer confirms the new total.
+- **Renewals are in the price's currency.** The local price applies only to the first payment.
+- **Refunds.** A refund of the first payment adds a credit note to its invoice in Stripe. The subscription stays active: cancel it in Stripe if the customer should not be charged again.
+- **Tax IDs.** The tax ID the customer gives is saved on the Stripe customer, so the next invoices keep the business treatment.
