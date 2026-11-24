@@ -367,6 +367,8 @@ Headless Fast Payments is available on the Yuno SDK for Web from version **2.7.1
 
 To deliver a reliable headless experience, observe these core principles:
 
+* **One checkout session per payment:** Create the session from your backend with `workflow: 'SDK_SEAMLESS'`, and create a new one for every payment. Once a payment is created on a session, Yuno rejects another payment on it.
+* **Unknown e-mail:** With an e-mail Mercado Pago does not know, `mp.wallet()` returns `available: false` and no methods. Offer your other payment methods instead.
 * **Unique selection key:** The `id` returned by Mercado Pago identifies the payment method brand (e.g. `visa`, `master`, `account_money`). Multiple saved cards can share the same `id`. Always use `token` as the unique selection key across the checkout. Keep selection exclusive across all checkout options.
 * **Lifecycle and `wallet.destroy()`:** A wallet instance is bound to the specific `amount` and `email` it was initialized with. If the shopper changes their email or if the checkout amount updates (e.g. applying shipping or discounts), call `wallet.destroy()` before calling `mp.wallet()` again to avoid memory leaks and stale session tokens.
 * **Payment method structure:** Each item in `wallet.paymentMethods` contains:
@@ -460,6 +462,19 @@ async function handlePay() {
   }
 }
 ```
+
+The `data` you pass to `transaction.start()` takes these fields:
+
+| Field | Value |
+| --- | --- |
+| `wallet.thirdPartyToken` | The token returned by `wallet.submit()`. Required. |
+| `wallet.providerMethodId` | The `id` of the chosen method, for example `visa`, `master` or `account_money`. Required. |
+| `wallet.providerMethodType` | The `type` of the chosen method: `credit_card`, `debit_card` or `account_money`. Required. |
+| `installment.value` | The number of installments the shopper chose from the method's `installments`. Optional. Without it the SDK sends 1. The SDK sends no installments for `account_money`. |
+
+When any of the three `wallet` fields is missing, the SDK creates no token and `onStatus` receives `INTERNAL_ERROR` with `message.code` `WALLET_DATA_MISSING`. `message.reason` names the missing fields.
+
+Both payment creation modes work. Without `createPayment` the SDK creates the payment. With `createPayment` you create it from your backend with the one-time token, as for any other method.
 
 #### 4. Complete runnable headless example
 
