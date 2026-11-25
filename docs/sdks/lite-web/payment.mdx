@@ -158,7 +158,44 @@ Configure the lite checkout with the following options:
 | `onPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `paymentResult`         | Callback called after the payment is completed. It receives the [payment status](/reference/payments/status-and-response-codes/payment) (for example, `SUCCEEDED`, `DECLINED`, `PENDING`, `ERROR`) and an optional `subStatus` qualifying it. See [Shopper-cancelled steps](/docs/sdks/resources/references/web#shopper-cancelled-steps).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `error`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `onChange`                        | Reports whether the payment form is complete. Receives `{ form: { isValid } }`. Use with `showPayButton: false` to control your own pay button. Available since v1.10.11. |
+| `onChange`                        | Reports the state of the payment form. Receives `{ form: { isValid, paymentMethodType, values, amount, taxQuoteStatus } }`. Use with `showPayButton: false` to control your own pay button. `isValid` is available since v1.10.11. On a checkout session with `tax_collection` (v1.11.56 and later): `values.billingAddress` holds the billing fields, `values.taxInformation` the business data, `amount` the price with taxes from the last `onBillingAddressChanged` answer, and `taxQuoteStatus` is `pending`, `ready` or `error`. Keep your pay button disabled unless it is `ready`. |
+| `onBillingAddressChanged`         | Required when the checkout session has `tax_collection` (v1.11.56 and later). The SDK calls it every time the billing country, postal code or business data of the selected payment method changes, and waits up to 10 seconds for the price with taxes. See [Checkouts with taxes](#checkouts-with-taxes). |
+
+### Checkouts with taxes
+
+When the checkout session has `tax_collection` ([Local price and taxes](/docs/payment-features/subscriptions/local-price-and-taxes)), the form asks for the billing country, the postal code in the United States and Canada, and an optional business block (business name, tax ID type and tax ID). Each time one of them changes, the SDK calls `onBillingAddressChanged`. Quote the tax from your backend with [Create tax quote](/reference/taxes/create-tax-quote) and answer the total. Without `onBillingAddressChanged` the SDK does not mount and calls `error` with the code `TAX_COLLECTION_CALLBACK_REQUIRED`.
+
+```javascript
+yuno.startCheckout({
+  checkoutSession: '<checkout_session>',
+  // ...
+  onBillingAddressChanged: async ({ paymentMethodType, billingAddress, taxInformation }) => {
+    // billingAddress: { country: 'US', zip_code: '10001' }
+    // taxInformation: { business: true, name: 'ACME Inc', type: 'us_ein', id: '12-3456789' } or undefined
+    const quote = await fetch('/my-backend/tax-quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ billingAddress, taxInformation }),
+    }).then((response) => response.json())
+
+    if (quote.code) {
+      // Your backend maps the tax quote error to the field the buyer has to fix
+      const fields = { TAX_LOCATION_INVALID: 'zip_code', TAX_ID_INVALID: 'tax_id' }
+      const error = new Error(quote.messages?.[0] ?? 'Tax quote failed')
+      error.code = quote.code
+      error.field = fields[quote.code] // country, zip_code, business_name, tax_id_type or tax_id
+      error.messageId = 'invalid' // invalid, unsupported or country_mismatch
+      throw error
+    }
+    return { amount: { currency: quote.currency, value: quote.total } }
+  },
+})
+```
+
+- Return a promise that resolves `{ amount: { currency, value } }` with a value of zero or more. The SDK shows it as the total and keeps the pay button disabled until it arrives: the button reads "Adding tax…" meanwhile.
+- If the promise rejects or takes more than 10 seconds, the button reads "Try again to continue" with a retry option, and `error` is called with the code `TAX_QUOTE_FAILED`. A rejection with `field` and `messageId` marks that field with its message.
+- Keep the `tax_quote_id` of the last quote: the payment you create in `createPayment` carries it in its tax line (`source: YUNO_TAX_QUOTE`) and charges the quoted total.
+- With `tax_collection`, Apple Pay is the only express button. Google Pay, PayPal, Revolut Pay and Samsung Pay show as rows of the list with their own billing block, and their button stays disabled until the billing is valid and the price was answered.
 
 <Note>
 **Promotions**
