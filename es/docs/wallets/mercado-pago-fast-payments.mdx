@@ -8,7 +8,7 @@ Mercado Pago Fast Payments muestra al comprador los métodos de pago que ya guar
 Yuno muestra la experiencia dentro de la lista de métodos de pago del Yuno SDK 2.0 y en el **Full checkout** y el **Lite checkout** del Web SDK v1.11. Tú creas la sesión de checkout y el pago como lo haces hoy; el SDK se encarga de la parte de Mercado Pago.
 
 <Note>
-Mercado Pago Fast Payments es compatible con el **Yuno SDK 2.0.0** (recomendado) y con el **Web SDK v1.11.21** o posterior (`https://sdk-web.y.uno/v1.11/main.js`).
+Mercado Pago Fast Payments es compatible con el **Yuno SDK 2.0.0** (recomendado, con headless disponible desde la **2.7.1**) y con el **Web SDK v1.11.21** o posterior (`https://sdk-web.y.uno/v1.11/main.js`).
 
 Los SDK heredados siguen siendo compatibles en paralelo durante la transición y está previsto dejar de darles soporte en **2027**. Yuno recomienda migrar al nuevo Yuno SDK en lugar de permanecer en un SDK heredado. Consulta la [guía de migración](/es/docs/yuno-sdk/migration/overview). Contacta a tu Account Manager para planificar la migración.
 </Note>
@@ -98,6 +98,24 @@ Igual que en el Full checkout, el componente muestra el aviso de privacidad que 
 
 Como tu propia página es la dueña de la lista de métodos de pago en el Lite checkout, Yuno no puede quitar de ella la entrada de Mercado Pago. Cuando Mercado Pago no se puede usar, o el comprador no es elegible, el componente montado muestra el mensaje *"Mercado Pago is not available right now. Please choose another payment method."*
 
+## Responsabilidades de la interfaz y la marca {#ui-responsibilities-and-branding}
+
+Al integrar Fast Payments, sobre todo en configuraciones personalizadas o headless, es esencial saber qué capa se encarga de cada elemento:
+
+* **Responsabilidades de la interfaz del comercio:**
+  * Dibujar el selector de métodos de pago y los elementos de la lista (tarjetas, dinero en cuenta y otros métodos de pago del comercio).
+  * Dibujar las opciones de cuotas con los datos exactos que entrega Mercado Pago (montos, etiquetas de tasa de interés).
+  * Gestionar los estados de los botones: deshabilitar o bloquear los botones de envío durante la inicialización de la billetera, la autenticación o la creación del token para evitar clics duplicados.
+  * Activar el indicador de carga de Yuno con `showLoading` durante la ejecución del pago y manejar los errores correctamente.
+* **Responsabilidades del SDK de Mercado Pago:**
+  * Alojar y dibujar el iframe del campo de CVV / código de seguridad (`wallet.mountSecurityCode()`) cuando se requiere para tarjetas de crédito/débito guardadas.
+  * Dibujar los modales de autenticación biométrica o multifactor (desafíos OTP / FIDO).
+  * Proporcionar la URL oficial y localizada de la política de privacidad (`wallet.privacyPolicyUrl`).
+* **Requisitos de marca y recursos:**
+  * **Logo:** Usa el logo oficial de Mercado Pago (`https://icons.prod.y.uno/mercadopago_logosimbolo.png`) junto al título de la sección o a la entrada del método.
+  * **Ubicación:** Muestra Mercado Pago de forma destacada en la parte superior de las opciones de pago para maximizar la conversión de los compradores que iniciaron sesión.
+  * **Política de privacidad:** Siempre que muestres métodos de Mercado Pago, muestra un enlace al aviso de privacidad de Mercado Pago con `wallet.privacyPolicyUrl` (por ejemplo, *"Conoce cómo protegemos tu privacidad"*).
+
 ## Integración {#integration}
 
 ### Correspondencia de workflow {#workflow-mapping}
@@ -107,7 +125,7 @@ Establece `workflow` en la sesión de checkout (`POST /v1/checkout/sessions`) se
 | SDK y experiencia | Valor de `workflow` | Fast Payments | Notas |
 | --- | --- | --- | --- |
 | **Yuno SDK 2.0** (lista de métodos de pago) | `SDK_SEAMLESS` | Sí | Obligatorio en el Yuno SDK 2.0: permite que el SDK cree el pago. Sin él, la transacción termina en `INTERNAL_ERROR`. |
-| **`start()` headless del Yuno SDK** | `SDK_SEAMLESS` | Sí | Tu página ejecuta el SDK de Mercado Pago. Crea una sesión de checkout por cada pago. |
+| **`start()` headless del Yuno SDK** | `SDK_SEAMLESS` | Sí | Tu página ejecuta el SDK de Mercado Pago. Crea una sesión de checkout por cada pago. Compatible con el SDK **v2.7.1+**. |
 | **Full checkout del Web SDK v1.11** | `SDK_CHECKOUT` | Sí | La sección de Mercado Pago se muestra en la parte superior de la lista de métodos de pago. |
 | **Lite checkout del Web SDK v1.11** (`element` o `modal`) | `SDK_CHECKOUT` | Sí | Mercado Pago recomienda `element`. |
 | **Seamless checkout del Web SDK v1.11** | `SDK_SEAMLESS` | No | Fast Payments no está disponible en el Seamless checkout de la v1. |
@@ -117,10 +135,10 @@ Establece `workflow` en la sesión de checkout (`POST /v1/checkout/sessions`) se
 <Tabs>
 <Tab title="Yuno SDK 2.0 (Recomendado)">
 
-Carga el SDK desde la CDN e inicialízalo una sola vez.
+Carga el SDK desde la CDN (versión **2.7.1+**) e inicialízalo una sola vez.
 
 ```html
-<script src="https://sdk-web.y.uno/v2.5.1/main.js"></script>
+<script src="https://sdk-web.y.uno/v2.7.1/main.js"></script>
 ```
 
 La sección de Mercado Pago se muestra en la parte superior de la lista de métodos de pago del SDK:
@@ -341,70 +359,111 @@ Mercado Pago se abre como un modal con los métodos guardados del comprador, o c
 
 ### Integración headless {#headless-integration}
 
-En una integración headless, tu página ejecuta el SDK de Mercado Pago, muestra los métodos guardados del comprador en tu propia interfaz y obtiene la autorización del comprador. Luego le entregas a Yuno el token autorizado y el método que eligió el comprador con `transaction.start()`. El Yuno SDK no renderiza nada y crea el mismo token de un solo uso que la lista de métodos de pago.
+En una integración headless, tu página ejecuta el SDK de Mercado Pago, muestra los métodos guardados del comprador en tu propia interfaz y obtiene la autorización del comprador. Luego le entregas a Yuno el token autorizado y el método que eligió el comprador con `transaction.start()`. El Yuno SDK no dibuja nada y crea el mismo token de un solo uso que la lista de métodos de pago.
 
-Fast Payments headless está disponible en el Yuno SDK para Web desde la versión 2.7.1. La integración headless del Web SDK v1 no envía los campos de Mercado Pago.
+Fast Payments headless está disponible en el Yuno SDK para Web desde la versión **2.7.1+**. La integración headless del Web SDK v1 no envía los campos de Mercado Pago.
 
-**1. Crea una sesión de checkout para el pago.** Créala desde tu backend con `workflow: 'SDK_SEAMLESS'`. Crea una sesión nueva para cada pago: una vez creado un pago en una sesión, Yuno rechaza otro pago en ella.
+#### 1. Ciclo de vida de la integración y selección única {#1-integration-lifecycle-and-unique-selection}
 
-**2. Carga los métodos de Mercado Pago del comprador.** Carga el SDK de Mercado Pago e inicialízalo con la clave pública de la misma aplicación de Mercado Pago que conectaste a Yuno, para el país del checkout. Pasa el monto de la sesión de checkout y el correo electrónico de la cuenta de Mercado Pago del comprador:
+Para ofrecer una experiencia headless confiable, ten en cuenta estos principios básicos:
 
-```html
-<script src="https://sdk.mercadopago.com/js/v2"></script>
-```
+* **Una sesión de checkout por pago:** Crea la sesión desde tu backend con `workflow: 'SDK_SEAMLESS'` y crea una nueva para cada pago. Una vez creado un pago en una sesión, Yuno rechaza otro pago en ella.
+* **Correo electrónico desconocido:** Con un correo electrónico que Mercado Pago no conoce, `mp.wallet()` devuelve `available: false` y ningún método. Ofrece tus otros métodos de pago en su lugar.
+* **Clave de selección única:** El `id` que devuelve Mercado Pago identifica la marca del método de pago (por ejemplo, `visa`, `master`, `account_money`). Varias tarjetas guardadas pueden compartir el mismo `id`. Usa siempre `token` como clave de selección única en todo el checkout. Mantén la selección exclusiva entre todas las opciones del checkout.
+* **Ciclo de vida y `wallet.destroy()`:** Una instancia de billetera está vinculada al `amount` y al `email` específicos con los que se inicializó. Si el comprador cambia su correo electrónico o si el monto del checkout se actualiza (por ejemplo, al aplicar envío o descuentos), llama a `wallet.destroy()` antes de volver a llamar a `mp.wallet()` para evitar fugas de memoria y tokens de sesión obsoletos.
+* **Estructura del método de pago:** Cada elemento de `wallet.paymentMethods` contiene:
+  * `token`: Token único de la tarjeta o del saldo.
+  * `id`: Identificador de la marca (`visa`, `master`, `account_money`).
+  * `type`: Categoría (`credit_card`, `debit_card`, `account_money`).
+  * `name`: Nombre para mostrar (por ejemplo, `"Mastercard"`).
+  * `thumbnail`: URL del recurso del ícono de la marca de la tarjeta o del método de pago.
+  * `lastFourDigits`: Últimos 4 dígitos de la tarjeta (vacío para `account_money`).
+  * `securityCode`: Objeto con `{ required: boolean, length: number }`. Cuando `required: true`, monta el campo de CVV con `wallet.mountSecurityCode()`.
+  * `installments`: Arreglo de opciones de cuotas disponibles.
+
+#### 2. Visualización de las cuotas {#2-installments-rendering}
+
+Cada entrada de `method.installments` proporciona:
+* `installments`: Número de cuotas (por ejemplo, `1`, `3`, `6`).
+* `installmentAmount`: Monto por cuota (por ejemplo, `50.00`).
+* `totalAmount`: Monto total financiado (por ejemplo, `150.00`).
+* `installmentRate`: Tasa de interés de la financiación (por ejemplo, `0` para sin interés).
+* `labels`: Etiquetas descriptivas (por ejemplo, `["recommended_installment"]`).
+
+<Tip>
+Muestra el desglose de cuotas directamente a partir de `installmentAmount`, `totalAmount` e `installmentRate`. No recalcules la financiación ni los intereses en tu frontend; los números de Mercado Pago son los que valen.
+</Tip>
 
 ```javascript
-const mp = new MercadoPago('YOUR_MERCADO_PAGO_PUBLIC_KEY', { locale: 'es-MX' });
-
-const wallet = await mp.wallet({
-  amount: '150.00',
-  payer: { email: 'shopper@example.com' },
-});
-
-if (!wallet.available) {
-  // Mercado Pago cannot be used for this shopper: offer your other payment methods
+// Example: formatting an installment option
+function renderInstallmentOption(installment) {
+  const interestText = installment.installmentRate === 0 ? 'without interest' : 'with interest';
+  return `${installment.installments}x $${installment.installmentAmount.toFixed(2)} (${interestText} - Total: $${installment.totalAmount.toFixed(2)})`;
 }
-
-// Each method has id, type, name, lastFourDigits, token, securityCode and installments
-const methods = wallet.paymentMethods;
 ```
 
-Con un correo electrónico que Mercado Pago no conoce, `wallet()` devuelve `available: false` y ningún método. Cuando el método que elige el comprador tiene `securityCode.required`, monta el campo de código de seguridad de Mercado Pago con `wallet.mountSecurityCode(containerId, { token: method.token })` antes de enviar.
+#### 3. Manejo de errores, cancelación y flujos de reintento {#3-error-handling-cancellation-and-retry-flows}
 
-**3. Obtén la autorización del comprador.** Envía el método elegido. El comprador confirma con Mercado Pago, y el resultado incluye el token autorizado:
+Autentica y envía el pago dentro de un bloque `try/catch/finally` estructurado. Distingue entre los distintos escenarios de falla para ofrecer la experiencia adecuada:
 
-```javascript
-const result = await wallet.submit({ token: method.token });
-const thirdPartyToken = result?.payment_method?.token ?? method.token;
-```
-
-**4. Inicia la transacción con los datos de la billetera.**
+* **Cancelación (`USER_CANCELLED`, `OTP_CANCELLED`, `FIDO_CANCELLED`):** El comprador descartó el desafío o la solicitud biométrica. Mantén activo el método seleccionado, vuelve a habilitar el botón de pago y deja que el comprador lo intente de nuevo sin perder su selección.
+* **No elegible / sesión obsoleta (`INVALID_PAYMENT_METHOD_TOKEN`, `account_payment_methods_empty`):** Destruye la billetera con `wallet.destroy()`, vuelve a inicializarla o recurre a los métodos de pago estándar del checkout.
+* **Fallas técnicas (`PAYMENT_REQUEST_ERROR`, `AUTHORIZATION_FAILED`):** Desbloquea la interfaz e invita al comprador a reintentar o a elegir otro método.
 
 ```javascript
-const sdkPayments = await SdkPayments.initialize('YOUR_PUBLIC_API_KEY');
+let isSubmitting = false;
 
-const transaction = sdkPayments.transaction({
-  checkoutSession: 'CHECKOUT_SESSION_ID',
-  countryCode: 'MX',
-  onStatus: (result) => {
-    console.log('Final status:', result.status);
-  },
-});
+async function handlePay() {
+  if (isSubmitting) return;
 
-await transaction.start({
-  paymentMethod: {
-    type: 'MERCADO_PAGO_SUPERTOKEN',
-    data: {
-      wallet: {
-        thirdPartyToken,
-        providerMethodId: method.id,
-        providerMethodType: method.type,
+  const payButton = document.querySelector('#pay-button');
+  payButton.disabled = true;
+  isSubmitting = true;
+
+  try {
+    // 1. Submit to Mercado Pago
+    const result = await wallet.submit({ token: selectedMethod.token });
+    const thirdPartyToken = result?.payment_method?.token ?? selectedMethod.token;
+
+    // 2. Start Yuno transaction
+    await transaction.start({
+      paymentMethod: {
+        type: 'MERCADO_PAGO_SUPERTOKEN',
+        data: {
+          wallet: {
+            thirdPartyToken,
+            providerMethodId: selectedMethod.id,
+            providerMethodType: selectedMethod.type,
+          },
+          ...(selectedMethod.type !== 'account_money' && selectedInstallment && {
+            installment: { value: selectedInstallment.installments },
+          }),
+        },
       },
-      installment: { value: 3 }, // cards only: the installments the shopper chose
-    },
-  },
-});
+    });
+  } catch (error) {
+    console.error('Mercado Pago authorization error:', error);
+    const errorCode = error?.errorCode;
+
+    if (['USER_CANCELLED', 'OTP_CANCELLED', 'FIDO_CANCELLED'].includes(errorCode)) {
+      // Shopper cancelled challenge; allow them to retry
+      console.log('Shopper cancelled authorization prompt.');
+    } else if (['INVALID_PAYMENT_METHOD_TOKEN', 'account_payment_methods_empty'].includes(errorCode)) {
+      // Stale wallet or method invalidated; reload wallet
+      await reloadWallet();
+    } else {
+      // General error; inform shopper
+      alert('Unable to complete payment with Mercado Pago. Please try again or select another method.');
+    }
+  } finally {
+    // Unlock button unless payment completed
+    isSubmitting = false;
+    payButton.disabled = false;
+  }
+}
 ```
+
+El objeto `data` que pasas a `transaction.start()` acepta estos campos:
 
 | Campo | Valor |
 | --- | --- |
@@ -415,7 +474,255 @@ await transaction.start({
 
 Cuando falta cualquiera de los tres campos de `wallet`, el SDK no crea ningún token y `onStatus` recibe `INTERNAL_ERROR` con `message.code` `WALLET_DATA_MISSING`. `message.reason` indica los campos que faltan.
 
-Ambos modos funcionan. Sin `createPayment`, el SDK crea el pago. Con `createPayment`, lo creas desde tu backend con el token de un solo uso, como con cualquier otro método.
+Ambos modos de creación del pago funcionan. Sin `createPayment`, el SDK crea el pago. Con `createPayment`, lo creas desde tu backend con el token de un solo uso, como con cualquier otro método.
+
+#### 4. Ejemplo headless completo y ejecutable {#4-complete-runnable-headless-example}
+
+El siguiente ejemplo muestra:
+* La carga del **Yuno SDK v2.7.1+** compatible y del SDK de Mercado Pago.
+* La inicialización y el cierre del ciclo de vida de la billetera (`wallet.destroy()`).
+* Los métodos guardados de Mercado Pago (con `thumbnail`, `name`, últimos dígitos y `installments` completo) junto a una opción estándar de tarjeta de crédito del comercio.
+* El cambio entre métodos con y sin CVV (`wallet.mountSecurityCode()`).
+* El enlace a la política de privacidad con `wallet.privacyPolicyUrl`.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Yuno Headless - Mercado Pago Fast Payments</title>
+  <!-- 1. Compatible SDK scripts -->
+  <script src="https://sdk-web.y.uno/v2.7.1/main.js"></script>
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <style>
+    .payment-option { border: 1px solid #ddd; padding: 12px; margin-bottom: 8px; border-radius: 6px; }
+    .payment-option.selected { border-color: #009ee3; background-color: #f6fbfe; }
+    .method-header { display: flex; align-items: center; gap: 8px; font-weight: bold; }
+    .method-icon { height: 24px; }
+    .cvv-container { margin-top: 10px; padding: 8px; background: #fff; border: 1px dashed #ccc; }
+    .privacy-notice { font-size: 12px; color: #666; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h2>Select a Payment Method</h2>
+
+  <!-- Payment Methods List -->
+  <div id="payment-methods-container"></div>
+
+  <!-- Privacy notice -->
+  <div id="privacy-container" class="privacy-notice" hidden>
+    <a id="privacy-link" href="#" target="_blank" rel="noopener noreferrer">Learn how Mercado Pago protects your privacy</a>
+  </div>
+
+  <br />
+  <button id="pay-button" disabled>Pay</button>
+
+  <script>
+    let mp = null;
+    let wallet = null;
+    let sdkPayments = null;
+    let transaction = null;
+
+    let selectedPayment = null; // { type: 'MERCADO_PAGO' | 'CARD', methodData, token }
+    let selectedInstallment = null;
+
+    async function initCheckout() {
+      // 1. Initialize Yuno SDK Payments
+      sdkPayments = await SdkPayments.initialize('YOUR_YUNO_PUBLIC_API_KEY');
+      transaction = sdkPayments.transaction({
+        checkoutSession: 'CHECKOUT_SESSION_ID',
+        countryCode: 'AR',
+        onStatus: (result) => {
+          console.log('Transaction status:', result.status);
+          if (result.status === 'SUCCEEDED') {
+            window.location.href = '/success';
+          }
+        },
+      });
+
+      // 2. Initialize Mercado Pago SDK
+      mp = new MercadoPago('YOUR_MERCADO_PAGO_PUBLIC_KEY', { locale: 'es-AR' });
+
+      await loadWallet({
+        amount: '150.00',
+        email: 'shopper@example.com'
+      });
+    }
+
+    async function loadWallet({ amount, email }) {
+      // Clean up existing wallet if email or amount changes
+      if (wallet) {
+        wallet.destroy();
+        wallet = null;
+      }
+
+      try {
+        wallet = await mp.wallet({
+          amount,
+          payer: { email }
+        });
+
+        renderPaymentOptions();
+      } catch (err) {
+        console.error('Wallet initialization failed:', err);
+        renderPaymentOptions(); // Render standard methods only
+      }
+    }
+
+    function renderPaymentOptions() {
+      const container = document.querySelector('#payment-methods-container');
+      container.innerHTML = '';
+
+      // A. Render Mercado Pago Saved Methods (if available)
+      if (wallet && wallet.available && wallet.paymentMethods.length > 0) {
+        wallet.paymentMethods.forEach((method) => {
+          const div = document.createElement('div');
+          div.className = 'payment-option';
+          div.dataset.token = method.token; // Use token as unique selection key
+
+          const lastDigits = method.lastFourDigits ? ` •••• ${method.lastFourDigits}` : '';
+          div.innerHTML = `
+            <div class="method-header">
+              <input type="radio" name="checkout-method" value="${method.token}" id="mp-${method.token}">
+              <img class="method-icon" src="${method.thumbnail}" alt="${method.name}">
+              <label for="mp-${method.token}">${method.name}${lastDigits}</label>
+            </div>
+            <div class="method-details" id="details-${method.token}" style="display:none; margin-top:8px;"></div>
+          `;
+
+          div.querySelector('input').addEventListener('change', () => selectMercadoPagoMethod(method));
+          container.appendChild(div);
+        });
+
+        // Display privacy policy
+        if (wallet.privacyPolicyUrl) {
+          const privacyContainer = document.querySelector('#privacy-container');
+          const privacyLink = document.querySelector('#privacy-link');
+          privacyLink.href = wallet.privacyPolicyUrl;
+          privacyContainer.hidden = false;
+        }
+      }
+
+      // B. Render Standard Merchant Card Option
+      const cardDiv = document.createElement('div');
+      cardDiv.className = 'payment-option';
+      cardDiv.innerHTML = `
+        <div class="method-header">
+          <input type="radio" name="checkout-method" value="standard-card" id="standard-card">
+          <label for="standard-card">Credit or Debit Card (Standard)</label>
+        </div>
+      `;
+      cardDiv.querySelector('input').addEventListener('change', selectStandardCard);
+      container.appendChild(cardDiv);
+    }
+
+    function selectMercadoPagoMethod(method) {
+      selectedPayment = { type: 'MERCADO_PAGO', method };
+      document.querySelector('#pay-button').disabled = false;
+
+      // Clear previous CVV containers and details
+      document.querySelectorAll('.method-details').forEach(el => {
+        el.style.display = 'none';
+        el.innerHTML = '';
+      });
+
+      const detailsContainer = document.querySelector(`#details-${method.token}`);
+      detailsContainer.style.display = 'block';
+
+      // 1. Render installments if credit card
+      if (method.type === 'credit_card' && method.installments && method.installments.length > 0) {
+        const select = document.createElement('select');
+        method.installments.forEach((inst) => {
+          const opt = document.createElement('option');
+          opt.value = inst.installments;
+          const interest = inst.installmentRate === 0 ? 'without interest' : 'with interest';
+          opt.textContent = `${inst.installments}x $${inst.installmentAmount.toFixed(2)} (${interest})`;
+          select.appendChild(opt);
+        });
+        selectedInstallment = method.installments[0];
+        select.addEventListener('change', (e) => {
+          selectedInstallment = method.installments.find(i => i.installments == e.target.value);
+        });
+        detailsContainer.appendChild(select);
+      } else {
+        selectedInstallment = null;
+      }
+
+      // 2. Mount CVV container if required
+      if (method.securityCode && method.securityCode.required) {
+        const cvvBox = document.createElement('div');
+        cvvBox.id = `security-code-${method.token}`;
+        cvvBox.className = 'cvv-container';
+        detailsContainer.appendChild(cvvBox);
+
+        // Mount Mercado Pago security code iframe
+        wallet.mountSecurityCode(cvvBox.id, { token: method.token });
+      }
+    }
+
+    function selectStandardCard() {
+      selectedPayment = { type: 'CARD' };
+      selectedInstallment = null;
+      document.querySelector('#pay-button').disabled = false;
+
+      // Close all MP detail containers
+      document.querySelectorAll('.method-details').forEach(el => {
+        el.style.display = 'none';
+        el.innerHTML = '';
+      });
+    }
+
+    // Handle Pay button click
+    document.querySelector('#pay-button').addEventListener('click', async () => {
+      const payButton = document.querySelector('#pay-button');
+      payButton.disabled = true;
+
+      try {
+        if (selectedPayment.type === 'MERCADO_PAGO') {
+          const method = selectedPayment.method;
+
+          // Authenticate / submit with Mercado Pago
+          const result = await wallet.submit({ token: method.token });
+          const thirdPartyToken = result?.payment_method?.token ?? method.token;
+
+          // Start Yuno transaction
+          await transaction.start({
+            paymentMethod: {
+              type: 'MERCADO_PAGO_SUPERTOKEN',
+              data: {
+                wallet: {
+                  thirdPartyToken,
+                  providerMethodId: method.id,
+                  providerMethodType: method.type,
+                },
+                ...(method.type !== 'account_money' && selectedInstallment && {
+                  installment: { value: selectedInstallment.installments },
+                }),
+              },
+            },
+          });
+        } else {
+          // Standard card flow
+          console.log('Proceeding with standard card payment');
+        }
+      } catch (err) {
+        console.error('Payment error:', err);
+        const errorCode = err?.errorCode;
+        if (['USER_CANCELLED', 'OTP_CANCELLED', 'FIDO_CANCELLED'].includes(errorCode)) {
+          console.log('User cancelled verification prompt.');
+        } else {
+          alert('Payment authentication failed. Please try again.');
+        }
+      } finally {
+        payButton.disabled = false;
+      }
+    });
+
+    initCheckout();
+  </script>
+</body>
+</html>
+```
 
 ### Token de un solo uso y creación del pago {#one-time-token-and-payment-creation}
 

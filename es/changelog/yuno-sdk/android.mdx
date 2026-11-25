@@ -5,6 +5,61 @@ description: "Últimas actualizaciones e historial de versiones del nuevo Yuno S
 
 import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
+## v3.1.0 {#v310}
+*November 6, 2026*
+
+**Pagos**
+
+- <ChangelogBadge type="added" /> **Pagos divididos entre dos tarjetas en headless**  
+  Transaction.start(activity, paymentsSelected) cobra un pedido con dos o más tarjetas. Cada elemento es un PaymentMethodSelected normal, ya sea un vaultedToken para una tarjeta guardada o transactionData.card para una nueva, y debe definir el nuevo transactionData.amount (PaymentAmount(currency, value)). El orden de la lista es el orden de pago: la primera tarjeta se cobra y se autentica primero. El SDK crea un token compuesto, se lo entrega a TransactionController.createPayment, luego ejecuta 3DS tarjeta por tarjeta e informa el estado general del pago en onStatus. Con autoContinuePayment = false se detiene después de createPayment, igual que con una sola tarjeta. Antes de cualquier solicitud, falla con INVALID_SPLIT_PAYMENT e indica la tarjeta cuando la lista tiene menos de dos elementos, un elemento no tiene monto, un monto no es mayor que 0 o no tiene moneda, las monedas difieren entre elementos, o la misma tarjeta o vaultedToken aparece dos veces. Transaction.start(activity, paymentSelected) no cambia.
+
+- <ChangelogBadge type="added" /> **PayPal a través de Braintree**  
+  Los compradores pueden pagar con PayPal procesado por Braintree (PAYPAL_BRAINTREE) desde la lista de métodos de pago. El SDK abre la página de aprobación de PayPal en una Chrome Custom Tab, envía la cuenta aprobada en el token de un solo uso y recopila los datos del dispositivo de Braintree para pagos posteriores con la cuenta guardada. Necesita el nuevo módulo opcional com.yuno.payments:yuno-sdk-paypal-braintree:1.0.0; como las clases de datos del dispositivo de PayPal se incluyen tanto en el núcleo como en Braintree, agrega también `configurations.all { exclude group: 'com.paypal.android', module: 'fraud-protection' }` a la app. La misma exclusión se aplica a cualquier app que ya incluya Braintree. Aparece en la lista de métodos de pago, así que Transaction.start() y getPaymentMethodsViews() no necesitan cambios.
+
+- <ChangelogBadge type="changed" /> **Error más claro cuando falta un módulo de pago opcional**  
+  Cuando un método de pago necesita un módulo opcional que la app no incluye (Revolut Pay, PayPal a través de Braintree), la transacción sigue terminando con INTERNAL_ERROR, y el mensaje de error ahora nombra la dependencia de Gradle que hay que agregar.
+
+- <ChangelogBadge type="fixed" /> **Los datos del dispositivo de PayPal ya no cierran la app cuando se excluye fraud-protection**  
+  Las apps que excluyen com.paypal.android:fraud-protection sin tener Braintree ya no se cierran al pagar con un método que recopila datos del dispositivo de PayPal ni al abrir una cuenta de PayPal guardada; el pago continúa sin esos datos del dispositivo.
+
+- <ChangelogBadge type="changed" /> **Los campos del formulario siguen el color de campo del Checkout Builder**  
+  Cuando el color de campo del Checkout Builder está definido en un color distinto de blanco, los campos del formulario, los menús desplegables y sus listas de opciones, el selector de marca para tarjetas co-badged, el selector de tipo de tarjeta, los cuadros de código OTP y PIN y los tooltips de ayuda ahora usan ese color de campo, con el color de acento en el campo enfocado y el cursor, de modo que los valores escritos y prellenados siguen siendo legibles sobre fondos oscuros. El título de la sección de dirección de envío y los títulos más delgados de las secciones del formulario también toman el color de texto del Checkout Builder. Los colores de error no cambian. Con un color de campo blanco o sin definir, cuando la app pasa su propio Appearance, o cuando se usa el tema oscuro del SDK, los campos se ven exactamente como antes. Para usarlo, define el color de campo en el Checkout Builder; no hacen falta cambios de código.
+
+- <ChangelogBadge type="changed" /> **El borde de los campos y la fila resaltada siguen los colores que llegan con el checkout**  
+  El borde de los campos del formulario, los divisores y la fila resaltada de las listas que abren ahora usan los colores que llegan con la configuración del checkout. Cuando esos colores no se proporcionan, los campos mantienen su borde y resaltado habituales. No hacen falta cambios de código.
+
+- <ChangelogBadge type="changed" /> **Una tarjeta nueva como único método de pago abre su formulario cuando se carga la lista**  
+  Cuando la lista de métodos de pago contiene solo una tarjeta nueva, la tarjeta se selecciona al cargar la lista, sin necesidad de tocar, y `onPaymentSelected` la recibe con `selectionSource` `AUTO`; la fila no se puede tocar y el formulario de tarjeta aparece abierto, esté o no activada la visualización desplegada. El encabezado del método está oculto por defecto y se muestra como un título no interactivo con el nombre y el logo cuando la configuración del checkout lo pide. El comportamiento está activado por defecto y se puede desactivar por comercio en la configuración del checkout, lo que devuelve la lista anterior. Las listas con dos o más métodos, tarjetas guardadas o un único método que no es tarjeta no cambian.
+
+- <ChangelogBadge type="added" /> **Callback de información de la tarjeta mientras el comprador escribe**  
+  Encadena el callback opcional `TransactionConfig.onCardInfoChanged { }` para recibir la marca, el tipo, el emisor y el país de la tarjeta mientras el comprador escribe el número de tarjeta, en pagos e inscripciones. Recibe `null` cuando el número se borra por debajo de 6 dígitos o falla la consulta de la tarjeta.
+
+- <ChangelogBadge type="added" /> **Logo de la marca de la tarjeta desde los primeros dígitos**  
+  Cuando está habilitado para la cuenta, el campo del número de tarjeta muestra el logo de la marca desde los primeros dígitos, antes de que responda la consulta de la tarjeta. El logo es solo visual: la validación, las longitudes, las cuotas, el selector de red y el pago siguen usando la marca de la consulta de la tarjeta, cuyo logo reemplaza al temprano en cuanto responde con una marca. Las marcas sin logo no muestran nada hasta entonces. Las cuentas que no lo tienen mantienen el comportamiento actual.
+
+- <ChangelogBadge type="fixed" /> **Las apps que reducen el código con R8 en modo completo llegan a la API de Yuno**  
+  En compilaciones de release con R8 en modo completo (el predeterminado desde Android Gradle Plugin 8) y sin Retrofit 2.10 o posterior en la app, todas las solicitudes del SDK fallaban con un error de red. Las reglas ProGuard de consumidor del SDK ahora conservan lo que Retrofit necesita, así que tu app no necesita reglas para eso.
+
+- <ChangelogBadge type="changed" /> **Las pantallas que dibuja el SDK después del pago llegan por showView**  
+  Cuando sobrescribes `showView`, las pantallas que el SDK dibuja después de crear el pago, como el QR de Pix, los vouchers, las instrucciones, el OTP y el PIN, ahora le llegan con `step` `ACTION`, para que puedas mostrarlas en tu propia pantalla. Sin una sobrescritura siguen a pantalla completa. Los desafíos de 3DS y las redirecciones siguen siendo siempre a pantalla completa.
+
+**Universal SDK**
+
+- <ChangelogBadge type="fixed" /> **Una cancelación del usuario llega a onStatus como USER_CANCEL**  
+  Cerrar el formulario de pago, la vista de 3DS, de redirección o de método de pago, o la inscripción, o iniciar una nueva transacción sobre una en curso, ahora entrega `status` `USER_CANCEL` sin substatus, como está documentado y como en iOS, en lugar de `CANCELED` / `CANCELED_BY_USER`.
+
+- <ChangelogBadge type="fixed" /> **Los pagos que pasaron por 3DS, una redirección o una vista de método de pago informan el estado del backend**  
+  Después de la acción adicional, `onStatus` recibe el `status` y el `substatus` del pago exactamente como los devuelve el backend, así que `REJECTED`, `CANCELED` y `EXPIRED` ya no llegan como `DECLINED`, y `ERROR` y `PENDING` conservan su substatus del backend.
+
+- <ChangelogBadge type="fixed" /> **Las inscripciones informan el estado del backend**  
+  Las inscripciones a través del formulario del SDK, una redirección, un OTP o 3DS entregan el `status` y el `substatus` del backend (por ejemplo `ENROLLED`) en lugar de `SUCCEEDED`, `PROCESSING`, `REJECT` o `FAIL`, y la pantalla de estado del SDK muestra el resultado correspondiente.
+
+- <ChangelogBadge type="fixed" /> **Un estado fuera de la lista documentada informa UNSUPPORTED_STATUS**  
+  Los pagos y las inscripciones pasan los estados que figuran en la referencia de Status; cualquier otro valor llega como `INTERNAL_ERROR` con `message.code` `UNSUPPORTED_STATUS` y `message.reason` `unsupported status: <value>`, como en iOS y Web. `REFUNDED` ahora se pasa tal cual.
+
+- <ChangelogBadge type="fixed" /> **Un createPayment rechazado informa MERCHANT_CREATE_PAYMENT_FAILED**  
+  Cuando tu `createPayment` lanza una excepción, `onStatus` recibe `INTERNAL_ERROR` con `message.code` `MERCHANT_CREATE_PAYMENT_FAILED` y el SDK cierra su vista sin mostrar su pantalla de estado, así que tu app muestra el error.
+
 ## v3.0.0 {#v300}
 *October 16, 2026*
 
