@@ -282,11 +282,23 @@ Usa este flujo para cambiar la tarjeta de una suscripción, incluida una `past_d
 
 ### Cambia a un método de pago que el cliente ya inscribió {#switch-to-a-payment-method-the-customer-already-enrolled}
 
-Si el cliente ya tiene otro método de pago almacenado en el vault en Yuno, puedes mover la suscripción a ese método sin llevar al cliente de vuelta al checkout. Llama a [Cambiar el método de pago de una suscripción externa](/es/reference/subscriptions/change-external-subscription-payment-method) con el ID de la suscripción de Stripe en la ruta, y envía el ID de cliente de Yuno en `customer_payer.id` (no el ID `cus_` de Stripe) y el nuevo `vaulted_token`.
+Si el cliente ya tiene otro método de pago almacenado en el vault en Yuno, puedes mover la suscripción a ese método sin llevar al cliente de vuelta al checkout. Llama a [Definir el método de pago de una suscripción externa](/es/reference/subscriptions/change-external-subscription-payment-method) con el ID de la suscripción de Stripe en la ruta, y envía el ID de cliente de Yuno en `customer_payer.id`, el ID de cliente de Stripe en `external_customer_id` y el nuevo `vaulted_token`.
 
 No se realiza ningún pago: Yuno no cobra al cliente y no ejecuta una verificación de $0 ni 3DS. Yuno establece el nuevo método de pago como predeterminado de la suscripción en Stripe, y las próximas renovaciones lo cobran. Si Stripe no confirma el cambio, la suscripción conserva su método de pago anterior y la API devuelve `502` `BILLING_PLATFORM_ERROR`: reintenta con un nuevo `X-Idempotency-Key`.
 
 Esta API se habilita por cuenta. Contacta a tu Key Account Manager para solicitar acceso.
+
+### Vincula una suscripción de Stripe existente a una tarjeta ya verificada en Yuno {#link-an-existing-stripe-subscription-to-a-card-already-verified-in-yuno}
+
+Una suscripción que creaste en Stripe antes de integrar Yuno no está vinculada a Yuno: Stripe la sigue cobrando. Si su cliente ya registró y verificó una tarjeta en Yuno, puedes vincular la suscripción a esa tarjeta sin una nueva verificación, así el cliente no vuelve a pasar por 3DS. Llama al mismo endpoint [Definir el método de pago de una suscripción externa](/es/reference/subscriptions/change-external-subscription-payment-method) con los mismos campos. La respuesta devuelve `result` `LINKED`.
+
+Yuno vincula la suscripción solo cuando:
+
+- La suscripción de Stripe está `active` o `trialing` y se cobra automáticamente (`collection_method: charge_automatically`).
+- `external_customer_id` es el cliente de Stripe de la suscripción.
+- La tarjeta se verificó antes en Yuno, por ejemplo con una verificación de $0 al registrarla. Yuno cobra las renovaciones como iniciadas por el comercio con esa verificación.
+
+No se realiza ningún pago. Yuno establece la tarjeta como predeterminada de la suscripción en Stripe, y Yuno cobra las próximas renovaciones. Vincula una suscripción por solicitud.
 
 ## Portal del cliente {#customer-portal}
 

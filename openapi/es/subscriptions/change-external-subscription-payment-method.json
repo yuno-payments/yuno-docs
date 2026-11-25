@@ -23,8 +23,8 @@
   "paths": {
     "/external-subscriptions/{external_subscription_id}/payment-method": {
       "post": {
-        "summary": "Change External Subscription Payment Method",
-        "description": "Mueve una suscripción externa (una suscripción de Stripe Billing vinculada a través del billing bridge) a otro método de pago que el cliente ya inscribió en Yuno, sin un pago.\n\nNo se realiza ningún pago: Yuno no cobra al cliente y no ejecuta una verificación de $0 ni 3DS. Las próximas renovaciones cobran el nuevo método de pago.\n\n`customer_payer.id` es el ID de cliente de Yuno, no el ID de cliente de Stripe (`cus_...`). Enviar el método de pago que la suscripción ya cobra devuelve `200` y no cambia nada.\n\nEsta API se habilita por cuenta: contacta a tu Key Account Manager para solicitar acceso.",
+        "summary": "Set External Subscription Payment Method",
+        "description": "Define el método de pago que cobra una suscripción de Stripe Billing, sin un pago. Úsalo en dos casos:\n\n- **La suscripción todavía no está vinculada a Yuno**: Yuno la vincula a una tarjeta que el cliente ya verificó en Yuno. La suscripción de Stripe tiene que estar `active` o `trialing`, cobrarse automáticamente (`collection_method: charge_automatically`) y pertenecer a `external_customer_id`. La tarjeta tiene que haberse verificado antes, para que Yuno pueda cobrar las renovaciones como iniciadas por el comercio.\n- **La suscripción ya está vinculada**: Yuno la mueve a otro método de pago que el cliente ya inscribió en Yuno.\n\nNo se realiza ningún pago: Yuno no cobra al cliente y no ejecuta una verificación de $0 ni 3DS. Las próximas renovaciones cobran el método de pago de `vaulted_token`.\n\n`customer_payer.id` es el ID de cliente de Yuno; `external_customer_id` es el ID de cliente de Stripe (`cus_...`). Enviar el método de pago que la suscripción ya cobra devuelve `200` con `result` `NO_CHANGE`.\n\nEsta API se habilita por cuenta: contacta a tu Key Account Manager para solicitar acceso.",
         "operationId": "change-external-subscription-payment-method",
         "parameters": [
           {
@@ -59,7 +59,8 @@
                 "required": [
                   "account_id",
                   "customer_payer",
-                  "vaulted_token"
+                  "vaulted_token",
+                  "external_customer_id"
                 ],
                 "properties": {
                   "account_id": {
@@ -94,6 +95,15 @@
                     "examples": [
                       "2deff5c9-da62-4888-8f05-df76ab2967a5"
                     ]
+                  },
+                  "external_customer_id": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255,
+                    "description": "El ID de cliente de Stripe (`cus_...`) de la suscripción. Entre 3 y 255 caracteres. Yuno verifica que la suscripción de Stripe pertenezca a este cliente.",
+                    "examples": [
+                      "cus_RplXYZ"
+                    ]
                   }
                 }
               },
@@ -104,7 +114,8 @@
                     "customer_payer": {
                       "id": "cfae0941-7234-427a-a739-ef4fce966c79"
                     },
-                    "vaulted_token": "2deff5c9-da62-4888-8f05-df76ab2967a5"
+                    "vaulted_token": "2deff5c9-da62-4888-8f05-df76ab2967a5",
+                    "external_customer_id": "cus_RplXYZ"
                   }
                 }
               }
@@ -113,7 +124,7 @@
         },
         "responses": {
           "200": {
-            "description": "La suscripción ahora usa el método de pago de `vaulted_token`. También se devuelve, sin cambios, cuando ese método de pago es el que la suscripción ya usa.",
+            "description": "La suscripción ahora cobra el método de pago de `vaulted_token`. `result` indica si se vinculó, si cambió o si ya usaba ese método de pago.",
             "content": {
               "application/json": {
                 "schema": {
@@ -142,10 +153,35 @@
                       "type": "string",
                       "format": "uuid",
                       "description": "El token del vault que la suscripción cobra a partir de ahora."
+                    },
+                    "external_customer_id": {
+                      "type": "string",
+                      "description": "El ID de cliente de Stripe de la solicitud."
+                    },
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "LINKED",
+                        "PAYMENT_METHOD_CHANGED",
+                        "NO_CHANGE"
+                      ],
+                      "description": "`LINKED` cuando la suscripción todavía no estaba vinculada a Yuno, `PAYMENT_METHOD_CHANGED` cuando pasó a este método de pago, `NO_CHANGE` cuando ya lo cobraba."
                     }
                   }
                 },
                 "examples": {
+                  "Subscription linked": {
+                    "value": {
+                      "external_subscription_id": "sub_1QF2abc",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "customer_payer": {
+                        "id": "cfae0941-7234-427a-a739-ef4fce966c79"
+                      },
+                      "vaulted_token": "2deff5c9-da62-4888-8f05-df76ab2967a5",
+                      "external_customer_id": "cus_RplXYZ",
+                      "result": "LINKED"
+                    }
+                  },
                   "Payment method changed": {
                     "value": {
                       "external_subscription_id": "sub_1QF2abc",
@@ -153,7 +189,9 @@
                       "customer_payer": {
                         "id": "cfae0941-7234-427a-a739-ef4fce966c79"
                       },
-                      "vaulted_token": "2deff5c9-da62-4888-8f05-df76ab2967a5"
+                      "vaulted_token": "2deff5c9-da62-4888-8f05-df76ab2967a5",
+                      "external_customer_id": "cus_RplXYZ",
+                      "result": "PAYMENT_METHOD_CHANGED"
                     }
                   }
                 }
@@ -161,7 +199,7 @@
             }
           },
           "400": {
-            "description": "La solicitud no es válida, o no se encontró el cliente, el método de pago o la suscripción, o no coinciden.",
+            "description": "La solicitud no es válida, no se encontró el cliente, el método de pago o la suscripción o no coinciden, o la suscripción o la tarjeta no se pueden vincular.",
             "content": {
               "application/json": {
                 "schema": {
@@ -196,7 +234,7 @@
                     "value": {
                       "code": "EXTERNAL_SUBSCRIPTION_NOT_FOUND",
                       "messages": [
-                        "No active external subscription with this id for the account."
+                        "The billing platform has no subscription with this id for the account."
                       ]
                     }
                   },
@@ -204,7 +242,47 @@
                     "value": {
                       "code": "CUSTOMER_MISMATCH",
                       "messages": [
-                        "The external subscription belongs to another customer."
+                        "The external subscription belongs to another customer or to another external_customer_id."
+                      ]
+                    }
+                  },
+                  "VAULTED_TOKEN_NOT_ENROLLED": {
+                    "value": {
+                      "code": "VAULTED_TOKEN_NOT_ENROLLED",
+                      "messages": [
+                        "The vaulted_token is not enrolled."
+                      ]
+                    }
+                  },
+                  "VAULTED_TOKEN_WITHOUT_COUNTRY": {
+                    "value": {
+                      "code": "VAULTED_TOKEN_WITHOUT_COUNTRY",
+                      "messages": [
+                        "The vaulted_token has no country."
+                      ]
+                    }
+                  },
+                  "VAULTED_TOKEN_WITHOUT_NETWORK_TRANSACTION_ID": {
+                    "value": {
+                      "code": "VAULTED_TOKEN_WITHOUT_NETWORK_TRANSACTION_ID",
+                      "messages": [
+                        "The vaulted_token has no network transaction id to charge the renewals merchant-initiated."
+                      ]
+                    }
+                  },
+                  "EXTERNAL_SUBSCRIPTION_NOT_ACTIVE": {
+                    "value": {
+                      "code": "EXTERNAL_SUBSCRIPTION_NOT_ACTIVE",
+                      "messages": [
+                        "The external subscription is neither active nor trialing."
+                      ]
+                    }
+                  },
+                  "EXTERNAL_SUBSCRIPTION_NOT_CHARGED_AUTOMATICALLY": {
+                    "value": {
+                      "code": "EXTERNAL_SUBSCRIPTION_NOT_CHARGED_AUTOMATICALLY",
+                      "messages": [
+                        "The external subscription is not charged automatically."
                       ]
                     }
                   }
@@ -233,7 +311,7 @@
             }
           },
           "409": {
-            "description": "CONCURRENT_CHANGE: otro cambio de método de pago para esta suscripción se completó primero.",
+            "description": "CONCURRENT_CHANGE: otro cambio de método de pago para esta suscripción se completó primero. EXTERNAL_SUBSCRIPTION_PENDING_ACTIVATION: la suscripción se está migrando a Yuno; reintenta cuando termine la migración.",
             "content": {
               "application/json": {
                 "schema": {
@@ -247,13 +325,21 @@
                         "Another payment method change for this subscription completed first."
                       ]
                     }
+                  },
+                  "EXTERNAL_SUBSCRIPTION_PENDING_ACTIVATION": {
+                    "value": {
+                      "code": "EXTERNAL_SUBSCRIPTION_PENDING_ACTIVATION",
+                      "messages": [
+                        "The external subscription is being migrated to Yuno. Retry once the migration finishes."
+                      ]
+                    }
                   }
                 }
               }
             }
           },
           "502": {
-            "description": "BILLING_PLATFORM_ERROR: la plataforma de facturación no pudo confirmar el cambio. Se mantiene el método de pago anterior. Reintenta con una nueva clave de idempotencia.",
+            "description": "BILLING_PLATFORM_ERROR: la plataforma de facturación no pudo confirmar el cambio. La suscripción sigue cobrando lo mismo que antes. Reintenta con una nueva clave de idempotencia.",
             "content": {
               "application/json": {
                 "schema": {
@@ -264,7 +350,7 @@
                     "value": {
                       "code": "BILLING_PLATFORM_ERROR",
                       "messages": [
-                        "The billing platform could not confirm the change. The previous payment method stays. Retry with a new idempotency key."
+                        "The billing platform could not confirm the change. The subscription keeps charging what it charged before. Retry with a new idempotency key."
                       ]
                     }
                   }

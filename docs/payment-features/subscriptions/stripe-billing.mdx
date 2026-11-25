@@ -284,11 +284,23 @@ Use this flow to change the card of a subscription, including a `past_due` one:
 
 ### Switch to a payment method the customer already enrolled
 
-If the customer already has another payment method vaulted in Yuno, you can move the subscription to it without bringing the customer back to checkout. Call [Change External Subscription Payment Method](/reference/subscriptions/change-external-subscription-payment-method) with the Stripe subscription ID in the path, and send the Yuno customer ID in `customer_payer.id` (not the Stripe `cus_` ID) and the new `vaulted_token`.
+If the customer already has another payment method vaulted in Yuno, you can move the subscription to it without bringing the customer back to checkout. Call [Set External Subscription Payment Method](/reference/subscriptions/change-external-subscription-payment-method) with the Stripe subscription ID in the path, and send the Yuno customer ID in `customer_payer.id`, the Stripe customer ID in `external_customer_id` and the new `vaulted_token`.
 
 No payment is made: Yuno does not charge the customer and does not run a $0 verification or 3DS. Yuno sets the new payment method as the subscription's default in Stripe, and the next renewals charge it. If Stripe does not confirm the change, the subscription keeps its previous payment method and the API returns `502` `BILLING_PLATFORM_ERROR`: retry with a new `X-Idempotency-Key`.
 
 This API is enabled per account. Contact your Key Account Manager to request access.
+
+### Link an existing Stripe subscription to a card already verified in Yuno
+
+A subscription you created in Stripe before integrating Yuno is not linked to Yuno: Stripe keeps charging it. If its customer already enrolled and verified a card in Yuno, you can link the subscription to that card without a new verification, so the customer does not go through 3DS again. Call the same [Set External Subscription Payment Method](/reference/subscriptions/change-external-subscription-payment-method) endpoint with the same fields. The response returns `result` `LINKED`.
+
+Yuno links the subscription only when:
+
+- The Stripe subscription is `active` or `trialing` and charged automatically (`collection_method: charge_automatically`).
+- `external_customer_id` is the Stripe customer of the subscription.
+- The card was verified in Yuno before, for example with a $0 verification when it was enrolled. Yuno charges the renewals as merchant-initiated with that verification.
+
+No payment is made. Yuno sets the card as the subscription's default in Stripe, and Yuno charges the next renewals. Link one subscription per request.
 
 ## Customer portal
 
