@@ -90,6 +90,20 @@ Si una decisión de temporización no está disponible a tiempo, el reintento re
 `SMART` está disponible para todas las cuentas.
 </Note>
 
+### Rechazos definitivos {#hard-declines}
+
+Para `stop_on_hard_decline`, las suscripciones usan su propia lista de rechazos definitivos, que puede diferir de la columna temporal/definitivo de la tabla [Declined status](/es/reference/payments/status-and-response-codes/transaction#declined-status). Un pago rechazado es un rechazo definitivo cuando:
+
+* Su último intento devolvió uno de estos códigos de respuesta de transacción: `BAD_FILLED_INFO`, `COUNTRY_NOT_SUPPORTED`, `CURRENCY_NOT_ALLOWED`, `DO_NOT_TRY_AGAIN`, `EXPIRED_CARD`, `INVALID_ACCOUNT`, `INVALID_API`, `INVALID_API_VERSION`, `INVALID_CARD_DATA`, `INVALID_CARD_NUMBER`, `INVALID_CREDENTIALS`, `INVALID_PARAMETERS`, `INVALID_SECURITY_CODE`, `INVALID_TRANSACTION`, `ISSUER_VIOLATION`, `MISSING_PARAMETERS`, `NO_RETRY_LIFE_CYCLE`, `NO_RETRY_POLICY`, `NO_RETRY_SECURITY`, `REPORTED_LOST`, `REPORTED_STOLEN`, `THREE_D_SECURE_REQUIRED`, `TRANSACTION_NOT_FOUND`, `UNAVAILABLE_PAYMENT_METHOD`, `UNSUPPORTED_OPERATION`, `USER_RESTRICTION`.
+* Es un pago Mastercard y el merchant advice code de un intento es `DO_NOT_TRY_AGAIN`.
+* Pasó por proveedores de respaldo (fallback) y un intento anterior devolvió un código a nivel de tarjeta: `DO_NOT_TRY_AGAIN`, `EXPIRED_CARD`, `INVALID_CARD_NUMBER`, `REPORTED_LOST`, `REPORTED_STOLEN`, `USER_RESTRICTION`. Otros códigos en intentos anteriores no cuentan.
+
+Un rechazo Mastercard con `NO_RETRY_LIFE_CYCLE` o `NO_RETRY_POLICY` no es un rechazo definitivo cuando su merchant advice code indica reintentar más tarde (`TRY_AGAIN_LATER` o `RETRY_AFTER_*`); los reintentos continúan.
+
+### Ventanas de reintento del emisor {#issuer-retry-windows}
+
+Cuando un rechazo trae un merchant advice code de la forma `RETRY_AFTER_<N>_H` o `RETRY_AFTER_<N>_D`, el siguiente reintento automático nunca se ejecuta antes de que pase esa ventana, sea cual sea la `strategy`. Si la ventana termina en la próxima fecha de facturación o después, no se ejecutan más reintentos en ese ciclo de facturación. Una llamada manual a [Retry Subscription](/es/reference/subscriptions/retry-subscription) no se retrasa.
+
 ### Suscripciones Pix Automático {#pix-automático-subscriptions}
 
 El calendario y la configuración de `retries` de esta página se aplican a las suscripciones que Yuno reintenta por sí mismo. En cambio, una suscripción `PIX_AUTOMATIC` sigue la escalera fija propia del riel de Pix (hasta tres reintentos, uno por fecha de débito, dentro de los siete días posteriores a la fecha de débito), y la configuración anterior no se puede modificar en ella. Consulta [Pix Automático](/es/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).
@@ -150,7 +164,7 @@ Con el [Yuno Testing Gateway](/es/docs/direct-integration-use-cases/yuno-testing
 * **Calendario completo de reintentos**: usa una tarjeta que devuelva un rechazo temporal, como `DECLINED_BY_BANK`, `DO_NOT_HONOR` o `INSUFFICIENT_FUNDS`.
 * **`stop_on_hard_decline`**: establece `stop_on_hard_decline` en `true` y usa una tarjeta que devuelva un rechazo definitivo, como `REPORTED_STOLEN` o `INVALID_CARD_DATA`.
 
-Si un código de respuesta es un rechazo temporal o definitivo se indica en la tabla [Declined status](/es/reference/payments/status-and-response-codes/transaction#declined-status).
+Qué códigos de respuesta cuentan como rechazo definitivo se indica en [Rechazos definitivos](#hard-declines).
 
 Ten en cuenta lo siguiente:
 

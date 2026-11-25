@@ -91,6 +91,20 @@ If a timing decision is not available in time, the retry falls back to the fixed
 `SMART` is available to all accounts.
 </Note>
 
+### Hard declines
+
+For `stop_on_hard_decline`, subscriptions use their own list of hard declines, which can differ from the soft/hard column of the [Declined status](/reference/payments/status-and-response-codes/transaction#declined-status) table. A declined payment is a hard decline when:
+
+* Its final attempt returned one of these transaction response codes: `BAD_FILLED_INFO`, `COUNTRY_NOT_SUPPORTED`, `CURRENCY_NOT_ALLOWED`, `DO_NOT_TRY_AGAIN`, `EXPIRED_CARD`, `INVALID_ACCOUNT`, `INVALID_API`, `INVALID_API_VERSION`, `INVALID_CARD_DATA`, `INVALID_CARD_NUMBER`, `INVALID_CREDENTIALS`, `INVALID_PARAMETERS`, `INVALID_SECURITY_CODE`, `INVALID_TRANSACTION`, `ISSUER_VIOLATION`, `MISSING_PARAMETERS`, `NO_RETRY_LIFE_CYCLE`, `NO_RETRY_POLICY`, `NO_RETRY_SECURITY`, `REPORTED_LOST`, `REPORTED_STOLEN`, `THREE_D_SECURE_REQUIRED`, `TRANSACTION_NOT_FOUND`, `UNAVAILABLE_PAYMENT_METHOD`, `UNSUPPORTED_OPERATION`, `USER_RESTRICTION`.
+* It is a Mastercard payment and the merchant advice code of an attempt is `DO_NOT_TRY_AGAIN`.
+* It was routed through fallback providers and an earlier attempt returned a card-level code: `DO_NOT_TRY_AGAIN`, `EXPIRED_CARD`, `INVALID_CARD_NUMBER`, `REPORTED_LOST`, `REPORTED_STOLEN`, `USER_RESTRICTION`. Other codes on earlier attempts do not count.
+
+A Mastercard decline with `NO_RETRY_LIFE_CYCLE` or `NO_RETRY_POLICY` is not a hard decline when its merchant advice code says to try again later (`TRY_AGAIN_LATER` or `RETRY_AFTER_*`); the retries continue.
+
+### Issuer retry windows
+
+When a decline carries a merchant advice code of the form `RETRY_AFTER_<N>_H` or `RETRY_AFTER_<N>_D`, the next automatic retry never runs before that window has passed, whatever the `strategy`. If the window ends at or after the next billing date, no more retries run for that billing cycle. A manual [Retry Subscription](/reference/subscriptions/retry-subscription) call is not delayed.
+
 ### Pix Automático subscriptions
 
 The schedule and the `retries` settings on this page apply to subscriptions Yuno retries itself. A `PIX_AUTOMATIC` subscription instead follows the Pix rail's own fixed ladder — up to three retries, one per debit date, within seven days of the debit date — and the settings above cannot be changed on it. See [Pix Automático](/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).
@@ -151,7 +165,7 @@ With the [Yuno Testing Gateway](/docs/direct-integration-use-cases/yuno-testing-
 * **Full retry schedule**: use a card that returns a soft decline, such as `DECLINED_BY_BANK`, `DO_NOT_HONOR` or `INSUFFICIENT_FUNDS`.
 * **`stop_on_hard_decline`**: set `stop_on_hard_decline` to `true` and use a card that returns a hard decline, such as `REPORTED_STOLEN` or `INVALID_CARD_DATA`.
 
-Whether a response code is a soft or hard decline is listed in the [Declined status](/reference/payments/status-and-response-codes/transaction#declined-status) table.
+Which response codes count as hard declines is listed in [Hard declines](#hard-declines).
 
 Keep in mind:
 
