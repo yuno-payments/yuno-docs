@@ -5,6 +5,64 @@ description: "Últimas actualizaciones e historial de versiones del Web SDK (Leg
 
 import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
 
+## v1.11.59
+*20 de noviembre de 2026*
+
+**Apple Pay**
+
+- <ChangelogBadge type="fixed" /> **Apple Pay se muestra cuando el comprador no tiene tarjeta en la billetera**  
+  El botón de Apple Pay ya no se oculta cuando el comprador no tiene tarjeta en Apple Wallet: se muestra siempre que el dispositivo es compatible con Apple Pay, y la hoja de Apple permite al comprador agregar una tarjeta durante la compra. Esto se aplica en todos los lugares donde el SDK lo dibuja (la lista de métodos de pago, el botón exprés, `mountExternalButtons` y `mountSeamlessExternalButtons`), y `isPaymentMethodAvailable({ paymentMethodType: 'APPLE_PAY' })` ahora devuelve `true` para esos compradores. El SDK ya no llama a `ApplePaySession.applePayCapabilities()`, lo que también elimina una solicitud a los servidores de Apple antes de que se muestre el botón.
+
+- <ChangelogBadge type="fixed" /> **Apple Pay sigue a updateCheckoutSession**  
+  Un botón de Apple Pay que ya está montado ahora toma la sesión de checkout establecida por `updateCheckoutSession` (o por un reintento de pago): la hoja de pago muestra el monto y la moneda de la nueva sesión, y el token de un solo uso y el pago usan la nueva sesión. Se ignora un toque mientras la configuración de la nueva sesión todavía se está cargando. Si esa configuración no se puede cargar, el botón se oculta y vuelve cuando se carga una sesión posterior.
+
+**Checkout**
+
+- <ChangelogBadge type="added" /> **Moon Active preselecciona otra tarjeta guardada después de un rechazo**  
+  Con el ajuste `skip_declined_saved_card_enabled` activado, un comprador de Moon Active con dos o más tarjetas guardadas, cuya tarjeta guardada acaba de ser rechazada, ve otra tarjeta guardada preseleccionada cuando el checkout se vuelve a montar; los compradores con una sola tarjeta guardada no ven ningún cambio.
+
+- <ChangelogBadge type="added" /> **Tarjeta nueva preseleccionada después del rechazo de una tarjeta guardada**  
+  En el diseño de métodos de pago guardados, con los ajustes `new_card_after_declined_saved_card_enabled` y `skip_declined_saved_card_enabled` activados, cuando se rechaza la tarjeta guardada de un comprador y no queda otra tarjeta guardada que no haya sido rechazada, el checkout que se vuelve a montar preselecciona la opción de tarjeta nueva en lugar de la tarjeta rechazada, igual que si el comprador la hubiera tocado. Esto se aplica solo cuando todas las opciones de pago se muestran en una sola lista (`all_options_visible_enabled`); cuando los demás métodos están bajo "Más opciones", la tarjeta rechazada sigue preseleccionada.
+
+- <ChangelogBadge type="added" /> **PayPal se abre como página completa en iPhone y iPad**  
+  Con el ajuste `paypal_ios_redirect_enabled` activado y `IS_PAYPAL_REDIRECT` en una conexión de PayPal que tiene un `CLIENT_ID`, los botones de PayPal y Venmo se mantienen, y un toque en PayPal en iPhone o iPad envía al comprador a la propia página de PayPal una vez que existe el pedido, en lugar de abrir una ventana emergente o una superposición. La página de retorno del pedido completa el pago y envía al comprador al `callback_url` del comercio. Venmo, Android y escritorio mantienen su comportamiento actual. Cuando PayPal no puede redirigir, el mismo toque abre la superposición. Volver atrás desde la página de PayPal cuenta como una cancelación del comprador, igual que cerrar la ventana emergente: `yunoError` recibe `CANCELED_BY_USER`. Sin el ajuste, `IS_PAYPAL_REDIRECT` mantiene el botón de redirección actual.
+
+- <ChangelogBadge type="added" /> **El diseño de métodos guardados puede mostrar todas las opciones**  
+  En el diseño que mantiene los demás métodos de pago bajo "Más opciones" cuando el comprador tiene un método de pago guardado, un nuevo ajuste muestra todo a la vez: los botones de billetera arriba, luego los métodos guardados y el resto de la lista. El método guardado sigue preseleccionado. El ajuste está desactivado por defecto, así que nada cambia a menos que Yuno lo active para la cuenta.
+
+- <ChangelogBadge type="fixed" /> **Los métodos guardados van primero cuando se muestran todas las opciones**  
+  Con el ajuste que muestra todas las opciones de pago junto a un método de pago guardado, los métodos guardados ahora van primero en la lista, justo debajo de los botones de billetera, seguidos de la opción de tarjeta nueva y luego el resto en su orden habitual. Antes, la tarjeta guardada podía aparecer debajo de otros métodos. No cambia nada cuando el ajuste está desactivado.
+
+- <ChangelogBadge type="added" /> **El formulario de tarjeta se abre al llegar para pagadores nuevos**  
+  En el diseño con botones de billetera y una lista de métodos de pago, un comprador sin método de pago guardado ahora ve el formulario de tarjeta abierto al llegar, incluso cuando la lista tiene otros métodos como Cash App o Klarna. El ajuste está desactivado por defecto, así que nada cambia a menos que Yuno lo active para la cuenta.
+
+- <ChangelogBadge type="added" /> **Nombre del titular completado en una tarjeta nueva a partir de las tarjetas guardadas del comprador**  
+  Con el ajuste `card_holder_name_prefill_enabled` activado, el formulario de tarjeta nueva se abre con el nombre del titular ya completado cuando todas las tarjetas que el comprador tiene guardadas llevan el mismo nombre. El campo sigue siendo editable, y prevalece un nombre que el comprador escribe o que el navegador autocompleta. No se completa ningún nombre cuando las tarjetas guardadas llevan nombres distintos, cuando un nombre está enmascarado o cuando el nombre tiene caracteres que el campo no acepta. Sin el ajuste, el campo se comporta como antes.
+
+- <ChangelogBadge type="added" /> **Google Pay puede mostrarse solo a compradores con una tarjeta en Google Pay**  
+  Con el ajuste `google_pay_existing_payment_method_required` activado, el botón de Google Pay se oculta cuando Google informa que el comprador no tiene ninguna tarjeta guardada en Google Pay, de modo que la lista empiece con un método con el que pueda pagar. El botón se sigue mostrando cuando Google no puede determinarlo (por ejemplo, cuando el navegador bloquea las cookies que Google necesita). El entorno `TEST` de Google siempre informa una tarjeta, así que el ocultamiento solo se nota en producción. Sin el ajuste, el botón y su verificación de disponibilidad no cambian. Un botón oculto porque Google dice que el comprador no puede pagar ya no se registra como error.
+
+- <ChangelogBadge type="added" /> **Medir la respuesta de tarjeta guardada de Google Pay sin ocultar el botón**  
+  Con el ajuste `google_pay_existing_payment_method_measure` activado, el SDK le pregunta a Google si el comprador tiene una tarjeta guardada en Google Pay y registra la respuesta, pero siempre mantiene el botón de Google Pay. Esto nos permite comprobar que la respuesta de Google es confiable antes de activar `google_pay_existing_payment_method_required`, que oculta el botón. La consulta agrega alrededor de 0.4 s antes de que aparezca el botón de Google Pay, solo en las sesiones donde el ajuste está activado. Cuando ambos ajustes están activados, prevalece el de ocultar.
+
+- <ChangelogBadge type="changed" /> **Los mismos datos en cada cancelación del usuario**  
+  Cada `CANCELED_BY_USER` enviado a `yunoError` ahora lleva los mismos datos: `cause`, `provider`, `paymentCreated`, `ottCreated` y `willUnmount`. Los tres indicadores son siempre booleanos, así que una sola regla cubre todos los métodos de pago: volver a montar cuando `willUnmount` es true, y crear una nueva sesión de checkout cuando `paymentCreated` es true. En PayPal, `paymentCreated` es true a menos que se sepa que el pedido o el token falló, porque el comprador puede cerrar la ventana emergente mientras el pago todavía se está creando.
+
+**Google Pay**
+
+- <ChangelogBadge type="fixed" /> **Google Pay sigue a updateCheckoutSession**  
+  Un botón de Google Pay que ya está montado ahora toma la sesión de checkout establecida por `updateCheckoutSession` (o por un reintento de pago): la hoja muestra el monto y la moneda de la nueva sesión, y el token de un solo uso y el pago usan la nueva sesión. Se ignora un toque mientras la configuración de la nueva sesión todavía se está cargando.
+
+**Botones exprés**
+
+- <ChangelogBadge type="changed" /> **La verificación de disponibilidad de Google Pay empieza al montar en los botones externos seamless**  
+  `mountSeamlessExternalButtons` con un botón de Google Pay ahora inicia la verificación `isReadyToPay` de Google al montar, mientras el SDK espera a la API, igual que ya lo hacen `mountExternalButtons` y los montajes Full. El botón reutiliza esa respuesta en lugar de preguntarle otra vez a Google, así que se muestra antes.
+
+**Payment Actions**
+
+- <ChangelogBadge type="added" /> **continuePayment acepta un transactionCode para 3DS en pagos divididos**  
+  `continuePayment` acepta un `transactionCode` opcional. En un pago dividido entre varias tarjetas, hace que el SDK actúe sobre la transacción de esa tarjeta: lee el pago desde `GET /v2/checkout/sessions/{checkout_session}/payment`, ejecuta la acción pendiente de esa transacción (configuración de 3DS, completada en esa transacción, luego su desafío), de modo que la página de 3DS alojada de cada tarjeta autentique su propia tarjeta. Cuando esa tarjeta no tiene ninguna acción pendiente, el SDK informa el estado del pago en lugar de actuar sobre otra tarjeta. Sin `transactionCode`, en un pago con una sola tarjeta, o cuando falla la lectura v2, `continuePayment` funciona como antes.
+
 ## v1.11.58
 *16 de noviembre de 2026*
 
@@ -1955,7 +2013,7 @@ yuno.startSeamlessCheckout({
 - <ChangelogBadge type="fixed" /> **Falla del formulario de tarjeta inscrita**  
   Evita una falla en tiempo de ejecución cuando faltan los metadatos de la tarjeta al detectar Amex en tarjetas inscritas.
 
-- <ChangelogBadge type="fixed" /> **Depuración de funciones en las cargas útiles de registro**  
+- <ChangelogBadge type="fixed" /> **Depuración de funciones en los payloads de registro**  
   Las funciones del estado inicial suministrado por el comercio se eliminan antes de serializar el registro de depuración, lo que evita problemas de serialización en el checkout, el checkout seamless, el pago e inscripción headless y los flujos de estado.
 
 ## v1.6.0

@@ -3,7 +3,7 @@ title: "Planes"
 description: "Define una vez un catálogo de precios reutilizable y luego suscribe a los clientes a él, en lugar de definir el monto y la frecuencia en cada suscripción"
 ---
 
-Un plan es una definición de precios reutilizable: nombre, precio (opcionalmente por país), frecuencia de cobro y una escalera opcional de fases de prueba. En lugar de especificar `amount`/`frequency` en cada [suscripción](/es/docs/payment-features/subscriptions/index) que creas, suscribe al cliente a un plan y Yuno resuelve automáticamente el precio para su país.
+Un plan es una definición de precios reutilizable: nombre, precio (opcionalmente por país), frecuencia de cobro y una secuencia opcional de fases de prueba. En lugar de especificar `amount`/`frequency` en cada [suscripción](/es/docs/payment-features/subscriptions/index) que creas, suscribe al cliente a un plan y Yuno resuelve automáticamente el precio para su país.
 
 <Note>
 **Planes frente a suscripciones sin plan**
@@ -23,7 +23,7 @@ Supón que lanzas un nivel "Streaming Pro" que cuesta \$20/mes en Estados Unidos
 **`plan_id` asume el control del precio y la cadencia, pero no todos los campos en conflicto se rechazan de la misma manera**
 
 - `amount` es mutuamente excluyente con `plan_id`: envía exactamente uno de los dos.
-- `trial_period` y `billing_date` enviados junto con `plan_id` se rechazan con `400 BAD_REQUEST`: el plan ya define la escalera de prueba y la cadencia, por lo que estos campos entrarían en conflicto.
+- `trial_period` y `billing_date` enviados junto con `plan_id` se rechazan con `400 BAD_REQUEST`: el plan ya define la secuencia de prueba y la cadencia, por lo que estos campos entrarían en conflicto.
 - `retries` enviado junto con un `plan_id` cuyo plan tiene su propia configuración de reintentos se rechaza con `400 INVALID_PARAMETERS` ("retries cannot be combined with a plan_id whose plan defines its own retry configuration"). La suscripción hereda los reintentos del plan, así que omite `retries` para estos planes. Un plan sin configuración de reintentos sigue aceptando `retries` en la suscripción.
 - `frequency` enviado junto con `plan_id` **no** se rechaza: se ignora en silencio y la frecuencia propia del plan lo sobrescribe. Si lo envías esperando que se aplique, no se aplicará, y nada te lo indicará.
 
@@ -40,7 +40,7 @@ En la práctica, esto significa que un "cambio de precio" es en realidad "crear 
 
 Si quieres que los nuevos suscriptores paguen menos (o nada) durante un tiempo antes de que entre en vigor el precio regular, como una prueba gratuita de 14 días o \$9.99/mes durante los primeros 3 meses antes de pasar a \$20/mes, para eso sirven las `phases` del plan.
 
-Piénsalo como una escalera corta que recorre el suscriptor: uno o más pasos `TRIAL` (con el precio que quieras, incluido \$0), seguidos de exactamente un paso `REGULAR` al final, que siempre se cobra según el `base_amount`/`country_prices` normales del plan. Por ejemplo, un plan de 3 meses y luego regular tiene dos fases: la fase 1 es `TRIAL`, 3 meses, \$9.99; la fase 2 es `REGULAR` sin duración definida: simplemente se ejecuta al precio normal del plan a partir de ese momento.
+Piénsalo como una secuencia corta que recorre el suscriptor: uno o más pasos `TRIAL` (con el precio que quieras, incluido \$0), seguidos de exactamente un paso `REGULAR` al final, que siempre se cobra según el `base_amount`/`country_prices` normales del plan. Por ejemplo, un plan de 3 meses y luego regular tiene dos fases: la fase 1 es `TRIAL`, 3 meses, \$9.99; la fase 2 es `REGULAR` sin duración definida: simplemente se ejecuta al precio normal del plan a partir de ese momento.
 
 Mientras un suscriptor está dentro de una fase `TRIAL`, el `status` de su suscripción es `TRIALING` (en lugar de `ACTIVE`) y `current_phase` es `TRIAL`, así puedes saber de un vistazo que todavía está en el período con descuento. En cuanto llega a la fase `REGULAR`, ambos cambian automáticamente: `status` pasa a `ACTIVE` y `current_phase` pasa a `REGULAR`, sin que tengas que hacer nada.
 
