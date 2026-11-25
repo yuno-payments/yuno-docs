@@ -92,7 +92,7 @@ Other facts:
 
 - `account_id` identifies the account inside request bodies (the sample project calls it `ACCOUNT_CODE`).
 - Yuno uses a 60-second timeout for all endpoints.
-- Docs MCP for coding tools: `https://docs.y.uno/mcp` (HTTP transport, no auth). Setup at https://docs.y.uno/setup-mcp.
+- Docs MCP for coding tools: `https://docs.y.uno/mcp` (HTTP transport, no auth).
 - API MCP, hosted: `https://mcp.prod.y.uno/mcp` with headers `public-api-key`, `private-secret-key`, and `account-code`.
 - API MCP, local: `npx @yuno-payments/yuno-mcp@latest` with env vars `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, and `YUNO_ACCOUNT_CODE`.
 
@@ -167,7 +167,6 @@ To audit a repository that already integrates Yuno, fetch the validator that mat
 - https://docs.y.uno/llms-full.txt
 - https://docs.y.uno/openapi.json
 - https://docs.y.uno/openapi.yaml
-- https://docs.y.uno/setup-mcp
 - https://docs.y.uno/auth.md
 - https://docs.y.uno/docs/developers
 - https://docs.y.uno/reference/getting-started/api-reference-overview

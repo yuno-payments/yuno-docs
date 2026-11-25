@@ -32,9 +32,9 @@ See [Authentication](/reference/getting-started/authentication#idempotency) for 
 
 Yuno exposes its API as MCP tools for AI agents. Two ways to connect:
 
-**Local (CLI-launched)**: run `npx @yuno-payments/yuno-mcp@latest` and set `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, and `YUNO_ACCOUNT_CODE` as environment variables. See [Building AI Integrations with Yuno's LLMs and MCP](/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp).
+**Local (CLI-launched)**: run `npx @yuno-payments/yuno-mcp@latest` and set `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, and `YUNO_ACCOUNT_CODE` as environment variables.
 
-**Remote (hosted endpoint)**: connect over HTTP transport to `https://mcp.prod.y.uno/mcp`, passing `public-api-key`, `private-secret-key`, and `account-code` as request headers. Adds IP binding, rate limiting (15 requests/minute/session), and session TTLs (30 min idle, 6 hours absolute). See [Remote Yuno MCP Server](/docs/ai-capabilities/remote-yuno-mcp-server).
+**Remote (hosted endpoint)**: connect over HTTP transport to `https://mcp.prod.y.uno/mcp`, passing `public-api-key`, `private-secret-key`, and `account-code` as request headers. Adds IP binding, rate limiting (15 requests/minute/session), and session TTLs (30 min idle, 6 hours absolute).
 
 Both methods use the same API key credentials as the REST API, no separate OAuth flow.
 

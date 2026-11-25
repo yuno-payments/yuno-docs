@@ -161,12 +161,9 @@ Every page of the Yuno documentation, grouped by tab and section. Each link poin
 
 ### AI Capabilities
 
-- [Model Context Protocol (MCP)](https://docs.y.uno/setup-mcp.md)
-- [Build with AI](https://docs.y.uno/docs/ai-capabilities/build-with-ai.md)
 - [Maia AI Technical Account Manager](https://docs.y.uno/docs/ai-capabilities/maia-ai-technical-account-manager.md)
-- [Use Yuno with Claude and ChatGPT](https://docs.y.uno/docs/ai-capabilities/use-yuno-with-claude-and-chatgpt.md)
-- [Building AI Integrations with Yuno's LLMs and MCP](https://docs.y.uno/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp.md)
-- [Remote Yuno MCP Server](https://docs.y.uno/docs/ai-capabilities/remote-yuno-mcp-server.md)
+- [Use Yuno with AI assistants](https://docs.y.uno/docs/ai-capabilities/use-yuno-with-claude-and-chatgpt.md)
+- [Agent documentation](https://docs.y.uno/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp.md)
 - [Agent Toolkit](https://docs.y.uno/docs/ai-capabilities/agent-toolkit.md)
 - [Payment Concierge](https://docs.y.uno/docs/ai-capabilities/payment-concierge.md)
 - [NOVA](https://docs.y.uno/docs/ai-capabilities/nova.md)
