@@ -1,0 +1,100 @@
+---
+title: "Capturar pagamentos"
+description: "Mostra como capturar manualmente uma autorização pendente usando o endpoint Capture Payment."
+---
+
+Neste guia, você encontra instruções passo a passo para capturar manualmente um pagamento criado anteriormente na Yuno.
+
+<Note>
+**Captura atrasada automática**
+
+Se você preferir que a Yuno capture os pagamentos automaticamente após um intervalo definido, você pode configurar `delayed_capture_settings` ao criar o pagamento. Saiba mais no guia [Fluxo de cancelamento e captura](/docs/payment-features/Cancel-and-capture-flow).
+</Note>
+
+<Warning>
+**Quais pagamentos você pode capturar**
+
+Somente pagamentos com status **PENDING** podem ser capturados. Consulte a página [Status do pagamento](/pt-br/docs/basic-concepts/payments-1) para mais detalhes sobre os possíveis status de pagamento.
+
+Se o pagamento já estiver como **SUCCEEDED**, ele já foi capturado e não resta nada a capturar. É o caso das compras (`capture: true`) e das autorizações (`capture: false`) enviadas a um provedor que só aceita captura imediata. Nesse segundo caso, a Yuno cria a transação de captura para você e retorna o pagamento como `SUCCEEDED` com `sub_status = CAPTURED`, então você pode pular a chamada de captura.
+</Warning>
+
+## Requisitos {#requirements}
+
+Para capturar um pagamento, você precisa:
+
+* Acessar suas [credenciais de API](/pt-br/docs/using-yuno/settings/developers-credentials) no Dashboard da Yuno, que consistem em:
+  * `public-api-key`
+  * `private-secret-key`
+* Ter os dados de identificação do pagamento recebidos após criar o pagamento usando o [endpoint Create Payment](/reference/payments/create-payment):
+  * `id`: o identificador único do pagamento, obtido do parâmetro `id` após criar o pagamento.
+  * `transaction_id`: o identificador único da transação, obtido do parâmetro `transaction.id` após criar o pagamento.
+
+<Note>
+**Explore as Postman Collections da Yuno**
+
+A Yuno oferece [Postman Collections](/reference/getting-started/postman-collections) que você pode usar para reproduzir os casos de uso localmente.
+</Note>
+
+<Info>
+**Opções de captura**
+
+Este guia trata da **captura manual** usando o endpoint da API. Para outras opções de captura, incluindo:
+
+* **Captura em tempo real** (compra imediata)
+* **Captura atrasada** (captura automática após um intervalo)
+
+Consulte o guia [Fluxo de cancelamento e captura](/docs/payment-features/Cancel-and-capture-flow).
+</Info>
+
+## Capturar um pagamento {#capture-a-payment}
+
+Você só pode capturar um pagamento se ele estiver com o status PENDING. Use o [endpoint Capture Payment](/reference/payments/capture-authorization) para capturar o pagamento. Para identificar o pagamento a ser capturado, você precisa informar o `id` dele e o `transaction_id`. Além disso, você precisa informar o valor a ser capturado usando o objeto `amount` no corpo da requisição:
+
+* Captura completa: deixe o valor vazio.
+* Captura parcial: informe o valor a ser capturado usando o parâmetro `amount`.
+
+<Note>
+**Pagamentos com uma promoção da Yuno**
+
+O valor autorizado é o que o cliente paga, `amount.value` menos `discount_amount`, então uma captura completa usa esse valor. Consulte [Promoções](/docs/payment-features/promotions#refunds-captures-and-cancellations).
+</Note>
+
+<Note>
+**Pagamentos aprovados parcialmente**
+
+Se você enviou o pagamento com `payment_method.detail.card.partial_approval: true` e o provedor aprovou menos do que o solicitado, o valor autorizado é `amount.authorized`. Uma captura completa usa `amount.authorized`, e uma captura parcial não pode ultrapassá-lo: uma captura acima de `amount.authorized` é rejeitada com `400 INVALID_PARAMETERS`. Para qualquer outro pagamento, uma captura maior que a autorização é encaminhada ao provedor, que decide se a aceita.
+</Note>
+
+Para confirmar que você capturou o pagamento com sucesso, verifique se os parâmetros da resposta do endpoint [Capture Payment](/reference/payments/capture-authorization) contêm os seguintes valores:
+
+* `type = CAPTURE`
+* `status = SUCCEEDED`
+* `payment.status = SUCCEEDED`
+* `payment.sub_status = CAPTURED/PARTIALLY_CAPTURED`
+
+Se a resposta contiver os valores acima, a captura foi bem-sucedida.
+
+### Pagamento já em um estado final {#payment-already-in-a-final-state}
+
+Se você chamar o endpoint de captura em um pagamento que não está mais como `PENDING` (por exemplo, ele já foi capturado, reembolsado ou cancelado), o endpoint retorna HTTP 400 com o código `INVALID_STATUS`:
+
+```json
+{
+  "code": "INVALID_STATUS",
+  "messages": ["Invalid transaction status."]
+}
+```
+
+Trate esse código como "nenhuma outra operação se aplica a este pagamento" e não tente a captura novamente. Para saber o estado atual do pagamento, use o endpoint [Retrieve payment](/reference/payments/retrieve-payment-by-id).
+
+### Verificar o status do pagamento {#check-the-payment-status}
+
+Se, por algum motivo, você precisar confirmar a captura do pagamento:
+
+* Use o [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) ou o [Retrieve Payment by merchant\_order\_id](/reference/payments/retrieve-payment-by-merchant-order-id) para obter informações detalhadas sobre o pagamento.
+* Como alternativa, configure webhooks para receber notificações de cada evento. Consulte o guia [Webhooks](/docs/webhooks/configure-webhooks) para saber como configurar webhooks na Yuno.
+
+## Veja também {#see-also}
+
+* [Cancelar pagamentos](/pt-br/docs/direct-integration-use-cases/cancel-payments)
