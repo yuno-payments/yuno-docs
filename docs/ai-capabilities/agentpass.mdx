@@ -1,0 +1,207 @@
+---
+title: "AgentPass"
+description: "Let your customers approve each purchase with their Visa Payment Passkey and receive a single-use card credential for it, through the Yuno Wallet API."
+---
+
+{/* TODO: confirm the product name with Pedro Schott. The source guide calls the product and the API "Yuno Wallet"; the Slack thread calls it AgentPass. */}
+
+AgentPass lets your customers pay with a Visa card they approve purchase by purchase. Your customer enrolls the card and a Visa Payment Passkey in Yuno Wallet, so they enter their card details there, not in your app. For each purchase, they review the merchant and amount and sign with the passkey, and your backend receives a single-use card credential to complete the payment.
+
+## How it works
+
+Your backend calls the API. The consent, card, and passkey steps take place in Yuno Wallet.
+
+| Step | Action | Where | Result |
+| --- | --- | --- | --- |
+| 1 | Create the customer account through enrollment | API | `customer_id` |
+| 2 | Save the address in the profile | Yuno Wallet | |
+| 3 | Enroll a Visa card | Yuno Wallet | |
+| 4 | Register the Visa Payment Passkey | Yuno Wallet and Visa | |
+| 5 | Verify the passkey | Yuno Wallet and Visa | |
+| 6 | Check that the card is ready | API | `ready: true` |
+| 7 | Create the purchase authorization | API | `requires_action` |
+| 8 | Approve and sign with the passkey | Yuno Wallet | `credential_ready` |
+| 9 | Retrieve the single-use credential | API | `credential_issued` |
+
+**Your side** authenticates the customer, calls the API from your backend, opens the consent screens, and uses the credential in your payment integration.
+
+**Yuno Wallet** handles card enrollment, consent, and passkey verification, manages the authorization, and delivers the credential for the approved purchase.
+
+## Before you start
+
+Yuno provisions your partner API key and configures your merchant, country, currency, and approved `return_url`. Keep the API key on your backend.
+
+{/* TODO: production base URL. The source guide only gives the staging URL. */}
+
+| Environment | Base URL |
+| --- | --- |
+| Staging | `https://staging.y.uno/wallet-api` |
+
+Send these headers on every request:
+
+```http
+Authorization: Bearer {partner_api_key}
+Content-Type: application/json
+Accept: application/json
+```
+
+## 1. Enroll the customer
+
+Create the customer account:
+
+```http
+POST /v1/customers/enroll
+```
+
+```json
+{
+  "external_customer_id": "customer-001",
+  "name": "Customer Name",
+  "email": "customer@example.com",
+  "return_url": "{approved_return_url}"
+}
+```
+
+The response is HTTP 200 with `customer_id`, `status: requires_action`, and `next_action.url`. Open the link in Chrome. The cardholder confirms the account, saves their address, enrolls the Visa card, and completes passkey registration and verification.
+
+Then check that the customer and card are ready:
+
+```http
+GET /v1/customers/{customer_id}
+```
+
+```json
+{
+  "customer_id": "{customer_id}",
+  "status": "ready",
+  "cards": [
+    {
+      "card_id": "{card_id}",
+      "last4": "{last_four_digits}",
+      "brand": "VISA",
+      "status": "active",
+      "ready": true
+    }
+  ]
+}
+```
+
+Proceed when the customer has `status: ready` and the selected card has `ready: true`.
+
+* The cardholder enters their address and card details in Yuno Wallet. This request returns only card metadata.
+* Customer identity is scoped to each partner, with no automatic linking by email. To resume an enrollment, reuse the original identity.
+
+## 2. Create and approve the purchase
+
+Create the purchase authorization. Send a unique `Idempotency-Key` for each purchase:
+
+```http
+POST /v1/purchases
+Idempotency-Key: {unique_purchase_key}
+```
+
+```json
+{
+  "customer_id": "{customer_id}",
+  "card_id": "{card_id}",
+  "order_reference": "order-001",
+  "amount_minor": 100,
+  "currency": "{configured_currency}",
+  "description": "Customer-authorized purchase",
+  "credential_format": "card_form",
+  "return_url": "{approved_return_url}"
+}
+```
+
+The response is HTTP 200 with `purchase_id`, `status: requires_action`, and `next_action.url`. Save the `purchase_id`. To retry the same purchase after a technical error, reuse the same idempotency key and payload.
+
+Open `next_action.url` in Chrome. The cardholder reviews the merchant and amount, approves, and signs with the passkey.
+
+<Note>
+  The customer returning to your app does not prove the purchase was approved. Check the purchase status with the request below.
+</Note>
+
+If the link expired, request a new one:
+
+```http
+POST /v1/purchases/{purchase_id}/sessions
+```
+
+```json
+{}
+```
+
+Check the purchase after approval:
+
+```http
+GET /v1/purchases/{purchase_id}
+```
+
+```json
+{
+  "purchase_id": "{purchase_id}",
+  "amount_minor": 100,
+  "currency": "{configured_currency}",
+  "credential_format": "card_form",
+  "status": "credential_ready"
+}
+```
+
+* `amount_minor` uses the smallest currency unit: `100` is 1.00 in BRL or USD.
+* The currency must match your partner configuration.
+* The amount and the credential format cannot change after the purchase is created.
+* The authorization lasts 30 minutes.
+* Links have an `expires_at` timestamp. Renew a link only while the purchase is in `requires_action`. Renewing a link does not extend the authorization.
+
+## 3. Retrieve the credential
+
+When the purchase reaches `credential_ready`, request the credential from your backend. Send a unique `Idempotency-Key`:
+
+```http
+POST /v1/purchases/{purchase_id}/credentials
+Idempotency-Key: {unique_issuance_key}
+```
+
+```json
+{}
+```
+
+```json
+{
+  "purchase_id": "{purchase_id}",
+  "status": "credential_issued",
+  "format": "card_form",
+  "expires_at": "{expires_at}",
+  "card_form": {
+    "number": "{tokenized_number}",
+    "expiration_month": "{month}",
+    "expiration_year": "{year}",
+    "security_code": "{dynamic_security_code}",
+    "holder_name": "{cardholder_name}"
+  }
+}
+```
+
+The `card_form` format contains a Visa token number, the expiration date, a dynamic security code, and the cardholder name. Use it in your payment integration before `expires_at`.
+
+<Warning>
+  The response contains sensitive payment data. Pass the credential only through your secure backend payment flow. Do not log the payload or expose it in chat or telemetry. `GET` requests never return the credential.
+</Warning>
+
+An HTTP 200 response can also contain `requires_action` or `refused`. Always check `status` and `reason`:
+
+| Status | What to do |
+| --- | --- |
+| `requires_action` | Complete the approval before requesting the credential. |
+| `credential_issued` | The credential was already delivered. A new request returns `CREDENTIAL_ALREADY_ISSUED`. |
+| `requires_reconciliation` | The request timed out. Look up the purchase and reconcile with Yuno. |
+| `expired` or `failed` | Investigate the cause. Retrying requires an explicit decision and a new approval. |
+
+Each purchase issues one credential: a new idempotency key cannot issue another credential for the same purchase. After delivery, `GET /v1/purchases/{purchase_id}` returns `credential_issued`.
+
+<Note>
+  Issuing the credential does not mean the payment was approved. The payment result comes from your payment integration.
+</Note>
+
+{/* TODO: Rivers' scope. Capture, refunds, cancels, and risk conditions are not in the source guide. */}
+{/* TODO: consumer access through the AgentPass MCP server (agentpass.prod.y.uno/mcp), per Pedro Schott. Waiting on what to say about it. */}
