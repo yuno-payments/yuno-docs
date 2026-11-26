@@ -1,0 +1,146 @@
+---
+title: "Autenticação de destinos"
+description: "Registre a autenticação de um destino uma única vez (credenciais de assinatura HMAC ou um certificado de cliente mTLS) e deixe o PCI Proxy autenticar cada forward por você. Os segredos são somente de escrita e criptografados em repouso."
+keywords: ["pci proxy", "autenticação", "mtls", "hmac", "assinatura", "certificado de cliente", "rotação"]
+---
+
+Em vez de enviar credenciais de assinatura em cada forward, você pode vincular uma autenticação a um
+destino da allowlist uma única vez. A partir daí, qualquer forward para esse host é autenticado pelo
+proxy automaticamente: assinado com HMAC, apresentado com o seu certificado de cliente mTLS ou ambos.
+
+Hoje há suporte a dois tipos de autenticação, e eles podem ser combinados em um mesmo destino:
+
+| Tipo | O que o proxy faz em cada forward |
+|---|---|
+| `DLOCAL_HMAC` | Assina a requisição de saída com as suas credenciais da dLocal: define `X-Login`, `X-Trans-Key`, `X-Date` e a assinatura HMAC `Authorization` |
+| `MTLS` | Apresenta o seu certificado de cliente durante o handshake TLS com o destino |
+
+<Info>
+**Seus segredos são somente de escrita**
+
+O material secreto (chaves de assinatura e chaves privadas) é aceito no registro e nunca é
+retornado por nenhum endpoint. Ele é criptografado com uma chave KMS dedicada antes de ser armazenado;
+o texto em claro existe apenas em memória enquanto uma requisição está sendo assinada. As leituras retornam apenas
+material não secreto: o identificador `x_login` ou o fingerprint e a validade do certificado.
+</Info>
+
+## Precedência: os cabeçalhos por requisição sempre prevalecem {#precedence-per-request-headers-always-win}
+
+Os [cabeçalhos de assinatura por requisição](/pt-br/docs/security-and-compliance/pci-proxy/forward-proxy#signed-destinations-hmac-request-signing)
+(`yuno-proxy-auth` + `yuno-proxy-auth-secret-key`) continuam funcionando exatamente como antes. Em qualquer
+forward:
+
+1. Se a requisição trouxer cabeçalhos `yuno-proxy-auth*`, essas credenciais são usadas.
+2. Caso contrário, se o destino tiver um perfil persistido, o proxy usa esse perfil.
+3. Caso contrário, a requisição é encaminhada sem autenticação, como uma entrada simples da allowlist.
+
+Quando um perfil `DLOCAL_HMAC` persistido é aplicado, o proxy define os quatro cabeçalhos
+(`X-Login`, `X-Trans-Key`, `X-Date`, `Authorization`) a partir do perfil; os valores que você enviar para
+esses cabeçalhos nessa requisição são substituídos. Um certificado mTLS é apresentado sempre que o
+destino tiver um perfil `MTLS`, independentemente de como a requisição é assinada.
+
+Se o mesmo hostname estiver registrado tanto para toda a organização quanto para uma conta específica, o
+destino restrito à conta (e a autenticação dele) prevalece nas requisições que trazem esse
+`yuno-account-id`.
+
+## Registrar um destino com autenticação {#register-a-destination-with-authentication}
+
+Adicione um array `authentication` ao [registro do destino](/pt-br/docs/security-and-compliance/pci-proxy/allowlist#register-a-destination),
+com no máximo uma entrada por tipo:
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hostname": "api.dlocal.com",
+    "purpose": "Direct payins - dLocal",
+    "authentication": [
+      {
+        "type": "DLOCAL_HMAC",
+        "x_login": "sak_live_...",
+        "x_trans_key": "...",
+        "secret_key": "..."
+      }
+    ]
+  }'
+```
+
+Uma entrada mTLS traz o certificado e a chave privada dele em formato PEM. O certificado pode
+incluir intermediários; a chave privada é somente de escrita:
+
+```json
+{
+  "type": "MTLS",
+  "certificate": "-----BEGIN CERTIFICATE-----\n...",
+  "private_key": "<your PEM private key>"
+}
+```
+
+A resposta, como toda leitura do destino, retorna apenas material não secreto:
+
+```json
+{
+  "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  "hostname": "api.dlocal.com",
+  "status": "ENABLED",
+  "authentication": [
+    { "type": "DLOCAL_HMAC", "x_login": "sak_live_..." },
+    {
+      "type": "MTLS",
+      "certificate_fingerprint": "sha256:9f86d081...",
+      "certificate_expires_at": "2027-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+Uma configuração inválida retorna `422 INVALID_AUTHENTICATION`: um `type` desconhecido, um `type`
+duplicado, um campo obrigatório ausente ou vazio, um campo inesperado, um certificado ou chave que não
+pode ser interpretado, uma chave que não corresponde ao certificado ou um certificado expirado.
+
+## Rotacionar credenciais {#rotate-credentials}
+
+A rotação substitui por completo a autenticação do destino: envie a nova
+configuração completa; não existe atualização parcial:
+
+```sh
+curl -X PUT "https://api.y.uno/v1/pci-proxy/destinations/{id}/authentication" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "authentication": [
+      { "type": "DLOCAL_HMAC", "x_login": "sak_live_new", "x_trans_key": "...", "secret_key": "..." }
+    ]
+  }'
+```
+
+Retorna `200` com o destino e o resumo da nova autenticação dele. A sobrescrita é
+idempotente e entra em vigor imediatamente: o próximo forward já usa as novas credenciais.
+Use `certificate_expires_at` nas suas leituras para programar a rotação do certificado antes que ele expire.
+
+## Remover a autenticação {#remove-authentication}
+
+```sh
+curl -X DELETE "https://api.y.uno/v1/pci-proxy/destinations/{id}/authentication" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Retorna `200`. O destino continua funcionando como uma entrada simples da allowlist; os forwards para ele
+simplesmente deixam de ser autenticados pelo proxy. Excluir o próprio destino também remove a
+autenticação dele.
+
+Toda alteração de autenticação é registrada na trilha de auditoria do destino como `AUTH_SET` ou
+`AUTH_REMOVED`.
+
+## Erros {#errors}
+
+| Status | Código | Quando |
+|---|---|---|
+| `400` | `INVALID_PARAMETERS` | Corpo malformado, um array `authentication` vazio em `PUT` ou um id de destino inválido |
+| `404` | `NOT_FOUND` | O destino não existe ou não está visível no escopo da sua conta |
+| `422` | `INVALID_AUTHENTICATION` | A configuração de autenticação é inválida (mensagem estática; o motivo específico não é informado) |
+| `502` | `DESTINATION_UNREACHABLE` | Nos forwards: o destino rejeitou o handshake TLS; verifique se o seu certificado de cliente é o que o destino espera e se ele não expirou |

@@ -1,0 +1,89 @@
+---
+title: "Visão geral do PCI Proxy"
+description: "Envie dados brutos de cartão para qualquer API de terceiros por meio do ambiente PCI DSS Nível 1 da Yuno, sem trazer seus próprios sistemas para o escopo PCI."
+keywords: ["pci proxy", "forward proxy", "destokenização", "vaulted_token", "conformidade pci"]
+---
+
+Algumas operações de pagamento exigem o envio de dados brutos de cartão a um terceiro: um processador que a Yuno não orquestra para você, a API de um fornecedor de companhia aérea ou hotel, um serviço de fraude ou do emissor, ou sua própria conexão de adquirência. Manipular esses dados diretamente colocaria seus sistemas no escopo completo do PCI DSS.
+
+O PCI Proxy da Yuno permite que seus servidores façam requisições HTTPS a qualquer API de terceiros **por meio do ambiente PCI DSS Nível 1 da Yuno**. Você envia uma requisição de API normal que referencia seus cartões armazenados pelo `vaulted_token`; a Yuno substitui essas referências pelos dados reais do cartão dentro do seu ambiente seguro e encaminha a requisição ao destino. O número bruto do cartão nunca passa pela sua infraestrutura, então o seu escopo PCI não muda.
+
+<Note>
+**Requisitos**
+
+O PCI Proxy funciona com cartões que você já armazenou na Yuno. Os cartões são armazenados quando um cliente salva um meio de pagamento durante o checkout ou quando você cadastra um por meio do endpoint [Cadastrar meio de pagamento](/reference/payment-methods-direct-workflow/enroll-payment-method-api).
+</Note>
+
+<Warning>
+**Os destinos precisam estar na allowlist**
+
+O proxy só chama hosts que você registrou na sua allowlist de destinos. Uma requisição a um
+host não registrado é rejeitada com `DESTINATION_NOT_ALLOWED`. O registro é feito por você mesmo e
+entra em vigor em minutos. Consulte [Allowlist de destinos](/pt-br/docs/security-and-compliance/pci-proxy/allowlist).
+</Warning>
+
+## Como funciona {#how-it-works}
+
+1. Seu servidor envia uma requisição HTTPS para `https://api.y.uno/v1/pci-proxy/forward`, autenticada com suas credenciais padrão da API da Yuno.
+2. Você coloca a URL completa de destino (incluindo o caminho e a query) no cabeçalho `yuno-proxy-destination-url` e referencia os dados do cartão no corpo ou nos cabeçalhos da requisição usando expressões como `{{vaulted_token.<TOKEN>.number}}`.
+3. Dentro do ambiente PCI da Yuno, o proxy resolve cada expressão para os dados reais do cartão e depois encaminha a sua requisição (mesmo método, cabeçalhos e corpo) ao destino via TLS.
+4. A resposta do destino é devolvida a você, junto com cabeçalhos de diagnóstico que informam o que o proxy fez.
+
+O proxy é um intermediário que apenas repassa os dados: a Yuno não armazena a sua requisição nem a resposta do destino, e os corpos de requisição e de resposta nunca são gravados em logs.
+
+## Dados de cartão nas respostas {#card-data-in-responses}
+
+Se um destino devolver um número de cartão completo na resposta, repassá-lo a você colocaria seus sistemas de volta no escopo PCI. Para evitar isso, o proxy verifica cada resposta em busca de números de cartão: o que ele acabou de injetar e qualquer outro número de cartão válido.
+
+Por padrão, o proxy os **mascara**, mantendo apenas os últimos quatro dígitos, e informa quantos foram mascarados no cabeçalho de resposta `yuno-proxy-response-redactions`; um valor diferente de zero indica que o seu destino está devolvendo dados de cartão que você não deveria receber. Opcionalmente, a Yuno pode ser configurada, como uma configuração de todo o serviço e não por conta, para **rejeitar** qualquer resposta que contenha dados de cartão, com `502 RESPONSE_BLOCKED`.
+
+## Dados de cartão que você pode referenciar {#card-data-you-can-reference}
+
+| Expressão | É resolvida para |
+|---|---|
+| `{{vaulted_token.<TOKEN>.number}}` | O número do cartão (PAN) |
+| `{{vaulted_token.<TOKEN>.expiration_month}}` | Mês de validade com dois dígitos (`MM`) |
+| `{{vaulted_token.<TOKEN>.expiration_year}}` | Ano de validade com quatro dígitos (`YYYY`) |
+| `{{vaulted_token.<TOKEN>.holder_name}}` | O nome do titular do cartão |
+| `{{vaulted_token.<TOKEN>.network_token_number}}` | O número do network token (DPAN), quando o cartão tem um network token |
+| `{{vaulted_token.<TOKEN>.network_token_expiration_month}}` | Mês de validade do network token com dois dígitos (`MM`) |
+| `{{vaulted_token.<TOKEN>.network_token_expiration_year}}` | Ano de validade do network token com quatro dígitos (`YYYY`) |
+| `{{vaulted_token.<TOKEN>.network_transaction_id}}` | O ID de transação da bandeira (NTID): a referência da bandeira do cartão para a transação original do cartão armazenado, exigida por muitos processadores em transações iniciadas pelo lojista |
+
+O `<TOKEN>` precisa ser um `vaulted_token` que pertença à sua organização. Um token que não existe ou que pertence a outra organização é rejeitado com `EXPRESSION_RESOLUTION_FAILED`, antes que qualquer dado de cartão seja lido. Um campo cujos dados não estão disponíveis falha da mesma forma: por exemplo, um campo `network_token_*` quando o cartão não tem network token, ou `network_transaction_id` quando o cartão não tem NTID. Todos os campos podem ser combinados na mesma requisição.
+
+<Note>
+**Não são tokens de provedor nem criptogramas**
+
+Essas expressões resolvem um vaulted token para os dados armazenados com ele: o cartão (PAN, validade, nome do titular), o network token dele (DPAN e a validade) e o ID de transação da bandeira. Tokens de provedor não são resolvidos. **Criptogramas** também não: um criptograma é gerado a cada transação, então, se o seu destino exigir um, obtenha-o em [Gerar criptograma de network token](/reference/network-tokens/generate-network-token-cryptogram) logo antes do forward e inclua o valor diretamente no corpo da requisição. Se a sua organização não tiver certificação PCI, solicite-o com `include_network_token: false`: a resposta somente com o criptograma não traz dados equivalentes ao PAN, e a expressão `network_token_number` resolve o DPAN no momento do forward.
+</Note>
+
+<Note>
+**A expressão do código de segurança (CVV) tem prazo de validade**
+
+`{{vaulted_token.<TOKEN>.security_code}}` só é resolvida enquanto o código de segurança ainda estiver disponível, por padrão durante 3 horas após o cadastro. Ele nunca é armazenado: é mantido por pouco tempo depois que o seu cliente o digita, e a Yuno deixa de fornecê-lo quando essa janela se encerra. Informe-o como `card.security_code` ao cadastrar o cartão e verifique `card_data.security_code_expires_in` no meio de pagamento antes de depender dele. Fora dessa janela, inclua você mesmo o CVV diretamente no corpo da requisição, se o seu destino exigir; o proxy o encaminha sem armazená-lo. Observe que transmitir um código de segurança bruto mantém essa requisição no seu escopo PCI.
+</Note>
+
+## Seu escopo PCI {#your-pci-scope}
+
+Quando você usa o PCI Proxy junto com os SDKs da Yuno para coletar cartões, os dados brutos de cartão nunca entram nos seus sistemas: eles vão do cliente para a Yuno e da Yuno para o destino que você escolher. A maioria dos lojistas que operam dessa forma se qualifica para a autoavaliação **SAQ A**. Consulte [Conformidade PCI](/pt-br/docs/security-and-compliance/pci-compliance) para ver o panorama completo de como a Yuno reduz o seu escopo PCI.
+
+## Controles de segurança {#security-controls}
+
+* **Somente HTTPS.** O proxy se conecta aos destinos via TLS 1.2 ou superior, somente na porta 443. Os destinos precisam ser hostnames DNS públicos; endereços IP e redes internas são rejeitados.
+* **Isolamento de credenciais.** Suas credenciais da API da Yuno e todos os cabeçalhos `yuno-*` são removidos antes que a requisição seja encaminhada. O destino só vê os cabeçalhos que você quer que ele veja.
+* **Sem armazenamento, sem logs.** O proxy mantém os dados de cartão em memória apenas durante a vida útil da requisição. Os corpos de requisição e de resposta ficam fora de logs e traces.
+* **Trilha de auditoria completa.** Cada chamada gera um registro de auditoria (quem, quando, destino, resultado; nunca dados de cartão).
+
+## Limites {#limits}
+
+| Limite | Valor |
+|---|---|
+| Tamanho do corpo de requisição e de resposta | 1 MB |
+| Vaulted tokens distintos por requisição | 20 |
+| Timeout do destino | 30 segundos por padrão, configurável até 120 com o cabeçalho `yuno-proxy-timeout` |
+| Métodos suportados | `GET`, `POST`, `PUT`, `PATCH`, `DELETE` |
+
+## Primeiros passos {#get-started}
+
+Siga o [guia do Forward Proxy](/pt-br/docs/security-and-compliance/pci-proxy/forward-proxy) para uma integração passo a passo ou vá direto para a [referência da API](/reference/pci-proxy/invoke-forward-proxy).
