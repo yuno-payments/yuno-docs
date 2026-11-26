@@ -1,0 +1,156 @@
+---
+title: "Configuração e pagamentos únicos"
+description: "Integre o Google Pay com o Yuno SDK: crie a sessão de checkout, deixe o SDK exibir o botão e a tela de pagamento e processe um pagamento único."
+---
+
+Este guia explica como integrar o Google Pay™ com a Yuno usando o SDK. Com essa abordagem, o SDK da Yuno gerencia toda a experiência do Google Pay: exibe o botão do Google Pay, apresenta a tela de pagamento e trata o token de pagamento. Você não precisa se integrar diretamente com a API do Google Pay.
+
+<Note>
+  Antes de implementar, revise os [requisitos do Google Pay](/docs/google-pay#requirements) e verifique se o Google Pay está disponível nos países onde você opera.
+</Note>
+
+## Fluxo de integração {#integration-flow}
+
+1. Crie uma sessão de checkout com a Yuno.
+2. Inicialize o SDK da Yuno no seu app (Web, Android ou iOS).
+3. O SDK exibe o botão do Google Pay e trata a tela de pagamento.
+4. O cliente autoriza o pagamento pelo Google Pay.
+5. A Yuno recebe o token de pagamento e processa a transação com o provedor configurado.
+6. Acompanhe o status do pagamento por meio de [webhooks](/docs/webhooks).
+
+## Requisitos {#requirements}
+
+* Uma conta Yuno com credenciais de API ([Dashboard](https://dashboard.y.uno/))
+* Uma conexão com um provedor de pagamento configurada no dashboard da Yuno que suporte o Google Pay
+* Uma regra de roteamento que inclua o meio de pagamento Google Pay
+* Yuno SDK integrado no seu app ([Web](/docs/sdks/resources/references/web), [Android](/docs/sdks/resources/references/android) ou [iOS](/docs/sdks/resources/references/ios))
+
+## Etapas de integração {#integration-steps}
+
+### Etapa 1: Criar uma sessão de checkout {#step-1-create-a-checkout-session}
+
+Use o endpoint [criar sessão de checkout](/reference/checkout-sessions/create-checkout-session) para iniciar uma sessão de pagamento:
+
+```json
+{
+  "country": "US",
+  "customer_id": "customer-uuid",
+  "merchant_order_id": "order-123",
+  "payment_description": "Google Pay payment",
+  "amount": {
+    "currency": "USD",
+    "value": 5000
+  }
+}
+```
+
+A resposta retorna um ID `checkout_session` para inicializar o SDK.
+
+### Etapa 2: Inicializar o SDK {#step-2-initialize-the-sdk}
+
+Inicialize o SDK da Yuno com a sessão de checkout. O SDK detecta automaticamente os meios de pagamento disponíveis, incluindo o Google Pay, com base na configuração do seu dashboard.
+
+Consulte a documentação do SDK para a sua plataforma:
+
+* [Integração do Web SDK](/docs/sdks/full-checkout/web-payments)
+* [Integração do Android SDK](/docs/sdks/full-checkout/android-payments)
+* [Integração do iOS SDK](/docs/sdks/full-checkout/ios-payments)
+
+### Etapa 3: O cliente conclui o pagamento {#step-3-customer-completes-payment}
+
+O SDK cuida do resto. Quando o cliente seleciona o Google Pay:
+
+1. A tela de pagamento do Google Pay aparece com os cartões salvos do cliente.
+2. O cliente seleciona um cartão e autoriza o pagamento.
+3. O SDK envia o token de pagamento criptografado para a Yuno.
+4. A Yuno processa o pagamento pelo provedor configurado.
+
+### Etapa 4: Tratar a resposta {#step-4-handle-the-response}
+
+O SDK retorna o resultado do pagamento. Você também pode acompanhar o status do pagamento por meio de [webhooks](/docs/webhooks) para obter a confirmação assíncrona.
+
+## Solicitar informações de contato {#requesting-contact-information}
+
+Você pode configurar quais campos a tela de pagamento do Google Pay solicita ao cliente diretamente no [Checkout Builder](/pt-br/docs/using-yuno/dashboard-overview/checkout-builder#required-fields). Os campos disponíveis são:
+
+- Email
+- Telefone
+- Nome do titular do cartão
+- Endereço de cobrança
+- Endereço de entrega
+
+Quando algum desses campos está ativado como obrigatório no Checkout Builder, a tela de pagamento do Google Pay pede ao cliente essas informações antes de concluir o pagamento.
+
+<Note>
+  Antes, isso era configurado no nível da conexão. Agora está unificado em Required Fields no Checkout Builder, da mesma forma que funciona para o Apple Pay.
+</Note>
+
+<Note>
+  O nome do titular do cartão vem desativado por padrão no Google Pay, ao contrário dos cartões, em que vem ativado por padrão. Ative-o no Checkout Builder se a sua integração precisar dele.
+</Note>
+
+| Plataforma | Versão mínima |
+|----------|-----------------|
+| Web      | 1.8.0           |
+| Android  | 2.16.0          |
+
+## Criar um pagamento com o workflow do SDK {#create-a-payment-with-the-sdk-workflow}
+
+Se você precisar chamar a API de pagamentos diretamente enquanto usa o fluxo de checkout do SDK, defina o `workflow` como `SDK_CHECKOUT` e inclua a sessão de checkout:
+
+```json
+{
+  "account_id": "your-account-id",
+  "description": "Google Pay via SDK",
+  "merchant_order_id": "order-123",
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": 5000
+  },
+  "checkout": {
+    "session": "checkout-session-id"
+  },
+  "customer_payer": {
+    "id": "customer-uuid",
+    "email": "customer@example.com"
+  },
+  "payment_method": {
+    "type": "GOOGLE_PAY"
+  },
+  "workflow": "SDK_CHECKOUT"
+}
+```
+
+<Warning>
+  Ao integrar carteiras como o Google Pay, o campo `payment_method.type` é obrigatório mesmo ao usar o workflow do SDK. Defina-o como `GOOGLE_PAY`.
+</Warning>
+
+## Ativar e testar o Google Pay {#enable-and-test-google-pay}
+
+Para testar o Google Pay em sandbox:
+
+1. Integre o [SDK da Yuno](/docs/sdks/full-checkout/android-payments) ao seu app.
+2. Crie uma conta de teste do Google e faça login no [Google Pay Business Console](https://pay.google.com/business/console).
+3. No Google Pay Business Console, acesse a seção de API e selecione **Create a Pass** para ativar o **Demo mode**.
+
+<Frame><img src="/images/reference/google-pay-sdk-integration/image1.png" /></Frame>
+
+4. Baixe o [app Google Wallet](https://play.google.com/store/apps/details?id=com.google.android.apps.walletnfcrel\&hl=en\&gl=US) no seu dispositivo de teste.
+5. Execute o fluxo de pagamento para verificar se a integração funciona.
+
+## Entrar em produção {#go-live}
+
+Depois dos testes, solicite o [acesso de produção do Google](https://developers.google.com/pay/api/web/guides/test-and-deploy/request-prod-access) e entre em contato com seu Technical Account Manager. A equipe da Yuno verificará sua configuração antes de entrar em produção.
+
+## Próximas etapas {#next-steps}
+
+- [Pagamentos recorrentes](/pt-br/docs/wallets/google-pay/sdk-integration/recurring-payments). Transações iniciadas pelo cliente e iniciadas pelo lojista com o token armazenado.
+- [Express checkout](/pt-br/docs/wallets/google-pay/sdk-integration/express-checkout). Detalhamento do pedido, métodos de envio e atualizações do endereço de entrega na tela do Google Pay (Android e Web).
+
+## Documentação relacionada {#related-documentation}
+
+* [Visão geral do Google Pay](/docs/google-pay)
+* [Integração direta do Google Pay](/pt-br/docs/wallets/google-pay/google-pay-direct-integration)
+* [Google Pay via provedor](/pt-br/docs/wallets/google-pay/integration-via-provider-google-pay)
+* [Google Pay com PIX](/pt-br/docs/wallets/google-pay/google-pay-with-pix)

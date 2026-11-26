@@ -1,0 +1,80 @@
+---
+title: "QR code e pagamento instantâneo"
+description: "Combina um pagamento com QR code Pix com o cadastro da assinatura para permitir cobranças recorrentes automáticas"
+---
+
+Na jornada **QR Code & Instant Payment**, a Yuno apresenta um único QR code que cobra o cliente na hora e, ao mesmo tempo, faz o cadastro dele para todos os pagamentos recorrentes futuros, em uma única etapa sem atritos. Quando o cliente escaneia o QR, o app do banco dele processa a primeira parcela e, simultaneamente, registra o consentimento para as cobranças automáticas seguintes, eliminando a necessidade de aprovações adicionais ou de ações manuais.
+
+Depois da leitura e do pagamento iniciais, cada **requisição seguinte** é enviada pelo lojista por meio da Yuno e validada automaticamente pelo banco do cliente com base no consentimento original, garantindo transferências rápidas e confiáveis sem nova interação do cliente. Esse fluxo simplifica o gerenciamento de assinaturas ao combinar cadastro e pagamento em uma única ação do usuário.
+
+## Etapa 1: primeiro pagamento e criação da assinatura {#step-1-first-payment-and-subscription-creation}
+
+Para iniciar o fluxo, você deve começar com um [pagamento Pix](/reference/payments/create-payment#/) padrão que também configura a assinatura. Isso gera um QR code ou uma tela de redirecionamento para o cliente autorizar a recorrência. Depois do pagamento, a assinatura é criada e um `subscription_code` é retornado.
+
+Você pode definir a frequência, a janela de disponibilidade e o tipo de valor (fixo ou variável) como parte do payload da assinatura.
+
+| Campos para assinaturas | Descrição                                                                                                                                                                        |
+| :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frequência                | Defina a frequência das cobranças da assinatura (semanal, mensal, trimestral, semestral ou anual), especificando o valor que precisa ser cobrado no próximo ciclo de cobrança. |
+| Disponibilidade             | As datas de início e de término da assinatura.                                                                                                                                       |
+| Valor                   | Defina o valor que você vai usar nos pagamentos futuros da assinatura. Pode ser `FIXED`, com um valor mínimo definido, ou `VARIABLE`, sem um valor definido para os pagamentos futuros. |
+
+Lembre-se de que as informações definidas na criação da assinatura restringem as datas e os valores que podem ser usados nos pagamentos futuros.
+
+```json Example
+{
+  "amount": {
+    "value": "100",
+    "currency": "BRL"
+  },
+	"payment_method": {
+        "type": "PIX_AUTOMATIC"
+	},
+	"subscription": {
+    "frequency": {
+      "type": "MONTH",
+      "value": 1
+    },
+    "availability": {
+      "start_at": "2025-05-23T20:17:30.277678Z",
+      "finish_at": "2027-05-23T20:17:30.277678Z"
+    },
+    "amount": {
+      "value": "100",
+      "currency": "BRL",
+      "type": "FIXED"
+    }
+  }
+}
+```
+
+Depois que o pagamento inicial é confirmado, o cliente tem uma assinatura ativa, e você pode começar a agendar as cobranças futuras.
+
+## Etapa 2: pagamentos futuros {#step-2-future-payments}
+
+Conforme definido pelo Banco Central, os pagamentos devem ser criados dentro de uma **janela de agendamento de 10 a 2 dias antes da data de cobrança programada**. Use o `subscription.id` para identificar a recorrência na [criação do pagamento](/reference/payments/create-payment#/).
+
+| Campos para pagamentos futuros |                                                                                                                                      |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| `subscription.id`          | ID da assinatura obtido na primeira etapa (retornado ali como `subscription_code`).                                           |
+| `billing_date`             | Ao especificar o objeto `billing_date`, o lojista pode definir a lógica da data exata de cobrança da assinatura. |
+
+```json Example
+"workflow": "DIRECT",
+"amount": {
+  "value": "100",
+  "currency": "BRL"
+},
+"payment_method": {
+  "type": "PIX_AUTOMATIC",
+},
+"subscription": {
+  "id": "cab9f0fe-2428-419b-8f9d-4b5efee8c1c8",
+  "billing_date": {
+    "type": "DAY",
+    "day": 14
+  }
+}
+```
+
+Se um pagamento recorrente falhar, ele pode ser tentado novamente com uma nova requisição de pagamento. As **novas tentativas** devem ocorrer **em até 7 dias** a partir da data de cobrança original e são limitadas a **3 tentativas por ciclo**.

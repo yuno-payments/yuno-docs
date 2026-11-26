@@ -1,0 +1,194 @@
+---
+title: "Agent Toolkit"
+description: "Crie experiências de pagamento com IA usando o toolkit multi-framework da Yuno."
+---
+
+O Agent Toolkit da Yuno permite que agentes de IA interajam com a plataforma de orquestração de pagamentos da Yuno por meio de function calling. Feito para TypeScript, ele se conecta ao servidor MCP remoto da Yuno e expõe ferramentas de pagamento que funcionam em cinco frameworks de IA: use uma única integração para acessar mais de 300 provedores de pagamento no mundo todo.
+
+## O que está incluído {#whats-included}
+
+O Yuno Agent Toolkit está disponível como um pacote npm (`@yuno-payments/agent-toolkit`) e oferece:
+
+*   **Integrações com frameworks**: Vercel AI SDK, Google Genkit, LangChain, OpenAI Chat e OpenAI Agents SDK. Importe apenas o adaptador de que você precisa.
+*   **Orquestração multiprovedor**: acesse mais de 300 provedores de pagamento no mundo todo por meio de uma única integração. Seu agente de IA herda o roteamento inteligente da Yuno, o failover entre vários provedores e os meios de pagamento específicos de cada mercado.
+*   **Tipagem segura**: TypeScript completo, com tipos abrangentes e schemas validados com Zod.
+*   **Modular**: importe apenas as categorias de ferramentas de que você precisa (clientes, pagamentos, assinaturas etc.) e filtre as ações de forma granular.
+
+## Início rápido {#quick-start}
+
+### Instalação {#installation}
+
+```bash
+npm install @yuno-payments/agent-toolkit
+```
+
+### Requisitos {#requirements}
+
+*   **Node.js**: versão 18 ou superior.
+*   **Conta Yuno**: uma [conta Yuno](https://y.uno/) com credenciais de API.
+
+### Credenciais {#credentials}
+
+Obtenha suas credenciais de API no [Dashboard da Yuno](https://dashboard.y.uno/) e defina-as como variáveis de ambiente:
+
+```bash
+YUNO_ACCOUNT_CODE=your_account_code
+YUNO_PUBLIC_API_KEY=your_public_api_key
+YUNO_PRIVATE_SECRET_KEY=your_private_secret_key
+```
+
+## Frameworks de IA compatíveis {#supported-ai-frameworks}
+
+O toolkit oferece adaptadores específicos para os principais frameworks de IA. Escolha o que se encaixa na sua stack:
+
+<Tabs>
+  <Tab title="Vercel AI SDK">
+    Importe o adaptador usando `@yuno-payments/agent-toolkit/ai-sdk`.
+
+    ```typescript
+    import { generateText } from "ai";
+    import { openai } from "@ai-sdk/openai";
+    import { createYunoAgentToolkit } from "@yuno-payments/agent-toolkit/ai-sdk";
+
+    const toolkit = await createYunoAgentToolkit({
+      accountCode: process.env.YUNO_ACCOUNT_CODE!,
+      publicApiKey: process.env.YUNO_PUBLIC_API_KEY!,
+      privateSecretKey: process.env.YUNO_PRIVATE_SECRET_KEY!,
+    });
+
+    const { text } = await generateText({
+      model: openai("gpt-4o"),
+      tools: toolkit.getTools(),
+      prompt: "Create a customer named Maria Garcia with email maria@example.com",
+    });
+
+    await toolkit.close();
+    ```
+  </Tab>
+  <Tab title="Google Genkit">
+    Importe o adaptador usando `@yuno-payments/agent-toolkit/genkit`.
+
+    ```typescript
+    import { genkit, z } from "genkit";
+    import { googleAI, gemini15Pro } from "@genkit-ai/googleai";
+    import { createYunoGenkitToolkit } from "@yuno-payments/agent-toolkit/genkit";
+
+    const ai = genkit({ plugins: [googleAI()] });
+
+    const toolkit = await createYunoGenkitToolkit({
+      accountCode: process.env.YUNO_ACCOUNT_CODE!,
+      publicApiKey: process.env.YUNO_PUBLIC_API_KEY!,
+      privateSecretKey: process.env.YUNO_PRIVATE_SECRET_KEY!,
+      ai,
+    });
+
+    const agent = ai.definePrompt({
+      name: "paymentAgent",
+      model: gemini15Pro,
+      tools: toolkit.getToolsArray(),
+      input: { schema: z.object({ query: z.string() }) },
+    });
+
+    const result = await agent({ query: "Create a customer named Jane Smith" });
+    await toolkit.close();
+    ```
+  </Tab>
+  <Tab title="LangChain">
+    Importe o adaptador usando `@yuno-payments/agent-toolkit/langchain`.
+
+    ```typescript
+    import { YunoLangChainToolkit } from "@yuno-payments/agent-toolkit/langchain";
+
+    const toolkit = await YunoLangChainToolkit.create({
+      accountCode: process.env.YUNO_ACCOUNT_CODE!,
+      publicApiKey: process.env.YUNO_PUBLIC_API_KEY!,
+      privateSecretKey: process.env.YUNO_PRIVATE_SECRET_KEY!,
+    });
+
+    const tools = toolkit.getTools();
+    // Use with LangChain agents...
+
+    await toolkit.close();
+    ```
+  </Tab>
+  <Tab title="OpenAI Chat">
+    Importe o adaptador usando `@yuno-payments/agent-toolkit/openai`.
+
+    ```typescript
+    import OpenAI from "openai";
+    import { createYunoOpenAIToolkit } from "@yuno-payments/agent-toolkit/openai";
+
+    const toolkit = await createYunoOpenAIToolkit({
+      accountCode: process.env.YUNO_ACCOUNT_CODE!,
+      publicApiKey: process.env.YUNO_PUBLIC_API_KEY!,
+      privateSecretKey: process.env.YUNO_PRIVATE_SECRET_KEY!,
+    });
+
+    const client = new OpenAI();
+    const response = await client.chat.completions.create({
+      model: "gpt-4o",
+      tools: toolkit.getTools(),
+      messages: [{ role: "user", content: "Create a payment link for $50 USD" }],
+    });
+
+    for (const toolCall of response.choices[0].message.tool_calls ?? []) {
+      const result = await toolkit.handleToolCall(
+        toolCall.function.name,
+        toolCall.function.arguments,
+      );
+    }
+
+    await toolkit.close();
+    ```
+  </Tab>
+  <Tab title="OpenAI Agents SDK">
+    Importe o adaptador usando `@yuno-payments/agent-toolkit/openai-agents`.
+
+    ```typescript
+    import { Agent, run } from "@openai/agents";
+    import { createYunoOpenAIAgentsToolkit } from "@yuno-payments/agent-toolkit/openai-agents";
+
+    const toolkit = await createYunoOpenAIAgentsToolkit({
+      accountCode: process.env.YUNO_ACCOUNT_CODE!,
+      publicApiKey: process.env.YUNO_PUBLIC_API_KEY!,
+      privateSecretKey: process.env.YUNO_PRIVATE_SECRET_KEY!,
+    });
+
+    const agent = new Agent({
+      name: "Yuno Payment Agent",
+      instructions: "You are a payment assistant powered by Yuno.",
+      tools: toolkit.getTools(),
+    });
+
+    const result = await run(agent, "Create a customer named Maria Garcia");
+    await toolkit.close();
+    ```
+  </Tab>
+</Tabs>
+
+## Configuração {#configuration}
+
+### Filtragem de ações {#action-filtering}
+
+Você pode controlar de forma granular quais ferramentas ficam disponíveis para o agente:
+
+```typescript
+const toolkit = await createYunoAgentToolkit({
+  // ...credentials
+  actions: {
+    customers: { create: true, retrieve: true },
+    payments: { retrieve: true, refund: true },
+  },
+});
+```
+
+Para ativar todas as ferramentas disponíveis, você pode usar a constante `ALL_TOOLS_ENABLED`:
+
+```typescript
+import { ALL_TOOLS_ENABLED } from "@yuno-payments/agent-toolkit/ai-sdk";
+
+const toolkit = await createYunoAgentToolkit({
+  // ...credentials
+  actions: ALL_TOOLS_ENABLED,
+});
+```

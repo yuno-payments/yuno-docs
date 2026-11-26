@@ -1,0 +1,350 @@
+---
+title: "Checkout expresso"
+description: "Mostre o detalhamento do pedido, ofereça métodos de envio e reaja a mudanças no endereço de entrega na folha do Apple Pay usando o SDK iOS ou Web."
+---
+
+Disponível a partir do Yuno iOS SDK 2.24.0 e do Yuno Web SDK 1.10.8.
+
+O detalhamento do pedido, as atualizações do endereço de entrega e o seletor de método de envio transformam a folha do Apple Pay em um checkout expresso:
+
+- **Detalhamento do pedido**: mostre subtotal, frete, impostos e descontos em vez de um único total.
+- **Atualizações do endereço de entrega**: recalcule o pedido quando o cliente escolhe ou muda o endereço de entrega, sem sair da folha.
+- **Seletor de método de envio**: deixe o cliente escolher Standard, Express ou Same-day na folha, com atualização instantânea do preço.
+
+Cada recurso é opcional. Se você não usar nenhum deles, a sua integração com o Apple Pay funciona exatamente como antes.
+
+## Requisitos {#requirements}
+
+| Requisito | Valor |
+|---|---|
+| Yuno iOS SDK | 2.24.0 ou mais recente |
+| Yuno Web SDK | 1.10.8 ou mais recente |
+| Apple Pay | [Configurado](/pt-br/docs/wallets/apple-pay/apple-pay-sdk-integration) no seu app e habilitado na sua conta da Yuno |
+| Endereço de entrega na folha | Solicitado automaticamente assim que a sessão tem `shipping_methods` ou o seu app registra o handler, nas duas plataformas. Você não precisa habilitá-lo no Checkout Builder. |
+
+## Como funciona {#how-it-works}
+
+1. O seu backend adiciona `summary_items` e/ou `shipping_methods` quando cria a sessão de checkout.
+2. O seu app registra `onShippingAddressChanged`: no iOS, no delegate que ele já passa para o fluxo de pagamento; na Web, em `externalButtons` quando inicia o checkout.
+3. Na folha do Apple Pay, trocar o método de envio atualiza o preço instantaneamente, sem chamar o seu app. Escolher ou mudar o endereço de entrega chama o seu handler, para que você possa devolver novos totais, novos métodos ou um erro.
+4. Depois que o cliente autoriza, o token de uso único inclui um objeto `shipping` com o método selecionado e o endereço completo.
+
+Duas regras valem em todos os casos:
+
+- Toda lista `summary_items` deve terminar com o total geral. O `amount` dele é o total mostrado na folha, e o `label` dele aparece ao lado como a linha do beneficiário (recomendamos o nome da sua loja).
+- Todos os valores devem usar a moeda da sessão. Uma moeda diferente faz o SDK ignorar esse detalhamento ou essa resposta.
+
+## Passo 1: Mostrar o detalhamento do pedido (apenas backend) {#step-1-show-an-order-breakdown-backend-only}
+
+Adicione `summary_items` quando você [criar a sessão de checkout](/reference/checkout-sessions/create-checkout-session):
+
+```json
+{
+  "amount": { "currency": "USD", "value": 108.00 },
+  "customer_id": "customer-uuid",
+  "merchant_order_id": "order-123",
+  "country": "US",
+  "summary_items": [
+    { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+    { "id": "tax", "label": "Tax", "amount": { "currency": "USD", "value": 8.00 } },
+    { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 108.00 } }
+  ]
+}
+```
+
+A folha agora mostra o detalhamento com o total identificado como "ACME Inc.". Não é necessário código no app.
+
+- A última entrada é exibida como o total geral, e o label dela como a linha do beneficiário.
+- Descontos podem ser negativos, por exemplo `-5.00`.
+- Quando você também envia `shipping_methods` (Passo 2), a folha abre com o detalhamento do primeiro método e esta lista é ignorada.
+- Sem `summary_items` e sem `shipping_methods`, a folha mostra uma única linha com o valor da sessão.
+
+## Passo 2: Oferecer métodos de envio na folha {#step-2-offer-shipping-methods-on-the-sheet}
+
+Adicione `shipping_methods` à sessão de checkout. Cada método tem os seus próprios `summary_items`, para que a folha possa atualizar o preço assim que o cliente troca de método:
+
+```json
+"shipping_methods": [
+  {
+    "id": "standard",
+    "label": "Standard shipping",
+    "detail": "Arrives in 3-5 business days",
+    "amount": { "currency": "USD", "value": 5.00 },
+    "delivery_estimate": { "from": "2026-10-12", "to": "2026-10-14" },
+    "summary_items": [
+      { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+      { "id": "shipping", "label": "Shipping", "amount": { "currency": "USD", "value": 5.00 } },
+      { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 105.00 } }
+    ]
+  },
+  {
+    "id": "express",
+    "label": "Express shipping",
+    "detail": "Arrives in 1-2 business days",
+    "amount": { "currency": "USD", "value": 12.00 },
+    "summary_items": [
+      { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+      { "id": "shipping", "label": "Shipping", "amount": { "currency": "USD", "value": 12.00 } },
+      { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 112.00 } }
+    ]
+  }
+]
+```
+
+- O primeiro método vem pré-selecionado, e o detalhamento dele é o que a folha mostra ao abrir.
+- `label` é o nome da opção e `detail` é a descrição dela. O Apple Pay mostra o preço ao lado da opção.
+- Trocar de método nunca chama o seu app nem o seu backend. O total vem dos `summary_items` desse método. Um método sem detalhamento mantém os totais que já estão na folha.
+- `delivery_estimate` é um par `from` e `to` de datas `YYYY-MM-DD`. Ele é exibido como um intervalo de datas ao lado da opção no iOS 15 ou mais recente e, na Web, em navegadores compatíveis com o Apple Pay JS versão 12 (Safari 15 ou mais recente). Um intervalo invertido ou malformado não é exibido.
+- A folha aceita até 100 métodos, 100 itens de resumo e 100 itens por método. Acima disso, o iOS SDK abre a folha sem métodos de envio, e o Web SDK não abre a folha e informa um erro.
+
+## Passo 3: Reagir a mudanças no endereço de entrega {#step-3-react-to-shipping-address-changes}
+
+Registre `onShippingAddressChanged` quando você iniciar o fluxo. O seu handler recebe o endereço parcial e responde com novos totais, novos métodos, um erro ou nada, para manter a folha como está.
+
+<Tabs>
+<Tab title="iOS">
+
+Faça o delegate que você já passa para o fluxo de pagamento estar em conformidade com `YunoShippingDelegate` e implemente `onShippingAddressChanged`. Isso funciona com todos os fluxos que recebem um `YunoPaymentDelegate`: `startCheckout`, `startPaymentLite` e a lista de meios de pagamento do modo Full.
+
+```swift
+import YunoSDK
+
+final class CheckoutDelegate: YunoShippingDelegate {
+
+    // ... your YunoPaymentDelegate implementation (checkoutSession, countryCode, yunoPaymentResult, ...)
+
+    func onShippingAddressChanged(
+        _ paymentMethodType: String,
+        shippingInfo: YunoShippingInfo
+    ) async -> YunoShippingUpdate? {
+        // paymentMethodType is "APPLE_PAY"
+        await myShippingService.quote(shippingInfo.shippingAddress) // a YunoShippingUpdate, or nil to keep the current values
+    }
+}
+```
+
+Se você não usa `async`, ou integra a partir de Objective-C, implemente em vez disso a variante baseada em completion que o `YunoPaymentDelegate` declara como opcional:
+
+```swift
+func onShippingAddressChanged(
+    paymentMethodType: String,
+    shippingInfo: YunoShippingInfo,
+    completion: @escaping (YunoShippingUpdate?) -> Void
+) {
+    myShippingService.quote(shippingInfo.shippingAddress) { quote in
+        completion(quote)
+    }
+}
+```
+
+Implemente uma das duas. Quando as duas existem, o SDK chama a versão `async`.
+
+</Tab>
+<Tab title="Web">
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session,
+  countryCode: 'US',
+  yunoCreatePayment: (oneTimeToken) => { /* create the payment on your server */ },
+  externalButtons: {
+    onShippingAddressChanged: async ({ paymentMethodType, shippingInfo }) => {
+      // paymentMethodType is "APPLE_PAY"
+      return await myShippingService.quote(shippingInfo.shippingAddress) // a ShippingUpdate, or null to keep the current values
+    },
+  },
+})
+```
+
+A mesma opção `externalButtons.onShippingAddressChanged` existe em `startSeamlessCheckout`. O handler é compartilhado com o Google Pay na Web: quando o cliente paga com Google Pay, ele é chamado com `paymentMethodType: "GOOGLE_PAY"`, então crie uma ramificação para esse valor se você calcula o frete de forma diferente por carteira.
+
+</Tab>
+</Tabs>
+
+### O que você recebe: ShippingInfo {#what-you-receive-shippinginfo}
+
+Antes da autorização, o Apple Pay compartilha apenas parte do endereço, o suficiente para calcular frete e impostos:
+
+| Campo | Tipo | Exemplo |
+|---|---|---|
+| `shippingAddress.city` | `String?` | `"Cupertino"` |
+| `shippingAddress.state` | `String?` | `"CA"` |
+| `shippingAddress.postalCode` | `String?` | `"95014"` (pode vir encurtado em alguns países) |
+| `shippingAddress.countryCode` | `String?` | `"US"` |
+
+Qualquer campo pode estar ausente: `nil` no iOS, omitido na Web. O endereço completo chega no token de uso único (Passo 4).
+
+### O que você retorna: ShippingUpdate {#what-you-return-shippingupdate}
+
+Retorne qualquer combinação destes, ou `nil` (`null` na Web) para manter a folha como está.
+
+<Tabs>
+<Tab title="iOS">
+
+```swift
+// A) New totals for this address
+YunoShippingUpdate(
+    summaryItems: [
+        YunoSummaryItem(id: "subtotal", label: "Subtotal", amount: YunoShippingAmount(currency: "USD", value: 100.00)),
+        YunoSummaryItem(id: "tax", label: "Tax", amount: YunoShippingAmount(currency: "USD", value: 10.00)),
+        YunoSummaryItem(id: "total", label: "ACME Inc.", amount: YunoShippingAmount(currency: "USD", value: 110.00)) // must be last
+    ]
+)
+```
+
+```swift
+// B) New shipping methods for this address
+YunoShippingUpdate(
+    shippingMethods: [
+        YunoShippingMethod(
+            id: "same-day", label: "Same-day delivery", detail: "Today before 9pm",
+            amount: YunoShippingAmount(currency: "USD", value: 15.00),
+            deliveryEstimate: YunoShippingDeliveryEstimate(from: "2026-10-10", to: "2026-10-10"),
+            summaryItems: [
+                YunoSummaryItem(id: "subtotal", label: "Subtotal", amount: YunoShippingAmount(currency: "USD", value: 100.00)),
+                YunoSummaryItem(id: "shipping", label: "Shipping", amount: YunoShippingAmount(currency: "USD", value: 15.00)),
+                YunoSummaryItem(id: "total", label: "ACME Inc.", amount: YunoShippingAmount(currency: "USD", value: 115.00))
+            ]
+        )
+    ]
+)
+```
+
+```swift
+// C) An address you can't serve
+YunoShippingUpdate(
+    errors: [
+        YunoShippingError(code: "CITY_NOT_SUPPORTED", message: "We don't ship to this city yet") // shown to the customer
+    ]
+)
+```
+
+</Tab>
+<Tab title="Web">
+
+```javascript
+// A) New totals for this address
+return {
+  summaryItems: [
+    { id: 'subtotal', label: 'Subtotal', amount: { currency: 'USD', value: 100.00 } },
+    { id: 'tax', label: 'Tax', amount: { currency: 'USD', value: 10.00 } },
+    { id: 'total', label: 'ACME Inc.', amount: { currency: 'USD', value: 110.00 } }, // must be last
+  ],
+}
+```
+
+```javascript
+// B) New shipping methods for this address
+return {
+  shippingMethods: [
+    {
+      id: 'same-day', label: 'Same-day delivery', detail: 'Today before 9pm',
+      amount: { currency: 'USD', value: 15.00 },
+      deliveryEstimate: { from: '2026-10-10', to: '2026-10-10' },
+      summaryItems: [
+        { id: 'subtotal', label: 'Subtotal', amount: { currency: 'USD', value: 100.00 } },
+        { id: 'shipping', label: 'Shipping', amount: { currency: 'USD', value: 15.00 } },
+        { id: 'total', label: 'ACME Inc.', amount: { currency: 'USD', value: 115.00 } },
+      ],
+    },
+  ],
+}
+```
+
+```javascript
+// C) An address you can't serve
+return {
+  errors: [
+    { code: 'CITY_NOT_SUPPORTED', message: "We don't ship to this city yet" }, // shown to the customer
+  ],
+}
+```
+
+</Tab>
+</Tabs>
+
+### Regras {#rules}
+
+| Situação | O que acontece |
+|---|---|
+| Você retorna `nil` (ou nada, na Web) | Os valores atuais são mantidos. |
+| Você responde com atraso | O SDK não define um tempo limite próprio: a folha continua aberta enquanto você responde. Se o tempo limite da própria Apple acabar antes, a Apple fecha a folha e o SDK informa `CANCELED_BY_USER`. Responda o mais rápido possível. |
+| Uma moeda é diferente da moeda da sessão, ou um valor não é um número | A resposta inteira é ignorada. |
+| Você envia `summaryItems` | A lista deve terminar com o total geral, que passa a ser o total da folha. Ela se aplica ao método selecionado no momento; trocar para outro método restaura o detalhamento próprio desse método. |
+| Você envia `shippingMethods` | Eles substituem as opções e o primeiro vem pré-selecionado. Inclua `summaryItems` em cada método; caso contrário, o total não muda quando o cliente troca de método. |
+| Você envia `errors` | O Apple Pay mostra a mensagem na folha e bloqueia o pagamento até que o cliente escolha outro endereço. `CITY_NOT_SUPPORTED`, `STATE_NOT_SUPPORTED`, `COUNTRY_NOT_SUPPORTED` e `POSTAL_CODE_INVALID` apontam para o campo correspondente do endereço; na Web, `ADDRESS_NOT_SUPPORTED` marca o endereço inteiro como não atendido. Qualquer outro código é exibido como um erro genérico de "não é possível enviar para este endereço". |
+| Mais de 100 entradas | A resposta inteira é ignorada. |
+| O seu handler lança uma exceção (ou rejeita, na Web) | Os valores atuais são mantidos. |
+| A folha abre | O Apple Pay chama o seu handler na hora com o endereço padrão do cliente. Faça com que o seu handler possa ser chamado mais de uma vez com segurança e não dependa dessa primeira chamada. Se você retornar métodos nessa chamada, eles substituem os métodos da sessão; retorne `nil` para mantê-los. |
+| O cliente muda o endereço de novo enquanto você ainda está respondendo | A chamada anterior é cancelada e só a resposta para o endereço mais recente é aplicada. |
+
+<Note>
+  Ao contrário do Google Pay, um erro na folha do Apple Pay bloqueia o pagamento: o cliente precisa escolher outro endereço antes de pagar. Mesmo assim, valide o endereço no seu servidor quando você criar o pagamento.
+</Note>
+
+## Passo 4: Ler o resultado no token de uso único {#step-4-read-the-result-in-the-one-time-token}
+
+Depois que o cliente autoriza, o token de uso único que você recebe em `yunoCreatePayment` inclui um objeto `shipping` com o método selecionado e o endereço completo:
+
+```json
+"shipping": {
+  "method": {
+    "id": "express",
+    "label": "Express shipping",
+    "amount": { "currency": "USD", "value": 12.00 }
+  },
+  "address": {
+    "address_line_1": "1 Apple Park Way",
+    "address_line_2": "",
+    "city": "Cupertino",
+    "state": "CA",
+    "zip_code": "95014",
+    "country": "US"
+  }
+}
+```
+
+- `method` é o método selecionado na folha, ou o primeiro, se o cliente não o mudou.
+- Os `summary_items` não são devolvidos.
+- O objeto é incluído sempre que a folha coletou um método de envio ou um endereço, com ou sem handler. Pagamentos sem nenhum dos dois não incluem `shipping`.
+
+Use esse objeto no seu servidor para cobrar o valor final, validar o endereço e enviar o pedido.
+
+## O que acontece em cada caso {#what-happens-in-each-case}
+
+| Handler implementado | `summary_items` na sessão | `shipping_methods` na sessão | Folha do Apple Pay |
+|---|---|---|---|
+| Não | Não | Não | Igual a antes (total único) |
+| Não | Sim | Não | Detalhamento, sem atualizações de endereço |
+| Não | Qualquer | Sim | Seletor com troca instantânea de método. A folha pede o endereço, mas o seu app não é chamado |
+| Sim | Não | Não | Atualizações de endereço; os totais mudam com as suas respostas. Sem seletor, a menos que você retorne métodos |
+| Sim | Sim | Não | Primeiro o detalhamento; as suas respostas podem atualizá-lo |
+| Sim | Qualquer | Sim | Experiência completa: seletor, troca instantânea de método e atualizações de endereço |
+
+## Bom saber {#good-to-know}
+
+- No iOS, o Apple Pay não é compatível com o iOS Simulator. Teste em um dispositivo físico. Na Web, teste no Safari em um dispositivo com o Apple Pay configurado.
+- O Apple Pay oculta parte do endereço até que o pagamento seja autorizado, então o seu handler nunca vê as linhas de logradouro.
+- O método selecionado continua selecionado quando o cliente muda o endereço, a menos que você retorne novos métodos.
+- **Privacidade:** o SDK nunca registra em log endereços, emails ou dados de pagamento.
+
+## Solução de problemas {#troubleshooting}
+
+| Sintoma | Causa provável |
+|---|---|
+| O seletor não aparece | A sessão não tem `shipping_methods` válidos, uma moeda é diferente da moeda da sessão, ou a sessão passa de 100 métodos, itens de resumo ou itens por método (na Web, a folha nem abre nesse caso). |
+| O detalhamento não aparece | `summary_items` é inválido (sem total, label vazio, moedas misturadas). |
+| A folha não pede um endereço de entrega | A sessão não tem `shipping_methods` e o seu app não implementa o handler. Adicione um dos dois, ou habilite o endereço de entrega como campo obrigatório no Checkout Builder. |
+| O meu handler nunca é chamado | No iOS, o seu delegate não está em conformidade com `YunoShippingDelegate` e também não implementa a variante baseada em completion. Na Web, `externalButtons.onShippingAddressChanged` não foi passado para `startCheckout` ou `startSeamlessCheckout`. |
+| Os meus métodos substituíram os da sessão quando a folha abriu | O Apple Pay chama o seu handler quando a folha abre, e a sua resposta é aplicada. Retorne `nil` nessa chamada para manter os métodos da sessão. |
+| Trocar de método não muda o total | Os métodos não têm `summaryItems`. Envie um detalhamento para cada método. |
+| A folha mantém os totais antigos depois da minha resposta | Uma moeda é diferente da moeda da sessão, a resposta tem mais de 100 entradas, ou o cliente mudou o endereço de novo antes da sua resposta. |
+| As datas de entrega não aparecem | O dispositivo usa o iOS 14 ou anterior, o navegador não é compatível com o Apple Pay JS versão 12, ou `from` é posterior a `to`. |
+| A folha fechou sozinha e eu recebi `CANCELED_BY_USER` | O seu handler demorou mais que o tempo limite da Apple. Responda mais rápido, ou retorne `nil` e calcule o frete no seu servidor quando você criar o pagamento. |
+
+## Documentação relacionada {#related-documentation}
+
+- [Configuração e pagamentos únicos](/pt-br/docs/wallets/apple-pay/apple-pay-sdk-integration)
+- [Checkout expresso do Google Pay no Android](/pt-br/docs/wallets/google-pay/sdk-integration/express-checkout)
+- [Fast Checkout Shipping](/pt-br/docs/payment-features/fast-checkout-shipping). Os mesmos campos de sessão e o mesmo nó `shipping` em carteiras que escolhem o endereço dentro do widget.
+- [Changelog do iOS SDK](/changelog/ios) e [changelog do Web SDK](/changelog/web#v1-10-8)

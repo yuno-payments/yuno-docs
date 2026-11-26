@@ -1,0 +1,87 @@
+---
+title: "PayPal & Venmo"
+description: "Integre PayPal e Venmo na Yuno pelos fluxos do Web SDK e de Checkout, ou de servidor para servidor com um nonce do Braintree."
+---
+
+O PayPal é uma carteira digital global que permite aos clientes pagar com o saldo do PayPal, contas bancárias vinculadas ou cartões de crédito e débito salvos. Em regiões compatíveis (como os Estados Unidos), os compradores também podem concluir compras usando o **Venmo**.
+
+## Principais recursos {#key-features}
+
+* **Cobertura global**: aceite pagamentos de milhões de contas PayPal ativas no mundo todo.
+* **Suporte ao Venmo**: quando o parâmetro `ENABLE_FUNDING` da sua conexão com o PayPal inclui `venmo`, o Web SDK exibe um botão do Venmo abaixo do botão do PayPal assim que o PayPal confirma que o comprador é elegível (um comprador dos EUA pagando em USD).
+* **Checkout expresso**: exiba botões independentes do PayPal e do Venmo diretamente nas páginas de produto, carrinho ou pagamento.
+* **Vaulting e Pay Later**: ofereça suporte a acordos de cobrança e parcelas (Pay in 4 / Pay Later) quando elegível.
+
+## Integração com o SDK {#sdk-integration}
+
+O PayPal está disponível como botão expresso nos fluxos do Web SDK (Full Checkout, Lite e Seamless), assim como no Yuno SDK.
+
+### Configuração do botão expresso {#express-button-configuration}
+
+Envie `externalButtons.paypal` em `startCheckout()` ou `startSeamlessCheckout()` para personalizar a aparência do botão:
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession,
+  countryCode: 'US',
+  language: 'en',
+  externalButtons: {
+    paypal: {
+      color: 'gold',      // 'gold' | 'blue' | 'silver' | 'white' | 'black'
+      shape: 'rect',      // 'rect' | 'pill' | 'sharp'
+      label: 'paypal',    // 'paypal' | 'checkout' | 'buynow' | 'pay' | 'installment'
+      layout: 'vertical', // 'vertical' | 'horizontal'
+      height: 45,         // 25 to 55 px
+      borderRadius: 4,
+    },
+  },
+})
+```
+
+Para integrações personalizadas com o Braintree usando o PayPal, configure `externalButtons.paypalBraintree` com callbacks de envio, como `onShippingAddressChange`. Veja a [referência do Web SDK](/docs/sdks/resources/references/web#paypal-braintree) para todas as opções.
+
+### Fluxo de cadastro {#enrollment-flow}
+
+Para pagamentos recorrentes ou tokenização, monte o botão do PayPal no modo de cadastro usando `mountEnrollmentLite()`. Veja [Cadastro do PayPal com o modo de renderização por elemento](/docs/sdks/lite-web/enrollment#paypal-enrollment-with-element-render-mode).
+
+## Integração direta com um nonce do Braintree {#direct-integration-with-a-braintree-nonce}
+
+Se você coleta o PayPal no seu próprio checkout com o Braintree JS SDK e chama a Yuno de servidor para servidor, envie o nonce de uso único do Braintree em um pagamento `DIRECT`. A Yuno o encaminha para a conexão do Braintree, que faz a cobrança e, com `vault_on_success`, salva a conta PayPal no cofre.
+
+1. Colete a aprovação do PayPal com o Braintree JS SDK e obtenha o nonce.
+2. Crie o pagamento com [Criar pagamento](/reference/payments/create-payment): `workflow` `DIRECT`, `payment_method.type` `PAYPAL_BRAINTREE`, o nonce em `payment_method.detail.wallet.provider_payment_token` e, para salvar a conta, `payment_method.vault_on_success` `true`.
+3. Em caso de sucesso, o pagamento retorna `payment_method.vaulted_token`. Cobre os pagamentos seguintes com esse `vaulted_token`. A Yuno só cria o `vaulted_token` quando o pagamento inclui `customer_payer.id`.
+4. Quando você precisar do id do meio de pagamento no Braintree (por exemplo, para compartilhar a conta PayPal com um parceiro pela Braintree Grant API), leia-o na resposta do pagamento em `payment_method.payment_method_detail.wallet.provider_token`. [Recuperar pagamento](/reference/payments/retrieve-payment-by-id) retorna o mesmo valor, e [Recuperar meio de pagamento](/reference/payment-methods-checkout/retrieve-payment-method-by-id-checkout) o retorna como `provider.token` para o `vaulted_token`.
+
+```json
+{
+  "account_id": "<ACCOUNT_ID>",
+  "merchant_order_id": "order-1234",
+  "country": "US",
+  "amount": { "currency": "USD", "value": 50 },
+  "workflow": "DIRECT",
+  "customer_payer": { "id": "<CUSTOMER_ID>" },
+  "payment_method": {
+    "type": "PAYPAL_BRAINTREE",
+    "vault_on_success": true,
+    "detail": {
+      "wallet": {
+        "provider_payment_token": "<BRAINTREE_NONCE>"
+      }
+    }
+  }
+}
+```
+
+Regras para `provider_payment_token`:
+
+* Aceito apenas no fluxo `DIRECT`; `REDIRECT` e `SDK_CHECKOUT` retornam `400 INVALID_REQUEST`.
+* Não pode estar em branco e não pode ser combinado com `wallet.payment_token`, `wallet.cryptogram`, `payment_method.token` ou `payment_method.vaulted_token`.
+* O nonce é de uso único: envie um novo em cada pagamento que o utilizar. A Yuno não o armazena.
+
+## Exibição em navegadores móveis {#mobile-browser-presentation}
+
+Quando os compradores acionam o checkout expresso do PayPal ou do Venmo em dispositivos móveis:
+* **Navegadores iOS (Safari, Chrome, Firefox, Edge no iOS), incluindo o Venmo**: por padrão, navegadores móveis que abrem popups congelam as abas em segundo plano, o que pode interromper a comunicação do pagamento. O Web SDK pode exibir o PayPal e o Venmo em uma sobreposição de iframe modal na própria página, mantendo a página do lojista ativa enquanto o pedido é repassado. A sobreposição foi lançada no Web SDK 1.11.40 e vem desativada por padrão; a Yuno a habilita por conta.
+* **Desktop**: navegadores de desktop (como o Safari no macOS) sempre usam uma janela popup.
+* **Tempo de geração do pedido**: o SDK registra quando a geração do pedido leva mais de 30 segundos, sem fazer a sessão falhar nem retornar um erro ao comprador.
