@@ -1,0 +1,916 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkout-api",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/checkout/sessions": {
+      "post": {
+        "summary": "Criar sessão de checkout",
+        "description": "",
+        "operationId": "create-checkout-session",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "merchant_order_id",
+                  "payment_description",
+                  "country",
+                  "account_id"
+                ],
+                "properties": {
+                  "customer_id": {
+                    "type": "string",
+                    "description": "O identificador único do cliente, criado com o endpoint [Criar cliente](https://docs.y.uno/reference/create-customer) (UUID, 36 caracteres)."
+                  },
+                  "merchant_order_id": {
+                    "type": "string",
+                    "description": "O identificador único do pedido do cliente (MAX 255; MIN 3)."
+                  },
+                  "payment_description": {
+                    "type": "string",
+                    "description": "A descrição do pagamento (MAX 255; MIN 3)."
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "description": "A URL para a qual redirecionamos o seu cliente depois da compra. Obrigatória para meios de pagamento alternativos com redirecionamento. (MAX 526; MIN 3)"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "País onde a transação deve ser processada (MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference))."
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "O identificador único da conta. Você encontra essa informação no [Dashboard da Yuno](https://dashboard.y.uno/) (UUID, 36 caracteres)."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Especifica o objeto de valor do pagamento, com o valor e a moeda.",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "A moeda usada para fazer o pagamento. Para a lista completa de códigos de moeda, consulte a [Referência de países](/reference/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "O valor do pagamento (múltiplo de 0.0001). Para uma moeda sem casas decimais (por exemplo, KRW, JPY ou CLP), o valor deve ser um número inteiro: consulte [Valores e moedas](/docs/basic-concepts/amounts-and-currencies).",
+                        "format": "float"
+                      }
+                    }
+                  },
+                  "alternative_amount": {
+                    "type": "object",
+                    "description": "Representação em moeda alternativa do valor da transação.",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "O código da moeda alternativa. Para a lista completa de códigos de moeda, consulte [Referência de países](/reference/country-reference) (MAX 3; MIN 3; ISO 4217).",
+                        "nullable": true
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "O valor alternativo (múltiplo de 0.0001). Para uma moeda sem casas decimais (por exemplo KRW, JPY ou CLP), o valor deve ser um número inteiro: consulte [Valores e moedas](/docs/basic-concepts/amounts-and-currencies).",
+                        "format": "float"
+                      }
+                    }
+                  },
+                  "shipping_methods": {
+                    "type": "array",
+                    "description": "Opções de entrega que o cliente pode escolher dentro de um widget de carteira (Fast Checkout). O primeiro método vem pré-selecionado. A moeda de cada valor deve ser a mesma da sessão.",
+                    "items": {
+                      "required": [
+                        "id",
+                        "label",
+                        "amount",
+                        "summary_items"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Identificador do método de entrega definido pelo lojista (MAX 255). Devolvido como shipping.method.id no pagamento."
+                        },
+                        "label": {
+                          "type": "string",
+                          "description": "Nome que a carteira exibe para o método (MAX 255)."
+                        },
+                        "detail": {
+                          "type": "string",
+                          "description": "Texto secundário opcional, como o prazo de entrega prometido (MAX 255)."
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Custo do método de entrega.",
+                          "required": [
+                            "currency",
+                            "value"
+                          ],
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "Código de moeda ISO 4217. Deve ser a mesma moeda da sessão."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "Valor do custo (múltiplo de 0.0001).",
+                              "format": "float"
+                            }
+                          }
+                        },
+                        "delivery_estimate": {
+                          "type": "object",
+                          "description": "Janela de entrega opcional (somente data, formato YYYY-MM-DD).",
+                          "properties": {
+                            "from": {
+                              "type": "string",
+                              "description": "Data de entrega mais próxima."
+                            },
+                            "to": {
+                              "type": "string",
+                              "description": "Data de entrega mais distante."
+                            }
+                          }
+                        },
+                        "summary_items": {
+                          "type": "array",
+                          "description": "Detalhamento do pedido que a tela da carteira exibe quando este método é selecionado (pelo menos um item; a última entrada é o total geral).",
+                          "items": {
+                            "required": [
+                              "id",
+                              "label",
+                              "amount"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identificador do item de linha (MAX 255)."
+                              },
+                              "label": {
+                                "type": "string",
+                                "description": "Nome que a carteira exibe para o item de linha (MAX 255)."
+                              },
+                              "amount": {
+                                "type": "object",
+                                "description": "Valor do item de linha. A moeda deve ser a mesma da sessão.",
+                                "required": [
+                                  "currency",
+                                  "value"
+                                ],
+                                "properties": {
+                                  "currency": {
+                                    "type": "string",
+                                    "description": "Código de moeda ISO 4217."
+                                  },
+                                  "value": {
+                                    "type": "number",
+                                    "description": "Valor (múltiplo de 0.0001).",
+                                    "format": "float"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "type": "array",
+                    "description": "Especifica uma lista de objetos de metadados. Você pode adicionar até 120 objetos de metadados.",
+                    "items": {
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "description": "A chave dos metadados (MAX 48)"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "O valor da chave dos metadados (MAX 512)"
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "value"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "workflow": {
+                    "type": "string",
+                    "description": "Tipo de fluxo do checkout.",
+                    "enum": [
+                      "SDK_CHECKOUT",
+                      "CHECKOUT",
+                      "SDK_SEAMLESS"
+                    ]
+                  },
+                  "installments": {
+                    "type": "object",
+                    "description": "O objeto para enviar o plano de parcelas criado na Yuno, para exibir aos seus clientes e deixá-los escolher. Este campo opcional é usado quando um plano de parcelas específico precisa ser usado na sessão. Se não for enviado, exibiremos o plano de parcelas criado para a conta em cada cenário, se houver.",
+                    "properties": {
+                      "plan_id": {
+                        "type": "string",
+                        "description": "Plan Id do plano de parcelas criado na Yuno"
+                      },
+                      "plan": {
+                        "type": "array",
+                        "description": "Parcelas a exibir ao cliente com a checkout_session. Esta estrutura opcional é usada quando um plano de parcelas específico precisa ser usado na sessão e não há um plano de parcelas criado para ela. Se não for enviada, exibiremos o plano de parcelas criado para a conta em cada cenário, se houver.",
+                        "items": {
+                          "properties": {
+                            "installment": {
+                              "type": "integer",
+                              "description": "O número de parcelas mensais que os compradores podem escolher",
+                              "format": "int32"
+                            },
+                            "rate": {
+                              "type": "number",
+                              "description": "A taxa aplicada pelo provedor de pagamento ao valor final da transação depois do uso de parcelas. O valor deve ser informado como multiplicador, não como porcentagem. Por exemplo, para aplicar uma taxa de 20%, informe `1.20` em vez de `20`.",
+                              "format": "float"
+                            }
+                          },
+                          "required": [
+                            "installment",
+                            "rate"
+                          ],
+                          "type": "object"
+                        }
+                      }
+                    }
+                  },
+                  "recurring_payment": {
+                    "type": "object",
+                    "description": "Objeto opcional para habilitar e configurar pagamentos recorrentes (assinaturas).",
+                    "properties": {
+                      "description": {
+                        "type": "string",
+                        "description": "Descrição do plano de assinatura."
+                      },
+                      "management_url": {
+                        "type": "string",
+                        "description": "URL em que o usuário pode gerenciar a assinatura."
+                      },
+                      "billing_agreement": {
+                        "type": "string",
+                        "description": "Identificador do acordo de cobrança."
+                      },
+                      "regular_billing": {
+                        "type": "object",
+                        "description": "Configuração do ciclo de cobrança recorrente.",
+                        "required": [
+                          "label",
+                          "amount",
+                          "interval_unit",
+                          "interval_count"
+                        ],
+                        "properties": {
+                          "label": {
+                            "type": "string",
+                            "description": "Rótulo descritivo do ciclo de cobrança (ex.: \"Monthly\")."
+                          },
+                          "amount": {
+                            "type": "string",
+                            "description": "Valor da cobrança (ex.: \"9.99\")."
+                          },
+                          "interval_unit": {
+                            "type": "string",
+                            "description": "Unidade do intervalo de cobrança.",
+                            "enum": [
+                              "year",
+                              "month",
+                              "day",
+                              "hour",
+                              "minute"
+                            ]
+                          },
+                          "interval_count": {
+                            "type": "integer",
+                            "description": "Número de unidades entre cada ciclo de cobrança."
+                          }
+                        }
+                      },
+                      "trial_billing": {
+                        "type": "object",
+                        "description": "(Opcional) Configuração do período de teste.",
+                        "required": [
+                          "label",
+                          "amount",
+                          "interval_unit",
+                          "interval_count"
+                        ],
+                        "properties": {
+                          "label": {
+                            "type": "string",
+                            "description": "Rótulo descritivo do ciclo de cobrança do período de teste (ex.: \"Free trial\")."
+                          },
+                          "amount": {
+                            "type": "string",
+                            "description": "Valor da cobrança do período de teste (ex.: \"0.00\")."
+                          },
+                          "interval_unit": {
+                            "type": "string",
+                            "description": "Unidade do intervalo de cobrança do período de teste.",
+                            "enum": [
+                              "year",
+                              "month",
+                              "day",
+                              "hour",
+                              "minute"
+                            ]
+                          },
+                          "interval_count": {
+                            "type": "integer",
+                            "description": "Número de unidades do período de teste."
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "checkout_id": {
+                    "type": "string",
+                    "description": "O identificador único (UUID) do Custom Checkout a ser usado nesta sessão. Opcional. Quando omitido, a sessão usa o checkout padrão da conta. O checkout deve ser uma configuração de checkout publicada na mesma conta da sessão; caso contrário, a API rejeita a requisição com `400 INVALID_CHECKOUT_CODE`."
+                  },
+                  "wallet_card_acceptance": {
+                    "type": "object",
+                    "description": "Opcional. Limita quais cartões o cliente pode selecionar na tela de pagamento do Apple Pay. Os cartões que não correspondem aparecem esmaecidos. Todos os campos são opcionais; um campo não enviado mantém o comportamento padrão. Os valores devem estar em maiúsculas, e uma lista vazia é rejeitada com 400 INVALID_PARAMETERS. Só pode ser definido na criação da sessão.",
+                    "properties": {
+                      "supported_countries": {
+                        "type": "array",
+                        "description": "Países que emitiram o cartão, como códigos ISO 3166-1 alpha-2. É o país emissor do cartão, não a localização do cliente.",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "BR"
+                        ]
+                      },
+                      "supported_networks": {
+                        "type": "array",
+                        "description": "Bandeiras de cartão que o cliente pode selecionar. Substitui a lista padrão (AMEX, DISCOVER, ELECTRON, ELO, MASTERCARD, VISA, MAESTRO).",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "VISA",
+                          "MASTERCARD"
+                        ]
+                      },
+                      "supported_funding_types": {
+                        "type": "array",
+                        "description": "Tipos de financiamento que o cliente pode selecionar: CREDIT, DEBIT ou ambos.",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "CREDIT",
+                            "DEBIT"
+                          ]
+                        },
+                        "example": [
+                          "CREDIT"
+                        ]
+                      }
+                    }
+                  },
+                  "summary_items": {
+                    "type": "array",
+                    "description": "Detalhamento do pedido que a tela da carteira exibe (pelo menos um item; a última entrada é o total geral). A moeda de cada valor deve ser a mesma da sessão. Quando `shipping_methods` também é enviado, o Apple Pay usa os `summary_items` do primeiro método; o Google Pay faz o mesmo apenas quando o handler de endereço de entrega está registrado.",
+                    "items": {
+                      "required": [
+                        "id",
+                        "label",
+                        "amount"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Identificador do item de linha (MAX 255)."
+                        },
+                        "label": {
+                          "type": "string",
+                          "description": "Nome que a carteira exibe para o item de linha (MAX 255)."
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Valor do item de linha. A moeda deve ser a mesma da sessão.",
+                          "required": [
+                            "currency",
+                            "value"
+                          ],
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "Código de moeda ISO 4217."
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "Valor (múltiplo de 0.0001).",
+                              "format": "float"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "tax_collection": {
+                    "type": "boolean",
+                    "description": "Defina como `true` para cotar e cobrar o imposto do endereço do cliente antes do pagamento. Requer `external_subscription` com `customer_id` e `items`, e a sua organização precisa ter a cobrança de impostos habilitada (caso contrário, `403 PRODUCT_NOT_ENABLED`). Com o SDK, passe `onBillingAddressChanged` para `startCheckout`. Padrão `false`.",
+                    "example": true
+                  },
+                  "external_subscription": {
+                    "type": "object",
+                    "description": "A assinatura do Stripe Billing que a Yuno cria depois que o pagamento é aprovado, para o fluxo de preço e impostos descrito em [Preço local e impostos](/docs/payment-features/subscriptions/local-price-and-taxes). Envie `customer_id` e `items`. `id` (uma assinatura existente) não pode ser enviado com `items` nem com `tax_collection`. `trial_period_days` e `metadata` ainda não são compatíveis e são rejeitados com `400`.",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "STRIPE_BILLING"
+                        ],
+                        "description": "A plataforma de cobrança. Apenas `STRIPE_BILLING`, o padrão."
+                      },
+                      "customer_id": {
+                        "type": "string",
+                        "description": "O identificador do cliente no Stripe (`cus_...`). De 3 a 255 caracteres.",
+                        "example": "cus_RplXYZ"
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "A moeda dos preços da assinatura.",
+                        "example": "USD"
+                      },
+                      "items": {
+                        "type": "array",
+                        "description": "Os preços da assinatura a ser criada.",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "price": {
+                              "type": "string",
+                              "description": "O identificador do preço no Stripe (`price_...`).",
+                              "example": "price_1QwAbc"
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "description": "Quantidade do preço. Padrão `1`.",
+                              "example": 1
+                            }
+                          },
+                          "required": [
+                            "price"
+                          ]
+                        }
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "Uma assinatura existente (`sub_...`), em vez de `items`. Não é permitido com `tax_collection`."
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Checkout Session (full data)": {
+                  "value": {
+                    "account_id": "{{account_id}}",
+                    "merchant_order_id": "1717681150",
+                    "payment_description": "Test Cards",
+                    "country": "CO",
+                    "customer_id": "{{customer_id}}",
+                    "callback_url": "https://www.example.com",
+                    "amount": {
+                      "currency": "COP",
+                      "value": 8000
+                    },
+                    "alternative_amount": {
+                      "currency": "USD",
+                      "value": 2
+                    },
+                    "metadata": [
+                      {
+                        "key": "ID",
+                        "value": "123456"
+                      }
+                    ],
+                    "recurring_payment": {
+                      "description": "Monthly subscription",
+                      "management_url": "https://example.com/manage",
+                      "billing_agreement": "BA-123",
+                      "regular_billing": {
+                        "label": "Monthly",
+                        "amount": "9.99",
+                        "interval_unit": "month",
+                        "interval_count": 1
+                      },
+                      "trial_billing": {
+                        "label": "Free trial",
+                        "amount": "0.00",
+                        "interval_unit": "month",
+                        "interval_count": 1
+                      }
+                    },
+                    "checkout_id": "6822f80c-684e-41a3-8628-78963d3d60f7"
+                  }
+                },
+                "Checkout Session (min data)": {
+                  "value": {
+                    "country": "US",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 100
+                    },
+                    "alternative_amount": {
+                      "currency": "ARS",
+                      "value": "140000"
+                    },
+                    "account_id": "{{account_id}}",
+                    "merchant_order_id": "1717681150",
+                    "payment_description": "Test Cards",
+                    "customer_id": "{{customer_id}}"
+                  }
+                },
+                "Checkout Session (alternative currency omitted)": {
+                  "value": {
+                    "account_id": "{{account_id}}",
+                    "merchant_order_id": "1717681150",
+                    "payment_description": "Test Cards",
+                    "country": "CO",
+                    "customer_id": "{{customer_id}}",
+                    "amount": {
+                      "currency": "COP",
+                      "value": 8000
+                    }
+                  },
+                  "summary": "Checkout Session (alternative currency omitted)"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Checkout Session (min. data)": {
+                    "value": {
+                      "merchant_order_id": "1717681150",
+                      "checkout_session": "d313047b-4f96-44ef-bbad-caf1d7ba4c2b",
+                      "country": "US",
+                      "payment_description": "Test Cards",
+                      "customer_id": "a577ad8f-08f1-4590-9cf1-e7679b15ee84",
+                      "callback_url": "https://www.example.com/callback",
+                      "amount": {
+                        "currency": "USD",
+                        "value": 520
+                      },
+                      "created_at": "2024-06-06T13:39:10.932297Z",
+                      "metadata": null,
+                      "workflow": "SDK_CHECKOUT",
+                      "installments": {
+                        "plan_id": null,
+                        "plan": null
+                      },
+                      "checkout_id": "6822f80c-684e-41a3-8628-78963d3d60f7",
+                      "used": false
+                    }
+                  },
+                  "Checkout Session (full data)": {
+                    "value": {
+                      "merchant_order_id": "1717681150",
+                      "checkout_session": "c437f4cc-7d66-40e6-a8df-7c3cde1ddca7",
+                      "country": "US",
+                      "payment_description": "Test Cards",
+                      "customer_id": "55006822-7c79-490b-bea1-81798b9afc74",
+                      "callback_url": "https://www.example.com/?checkoutSession=c437f4cc-7d66-40e6-a8df-7c3cde1ddca7",
+                      "amount": {
+                        "currency": "USD",
+                        "value": 520
+                      },
+                      "created_at": "2023-07-20T17:06:17.232130Z",
+                      "metadata": [
+                        {
+                          "key": "ID",
+                          "value": "123456"
+                        }
+                      ],
+                      "workflow": "SDK_CHECKOUT",
+                      "installments": {
+                        "plan_id": null,
+                        "plan": null
+                      },
+                      "checkout_id": "6822f80c-684e-41a3-8628-78963d3d60f7",
+                      "used": false
+                    }
+                  }
+                },
+                "schema": {
+                  "title": "Sessão de checkout",
+                  "type": "object",
+                  "properties": {
+                    "merchant_order_id": {
+                      "type": "string",
+                      "example": "1717681150"
+                    },
+                    "checkout_session": {
+                      "type": "string",
+                      "example": "c437f4cc-7d66-40e6-a8df-7c3cde1ddca7"
+                    },
+                    "country": {
+                      "type": "string",
+                      "example": "US"
+                    },
+                    "payment_description": {
+                      "type": "string",
+                      "example": "Test Cards"
+                    },
+                    "customer_id": {
+                      "type": "string",
+                      "example": "55006822-7c79-490b-bea1-81798b9afc74"
+                    },
+                    "callback_url": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "https://www.example.com/?checkoutSession=c437f4cc-7d66-40e6-a8df-7c3cde1ddca7"
+                    },
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "example": "USD"
+                        },
+                        "value": {
+                          "type": "integer",
+                          "example": 520,
+                          "default": 0
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2023-07-20T17:06:17.232130Z"
+                    },
+                    "metadata": {
+                      "type": [
+                        "array",
+                        "null"
+                      ],
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "example": "ID"
+                          },
+                          "value": {
+                            "type": "string",
+                            "example": "123456"
+                          }
+                        }
+                      }
+                    },
+                    "workflow": {
+                      "type": "string",
+                      "example": "SDK_CHECKOUT"
+                    },
+                    "installments": {
+                      "type": "object",
+                      "properties": {
+                        "plan_id": {},
+                        "plan": {}
+                      }
+                    },
+                    "checkout_id": {
+                      "type": "string",
+                      "example": "6822f80c-684e-41a3-8628-78963d3d60f7"
+                    },
+                    "used": {
+                      "type": "boolean",
+                      "example": false,
+                      "description": "Usado."
+                    },
+                    "tax_collection": {
+                      "type": "boolean",
+                      "description": "`true` quando a sessão de checkout cota e cobra impostos antes do pagamento."
+                    },
+                    "external_subscription": {
+                      "type": "object",
+                      "description": "A assinatura do Stripe Billing que a Yuno cria depois que o pagamento é aprovado, para o fluxo de preço e impostos descrito em [Preço local e impostos](/docs/payment-features/subscriptions/local-price-and-taxes). Envie `customer_id` e `items`. `id` (uma assinatura existente) não pode ser enviado com `items` nem com `tax_collection`. `trial_period_days` e `metadata` ainda não são compatíveis e são rejeitados com `400`.",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "enum": [
+                            "STRIPE_BILLING"
+                          ],
+                          "description": "A plataforma de cobrança. Apenas `STRIPE_BILLING`, o padrão."
+                        },
+                        "customer_id": {
+                          "type": "string",
+                          "description": "O identificador do cliente no Stripe (`cus_...`). De 3 a 255 caracteres.",
+                          "example": "cus_RplXYZ"
+                        },
+                        "currency": {
+                          "type": "string",
+                          "description": "A moeda dos preços da assinatura.",
+                          "example": "USD"
+                        },
+                        "items": {
+                          "type": "array",
+                          "description": "Os preços da assinatura a ser criada.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "price": {
+                                "type": "string",
+                                "description": "O identificador do preço no Stripe (`price_...`).",
+                                "example": "price_1QwAbc"
+                              },
+                              "quantity": {
+                                "type": "integer",
+                                "description": "Quantidade do preço. Padrão `1`.",
+                                "example": 1
+                              }
+                            },
+                            "required": [
+                              "price"
+                            ]
+                          }
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "Uma assinatura existente (`sub_...`), em vez de `items`. Não é permitido com `tax_collection`."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Bad Request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request"
+                      ]
+                    }
+                  },
+                  "Invalid checkout_id": {
+                    "value": {
+                      "code": "INVALID_CHECKOUT_CODE",
+                      "messages": [
+                        "The checkout_code is invalid for this account or is not published: 6822f80c-684e-41a3-8628-78963d3d60f7"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_CREDENTIALS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid credentials"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Forbidden": {
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "AUTHORIZATION_REQUIRED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "The merchant has no authorization to use this API."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}
