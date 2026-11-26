@@ -15,16 +15,30 @@ The provider account must allow unreferenced refunds. Some providers enable this
 </Info>
 
 <Info>
-**Provider raw data**
+**Provider data in the response**
 
-The `provider` object carries the untouched provider exchange in two fields. The shape of both is defined by the provider, not by Yuno, so it varies per provider and per operation.
+In the request, `provider_data` only pins the refund to a provider or connection. In the response, `provider_data` is always present and carries the result from the provider that processed the refund. Webhook payloads carry the same object without the raw fields (`raw_request`, `raw_request_details`, `raw_response`, `raw_response_details`).
+
+| Field | Content |
+| --- | --- |
+| `id` | Provider that processed the refund, for example `STRIPE`. |
+| `type` | Provider type, for example `PSP`. |
+| `connection_id` | Connection that processed the refund (UUID). |
+| `transaction_id` | The provider's identifier for the refund. Omitted when the provider has not returned one yet. |
+| `category` | Category of the provider's result, for example `APPROVED`. |
+| `response_code` | Response code returned by the provider. |
+| `response_message` | Response message returned by the provider. |
+
+The following fields carry the untouched provider exchange. Their shape is defined by the provider, not by Yuno, so it varies per provider and per operation.
 
 | Field | Content | Availability |
 | --- | --- | --- |
-| `raw_request` | The exact payload Yuno sent to the provider. | Accounts enabled for provider raw data. Contact your Yuno account manager to request access. Otherwise omitted. |
+| `raw_request` | The exact payload Yuno sent to the provider. | Accounts enabled for provider raw data. Contact your Yuno account manager to request access. Returned only when Yuno called the provider. Otherwise omitted. |
+| `raw_request_details` | Details of the request Yuno sent to the provider, such as the HTTP method, URL, and headers, with credentials redacted. | Same as `raw_request`. |
 | `raw_response` | The full payload the provider returned. | Not returned on this endpoint. Retrieve it with [Retrieve Unreferenced Refund by ID](/reference/unreferenced-refunds/retrieve-unreferenced-refund-by-id) using `include_raw_responses=true`. |
+| `raw_response_details` | Details of the provider's response, such as the HTTP status code. | Same as `raw_request`. |
 
-`raw_response_code` and `raw_response_message` are summaries of the provider's answer and are always returned, independently of both fields above.
+`response_code` and `response_message` are summaries of the provider's answer, returned when available, independently of the raw fields above.
 </Info>
 
 <ParamField header="public-api-key" type="string" required>
@@ -73,7 +87,7 @@ The currency used for the refund (MAX 3; MIN 3; [ISO 4217](/reference/country-re
 </ParamField>
 
 <ParamField body="provider_data" type="object">
-Pins the refund to a specific gateway, bypassing routing rules. Useful when the destination provider is dictated by where the original payment was processed.
+Pins the refund to a specific gateway, bypassing routing rules. The response returns `provider_data` with the provider's result (see **Provider data in the response** above). Useful when the destination provider is dictated by where the original payment was processed.
 
 <Expandable title="properties">
 <ParamField body="id" type="string" required>
@@ -243,8 +257,8 @@ When `stand_alone: true`, Yuno runs an ML fraud check before submitting to the p
     "value": 25.00,
     "currency": "USD"
   },
-  "status": "CREATED",
-  "sub_status": "CREATED",
+  "status": "SUCCEEDED",
+  "sub_status": "SUCCEEDED",
   "payment_method": {
     "vaulted_token": "550e8400-e29b-41d4-a716-446655440000",
     "detail": {
@@ -263,18 +277,29 @@ When `stand_alone: true`, Yuno runs an ML fraud check before submitting to the p
     "first_name": "John",
     "last_name": "Doe"
   },
-  "provider": {
-    "name": "STRIPE",
+  "provider_data": {
+    "id": "STRIPE",
     "type": "PSP",
-    "connection_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
-    "reference": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
+    "connection_id": "8821cf99-89a5-4ecb-aba9-149cb08624fa",
+    "transaction_id": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
     "category": "APPROVED",
-    "raw_response_code": "succeeded",
+    "response_code": "succeeded",
     "raw_request": {
       "amount": 2500,
       "currency": "usd",
       "payment_method": "pm_1OqQz92eZvKYlo2C7Kx9Vbnm",
       "metadata": { "merchant_order_id": "REFUND-2026-05-14-001" }
+    },
+    "raw_request_details": {
+      "url": "/v1/refunds",
+      "method": "POST",
+      "headers": {
+        "Authorization": ["[REDACTED]"],
+        "Content-Type": ["application/x-www-form-urlencoded"]
+      }
+    },
+    "raw_response_details": {
+      "http_status_code": 200
     }
   },
   "metadata": [
