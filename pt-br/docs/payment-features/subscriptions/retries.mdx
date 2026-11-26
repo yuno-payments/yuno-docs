@@ -1,0 +1,160 @@
+---
+title: "Smart Retries"
+description: "Recupere cobranças recorrentes de cartão recusadas fazendo novas tentativas em um cronograma otimizado e personalizável"
+---
+
+Os Smart Retries da Yuno ajudam a recuperar pagamentos recorrentes com cartão de crédito recusados, fazendo novas tentativas em um cronograma otimizado. Ao tentar novamente nos momentos certos, os Smart Retries aumentam a probabilidade de sucesso do pagamento, garantindo um fluxo de receita consistente e reduzindo o cancelamento involuntário de assinantes.
+
+### Principais vantagens {#key-advantages}
+
+Os Smart Retries da Yuno oferecem vários benefícios que melhoram os processos de pagamento e a recuperação de receita:
+
+* **Decisões baseadas em dados**: usa um cronograma de novas tentativas comprovado, ou o momento das novas tentativas definido por machine learning com a estratégia `SMART`.
+* **Maior recuperação de receita**: aumenta as chances de cobrar os pagamentos com sucesso.
+* **Menor rotatividade de assinantes**: minimiza interrupções e saídas involuntárias de assinantes.
+* **Lógica flexível**: permite personalizar os cronogramas de novas tentativas para maximizar as oportunidades de sucesso.
+* **Abordagem abrangente**: funciona em conjunto com outras estratégias de recuperação de receita.
+
+### Cronograma de novas tentativas {#retry-schedule}
+
+Por padrão, a Yuno aplica o cronograma fixo de novas tentativas abaixo. Cada intervalo é medido **a partir da tentativa anterior**, e não de forma acumulada desde a primeira tentativa. Você também pode mudar para o momento das novas tentativas definido por machine learning, que adapta o momento de cada nova tentativa por transação, definindo `strategy` como `SMART` (veja [Momento das novas tentativas por machine learning](#machine-learning-retry-timing)).
+
+| Tentativa                  | Intervalo após a tentativa anterior | Tempo total após a primeira tentativa |
+| :------------------------- | :------------------------------- | :--------------------------------- |
+| Primeira tentativa (cobrança inicial) | -                                | -                                  |
+| Nova tentativa 1           | 5 horas                          | ~5 horas                           |
+| Nova tentativa 2           | 12 horas                         | ~17 horas                          |
+| Nova tentativa 3           | 24 horas                         | ~41 horas                          |
+| Nova tentativa 4           | 36 horas                         | ~77 horas (~3,2 dias)              |
+| Nova tentativa 5           | 48 horas                         | ~125 horas (~5,2 dias)             |
+| Nova tentativa 6           | 96 horas                         | ~221 horas (~9,2 dias)             |
+
+A última nova tentativa é feita cerca de 9,2 dias após a cobrança inicial com falha.
+
+### Personalização {#customization}
+
+Cada modelo de negócio é único, por isso permitimos que os lojistas definam regras específicas para aumentar a flexibilidade do nosso cronograma de novas tentativas. Você pode definir a estrutura `retries` ao criar a assinatura e alterá-la depois em uma assinatura existente com [Atualizar assinatura](/reference/subscriptions/update-subscription), em todos os campos exceto `cancel_on_exhausted_retries`, que só pode ser definido na criação:
+
+<div className="nowrap-col1-table dense-table">
+
+| Parâmetro          | Tipo   | Descrição                                                                                                                              | Exemplo                            |
+| :----------------- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------- |
+| `retry_on_decline` | bool   | Indica se um pagamento deve ser tentado novamente após uma primeira recusa. O padrão é false. Este flag é a única opção que habilita as novas tentativas; não há uma opção no dashboard. | TRUE |
+| `amount`           | number | Número de novas tentativas que a assinatura fará. O máximo é igual ao tamanho do cronograma de novas tentativas configurado no seu ambiente: 6 em produção. Um valor acima do limite é rejeitado com `400` (`Max retries attempts exceeded`). Esse limite é definido por ambiente e não pode ser configurado por conta pela API. | 4 |
+| `strategy`         | string | A estratégia de novas tentativas. Valores permitidos: DEFAULT, SMART e CUSTOM_SCHEDULE. DEFAULT usa o cronograma fixo acima. SMART usa o momento das novas tentativas definido por machine learning (veja [Momento das novas tentativas por machine learning](#machine-learning-retry-timing)). CUSTOM_SCHEDULE usa o cronograma por tentativa que você fornece. | `CUSTOM_SCHEDULE` |
+| `stop_on_hard_decline` | bool | Quando true e uma recusa definitiva (hard decline) é detectada, as novas tentativas param somente no ciclo atual. Por si só, a assinatura continua ACTIVE, a cobrança avança para o próximo ciclo e nenhum webhook de cancelamento, pausa ou assinatura é emitido. Se `cancel_on_exhausted_retries` também for true, a assinatura é cancelada (veja [Cancelar uma assinatura quando as novas tentativas acabam](#canceling-a-subscription-when-retries-run-out)). | TRUE |
+| `cancel_on_exhausted_retries` | bool | Quando true, a assinatura é cancelada assim que as novas tentativas de um ciclo de cobrança terminam sem um pagamento bem-sucedido, em vez de avançar para o próximo ciclo. O padrão é false. Só pode ser definido na criação: não pode ser alterado depois, e [Atualizar assinatura](/reference/subscriptions/update-subscription) rejeita um valor diferente com `400`. Veja [Cancelar uma assinatura quando as novas tentativas acabam](#canceling-a-subscription-when-retries-run-out). | TRUE |
+| `schedule`         | object | Cronograma por tentativa para `CUSTOM_SCHEDULE`, um array de objetos com os campos `attempt` e `delay_seconds`. Até 7 tentativas; os números das tentativas precisam seguir em sequência a partir de 1, e cada `delay_seconds` precisa estar entre 1 e 604800 (7 dias). Enviá-lo sem `strategy` implica `CUSTOM_SCHEDULE`, e a quantidade de novas tentativas segue o tamanho do cronograma. | Attempt: 2, `delay_seconds`: 86400 |
+
+</div>
+
+<Note>
+**Atualizar as novas tentativas em uma assinatura existente**
+
+[Atualizar assinatura](/reference/subscriptions/update-subscription) aceita o mesmo objeto `retries` (um `schedule` enviado substitui o armazenado por inteiro). A alteração vale na próxima vez em que as novas tentativas forem agendadas: um ciclo de cobrança que já está executando as suas novas tentativas termina com a configuração com que começou, e a nova configuração passa a valer a partir do próximo ciclo.
+</Note>
+
+<Note>
+O número máximo de novas tentativas é igual ao tamanho do cronograma de novas tentativas configurado no seu ambiente: 6 em produção. O sandbox está limitado a 5 no momento e está sendo ajustado para ficar igual à produção.
+</Note>
+
+<Note>
+`strategy`: `DEFAULT` aplica o cronograma fixo acima. Use `SMART` para o momento das novas tentativas definido por machine learning, ou `CUSTOM_SCHEDULE` junto com o array `schedule` para definir os seus próprios intervalos.
+</Note>
+
+### Momento das novas tentativas por machine learning {#machine-learning-retry-timing}
+
+Defina `strategy` como `SMART` para que o modelo de machine learning da Yuno escolha **quando** cada nova tentativa é feita, em vez de usar o cronograma fixo. O modelo considera sinais como o motivo da recusa, o país, o emissor do cartão e o provedor de pagamento para escolher o momento com maior probabilidade de sucesso.
+
+```json
+{
+  "retries": {
+    "retry_on_decline": true,
+    "amount": 4,
+    "strategy": "SMART"
+  }
+}
+```
+
+`SMART` altera somente o **momento** das novas tentativas. Ele não altera quantas novas tentativas você tem: `amount` continua controlando isso, e o mesmo máximo por ambiente se aplica. Qualquer array `schedule` enviado junto com `strategy: SMART` é ignorado.
+
+<Note>
+O momento definido por machine learning é aplicado **a partir da segunda nova tentativa**. A primeira nova tentativa sempre usa o intervalo padrão do cronograma fixo acima.
+</Note>
+
+<Note>
+Se uma decisão de momento não estiver disponível a tempo, a nova tentativa volta a usar o cronograma fixo acima. As novas tentativas nunca são puladas nem descartadas por causa disso; só o momento delas muda.
+</Note>
+
+<Note>
+`SMART` está disponível para todas as contas.
+</Note>
+
+### Assinaturas Pix Automático {#pix-automático-subscriptions}
+
+O cronograma e as configurações de `retries` desta página se aplicam às assinaturas em que a própria Yuno faz as novas tentativas. Uma assinatura `PIX_AUTOMATIC` segue a escala fixa do próprio arranjo Pix (até três novas tentativas, uma por data de débito, dentro de sete dias da data de débito), e as configurações acima não podem ser alteradas nela. Veja [Pix Automático](/pt-br/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder).
+
+### Assinaturas aguardando recuperação {#subscriptions-awaiting-recovery}
+
+Quando o status `PAST_DUE` está habilitado para a conta, uma cobrança recorrente com falha move a assinatura de `ACTIVE` (ou de `TRIALING`) para [`PAST_DUE`](/reference/subscriptions/status-subscriptions) e emite um webhook `subscription.past_due`. A assinatura continua sendo cobrada e ainda pode ser cancelada enquanto estiver nesse status; a próxima cobrança bem-sucedida a devolve ao status de onde veio e emite o evento correspondente `subscription.active` ou `subscription.trialing`.
+
+Quando o status não está habilitado, uma cobrança com falha deixa a assinatura em `ACTIVE` enquanto as novas tentativas acontecem, e somente o webhook `payment.purchase` informa a recusa. Entre em contato com o seu representante da Yuno para habilitar o `PAST_DUE`.
+
+Cancelar uma assinatura `PAST_DUE` (imediatamente, ou porque um cancelamento agendado chegou à data) nunca gera erro e sempre interrompe as novas tentativas desse ciclo. Veja [Cancelar assinatura](/reference/subscriptions/cancel-subscription) para agendar um cancelamento com antecedência, incluindo a opção `past_due_behavior`, que controla se um agendamento pendente espera as novas tentativas terminarem ou é executado na hora.
+
+### Cancelar uma assinatura quando as novas tentativas acabam {#canceling-a-subscription-when-retries-run-out}
+
+Por padrão, quando todas as novas tentativas de um ciclo de cobrança foram feitas e nenhuma foi bem-sucedida, a assinatura continua no status atual e a cobrança avança para o próximo ciclo. Por isso, uma assinatura vinculada a um cartão permanentemente inválido continua gerando cobranças com falha indefinidamente.
+
+Defina `cancel_on_exhausted_retries` como `true` na criação para mudar isso:
+
+```json
+{
+  "retries": {
+    "retry_on_decline": true,
+    "amount": 3,
+    "cancel_on_exhausted_retries": true
+  }
+}
+```
+
+Quando as novas tentativas de um ciclo terminam sem um pagamento bem-sucedido, a Yuno então:
+
+1. Define o status da assinatura como `CANCELED`.
+2. Define `cancellation_source` como `RETRIES_EXHAUSTED`.
+3. Interrompe todas as cobranças futuras agendadas da assinatura.
+4. Envia um webhook `SUBSCRIPTION.CANCEL`.
+
+Isso vale seja qual for a forma como as novas tentativas terminaram: o cronograma chegando à última tentativa, ou `stop_on_hard_decline` encerrando o ciclo antes, após uma recusa definitiva. Nos dois casos, `cancellation_source` é `RETRIES_EXHAUSTED`.
+
+<Note>
+O padrão de `cancel_on_exhausted_retries` é `false`. Se você o omitir, as assinaturas se comportam exatamente como hoje. Nenhuma assinatura existente muda de comportamento.
+</Note>
+
+<Warning>
+**Este cancelamento é definitivo.** Uma assinatura cancelada não pode mais ser cobrada, por isso [Tentar assinatura novamente](/reference/subscriptions/retry-subscription) é rejeitado para ela. Sem este flag, você pode recuperar manualmente uma assinatura cujas novas tentativas se esgotaram; com ele habilitado, essa opção deixa de existir assim que o cancelamento acontece. Habilite-o somente se um cronograma de novas tentativas esgotado realmente deve encerrar a assinatura do cliente.
+</Warning>
+
+<Note>
+`cancel_on_exhausted_retries` só pode ser definido na criação. [Atualizar assinatura](/reference/subscriptions/update-subscription) rejeita um valor diferente do armazenado com `400` (`The field 'retries.cancel_on_exhausted_retries' can only be set when the subscription is created`); o restante do objeto `retries` continua podendo ser atualizado.
+</Note>
+
+<Note>
+Este flag se aplica aos ciclos de renovação. Assinaturas criadas com `initial_payment_validation: true` já se cancelam quando o primeiro pagamento falha, e esse caminho informa `cancellation_source` como `SYSTEM`, e não como `RETRIES_EXHAUSTED`.
+</Note>
+
+### Testar as novas tentativas em sandbox {#testing-retries-in-sandbox}
+
+Com o [Yuno Testing Gateway](/pt-br/docs/direct-integration-use-cases/yuno-testing-gateway) configurado como o seu provedor de cartão em sandbox, cada um dos seus [cartões de teste](/pt-br/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway) retorna um código de resposta de transação fixo. Escolha o cartão de acordo com o que você quer testar:
+
+* **Cronograma completo de novas tentativas**: use um cartão que retorne uma recusa temporária (soft decline), como `DECLINED_BY_BANK`, `DO_NOT_HONOR` ou `INSUFFICIENT_FUNDS`.
+* **`stop_on_hard_decline`**: defina `stop_on_hard_decline` como `true` e use um cartão que retorne uma recusa definitiva, como `REPORTED_STOLEN` ou `INVALID_CARD_DATA`.
+
+Se um código de resposta é uma recusa temporária ou definitiva está indicado na tabela [Status recusado](/reference/payments/status-and-response-codes/transaction#declined-status).
+
+Lembre-se:
+
+* Defina `retry_on_decline` como `true` ao criar a assinatura de teste. O padrão é `false`, e sem ele nenhuma nova tentativa acontece.
+* O sandbox está limitado a 5 novas tentativas, então um `amount` acima de 5 é rejeitado lá.
+* Envie `cancel_on_exhausted_retries` ao criar a assinatura de teste; ele não pode ser adicionado depois.
+* Quando as novas tentativas acabarem com `cancel_on_exhausted_retries` habilitado, confirme com [Consultar assinatura](/reference/subscriptions/retrieve-subscription) que `status` é `CANCELED` e `cancellation_source` é `RETRIES_EXHAUSTED`, e que o seu endpoint de webhook recebeu um evento `SUBSCRIPTION.CANCEL`.

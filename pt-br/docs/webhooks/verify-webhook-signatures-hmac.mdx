@@ -1,0 +1,105 @@
+---
+title: "Verificar assinaturas de webhook (HMAC)"
+description: "Verifica a autenticidade dos webhooks validando a assinatura HMAC SHA256 enviada no cabeçalho da requisição"
+---
+
+A verificação da assinatura de webhooks com HMAC (Hash-based Message Authentication Code) garante que os webhooks enviados ao seu servidor realmente vêm da Yuno e não foram interceptados nem modificados durante a transmissão. Isso adiciona uma camada extra de segurança, além de métodos de autenticação como o OAuth.
+
+Enquanto o OAuth fornece autenticação (verifica quem está enviando a requisição), as assinaturas HMAC fornecem:
+
+* **Integridade dos dados**: confirma que o payload do webhook não foi adulterado
+* **Autenticidade**: verifica se o webhook realmente vem da Yuno
+* **Proteção**: protege contra ataques man-in-the-middle e ataques de repetição (replay)
+* **Conformidade**: ajuda a cumprir os requisitos do PCI DSS para o tratamento de dados de pagamento sensíveis
+
+## Como funcionam as assinaturas HMAC {#how-hmac-signatures-work}
+
+Quando a Yuno envia um webhook ao seu servidor:
+
+1. **Geração da assinatura**: a Yuno cria uma assinatura HMAC gerando o hash do payload do webhook com a sua chave secreta de cliente (client secret), usando o algoritmo SHA-256
+2. **Inclusão no cabeçalho**: a assinatura é incluída no cabeçalho HTTP `x-hmac-signature`
+3. **Verificação**: o seu servidor extrai a assinatura do cabeçalho, recria a assinatura com o mesmo payload e a mesma chave secreta e compara as duas
+4. **Validação**: se as assinaturas forem iguais, o webhook é autêntico e não foi alterado
+
+## Configuração {#configuration}
+
+Para ativar a verificação da assinatura HMAC, marque **Use HMAC Authentication** ao criar ou editar um webhook no [Dashboard da Yuno](https://dashboard.y.uno/), ou defina `hmac_client_secret` pela [API de Webhooks](/reference/webhooks/create-webhook). A verificação funciona da mesma forma nos dois casos.
+
+Consulte [Configurar webhooks](/pt-br/docs/webhooks/configure-webhooks) para ver as instruções passo a passo das duas opções.
+
+## O que muda com o HMAC {#what-changes-with-hmac}
+
+Quando a verificação da assinatura HMAC está ativada, os webhooks da Yuno incluem um cabeçalho HTTP adicional, `x-hmac-signature`. O payload JSON do webhook não muda.
+
+### Exemplo de requisição de webhook com HMAC {#example-webhook-request-with-hmac}
+
+Veja como fica uma requisição de webhook com o cabeçalho `x-hmac-signature` adicionado junto aos outros cabeçalhos de autenticação configurados.
+
+```http
+POST /your-webhook-endpoint HTTP/1.1
+Host: your-server.com
+Content-Type: application/json
+x-api-key: your-api-key
+x-secret: your-secret
+x-hmac-signature: K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols=
+
+{
+  "type": "payment",
+  "type_event": "payment.purchase",
+  "account_id": "2c05976d-1234-1234-1234-6421883de48d",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment": {
+      "id": "a546c566-1703-4fba-b334-c46e89bc97f7",
+      "status": "SUCCEEDED"
+    }
+  }
+}
+```
+
+## Exemplo de código de verificação {#verification-code-example}
+
+Verifique o cabeçalho `x-hmac-signature` usando o **corpo bruto da requisição** (antes de fazer o parse do JSON) e o mesmo segredo configurado para o webhook no Dashboard da Yuno. Não serialize o JSON de novo antes. Uma mudança na ordem das chaves ou nos espaços em branco gera uma assinatura diferente da que a Yuno enviou.
+
+**Node.js (Express):** use um body parser que mantenha o corpo bruto na rota do webhook (por exemplo, `express.raw()` para esse caminho) e, em seguida:
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(rawBody, signatureHeader, secret) {
+  if (typeof signatureHeader !== 'string') return false;
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('base64');
+  const received = Buffer.from(signatureHeader);
+  const computed = Buffer.from(expected);
+  // timingSafeEqual throws when lengths differ, so check the length first
+  return received.length === computed.length && crypto.timingSafeEqual(received, computed);
+}
+
+// Example: const isValid = verifyWebhookSignature(req.body, req.headers['x-hmac-signature'], process.env.WEBHOOK_SECRET);
+```
+
+**Python:** use os bytes do corpo bruto da requisição e o cabeçalho `x-hmac-signature`:
+
+```python
+import hmac
+import hashlib
+import base64
+
+def verify_webhook_signature(raw_body: bytes, signature_header: str, secret: str) -> bool:
+    expected = base64.b64encode(
+        hmac.new(secret.encode(), raw_body, hashlib.sha256).digest()
+    ).decode()
+    return hmac.compare_digest(signature_header, expected)
+```
+
+Se a assinatura calculada não for igual à do cabeçalho, rejeite o webhook (por exemplo, retorne 401).
+
+## Documentação relacionada {#related-documentation}
+
+* [Configurar webhooks](/pt-br/docs/webhooks/configure-webhooks)
+* [Payloads e exemplos](/pt-br/docs/webhooks/object-and-examples)
+* [Visão geral dos webhooks](/docs/webhooks)

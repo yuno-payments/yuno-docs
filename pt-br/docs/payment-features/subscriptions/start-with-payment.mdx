@@ -1,0 +1,390 @@
+---
+title: "Iniciar uma assinatura com o primeiro pagamento"
+description: "Crie o pagamento e a assinatura em uma única chamada de Create Payment: a primeira cobrança é o próprio pagamento, então nada começa a ser cobrado a menos que o cliente realmente pague"
+---
+
+A maioria das integrações de assinatura precisa de duas idas e voltas: cadastrar o cartão para obter um `vaulted_token` e depois chamar [Create Subscription](/reference/subscriptions/create-subscription) com esse token. Isso funciona, mas divide a adesão em duas chamadas e deixa você com uma credencial armazenada antes de saber se o cartão do cliente será realmente autorizado.
+
+O bloco `subscription` em [Create Payment](/reference/payments/create-payment) reduz isso a uma única chamada. Você envia o instrumento e as instruções de recorrência juntos; a Yuno cobra o cliente e, a partir dessa mesma cobrança, cria a assinatura. Esse pagamento fica vinculado à assinatura e é registrado como o primeiro ciclo de cobrança dela, e nada começa a ser cobrado se o pagamento não for concluído.
+
+<Note>
+**Qual rota você deve usar?**
+
+* **Uma chamada** (esta página): o cliente está aderindo e pagando agora, e você quer que a adesão seja bem-sucedida ou falhe como uma única unidade. Ideal para fluxos de checkout.
+* **[Create Subscription](/reference/subscriptions/create-subscription)**: você já tem um `vaulted_token` do cliente (por exemplo, ele cadastrou um cartão antes). Veja a [visão geral de assinaturas](/pt-br/docs/payment-features/subscriptions/index) para esse fluxo. Para mover um assinante existente para outro plano, use [Change Subscription Plan](/reference/subscriptions/change-subscription-plan): criar uma segunda assinatura deixa a primeira ativa e cobrando.
+* **[Links de pagamento](/reference/payment-links/create-payment-link)**: o bloco `subscription` não é suportado na criação de link de pagamento. Ele é ignorado em vez de rejeitado, então o link retorna `201` e nenhuma assinatura é criada. Receba o pagamento no link com `vault_on_success` e depois chame [Create Subscription](/reference/subscriptions/create-subscription) com o `vaulted_token` resultante.
+
+As duas rotas geram uma assinatura que você gerencia com os mesmos endpoints: [pausar](/reference/subscriptions/pause-subscription), [retomar](/reference/subscriptions/resume-subscription), [cancelar](/reference/subscriptions/cancel-subscription), [consultar](/reference/subscriptions/retrieve-subscription). Elas não são configuradas da mesma forma: o bloco `subscription` em Create Payment aceita um conjunto menor de campos e não pode definir `trial_period`, `soft_descriptor` nem um `name` de assinatura. `metadata` só é lido junto com `plan_id`, e uma assinatura criada a partir de um plano usa a configuração de novas tentativas do plano (veja [Criar uma assinatura a partir de um plano](#create-a-subscription-from-a-plan)). Quando você envia os termos da assinatura na própria chamada (`frequency`, `availability` e `amount`, chamados de *termos inline* nesta página), `retries` e `metadata` são ignorados, e as **[Smart Retries](/pt-br/docs/payment-features/subscriptions/retries) ficam desativadas** em uma assinatura criada dessa forma: uma renovação recusada não é tentada novamente até que você as ative com [Update Subscription](/reference/subscriptions/update-subscription).
+</Note>
+
+## Como funciona a chamada única {#how-the-one-call-works}
+
+Estas etapas se aplicam quando você envia os termos da assinatura na própria chamada: `frequency`, `availability` e `amount`. Se você enviar um `plan_id` em vez disso, a ordem muda e a Yuno cria a assinatura **antes** da cobrança. Veja [Criar uma assinatura a partir de um plano](#create-a-subscription-from-a-plan).
+
+1. **Você chama [Create Payment](/reference/payments/create-payment)** com o pagamento que enviaria de qualquer forma (valor, país, meio de pagamento, cliente), mais um objeto `subscription` descrevendo a recorrência.
+2. **A Yuno cobra o cliente.** Este é um pagamento com cartão normal: ele é roteado e pode ser recusado.
+3. **Se a cobrança for concluída, a Yuno cria a assinatura** e registra esse pagamento como o primeiro ciclo de cobrança dela. A resposta do pagamento volta com `subscription_code`, o `id` da nova assinatura.
+4. **A Yuno cobra cada ciclo seguinte por conta própria**, na cadência definida em `frequency`, até que a assinatura seja concluída, cancelada ou esgote os ciclos de cobrança.
+
+Se a cobrança não for concluída, nenhuma assinatura é criada: você recebe um pagamento recusado e esse é o resultado completo. Quando a cobrança é concluída, o pagamento fica vinculado à nova assinatura como o primeiro ciclo de cobrança dela; confirme esse vínculo pelo `subscription_code` na resposta do pagamento e por [Retrieve Subscription](/reference/subscriptions/retrieve-subscription), em vez de presumi-lo.
+
+Faça essa verificação somente depois que o pagamento atingir um status final. Se o pagamento voltar como `PENDING`, a assinatura ainda não foi criada e a resposta volta com `subscription_code: null`: aguarde o resultado final antes de conciliar. Em um pagamento que já está em status final e bem-sucedido, `subscription_code: null` significa que a assinatura não foi criada. Veja [Erros](#errors).
+
+### Repetindo a chamada {#retrying-the-call}
+
+Create Payment exige um cabeçalho `X-idempotency-key`; a requisição é rejeitada antes de o corpo ser processado se ele estiver ausente.
+
+Repetir com a **mesma** chave retorna o pagamento original e não cria uma segunda assinatura. Repetir com uma chave **nova** cobra o cliente de novo. Portanto, se um pagamento foi bem-sucedido sem um `subscription_code`, repetir a chamada não resolve: a mesma chave devolve o pagamento original, e uma chave nova gera um segundo pagamento. Em vez disso, faça a conciliação (veja [Erros](#errors)).
+
+<Note>
+**Meios de pagamento disponíveis**
+
+Veja [Assinaturas](/pt-br/docs/payment-features/subscriptions/index) para os meios de pagamento que as assinaturas suportam. Para fazer a adesão de um cliente de Pix Automático a partir de um plano com o primeiro pagamento, veja [Criar uma assinatura a partir de um plano](#create-a-subscription-from-a-plan).
+</Note>
+
+## O bloco `subscription` {#the-subscription-block}
+
+Envie `subscription` junto com os campos normais de Create Payment. O bloco tem três formatos, e você envia exatamente um deles:
+
+* **Nova assinatura com termos inline:** envie `frequency`, `availability` e `amount`, e deixe `id` e `plan_id` de fora. A tabela abaixo descreve esse formato.
+* **Nova assinatura a partir de um plano:** envie `plan_id`. Veja [Criar uma assinatura a partir de um plano](#create-a-subscription-from-a-plan).
+* **Assinatura existente:** envie `id`. Veja [Cobrando uma assinatura existente](#charging-an-existing-subscription).
+
+`checkout.session` é obrigatório em Create Payment, a menos que você envie `"workflow": "DIRECT"` ou `"workflow": "REDIRECT"`; o bloco `subscription` não muda isso. Crie uma sessão com [Create checkout session](/reference/checkout-sessions/create-checkout-session) e envie o identificador dela como `checkout.session`.
+
+<div className="nowrap-col1-table dense-table">
+
+| Campo                  | Tipo    | Obrigatório                  | Descrição                                                                                                                                    |
+| :--------------------- | :------ | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| `frequency.type`       | string  | Sim                          | Unidade da cadência de cobrança. `MONTH` é o único valor aceito nesta rota; outras cadências estão disponíveis em [Create Subscription](/reference/subscriptions/create-subscription). |
+| `frequency.value`      | integer | Sim (verificado após a cobrança) | Quantas unidades de `type` entre as cobranças. `{"type": "MONTH", "value": 1}` cobra mensalmente, `"value": 3` cobra trimestralmente. Sempre envie esse campo: a ausência dele não é detectada de início e falha depois, quando a assinatura é criada. Somente números inteiros: um valor fracionário não é rejeitado de início e falha após a cobrança. |
+| `frequency.execution`  | string  | Sim                          | Quem executa a recorrência. Envie `YUNO`. Veja [`execution` decide quem cobra](#execution-decides-who-bills).                                        |
+| `availability.start_at`| string  | Não                          | Quando a janela ativa da assinatura começa, em UTC [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601). Deve estar no futuro.                     |
+| `availability.finish_at`| string | Não                          | Quando a janela termina, em UTC ISO 8601. Deve ser posterior a `start_at` ou, se você omitir `start_at`, posterior ao momento da chamada.                      |
+| `amount.value`         | number  | Sim                          | O valor de cada cobrança recorrente. Quando `amount.type` é `FIXED`, ele deve ser igual ao `amount.value` do pagamento; um valor diferente é rejeitado antes de qualquer cobrança. |
+| `amount.currency`      | string  | Sim                          | Código de moeda ISO 4217 (3 caracteres). Deve corresponder ao `amount.currency` do pagamento; uma moeda diferente é rejeitada antes de qualquer cobrança. Veja [Referência de países](/reference/country-reference). |
+| `amount.type`          | string  | Sim                          | `FIXED` ou `VARIABLE`.                                                                                                                        |
+| `billing_cycles.total` | number  | Não                          | Número total de ciclos a cobrar antes de a assinatura ser concluída. Deve ser `1` ou maior.                                                     |
+| `billing_cycles.current`| number | Não                          | Aceito pela API, mas **ignorado** quando uma assinatura é criada: o primeiro ciclo é sempre o ciclo 1. Não use esse campo para iniciar uma assinatura no meio do caminho. |
+| `id`                   | string  | Só para assinatura existente | UUID de uma assinatura existente. Omita ao criar uma nova (veja [Cobrando uma assinatura existente](#charging-an-existing-subscription)). |
+
+</div>
+
+Com termos inline, o próprio objeto `availability` é obrigatório, mas os dois campos dentro dele são opcionais: envie `{}` se quiser que a assinatura comece agora e dure até você cancelá-la. Com `plan_id`, `availability` é totalmente opcional (veja [Campos que você pode enviar com `plan_id`](#fields-you-can-send-with-plan_id)).
+
+<Warning>
+**`customer_payer` é obrigatório neste fluxo**
+
+Uma assinatura sempre pertence a um cliente, então um objeto `customer_payer` deve estar presente quando você envia um bloco `subscription`. Você pode identificar um cliente existente com `customer_payer.id` ou enviar o cliente inline (`email`, `merchant_customer_id`, `document`) e deixar a Yuno criá-lo; `id` não é obrigatório. Crie o cliente antes com [Create Customer](/reference/customers/create-customer) se preferir guardar o identificador você mesmo.
+</Warning>
+
+<Warning>
+**`billing_cycles` e `availability.finish_at` afetam um ao outro**
+
+Se você definir os dois, a assinatura chega a `COMPLETED` no que ocorrer primeiro: o último ciclo de cobrança ou `finish_at`. Se você não definir nenhum, a Yuno continua cobrando até você cancelar.
+</Warning>
+
+### Exemplo completo {#complete-example}
+
+```json Create Payment with a new subscription
+{
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "merchant_order_id": "order-90218",
+  "description": "Streaming Pro — monthly",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 2000
+  },
+  "customer_payer": {
+    "id": "a3b3a0f4-1f1e-4a19-9a2a-6f0f2d6bbd11"
+  },
+  "checkout": {
+    "session": "0e2a4b0d-59a5-4b0e-8b6a-71a7c0e2f9c3"
+  },
+  "payment_method": {
+    "type": "CARD",
+    "token": "8a7f2c11-0d94-4b3e-8f2a-1c5b7e9d0a44"
+  },
+  "subscription": {
+    "frequency": {
+      "type": "MONTH",
+      "value": 1,
+      "execution": "YUNO"
+    },
+    "availability": {
+      "finish_at": "2027-05-23T20:17:30.277678Z"
+    },
+    "amount": {
+      "value": 2000,
+      "currency": "BRL",
+      "type": "FIXED"
+    },
+    "billing_cycles": {
+      "total": 12
+    }
+  }
+}
+```
+
+`payment_method.token` é o token de uso único que a sessão de checkout gera para o cartão que o cliente acabou de inserir; esse é o instrumento de adesão nesta rota. Use `vaulted_token` somente quando o cartão já estiver armazenado, como em [Cobrando uma assinatura existente](#charging-an-existing-subscription).
+
+A resposta é um objeto de pagamento normal com um campo extra preenchido:
+
+```json Response (excerpt) — illustrative
+{
+  "id": "8f2c1d24-2b0a-4f7e-a1a2-b0a1d2c3e4f5",
+  "status": "SUCCEEDED",
+  "sub_status": "APPROVED",
+  "subscription_code": "1c9f0b2e-7d5a-4c3b-8e1f-9a0b1c2d3e4f"
+}
+```
+
+<Note>
+Ilustrativo: ainda não existe uma captura do lado do lojista para este fluxo. Os nomes e o aninhamento dos campos são os que esta rota adiciona; os valores são exemplos fictícios.
+</Note>
+
+Guarde o `subscription_code`: ele é o `id` da assinatura e é o que você passa para [Retrieve](/reference/subscriptions/retrieve-subscription), [Pause](/reference/subscriptions/pause-subscription), [Resume](/reference/subscriptions/resume-subscription) e [Cancel](/reference/subscriptions/cancel-subscription).
+
+## `execution` decide quem cobra {#execution-decides-who-bills}
+
+`frequency.execution` informa à Yuno quem é responsável por gerar cada cobrança recorrente. Com termos inline, ele é obrigatório e não há valor padrão. Com `plan_id`, o padrão é `YUNO`.
+
+* **`YUNO`**: o mecanismo da Yuno controla o agendamento. Ele gera todas as cobranças depois da primeira e emite os webhooks `payment.purchase` de cada ciclo. **É isso que você quer para este fluxo.**
+* **`MERCHANT`**: você controla o agendamento. A Yuno armazena a assinatura como um registro do acordo, mas nunca cobra com base nela; você mesmo envia cada nova cobrança como um pagamento iniciado pelo lojista. As operações de ciclo de vida que só fazem sentido com um agendamento executado pela Yuno ([Pause](/reference/subscriptions/pause-subscription), [Resume](/reference/subscriptions/resume-subscription), [Update](/reference/subscriptions/update-subscription), [Retry](/reference/subscriptions/retry-subscription) e [Change plan](/reference/subscriptions/change-subscription-plan)) são rejeitadas com `400 BAD_REQUEST`.
+
+<Note>
+**As novas tentativas são a única exceção a "mesmo objeto de assinatura"**
+
+Com termos inline, o bloco `subscription` em Create Payment não lê nenhum objeto `retries`, então uma assinatura criada dessa forma começa com `retry_on_decline: false`: uma renovação recusada não é tentada novamente, com qualquer valor de `execution`. Com `plan_id`, veja [Criar uma assinatura a partir de um plano](#create-a-subscription-from-a-plan). Ative as [Smart Retries](/pt-br/docs/payment-features/subscriptions/retries) depois com [Update Subscription](/reference/subscriptions/update-subscription).
+</Note>
+
+<Warning>
+**Assinaturas `MERCHANT` nunca cobram por conta própria**
+
+Se você enviar `"execution": "MERCHANT"` esperando que a Yuno cobre o cliente no mês seguinte, nada vai acontecer: a assinatura é criada, parece saudável, e nenhuma cobrança é gerada. Se a Yuno deve fazer a cobrança, envie `"execution": "YUNO"`.
+
+Se você realmente quer conduzir a recorrência por conta própria, não precisa de uma assinatura: use [Stored Credentials](/pt-br/docs/payment-features/stored-credentials) e envie cada nova cobrança como um pagamento com `stored_credentials.reason = SUBSCRIPTION`.
+</Warning>
+
+## Autenticação na primeira cobrança {#authentication-on-the-first-charge}
+
+A primeira cobrança é uma transação iniciada pelo cliente (CIT) na superfície de pagamentos, então ela é elegível para 3DS de uma forma que uma nova cobrança de [Create Subscription](/reference/subscriptions/create-subscription) não é: esse endpoint recebe um `vaulted_token` e inicia um agendamento, sem sessão do cliente associada e sem superfície onde apresentar um desafio.
+
+<Warning>
+**Por enquanto, somente sem fricção**
+
+Esta rota está documentada somente para autenticação **sem fricção**. Um pagamento que exige um desafio 3DS é concluído de forma assíncrona depois que o cliente se autentica, e o ciclo de chamada única + desafio não foi validado de ponta a ponta: não construa uma adesão de assinatura sobre ele ainda. Mantenha a primeira cobrança sem fricção ou use o fluxo de duas chamadas ([Create Payment](/reference/payments/create-payment) e depois [Create Subscription](/reference/subscriptions/create-subscription) com o `vaulted_token` resultante) quando um desafio for esperado. Veja [Configuração e testes de 3DS](/pt-br/docs/direct-integration-use-cases/3ds-configuration-and-testing).
+</Warning>
+
+<Warning>
+**Uso da credencial nas novas cobranças**
+
+A primeira cobrança é uma CIT. Toda cobrança que a Yuno gera depois é uma transação iniciada pelo lojista com a mesma credencial armazenada. A Yuno configura isso para você nesta rota, mas, se algum dia você montar o fluxo de duas chamadas manualmente (primeiro o pagamento CIT, depois Create Subscription com o token resultante), você deve definir o uso da credencial nesse pagamento CIT (`payment_method.detail.card.stored_credentials.usage`, ou `payment_method.detail.wallet.stored_credentials.usage` para uma CIT com Apple Pay ou Google Pay) e, na chamada de Create Subscription, o campo simples `payment_method.card.usage: "USED"` (veja [Create Subscription](/reference/subscriptions/create-subscription)); caso contrário, as novas cobranças serão enviadas como CITs e recusadas. Veja [Stored Credentials](/pt-br/docs/payment-features/stored-credentials).
+</Warning>
+
+## Encontrando a primeira cobrança depois {#finding-the-first-charge-later}
+
+O pagamento feito na chamada única não é uma transação solta ao lado da assinatura: ele é registrado como o primeiro ciclo de cobrança da assinatura. Isso importa para os relatórios: se ele não estivesse vinculado, seus números de receita recorrente deixariam de fora o primeiro mês de cada assinatura.
+
+Duas formas de seguir o vínculo:
+
+* **A partir do pagamento**: o `subscription_code` no objeto de pagamento é o `id` da assinatura. Ele está na resposta de Create Payment e em [Retrieve Payment](/reference/payments/retrieve-payment-by-id).
+* **A partir da assinatura**: [List Subscription Payments](/reference/subscriptions/list-subscription-payments) retorna o histórico de cobranças da assinatura, e o pagamento da chamada única aparece vinculado ali como o primeiro ciclo de cobrança da assinatura, com o mesmo `id` de pagamento que você recebeu da chamada.
+
+<Note>
+**Webhooks de renovação**
+
+`subscription.active` é disparado uma vez, quando a assinatura fica ativa pela primeira vez. Ele não é reenviado nas renovações seguintes. Em vez disso, acompanhe cada renovação pelo webhook `payment.purchase` de cada ciclo. Veja [Assinaturas](/pt-br/docs/payment-features/subscriptions/index#renewal-events).
+</Note>
+
+## Criar uma assinatura a partir de um plano {#create-a-subscription-from-a-plan}
+
+Se você já tem um [plano](/pt-br/docs/payment-features/subscriptions/plans), pode fazer a adesão de um cliente a ele na mesma chamada que recebe o primeiro pagamento. Envie o `id` do plano como `subscription.plan_id` em Create Payment. A assinatura usa o preço, a cadência e o período de teste do plano, então você não envia `amount` nem uma cadência dentro do bloco `subscription`.
+
+Isso funciona com qualquer meio de pagamento que o plano permita, incluindo cartões e Pix Automático:
+
+* **Cartão:** envie o pagamento com cartão como no [exemplo completo](#complete-example), com `plan_id` como único campo no bloco `subscription`. O plano não pode ter período de teste nem outras fases: em um meio de pagamento diferente de Pix Automático, um plano com fases é rejeitado com `400 INVALID_PARAMETERS`.
+* **[Pix Automático](/pt-br/docs/payment-features/subscriptions/pix-automatico#signing-up-from-a-plan-with-the-first-payment):** o pagamento é a configuração do mandato, e o plano decide o que o cliente aprova. Planos com período de teste gratuito são suportados.
+
+<Warning>
+**Com um plano, a assinatura existe antes de o cliente pagar**
+
+Com `plan_id`, a Yuno cria a assinatura **antes** da cobrança, assim que as verificações do plano passam. A primeira resposta já traz `subscription_code`, mesmo enquanto o pagamento ainda está pendente. A regra do restante desta página, "nenhuma assinatura a menos que a cobrança seja concluída", não se aplica aqui. Veja [Se o primeiro pagamento falhar](#if-the-first-payment-fails) para saber o que limpar.
+</Warning>
+
+### A requisição {#the-request}
+
+```json Create Payment from a plan
+{
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "merchant_order_id": "order-90220",
+  "description": "Streaming BR — monthly",
+  "country": "BR",
+  "workflow": "DIRECT",
+  "amount": {
+    "currency": "BRL",
+    "value": 49.90
+  },
+  "customer_payer": {
+    "id": "a3b3a0f4-1f1e-4a19-9a2a-6f0f2d6bbd11"
+  },
+  "payment_method": {
+    "type": "PIX_AUTOMATIC",
+    "vault_on_success": true
+  },
+  "subscription": {
+    "plan_id": "14898a9d-5a75-433d-ba17-f2ea5b33620c"
+  }
+}
+```
+
+O `amount` do pagamento deve ser igual ao preço do plano para o `country` do pagamento, na mesma moeda. A Yuno determina esse preço nesta ordem: o preço da fase regular para o país, depois a entrada de `country_prices` do plano para o país, depois o `base_amount` do plano. Em um plano com período de teste gratuito, você ainda envia o preço regular; o período de teste decide o que é cobrado primeiro.
+
+### Campos que você pode enviar com `plan_id` {#fields-you-can-send-with-planid}
+
+<div className="nowrap-col1-table dense-table">
+
+| Campo                  | Obrigatório | Descrição |
+| :--------------------- | :------- | :---------- |
+| `plan_id`              | Sim      | UUID (v4) de um plano ativo na sua conta. |
+| `frequency.execution`  | Não      | `YUNO` ou `MERCHANT`. O padrão é `YUNO`. Somente `execution` pode ser enviado dentro de `frequency`: o plano define `type` e `value`. |
+| `availability`         | Não      | Igual ao uso com termos inline. |
+| `billing_cycles.total` | Não      | Número total de ciclos a cobrar. Deve ser `1` ou maior; um valor menor é rejeitado de início com `400 INVALID_REQUEST`. |
+| `metadata`             | Não      | Metadados armazenados na assinatura. Mesmo formato de [Create Subscription](/reference/subscriptions/create-subscription). |
+
+</div>
+
+**As novas tentativas vêm do plano.** A assinatura usa a configuração de novas tentativas do plano, então `retries` não é um campo desta chamada: enviá-lo resulta em rejeição com `400 INVALID_PARAMETERS`. Em uma assinatura de Pix Automático executada pela Yuno, para organizações com o agendamento de Pix Automático ativado, aplica-se a [escala de novas tentativas do Pix](/pt-br/docs/payment-features/subscriptions/pix-automatico#the-retry-ladder) (`retry_on_decline: true`).
+
+### Campos que você não pode enviar com `plan_id` {#fields-you-cannot-send-with-planid}
+
+O plano já define estes campos, então cada um deles é rejeitado com `400 INVALID_REQUEST`, mesmo quando o valor é `null`:
+
+`id`, `amount`, `frequency.type`, `frequency.value`, `billing_date`, `trial`, `trial_period`, `phases`
+
+A mensagem de erro informa o nome do campo:
+
+```json plan_id with a forbidden field
+{
+  "code": "INVALID_REQUEST",
+  "messages": [
+    "The field 'subscription.amount' cannot be sent with 'subscription.plan_id'"
+  ]
+}
+```
+
+Para `frequency.type` e `frequency.value`, a mensagem diz "Only 'subscription.frequency.execution' can be sent with 'subscription.plan_id'".
+
+### O que a resposta adiciona {#what-the-response-adds}
+
+A resposta do pagamento traz três campos para esta rota:
+
+* `subscription_code`: o `id` da nova assinatura.
+* `plan_id`: o plano da assinatura no momento em que este pagamento foi criado.
+* `plan_assigned_at`: quando o plano foi atribuído à assinatura.
+
+Os mesmos três campos estão em [Retrieve Payment](/reference/payments/retrieve-payment-by-id) e nos webhooks de pagamento. Os pagamentos de renovação que a Yuno gera para a assinatura também trazem `plan_id` e `plan_assigned_at`. Em um pagamento feito sem plano, `plan_id` e `plan_assigned_at` estão ausentes, e não `null`.
+
+Em um plano com período de teste gratuito, o pagamento mostra o preço regular em `amount.value`, enquanto a transação dele é `0.00`: essa é a configuração do mandato, que não cobra nada. Um reembolso desse pagamento é rejeitado com `400 INVALID_PARAMETERS`, porque nada foi cobrado.
+
+### Se o primeiro pagamento falhar {#if-the-first-payment-fails}
+
+* **Plano com período de teste gratuito:** veja [Pix Automático](/pt-br/docs/payment-features/subscriptions/pix-automatico#while-a-free-trial-setup-awaits-approval). Uma configuração recusada cancela a assinatura automaticamente.
+* **Plano sem período de teste:** um primeiro pagamento recusado deixa a assinatura como `CREATED`. Ela nunca é cobrada, mas também não é cancelada: cancele-a com [Cancel Subscription](/reference/subscriptions/cancel-subscription). Um primeiro pagamento expirado é diferente: o banco do cliente ainda pode entregar uma aprovação depois que o QR code expira, o que conclui o pagamento e ativa a assinatura. Cancele-a somente se você não quiser isso.
+
+### Erros de um plano {#errors-from-a-plan}
+
+As verificações da requisição falham com `400` antes de qualquer coisa ser criada. As verificações do plano falham com `400` antes de o provedor ser chamado: nenhum dinheiro é movimentado, nenhuma assinatura é criada e o pagamento é armazenado com status `ERROR`.
+
+<div className="nowrap-col1-table dense-table">
+
+| Condição | Código |
+| :-------- | :--- |
+| `plan_id` não é um UUID v4 válido, um campo proibido é enviado com ele ou `billing_cycles.total` é menor que `1` | `INVALID_REQUEST` |
+| O plano não existe ou pertence a outra conta | `PLAN_NOT_FOUND` |
+| O plano não está ativo (por exemplo, cancelado) | `INVALID_STATE` |
+| O meio de pagamento não é permitido pelo plano | `INCORRECT_PAYMENT_METHOD_TYPE` |
+| O `amount` ou a moeda do pagamento difere do preço do plano para o país | `INVALID_PARAMETERS` |
+| Plano de Pix Automático com período de teste pago, ou um período de teste com cadência diferente da fase regular | `INVALID_PARAMETERS` |
+| Um plano com fases (por exemplo, um período de teste) e um meio de pagamento diferente de Pix Automático | `INVALID_PARAMETERS` |
+| `retries` enviado com `plan_id` | `INVALID_PARAMETERS` |
+
+</div>
+
+## Cobrando uma assinatura existente {#charging-an-existing-subscription}
+
+O mesmo bloco `subscription` tem um terceiro formato: envie `id` com o UUID de uma assinatura que já existe, e o pagamento é associado a essa assinatura em vez de criar uma nova. Nesse formato, você omite `frequency`, `availability` e `amount`, porque a assinatura já os define.
+
+```json Create Payment for an existing subscription
+{
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "merchant_order_id": "order-90219",
+  "description": "Streaming Pro — monthly",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 2000
+  },
+  "customer_payer": {
+    "id": "a3b3a0f4-1f1e-4a19-9a2a-6f0f2d6bbd11"
+  },
+  "checkout": {
+    "session": "0e2a4b0d-59a5-4b0e-8b6a-71a7c0e2f9c3"
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "6d3f7b3c-4c1e-4d1b-9a6a-2f6d1a5f7c88"
+  },
+  "subscription": {
+    "id": "1c9f0b2e-7d5a-4c3b-8e1f-9a0b1c2d3e4f"
+  }
+}
+```
+
+<Warning>
+**`billing_date` é ignorado sem aviso quando você cria uma assinatura**
+
+O bloco da superfície de pagamentos aceita um objeto `billing_date`, mas somente junto com `id`, para uma assinatura que já existe. Se você enviá-lo ao *criar* uma nova assinatura, ele **não** é rejeitado: é aceito, descartado, e a nova assinatura é criada sem ele. Você recebe um `201`, e nada informa que o dia de cobrança que você pediu foi descartado.
+
+Defina o dia de cobrança na superfície de assinaturas com [Create Subscription](/reference/subscriptions/create-subscription) ou [Update Subscription](/reference/subscriptions/update-subscription), e não no bloco do lado de pagamentos que cria a assinatura. Essa superfície usa seu próprio formato de campo e seu próprio conjunto de valores de `type`, que diferem do objeto do lado de pagamentos; não copie um objeto `billing_date` de um pagamento para uma chamada de assinatura.
+</Warning>
+
+## Erros {#errors}
+
+Esta seção trata de uma assinatura cujos termos você envia na chamada (`frequency`, `availability` e `amount`). Para `plan_id`, veja [Erros de um plano](#errors-from-a-plan).
+
+Um bloco `subscription` inválido pode falhar em dois momentos diferentes, e a diferença importa: um deles acontece antes de o cliente ser cobrado, o outro depois.
+
+### Rejeitado antes de qualquer cobrança {#rejected-before-any-charge}
+
+Estes erros são detectados quando a requisição é validada, então a chamada falha com `400`, nenhum dinheiro é movimentado e nenhuma assinatura é criada:
+
+* `frequency.execution` ausente ou com qualquer valor diferente de `YUNO` / `MERCHANT`.
+* `frequency.type` definido com qualquer valor diferente de `MONTH`.
+* `amount.type` definido com qualquer valor diferente de `FIXED` / `VARIABLE`.
+* `amount.value` ou `amount.currency` ausente, ou uma moeda que não é um código ISO 4217 válido.
+* `subscription.amount.currency` diferente do `amount.currency` do pagamento.
+* `subscription.amount.type` = `FIXED` com um `subscription.amount.value` diferente do `amount.value` do pagamento.
+* `frequency`, `availability` ou `amount` ausente ao criar uma nova assinatura (os três são obrigatórios, a menos que você envie `id` ou `plan_id`).
+* `customer_payer` ausente: um pagamento sempre precisa de um pagador, então isso é recusado antes de qualquer cobrança.
+
+### Validado quando a assinatura é criada {#validated-when-the-subscription-is-created}
+
+Estes itens são verificados no momento da criação da assinatura, que acontece *depois* da cobrança:
+
+* `availability.start_at` no passado, ou `finish_at` igual ou anterior a `start_at`.
+* `billing_cycles.total` definido como `0` ou um número negativo.
+* `frequency.value` ausente ou definido como um número fracionário.
+
+<Warning>
+**Neste ponto, o pagamento pode já ter sido bem-sucedido**
+
+Se um desses itens falhar, a cobrança não é revertida. **O pagamento permanece e a assinatura não é criada**: você tem um pagamento avulso bem-sucedido e nenhuma recorrência. A resposta do pagamento volta com `subscription_code: null`.
+
+Faça essa verificação somente depois que o pagamento atingir um status final. Se o pagamento voltar como `PENDING`, a assinatura **ainda** não foi criada e `subscription_code` é `null` porque o resultado ainda está em aberto: aguarde o status final antes de fazer qualquer coisa.
+
+Em um pagamento em status final e bem-sucedido, trate `subscription_code: null` como um sinal para conciliar: reembolse o pagamento ou crie a assinatura separadamente com [Create Subscription](/reference/subscriptions/create-subscription). Não repita a chamada original (veja [Repetindo a chamada](#retrying-the-call)). Verificar esses campos do seu lado antes de enviar a chamada reduz essa janela, então vale a pena fazer isso.
+</Warning>
+
+Veja [Códigos de resposta HTTP](/reference/getting-started/response-codes) para a lista completa.

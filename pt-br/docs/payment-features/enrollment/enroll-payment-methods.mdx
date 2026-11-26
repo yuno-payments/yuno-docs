@@ -1,0 +1,136 @@
+---
+title: "Cadastrar meios de pagamento"
+description: "Armazene o meio de pagamento de um cliente no vault da Yuno para permitir cobranças recorrentes e novas tentativas entre provedores"
+---
+
+O cadastro permite armazenar com segurança o meio de pagamento de um cliente no vault da Yuno para uso futuro. Quando você cadastra um meio de pagamento, a Yuno gera um `vaulted_token` que referencia os dados de pagamento sem expor informações sensíveis. Isso permite pagamentos recorrentes, assinaturas e novas tentativas entre provedores, mantendo a conformidade com o PCI.
+
+<Note>
+**Vaulted Token**
+
+Um Vaulted Token é criado quando um meio de pagamento é cadastrado e armazenado com as informações do cliente. Você pode usar o Vaulted Token criado para identificar o meio de pagamento em pagamentos futuros.
+</Note>
+
+## Meios de pagamento disponíveis para cadastro {#available-payment-methods-for-enrollment}
+
+| Meio de pagamento             | Tipo                   |
+| -------------------------- | ---------------------- |
+| **Cartões**                  | `CARD`                 |
+| **Nupay**                  | `NU_PAY_ENROLLMENT`    |
+| **PayPal**                 | `PAYPAL_ENROLLMENT`    |
+| **Daviplata**              | `DAVIPLATA_ENROLLMENT` |
+| **MercadoPago Wallet**     | `WALLET_CONNECT`       |
+| **dLocal Yape**            | `YAPE_ENROLLMENT`      |
+| **dLocal Smart PIX**       | `SMART_PIX`            |
+| **Astropay**               | `ASTROPAY_ENROLLABLE`  |
+| **Nequi**\*                | `NEQUI`                |
+| **Bancolombia Tokenbox**\* | `BANCOLOMBIA_TOKENBOX` |
+| **Adyen PIX Biométrico**   | `PIX_BIOMETRICO`       |
+| **DolarApp**               | `DOLARAPP`             |
+| **KCP KakaoPay**\*\*       | `KAKAO_PAY`            |
+| **KCP PAYCO**\*\*          | `KCP_PAYCO`            |
+
+(\*) Apenas SDK. Consulte a [documentação do SDK](/docs/sdks/overview/quickstart) para ver os detalhes de integração.
+(\*\*) Apenas Web SDK. Consulte a [documentação de cadastro do Lite Web](/docs/sdks/lite-web/enrollment) para ver os detalhes de integração.
+
+## Requisitos {#requirements}
+
+* Obtenha suas [credenciais de API](/pt-br/docs/using-yuno/settings/developers-credentials) no [Dashboard da Yuno](https://dashboard.y.uno/developers):
+  * `public-api-key`
+  * `private-secret-key`
+  * `account_id`
+* [Configure as conexões](/pt-br/docs/using-yuno/dashboard-overview/connections) no seu Dashboard da Yuno. Adicione um meio de pagamento que exija cadastro.
+* [Crie uma rota](/pt-br/docs/using-yuno/dashboard-overview/routing#configuring-the-dynamic-routing) para o meio de pagamento para definir como ele será processado.
+* [Configure o checkout builder](/pt-br/docs/using-yuno/dashboard-overview/checkout-builder) para disponibilizar seus pagamentos conectados.
+
+## Resumo das etapas {#steps-summary}
+
+Para cadastrar um meio de pagamento na conta de um cliente:
+
+1. [Criar um cliente](/reference/customers/create-customer)
+2. [Criar sessão do cliente](/reference/customer-sessions-enrollment/create-customer-session) (apenas para o workflow de Checkout)
+3. (Opcional) Consultar os meios de pagamento disponíveis para cadastro - [Workflow de Checkout](/reference/payment-methods-checkout/retrieve-payment-methods-to-enroll-checkout)
+4. Cadastrar meio de pagamento [Workflow de Checkout](/reference/payment-methods-checkout/enroll-payment-method-checkout)/[Workflow Direct](/reference/payment-methods-direct-workflow/enroll-payment-method-api)
+5. Consultar meios de pagamento - [Workflow Direct](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api)
+
+## Cadastrar um meio de pagamento {#enroll-a-payment-method}
+
+### Etapa 1: Criar um cliente {#step-1-create-a-customer}
+
+Registre as informações do cliente pelo endpoint [Criar cliente](/reference/customers/create-customer). Informe também o `merchant_customer_id`, um identificador único do cliente usado no seu sistema.
+
+<Note>
+**Informações complementares do cliente**
+
+Dados opcionais, como telefone, endereço de cobrança e endereço de entrega, não são necessários para cadastrar um meio de pagamento, mas alguns provedores os usam em verificações de fraude. Se você incluir esses campos, alguns subcampos se tornam obrigatórios.
+</Note>
+
+Depois de criar o cliente, você recebe um `id` que o identifica na Yuno. Se o seu cliente já tiver um `id`, pule esta etapa.
+
+### Etapa 2: Criar uma sessão do cliente {#step-2-create-a-customer-session}
+
+<Warning>
+**Requisitos de workflow**
+
+O workflow de cadastro varia conforme o tipo de meio de pagamento:
+
+* **Workflow de Checkout**: exige sessão do cliente para a maioria dos meios de pagamento (Cartões, Nupay, PayPal, Daviplata, meios da dLocal, Astropay, Adyen PIX Biométrico)
+* **Workflow Direct**: disponível apenas para cartões (lojistas com conformidade PCI). Vá direto para a Etapa 3 usando o `id` do cliente gerado na Etapa 1.
+* **Workflow SDK**: meios de pagamento como Nequi e Bancolombia Tokenbox exigem implementação via SDK. WALLET\_CONNECT (MercadoPago) aceita os workflows SDK e Checkout. Consulte a [documentação do SDK](/docs/sdks/overview/quickstart) para ver os detalhes.
+* **Workflow SDK Seamless**: você pode cadastrar meios de pagamento durante o fluxo de pagamento seamless definindo `vault_on_success: true` ao criar o pagamento. O meio de pagamento será cadastrado automaticamente se o pagamento for bem-sucedido. Para carteiras (Apple Pay / Google Pay), o instrumento é armazenado no vault como um registro oculto: o `vaulted_token` é retornado na resposta do pagamento, mas não aparece na listagem de meios de pagamento do cliente. Veja a nota na [Etapa 5](#step-5-retrieve-payment-methods).
+</Warning>
+
+Crie uma sessão do cliente para armazenar as preferências de pagamento do cliente usando o endpoint [Criar sessão do cliente](/reference/customer-sessions-enrollment/create-customer-session). Use o `id` da Etapa 1 como `customer_id`.
+
+A resposta retorna uma `customer_session`, que você usará para cadastrar o meio de pagamento.
+
+### Etapa 3: Consultar meios de pagamento para cadastro {#step-3-retrieve-payment-methods-to-enroll}
+
+Esta **etapa opcional** lista todos os meios de pagamento disponíveis que o cliente pode cadastrar. Se você já sabe qual meio de pagamento cadastrar, vá para a [Etapa 4](#step-4-enroll-a-payment-method).
+
+Para listar os meios de pagamento disponíveis, use o endpoint Retrieve Payment Methods To Enroll. Para o [workflow de Checkout](/reference/payment-methods-checkout/retrieve-payment-methods-to-enroll-checkout), inclua a `customer_session` na requisição. No momento, o workflow Direct não permite consultar meios de pagamento para cadastro.
+
+A resposta retorna um array `payment_methods` com todos os meios de pagamento disponíveis para cadastro. Use o campo `type` dessa resposta na próxima etapa.
+
+<Note>
+**Meios de pagamento disponíveis**
+
+Apenas os meios de pagamento que você conectou, roteou e adicionou ao seu checkout aparecerão na resposta.
+</Note>
+
+### Etapa 4: Cadastrar um meio de pagamento {#step-4-enroll-a-payment-method}
+
+Cadastre o meio de pagamento usando um dos seguintes endpoints:
+
+* [**Workflow de Checkout**](/reference/payment-methods-checkout/enroll-payment-method-checkout): passe o `type` do meio de pagamento no parâmetro `payment_method_type`. Os tipos aceitos incluem: `CARD`, `NU_PAY_ENROLLMENT`, `PAYPAL_ENROLLMENT`, `DAVIPLATA_ENROLLMENT`, `WALLET_CONNECT`, `YAPE_ENROLLMENT`, `SMART_PIX`, `ASTROPAY_ENROLLABLE`, `PIX_BIOMETRICO`.
+* [**Workflow Direct**](/reference/payment-methods-direct-workflow/enroll-payment-method-api): passe o `type` do meio de pagamento no parâmetro `type`. (Disponível apenas para meios de pagamento `CARD` usados por lojistas com conformidade PCI)
+* [**Workflow SDK**](/docs/sdks/overview/quickstart): meios de pagamento como `NEQUI` e `BANCOLOMBIA_TOKENBOX` exigem implementação via SDK. `WALLET_CONNECT` (MercadoPago) aceita os workflows SDK e Checkout.
+
+A resposta do cadastro inclui uma URL de redirecionamento para a página do provedor de pagamento. A Etapa 5 explica onde encontrá-la e como concluir o cadastro.
+
+### Etapa 5: Consultar meios de pagamento {#step-5-retrieve-payment-methods}
+
+O cliente deve dar a autorização na página do provedor de pagamento. Obtenha a URL de autorização de acordo com o seu workflow:
+
+* **Workflow de Checkout**: a URL de cadastro aparece na resposta de cadastro da Etapa 4. Ela fica em `provider.redirect.init_url`.
+* **Workflow Direct**: você recebe o status final na Etapa 4 (apenas cartões).
+
+Redirecione o usuário para concluir a autorização. Quando o cadastro for concluído, siga para a próxima etapa.
+
+Para confirmar o cadastro, consulte os meios de pagamento cadastrados e verifique se o `status` é `ENROLLED`.
+
+<Note>
+**Instrumentos armazenados por carteira não são listados**
+
+Instrumentos armazenados no vault por meio de um pagamento com carteira (Apple Pay / Google Pay com `vault_on_success: true`) ficam guardados como registros ocultos: eles não aparecem na listagem de meios de pagamento cadastrados, mesmo que o `vaulted_token` seja válido e possa ser cobrado. Guarde esse token a partir da resposta do pagamento e, se necessário, consulte-o individualmente com [Consultar meio de pagamento cadastrado por ID](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api). Veja [Credenciais armazenadas](/pt-br/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
+</Note>
+
+<Note>
+**Fingerprint**
+
+Quando um cartão de crédito é cadastrado, a resposta inclui um campo `fingerprint` que representa o cartão do seu cliente em toda a sua organização. Se um cliente cadastrar o mesmo cartão várias vezes, vários valores de `vaulted_token` são gerados, mas o `fingerprint` continua o mesmo, o que permite eliminar duplicidades do seu lado. Veja [Card Fingerprint](/docs/security-and-compliance/fingerprint).
+
+O fingerprint fica disponível após o cadastro, mas pode ser `null` para alguns provedores. Sempre verifique se ele existe antes de usá-lo para eliminar duplicidades.
+
+O fingerprint também aparece nas respostas de pagamento quando uma transação usa um cartão de crédito cadastrado.
+</Note>

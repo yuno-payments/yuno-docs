@@ -1,0 +1,87 @@
+---
+title: "Descritor da fatura em pagamentos recorrentes"
+description: "Controle o soft descriptor (descritor da fatura) que aparece na fatura do titular do cartão em cobranças de assinatura e em cobranças recorrentes iniciadas pelo lojista."
+---
+
+O soft descriptor (também chamado de descritor da fatura) é o texto que o titular do cartão vê na fatura do banco ao lado de uma cobrança. Um descritor claro reduz a confusão e as disputas que vêm dela, o que importa mais nas cobranças recorrentes, em que o cliente é cobrado sem passar de novo pelo checkout.
+
+Onde você define o descritor depende do mecanismo de recorrência que você usa. Os dois caminhos são independentes, então escolha o que corresponde à forma como a cobrança é gerada.
+
+<Note>
+**Qual caminho se aplica a você**
+
+* **Motor de assinaturas da Yuno**: a Yuno gera cada nova cobrança a partir de um objeto de assinatura. Defina o descritor na assinatura.
+* **Iniciado pelo lojista (MIT)**: você mesmo gera cada nova cobrança com uma chamada de Create Payment usando credenciais armazenadas. Defina o descritor em cada pagamento.
+
+O mesmo lojista pode usar os dois para produtos diferentes. As novas cobranças de carteiras digitais (Apple Pay / Google Pay) passam pelo trilho de cartão / network token nos dois casos, então as regras abaixo também se aplicam a elas.
+</Note>
+
+## Novas cobranças pelo motor de assinaturas {#subscription-engine-rebills}
+
+Quando o [motor de assinaturas](/pt-br/docs/payment-features/subscriptions) da Yuno cobra o cliente a cada ciclo, defina o descritor uma única vez com o campo `soft_descriptor` na assinatura. A Yuno o mantém na assinatura e o aplica a todas as novas cobranças que o motor gera.
+
+* Defina-o em [Create Subscription](/reference/subscriptions/create-subscription) (`soft_descriptor`, string, máx. 255).
+* Altere-o depois em [Update Subscription](/reference/subscriptions/update-subscription); o novo valor se aplica às novas cobranças seguintes.
+
+```json Create Subscription (excerpt)
+{
+  "name": "Streaming plan",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "country": "US",
+  "soft_descriptor": "ACME STREAMING",
+  "amount": { "currency": "USD", "value": 15000 },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "{{vaulted_token}}"
+  }
+}
+```
+
+## Novas cobranças iniciadas pelo lojista (MIT) {#merchant-initiated-mit-rebills}
+
+Quando você mesmo conduz a recorrência (enviando cada cobrança como um pagamento iniciado pelo lojista com `stored_credentials.usage = USED` e `reason = SUBSCRIPTION`), não há um objeto de assinatura para levar o descritor. Nesse caso, defina-o por pagamento.
+
+Em [Create Payment](/reference/payments/create-payment), o descritor fica no detalhe do meio de pagamento:
+
+* `payment_method.detail.card.soft_descriptor`
+* `payment_method.detail.wallet.soft_descriptor`
+* `payment_method.detail.bank_transfer.soft_descriptor`
+
+Para novas cobranças de Apple Pay e Google Pay, o meio salvo é um network token do tipo cartão, então use `payment_method.detail.card.soft_descriptor`.
+
+```json Create Payment (excerpt)
+{
+  "amount": { "currency": "USD", "value": 15000 },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "{{vaulted_token}}",
+    "detail": {
+      "card": {
+        "soft_descriptor": "ACME STREAMING",
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED"
+        }
+      }
+    }
+  }
+}
+```
+
+Veja [Credenciais armazenadas](/pt-br/docs/payment-features/stored-credentials) para o fluxo completo de CIT/MIT.
+
+## Comportamento dos provedores {#provider-behavior}
+
+A Yuno repassa `soft_descriptor` para o campo equivalente de cada provedor (por exemplo, Stripe `statement_descriptor` / `statement_descriptor_suffix`, Unlimit `dynamic_descriptor`, Airwallex `descriptor`, Inovio `PMT_DESCRIPTOR`, Nuvei `dynamicDescriptor.merchantName`). O comportamento varia conforme o provedor:
+
+| Provedor | Comportamento |
+| :------- | :------- |
+| Stripe | Envia só o sufixo (`statement_descriptor_suffix`) por padrão. O descritor completo só é enviado para organizações habilitadas para descritores completos; entre em contato com seu technical account manager. |
+| Unlimit | Trunca em 22 caracteres. |
+| Airwallex | Trunca em 30 caracteres. |
+| Inovio | Remove caracteres não alfanuméricos. |
+| Worldpay | Não lê `soft_descriptor`. O texto da fatura vem do campo genérico `payment_description`. |
+
+<Warning>
+O tamanho e os caracteres permitidos variam conforme o provedor. Mantenha os descritores curtos e alfanuméricos para que resistam ao truncamento e à sanitização, e faça testes com seu provedor antes de depender de um formato específico.
+</Warning>

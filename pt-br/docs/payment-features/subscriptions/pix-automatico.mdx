@@ -1,0 +1,405 @@
+---
+title: "Pix Automático"
+description: "Cobre um mandato Pix Automático brasileiro como uma assinatura: as cadências que o arranjo aceita, a data de agendamento D−4 e a sequência fixa de novas tentativas do Pix"
+---
+
+A Yuno cobra um mandato Pix Automático brasileiro como uma assinatura comum: você cadastra o mandato
+primeiro e depois cria a assinatura com o `vaulted_token` resultante ou, com um plano, configura
+o mandato e a assinatura no primeiro pagamento
+([Cadastro a partir de um plano](#signing-up-from-a-plan-with-the-first-payment)). Com o EBANX, você também pode
+coletá-lo pelo meio de pagamento `PIX` e cobrá-lo você mesmo
+([Pix com vault on success](#pix-with-vault-on-success)). Três coisas se comportam
+de forma diferente de uma assinatura com cartão, e as três são definidas pelo arranjo Pix, e não pela sua
+requisição: as cadências de cobrança que o mandato consegue expressar, a data em que a instrução de débito é entregue ao
+arranjo e a sequência de novas tentativas executada quando um débito é recusado.
+
+## Como criar uma assinatura Pix Automático {#creating-a-pix-automático-subscription}
+
+Envie `payment_method.type` como `PIX_AUTOMATIC` com o `vaulted_token` de um mandato já
+cadastrado, exatamente como você faria com um cartão:
+
+```json Create a monthly Pix Automático subscription
+{
+  "name": "Streaming BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 29.90
+  },
+  "frequency": {
+    "type": "MONTH",
+    "value": 1
+  },
+  "customer_payer": {
+    "id": "a15783f1-94e1-4ec0-ab8b-306f8517bcff"
+  },
+  "payment_method": {
+    "type": "PIX_AUTOMATIC",
+    "vaulted_token": "296dff7f-a6cb-4ce2-bf42-c51f1b356a2d"
+  }
+}
+```
+
+`payment_method.type` não diferencia maiúsculas de minúsculas, então `pix_automatic` resolve para o mesmo meio
+de pagamento (e para as mesmas regras de cadência) que `PIX_AUTOMATIC`.
+
+Exceto por [Pix com vault on success](#pix-with-vault-on-success), tudo nesta página
+descreve assinaturas que **a Yuno executa**: `frequency.execution` é `YUNO`,
+então a Yuno gera cada instrução de débito no prazo. Na rota de chamada única com termos inline,
+`frequency.execution` é enviado explicitamente e não tem valor padrão; com um `plan_id`, o padrão é `YUNO` (veja
+[Iniciar uma assinatura com o primeiro pagamento](/pt-br/docs/payment-features/subscriptions/start-with-payment#execution-decides-who-bills)).
+Quando `frequency.execution` é `MERCHANT`, você gera cada cobrança, o comportamento de agendamento e
+de novas tentativas abaixo não se aplica e a assinatura não pode
+[agendar um cancelamento](/reference/subscriptions/cancel-subscription#scheduling-a-cancellation-instead).
+
+## Cadastro a partir de um plano com o primeiro pagamento {#signing-up-from-a-plan-with-the-first-payment}
+
+A chamada acima precisa de um mandato já cadastrado. Para configurar o mandato e criar a
+assinatura em uma única chamada, envie [Create Payment](/reference/payments/create-payment) com
+`payment_method.type` `PIX_AUTOMATIC` e `subscription.plan_id`. A requisição está descrita em
+[Criar uma assinatura a partir de um plano](/pt-br/docs/payment-features/subscriptions/start-with-payment#create-a-subscription-from-a-plan). O
+cliente aprova a requisição de Pix Automático no app do banco, e essa aprovação autoriza o
+mandato.
+
+O que o primeiro pagamento faz depende do plano:
+
+* **Plano sem período de teste:** o pagamento é a primeira cobrança, pelo preço do plano. Quando o cliente
+  aprova, o pagamento é bem-sucedido e conta como o ciclo de cobrança 1. O próximo débito ocorre uma cadência depois.
+  A assinatura fica em `CREATED` até o provedor confirmar o mandato e, então, fica ativa.
+  Se o primeiro pagamento for recusado, a assinatura fica em `CREATED` e nunca é cobrada; cancele-a
+  com [Cancel Subscription](/reference/subscriptions/cancel-subscription). Se ele expirar, uma aprovação
+  tardia do banco ainda pode concluí-lo e ativar a assinatura; cancele-a somente se você
+  não quiser isso.
+* **Plano com período de teste gratuito:** envie o preço regular como o `amount` do pagamento. A configuração do mandato é
+  enviada ao provedor com `0.00`, e o valor da assinatura continua sendo o preço regular. A
+  assinatura começa em `TRIALING` no ciclo de cobrança 0 e não cobra nada até o cliente aprovar
+  o mandato. O período de teste começa quando o cliente aprova (ou em `availability.start_at`, se essa data for
+  posterior), e o primeiro débito pago vem depois do período de teste.
+
+O plano precisa caber no que um único mandato Pix Automático consegue expressar: ou nenhum período de teste, ou um período de teste **gratuito**
+na mesma cadência da fase regular. Qualquer outra coisa é rejeitada antes de o provedor ser chamado:
+
+```json Priced trial, or a trial on another cadence
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "Pix plans support only free trials with the regular billing cadence."
+  ]
+}
+```
+
+### Enquanto a configuração com período de teste gratuito aguarda aprovação {#while-a-free-trial-setup-awaits-approval}
+
+Estas regras se aplicam somente a planos com período de teste gratuito, em que nada é coletado até o cliente aprovar.
+
+* **O provedor recusa a configuração:** a Yuno cancela a assinatura. Ela nunca é cobrada.
+* **O cliente nunca aprova:** a Yuno cancela a assinatura 31 dias depois de o pagamento ser
+  criado. Se uma aprovação ainda chegar depois disso, a Yuno pede ao provedor que revogue o mandato
+  e registra um alerta.
+* **O pagamento mostra `EXPIRED`:** isso, por si só, não cancela a assinatura. O banco ainda pode
+  entregar uma aprovação depois que o QR code expira, então a Yuno continua aguardando até o limite de 31 dias.
+* Pausar, retomar, reativar e [Change Subscription Plan](/reference/subscriptions/change-subscription-plan)
+  são rejeitados com `400 INVALID_STATE` até o mandato ser aprovado. Se a configuração for cancelada
+  sem uma aprovação, essas ações continuam rejeitadas.
+
+## Pix com vault on success {#pix-with-vault-on-success}
+
+Com o EBANX, você também pode coletar o Pix Automático pelo meio de pagamento `PIX`: o primeiro pagamento
+cria a autorização recorrente e a salva como um `vaulted_token`, e as cobranças posteriores usam esse
+token. `PIX_AUTOMATIC` continua sendo um meio de pagamento separado; habilite no seu checkout somente os que você
+quer oferecer. Aqui, o seu sistema decide quando cobrar (`frequency.execution` `MERCHANT`).
+
+**1. Primeiro pagamento.** Envie `payment_method.vault_on_success: true` e um bloco `subscription` que
+descreva o que o cliente autoriza:
+
+* `frequency.type` e `frequency.value`: as mesmas cadências do
+  [Pix Automático](#accepted-billing-cadences) (`WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` ou `YEAR`
+  com valor `1`), além de `MONTH` `3`, `6` ou `12` para trimestral, semestral ou anual.
+* `frequency.execution` `MERCHANT`: o seu sistema decide quando cobrar. A Yuno não rejeita
+  `YUNO`, mas este fluxo é documentado somente para `MERCHANT`.
+* `availability` e `amount`, com `amount.type`. Uma requisição sem um deles é rejeitada com
+  `HTTP 400` antes de qualquer cobrança. Com `amount.type` `FIXED`, `subscription.amount.value` precisa ser igual
+  ao `amount.value` do pagamento; use `VARIABLE` para autorizar cobranças posteriores maiores que a primeira.
+
+A Yuno envia ao EBANX o maior valor entre o `amount` do pagamento e `subscription.amount` (quando ambos usam a
+mesma moeda) como o limite mínimo da autorização. Ao aprovar, o cliente define o valor máximo por cobrança no app do banco,
+e ele não pode ser menor que esse valor.
+
+O cliente referenciado por `customer_payer.id` precisa ter nome e sobrenome, um email e um CPF
+ou CNPJ em `document`. A Yuno os envia ao EBANX para criar a autorização e em cada cobrança
+posterior; ela não os valida antes, e o EBANX recusa o pagamento se estiverem faltando.
+
+```json Create the first Pix payment
+{
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "merchant_order_id": "order-0001",
+  "description": "Monthly plan",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 15.00
+  },
+  "workflow": "DIRECT",
+  "customer_payer": {
+    "id": "a3b3a0f4-1f1e-4a19-9a2a-6f0f2d6bbd11"
+  },
+  "payment_method": {
+    "type": "PIX",
+    "vault_on_success": true
+  },
+  "subscription": {
+    "frequency": {
+      "type": "MONTH",
+      "value": 1,
+      "execution": "MERCHANT"
+    },
+    "availability": {
+      "finish_at": "2027-10-27T00:00:00Z"
+    },
+    "amount": {
+      "currency": "BRL",
+      "value": 15.00,
+      "type": "FIXED"
+    }
+  }
+}
+```
+
+Sem o bloco `subscription`, ou com uma frequência diferente das listadas acima (por exemplo,
+`MONTH` `2`), o pagamento é criado como `DECLINED` e o provedor não é chamado. O
+`response_message` da transação começa com
+`vault_on_success on PIX requires a subscription to enroll the recurring authorization` e lista
+as frequências aceitas.
+
+A resposta é `READY_TO_PAY` (`sub_status` `CREATED`) com um redirecionamento: envie o cliente para
+`payment_method.payment_method_detail.bank_transfer.redirect_url`, a página do EBANX que mostra o
+QR code do Pix. A resposta não tem um campo de QR code para você renderizar. O cliente paga uma vez no
+app do banco, o que liquida este pagamento e aprova a autorização recorrente.
+
+O bloco `subscription` também cria uma assinatura na Yuno, retornada como `subscription_code`. Cobre
+a autorização com o token salvo, como mostrado abaixo, e não com `subscription.id`.
+
+**2. O token salvo.** A Yuno salva o meio de pagamento Pix do cliente quando este pagamento é
+criado, antes de o cliente aprová-lo. O token dele aparece em
+[Retrieve Enrolled Payment Methods](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api)
+imediatamente, e em `transactions[].payment_method.vaulted_token` de
+[Retrieve Payment](/reference/payments/retrieve-payment-by-id-v2) quando o pagamento chega a
+`SUCCEEDED`. Cobre-o somente depois que este pagamento estiver em `SUCCEEDED`: até o cliente aprovar, uma cobrança
+com o token é recusada.
+
+Cada cliente tem um único meio de pagamento Pix salvo. Um novo primeiro pagamento com `vault_on_success`
+substitui a autorização dele pela nova e mantém o mesmo `vaulted_token`, então as cobranças com
+esse token são recusadas até o cliente aprovar o novo pagamento.
+
+**3. Cobranças posteriores.** Cobre a autorização armazenada com o token salvo. Não é preciso QR code nem
+aprovação do cliente:
+
+```json Charge with the vaulted token
+{
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "merchant_order_id": "order-0002",
+  "description": "Monthly plan — November",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 15.00
+  },
+  "workflow": "DIRECT",
+  "customer_payer": {
+    "id": "a3b3a0f4-1f1e-4a19-9a2a-6f0f2d6bbd11"
+  },
+  "payment_method": {
+    "type": "PIX",
+    "vaulted_token": "665dfa97-3a64-4173-8552-58fee66abf80"
+  }
+}
+```
+
+Uma cobrança de Pix Automático é um débito agendado: a resposta da criação retorna `PENDING` com
+`sub_status` `PENDING_PROVIDER_CONFIRMATION`, e a Yuno pede ao EBANX que debite o cliente em uma data de
+vencimento dois dias depois da requisição. O status final chega por webhook: `SUCCEEDED` quando o débito
+é liquidado; caso contrário, `DECLINED` ou `EXPIRED`. O EBANX não faz novas tentativas de um débito com falha em autorizações
+criadas pela Yuno. Se o EBANX rejeitar a cobrança no momento da criação, por exemplo porque o
+cliente não aprovou a autorização, o pagamento fica `DECLINED` na resposta da criação e
+nenhum dinheiro é movimentado.
+
+**No checkout.** Quando você cria a sessão de checkout com o `customer_id` do cliente e o Pix
+está habilitado no seu checkout, o Pix salvo aparece como uma opção própria, identificada pelos quatro últimos
+dígitos do documento do cliente (por exemplo, `Pix ****6893`), ao lado da opção de Pix comum que
+mostra um novo QR code. Pagar com a opção salva não exige QR code: o SDK mostra o pagamento como em
+andamento, e o status final chega por webhook.
+
+**Autorizações criadas antes da Yuno.** Se você já tem autorizações de Pix Automático criadas
+com o EBANX, fale com o seu representante da Yuno antes de cobrá-las pela Yuno.
+
+## Cadências de cobrança aceitas {#accepted-billing-cadences}
+
+Estas regras se aplicam a `PIX_AUTOMATIC`. Para `PIX` com vault on success, veja
+[Pix com vault on success](#pix-with-vault-on-success).
+
+Um mandato Pix Automático só consegue expressar as periodicidades que o arranjo Pix define, então uma cadência que o
+mandato não conseguiria executar é rejeitada quando a assinatura é criada, em vez de falhar no
+primeiro débito.
+
+Aceitas hoje: **`WEEK × 1`, `MONTH × 1`, `QUARTER × 1`, `HALF_YEAR × 1` e `YEAR × 1`**, ou seja,
+`frequency.type` é um desses cinco e `frequency.value` é exatamente `1`. A cadência diária não existe no
+Pix Automático: é uma restrição do BCB no próprio arranjo, e não uma limitação da Yuno ou da Adyen.
+
+| `frequency` | Resultado |
+|---|---|
+| `WEEK`, valor `1` | Aceita |
+| `MONTH`, valor `1` | Aceita |
+| `QUARTER`, valor `1` | Aceita |
+| `HALF_YEAR`, valor `1` | Aceita |
+| `YEAR`, valor `1` | Aceita, somente por meio de um plano (veja [Cobrança anual exige um plano](#yearly-needs-a-plan)) |
+| `WEEK`, `MONTH`, `QUARTER`, `HALF_YEAR` ou `YEAR` com qualquer outro valor | `400 INVALID_PARAMETERS` |
+| `DAY`, qualquer valor | `400 INVALID_PARAMETERS` |
+
+A rejeição é a mesma em todos os caminhos, `HTTP 400`:
+
+```json Rejected cadence
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "Pix Automático only supports weekly, monthly, quarterly, half-yearly or yearly frequencies with value 1."
+  ]
+}
+```
+
+Uma assinatura cobrada em uma data fixa (o objeto `billing_date` em vez de `frequency`) não é
+afetada: ela não tem `frequency.type` para a regra avaliar, então `PREPAID`, `POSTDATE`, `DAY` e
+`PLAN_CREATION_DATE` continuam disponíveis no Pix Automático.
+
+### Onde a regra se aplica {#where-the-rule-applies}
+
+A cadência é avaliada sempre que uma assinatura resolve para um meio de pagamento Pix Automático: na
+cadência solicitada, para um `frequency` inline, e na cadência do plano, quando a assinatura é
+criada a partir de um `plan_id`. Ela é avaliada de novo na cadência de destino de uma troca de plano: em
+[Change Subscription Plan](/reference/subscriptions/change-subscription-plan) e em
+`PATCH /v1/subscriptions/{id}` com um bloco `plan_change`, tanto para `NEXT_BILLING_CYCLE` quanto para
+`IMMEDIATE`.
+
+Os planos em si não são afetados. Um plano em qualquer cadência continua podendo ser criado (a regra controla a
+assinatura, não o plano), então um plano `DAY` só é recusado no momento em que uma assinatura Pix Automático
+tenta cobrar a partir dele.
+
+### Assinaturas existentes nunca são reavaliadas {#existing-subscriptions-are-never-re-judged}
+
+Somente a cadência que está sendo solicitada é avaliada; uma assinatura já em andamento nunca é reavaliada.
+Uma assinatura Pix Automático criada antes de esta regra existir continua cobrando na sua cadência
+original e ainda pode ser movida para um plano. Essa mudança é avaliada na cadência do plano de destino, então
+ela é bem-sucedida sempre que o destino for uma das cinco cadências aceitas.
+
+### Cobrança anual exige um plano {#yearly-needs-a-plan}
+
+Enviar `frequency.type` como `YEAR` inline (sem `plan_id` e sem fases) é recusado por uma
+regra separada e mais antiga, que se aplica a todos os meios de pagamento, não só ao Pix Automático:
+
+```json Inline YEAR, any payment method
+{
+  "code": "BAD_REQUEST",
+  "messages": [
+    "YEAR is invalid for frequency.type field"
+  ]
+}
+```
+
+Para cobrar uma assinatura Pix Automático anualmente, crie-a a partir de um plano cuja frequência seja `YEAR × 1`.
+A regra de cadência do Pix aceita isso; somente a rota inline está fechada. Isso não se aplica a
+[Pix com vault on success](#pix-with-vault-on-success), que aceita `YEAR` `1` no bloco
+`subscription` do pagamento.
+
+## A data de agendamento {#the-scheduling-date}
+
+Um débito Pix não é feito sob demanda: a instrução precisa chegar ao arranjo antes da data do débito.
+Para uma assinatura Pix Automático que a Yuno executa, a Yuno agenda a instrução **quatro dias
+antes** da data do débito e informa esse momento como `billing_cycles.scheduling_date`.
+
+`scheduling_date` é exatamente `billing_cycles.next_at` menos quatro dias:
+
+```json billing_cycles on a Pix Automático subscription
+{
+  "billing_cycles": {
+    "total": null,
+    "current": 0,
+    "paid": 0,
+    "next_at": "2026-12-01T00:00:00Z",
+    "scheduling_date": "2026-11-27T00:00:00Z"
+  }
+}
+```
+
+Em todos os outros meios de pagamento, a chave fica **ausente, e não `null`**: o `billing_cycles` de uma assinatura com cartão
+traz `total`, `current`, `paid` e `next_at` e nada mais. Leia-a em
+[Retrieve Subscription](/reference/subscriptions/retrieve-subscription), nos itens de
+[List Subscriptions](/reference/subscriptions/list-subscriptions) e nos payloads de webhook
+de assinatura, que a trazem dentro do mesmo bloco `billing_cycles`.
+
+`subscription.close_to_renewal` acompanha essa data: para estas assinaturas, o aviso é contado a partir de
+`scheduling_date`, e não de `next_at`, então ele chega quatro dias antes do que chegaria para uma
+assinatura com cartão com o mesmo `next_at` e o mesmo `renewal_notification_days`.
+
+Quando a data de agendamento já passou no momento em que a assinatura é criada (o primeiro
+débito está a menos de quatro dias), não há o que esperar e a instrução é agendada
+imediatamente.
+
+<Note>
+**Somente organizações na lista de permissões**
+
+A antecedência de quatro dias no agendamento e o campo `scheduling_date` são habilitados por organização. Onde
+não estão habilitados, `scheduling_date` fica ausente em todas as leituras e a instrução é agendada
+com a antecedência de renovação padrão da Yuno. Fale com o seu representante da Yuno para habilitá-los.
+</Note>
+
+## A sequência de novas tentativas {#the-retry-ladder}
+
+Um débito Pix recusado é tentado de novo nos termos do próprio arranjo Pix, e não no cronograma do
+[Smart Retries](/pt-br/docs/payment-features/subscriptions/retries). A Yuno informa a sequência que
+aplica no objeto `retries` da assinatura:
+
+| Campo | Valor em uma assinatura Pix Automático |
+|---|---|
+| `profile` | `PIX_AUTOMATIC` |
+| `max_attempts` | `3` |
+| `min_gap_hours` | `24` |
+| `until` | `billing_cycles.next_at` mais 7 dias |
+
+`amount` mostra `3` nestas assinaturas, em vez do padrão de `6` para cartão, igual a
+`max_attempts`. Os quatro campos acima ficam **ausentes, e não `null`**, em `CARD` e em todos os outros
+meios de pagamento.
+
+### `min_gap_hours` conta datas de débito, não envios {#mingaphours-counts-debit-dates-not-dispatches}
+
+`min_gap_hours: 24` é o intervalo entre **datas de débito**: a sequência é executada em **D, D+1, D+2, D+3**,
+com o débito original em D e até três novas tentativas nos três dias seguintes. Não é um intervalo entre
+tentativas de envio, e não significa que a Yuno espera 24 horas antes de enviar a próxima instrução.
+
+Quando o provedor recusa uma instrução de forma síncrona, a instrução da próxima data de débito pode
+sair segundos depois, então, com um provedor que rejeita tudo, a sequência inteira pode ser
+enviada quase de uma vez. Isso é a sequência funcionando como especificado, não uma falha. Confira as **datas
+de débito** registradas nas tentativas (D, D+1, D+2, D+3), e não os horários em que elas foram enviadas.
+
+### A sequência não é configurável {#the-ladder-is-not-configurable}
+
+`retries.retry_on_decline` é a única entrada que estas assinaturas aceitam, nos dois sentidos: `false`
+suprime a sequência inteira e deixa uma única tentativa por ciclo. Enviar `amount`, `strategy`,
+`schedule`, `stop_on_hard_decline` ou `cancel_on_exhausted_retries` em uma assinatura Pix Automático
+(na criação ou em [Update Subscription](/reference/subscriptions/update-subscription)) é
+rejeitado:
+
+```json Configuring the Pix ladder
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "Retries for PIX_AUTOMATIC follow the Pix rail (max 3, 24 h apart, within 7 days of the debit date) and cannot be configured."
+  ]
+}
+```
+
+## Campos que a Yuno calcula {#fields-yuno-computes}
+
+`billing_cycles.scheduling_date` e o snapshot de `retries.stopped`, `retries.attempts_made`,
+`retries.outcome` e `retries.next_retry_at` são calculados pela Yuno a partir do próprio estado
+da assinatura e são ignorados na criação e na atualização: enviá-los não muda nada, e os valores que você
+lê de volta são sempre os da Yuno. Veja
+[The Subscription Object](/reference/subscriptions/the-subscription-object) para a referência completa
+dos campos.

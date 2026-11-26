@@ -1,0 +1,205 @@
+---
+title: "Operadores de carteiras digitais em etapas (SDWO)"
+description: "Marque transações de carga de carteira e de compras pagas com saldo da carteira como tráfego de operador de carteira digital em etapas pela Payments API"
+---
+
+## Introdução {#introduction}
+
+Uma **carteira digital em etapas** é uma carteira em que o cliente primeiro carrega um saldo e depois o gasta, em duas transações de cartão separadas. As duas transações são cobradas pelo **operador da carteira**, a empresa que administra a carteira, e não pela loja onde o cliente finalmente compra. Por isso, as bandeiras de cartão exigem que cada transação seja marcada como tráfego **SDWO (Staged Digital Wallet Operators)**. Marcá-la corretamente é o que dá à transação o interchange certo, o tratamento de compliance certo e uma boa taxa de aprovação.
+
+SDWO não é um novo meio de pagamento. Nas duas transações, o meio de pagamento continua sendo o cartão do cliente, e você envia a mesma requisição de [Create payment](/reference/payments/create-payment) que já envia. O que muda são os dados que você anexa a ela, que a Yuno traduz para a estrutura de carteira que o provedor espera.
+
+## As duas operações {#the-two-operations}
+
+| Operação | O que é | Como sinalizar |
+| --- | --- | --- |
+| **Cash-in** | O cliente carrega o saldo da própria carteira com o cartão. | Envie o objeto `additional_data.order.account_funding`. |
+| **Compra** | A carteira paga um subcomerciante com o saldo que o cliente carregou. | Não envie `account_funding`. Envie o subcomerciante em `additional_data.seller_details`. |
+
+**A presença do objeto `account_funding` é o único campo que diferencia as duas operações.** Você não envia um tipo de operação, um código de processamento nem um ID de carteira: a Yuno deriva os valores específicos do provedor a partir do objeto que você envia e da configuração da sua conexão.
+
+<Note>
+Este é o mesmo objeto `account_funding` descrito em [Transações de financiamento de conta (AFTs)](/pt-br/docs/payment-features/account-funding-transactions-afts). SDWO é o caso de carteira em etapas de uma AFT: o cash-in *é* uma transação de financiamento de conta, e a compra é a segunda transação que só as carteiras em etapas têm.
+</Note>
+
+## Provedores suportados {#supported-providers}
+
+| Provedor | País | Cash-in | Compra |
+| --- | --- | --- | --- |
+| Rede (e.Rede) | Brasil | Sim | Sim |
+
+A Rede é o único provedor com suporte a SDWO hoje. O objeto `account_funding` é o mesmo que toda integração de financiamento de conta da Yuno lê, então habilitar outro provedor no futuro não muda a sua integração.
+
+## Criar um cash-in {#creating-a-cash-in}
+
+Envie um pagamento com cartão normal, mais o objeto `account_funding`, que identifica quem financia a operação e quem recebe o saldo, e `seller_details`, que identifica o operador da carteira.
+
+```json Cash-in request
+{
+  "account_id": "d2b7e0f2-1c3a-4f6b-9f2a-8e1d4c5b6a70",
+  "merchant_order_id": "ORDER-91827",
+  "description": "Wallet cash-in",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 100.00
+  },
+  "customer_payer": {
+    "merchant_customer_id": "CUSTOMER-5521",
+    "first_name": "Marina",
+    "last_name": "Ribeiro",
+    "document": {
+      "document_type": "CPF",
+      "document_number": "06202173165"
+    }
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "50bae77e-c65c-11ec-9d64-0242ac120002",
+    "detail": {
+      "card": {
+        "soft_descriptor": "MYWALLET*CASHIN",
+        "stored_credentials": {
+          "reason": "UNSCHEDULED_CARD_ON_FILE",
+          "usage": "USED",
+          "network_transaction_id": "016153570198200"
+        }
+      }
+    }
+  },
+  "additional_data": {
+    "order": {
+      "account_funding": {
+        "sender": {
+          "first_name": "Marina",
+          "last_name": "Ribeiro",
+          "country": "BR",
+          "document": {
+            "document_type": "CPF",
+            "document_number": "06202173165"
+          },
+          "address": {
+            "address_line_1": "Rua Sebastiana Muller Pimentel",
+            "building_number_1": "260",
+            "city": "Sorriso",
+            "country": "BRA"
+          }
+        },
+        "beneficiary": {
+          "first_name": "Marina",
+          "last_name": "Ribeiro",
+          "country": "BR",
+          "document": {
+            "document_type": "CPF",
+            "document_number": "06202173165"
+          },
+          "account_number": "1111111"
+        }
+      }
+    },
+    "seller_details": {
+      "name": "My Wallet",
+      "merchant_category_code": "6051",
+      "document": {
+        "document_type": "CNPJ",
+        "document_number": "16577631000299"
+      },
+      "address": {
+        "address_line_1": "Rua Funchal 418",
+        "city": "Sao Paulo",
+        "state": "SP",
+        "country": "BRA",
+        "zip_code": "04551-060"
+      }
+    }
+  }
+}
+```
+
+### Campos do cash-in {#cash-in-fields}
+
+| Campo | Obrigatório | Descrição |
+| --- | --- | --- |
+| `additional_data.order.account_funding.beneficiary` | Obrigatório | O titular da conta da carteira que recebe o saldo. A presença dele é o que torna o pagamento um cash-in. |
+| `account_funding.beneficiary.first_name`, `last_name` | Opcional | Nome do titular da conta, como cadastrado na sua carteira. |
+| `account_funding.beneficiary.country` | Opcional | Código ISO do país do titular da conta. |
+| `account_funding.beneficiary.document.document_number` | Obrigatório | Documento fiscal do titular da conta (CPF ou CNPJ no Brasil). Os provedores rejeitam o cash-in sem ele. |
+| `account_funding.beneficiary.account_number` | Obrigatório | O identificador da conta do cliente **dentro da sua carteira**. Não é o documento fiscal: é a conta da carteira onde o saldo é creditado, e as bandeiras de cartão exigem esse dado no cash-in. Máximo de 255 caracteres. |
+| `account_funding.sender.country` | Opcional | Código ISO do país da pessoa que financia a operação. |
+| `account_funding.sender.document.document_number` | Obrigatório | Documento fiscal da pessoa que financia a operação. |
+| `account_funding.sender.first_name`, `last_name`, `address` | Opcional | Identificação da pessoa que financia a operação. Enviado para Visa, Elo e American Express. A Mastercard não transporta os dados do remetente, e a Yuno os descarta para você. |
+| `additional_data.seller_details.merchant_category_code` | Obrigatório | MCC da operação da carteira. O cash-in normalmente usa `6051`; use o MCC combinado com o seu provedor para o seu negócio. |
+| `additional_data.seller_details.document.document_number` | Obrigatório | CNPJ do operador da carteira. |
+| `additional_data.seller_details.name`, `address` | Opcional | Identificação do operador da carteira. Algumas bandeiras de cartão exigem o endereço completo. |
+| `payment_method.detail.card.soft_descriptor` | Opcional | O que o cliente vê na fatura do cartão. O SDWO limita o texto a 18 caracteres, no formato `WalletName*Recipient`. |
+| `payment_method.detail.card.stored_credentials` | Condicional | Obrigatório quando o cash-in é uma cobrança recorrente automática em um cartão armazenado. Consulte [Credenciais armazenadas](/pt-br/docs/payment-features/stored-credentials). |
+
+## Criar uma compra {#creating-a-purchase}
+
+A compra é um pagamento com cartão padrão, com o subcomerciante em `seller_details` e **sem** o objeto `account_funding`.
+
+```json Purchase request
+{
+  "account_id": "d2b7e0f2-1c3a-4f6b-9f2a-8e1d4c5b6a70",
+  "merchant_order_id": "ORDER-91828",
+  "description": "Purchase paid with wallet balance",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 59.90
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "50bae77e-c65c-11ec-9d64-0242ac120002",
+    "detail": {
+      "card": {
+        "soft_descriptor": "MYWALLET*STORE"
+      }
+    }
+  },
+  "additional_data": {
+    "seller_details": {
+      "name": "Store Name",
+      "merchant_category_code": "5814",
+      "document": {
+        "document_type": "CNPJ",
+        "document_number": "16577631000299"
+      },
+      "address": {
+        "address_line_1": "Rua Funchal 418",
+        "city": "Sao Paulo",
+        "state": "SP",
+        "country": "BRA",
+        "zip_code": "04551-060"
+      }
+    }
+  }
+}
+```
+
+Aqui, `seller_details` descreve o **subcomerciante que está sendo pago**, não o operador da carteira.
+
+## Resposta {#response}
+
+O SDWO não adiciona campos à resposta. Você recebe o [objeto de pagamento](/reference/payments/the-payment-object) padrão e acompanha o status do pagamento exatamente como faz com qualquer pagamento com cartão. Os dados da carteira que você enviou são usados para montar a requisição ao provedor; eles não são devolvidos no pagamento nem em chamadas `GET` posteriores, então mantenha o seu próprio registro da conta de carteira que cada pagamento financiou.
+
+## O que a Yuno faz por você {#what-yuno-handles-for-you}
+
+Você nunca envia valores de carteira específicos do provedor. A Yuno os deriva da sua conexão e da bandeira do cartão:
+
+* **O código da operação.** Na Rede, o `processingType` que marca a transação como `01` compra ou `02` cash-in.
+* **O ID da carteira.** Registrado em cada bandeira de cartão e armazenado na sua conexão, com um formato diferente para cada uma.
+* **O destino do pagamento.** O código que informa ao provedor que tipo de cash-in é. Ele é definido na sua conexão, não em cada requisição. Veja a limitação abaixo.
+* **As regras de cada bandeira de cartão.** Quais dados cada uma transporta: a Mastercard não aceita os dados do remetente, a Elo exige o endereço completo do subcomerciante, e o soft descriptor é truncado em 18 caracteres.
+
+## Antes de entrar em produção {#before-you-go-live}
+
+1. **Registre o seu ID de carteira em cada bandeira de cartão que você vai processar.** O seu provedor solicita o registro na Mastercard e na Visa; na Elo, você mesmo solicita diretamente à bandeira. Sem um ID de carteira registrado, o provedor rejeita a transação de carteira.
+2. **Peça ao seu provedor que habilite o escopo de carteira na sua conta de lojista.** As operações de carteira são habilitadas por conta de lojista, e uma conta sem elas retorna um erro de parâmetro não permitido mesmo quando a requisição está correta.
+3. **Use uma conexão dedicada para o tráfego SDWO.** O SDWO é habilitado no nível da conexão, então uma conexão com SDWO ativado marca todos os pagamentos com cartão roteados por ela. Mantenha as suas vendas normais com cartão em uma conexão separada.
+
+## Limitações {#limitations}
+
+* **Uma variante de cash-in por conexão.** O destino do pagamento é configurado na sua conexão no dashboard da Yuno, não enviado em cada requisição, então uma mesma conexão sempre produz o mesmo tipo de cash-in. Se o seu negócio precisar de mais de uma variante, peça ao seu contato na Yuno uma conexão por variante.
+* **O Consumer Bill Payment Service (CBPS) não é suportado.** Pagar uma conta ou um boleto com saldo da carteira como programa de pagamento de contas da bandeira de cartão não está disponível hoje.
+* **O campo `funding_type` não é usado.** `account_funding.funding_type` é aceito pela API, mas nenhuma integração de provedor o lê ainda, então ele não muda a forma como a operação é processada.

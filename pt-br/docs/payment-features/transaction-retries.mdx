@@ -1,0 +1,94 @@
+---
+title: "Novas tentativas de transação"
+description: "Tente novamente, de forma automática, transações de captura ou reembolso que falharam, até sete vezes em uma janela de 96 horas"
+---
+
+A Yuno oferece aos lojistas a possibilidade de tentar novamente transações de captura e reembolso que apresentaram erros ou foram recusadas pelo provedor. Este recurso tem como objetivo aumentar as taxas de sucesso das transações e melhorar a experiência do usuário. Ao definir o campo `simplified_mode` como `true` nas requisições de [captura](/reference/payments/capture-authorization) e de [reembolso](/reference/payments/refund-payment), a Yuno tenta novamente, de forma automática, as transações que falharam até sete vezes em um período de 96 horas. O sistema trata os seguintes cenários durante o processo de novas tentativas:
+
+#### Transações de captura {#capture-transactions}
+
+As transações de captura podem passar por vários status durante e após o processo de novas tentativas. A tabela abaixo detalha esses status:
+
+| Pagamento durante as novas tentativas   | Pagamento após novas tentativas bem-sucedidas                        | Pagamento após novas tentativas malsucedidas |
+| :-------------------------------------- | :------------------------------------------------------------------- | :------------------------------------------ |
+| SUCCEEDED / CAPTURE\_RETRY\_IN\_PROCESS | SUCCEEDED / CAPTURED ou PARTIALLY\_CAPTURED, de acordo com o valor.  | SUCCEEDED / CAPTURE\_RETRY\_PROCESS\_FAILED |
+
+#### Transações de reembolso {#refund-transactions}
+
+As transações de reembolso também têm status específicos durante e após o processo de novas tentativas. A tabela abaixo descreve esses status:
+
+| Pagamento durante as novas tentativas  | Pagamento após novas tentativas bem-sucedidas                                   | Pagamento após novas tentativas malsucedidas |
+| :------------------------------------- | :------------------------------------------------------------------------------ | :--------------------------- |
+| SUCCEEDED / REFUND\_RETRY\_IN\_PROCESS | REFUNDED / REFUNDED ou SUCCEEDED / PARTIALLY\_REFUNDED, de acordo com o valor.  | SUCCEEDED / APPROVED         |
+
+## Benefícios {#benefits}
+
+Este recurso oferece várias vantagens:
+
+* **Taxas de sucesso de transação mais altas**: as novas tentativas automáticas aumentam a probabilidade de conclusão bem-sucedida das transações, levando a taxas de aprovação mais altas.
+* **Melhor experiência do usuário**: ao tentar novamente as transações que falharam de forma automática, o atrito para o usuário é reduzido, o que melhora a satisfação e a retenção dos clientes de modo geral.
+* **Eficiência operacional**: automatizar as novas tentativas otimiza tempo e recursos ao minimizar a intervenção manual em transações que falharam, permitindo que as equipes se concentrem em tarefas estratégicas.
+
+## Esquema de novas tentativas {#retry-scheme}
+
+O esquema de novas tentativas foi criado para maximizar o sucesso das transações, agendando as novas tentativas em intervalos estratégicos.
+
+A tabela abaixo descreve os intervalos entre cada nova tentativa. Observe que cada nova tentativa é agendada com base no momento da última tentativa, ou seja, o tempo entre as novas tentativas é cumulativo:
+
+| Evento             | Prazo após a primeira tentativa |
+| :---------- | :--------------------------- |
+| Primeira tentativa | -                               |
+| Segunda tentativa  | 5 minutos                       |
+| Terceira tentativa | 50 minutos                      |
+| Quarta tentativa   | 6 horas                         |
+| Quinta tentativa   | 24 horas                        |
+| Sexta tentativa    | 48 horas                        |
+| Sétima tentativa   | 96 horas                        |
+
+Esta tabela mostra que cada nova tentativa é feita com base no tempo decorrido desde a tentativa anterior, e não desde a tentativa inicial. Por exemplo, a quarta nova tentativa ocorre 6 horas após a terceira nova tentativa, e não 6 horas após a primeira tentativa. O agendamento completo abrange 7 dias e 7 horas no total.
+
+## Exemplos {#examples}
+
+Veja abaixo exemplos de requisições de captura de autorização e de reembolso usando o modo simplificado.
+
+```Text Capture
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/payments/id/transactions/transaction_id/capture \
+     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'accept: application/json' \
+     --header 'charset: utf-8' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>' \
+     --data '
+{
+  "amount": {
+    "currency": "JPY",
+    "value": 300
+  },
+  "simplified_mode": true,
+  "description": "Confirmed",
+  "reason": "PRODUCT_CONFIRMED",
+  "merchant_reference": "AAB01-432245"
+}
+'
+```
+
+```sh Refund
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/payments/id/transactions/transaction_id/refund \
+     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'accept: application/json' \
+     --header 'charset: utf-8' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>' \
+     --data '
+{
+  "simplified_mode": true,
+  "description": "Refund",
+  "reason": "REQUESTED_BY_CUSTOMER",
+  "merchant_reference": "AAB01-432245"
+}
+'
+```
