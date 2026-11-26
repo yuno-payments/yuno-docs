@@ -1,0 +1,492 @@
+---
+title: "Fluxo de cancelamento e captura"
+description: "Configure as opções de captura e cancelamento em tempo real, manual ou com atraso para pagamentos com cartão autorizados"
+---
+
+Este guia apresenta todas as abordagens disponíveis para operações de captura e cancelamento e explica como interagir com nossas APIs em cada cenário.
+
+## Neste guia {#in-this-guide}
+
+* [**Modos de captura**](#capture-modes)
+  * [Captura em tempo real](#real-time-capture)
+  * [Captura manual](#manual-capture)
+  * [Captura com atraso](#delayed-capture)
+  * [Apple Pay e Google Pay](#apple-pay-and-google-pay)
+* [**Modos de cancelamento**](#cancel-modes)
+  * [Cancelamento manual](#manual-cancel)
+  * [Cancelamento com atraso](#delayed-cancel)
+* [**Requisitos de configuração**](#configuration-requirements)
+* [**Exemplos de requisições**](#example-requests)
+  * [Exemplo 1: captura em tempo real](#example-1-real-time-capture)
+  * [Exemplo 2: somente captura manual](#example-2-manual-capture-only)
+  * [Exemplo 3: captura com atraso](#example-3-delayed-capture)
+  * [Exemplo 4: cancelamento com atraso](#example-4-delayed-cancel)
+  * [Exemplo 5: captura e cancelamento com atraso combinados](#example-5-combined-delayed-capture-and-cancel-with-enhanced-validation)
+* [**Quando usar cada modo**](#when-to-use-each-mode)
+* [**Referência de campos**](#field-reference)
+
+## Modos de captura {#capture-modes}
+
+A Yuno oferece três opções para capturar pagamentos, determinadas pelo campo `capture` e pela configuração opcional `delayed_capture_settings` da [API de criação de pagamento](/reference/payments/create-payment). A disponibilidade real do recurso ou os detalhes específicos de implementação podem variar conforme o provedor de pagamento pelo qual você faz o roteamento dos seus pagamentos.
+
+### Captura em tempo real {#real-time-capture}
+
+Este modo processa o pagamento e transfere os fundos sem nenhum atraso, combinando efetivamente a autorização e a captura em uma única operação de **compra**. Quando `payment_method.detail.card.capture` é definido como `true`, a transação é executada como uma compra, o que significa que a autorização e a captura acontecem simultaneamente.
+
+Dependendo da API do provedor de pagamento, a Yuno pode executar isso como uma única transação de compra direta ou como uma autorização seguida imediatamente por uma chamada de captura.
+
+```json
+{
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": true,
+        "card_data": {
+          // card details
+        }
+      }
+    }
+  }
+}
+```
+
+### Captura manual {#manual-capture}
+
+Com esta configuração, a Yuno não captura o pagamento até que você chame a [API de captura](/reference/payments/capture-authorization) ou o capture manualmente no seu [Dashboard da Yuno](https://dashboard.y.uno/). Defina `capture: false` para autorizar o pagamento sem capturá-lo.
+
+As capturas manuais oferecem máxima flexibilidade, pois dão a você controle total sobre quando a captura é feita. No entanto, é importante capturar o quanto antes, pois os provedores de pagamento impõem limites de tempo para que as autorizações permaneçam sem captura, e esses limites variam conforme o provedor e a região.
+
+```json
+{
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "card_data": {
+          // card details
+        }
+      }
+    }
+  }
+}
+```
+
+<Warning>
+**Captura de valores diferentes**
+
+Se você precisar capturar um valor diferente do autorizado originalmente, deve usar a captura manual. Os modos de captura em tempo real e com atraso sempre capturam o valor autorizado inicialmente.
+</Warning>
+
+### Retenções de pré-autorização (`authorization_type`) {#pre-authorization-holds-authorizationtype}
+
+Ao autorizar um pagamento com `capture: false`, você pode definir `payment_method.detail.card.authorization_type` para declarar o tipo de retenção desejado. `STANDARD` (o padrão, usado também quando o campo é omitido) cria uma autorização comum. `PRE_AUTHORIZATION` solicita uma retenção de pré-autorização estendida, que alguns provedores exigem antes que você possa aumentar depois o valor retido com [autorizações incrementais](/reference/payments/increment-authorization).
+
+```json
+{
+  "payment_method": {
+    "type": "CARD",
+    "detail": {
+      "card": {
+        "capture": false,
+        "authorization_type": "PRE_AUTHORIZATION"
+      }
+    }
+  }
+}
+```
+
+- `authorization_type` só se aplica quando `capture` é `false`. Enviar `PRE_AUTHORIZATION` com `capture: true` (ou com `capture` omitido, já que o padrão é `true`) retorna um erro `400` com o código `INVALID_PARAMETERS`.
+- Provedores sem um equivalente de pré-autorização processam o pagamento como uma autorização padrão (melhor esforço).
+- Quando você envia o campo, o valor dele é devolvido nas respostas de consulta do pagamento em `payment_method.detail.card.authorization_type` da transação. Se você o omitir, o pagamento é processado como `STANDARD`, mas nenhum valor é armazenado, então o campo não aparece nas respostas de consulta.
+
+### Captura com atraso {#delayed-capture}
+
+Configure `capture: false` junto com `delayed_capture_settings` para agendar a captura do pagamento para um momento posterior, especificado no campo `delay`.
+
+<Warning>
+**Somente capturas do valor total**
+
+A captura com atraso só se aplica ao capturar o **valor total** da autorização. Se você precisar capturar um valor parcial, deve usar a [captura manual](/pt-br/docs/direct-integration-use-cases/capture-payments). Para um pagamento com cartão enviado com `partial_approval: true` e aprovado por um valor menor que o solicitado, o valor total da autorização é `amount.authorized`.
+</Warning>
+
+<Note>
+**`simplified_mode`**
+
+Definir `simplified_mode` como `true` faz a Yuno tentar novamente a operação de captura caso ocorra um erro durante a tentativa de captura agendada.
+</Note>
+
+```json
+{
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "delayed_capture_settings": {
+          "delay": "P7D",
+          "simplified_mode": false
+        },
+        "card_data": {
+          // card details
+        }
+      }
+    }
+  }
+}
+```
+
+O campo `delay` é obrigatório ao usar operações de captura com atraso e deve seguir o <a label="padrão ISO 8601" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">padrão ISO 8601</a>. Por exemplo:
+
+* `"PT3H"` para 3 horas
+* `"P7D"` para 7 dias
+* `"P1M"` para 1 mês
+
+Se você chamar a [API de captura](/reference/payments/capture-authorization) antes do horário agendado, sua chamada substitui o atraso e executa a captura imediatamente. **Essa ação cancela automaticamente o gatilho agendado da Yuno**. Como alternativa, você pode capturar o pagamento manualmente pelo seu [Dashboard da Yuno](https://dashboard.y.uno/).
+
+### Apple Pay e Google Pay {#apple-pay-and-google-pay}
+
+Os modos de captura acima também se aplicam aos pagamentos com Apple Pay e Google Pay que a Yuno descriptografa e processa como pagamentos com cartão, que é como funcionam as integrações diretas de [Apple Pay](/docs/wallets/apple-pay/apple-pay-direct-integration) e [Google Pay](/docs/wallets/google-pay/google-pay-direct-integration) e as integrações via SDK das duas carteiras. Onde você envia o campo `capture` depende de como você cria o pagamento:
+
+* **Integração direta via API** (`workflow: "DIRECT"` com o token da carteira em `payment_method.detail.wallet.payment_token`): envie `capture` dentro de `payment_method.detail.wallet`, junto ao token.
+* **Integração via SDK** (pagamento criado com o token de uso único retornado pelo SDK em `payment_method.token`): envie `capture` dentro de `payment_method.detail.card`, exatamente como em um pagamento com cartão. Nesse fluxo, `payment_method.detail.card.capture` tem precedência sobre um valor de `capture` enviado no nível da carteira.
+
+```json
+{
+  "workflow": "DIRECT",
+  "payment_method": {
+    "type": "APPLE_PAY",
+    "detail": {
+      "wallet": {
+        "payment_token": "{...}",
+        "capture": false
+      }
+    }
+  }
+}
+```
+
+A autorização é então capturada ou cancelada com os mesmos endpoints e ações do Dashboard que uma autorização de cartão. Assim como nos cartões, se o provedor aceita autorizações para pagamentos com carteira, e por quanto tempo, depende do provedor.
+
+## Modos de cancelamento {#cancel-modes}
+
+Quando você autoriza um pagamento sem capturá-lo imediatamente, esses fundos ficam retidos temporariamente no meio de pagamento do cliente. Se você decidir não capturar o pagamento, é importante cancelar a autorização para liberar os fundos retidos e oferecer uma experiência melhor ao cliente. Os modos de cancelamento dão a você controle sobre quando e como essas autorizações são anuladas.
+
+### Cancelamento manual {#manual-cancel}
+
+No modo de cancelamento manual, os pagamentos autorizados permanecem ativos até que você os cancele explicitamente. A Yuno não anula essas autorizações automaticamente, o que dá a você controle total sobre quando liberar os fundos. Você pode cancelar autorizações usando a [API de cancelamento](/reference/payments/cancel-or-refund-a-payment) ou pela interface do seu Dashboard da Yuno.
+
+É fundamental cancelar o quanto antes as autorizações que você não vai capturar, para liberar os fundos retidos. A experiência do cliente é muito afetada quando as autorizações não são canceladas, pois os fundos podem ficar reservados por períodos variados, dependendo da região do cliente e da bandeira do cartão.
+
+### Cancelamento com atraso {#delayed-cancel}
+
+Configure `delayed_cancel_settings` para definir um atraso ao cancelar autorizações não capturadas, de forma semelhante às capturas com atraso. Esse recurso automatiza a liberação dos fundos do cliente caso você decida não capturá-los dentro de um prazo especificado, melhorando muito a experiência do cliente ao evitar retenções indefinidas nos meios de pagamento dele.
+
+O campo `delay` é obrigatório ao usar operações de cancelamento com atraso e deve seguir o <a label="padrão ISO 8601" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">padrão ISO 8601</a>. Por exemplo:
+
+* `"PT3H"` para 3 horas
+* `"P7D"` para 7 dias
+* `"P30D"` para 30 dias
+
+<Note>
+**`simplified_mode`**
+
+Definir `simplified_mode` como `true` faz a Yuno tentar novamente a operação de cancelamento caso ocorra um erro durante a tentativa de cancelamento agendada.
+</Note>
+
+```json
+{
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "delayed_cancel_settings": {
+          "delay": "P30D",
+          "simplified_mode": false
+        },
+        "card_data": {
+          // card details
+        }
+      }
+    }
+  }
+}
+```
+
+Se você chamar a [API de captura](/reference/payments/capture-authorization) ou a [API de cancelamento](/reference/payments/cancel-or-refund-a-payment) antes do horário agendado, sua chamada substitui o atraso e executa a ação imediatamente. **Essa ação cancela automaticamente o gatilho agendado da Yuno**. Como alternativa, você pode capturar ou cancelar o pagamento manualmente pelo seu Dashboard da Yuno.
+
+<Info>
+**Configurações de captura e cancelamento com atraso**
+
+A Yuno recomenda não usar `delayed_capture_settings` e `delayed_cancel_settings` **ao mesmo tempo**, para evitar comportamentos inesperados. Use apenas um de cada vez, conforme a sua necessidade.
+</Info>
+
+## Requisitos de configuração {#configuration-requirements}
+
+* `delayed_capture_settings` e `delayed_cancel_settings` só são válidos quando `capture = false`
+* Se `capture = true`, esses objetos devem ser omitidos ou definidos como `null`
+* As operações manuais podem ser feitas pelos endpoints da API ou pelo seu Dashboard da Yuno
+
+## Exemplos de requisições {#example-requests}
+
+### Exemplo 1: captura em tempo real {#example-1-real-time-capture}
+
+```json
+{
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": "20000"
+  },
+  "customer_payer": {
+    "id": "<customer_id>",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@example.com"
+  },
+  "workflow": "DIRECT",
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": true,
+        "card_data": {
+          "number": "4111111111111111",
+          "expiration_month": 11,
+          "expiration_year": 28,
+          "security_code": "123",
+          "holder_name": "John Doe"
+        }
+      }
+    },
+    "type": "CARD"
+  },
+  "account_id": "<account_id>",
+  "description": "Real-time capture payment",
+  "merchant_order_id": "000023"
+}
+```
+
+### Exemplo 2: somente captura manual {#example-2-manual-capture-only}
+
+```json
+{
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": "20000"
+  },
+  "customer_payer": {
+    "id": "<customer_id>",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@example.com"
+  },
+  "workflow": "DIRECT",
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "card_data": {
+          "number": "4111111111111111",
+          "expiration_month": 11,
+          "expiration_year": 28,
+          "security_code": "123",
+          "holder_name": "John Doe"
+        }
+      }
+    },
+    "type": "CARD"
+  },
+  "account_id": "<account_id>",
+  "description": "Authorization only - manual capture",
+  "merchant_order_id": "000024"
+}
+```
+
+### Exemplo 3: captura com atraso {#example-3-delayed-capture}
+
+```json
+{
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": "20000"
+  },
+  "customer_payer": {
+    "id": "<customer_id>",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@example.com"
+  },
+  "workflow": "DIRECT",
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "delayed_capture_settings": {
+          "delay": "P7D",
+          "simplified_mode": false
+        },
+        "card_data": {
+          "number": "4111111111111111",
+          "expiration_month": 11,
+          "expiration_year": 28,
+          "security_code": "123",
+          "holder_name": "John Doe"
+        }
+      }
+    },
+    "type": "CARD"
+  },
+  "account_id": "<account_id>",
+  "description": "Authorization with delayed capture",
+  "merchant_order_id": "000025"
+}
+```
+
+### Exemplo 4: cancelamento com atraso {#example-4-delayed-cancel}
+
+```json
+{
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": "20000"
+  },
+  "customer_payer": {
+    "id": "<customer_id>",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@example.com"
+  },
+  "workflow": "DIRECT",
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "delayed_cancel_settings": {
+          "delay": "P30D",
+          "simplified_mode": false
+        },
+        "card_data": {
+          "number": "4111111111111111",
+          "expiration_month": 11,
+          "expiration_year": 28,
+          "security_code": "123",
+          "holder_name": "John Doe"
+        }
+      }
+    },
+    "type": "CARD"
+  },
+  "account_id": "<account_id>",
+  "description": "Authorization with delayed cancel",
+  "merchant_order_id": "000026"
+}
+```
+
+### Exemplo 5: captura e cancelamento com atraso combinados, com validação reforçada {#example-5-combined-delayed-capture-and-cancel-with-enhanced-validation}
+
+Este exemplo mostra uma requisição de pagamento completa com configurações de captura e de cancelamento com atraso, junto com campos reforçados de validação do cliente:
+
+```json
+{
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": "20000"
+  },
+  "customer_payer": {
+    "merchant_customer_validations": {
+      "account_is_verified": true,
+      "email_is_verified": true,
+      "phone_is_verified": true
+    },
+    "id": "<customer_id>",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@example.com"
+  },
+  "workflow": "DIRECT",
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "delayed_capture_settings": {
+          "delay": "P20D",
+          "simplified_mode": true
+        },
+        "delayed_cancel_settings": {
+          "delay": "P40D",
+          "simplified_mode": true
+        },
+        "card_data": {
+          "number": "4111111111111111",
+          "expiration_month": 11,
+          "expiration_year": 28,
+          "security_code": "123",
+          "holder_name": "John Doe"
+        },
+        "verify": false
+      }
+    },
+    "type": "CARD"
+  },
+  "account_id": "<account_id>",
+  "description": "Payment with card details",
+  "merchant_order_id": "000023"
+}
+```
+
+<Info>
+**Observação**
+
+Embora este exemplo mostre `delayed_capture_settings` e `delayed_cancel_settings` configurados juntos, a Yuno recomenda usar apenas um de cada vez para evitar comportamentos inesperados.
+</Info>
+
+## Revise um pagamento antes de capturá-lo {#review-a-payment-before-you-capture-it}
+
+A captura manual também é a forma de aprovar você mesmo cada pagamento antes que o dinheiro seja movimentado. O padrão:
+
+1. Autorize com `capture: false`. Os fundos do cliente ficam reservados, não são cobrados.
+2. Faça suas próprias verificações: estoque, endereço de entrega, uma equipe interna de fraude ou uma chamada ao seu provedor de risco. Se você quiser que a Yuno retenha os pagamentos suspeitos por você, coloque uma [lista de revisão ou uma regra com o resultado Review](/pt-br/docs/using-yuno/dashboard-overview/risk-conditions#review-lists) na rota; esses pagamentos ficam retidos antes de chegar ao provedor, e você os aprova ou recusa na aba **Held payments** de Risk Conditions.
+3. Chame [Capture Authorization](/reference/payments/capture-authorization) para cobrar os fundos ou [Cancel](/reference/payments/cancel-payment) para liberá-los. Adicione `delayed_cancel_settings` ao pagamento para que uma autorização sobre a qual você nunca decidir seja liberada automaticamente.
+
+O cliente nunca é cobrado por um pagamento que você rejeita, e nenhum reembolso é necessário.
+
+## Quando usar cada modo {#when-to-use-each-mode}
+
+### Use a captura em tempo real quando: {#use-real-time-capture-when}
+
+* Você entrega produtos ou serviços imediatamente
+* Você não precisa validar o estoque nem fazer verificações de fraude após a autorização
+* Você quer o fluxo de pagamento mais simples
+
+### Use a captura manual quando: {#use-manual-capture-when}
+
+* Você precisa verificar o estoque antes de finalizar o pagamento
+* Você quer capturar um valor diferente do autorizado
+* Você tem uma lógica de negócio complexa que determina se deve capturar ou cancelar
+* Você quer aprovar cada pagamento antes que o cliente seja cobrado
+* Você precisa de controle máximo sobre o momento da captura
+
+### Use a captura com atraso quando: {#use-delayed-capture-when}
+
+* Você quer a captura automática após um período específico
+* Você tem um processo de entrega previsível
+* Você quer reduzir a intervenção manual sem perder o controle
+
+### Use o cancelamento com atraso quando: {#use-delayed-cancel-when}
+
+* Você quer liberar automaticamente os fundos do cliente se não capturar dentro de um prazo
+* Você quer melhorar a experiência do cliente sem reter fundos indefinidamente
+* Você tem um prazo máximo para o seu processo de entrega
+
+## Referência de campos {#field-reference}
+
+| Campo                                      | Tipo      | Descrição                                                                                                                                                                                                                                          |
+| ------------------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `capture`                                  | `boolean` | Determina se o pagamento com cartão é capturado imediatamente (`true`, compra) ou apenas autorizado (`false`, exige captura ou cancelamento).                                                                                                             |
+| `authorization_type`                       | `string`  | Opcional, só se aplica quando `capture` é `false`. `STANDARD` (padrão) cria uma autorização comum; `PRE_AUTHORIZATION` solicita uma retenção de pré-autorização estendida para [autorizações incrementais](/reference/payments/increment-authorization) posteriores. `PRE_AUTHORIZATION` com `capture: true` (ou com `capture` omitido, cujo padrão é `true`) retorna um `400` (`INVALID_PARAMETERS`). |
+| `delayed_capture_settings.delay`           | `string`  | Atraso antes de a Yuno capturar o pagamento. Deve seguir o <a label="formato de duração ISO 8601" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">formato de duração ISO 8601</a> (por exemplo, "P7D" para 7 dias, "PT3H" para 3 horas). |
+| `delayed_capture_settings.simplified_mode` | `boolean` | Se `true`, a Yuno tenta a captura novamente caso ela falhe.                                                                                                                                                                                                     |
+| `delayed_cancel_settings.delay`            | `string`  | Atraso antes de a Yuno cancelar a autorização. Deve seguir o <a label="formato de duração ISO 8601" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">formato de duração ISO 8601</a> (por exemplo, "P30D" para 30 dias).              |
+| `delayed_cancel_settings.simplified_mode`  | `boolean` | Se `true`, a Yuno tenta o cancelamento novamente caso ele falhe.                                                                                                                                                                                                      |

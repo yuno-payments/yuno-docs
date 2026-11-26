@@ -1,0 +1,3461 @@
+---
+title: "Payloads e exemplos"
+description: "Documenta os atributos do payload de webhook com exemplos JSON para pagamentos, chargebacks, cadastros, payouts e assinaturas"
+---
+
+## Atributos do webhook {#webhook-attributes}
+
+Os atributos JSON dos webhooks da Yuno estão listados abaixo. Consulte [Eventos e gatilhos](/pt-br/docs/webhooks/events) para ver o campo de gatilho que seleciona cada evento.
+
+<ParamField body="account_id" type="string">
+   O identificador único da conta na Yuno (MAX 64, MIN 36).
+</ParamField>
+
+<ParamField body="type" type="string">
+  Especifica o tipo de notificação.
+</ParamField>
+
+<ParamField body="type_event" type="string">
+  Especifica o tipo de notificação do evento.
+</ParamField>
+
+<ParamField body="version" type="string">
+  Especifica a versão do webhook enviado. Atualmente, 2.
+</ParamField>
+
+<ParamField body="retry" type="string">
+  Especifica o número de novas tentativas dessa notificação.
+</ParamField>
+
+<ParamField body="data" type="object">
+  Especifica o [pagamento](/reference/payments/the-payment-object) (para o tipo pagamento) ou o [objeto do meio de pagamento](/reference/payment-methods-direct-workflow/the-payment-method-object-api) (para cadastro e outros objetos).
+
+  <Expandable title="propriedades">
+    <ParamField body="idempotency_key" type="string">
+      Identificador usado para ignorar entregas duplicadas. Ele se mantém estável em todas as novas tentativas do mesmo evento. A localização depende do evento: os eventos de pagamento comuns (incluindo reembolso e chargeback) o trazem em `data.payment.idempotency_key`, `payment.split_update` o traz em `data.split_update.idempotency_key` e os eventos de assinatura o trazem em `data.idempotency_key`. Nos eventos `subscription.*`, ele identifica a assinatura e não o evento, então elimine as duplicatas desses eventos usando `type_event` mais essa chave. Consulte [Eliminação de duplicatas](/docs/webhooks#de-duplication) para ver os detalhes de cobertura.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="x-hmac-signature" type="string">
+  Opcional. A assinatura HMAC-SHA256 enviada no cabeçalho HTTP para a verificação do webhook quando a autenticação HMAC está ativada.
+</ParamField>
+
+## Webhooks de atualização de split {#split-update-webhooks}
+
+Estes exemplos resumidos mostram apenas os campos necessários para interpretar `payment.split_update`; os campos normais do pagamento também são incluídos. Este evento exige uma assinatura explícita e está pendente de disponibilidade no catálogo de produção.
+
+Na v2, o envelope identifica `type_event: "payment.split_update"`, e o bloco da operação é `data.split_update`:
+
+```json
+{
+  "type": "payment",
+  "type_event": "payment.split_update",
+  "version": 2,
+  "retry": 0,
+  "data": {
+    "split_update": {
+      "idempotency_key": "4a518553-a6e7-4717-a415-06084ea85c99",
+      "updated_at": "2026-09-22T04:20:00Z"
+    },
+    "payment": {
+      "transactions": {
+        "split_marketplace": []
+      }
+    }
+  }
+}
+```
+
+Este exemplo limpa o split, então o `split_marketplace` da operação é `[]`. Uma substituição aplicada traz, em vez disso, as entradas de split dessa operação. `transactions` é um único objeto, não um array.
+
+A v1 legada envia o corpo do pagamento sem o envelope da v2 nem `type_event`. Identifique este evento pelo bloco `split_update` ao lado de `payment`:
+
+```json
+{
+  "split_update": {
+    "idempotency_key": "4a518553-a6e7-4717-a415-06084ea85c99",
+    "updated_at": "2026-09-22T04:20:00Z"
+  },
+  "payment": {
+    "transactions": {
+      "split_marketplace": []
+    }
+  }
+}
+```
+
+| Campo | Significado |
+| --- | --- |
+| `split_update.idempotency_key` | A chave da requisição original de atualização de split. Use-a para distinguir operações e eliminar entregas duplicadas, no escopo da conta e do tipo de evento. |
+| `split_update.updated_at` | O horário de conclusão registrado da operação, preservado em resoluções repetidas e em notificações atrasadas. |
+| `payment.transactions.split_marketplace` | O snapshot do split da operação selecionada, incluindo `[]` para uma limpeza. |
+
+Se `transactions_history` estiver ativado, a entrada dele para a transação afetada traz o mesmo split da operação. O evento não ativa o histórico nem substitui o `payment.split_marketplace` no nível do pagamento; não use esse campo do nível do pagamento como snapshot desta operação. Os outros campos refletem o pagamento lido quando a notificação é preparada e podem incluir alterações posteriores. Use `GET /v1/payments/{payment_id}` para obter o estado mais recente do pagamento.
+
+Não há garantia de que o snapshot da operação seja serializado de forma idêntica a uma leitura posterior do pagamento. A escala numérica pode ser diferente (por exemplo, `5` versus `5.0`), e um objeto de responsabilidade que contém apenas `chargebacks` pode ser representado de outra forma pelo mapeamento do pagamento ativo. Compare os valores e o significado deles em vez de exigir igualdade de JSON byte a byte. Essas diferenças de representação não identificam uma nova operação de split.
+
+Apenas este evento adiciona `split_update`; os payloads de compra e de reembolso não recebem o bloco. Consulte [Notificações de atualização de split](/docs/webhooks#split-update-notifications) para ver o comportamento de assinatura, emissão, ordenação e entrega.
+
+## Exemplos {#examples}
+
+A Yuno oferece vários webhooks relacionados a notificações de cadastro e de pagamento. Aqui você encontra alguns exemplos de estruturas de dados relacionadas a cada evento.
+
+<Columns cols={4}>
+  <Card title="Webhook de pagamento V2" href="#payment-webhook-v2" arrow/>
+
+  <Card title="Webhook de pagamento V1" href="#payment-webhook-v1" arrow/>
+
+  <Card title="Webhook de chargeback V2" href="#chargeback-webhook-v2" arrow/>
+
+  <Card title="Webhook de chargeback V1" href="#chargeback-webhook-v1" arrow/>
+
+  <Card title="Cadastro" href="#enrollment" arrow/>
+
+  <Card title="Payouts" href="#payouts" arrow/>
+
+  <Card title="Assinaturas" href="#subscriptions" arrow/>
+
+  <Card title="Onboardings" href="#onboardings" arrow/>
+
+  <Card title="Reembolsos" href="#refunds" arrow/>
+
+  <Card title="Transferências de split do marketplace" href="#marketplace-split-transfers" arrow/>
+
+  <Card title="HMAC - Autorização" href="#hmac---authorization" arrow/>
+</Columns>
+
+## Pagamento {#payment}
+
+### Webhook de pagamento V2 {#payment-webhook-v2}
+
+Exemplo de payload:
+
+<Info>
+  Os payloads de webhook de eventos correspondentes a um meio de pagamento de transferência bancária incluem `payment.payment_method.payment_method_detail.bank_transfer.bank_id`. O campo reflete o `bank_id` enviado na requisição original do pagamento e é omitido quando nenhum banco foi selecionado.
+</Info>
+
+<Info>
+  Quando o pagamento traz uma seleção de frete (por exemplo, escolhida dentro de um widget de carteira com o [frete do Fast Checkout](/pt-br/docs/payment-features/fast-checkout-shipping)), o payload inclui um nó `payment.shipping` no nível superior (com o mesmo formato do [objeto de pagamento](/reference/payments/the-payment-object)) nas versões V1 e V2, e `payment.customer_payer.shipping_address` é preenchido a partir dele quando o pagador não tinha um. A chave `shipping` é omitida quando o pagamento não tem seleção.
+</Info>
+
+<Info>
+  Cada transação inclui `connection_data`, que identifica a conexão do provedor que a processou. Use `connection_data.id` como identificador estável para atribuir transações a uma conexão específica quando você opera várias conexões com o mesmo provedor. `connection_data.name` é o nome de exibição configurado no Dashboard da Yuno e pode ser `null` em alguns eventos, como transações de acompanhamento.
+</Info>
+
+<Info>
+  O campo `transactions` tem um significado diferente em cada superfície. Nos payloads de webhook, `data.payment.transactions` é um **único objeto** (a transação que disparou o evento), e `transactions_history` traz a lista completa das transações do pagamento quando ele está ativado para o pagamento (veja a nota abaixo). Nos endpoints de consulta de pagamento (`GET /payments/{payment_id}` e `GET /payments?merchant_order_id=`), `transactions` é um **array** que contém todas as transações do pagamento.
+</Info>
+
+<Info>
+  `transactions_history` é **opcional (opt-in)**: ele só é preenchido quando o pagamento foi criado com `response_additional_data.transactions_history: true` na requisição de [Criar pagamento](/reference/payments/create-payment). Caso contrário, os webhooks o entregam como um array vazio `[]`, o padrão, que mantém os payloads pequenos. Isso importa para pagamentos que o seu roteamento tenta novamente em outros provedores: sem a flag, o webhook final mostra apenas a última transação, e as tentativas anteriores só ficam visíveis via `GET /payments/{payment_id}`. Pagamentos criados por fluxos gerenciados pela Yuno que não definem a flag (por exemplo, renovações de assinatura) também entregam `[]`. Os eventos de chargeback sempre incluem o histórico completo.
+</Info>
+
+<Info>
+  Nomenclatura de campos: a geolocalização do cliente é serializada como `geo_location` nos payloads de webhook e como `geolocation` nos endpoints de consulta de pagamento. Interprete cada superfície de acordo.
+</Info>
+
+<Info>
+  `payment.amount.authorized` é o valor que o provedor aprovou, já descontada qualquer promoção da Yuno, como no [objeto de pagamento](/reference/payments/the-payment-object). Um pagamento com cartão enviado com `partial_approval: true` mantém o status de uma aprovação total após uma aprovação parcial, então ele está parcialmente aprovado quando `payment.amount.authorized` é menor que `payment.amount.value` menos `payment.discount_amount` (quando não há promoção, menor que `payment.amount.value`). O campo é omitido em pagamentos que não foram aprovados ou que foram criados antes de ele ser introduzido. As duas versões do webhook trazem o campo.
+</Info>
+
+```json
+{
+    "type": "payment",
+    "type_event": "payment.purchase",
+    "account_id": "2c05976d-1234-1234-1234-6421883de48d",
+    "retry": 0,
+    "version": 2,
+    "data": {
+        "payment": {
+            "id": "a546c566-1703-4fba-b334-c46e89bc97f7",
+            "account_id": "2c05976d-1234-1234-1234-6421883de48d",
+            "description": "Testing Yuno",
+            "country": "UY",
+            "status": "SUCCEEDED",
+            "sub_status": "APPROVED",
+            "order_id": "Order1234",
+            "merchant_order_id": "Test1234",
+            "created_at": "2024-07-19T16:31:59.528561Z",
+            "updated_at": "2024-07-19T16:32:02.203776Z",
+            "idempotency_key": "9e2aba6a-1234-1234-1234-03a0a67ee15f",
+            "amount": {
+                "currency": "UYU",
+                "value": 1458,
+                "refunded": 0,
+                "captured": 0,
+                "authorized": 1458
+            },
+            "checkout": {
+                "session": "2f3423dd-1234-1234-1234-2c7da5ad1caf",
+                "sdk_action_required": false
+            },
+            "customer_payer": {
+                "id": "96bf8513-1234-1234-1234-0087b2a60535",
+                "merchant_customer_id": "user1234",
+                "first_name": "harry ",
+                "last_name": "potter ",
+                "gender": "",
+                "date_of_birth": null,
+                "email": "testing6@y.uno",
+                "nationality": null,
+                "ip_address": "123.123.123.27",
+                "device_fingerprint": null,
+                "third_party_session_id": "third_party_session_id",
+                "merchant_customer_created_at": "2019-01-08T18:38:55.617Z",
+                "browser_info": {
+                    "user_agent": "Yuno's/20979 CFNetwork/1496.0.7 Darwin/23.5.0",
+                    "accept_header": "*/*",
+                    "color_depth": null,
+                    "screen_height": "844.0",
+                    "screen_width": "390.0",
+                    "javascript_enabled": null,
+                    "language": "es-UY",
+                    "accept_content": null,
+                    "accept_browser": null,
+                    "java_enabled": null,
+                    "browser_time_difference": null
+                },
+                "document": {
+                    "document_number": "99999999",
+                    "document_type": "CI"
+                },
+                "billing_address": {
+                    "address_line_1": "GEANT - Av. A la Playa y calle de 17",
+                    "address_line_2": "",
+                    "city": "Canelones",
+                    "country": "UY",
+                    "state": "Canelones",
+                    "zip_code": "-",
+                    "neighborhood": null
+                },
+                "shipping_address": {
+                    "address_line_1": "GEANT - Av. A la Playa y calle de 17",
+                    "address_line_2": "",
+                    "city": "Canelones",
+                    "country": "UY",
+                    "state": "Canelones",
+                    "zip_code": "-",
+                    "neighborhood": null
+                },
+                "phone": {
+                    "country_code": "598",
+                    "number": "12345678"
+                }
+            },
+            "shipping": {
+                "method": {
+                    "id": "express",
+                    "label": "Express shipping",
+                    "amount": {
+                        "currency": "GBP",
+                        "value": 5.00
+                    }
+                },
+                "address": {
+                    "address_line_1": "221B Baker Street",
+                    "address_line_2": "Flat 2",
+                    "city": "London",
+                    "state": "England",
+                    "zip_code": "NW1 6XE",
+                    "country": "GB"
+                }
+            },
+            "additional_data": {
+                "order": {
+                    "shipping_amount": 0,
+                    "fee_amount": null,
+                    "tip_amount": null,
+                    "items": [
+                        {
+                            "id": "item123",
+                            "name": "Yuno Testing",
+                            "quantity": 1,
+                            "unit_amount": 1458,
+                            "category": "services",
+                            "brand": null,
+                            "sku_code": null,
+                            "manufacture_part_number": null,
+                            "image_url": null
+                        }
+                    ],
+                    "taxes": [],
+                    "discounts": []
+                },
+                "airline": null,
+                "seller_details": null
+            },
+            "transactions": {
+                "id": "3a35add9-89d6-4b11-9f17-24a76f4d046e",
+                "type": "PURCHASE",
+                "status": "SUCCEEDED",
+                "category": "CARD",
+                "amount": 1458,
+                "provider_id": "YUNO_TEST_PAYMENT_GW",
+                "response_code": "SUCCEEDED",
+                "merchant_reference": "Test1234",
+                "response_message": "Transaction successful",
+                "reason": null,
+                "description": "Testing Yuno",
+                "created_at": "2024-07-19T16:31:59.617130Z",
+                "updated_at": "2024-07-19T16:32:02.138835Z",
+                "payment_method": {
+                    "token": "902f17f9-1234-1234-1234-3322f5ebdbb5",
+                    "type": "CARD",
+                    "vaulted_token": "795b4f2e-1234-1234-1234-fcc1930d5d4c",
+                    "vault_on_success": false,
+                    "payment_method_detail": {
+                        "card": {
+                            "verify": null,
+                            "capture": true,
+                            "installments": 1,
+                            "installments_plan_id": null,
+                            "first_installment_deferral": null,
+                            "installments_amount": null,
+                            "installments_type": null,
+                            "soft_descriptor": "",
+                            "authorization_code": "123456",
+                            "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
+                            "voucher": null,
+                            "card_data": {
+                                "holder_name": "HARRY POTTER",
+                                "iin": "51584511",
+                                "lfd": "1234",
+                                "number_length": 16,
+                                "security_code_length": 3,
+                                "brand": "MASTERCARD",
+                                "issuer_name": "ECONSTAR SA",
+                                "issuer_code": null,
+                                "category": "MRG - Prepaid MasterCard Card",
+                                "type": "CREDIT",
+                                "three_d_secure": {
+                                    "version": null,
+                                    "electronic_commerce_indicator": null,
+                                    "cryptogram": null,
+                                    "transaction_id": null,
+                                    "directory_server_transaction_id": null,
+                                    "pares_status": null,
+                                    "acs_id": null
+                                },
+                                "network_token": null,
+                                "fingerprint": null
+                            },
+                            "stored_credentials": {
+                                "reason": null,
+                                "usage": null
+                            }
+                        },
+                        "wallet": null,
+                        "bnpl": null,
+                        "bank_transfer": null,
+                        "ticket": null,
+                        "payment_link": null
+                    }
+                },
+                "provider": {
+                    "provider_transaction_id": "YUNO-51056-b673b951-aaa-aaa-aaa-123489aee2e0"
+                },
+                "provider_data": {
+                    "raw_response": {
+                        "value": "provider raw response"
+                    },
+                    "id": "DLOCAL",
+                    "transaction_id": "YUNO-51056-b673b951-aaa-aaa-aaa-123489aee2e0",
+                    "account_id": "699ec8d444",
+                    "status": "PAID",
+                    "status_detail": null,
+                    "response_message": "The payment was paid.",
+                    "response_code": "200",
+                    "third_party_transaction_id": "",
+                    "third_party_account_id": ""
+                },
+                "connection_data": {
+                    "id": "88292fd3-bf5b-4b23-bb95-7186ba4e7f88",
+                    "name": "dLocal US"
+                },
+                "simplified_mode": false,
+                "third_party_session_id": "third_party_session_id"
+            },
+            "transactions_history": [
+                {
+                    "id": "3a35add9-89d6-4b11-9f17-24a76f4d046e",
+                    "type": "PURCHASE",
+                    "status": "SUCCEEDED",
+                    "category": "CARD",
+                    "amount": 1458,
+                    "provider_id": "YUNO_TEST_PAYMENT_GW",
+                    "response_code": "SUCCEEDED",
+                    "merchant_reference": "Test1234",
+                    "response_message": "Transaction successful",
+                    "reason": null,
+                    "description": "Testing Yuno",
+                    "created_at": "2024-07-19T16:31:59.617130Z",
+                    "updated_at": "2024-07-19T16:32:02.138835Z",
+                    "payment_method": {
+                        "token": "902f17f9-1234-1234-1234-3322f5ebdbb5",
+                        "type": "CARD",
+                        "vaulted_token": "795b4f2e-1234-1234-1234-fcc1930d5d4c",
+                        "vault_on_success": false,
+                        "payment_method_detail": {
+                            "card": {
+                                "verify": null,
+                                "capture": true,
+                                "installments": 1,
+                                "installments_plan_id": null,
+                                "first_installment_deferral": null,
+                                "installments_amount": null,
+                                "installments_type": null,
+                                "soft_descriptor": "",
+                                "authorization_code": "123456",
+                                "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
+                                "voucher": null,
+                                "card_data": {
+                                    "holder_name": "HARRY POTTER",
+                                    "iin": "51584511",
+                                    "lfd": "1234",
+                                    "number_length": 16,
+                                    "security_code_length": 3,
+                                    "brand": "MASTERCARD",
+                                    "issuer_name": "ECONSTAR SA",
+                                    "issuer_code": null,
+                                    "category": "MRG - Prepaid MasterCard Card",
+                                    "type": "CREDIT",
+                                    "three_d_secure": {
+                                        "version": null,
+                                        "electronic_commerce_indicator": null,
+                                        "cryptogram": null,
+                                        "transaction_id": null,
+                                        "directory_server_transaction_id": null,
+                                        "pares_status": null,
+                                        "acs_id": null
+                                    },
+                                    "network_token": null,
+                                    "fingerprint": null
+                                },
+                                "stored_credentials": {
+                                    "reason": null,
+                                    "usage": null
+                                }
+                            },
+                            "wallet": null,
+                            "bnpl": null,
+                            "bank_transfer": null,
+                            "ticket": null,
+                            "payment_link": null
+                        }
+                    },
+                    "provider": {
+                        "provider_transaction_id": "YUNO-51056-b673b951-aaa-aaa-aaa-123489aee2e0"
+                    },
+                    "provider_data": {
+                        "raw_response": {
+                            "value": "raw_response"
+                        },
+                        "id": "DLOCAL",
+                        "transaction_id": "YUNO-51056-b673b951-aaa-aaa-aaa-123489aee2e0",
+                        "account_id": "699ec8d444",
+                        "status": "PAID",
+                        "status_detail": null,
+                        "response_message": "The payment was paid.",
+                        "response_code": "200",
+                        "third_party_transaction_id": "",
+                        "third_party_account_id": ""
+                    },
+                    "connection_data": {
+                        "id": "88292fd3-bf5b-4b23-bb95-7186ba4e7f88",
+                        "name": "dLocal US"
+                    },
+                    "simplified_mode": false,
+                    "third_party_session_id": "json object"
+                }
+            ],
+            "callback_url": null,
+            "workflow": "SDK_CHECKOUT",
+            "split": [],
+            "payment_link_code": "",
+            "subscription_id": null,
+            "fraud_screening": null,
+            "metadata": [],
+            "routing_rules": {
+                "condition": {
+                    "id": 222770,
+                    "name": null,
+                    "description": null
+                }
+            }
+        }
+    }
+}
+```
+
+<Info>
+  Pagamentos criados com um objeto `external_subscription` (consulte [Criar pagamento](/reference/payments/create-payment)) o trazem no payload do webhook dentro do objeto de pagamento (`data.payment` no payload v2), como uma chave `external_subscription` com `id` e `customer_id`. A chave é **omitida** (não é enviada como `null`) quando o pagamento foi criado sem ela, e é por isso que o exemplo acima não a mostra. As duas versões do webhook trazem o campo.
+
+  Pagamentos criados com um objeto `external_invoice` (consulte [Pagar uma fatura do Stripe (recargas)](/pt-br/docs/payment-features/subscriptions/stripe-billing-top-ups)) o trazem nos webhooks de pagamento, por exemplo `payment.purchase`, como uma chave `external_invoice` com `id` e `customer_id`. No payload v2 acima, a chave fica dentro de `data.payment`. Ela é **omitida** quando o pagamento foi criado sem ela.
+</Info>
+
+<Info>
+  Quando o pagamento traz uma [promoção da Yuno](/docs/payment-features/promotions), o payload também tem `payment.discount_amount` (`currency` e `value`, o desconto total), colocado logo depois de `amount`. A linha de desconto da Yuno vem primeiro em `payment.additional_data.order.discounts` (`type: YUNO_PROMOTION`, `quote_id`, `id`, `unit_amount` e `name` quando a Yuno o tem), e as suas próprias linhas de desconto vêm em seguida com `type: MERCHANT`. `payment.amount.value` continua sendo o valor que você enviou, e `payment.transactions.amount` é o valor cobrado. Sem promoção, `discount_amount` é omitido e as linhas de desconto ficam exatamente como você as enviou. As duas versões do webhook trazem o campo. O trecho abaixo mostra apenas os campos que mudam.
+</Info>
+
+```json Payment with a Yuno promotion (excerpt)
+{
+    "type": "payment",
+    "type_event": "payment.purchase",
+    "version": 2,
+    "data": {
+        "payment": {
+            "status": "SUCCEEDED",
+            "sub_status": "APPROVED",
+            "amount": {
+                "currency": "USD",
+                "value": 250.0,
+                "refunded": 0.0,
+                "captured": 0.0,
+                "authorized": 225.0
+            },
+            "discount_amount": {
+                "currency": "USD",
+                "value": 25.0
+            },
+            "additional_data": {
+                "order": {
+                    "discounts": [
+                        {
+                            "type": "YUNO_PROMOTION",
+                            "id": "b7c1a4f2-6e0d-4a3b-9c55-1f2e7d8a0b31",
+                            "name": "10% off with credit cards - Mother's Day",
+                            "unit_amount": 25.0,
+                            "quote_id": "qte_…",
+                            "discount_indicator": null,
+                            "discount_rate": null
+                        },
+                        {
+                            "type": "MERCHANT",
+                            "id": "LOYALTY-5",
+                            "name": "Loyalty 5%",
+                            "unit_amount": 12.5,
+                            "discount_indicator": null,
+                            "discount_rate": null
+                        }
+                    ]
+                }
+            },
+            "transactions": {
+                "type": "PURCHASE",
+                "status": "SUCCEEDED",
+                "amount": 225.0
+            }
+        }
+    }
+}
+```
+
+### Webhook de pagamento V1 {#payment-webhook-v1}
+
+Exemplo de payload:
+
+```json JSON
+{
+   "payment":{
+      "code":"b3da6717-7949-454e-8699-e449bfaccb69",
+      "id":"b3da6717-7949-454e-8699-e449bfaccb69",
+      "idempotency_key":"28f14927-421b-4424-b4d2-5de4d83ca138",
+      "organization_code":"9c99108c-7681-4d48-acca-bce037685e99",
+      "account_code":"c004cfd7-0c65-4add-b9b3-3d7e3949c9f1",
+      "account_id":"c004cfd7-0c65-4add-b9b3-3d7e3949c9f1",
+      "description":"test description",
+      "country":"CO",
+      "status":"SUCCEEDED",
+      "sub_status":"APPROVED",
+      "order_id":"1679531154456",
+      "merchant_order_id":"1679531154456",
+      "created_at":"2023-03-23T00:26:38.093810Z",
+      "updated_at":"2023-03-23T00:26:51.285333Z",
+      "amount":{
+         "currency":"COP",
+         "value":2000.0,
+         "refunded":0.0,
+         "captured":0.0,
+         "authorized":2000.0
+      },
+      "checkout":{
+         "session":"fb98b19d-39c0-42d2-bed6-438605458964",
+         "sdk_action_required":false
+      },
+      "customer_payer":{
+         "code":"8122d1f5-c07d-4d88-9dfe-a09ccdaeda0b",
+         "id":"8122d1f5-c07d-4d88-9dfe-a09ccdaeda0b",
+         "organization_customer_external_id":"1679531154456",
+         "merchant_customer_id":"1679531154456",
+         "first_name":"Aaron",
+         "last_name":"Hegmann",
+         "gender":"F",
+         "date_of_birth":"1990-02-28",
+         "email":"andrea@y.uno",
+         "nationality":"CO",
+         "ip_address":"192.168.123.167",
+         "device_fingerprint":"278994bb-9ece-5c63-8c44-c03481851625",
+         "browser_info":null,
+         "document":{
+            "document_number":"1032765432",
+            "document_type":"CC"
+         },
+         "billing_address":{
+            "address_line_1":"Calle 34 # 56 - 78",
+            "address_line_2":"Apartamento 502, Torre I",
+            "city":"Bogotá",
+            "country":"CO",
+            "state":"Cundinamarca",
+            "zip_code":"111111"
+         },
+         "shipping_address":{
+            "address_line_1":"Calle 34 # 56 - 78",
+            "address_line_2":"Apartamento 502, Torre I",
+            "city":"Bogotá",
+            "country":"CO",
+            "state":"Cundinamarca",
+            "zip_code":"111111"
+         },
+         "phone":{
+            "country_code":"57",
+            "number":"3991111111"
+         }
+      },
+      "shipping":{
+         "method":{
+            "id":"express",
+            "label":"Express shipping",
+            "amount":{
+               "currency":"GBP",
+               "value":5.00
+            }
+         },
+         "address":{
+            "address_line_1":"221B Baker Street",
+            "address_line_2":"Flat 2",
+            "city":"London",
+            "state":"England",
+            "zip_code":"NW1 6XE",
+            "country":"GB"
+         }
+      },
+      "additional_data":{
+         "order":{
+            "shipping_amount":0.0,
+            "fee_amount":0.0,
+            "items":[
+               {
+                  "id":"123AD",
+                  "name":"Skirt",
+                  "quantity":1,
+                  "unit_amount":2000.0,
+                  "category":"Clothes",
+                  "brand":"XYZ",
+                  "sku_code":"8765432109",
+                  "manufacture_part_number":"XYZ123456",
+                  "image_url":null
+               }
+            ],
+            "discounts":[]
+         },
+         "airline":null
+      },
+      "transactions":{
+         "code":"98c80022-fe05-4b9b-b478-2e102fc72cc3",
+         "id":"98c80022-fe05-4b9b-b478-2e102fc72cc3",
+         "type":"PURCHASE",
+         "status":"SUCCEEDED",
+         "category":"CARD",
+         "amount":2000.0,
+         "provider_id":"KUSHKI",
+         "response_code":"SUCCEEDED",
+         "merchant_reference":null,
+         "response_message":"Transaction successful",
+         "reason":null,
+         "description":"test description",
+         "created_at":"2023-03-23T00:26:38.290239Z",
+         "updated_at":"2023-03-23T00:26:51.258039Z",
+         "payment_method":{
+            "token":"e12440ca-920c-4aab-b656-6ed63f9ed5ac",
+            "type":"CARD",
+            "vaulted_token":null,
+            "vault_on_success":false,
+            "payment_method_detail":{
+               "card":{
+                  "verify":null,
+                  "capture":false,
+                  "installments":1,
+                  "first_installment_deferral":null,
+                  "installments_amount":null,
+                  "installments_type":null,
+                  "soft_descriptor":"",
+                  "authorization_code":"",
+                  "retrieval_reference_number":"",
+                  "acquirer_reference_number":"",
+                  "voucher":null,
+                  "card_data":{
+                     "holder_name":"APROBADO",
+                     "iin":"54519515",
+                     "lfd":"5480",
+                     "number_length":16,
+                     "security_code_length":3,
+                     "brand":"MASTERCARD",
+                     "issuer_name":"BANCO DE LA PRODUCCION S.A. (PRODUBANCO)",
+                     "issuer_code":null,
+                     "category":"BLACK",
+                     "type":"CREDIT"
+                  }
+               },
+               "wallet":null,
+               "bnpl":null,
+               "bank_transfer":null,
+               "payment_link":null
+            }
+         },
+         "provider":{
+            "provider_transaction_id":"488990863216107201"
+         },
+         "provider_data":{
+            "raw_response":{
+               "details":{
+                  "amount":{
+                     "currency":"COP",
+                     "ice":0,
+                     "iva":0,
+                     "subtotalIva":0,
+                     "subtotalIva0":2000
+                  },
+                  "approvalCode":"000000",
+                  "approvedTransactionAmount":2000,
+                  "binInfo":{
+                     "bank":"Banco de la Produccion S.A. (PRODUBANCO)",
+                     "bindCard":"545195",
+                     "cardCountry":"Ecuador",
+                     "lastFourDigits":"5480",
+                     "type":"credit"
+                  },
+                  "cardHolderName":"APROBADO",
+                  "created":1679531210000,
+                  "merchantId":"20000000107058310000",
+                  "merchantName":"kushkiCOSBX Colombia",
+                  "paymentBrand":"Mastercard",
+                  "processorBankName":"0032~BANCO INTERNACIONAL",
+                  "requestAmount":2000,
+                  "responseCode":"000",
+                  "responseText":"Transacción aprobada",
+                  "transactionId":"091607275430589119",
+                  "transactionReference":"eb6eb9e1-68d3-46be-8a0b-41ec8ff3ad73",
+                  "transactionStatus":"APPROVAL",
+                  "transactionType":"SALE"
+               },
+               "ticketNumber":"488990863216107201",
+               "transactionReference":"eb6eb9e1-68d3-46be-8a0b-41ec8ff3ad73"
+            },
+            "id":"KUSHKI",
+            "transaction_id":"488990863216107201",
+            "account_id":null,
+            "status":"APPROVAL",
+            "status_detail":"Transacción aprobada",
+            "response_message":"Transacción aprobada"
+         },
+         "connection_data":{
+            "id":"88292fd3-bf5b-4b23-bb95-7186ba4e7f88",
+            "name":"Kushki Colombia"
+         }
+      },
+      "callback_url":null,
+      "workflow":"CHECKOUT",
+      "split":[ 
+      ],
+     "subscription_id":null,
+     "payment_link_id":null
+   }
+}
+```
+
+### Webhook de chargeback V2 {#chargeback-webhook-v2}
+
+Exemplo de payload:
+
+```json
+{
+   "type":"payment",
+   "type_event":"payment.chargeback",
+   "account_id":"a4441009-df56-4a59-a515-ca9b949c4ce3",
+   "retry":0,
+   "version":2,
+   "data":{
+      "payment":{
+         "id":"ae70d7f9-e0a2-4e37-a12f-765e8af87924",
+         "account_id":"a4441009-df56-4a59-a515-ca9b949c4ce3",
+         "description":"test Ecommerce",
+         "country":"MX",
+         "status":"IN_DISPUTE",
+         "sub_status":"RECEIVED",
+         "order_id":"584-67f854a2eb05a22320e86071",
+         "merchant_order_id":"584-67f854a2eb05a22320e86071",
+         "created_at":"2025-04-10T23:30:53.210656Z",
+         "updated_at":"2025-04-17T04:46:49.640765Z",
+         "idempotency_key":"485d3965-6deb-4fc5-81de-4a7211c835bc",
+         "amount":{
+            "currency":"MXN",
+            "value":418.0,
+            "refunded":0.0,
+            "captured":0.0,
+            "authorized":418.0,
+            "currency_conversion": {
+               "code": "ccv_01HVK3Z9M2...",
+               "cardholder_currency": "QAR",
+               "cardholder_amount": 3640.00,
+               "cardholder_accepted": true,
+               "rate": 3.6400,
+               "rate_margin_percentage": 3.75,
+               "rate_source": "ECB",
+               "provider": "FEXCO",
+               "description": "You have chosen to pay in QAR. Amount: 3640.00 QAR. Rate: 3.6400.",
+               "created_at": "2026-04-24T14:30:00Z",
+               "expires_at": "2026-04-24T15:30:00Z",
+               "status": "APPLIED",
+               "error_reason": null,
+               "provider_data": {
+                 "acquirer_id": "MPGS_01"
+               }
+            }
+         },
+         "checkout":{
+            "session":"4f335b32-79de-41a7-b30b-f478620bc7a8",
+            "sdk_action_required":false
+         },
+         "customer_payer":{
+            "id":"4476c479-9a32-4910-83d8-b74b7b8eb86f",
+            "merchant_customer_id":"67f854536e2a02461a1a8f5f",
+            "first_name":"merit",
+            "last_name":"amador",
+            "gender":"",
+            "date_of_birth":null,
+            "email":"bolitas.nuca9b@icloud.com",
+            "nationality":null,
+            "ip_address":"200.68.159.190",
+            "device_fingerprint":null,
+            "third_party_session_id":null,
+            "device_fingerprints":[
+               
+            ],
+            "merchant_customer_created_at":"2025-04-10T23:23:46.357Z",
+            "browser_info":{
+               "user_agent":"Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+               "accept_header":"*/*",
+               "color_depth":"24",
+               "screen_height":"852",
+               "screen_width":"393",
+               "javascript_enabled":true,
+               "language":"es",
+               "accept_content":"*/*",
+               "accept_browser":"*/*",
+               "java_enabled":false,
+               "browser_time_difference":"360"
+            },
+            "document":null,
+            "billing_address":{
+               "address_line_1":"Av. test test No. 193 Local C-1-2-3 Plaza Galerias Col. test test C.P11300 test D.F",
+               "address_line_2":"",
+               "city":"test",
+               "country":"MX",
+               "state":"-",
+               "zip_code":"-",
+               "neighborhood":null
+            },
+            "shipping_address":{
+               "address_line_1":"Av. test test No. 193 Local C-1-2-3 test test Col. test test C.P11300 test D.F",
+               "address_line_2":"",
+               "city":"CDMX",
+               "country":"MX",
+               "state":"-",
+               "zip_code":"-",
+               "neighborhood":null
+            },
+            "phone":{
+               "country_code":"52",
+               "number":"5659708369"
+            }
+         },
+         "additional_data":{
+            "order":{
+               "shipping_amount":0.0,
+               "fee_amount":0.0,
+               "tip_amount":null,
+               "items":[
+                  {
+                     "id":"26609",
+                     "name":"McTrío Grande Signature BBQ Crispy Onion",
+                     "quantity":2,
+                     "unit_amount":193.0,
+                     "category":"others",
+                     "brand":null,
+                     "sku_code":"26609",
+                     "manufacture_part_number":null,
+                     "image_url":null
+                  }
+               ],
+               "taxes":[
+                  
+               ],
+               "shipping":null,
+               "account_funding":null,
+               "tickets":[
+                  
+               ],
+               "fulfillment":null,
+               "discounts":[
+                  
+               ]
+            },
+            "airline":null,
+            "seller_details":null
+         },
+         "transactions":{
+            "id":"5f354190-ffe8-4b25-a73d-55fe25821067",
+            "type":"CHARGEBACK",
+            "status":"CREATED",
+            "category":"CARD",
+            "amount":418.0,
+            "provider_id":"ADYEN",
+            "response_code":"ACTION_REQUIRED",
+            "merchant_reference":"YU00000058467f854a2eb05a22320e86071",
+            "response_message":"Chargeback or Inquiry received. Decision or documentation must be provided",
+            "reason":"REQUESTED_BY_CUSTOMER",
+            "description":"webhook transaction",
+            "created_at":"2025-04-17T04:46:49.591869Z",
+            "updated_at":"2025-04-17T04:46:49.616143Z",
+            "payment_method":{
+               "token":"592c7a1c-e34c-4dc1-851f-5bd41bc32c68",
+               "type":"CARD",
+               "vaulted_token":"2146a9c4-56c9-43a5-a35b-916bf15f7772",
+               "vault_on_success":false,
+               "parent_payment_method_type":null,
+               "payment_method_detail":{
+                  "card":{
+                     "verify":false,
+                     "capture":false,
+                     "installments":1,
+                     "installments_plan_id":null,
+                     "first_installment_deferral":null,
+                     "installments_amount":null,
+                     "installments_type":null,
+                     "soft_descriptor":"",
+                     "authorization_code":"373761",
+                     "retrieval_reference_number":"",
+                     "acquirer_reference_number":"",
+                     "voucher":null,
+                     "card_data":{
+                        "holder_name":"YOANA CALAM",
+                        "iin":"55123824",
+                        "lfd":"2451",
+                        "number_length":16,
+                        "security_code_length":3,
+                        "brand":"MASTERCARD",
+                        "issuer_name":"BANCO AZTECA INSTITUCION BANCA MULTIPLE",
+                        "issuer_code":null,
+                        "country_code":"MX",
+                        "category":"DEBIT MASTERCARD",
+                        "type":"DEBIT",
+                        "three_d_secure":{
+                           "version":null,
+                           "electronic_commerce_indicator":null,
+                           "cryptogram":null,
+                           "transaction_id":null,
+                           "directory_server_transaction_id":null,
+                           "pares_status":null,
+                           "acs_id":null
+                        },
+                        "network_token":null,
+                        "fingerprint":"355e7384-7e75-4a32-94b9-26031a4faab5",
+                        "expiration_month":12,
+                        "expiration_year":26
+                     },
+                     "stored_credentials":{
+                        "reason":null,
+                        "usage":null,
+                        "subscription_agreement_id":null,
+                        "network_transaction_id":null
+                     }
+                  },
+                  "wallet":null,
+                  "bnpl":null,
+                  "bank_transfer":null,
+                  "ticket":null,
+                  "payment_link":null
+               }
+            },
+            "provider":{
+               "provider_transaction_id":"L2JC9B5K995BJDF6"
+            },
+            "provider_data":{
+               "raw_response":null,
+               "id":"ADYEN",
+               "transaction_id":"L2JC9B5K995BJDF6",
+               "account_id":null,
+               "status":"NOTIFICATION_OF_CHARGEBACK",
+               "status_detail":null,
+               "response_message":null,
+               "response_code":null,
+               "third_party_transaction_id":null,
+               "third_party_account_id":null,
+               "iso8583_response_code":null,
+               "iso8583_response_message":null
+            },
+            "connection_data":{
+               "id":null,
+               "name":null
+            },
+            "device_fingerprint":null,
+            "simplified_mode":false,
+            "third_party_session_id":null
+         },
+         "transactions_history":[
+            {
+               "id":"5f354190-ffe8-4b25-a73d-55fe25821067",
+               "type":"CHARGEBACK",
+               "status":"CREATED",
+               "category":"CARD",
+               "amount":418.0,
+               "provider_id":"ADYEN",
+               "response_code":"ACTION_REQUIRED",
+               "merchant_reference":"YU00000058467f854a2eb05a22320e86071",
+               "response_message":"Chargeback or Inquiry received. Decision or documentation must be provided",
+               "reason":"REQUESTED_BY_CUSTOMER",
+               "description":"webhook transaction",
+               "created_at":"2025-04-17T04:46:49.591869Z",
+               "updated_at":"2025-04-17T04:46:49.616143Z",
+               "payment_method":{
+                  "token":"592c7a1c-e34c-4dc1-851f-5bd41bc32c68",
+                  "type":"CARD",
+                  "vaulted_token":"2146a9c4-56c9-43a5-a35b-916bf15f7772",
+                  "vault_on_success":false,
+                  "parent_payment_method_type":null,
+                  "payment_method_detail":{
+                     "card":{
+                        "verify":false,
+                        "capture":false,
+                        "installments":1,
+                        "installments_plan_id":null,
+                        "first_installment_deferral":null,
+                        "installments_amount":null,
+                        "installments_type":null,
+                        "soft_descriptor":"",
+                        "authorization_code":"373761",
+                        "retrieval_reference_number":"",
+                        "acquirer_reference_number":"",
+                        "voucher":null,
+                        "card_data":{
+                           "holder_name":"YOANA CALAM",
+                           "iin":"55123824",
+                           "lfd":"2451",
+                           "number_length":16,
+                           "security_code_length":3,
+                           "brand":"MASTERCARD",
+                           "issuer_name":"BANCO AZTECA INSTITUCION BANCA MULTIPLE",
+                           "issuer_code":null,
+                           "country_code":"MX",
+                           "category":"DEBIT MASTERCARD",
+                           "type":"DEBIT",
+                           "three_d_secure":{
+                              "version":null,
+                              "electronic_commerce_indicator":null,
+                              "cryptogram":null,
+                              "transaction_id":null,
+                              "directory_server_transaction_id":null,
+                              "pares_status":null,
+                              "acs_id":null
+                           },
+                           "network_token":null,
+                           "fingerprint":"355e7384-7e75-4a32-94b9-26031a4faab5",
+                           "expiration_month":12,
+                           "expiration_year":26
+                        },
+                        "stored_credentials":{
+                           "reason":null,
+                           "usage":null,
+                           "subscription_agreement_id":null,
+                           "network_transaction_id":null
+                        }
+                     },
+                     "wallet":null,
+                     "bnpl":null,
+                     "bank_transfer":null,
+                     "ticket":null,
+                     "payment_link":null
+                  }
+               },
+               "provider":{
+                  "provider_transaction_id":"L2JC9B5K995BJDF6"
+               },
+               "provider_data":{
+                  "raw_response":null,
+                  "id":"ADYEN",
+                  "transaction_id":"L2JC9B5K995BJDF6",
+                  "account_id":null,
+                  "status":"NOTIFICATION_OF_CHARGEBACK",
+                  "status_detail":null,
+                  "response_message":null,
+                  "response_code":null,
+                  "third_party_transaction_id":null,
+                  "third_party_account_id":null,
+                  "iso8583_response_code":null,
+                  "iso8583_response_message":null
+               },
+               "connection_data":{
+                  "id":null,
+                  "name":null
+               },
+               "device_fingerprint":null,
+               "simplified_mode":false,
+               "third_party_session_id":null
+            },
+            {
+               "id":"4d508842-5ffc-438a-a864-deeceb9935ca",
+               "type":"PURCHASE",
+               "status":"SUCCEEDED",
+               "category":"CARD",
+               "amount":418.0,
+               "provider_id":"ADYEN",
+               "response_code":"SUCCEEDED",
+               "merchant_reference":"YU00000058467f854a2eb05a22320e86071",
+               "response_message":"Transaction successful",
+               "reason":null,
+               "description":"McDonalds Ecommerce",
+               "created_at":"2025-04-10T23:30:53.319251Z",
+               "updated_at":"2025-04-10T23:30:54.496131Z",
+               "payment_method":{
+                  "token":"592c7a1c-e34c-4dc1-851f-5bd41bc32c68",
+                  "type":"CARD",
+                  "vaulted_token":"2146a9c4-56c9-43a5-a35b-916bf15f7772",
+                  "vault_on_success":false,
+                  "parent_payment_method_type":null,
+                  "payment_method_detail":{
+                     "card":{
+                        "verify":false,
+                        "capture":true,
+                        "installments":1,
+                        "installments_plan_id":null,
+                        "first_installment_deferral":null,
+                        "installments_amount":null,
+                        "installments_type":null,
+                        "soft_descriptor":"",
+                        "authorization_code":"373761",
+                        "retrieval_reference_number":"",
+                        "acquirer_reference_number":"",
+                        "voucher":null,
+                        "card_data":{
+                           "holder_name":"YOANA CALAM",
+                           "iin":"55123824",
+                           "lfd":"2451",
+                           "number_length":16,
+                           "security_code_length":3,
+                           "brand":"MASTERCARD",
+                           "issuer_name":"BANCO AZTECA INSTITUCION BANCA MULTIPLE",
+                           "issuer_code":null,
+                           "country_code":"MX",
+                           "category":"DEBIT MASTERCARD",
+                           "type":"DEBIT",
+                           "three_d_secure":{
+                              "version":null,
+                              "electronic_commerce_indicator":null,
+                              "cryptogram":null,
+                              "transaction_id":null,
+                              "directory_server_transaction_id":null,
+                              "pares_status":null,
+                              "acs_id":null
+                           },
+                           "network_token":null,
+                           "fingerprint":"355e7384-7e75-4a32-94b9-26031a4faab5",
+                           "expiration_month":12,
+                           "expiration_year":26
+                        },
+                        "stored_credentials":{
+                           "reason":null,
+                           "usage":null,
+                           "subscription_agreement_id":null,
+                           "network_transaction_id":null
+                        }
+                     },
+                     "wallet":null,
+                     "bnpl":null,
+                     "bank_transfer":null,
+                     "ticket":null,
+                     "payment_link":null
+                  }
+               },
+               "provider":{
+                  "provider_transaction_id":"L2JC9B5K995BJDF6"
+               },
+               "provider_data":{
+                  "raw_response":{
+                     "additionalData":{
+                        "acquirerAccountCode":"AdyenProsa_ArcosDouradosPlataforma-MX_Cvv",
+                        "acquirerCode":"AdyenProsa",
+                        "acquirerReference":"373761",
+                        "authCode":"373761",
+                        "authorisationMid":"9024452",
+                        "avsResult":"0 Unknown",
+                        "cardFunction":"Consumer",
+                        "cavv":"N/A",
+                        "cavvAlgorithm":"N/A",
+                        "cvcResult":"1 Matches",
+                        "cvcResultRaw":"1 Matches",
+                        "eci":"N/A",
+                        "liabilityShift":"false",
+                        "paymentMethod":"mc",
+                        "paymentMethodVariant":"mcstandarddebit",
+                        "refusalReasonRaw":"00 : Approved or completed successfully",
+                        "threeDAuthenticated":"false",
+                        "threeDAuthenticatedResponse":"N/A",
+                        "threeDOffered":"false",
+                        "threeDOfferedResponse":"N/A",
+                        "threeds2.cardEnrolled":"true",
+                        "xid":"N/A"
+                     },
+                     "amount":{
+                        "currency":"MXN",
+                        "value":41800
+                     },
+                     "merchantReference":"584-67f854a2eb05a22320e86071",
+                     "paymentMethod":{
+                        "brand":"mc",
+                        "type":"scheme"
+                     },
+                     "pspReference":"L2JC9B5K995BJDF6",
+                     "resultCode":"Authorised"
+                  },
+                  "id":"ADYEN",
+                  "transaction_id":"L2JC9B5K995BJDF6",
+                  "account_id":"test-account",
+                  "status":"Authorised",
+                  "status_detail":"Authorised",
+                  "response_message":null,
+                  "response_code":null,
+                  "third_party_transaction_id":"L2JC9B5K995BJDF6",
+                  "third_party_account_id":"",
+                  "iso8583_response_code":"00 ",
+                  "iso8583_response_message":null
+               },
+               "connection_data":{
+                  "id":"72f2adb3-ed95-4bca-be01-20bbe4d5a1cb",
+                  "name":null
+               },
+               "device_fingerprint":null,
+               "simplified_mode":false,
+               "third_party_session_id":null
+            }
+         ],
+         "callback_url":"https://test.com.mx/api/callback/my-orders?path=%2Fmi-cuenta%2Fmis-pedidos%2F67f854a2eb05a22320e86071&checkoutSession=5f446b32-79de-41a7-b30b-f478620bc7a8",
+         "workflow":"SDK_CHECKOUT",
+         "split_marketplace":[
+            
+         ],
+         "payment_link_code":"",
+         "subscription_id":null,
+         "fraud_screening":null,
+         "metadata":[
+            {
+               "key":"riskdata.deliveryMethod",
+               "value":"MOP"
+            },
+            {
+               "key":"riskdata.storeId",
+               "value":"584"
+            },
+            {
+               "key":"riskdata.basket.item1.amountPerItem",
+               "value":"41800"
+            },
+            {
+               "key":"riskdata.basket.item1.itemID",
+               "value":"26609"
+            },
+            {
+               "key":"riskdata.basket.item1.category",
+               "value":"test value"
+            },
+            {
+               "key":"riskdata.basket.item1.currency",
+               "value":"MXN"
+            },
+            {
+               "key":"riskdata.basket.item1.quantity",
+               "value":"2"
+            },
+            {
+               "key":"riskdata.basket.item1.productTitle",
+               "value":"test value"
+            }
+         ],
+         "routing_rules":{
+            "smart_routing":false,
+            "monitors":false,
+            "condition":{
+               "id":537769,
+               "name":null,
+               "description":null
+            }
+         }
+      }
+   }
+}
+```
+
+### Webhook de chargeback V1 {#chargeback-webhook-v1}
+
+Exemplo de payload:
+
+```json JSON
+{
+   "payment":{
+      "code":"b3da6717-7949-454e-8699-e449bfaccb69",
+      "id":"b3da6717-7949-454e-8699-e449bfaccb69",
+      "idempotency_key":"28f14927-421b-4424-b4d2-5de4d83ca138",
+      "organization_code":"9c99108c-7681-4d48-acca-bce037685e99",
+      "account_code":"c004cfd7-0c65-4add-b9b3-3d7e3949c9f1",
+      "account_id":"c004cfd7-0c65-4add-b9b3-3d7e3949c9f1",
+      "description":"test description",
+      "country":"CO",
+      "status":"CHARGEBACK",
+      "sub_status":"LOST",
+      "order_id":"1679531154456",
+      "merchant_order_id":"1679531154456",
+      "created_at":"2023-03-23T00:26:38.093810Z",
+      "updated_at":"2023-03-23T00:26:51.285333Z",
+      "amount":{
+         "currency":"COP",
+         "value":2000.0,
+         "refunded":0.0,
+         "captured":0.0,
+         "authorized":2000.0
+      },
+      "checkout":{
+         "session":"fb98b19d-39c0-42d2-bed6-438605458964",
+         "sdk_action_required":false
+      },
+      "customer_payer":{
+         "code":"8122d1f5-c07d-4d88-9dfe-a09ccdaeda0b",
+         "id":"8122d1f5-c07d-4d88-9dfe-a09ccdaeda0b",
+         "organization_customer_external_id":"1679531154456",
+         "merchant_customer_id":"1679531154456",
+         "first_name":"Aaron",
+         "last_name":"Hegmann",
+         "gender":"F",
+         "date_of_birth":"1990-02-28",
+         "email":"andrea@y.uno",
+         "nationality":"CO",
+         "ip_address":"192.168.123.167",
+         "device_fingerprint":"278994bb-9ece-5c63-8c44-c03481851625",
+         "browser_info":null,
+         "document":{
+            "document_number":"1032765432",
+            "document_type":"CC"
+         },
+         "billing_address":{
+            "address_line_1":"Calle 34 # 56 - 78",
+            "address_line_2":"Apartamento 502, Torre I",
+            "city":"Bogotá",
+            "country":"CO",
+            "state":"Cundinamarca",
+            "zip_code":"111111"
+         },
+         "shipping_address":{
+            "address_line_1":"Calle 34 # 56 - 78",
+            "address_line_2":"Apartamento 502, Torre I",
+            "city":"Bogotá",
+            "country":"CO",
+            "state":"Cundinamarca",
+            "zip_code":"111111"
+         },
+         "phone":{
+            "country_code":"57",
+            "number":"3991111111"
+         }
+      },
+      "additional_data":{
+         "order":{
+            "shipping_amount":0.0,
+            "fee_amount":0.0,
+            "items":[
+               {
+                  "id":"123AD",
+                  "name":"Skirt",
+                  "quantity":1,
+                  "unit_amount":2000.0,
+                  "category":"Clothes",
+                  "brand":"XYZ",
+                  "sku_code":"8765432109",
+                  "manufacture_part_number":"XYZ123456",
+                  "image_url":null
+               }
+            ]
+         },
+         "airline":null
+      },
+      "transactions":{
+         "code":"98c80022-fe05-4b9b-b478-2e102fc72cc3",
+         "id":"98c80022-fe05-4b9b-b478-2e102fc72cc3",
+         "type":"CHARGEBACK",
+         "status":"LOST",
+         "category":"CARD",
+         "amount":2000.0,
+         "provider_id":"KUSHKI",
+         "response_code":"CHARGEBACK",
+         "merchant_reference":null,
+         "response_message":"Transaction successful",
+         "reason":null,
+         "description":"test description",
+         "created_at":"2023-03-23T00:26:38.290239Z",
+         "updated_at":"2023-03-23T00:26:51.258039Z",
+         "payment_method":{
+            "token":"e12440ca-920c-4aab-b656-6ed63f9ed5ac",
+            "type":"CARD",
+            "vaulted_token":null,
+            "vault_on_success":false,
+            "payment_method_detail":{
+               "card":{
+                  "verify":null,
+                  "capture":false,
+                  "installments":1,
+                  "first_installment_deferral":null,
+                  "installments_amount":null,
+                  "installments_type":null,
+                  "soft_descriptor":"",
+                  "authorization_code":"",
+                  "retrieval_reference_number":"",
+                  "acquirer_reference_number":"",
+                  "voucher":null,
+                  "card_data":{
+                     "holder_name":"APROBADO",
+                     "iin":"54519515",
+                     "lfd":"5480",
+                     "number_length":16,
+                     "security_code_length":3,
+                     "brand":"MASTERCARD",
+                     "issuer_name":"BANCO DE LA PRODUCCION S.A. (PRODUBANCO)",
+                     "issuer_code":null,
+                     "category":"BLACK",
+                     "type":"CREDIT"
+                  }
+               },
+               "wallet":null,
+               "bnpl":null,
+               "bank_transfer":null,
+               "payment_link":null
+            }
+         },
+         "provider":{
+            "provider_transaction_id":"488990863216107201"
+         },
+         "provider_data":{
+            "raw_response":{
+               },
+            "id":"KUSHKI",
+            "transaction_id":"488990863216107201",
+            "account_id":null,
+            "status":"CHARGEBACK",
+            "status_detail":"",
+            "response_message":""
+         }
+      },
+      "callback_url":null,
+      "workflow":"SDK_CHECKOUT",
+      "split":[
+         
+      ]
+   }
+}
+```
+
+### payment.pre_chargeback {#paymentprechargeback}
+
+Enviado quando um aviso de pré-chargeback ou um alerta de fraude é recebido para um pagamento, antes de um chargeback completo. Atualmente, é enviado para qualquer webhook com pelo menos um valor em `payment_triggers`, independentemente de `PRECHARGEBACK` estar selecionado; um gatilho dedicado está planejado para uma versão futura.
+
+```json
+{
+  "type": "payment",
+  "type_event": "payment.pre_chargeback",
+  "account_id": "2c05976d-1234-1234-1234-6421883de48d",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment": {
+      "id": "8f3a1b6c-4d2e-4f8a-9b1c-7e5d3a2f6b04",
+      "account_id": "2c05976d-1234-1234-1234-6421883de48d",
+      "description": "Order 12578185913914",
+      "country": "BR",
+      "status": "SUCCEEDED",
+      "sub_status": "APPROVED",
+      "order_id": "ORDER-12578185913914",
+      "merchant_order_id": "ORDER-12578185913914",
+      "created_at": "2026-07-11T05:04:49.855791Z",
+      "updated_at": "2026-08-17T16:32:03.145543Z",
+      "idempotency_key": "4a6f2d18-9b73-4c51-a2e9-6d3b8f1c07a4",
+      "amount": {
+        "currency": "BRL",
+        "value": 24.9,
+        "refunded": 0.0,
+        "captured": 0.0,
+        "authorized": 24.9,
+        "currency_conversion": null
+      },
+      "workflow": "DIRECT",
+      "fraud_screening": null,
+      "transactions": {
+        "id": "3d5e8c92-1f47-4a63-b8d0-5c2a9e7f14b6",
+        "type": "PRE_CHARGEBACK",
+        "status": "CREATED",
+        "category": "CARD",
+        "amount": 24.9,
+        "provider_id": "ADYEN",
+        "response_code": "ACTION_REQUIRED",
+        "merchant_reference": "ORDER-12578185913914",
+        "response_message": "Chargeback or Inquiry received. Decision or documentation must be provided",
+        "reason": "FRAUDULENT",
+        "description": "webhook transaction",
+        "created_at": "2026-08-17T16:32:03.075632Z",
+        "updated_at": "2026-08-17T16:32:03.103778Z",
+        "provider": { "provider_transaction_id": "PROVIDER_CASE_ID" },
+        "provider_data": {
+          "id": "ADYEN",
+          "transaction_id": "PROVIDER_CASE_ID",
+          "account_id": "merchant_account_name",
+          "status": "NOTIFICATION_OF_FRAUD",
+          "raw_response": null,
+          "status_detail": null,
+          "response_message": null,
+          "response_code": null,
+          "reason_code": null,
+          "reason_description": null
+        },
+        "connection_data": { "id": "6c4b2f79-8e13-4d5a-9f27-0a3e6b8d51c9", "name": "connection_name" }
+      }
+    }
+  }
+}
+```
+
+## Cadastro {#enrollment}
+
+O próximo objeto JSON apresenta um exemplo de estrutura de dados relacionada a um evento de cadastro.
+
+```json
+{
+  "type": "enrollment",
+  "type_event": "enrollment.enroll",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment_method": {
+      "id": "03c3aae1-ed42-4be6-bc24-de5487f58491",
+      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+      "name": "VISA ****1111",
+      "description": "VISA ****1111",
+      "type": "CARD",
+      "category": "CARD",
+      "country": "CO",
+      "status": "ENROLLED",
+      "customer_id": "2f38972e-2427-43b7-95be-ee4cf21cef1b",
+      "created_at": "2024-09-10T15:04:10.453741Z",
+      "updated_at": "2024-09-10T15:04:10.453745Z",
+      "enrollment": {
+        "session": null,
+        "sdk_action_required": false
+      },
+      "verify": {
+        "vault_on_success": false,
+        "currency": null,
+        "payment": null
+      },
+      "metadata": [
+        {
+          "key": "on_behalf_of",
+          "value": "acct_1A2b3C4d5E6f7G8h"
+        },
+        {
+          "key": "order_ref",
+          "value": "ABC-123"
+        }
+      ],
+      "detail": {
+        "card": {
+          "holder_name": "Pepito Perez",
+          "expiration_month": 3,
+          "expiration_year": 26,
+          "iin": "41111111",
+          "lfd": "1111",
+          "security_code_length": 3,
+          "number_length": 16,
+          "brand": "VISA",
+          "issuer_name": "JPMORGAN CHASE BANK N A",
+          "issuer_code": null,
+          "type": "CREDIT",
+          "category": "CREDIT",
+          "country_code": "US",
+          "country_name": "United States of America",
+          "fingerprint_code": "d244e20d-43a1-43f7-9b48-0a76423be35e",
+          "created_at": "2024-09-10T15:04:10.453799Z",
+          "updated_at": "2024-09-10T15:04:10.453800Z"
+        }
+      }
+    }
+  }
+}
+
+```
+
+<Info>
+  Quando um cadastro é criado com `verify.external_subscription` (consulte [Cadastrar meio de pagamento](/reference/payment-methods-direct-workflow/enroll-payment-method-api)), o objeto é devolvido na **resposta do cadastro** e persistido no **pagamento de verificação**; ele não faz parte do payload do webhook de cadastro. Para correlacionar depois, use o pagamento de verificação: o id dele volta na resposta do cadastro (`verify.payment.id`), e o objeto é retornado por [Consultar pagamento](/reference/payments/retrieve-payment-by-id) e nos webhooks de pagamento.
+</Info>
+
+## Payouts {#payouts}
+
+O próximo objeto JSON apresenta um exemplo de estrutura de dados relacionada a um evento de payout.
+
+```json JSON
+{
+  "type": "payout",
+  "type_event": "payout.payout",
+  "account_id": "f7c5fe77-721b-49c2-84d3-957748df3c2c",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "id": "0cbc7bd4-04f3-4897-b3c6-4d5f36a6b9a7",
+    "status": "SUCCEEDED",
+    "merchant_reference": "MR-12345",
+    "description": null,
+    "country": "BR",
+    "account_code": "f7c5fe77-721b-49c2-84d3-957748df3c2c",
+    "organization_code": "6c6a6b2c-c9c0-4104-9dd0-4237e6f00047",
+    "purpose": null,
+    "amount": {
+      "currency": "BRL",
+      "value": 100
+    },
+    "beneficiary": {
+      "merchant_beneficiary_id": "test_merchant_deposit_id",
+      "national_entity": null,
+      "first_name": null,
+      "last_name": null,
+      "legal_name": null,
+      "email": null,
+      "country": "BR",
+      "date_of_birth": null,
+      "document": null,
+      "phone": null,
+      "address": null
+    },
+    "transactions": [
+      {
+        "id": "2be03290-70a9-414a-a285-8c573d26de5a",
+        "status": "SUCCEEDED",
+        "type": "ASTROPAY_PAYOUT",
+        "response_code": "SUCCEEDED",
+        "purpose": null,
+        "description": null,
+        "amount": {
+          "currency": "BRL",
+          "value": 100
+        },
+        "withdrawal_method": {
+          "type": "ASTROPAY_PAYOUT",
+          "provider_id": null,
+          "detail": {
+            "bank_transfer": null,
+            "wallet": {
+              "code": "h15sg84U6rCl",
+              "email": null,
+              "country": null,
+              "document": null,
+              "phone": null
+            }
+          }
+        },
+        "provider_data": {
+          "id": "ASTROPAY",
+          "transaction_id": "32389",
+          "account_id": "",
+          "beneficiary_id": "test_merchant_deposit_id",
+          "raw_response": "\"{\\n  \\\"cashout_id\\\" : 32389,\\n  \\\"merchant_cashout_id\\\" : \\\"2be03290-70a9-414a-a285-8c573d26de5a\\\",\\n  \\\"status\\\" : \\\"APPROVED\\\",\\n  \\\"user_id\\\" : \\\"h15sg84U6rCl\\\"\\n}\"",
+          "status_detail": "APPROVED",
+          "provider_status": null
+        },
+        "created_at": "2024-05-27T19:10:32.723578Z",
+        "updated_at": "2024-05-27T19:10:33.757137Z"
+      }
+    ],
+    "metadata": [],
+    "created_at": "2024-05-27T19:10:32.494514Z",
+    "updated_at": "2024-05-27T19:10:33.757143Z"
+  }
+}
+```
+
+## Relatórios {#reports}
+
+`report_triggers` assina os eventos do ciclo de vida dos relatórios. Atualmente, apenas `report.update` é emitido por algum serviço; é possível assinar `report.create`, mas ele ainda não tem emissor.
+
+```json JSON
+{
+  "type": "report",
+  "type_event": "report.update",
+  "account_id": "2c05976d-1234-1234-1234-6421883de48d",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "report_id": "7b1c9d3e-5a24-4f68-9c02-3e8d1f6a4b57",
+    "organization_code": "9f2e1a44-3c7b-4d15-8e60-1b4a7c9d2f88",
+    "account_code": "2c05976d-1234-1234-1234-6421883de48d",
+    "type": "TRANSACTIONS",
+    "s3_link": "reports/ON_DEMAND/TRANSACTIONS/date=2026-08-17/organization_code=9f2e1a44-3c7b-4d15-8e60-1b4a7c9d2f88/report=7b1c9d3e-5a24-4f68-9c02-3e8d1f6a4b57/7b1c9d3e-5a24-4f68-9c02-3e8d1f6a4b57.csv",
+    "merchant_reference_id": "",
+    "start_date": "2026-08-01T03:00:00Z",
+    "end_date": "2026-08-17T07:30:00Z",
+    "created_at": "2026-08-17T07:33:04.372231Z",
+    "updated_at": "2026-08-17T07:35:18.49869Z",
+    "status": "SUCCEEDED",
+    "user_code": ""
+  }
+}
+```
+
+## Assinaturas {#subscriptions}
+
+O próximo objeto JSON apresenta um exemplo de estrutura de dados relacionada a um evento `subscription.create`.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.create",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "8fc8a985-bc18-4f9a-9403-d0cf6fc64e94",
+      "name": "Subscription",
+      "description": "retries activos",
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "subscription-ref-merchant-002",
+      "status": "CREATED",
+      "amount": {
+        "currency": "COP",
+        "value": 36000
+      },
+      "frequency": null,
+      "billing_date": {
+        "type": "DAY",
+        "day": 30
+      },
+      "billing_cycles": {
+        "total": 5,
+        "current": 1,
+        "next_at": "2026-02-28T18:25:49.995376Z"
+      },
+      "current_period_start": "2026-01-28T18:25:49.995376Z",
+      "current_period_end": "2026-02-28T18:25:49.995376Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payment_method": {
+        "type": "CARD",
+        "vaulted_token": "7eeb8d32-d5c3-45a8-955b-30accc625d1f"
+      },
+      "availability": {
+        "start_at": "2026-02-01T18:25:49.995376Z",
+        "finish_at": null
+      },
+      "retries": {
+        "retry_on_decline": false,
+        "amount": 6
+      },
+      "metadata": [
+        {
+          "key": "Canal 1",
+          "value": "Soccer"
+        }
+      ],
+      "additional_data": null,
+      "payments": [],
+      "trial_period": {
+        "billing_cycles": 1,
+        "amount": {
+          "currency": null,
+          "value": null
+        }
+      },
+      "initial_payment_validation": true,
+      "subscription_agreement_id": null,
+      "created_at": "2025-05-21T15:33:16.662026Z",
+      "updated_at": "2025-05-21T15:33:16.662026Z"
+    }
+  }
+}
+```
+
+### subscription.active {#subscriptionactive}
+
+Enviado quando uma assinatura passa de qualquer outro status válido para `ACTIVE`. Use este evento para disparar processos pós-ativação sem polling.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.active",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "description": "retries activos",
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "subscription-ref-merchant-002",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 36000
+      },
+      "frequency": {
+        "type": "MINUTES",
+        "value": 3,
+        "monthly_billing_day": null,
+        "execution": "YUNO"
+      },
+      "billing_date": null,
+      "billing_cycles": {
+        "total": 5,
+        "current": 2,
+        "next_at": "2025-12-04T00:32:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:29:25.485281Z",
+      "current_period_end": "2025-12-04T00:32:25.485281Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payment_method": {
+        "type": "CARD",
+        "vaulted_token": "7eeb8d32-d5c3-45a8-955b-30accc625d1f",
+        "card": {
+          "installments": null,
+          "network_transaction_id": "651161211088410"
+        }
+      },
+      "availability": {
+        "start_at": "2025-12-04T00:29:25.485281Z",
+        "finish_at": null
+      },
+      "retries": {
+        "retry_on_decline": true,
+        "amount": 6
+      },
+      "metadata": [
+        {
+          "key": "Canal 1",
+          "value": "Soccer"
+        }
+      ],
+      "additional_data": null,
+      "payments": [],
+      "trial_period": {
+        "billing_cycles": 1,
+        "amount": {
+          "currency": null,
+          "value": null
+        }
+      },
+      "initial_payment_validation": true,
+      "provider_subscription_id": null,
+      "subscription_agreement_id": null,
+      "created_at": "2025-12-04T00:29:25.485281Z",
+      "updated_at": "2025-12-04T00:29:59.216998Z"
+    }
+  }
+}
+```
+
+### subscription.trialing {#subscriptiontrialing}
+
+Enviado quando uma assinatura entra na fase de teste de um plano a partir de outro status. A entrada no teste no momento da criação é informada como `subscription.create`, e a saída de uma pausa para o teste, como `subscription.resume`.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.trialing",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "subscription-ref-merchant-002",
+      "status": "TRIALING",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "current_phase": "TRIAL",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 36000
+      },
+      "billing_cycles": {
+        "total": 5,
+        "current": 2,
+        "next_at": "2025-12-04T00:32:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:29:25.485281Z",
+      "current_period_end": "2025-12-04T00:32:25.485281Z",
+      "current_phase_end": "2025-12-04T00:32:25.485281Z",
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payments": [],
+      "created_at": "2025-12-04T00:29:25.485281Z",
+      "updated_at": "2025-12-04T00:29:59.216998Z"
+    }
+  }
+}
+```
+
+### subscription.past_due {#subscriptionpastdue}
+
+Enviado quando uma cobrança recorrente falha e a assinatura entra em `PAST_DUE`. A assinatura continua cobrando enquanto as novas tentativas acontecem e ainda pode ser cancelada. Quando uma cobrança posterior é bem-sucedida, ela volta para `ACTIVE` (ou para `TRIALING`, se a fase de teste ainda estiver em andamento), e o evento correspondente `subscription.active` ou `subscription.trialing` é enviado.
+
+Este evento só é emitido para contas em que o status `PAST_DUE` está ativado. Onde não está, uma cobrança com falha deixa a assinatura em `ACTIVE`, e apenas o webhook `payment.purchase` informa a recusa. Consulte [Status da assinatura](/reference/subscriptions/status-subscriptions).
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.past_due",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "subscription-ref-merchant-002",
+      "status": "PAST_DUE",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 36000
+      },
+      "billing_cycles": {
+        "total": 5,
+        "current": 3,
+        "next_at": "2025-12-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:32:25.485281Z",
+      "current_period_end": "2025-12-04T00:35:25.485281Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "retries": {
+        "retry_on_decline": true,
+        "amount": 6
+      },
+      "payments": [],
+      "created_at": "2025-12-04T00:29:25.485281Z",
+      "updated_at": "2025-12-04T00:35:25.485281Z"
+    }
+  }
+}
+```
+
+### subscription.pause {#subscriptionpause}
+
+Enviado quando uma assinatura é pausada. Use este evento para atualizar o status no seu sistema e pausar os serviços relacionados.
+
+<Note>
+**A janela de uma assinatura pausada fica congelada onde estava, não é avançada.** `current_period_start`/`current_period_end` (e `current_phase_end`, se a assinatura estiver dentro de uma fase) mantêm a janela que estava vigente no momento da pausa; a Yuno não os avança enquanto a cobrança está suspensa. Quanto mais tempo uma assinatura fica pausada, mais `current_period_end` fica no passado; em produção, a grande maioria das assinaturas pausadas atualmente já mostra uma janela vencida. Não trate `current_period_end` como "a próxima data de cobrança" sem verificar também `status`: para uma assinatura pausada, ele não é.
+</Note>
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.pause",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "PAUSED",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 36000
+      },
+      "billing_cycles": {
+        "total": 5,
+        "current": 3,
+        "next_at": "2025-12-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:32:25.485281Z",
+      "current_period_end": "2025-12-04T00:35:25.485281Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    }
+  }
+}
+```
+
+### subscription.resume {#subscriptionresume}
+
+Enviado quando uma assinatura pausada é retomada e volta ao status em que estava cobrando: `ACTIVE` ou `TRIALING`, se ainda estiver dentro de uma fase de teste.
+
+O payload traz `resume_reason`, presente apenas neste evento: `MERCHANT` quando [Retomar assinatura](/reference/subscriptions/resume-subscription) foi chamado, `SCHEDULED` quando a pausa chegou ao seu `pause_until` e a assinatura voltou sozinha. O evento também traz o `billing_cycles.next_at` resultante.
+
+Os payloads de assinatura trazem `refund_rule` e `pause_until` sempre que o objeto de assinatura os traz; consulte [o objeto de assinatura](/reference/subscriptions/the-subscription-object).
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.resume",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "description": "Monthly subscription",
+      "country": "US",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "subscription-ref-merchant-002",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 42.46
+      },
+      "frequency": {
+        "type": "MONTH",
+        "value": 1,
+        "monthly_billing_day": null,
+        "execution": "YUNO"
+      },
+      "billing_date": null,
+      "billing_cycles": {
+        "total": null,
+        "current": 2,
+        "next_at": "2026-07-14T19:19:31.914Z"
+      },
+      "current_period_start": "2026-06-14T19:19:31.914Z",
+      "current_period_end": "2026-07-14T19:19:31.914Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payment_method": {
+        "type": "CARD",
+        "vaulted_token": "4ba74a56-14d4-4161-a0ba-8036e9b8abf6",
+        "card": {
+          "installments": null,
+          "network_transaction_id": "000000000000000",
+          "usage": "USED"
+        }
+      },
+      "availability": {
+        "start_at": "2026-06-14T19:19:31.914Z",
+        "finish_at": null
+      },
+      "retries": {
+        "retry_on_decline": true,
+        "amount": 4,
+        "strategy": "DEFAULT",
+        "schedule": null,
+        "stop_on_hard_decline": null,
+        "cancel_on_exhausted_retries": null
+      },
+      "metadata": [
+        {
+          "key": "plan_id",
+          "value": "monthly_plan"
+        }
+      ],
+      "additional_data": null,
+      "payments": [],
+      "trial_period": {
+        "billing_cycles": 1,
+        "amount": {
+          "currency": null,
+          "value": null
+        }
+      },
+      "initial_payment_validation": false,
+      "provider_subscription_id": null,
+      "reason": null,
+      "resume_reason": "MERCHANT",
+      "subscription_agreement_id": null,
+      "soft_descriptor": null,
+      "renewal_notification_days": null,
+      "cancellation_time": null,
+      "cancellation_source": null,
+      "ending_time": null,
+      "created_at": "2026-05-14T19:19:32.117629Z",
+      "updated_at": "2026-06-15T07:11:52.504031Z",
+      "history": null
+    }
+  }
+}
+```
+
+Uma retomada agendada (a pausa chegando sozinha ao seu `pause_until`) envia o mesmo evento com `"resume_reason": "SCHEDULED"`, sem nenhuma outra diferença estrutural no payload (a variante `SCHEDULED` é descrita a partir da definição de evento do serviço, não de uma entrega capturada).
+
+### subscription.reactivate {#subscriptionreactivate}
+
+Enviado quando uma assinatura `CANCELED` ou `COMPLETED` volta para `ACTIVE` (ou `TRIALING`, quando uma fase de teste cobre o ciclo reativado) por meio de [Reativar assinatura](/reference/subscriptions/reactivate-subscription). O payload é o objeto de assinatura.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.reactivate",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "SUB-111 win-back subject",
+      "description": null,
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "sub111a-1789487996637-802344",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 45000
+      },
+      "frequency": {
+        "type": "MONTH",
+        "value": 1,
+        "monthly_billing_day": null,
+        "execution": "YUNO"
+      },
+      "billing_date": null,
+      "billing_cycles": {
+        "total": 12,
+        "current": 2,
+        "next_at": "2026-10-15T15:59:57.366916Z"
+      },
+      "current_period_start": "2026-09-15T15:59:57.366916Z",
+      "current_period_end": "2026-10-15T15:59:57.366916Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payment_method": {
+        "type": "CARD",
+        "vaulted_token": "96a73f83-8039-455c-97c6-7757d036450a",
+        "card": {
+          "installments": null,
+          "network_transaction_id": null,
+          "usage": "USED"
+        }
+      },
+      "availability": {
+        "start_at": "2026-09-15T15:59:57.366916Z",
+        "finish_at": null
+      },
+      "retries": {
+        "retry_on_decline": false,
+        "amount": 6,
+        "strategy": "DEFAULT",
+        "schedule": null,
+        "stop_on_hard_decline": null,
+        "cancel_on_exhausted_retries": null
+      },
+      "metadata": null,
+      "additional_data": null,
+      "payments": [],
+      "trial_period": {
+        "billing_cycles": 1,
+        "amount": {
+          "currency": null,
+          "value": null
+        }
+      },
+      "initial_payment_validation": false,
+      "provider_subscription_id": null,
+      "reason": null,
+      "subscription_agreement_id": null,
+      "soft_descriptor": null,
+      "renewal_notification_days": null,
+      "cancellation_time": null,
+      "cancellation_source": null,
+      "ending_time": null,
+      "created_at": "2026-09-15T15:59:57.366916Z",
+      "updated_at": "2026-09-15T15:59:58.65775Z",
+      "history": null
+    }
+  }
+}
+```
+
+### subscription.auto_resume_failed {#subscriptionautoresumefailed}
+
+Enviado quando a retomada automática de uma assinatura pausada não pôde ser concluída após as novas tentativas; a assinatura continua `PAUSED`. O payload é o objeto de assinatura. Disponível para organizações habilitadas para isso; entre em contato com a Yuno.
+
+<Note>
+Ainda não existe uma captura real deste evento. O exemplo abaixo reutiliza um corpo capturado de assinatura `PAUSED` (o mesmo formato que [`subscription.pause`](#subscription-pause) mostra, com `pause_until` de uma pausa baseada em duração), com os identificadores trocados pelos da assinatura de exemplo desta página.
+</Note>
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.auto_resume_failed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "SUB-112 passthrough subject",
+      "description": null,
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "pa-sub112pt-1789487657670-794215",
+      "status": "PAUSED",
+      "amount": {
+        "currency": "COP",
+        "value": 45000
+      },
+      "frequency": {
+        "type": "MONTH",
+        "value": 1
+      },
+      "billing_cycles": {
+        "total": null,
+        "current": 2,
+        "paid": 1,
+        "next_at": "2026-10-15T15:54:18.312843Z"
+      },
+      "current_period_start": "2026-09-15T15:54:18.312843Z",
+      "current_period_end": "2026-10-15T15:54:18.312843Z",
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payment_method": {
+        "type": "CARD",
+        "vaulted_token": "589c51a6-050d-4b9b-a00c-856e064e5f50",
+        "card": {
+          "installments": null,
+          "network_transaction_id": "615803391389209",
+          "usage": "USED"
+        }
+      },
+      "availability": {
+        "start_at": "2026-09-15T15:54:18.312843Z",
+        "finish_at": null
+      },
+      "retries": {
+        "retry_on_decline": false,
+        "amount": 6,
+        "strategy": "SMART",
+        "schedule": null,
+        "stop_on_hard_decline": null,
+        "cancel_on_exhausted_retries": null
+      },
+      "metadata": null,
+      "additional_data": null,
+      "initial_payment_validation": false,
+      "reason": null,
+      "subscription_agreement_id": null,
+      "created_at": "2026-09-15T15:54:18.312843Z",
+      "updated_at": "2026-09-15T15:54:22.783678Z",
+      "pause_until": "2026-10-15T15:54:22.780166Z"
+    }
+  }
+}
+```
+
+`auto_resume_failed` não é um status em si: a assinatura está, e continua, `PAUSED`. Chame [Retomar assinatura](/reference/subscriptions/resume-subscription) para encerrar a pausa manualmente quando este evento chegar.
+
+### subscription.creation_failed {#subscriptioncreationfailed}
+
+Enviado para pagamentos do [Stripe Billing](/pt-br/docs/payment-features/subscriptions/stripe-billing) quando um pagamento `SUCCEEDED` que traz `external_subscription` não conseguiu criar a assinatura no Stripe. O dinheiro foi capturado, e nenhuma assinatura do Stripe foi criada ou ativada. Enviado uma vez por falha. Não é enviado quando o pagamento já foi reembolsado ou parcialmente reembolsado. Assine com o valor `CREATION_FAILED` em `subscription_triggers`.
+
+Diferente dos outros eventos de assinatura, `data` não traz um objeto de assinatura da Yuno, porque nenhum existe:
+
+| Campo | Tipo | Descrição |
+| :---- | :--- | :---------- |
+| `payment_id` | string (UUID) | O pagamento da Yuno que foi capturado. |
+| `external_subscription` | object | O objeto `external_subscription` exatamente como você o enviou no pagamento. |
+| `dead_letter_kind` | string | Por que a assinatura não foi criada, por exemplo `incomplete_payload`, `tax_quote_expired`, `tax_not_calculated` ou `stripe_resource_missing`. Trate-o como aberto: novos valores podem ser adicionados. |
+| `reason` | string | Uma descrição curta e legível de `dead_letter_kind`. Não faça parsing dela. |
+| `occurred_at` | string (ISO 8601, UTC) | Quando a Yuno desistiu de criar a assinatura. |
+
+<Note>
+Ainda não existe uma captura real deste evento. O exemplo abaixo foi montado a partir do contrato do evento; os identificadores são ilustrativos.
+</Note>
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.creation_failed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment_id": "4f2b8a3e-6d1c-4b7a-9e2f-8c5d3a1b7e60",
+    "external_subscription": {
+      "id": "sub_1QwZzz",
+      "customer_id": "cus_RplXYZ"
+    },
+    "dead_letter_kind": "tax_quote_expired",
+    "reason": "The tax quote expired",
+    "occurred_at": "2026-11-05T14:32:07.512Z"
+  }
+}
+```
+
+O pagamento continua `SUCCEEDED`: a Yuno não o reembolsa. Corrija a causa e tente a adesão de novo com um novo pagamento, reembolsando o original, ou reembolse-o. Consulte [Se a assinatura não puder ser criada](/pt-br/docs/payment-features/subscriptions/stripe-billing#if-the-subscription-cannot-be-created).
+
+### subscription.cancel {#subscriptioncancel}
+
+Enviado quando uma assinatura é cancelada. Uma assinatura cancelada pode ser recuperada com [Reativar assinatura](/reference/subscriptions/reactivate-subscription), que mantém a mesma assinatura e o histórico de pagamentos dela.
+
+O objeto de assinatura traz um campo `cancellation_source` que descreve o que disparou o cancelamento: `MERCHANT`, `SYSTEM`, `PLAN_CHANGE` ou `RETRIES_EXHAUSTED`. Consulte [o objeto de assinatura](/reference/subscriptions/the-subscription-object) para ver o que cada valor significa.
+
+<Note>
+Trate `cancellation_source` como aberto. Novos valores podem ser adicionados à medida que a Yuno introduz novos comportamentos de cancelamento, então trate um valor desconhecido de forma tolerante em vez de cobrir exaustivamente a lista atual. `RETRIES_EXHAUSTED` é a adição mais recente: ele é enviado quando as novas tentativas de um ciclo de cobrança terminam sem um pagamento bem-sucedido em uma assinatura criada com `retries.cancel_on_exhausted_retries` definido como `true`.
+</Note>
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.cancel",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "CANCELED",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 36000
+      },
+      "billing_cycles": {
+        "total": 5,
+        "current": 5,
+        "next_at": "2026-01-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:35:25.485281Z",
+      "current_period_end": "2026-01-04T00:35:25.485281Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    }
+  }
+}
+```
+
+Uma assinatura terminal informa o seu último período de cobrança em vez de um período vazio: o par acima fica congelado na janela que estava vigente quando a assinatura chegou a `CANCELED`, da mesma forma que uma assinatura `PAUSED` congela a sua janela (veja a nota de [`subscription.pause`](#subscription-pause)).
+
+### subscription.complete {#subscriptioncomplete}
+
+Enviado quando uma assinatura chega à data de término ou ao total de ciclos de cobrança e passa para o status `COMPLETED`.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.complete",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "COMPLETED",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 36000
+      },
+      "billing_cycles": {
+        "total": 5,
+        "current": 5,
+        "next_at": "2026-01-04T00:35:25.485281Z"
+      },
+      "current_period_start": "2025-12-04T00:35:25.485281Z",
+      "current_period_end": "2026-01-04T00:35:25.485281Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    }
+  }
+}
+```
+
+### subscription.close_to_renewal {#subscriptionclosetorenewal}
+
+Enviado antes de uma renovação próxima. O momento é controlado por `renewal_notification_days` na assinatura.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.close_to_renewal",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "description": "Monthly subscription",
+      "country": "US",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "subscription-ref-merchant-002",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 42.46
+      },
+      "frequency": {
+        "type": "MONTH",
+        "value": 1,
+        "monthly_billing_day": null,
+        "execution": "YUNO"
+      },
+      "billing_date": null,
+      "billing_cycles": {
+        "total": null,
+        "current": 2,
+        "next_at": "2026-07-14T19:19:31.914Z"
+      },
+      "current_period_start": "2026-06-14T19:19:31.914Z",
+      "current_period_end": "2026-07-14T19:19:31.914Z",
+      "current_phase_end": null,
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payment_method": {
+        "type": "CARD",
+        "vaulted_token": "4ba74a56-14d4-4161-a0ba-8036e9b8abf6",
+        "card": {
+          "installments": null,
+          "network_transaction_id": "000000000000000",
+          "usage": "USED"
+        }
+      },
+      "availability": {
+        "start_at": "2026-06-14T19:19:31.914Z",
+        "finish_at": null
+      },
+      "retries": {
+        "retry_on_decline": true,
+        "amount": 4,
+        "strategy": "DEFAULT",
+        "schedule": null,
+        "stop_on_hard_decline": null,
+        "cancel_on_exhausted_retries": null
+      },
+      "metadata": [
+        {
+          "key": "plan_id",
+          "value": "monthly_plan"
+        }
+      ],
+      "additional_data": null,
+      "payments": [],
+      "trial_period": {
+        "billing_cycles": 1,
+        "amount": {
+          "currency": null,
+          "value": null
+        }
+      },
+      "initial_payment_validation": false,
+      "provider_subscription_id": null,
+      "reason": null,
+      "subscription_agreement_id": null,
+      "soft_descriptor": null,
+      "renewal_notification_days": 3,
+      "cancellation_time": null,
+      "cancellation_source": null,
+      "ending_time": null,
+      "created_at": "2026-05-14T19:19:32.117629Z",
+      "updated_at": "2026-06-15T07:11:52.504031Z",
+      "history": null
+    }
+  }
+}
+```
+
+### subscription.cycle_executed {#subscriptioncycleexecuted}
+
+Enviado para assinaturas baseadas em plano quando um ciclo de `$0` é executado, seja um ciclo de teste ou um ciclo com desconto total. Esses ciclos não geram webhook `payment.purchase`, então este evento é o único comprovante deles. `reason` é `TRIAL` ou `FULL_DISCOUNT`, `phase` é a fase à qual o ciclo pertence, e `breakdown` traz o mesmo detalhamento por item de um ciclo pago, com total zero.
+
+Em um ciclo com desconto de uma assinatura com uma [promoção](/pt-br/docs/payment-features/subscriptions/promotions) ativa, o evento também inclui um objeto `promotion` em `data`. Ele traz o `id` da promoção, o `discount_amount` descontado dessa cobrança e `cycles_remaining`, o número de ciclos com desconto que restam depois deste. Uma cobrança de preço cheio sem promoção não envia este evento. Um ciclo com desconto cobrado não traz `reason`. `reason` só é `FULL_DISCOUNT` quando a cobrança do ciclo é 0.
+
+| Ciclo | Enviado? |
+| :---- | :---- |
+| Cobrança aprovada com desconto | Sim. Inclui o objeto `promotion` e é enviado depois que o ciclo é contabilizado. |
+| Nova tentativa automática ou forçada, aprovada | Sim, uma vez por ciclo, com o objeto `promotion`. |
+| Resultado tardio, aprovado | Sim, uma vez, quando o resultado chega. |
+| Cobrança recusada | Não. |
+| Ciclo de teste | Enviado apenas para assinaturas em um plano com fases, como hoje (reason `TRIAL`). Quando o ciclo de teste conta para uma promoção, o evento inclui o objeto da promoção com `discount_amount` 0. |
+| Ciclo de $0 de uma fase de um plano com fases, sem promoção | Sim, com reason `TRIAL` ou `FULL_DISCOUNT`. Sem alterações. |
+| Ciclo de 100% (`FULL_DISCOUNT`) | Sim, com reason `FULL_DISCOUNT`. O objeto `promotion` é incluído quando pode ser lido. |
+| Cobrança de preço cheio sem promoção | Não. |
+
+```json
+"promotion": {
+  "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+  "discount_amount": 50,
+  "cycles_remaining": 2
+}
+```
+
+<Note>
+**Os valores são números JSON**
+
+Os valores nos payloads de webhook são números JSON, então um zero à direita pode não ser mantido: um valor de 50.00 pode chegar como 50.0. Compare os valores como números, não como texto.
+</Note>
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.cycle_executed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "status": "TRIALING",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "current_phase": "TRIAL",
+      "billing_cycles": {
+        "total": null,
+        "current": 2,
+        "next_at": "2026-07-14T19:19:31.914Z"
+      },
+      "current_period_start": "2026-06-14T19:19:31.914Z",
+      "current_period_end": "2026-07-14T19:19:31.914Z",
+      "current_phase_end": "2026-07-14T19:19:31.914Z",
+      "payments": []
+    },
+    "cycle": 1,
+    "reason": "TRIAL",
+    "phase": "TRIAL",
+    "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+    "phase_payment": 1,
+    "billing_cycle": 1,
+    "breakdown": {
+      "currency": "USD",
+      "subtotal": 0,
+      "total": 0,
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "line_items": [
+        {
+          "type": "PLAN",
+          "label": "Trial",
+          "service_period": {
+            "start": "2026-06-14T19:19:31.914Z",
+            "end": "2026-07-14T19:19:31.914Z"
+          },
+          "amount": {
+            "currency": "USD",
+            "value": 0
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+### subscription.promotion_applied {#subscriptionpromotionapplied}
+
+Enviado quando uma promoção é aplicada a uma assinatura: na criação, quando um link de pagamento cria a assinatura, com [Atualizar assinatura](/reference/subscriptions/update-subscription) (incluindo uma reaplicação que substitui a promoção atual) e em uma troca de plano que aplica a promoção do novo plano. Ele é enviado para webhooks com o gatilho `PROMOTION_APPLIED`. `data.promotion` é o [objeto de promoção da assinatura](/reference/subscriptions/the-subscription-promotion-object), e a assinatura incorporada traz o mesmo objeto. Nenhum evento é enviado quando uma promoção termina; consulte a assinatura para ver o estado dela.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.promotion_applied",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+  "status": "ACTIVE",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "promotion": {
+      "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+      "name": "Welcome 50% x3",
+      "status": "ACTIVE",
+      "discount": {
+        "type": "PERCENTAGE",
+        "value": 50
+      },
+      "cycles": {
+        "total": 3,
+        "used": 0,
+        "remaining": 3
+      },
+      "on_pause": "KEEP",
+      "applied_at": "2026-06-14T19:19:32.117629Z",
+      "ended_at": null,
+      "end_reason": null
+    },
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "status": "ACTIVE",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 100
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "promotion": {
+        "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+        "name": "Welcome 50% x3",
+        "status": "ACTIVE",
+        "discount": {
+          "type": "PERCENTAGE",
+          "value": 50
+        },
+        "cycles": {
+          "total": 3,
+          "used": 0,
+          "remaining": 3
+        },
+        "on_pause": "KEEP",
+        "applied_at": "2026-06-14T19:19:32.117629Z",
+        "ended_at": null,
+        "end_reason": null
+      }
+    }
+  }
+}
+```
+
+### subscription.phase_completed {#subscriptionphasecompleted}
+
+Enviado para assinaturas baseadas em plano quando uma fase de cobrança termina, imediatamente antes do `subscription.phase_started` da fase que a substitui. Não é enviado para a primeira fase, que não tem antecessora. `phase` é a fase que acabou de terminar.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.phase_completed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "status": "ACTIVE",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "current_phase": "REGULAR",
+      "payments": []
+    },
+    "phase": "TRIAL"
+  }
+}
+```
+
+### subscription.phase_started {#subscriptionphasestarted}
+
+Enviado para assinaturas baseadas em plano quando uma fase de cobrança começa, incluindo a primeira. `phase` é a fase que está começando e `previous_phase` é a que ela substitui, ou `null` para a primeira fase.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.phase_started",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "status": "ACTIVE",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "current_phase": "REGULAR",
+      "payments": []
+    },
+    "phase": "REGULAR",
+    "previous_phase": "TRIAL"
+  }
+}
+```
+
+### subscription.plan_change_scheduled {#subscriptionplanchangescheduled}
+
+Enviado quando uma troca de plano é agendada para o próximo ciclo de cobrança. O bloco `plan_change` descreve a troca pendente; `applies_at` é a próxima data de cobrança em que a troca entrará em vigor.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.plan_change_scheduled",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 9.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    },
+    "plan_change": {
+      "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+      "plan_name": "Pro",
+      "direction": "UPGRADE",
+      "effective": "NEXT_BILLING_CYCLE",
+      "phases_behavior": "START_FROM_REGULAR",
+      "applies_at": "2026-08-15T00:00:00Z",
+      "requested_at": "2026-07-28T14:02:11Z"
+    }
+  }
+}
+```
+
+### subscription.plan_change_canceled {#subscriptionplanchangecanceled}
+
+Enviado quando uma troca de plano pendente é desfeita ou abortada. O `reason` dentro de `plan_change` é `MERCHANT_UNDO` quando o lojista enviou `"plan_change": null`, ou `TARGET_PLAN_CANCELED` quando o plano de destino foi cancelado antes de a troca ser aplicada; nos dois casos, a assinatura continua no plano atual. Se a própria assinatura for cancelada, a troca pendente é descartada silenciosamente e apenas `subscription.cancel` é enviado.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.plan_change_canceled",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 9.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    },
+    "plan_change": {
+      "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+      "plan_name": "Pro",
+      "reason": "MERCHANT_UNDO"
+    }
+  }
+}
+```
+
+### subscription.plan_changed {#subscriptionplanchanged}
+
+Enviado quando uma troca de plano entra em vigor. `previous_plan_id` identifica o plano do qual a assinatura saiu; a assinatura incorporada já reflete o novo plano.
+
+Uma troca agendada é aplicada na renovação que cobra o novo plano pela primeira vez, no próprio lugar: a assinatura incorporada mantém o mesmo `code`. `POST /v1/subscriptions/{id}/plan`, por outro lado, substitui a assinatura: o payload traz um novo `code` com `previous_subscription_id` definido, e um `subscription.cancel` separado (`cancellation_source: PLAN_CHANGE`) é disparado para a original.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.plan_changed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 29.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    },
+    "previous_plan_id": "0804911d-5df9-429e-8488-ad41abea1a4c"
+  }
+}
+```
+
+### subscription.cancel_scheduled {#subscriptioncancelscheduled}
+
+Enviado quando um cancelamento é agendado via `POST /v1/subscriptions/{id}/cancel` com um bloco `schedule`. `cancel_scheduled` descreve o agendamento pendente; consulte [Cancelar assinatura](/reference/subscriptions/cancel-subscription#scheduling-a-cancellation-instead).
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.cancel_scheduled",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 9.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    },
+    "cancel_scheduled": {
+      "mode": "AFTER_CYCLES",
+      "after_cycles": 3,
+      "at": "<example>",
+      "requested_at": "<example>",
+      "past_due_behavior": "EXHAUST_RETRIES"
+    }
+  }
+}
+```
+
+### subscription.cancel_schedule_canceled {#subscriptioncancelschedulecanceled}
+
+Enviado quando um cancelamento agendado pendente é desfeito via `"schedule": null` em `POST /v1/subscriptions/{id}/cancel`. Não é enviado quando o agendamento é executado: nesse caso, é disparado `subscription.cancel`.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.cancel_schedule_canceled",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 9.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    }
+  }
+}
+```
+
+### Cobranças de renovação e falhas (sem `subscription.error`) {#renewal-charges-and-failures-no-subscriptionerror}
+
+<Warning>
+**Não existe webhook `subscription.error`**. A Yuno não emite um evento de assinatura quando uma cobrança de renovação falha. Os resultados das cobranças de renovação, tanto as recobranças bem-sucedidas quanto as tentativas com falha ou recusadas, são entregues como webhooks `payment.purchase` vinculados à assinatura, com o resultado nos campos `status`/`sub_status`. Assine `payment.purchase` para acompanhar os resultados das renovações. Ciclos de `$0`/teste não emitem webhook de pagamento; em assinaturas baseadas em plano, eles são informados como [`subscription.cycle_executed`](#subscription-cycle_executed).
+</Warning>
+
+<Note>
+A **cobrança** da renovação em si é sempre sinalizada por um webhook `payment.purchase`, nunca por um webhook de assinatura. O array `payments` dentro do objeto de assinatura está sempre vazio nos payloads de webhook atualmente. `subscription.active` é enviado quando a assinatura fica ativa pela primeira vez (em `billing_cycles.current` = 2), não a cada renovação; ele só é enviado de novo quando uma assinatura se recupera de `PAST_DUE`.
+</Note>
+
+<Note>
+Uma renovação com falha gera, sim, um webhook de assinatura em dois casos. Onde o status `PAST_DUE` está ativado para a conta, a primeira cobrança com falha de um ciclo move a assinatura para `PAST_DUE` e emite [`subscription.past_due`](#subscription-past_due). E, se a assinatura tiver `retries.cancel_on_exhausted_retries` definido como `true`, quando as novas tentativas desse ciclo terminam sem um pagamento bem-sucedido, a assinatura é cancelada e um único [`subscription.cancel`](#subscription-cancel) é emitido com `cancellation_source` definido como `RETRIES_EXHAUSTED`. Isso ainda não é um `subscription.error`: as tentativas individuais com falha continuam sendo webhooks `payment.purchase`. Apenas o cancelamento final é sinalizado na assinatura.
+</Note>
+
+## Onboardings {#onboardings}
+
+O próximo objeto JSON apresenta um exemplo de estrutura de dados relacionada a um evento de onboarding, neste caso `onboarding.error`.
+
+```json Example
+{
+    "type": "onboarding",
+    "type_event": "onboarding.error",
+    "account_id": "c2721496-89c3-497a-8e24-0872c2e1386c",
+    "retry": 0,
+    "version": 2,
+    "data": {
+        "id": "d1fbb1d7-321d-4855-b603-135cd4f4ab82",
+        "type": "TWO_STEP_ONBOARDING",
+        "workflow": "DIRECT",
+        "description": null,
+        "status": "ERROR",
+        "response_message": null,
+        "callback_url": "https://merchant.example.com/webhook/onboarding",
+        "provider": {
+            "id": "STRIPE",
+            "connection_id": "caaeba00-05c8-4295-815f-1736c2b0b622",
+            "redirect_url": null,
+            "recipient_id": "",
+            "onboarding_url": "",
+            "legal_entity": null
+        },
+        "documentation": [],
+        "legal_representatives": [],
+        "withdrawal_methods": {
+            "bank": {
+                "code": "002",
+                "branch": "002",
+                "branch_digit": null,
+                "account": "9876543210",
+                "account_digit": null,
+                "account_type": "CHECKINGS",
+                "routing": "021000022",
+                "country": "US",
+                "currency": "USD",
+                "payout_schedule": null
+            }
+        },
+        "requirements": [
+            {
+                "field": "withdrawal_methods.bank.routing",
+                "message": "Invalid routing number",
+                "status": "REJECTED"
+            }
+        ],
+        "terms_of_service": null,
+        "metadata": [],
+        "recipient": {
+            "id": "c5e0d5d5-5346-4fea-9b3e-97e825b11b07",
+            "national_entity": "INDIVIDUAL",
+            "merchant_recipient_id": "12b2b154-3ac9-4255-848a-46c8e3a70476",
+            "entity_type": "PRIVATE",
+            "first_name": "Juan",
+            "last_name": "Pérez",
+            "legal_name": null,
+            "email": "juan.perez@example.com",
+            "date_of_birth": "1990-01-15",
+            "country": "CO",
+            "website": "https://juanperez.com",
+            "industry": "Technology",
+            "merchant_category_code": "5734",
+            "document": {
+                "document_number": "1234567890",
+                "document_type": "CC"
+            },
+            "phone": {
+                "country_code": "57",
+                "number": "3001234567"
+            },
+            "address": {
+                "address_line_1": "Carrera 7 # 32-16",
+                "address_line_2": "Oficina 201",
+                "city": "Bogotá",
+                "country": "CO",
+                "state": "Cundinamarca",
+                "zip_code": "110311",
+                "neighborhood": "Centro"
+            },
+            "withdrawal_methods": {
+                "bank": {
+                    "code": "001",
+                    "branch": "004",
+                    "branch_digit": "123",
+                    "account": "1234567890",
+                    "account_digit": "123",
+                    "account_type": "SAVINGS",
+                    "routing": "021000021",
+                    "country": "CO",
+                    "currency": "COP",
+                    "payout_schedule": null
+                }
+            },
+            "documentation": [],
+            "legal_representatives": [
+                {
+                    "merchant_reference": "REP_001",
+                    "first_name": "María",
+                    "last_name": "González",
+                    "email": "maria.gonzalez@example.com",
+                    "date_of_birth": "1985-05-20",
+                    "country": "CO",
+                    "nationality": "CO",
+                    "title": "CEO",
+                    "publicly_exposed_person": false,
+                    "ultimate_beneficial_owner": true,
+                    "document": {
+                        "document_number": "0987654321",
+                        "document_type": "CC"
+                    },
+                    "phone": {
+                        "country_code": "+57",
+                        "number": "3109876543"
+                    },
+                    "address": {
+                        "address_line_1": "Calle 26 # 13-19",
+                        "address_line_2": null,
+                        "city": "Bogotá",
+                        "country": "CO",
+                        "state": "Cundinamarca",
+                        "zip_code": "110311",
+                        "neighborhood": null
+                    }
+                }
+            ],
+            "created_at": "2025-10-21T16:29:36.997492Z",
+            "updated_at": "2025-10-21T16:29:36.997505Z"
+        },
+        "created_at": "2025-10-21T16:29:41.88055Z",
+        "updated_at": "2025-10-21T16:29:42.571531Z",
+        "expires_at": null
+    }
+}
+```
+
+## Transferências de split do marketplace {#marketplace-split-transfers}
+
+As notificações de transferência avulsa incluem a `direction` salva no nível superior do corpo JSON entregue. As transferências existentes usam `PLATFORM_TO_RECIPIENT`. A disponibilidade de destinatário para plataforma segue o [endpoint de criação](/reference/transfers/create-standalone-transfer).
+
+Os exemplos abaixo mostram campos selecionados do corpo entregue. Os títulos são os tipos de evento da assinatura; o corpo entregue é o próprio objeto de transferência, sem envelope e sem campo de tipo de evento. Identifique uma notificação de estorno pelo `status` (`REVERSED` ou `REVERSED_PARTIAL`) e por uma transação do tipo `SPLIT_TRANSFER_REVERSE`. `provider_data` descreve a conta do provedor que processou a transferência; o `raw_response` de cada transação traz a resposta bruta do provedor, serializada em JSON como string.
+
+<Note>
+Segundo a engenharia, o `type_event` sob o qual esses dois eventos são registrados internamente é `transfer.transfer`; o corpo do webhook entregue em si não traz envelope `type`/`type_event`, como indicado acima.
+</Note>
+
+### split_transfer.succeeded {#splittransfersucceeded}
+
+Enviado quando uma transferência de split do marketplace é concluída com sucesso.
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "recipient_id": "d246d578-266c-47c3-92b6-1748d780711b",
+  "direction": "PLATFORM_TO_RECIPIENT",
+  "amount": {
+    "currency": "USD",
+    "value": 4
+  },
+  "status": "SUCCEEDED",
+  "description": "Weekly marketplace earnings",
+  "merchant_reference": null,
+  "metadata": null,
+  "provider_data": {
+    "id": "STRIPE",
+    "recipient_id": "acct_1H2c3d4E5f6G7h8I",
+    "transfer_id": "tr_example",
+    "response_code": null,
+    "response_message": null
+  },
+  "transactions": [
+    {
+      "code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+      "type": "SPLIT_TRANSFER",
+      "status": "SUCCEEDED",
+      "parent_transaction_code": null,
+      "provider_transfer_id": "tr_example",
+      "provider_response_code": null,
+      "provider_response_message": null,
+      "raw_response": "{\"id\":\"tr_example\",\"status\":\"paid\"}",
+      "reason": null,
+      "created_at": "2026-09-15T10:00:00Z",
+      "updated_at": "2026-09-15T10:00:00Z"
+    }
+  ],
+  "created_at": "2026-09-15T10:00:00Z",
+  "updated_at": "2026-09-15T10:00:00Z",
+  "completed_at": "2026-09-15T10:00:00Z"
+}
+```
+
+### split_transfer_reverse.succeeded {#splittransferreversesucceeded}
+
+A notificação identifica a transferência original, mantém a direção dela e inclui tanto a transação original quanto a de estorno. Neste exemplo de estorno parcial, `status` é `REVERSED_PARTIAL` e `amount` é o valor de estorno de USD 1. A transação de estorno aponta para a transação original por meio de `parent_transaction_code`. Esta notificação é diferente da resposta HTTP do estorno, que não inclui a direção. Ela é entregue com o `id` da transferência original; `description` e `merchant_reference` trazem os valores enviados na requisição de estorno.
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "recipient_id": "d246d578-266c-47c3-92b6-1748d780711b",
+  "direction": "PLATFORM_TO_RECIPIENT",
+  "amount": {
+    "currency": "USD",
+    "value": 1
+  },
+  "status": "REVERSED_PARTIAL",
+  "description": "Reversal due to order cancelled",
+  "merchant_reference": "reverse-merchant-ref",
+  "metadata": null,
+  "provider_data": {
+    "id": "STRIPE",
+    "recipient_id": "acct_1H2c3d4E5f6G7h8I",
+    "transfer_id": "trr_example",
+    "response_code": null,
+    "response_message": null
+  },
+  "transactions": [
+    {
+      "code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+      "type": "SPLIT_TRANSFER",
+      "status": "SUCCEEDED",
+      "parent_transaction_code": null,
+      "provider_transfer_id": "tr_example",
+      "provider_response_code": null,
+      "provider_response_message": null,
+      "raw_response": "{\"id\":\"tr_example\",\"status\":\"paid\"}",
+      "reason": null,
+      "created_at": "2026-09-15T10:00:00Z",
+      "updated_at": "2026-09-15T10:00:00Z"
+    },
+    {
+      "code": "0e5b4d60-4811-4a48-90c1-398d28dbce8c",
+      "type": "SPLIT_TRANSFER_REVERSE",
+      "status": "SUCCEEDED",
+      "parent_transaction_code": "cb5fd244-90fd-49b0-a160-a9d9f764eb9e",
+      "provider_transfer_id": "trr_example",
+      "provider_response_code": null,
+      "provider_response_message": null,
+      "raw_response": "{\"id\":\"trr_example\",\"status\":\"reversed\"}",
+      "reason": "ORDER_CANCELLED",
+      "created_at": "2026-09-15T10:05:00Z",
+      "updated_at": "2026-09-15T10:05:00Z"
+    }
+  ],
+  "created_at": "2026-09-15T10:00:00Z",
+  "updated_at": "2026-09-15T10:05:00Z",
+  "completed_at": "2026-09-15T10:05:00Z"
+}
+```
+
+## Reembolsos {#refunds}
+
+O próximo objeto JSON apresenta um exemplo de estrutura de dados relacionada a um evento `payment.refund`.
+
+```json Example
+{
+  "type": "payment",
+  "type_event": "payment.refund",
+  "account_id": "2e7bc710-32db-43b2-a7aa-21c3bd031f8f",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment": {
+    "code": "f7bcf40d-7255-4e13-9dba-df6fa09be6b2",
+    "id": "f7bcf40d-7255-4e13-9dba-df6fa09be6b2",
+    "idempotency_key": "49eda7f2-bb05-437f-9676-7c8bb6df94a9",
+    "organization_code": "c60f4657-6ec5-487c-b9d5-a5fdbc887a1f",
+    "account_code": "2e7bc710-32db-43b2-a7aa-21c3bd031f8f",
+    "account_id": "2e7bc710-32db-43b2-a7aa-21c3bd031f8f",
+    "description": "Test goold",
+    "country": "CO",
+    "status": "REFUNDED",
+    "sub_status": "REFUNDED",
+    "order_id": "0000023",
+    "merchant_order_id": "0000023",
+    "created_at": "2025-09-03T21:51:08.633533Z",
+    "updated_at": "2025-09-03T21:53:40.368707Z",
+    "amount": {
+      "currency": "COP",
+      "value": 30000,
+      "refunded": 30000,
+      "captured": 0,
+      "authorized": 30000,
+      "currency_conversion": {
+        "code": "ccv_01HVK3Z9M2...",
+        "cardholder_currency": "USD",
+        "cardholder_amount": 7.50,
+        "cardholder_accepted": true,
+        "rate": 4000.00,
+        "rate_margin_percentage": 3.0,
+        "rate_source": "BLOOMBERG",
+        "provider": "PLANET",
+        "description": "DCC quote for retail shopping.",
+        "created_at": "2026-04-24T14:30:00Z",
+        "expires_at": "2026-04-24T15:30:00Z",
+        "status": "APPLIED",
+        "error_reason": null,
+        "provider_data": {
+          "terminal_id": "TERM_99"
+        }
+      }
+    },
+    "checkout": {
+      "session": null,
+      "sdk_action_required": false
+    },
+    "customer_payer": {
+      "code": "1ca7351f-8855-4765-bbe5-bd5110809cf2",
+      "id": "1ca7351f-8855-4765-bbe5-bd5110809cf2",
+      "organization_customer_external_id": "1756936266",
+      "merchant_customer_id": "1756936266",
+      "first_name": "Willintong",
+      "last_name": "Ramirez",
+      "gender": "M",
+      "date_of_birth": "1990-02-28",
+      "email": "willintong.ramirez@y.uno",
+      "nationality": "AR",
+      "ip_address": null,
+      "device_fingerprint": null,
+      "third_party_session_id": null,
+      "device_fingerprints": [],
+      "browser_info": null,
+      "document": {
+        "document_number": "123554332",
+        "document_type": "PASS"
+      },
+      "billing_address": {
+        "address_line_1": "Calle 34 # 56 - 78",
+        "address_line_2": "Apartamento 502, Torre I",
+        "city": "Bogotá",
+        "country": "CO",
+        "state": "Cundinamarca",
+        "zip_code": "111111",
+        "neighborhood": null
+      },
+      "shipping_address": {
+        "address_line_1": "Calle 34 # 56 - 78",
+        "address_line_2": "Apartamento 502, Torre I",
+        "city": "Bogotá",
+        "country": "CO",
+        "state": "Cundinamarca",
+        "zip_code": "111111",
+        "neighborhood": null
+      },
+      "phone": {
+        "country_code": "57",
+        "number": "3132450765"
+      },
+      "merchant_customer_created_at": null,
+      "geo_location": {
+        "latitude": null,
+        "longitude": null
+      },
+      "merchant_customer_validations": {
+        "account_is_verified": true,
+        "email_is_verified": true,
+        "phone_is_verified": true
+      }
+    },
+    "additional_data": {
+      "order": {
+        "shipping_amount": 10.35,
+        "fee_amount": 40.5,
+        "tip_amount": null,
+        "items": [
+          {
+            "id": "123AD",
+            "name": "Skirt",
+            "quantity": 3,
+            "unit_amount": 20,
+            "category": "Clothes",
+            "brand": "XYZ",
+            "sku_code": "8765432109",
+            "manufacture_part_number": "XYZ123456",
+            "image_url": null
+          }
+        ],
+        "taxes": [],
+        "shipping": null,
+        "account_funding": null,
+        "tickets": [],
+        "fulfillment": null,
+        "discounts": [],
+        "sales_channel": null
+      },
+      "airline": null,
+      "transportations": null,
+      "seller_details": null
+    },
+    "transactions": {
+      "code": "14a2ca8a-07bd-47b2-9070-4868ab176ac8",
+      "id": "14a2ca8a-07bd-47b2-9070-4868ab176ac8",
+      "type": "REFUND",
+      "status": "SUCCEEDED",
+      "category": "CARD",
+      "amount": 30000,
+      "provider_id": "YUNO_TEST_PAYMENT_GW",
+      "response_code": "SUCCEEDED",
+      "merchant_reference": "REFUND_001",
+      "response_message": "Transaction successful",
+      "reason": "REQUESTED_BY_CUSTOMER",
+      "description": "Test refund",
+      "created_at": "2025-09-03T21:53:40.230290Z",
+      "updated_at": "2025-09-03T21:53:40.346884Z",
+      "payment_method": {
+        "token": null,
+        "type": "CARD",
+        "vaulted_token": null,
+        "vault_on_success": false,
+        "parent_payment_method_type": null,
+        "payment_method_detail": {
+          "card": {
+            "verify": false,
+            "capture": false,
+            "installments": 1,
+            "installments_plan_id": null,
+            "first_installment_deferral": null,
+            "installments_amount": null,
+            "installments_type": null,
+            "soft_descriptor": "",
+            "authorization_code": "658571",
+            "retrieval_reference_number": "",
+            "acquirer_reference_number": "",
+            "voucher": null,
+            "card_data": {
+              "holder_name": "Pepito Perez",
+              "iin": "41111111",
+              "lfd": "1111",
+              "number_length": 16,
+              "security_code_length": 3,
+              "brand": "VISA",
+              "issuer_name": "CONOTOXIA SP Z O O",
+              "issuer_code": null,
+              "country_code": "PL",
+              "category": "CLASSIC",
+              "type": "DEBIT",
+              "three_d_secure": {
+                "version": null,
+                "electronic_commerce_indicator": null,
+                "cryptogram": null,
+                "transaction_id": null,
+                "directory_server_transaction_id": null,
+                "pares_status": null,
+                "acs_id": null,
+                "strong_customer_authentication_exemptions": null
+              },
+              "network_token": null,
+              "fingerprint": "3d49ec9d-e941-4eaf-80eb-251469d66108",
+              "expiration_month": 3,
+              "expiration_year": 26
+            },
+            "stored_credentials": {
+              "reason": null,
+              "usage": null,
+              "subscription_agreement_id": null,
+              "network_transaction_id": null
+            }
+          },
+          "wallet": null,
+          "bnpl": null,
+          "bank_transfer": null,
+          "ticket": null,
+          "payment_link": null
+        }
+      },
+      "provider": {
+        "provider_transaction_id": "a9908f18-71ca-458b-9f94-f63e55bdc94a"
+      },
+      "provider_data": {
+        "raw_response": {
+          "message": "provider response"
+        },
+        "id": "YUNO_TEST_PAYMENT_GW",
+        "transaction_id": "a9908f18-71ca-458b-9f94-f63e55bdc94a",
+        "account_id": null,
+        "status": null,
+        "status_detail": null,
+        "response_message": null,
+        "response_code": "SUCCEEDED",
+        "third_party_transaction_id": null,
+        "third_party_account_id": null,
+        "iso8583_response_code": null,
+        "iso8583_response_message": null
+      },
+      "connection_data": {
+        "id": null,
+        "name": null
+      },
+      "simplified_mode": false,
+      "third_party_session_id": null,
+      "receipt": false,
+      "receipt_language": null,
+      "receipt_url": null,
+      "device_fingerprint": null
+    },
+    "transactions_history": [],
+    "callback_url": null,
+    "workflow": "DIRECT",
+    "split_marketplace": [],
+    "payment_link_code": "",
+    "subscription_id": null,
+    "subscription": null,
+    "fraud_screening": null,
+    "metadata": [],
+    "routing_rules": {
+      "smart_routing": false,
+      "monitors": false,
+      "condition": {
+        "id": 148781,
+        "name": null,
+        "description": null
+      }
+    }
+    }
+  }
+}
+```
+
+## HMAC - Autorização {#hmac---authorization}
+
+O próximo exemplo mostra uma requisição bruta de webhook com o cabeçalho `x-hmac-signature` que a Yuno inclui quando a autenticação HMAC está ativada.
+
+```http
+POST /your-webhook-endpoint HTTP/1.1
+Host: your-server.com
+Content-Type: application/json
+x-api-key: your-api-key
+x-secret: your-secret
+x-hmac-signature: YwPQ1b2RcBkDGo32XvDS7R+/nMDuDIRjvQlsak72EMBY=
+
+{
+  "live": "false",
+  "notificationItems": [
+    {
+      "NotificationRequestItem": {
+        "additionalData": {
+          "expiryDate": "12/2012",
+          "authCode": "1234",
+          "cardSummary": "7777",
+          "totalFraudScore": "10"
+        },
+        "amount": {
+          "currency": "EUR",
+          "value": 10100
+        },
+        "eventCode": "AUTHORISATION",
+        "eventDate": "2022-11-15T20:04:11+01:00",
+        "merchantAccountCode": "AcmeCorp",
+        "merchantReference": "2931874530016873",
+        "paymentMethod": "visa",
+        "pspReference": "CU4KVBAYAPFG0ZZKR",
+        "success": "true"
+      }
+    }
+  ]
+}
+```

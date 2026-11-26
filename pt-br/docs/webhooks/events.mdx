@@ -1,0 +1,134 @@
+---
+title: "Eventos e gatilhos"
+description: "O catálogo completo de eventos que um webhook pode assinar, organizado por domínio, e o campo de gatilho que seleciona cada um"
+keywords: ["webhooks", "eventos", "gatilhos", "catálogo de eventos"]
+---
+
+Um webhook assina eventos por meio de campos de gatilho, um por domínio, e precisa de pelo menos um gatilho. Defina-os no [dashboard](/pt-br/docs/webhooks/configure-webhooks) ou na [API de Webhooks](/reference/webhooks). O catálogo abaixo é o mesmo nos dois casos. O payload de cada evento está documentado em [Payloads e exemplos](/pt-br/docs/webhooks/object-and-examples).
+
+## Cadastro {#enrollment}
+
+`enrollment_triggers`
+
+| Gatilho | Evento | Descrição |
+| :------ | :---- | :---------- |
+| `ENROLL` | `enrollment.enroll` | Enviado quando um meio de pagamento é cadastrado com sucesso. |
+| `UNENROLL` | `enrollment.unenroll` | Enviado quando um meio de pagamento cadastrado é descadastrado. |
+
+<Note>
+`enrollment.expiration` existe, mas no momento não é oferecido como opção no dashboard.
+</Note>
+
+## Pagamento {#payment}
+
+`payment_triggers`
+
+| Gatilho | Evento | Descrição |
+| :------ | :---- | :---------- |
+| `AUTHORIZE` | `payment.authorize` | Enviado quando um pagamento é autorizado. |
+| `CANCEL` | `payment.cancel` | Enviado quando um pagamento é cancelado. |
+| `CAPTURE` | `payment.capture` | Enviado quando um pagamento é capturado. |
+| `CHARGEBACK` | `payment.chargeback` | Enviado quando um chargeback ou uma consulta é recebido para um pagamento. |
+| `PURCHASE` | `payment.purchase` | Enviado quando um pagamento é criado ou o status dele muda durante um fluxo de compra. |
+| `SPLIT_UPDATE` | `payment.split_update` | Enviado depois que uma atualização de split é aplicada, incluindo uma resolução manual que aplica o split solicitado ou o remove. Exige assinatura explícita; disponibilidade no catálogo de produção pendente. Veja [Notificações de atualização de split](/docs/webhooks#split-update-notifications). |
+| `REFUND` | `payment.refund` | Enviado quando um reembolso é processado para um pagamento. |
+| `VERIFY` | `payment.verify` | Enviado quando a verificação de um meio de pagamento é concluída. |
+| `PRECHARGEBACK` | `payment.pre_chargeback` | Enviado quando um aviso de pré-chargeback ou um alerta de fraude é recebido para um pagamento, antes de um chargeback completo. |
+
+<Note>
+**Análise de fraude:** quando uma transação é recusada pela análise de fraude e não segue para o processamento, nenhuma transação é criada. Somente o objeto `fraud_screening` é preenchido, e a Yuno envia `payment.fraud_screening`. Se a transação seguir para o processamento apesar da recusa (conforme a sua configuração de roteamento), o evento enviado é `payment.purchase`.
+</Note>
+
+<Note>
+`payment.fraud_screening` e `payment.pre_chargeback` são enviados hoje a qualquer webhook com pelo menos um valor em `payment_triggers`, independentemente de `PRECHARGEBACK` estar selecionado. Um controle de gatilho dedicado para `payment.pre_chargeback` está planejado para uma versão futura.
+</Note>
+
+## Assinatura {#subscription}
+
+`subscription_triggers`
+
+| Gatilho | Evento | Descrição |
+| :------ | :---- | :---------- |
+| `CREATE` | `subscription.create` | Enviado quando uma assinatura é criada pela primeira vez. |
+| `ACTIVE` | `subscription.active` | Enviado uma vez, quando a assinatura fica ativa pela primeira vez. Não é reenviado nos ciclos de renovação seguintes. |
+| `PAUSE` | `subscription.pause` | Enviado quando uma assinatura é pausada. |
+| `RESUME` | `subscription.resume` | Enviado quando uma assinatura pausada é retomada e volta para `ACTIVE` ou `TRIALING`. Traz `resume_reason` (`MERCHANT` quando [Resume Subscription](/reference/subscriptions/resume-subscription) foi chamado, `SCHEDULED` quando uma retomada automática foi concluída sozinha) e o `billing_cycles.next_at` resultante. |
+| `CANCEL` | `subscription.cancel` | Enviado quando uma assinatura é cancelada. Uma assinatura cancelada pode ser recuperada com [Reactivate Subscription](/reference/subscriptions/reactivate-subscription). Traz `refund` quando uma cotação de reembolso foi calculada para o cancelamento. |
+| `COMPLETE` | `subscription.complete` | Enviado quando uma assinatura atinge a data de término ou o total de ciclos de cobrança e passa para `COMPLETED`. |
+| `CLOSE_TO_RENEWAL` | `subscription.close_to_renewal` | Enviado antes de uma renovação próxima. O momento é controlado por `renewal_days`, quando definido pela [API](/reference/webhooks#triggers), e aparece na assinatura como `renewal_notification_days`. |
+| `PLAN_CHANGE_SCHEDULED` | `subscription.plan_change_scheduled` | Enviado quando uma troca de plano é agendada para o próximo ciclo de cobrança. |
+| `PLAN_CHANGE_CANCELED` | `subscription.plan_change_canceled` | Enviado quando uma troca de plano pendente é desfeita pelo lojista ou interrompida porque o plano de destino foi cancelado. Não é enviado quando a própria assinatura é cancelada; nesse caso, só `subscription.cancel` é disparado. |
+| `PLAN_CHANGED` | `subscription.plan_changed` | Enviado quando uma troca de plano entra em vigor. |
+| `PROMOTION_APPLIED` | `subscription.promotion_applied` | Enviado quando uma promoção é aplicada a uma assinatura: na criação, quando um link de pagamento cria a assinatura, com Update Subscription (incluindo uma reaplicação) e em uma troca de plano que aplica a promoção do novo plano. Traz o [objeto de promoção da assinatura](/reference/subscriptions/the-subscription-promotion-object) como `promotion`. Não é enviado quando uma promoção termina. Veja [Promoções em planos de assinatura](/pt-br/docs/payment-features/subscriptions/promotions). |
+| `CREATION_FAILED` | `subscription.creation_failed` | Enviado quando um pagamento `SUCCEEDED` com `external_subscription` (Stripe Billing) não conseguiu criar a assinatura na Stripe: o dinheiro foi capturado e não existe assinatura. Enviado uma vez por falha. Veja [Stripe Billing](/pt-br/docs/payment-features/subscriptions/stripe-billing#if-the-subscription-cannot-be-created). |
+
+<Note>
+Cada cobrança de renovação é entregue como um webhook `payment.purchase` vinculado à assinatura, com o resultado (sucesso ou recusa) nos campos `status`/`sub_status`. Ciclos de `$0`/período de teste não emitem webhook de pagamento, e hoje não existe um evento `subscription.error`. Para assinaturas baseadas em plano, um ciclo de `$0`/período de teste é informado como `subscription.cycle_executed` (veja abaixo).
+</Note>
+
+Os eventos de assinatura a seguir não são controlados por um valor de gatilho próprio; eles são enviados automaticamente a qualquer webhook com pelo menos um valor em `subscription_triggers`.
+
+| Evento | Descrição |
+| :---- | :---------- |
+| `subscription.trialing` | Enviado quando uma assinatura entra na fase de teste de um plano a partir de outro status. A entrada no período de teste no momento da criação é informada como `subscription.create`, e a saída de uma pausa para o período de teste, como `subscription.resume`. |
+| `subscription.past_due` | Enviado quando uma cobrança recorrente falha e a assinatura entra em `PAST_DUE`. Emitido somente para contas em que esse status está habilitado. Veja [Status da assinatura](/reference/subscriptions/status-subscriptions). |
+| `subscription.cycle_executed` | Enviado para assinaturas baseadas em plano quando um ciclo de `$0` é executado, seja um ciclo de teste, seja um ciclo com desconto total. Esses ciclos não geram webhook `payment.purchase`, então este evento é o único comprovante deles. Em um ciclo com desconto de uma assinatura com promoção, o evento inclui o objeto `promotion`. Uma cobrança de preço cheio sem promoção não envia este evento. |
+| `subscription.phase_started` | Enviado para assinaturas baseadas em plano quando uma fase de cobrança começa, incluindo a primeira. |
+| `subscription.phase_completed` | Enviado para assinaturas baseadas em plano quando uma fase de cobrança termina, imediatamente antes do `subscription.phase_started` da fase que a substitui. Não é enviado para a primeira fase, que não tem antecessora. |
+| `subscription.cancel_scheduled` | Enviado quando um cancelamento é agendado para uma data futura ou um ciclo de cobrança futuro via `POST /v1/subscriptions/{id}/cancel` com um bloco `schedule`. |
+| `subscription.cancel_schedule_canceled` | Enviado quando um cancelamento agendado pendente é desfeito. Não é enviado quando o agendamento é executado; nesse caso, `subscription.cancel` é disparado. |
+| `subscription.reactivate` | Enviado quando uma assinatura `CANCELED` ou `COMPLETED` volta para `ACTIVE` ou `TRIALING` por meio de [Reactivate Subscription](/reference/subscriptions/reactivate-subscription). |
+| `subscription.auto_resume_failed` | Enviado quando a retomada automática de uma assinatura pausada não pôde ser concluída depois das novas tentativas; a assinatura continua `PAUSED`. Disponível para organizações habilitadas; fale com a Yuno. |
+
+<Note>
+Trate os eventos de troca de plano como notificações, e não como a fonte da verdade. Faça a conciliação com `GET /v1/subscriptions/{id}` em vez de depender só da entrega de webhooks. O mesmo vale para os eventos de agendamento de cancelamento. Veja [Payloads e exemplos](/pt-br/docs/webhooks/object-and-examples#subscription-plan_change_scheduled) para a referência completa dos campos de cada um.
+</Note>
+
+## Onboarding {#onboarding}
+
+`onboarding_triggers`
+
+| Gatilho | Evento | Descrição |
+| :------ | :---- | :---------- |
+| `CREATED` | `onboarding.create` | Enviado quando um onboarding é criado. |
+| `PENDING` | `onboarding.pending` | Enviado quando um onboarding é enviado e aguarda análise. |
+| `SUCCEEDED` | `onboarding.succeeded` | Enviado quando um onboarding é aprovado. |
+| `DECLINED` | `onboarding.declined` | Enviado quando um onboarding é recusado. |
+| `ERROR` | `onboarding.error` | Enviado quando um onboarding apresenta erro. |
+| `EXPIRED` | `onboarding.expired` | Enviado quando um onboarding expira. |
+| `BLOCKED` | `onboarding.blocked` | Enviado quando um onboarding é bloqueado. |
+| `UNBLOCKED` | `onboarding.unblocked` | Enviado quando um onboarding bloqueado é desbloqueado. |
+| `CANCELLED` | `onboarding.cancelled` | Enviado quando um onboarding é cancelado. |
+| `INACTIVE` | `onboarding.inactive` | Enviado quando um onboarding fica inativo. |
+| `TRANSFERRED` | `onboarding.transferred` | Enviado quando um onboarding é transferido. |
+
+<Note>
+Os status de onboarding `FAILED` e `REJECTED` não são eventos separados; ambos são informados como `onboarding.declined`. Da mesma forma, `PENDING_ADDITIONAL_DOCUMENTATION` e `PENDING_RECIPIENT_ACTION` são ambos informados como `onboarding.pending`, com o status específico no payload, e não no nome do evento.
+</Note>
+
+## Relatório {#report}
+
+`report_triggers`
+
+`report_triggers` assina eventos do ciclo de vida de relatórios: `CREATE` quando um relatório é criado e `UPDATE` quando o status dele muda (por exemplo, quando ele fica pronto para download). Hoje, somente `report.update` é emitido por algum serviço; `report.create` pode ser assinado, mas ainda não tem emissor.
+
+## Payout {#payout}
+
+Eventos de payout não têm um campo de gatilho correspondente.
+
+| Evento | Descrição |
+| :---- | :---------- |
+| `payout.payout` | Enviado quando ocorre um evento de payout. |
+
+## Transferências de split do marketplace {#marketplace-split-transfers}
+
+Assim como os payouts, os eventos de transferência de split não têm um campo de gatilho correspondente, e hoje os lojistas não podem deixar de recebê-los. Segundo a engenharia, eles são registrados internamente com o `type_event` `transfer.transfer`; o corpo do webhook entregue não traz um envelope `type`/`type_event`, então identifique o evento pelos próprios campos do objeto de transferência, como mostrado em [Payloads e exemplos](/pt-br/docs/webhooks/object-and-examples#marketplace-split-transfers).
+
+| Evento | Descrição |
+| :---- | :---------- |
+| `succeeded` (type `split_transfer`) | Transferência de split concluída com sucesso. |
+| `succeeded` (type `split_transfer_reverse`) | Estorno da transferência de split concluído com sucesso. |
+
+## Banking Connectivity {#banking-connectivity}
+
+Os webhooks do Banking Connectivity (Banking as a Service) seguem o mesmo comportamento de entrega e de novas tentativas do restante desta página, mas são uma superfície de produto separada. Veja [Eventos de webhook do Banking Connectivity](/reference/banking-connectivity#webhook-events) para o catálogo completo de eventos (entidades, onboardings, contas e transferências) e [Notificações de webhook](/reference/banking-connectivity/webhooks/webhook-notifications-banking) para a estrutura do payload de transferências recebidas.

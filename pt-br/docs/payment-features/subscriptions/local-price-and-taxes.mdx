@@ -1,0 +1,102 @@
+---
+title: "Preço local e impostos (Stripe Billing)"
+description: "Cobre o primeiro pagamento de uma assinatura do Stripe Billing na moeda do cliente e com o imposto do endereço dele, em um link de pagamento hospedado ou com o Lite SDK"
+---
+
+Com o [Stripe Billing](/pt-br/docs/payment-features/subscriptions/stripe-billing) como seu sistema de assinaturas, a Yuno pode mostrar o preço na moeda local do cliente e somar o imposto do endereço dele antes do primeiro pagamento. Quando o pagamento é aprovado, a Yuno cria a assinatura no Stripe com esse imposto na primeira fatura. As renovações são faturadas pelo Stripe na moeda dos seus preços e cobradas pela Yuno.
+
+Você escolhe como o cliente paga:
+
+- **Link de pagamento hospedado:** a Yuno hospeda a página inteira. Você só cria o link.
+- **Lite SDK:** você renderiza o checkout na sua página e cota o imposto a partir do seu backend.
+
+<Warning>
+**Habilitado por organização**
+
+O preço local (cotações de câmbio) e a cobrança de impostos vêm desativados por padrão. Peça ao seu Technical Account Manager ou Key Account Manager para habilitá-los, primeiro no sandbox e depois em produção. Sua conta também precisa do [onboarding do Stripe Billing](/pt-br/docs/payment-features/subscriptions/stripe-billing#prerequisites) com o Stripe Tax ativo na sua conta Stripe.
+</Warning>
+
+## Como funciona {#how-it-works}
+
+1. **Você cria o link ou a sessão de checkout** com `external_subscription`: o cliente do Stripe e os preços a vender. A Yuno ainda não cria nada no Stripe.
+2. **O cliente vê o preço local.** Quando o país do cliente tem uma taxa publicada, a página abre na moeda local com a taxa, e o cliente pode alternar para a moeda do preço e voltar. Só preços em USD são convertidos.
+3. **O cliente informa o endereço de cobrança.** O país é sempre solicitado. O código postal é solicitado para os Estados Unidos e o Canadá. Uma empresa pode adicionar o nome e o identificador fiscal para receber o tratamento de empresa (por exemplo, reverse charge na UE).
+4. **A Yuno cota o imposto** com o Stripe Tax sempre que o país, o código postal ou o identificador fiscal mudam, e mostra o total. Uma cotação de imposto vale por 30 minutos; depois disso, a página cota de novo antes de cobrar.
+5. **O cliente paga o total cotado,** na moeda selecionada, pelo seu roteamento.
+6. **A Yuno cria a assinatura no Stripe:** o cliente, os preços, o cartão como meio de pagamento padrão e a primeira fatura marcada como paga com o imposto cotado. Um pagamento recusado não cria nada no Stripe.
+
+## Antes de começar {#before-you-start}
+
+- **Preços em USD** se você usa preço local: as cotações de câmbio só convertem a partir de USD.
+- **Registros no Stripe Tax** onde você cobra impostos. Sem um registro, o Stripe responde que nenhum imposto se aplica. Para cobrar VAT de consumidores na UE, o Stripe precisa de um registro OSS.
+- **Um cliente na Yuno** para o comprador (`customer_payer.id`): a Yuno usa o país dele para escolher a moeda local.
+
+## Opção 1: link de pagamento hospedado {#option-1-hosted-payment-link}
+
+Crie o link com `local_pricing`, `tax_collection` e `external_subscription`. Veja [Criar link de pagamento](/reference/payment-links/create-payment-link).
+
+```json
+{
+  "account_id": "<your_account_id>",
+  "description": "Pro plan, monthly",
+  "country": "US",
+  "amount": { "currency": "USD", "value": 29 },
+  "payment_method_types": ["CARD"],
+  "one_time_use": true,
+  "customer_payer": { "id": "<yuno_customer_id>" },
+  "local_pricing": true,
+  "tax_collection": true,
+  "external_subscription": {
+    "provider": "STRIPE_BILLING",
+    "customer_id": "cus_RplXYZ",
+    "items": [{ "price": "price_1QwAbc", "quantity": 1 }]
+  }
+}
+```
+
+- `amount.value` deve ser o subtotal dos preços, na moeda deles (preço vezes quantidade, somados). Se não for, o link abre, mas o pagamento é recusado com `TAX_QUOTE_INVALID` quando o cliente paga.
+- A moeda local vem do país do cliente e, depois, do país do endereço de cobrança dele. Sem um país, o link abre na moeda do preço.
+- `local_pricing` e `tax_collection` são independentes: você pode usar um sem o outro.
+- Um link que cobra impostos nunca aplica uma [promoção](/docs/payment-features/promotions).
+
+Envie ao cliente o `checkout_url` da resposta. Os erros que a página pode mostrar estão listados em [Erros do checkout hospedado](/reference/payment-links/hosted-checkout-errors).
+
+## Opção 2: Lite SDK {#option-2-lite-sdk}
+
+1. **Crie a sessão de checkout** com `tax_collection: true` e `external_subscription` (`customer_id` e `items`). Veja [Criar sessão de checkout](/reference/checkout-sessions/create-checkout-session).
+2. **Inicie o checkout com `onBillingAddressChanged`.** O SDK chama essa função quando os dados de cobrança mudam; seu backend cota o imposto com [Criar cotação de imposto](/reference/taxes/create-tax-quote) e você retorna o total. Veja [Checkouts com impostos](/docs/sdks/lite-web/payment#checkouts-with-taxes).
+3. **Crie o pagamento** em `createPayment` com o total cotado como `amount`, `vault_on_success: true`, `customer_payer.id`, `external_subscription.customer_id` e uma entrada por linha da cotação em `additional_data.order.taxes`, cada uma com `source: YUNO_TAX_QUOTE` e o último `tax_quote_id`. Veja [Criar pagamento](/reference/payments/create-payment).
+
+Cada entrada de imposto copia uma linha da cotação, com o `taxable_amount` da linha como `tax_base`:
+
+```json
+"additional_data": {
+  "order": {
+    "taxes": [
+      {
+        "type": "SALES_TAX",
+        "tax_base": 12.00,
+        "value": 1.07,
+        "percentage": 8.875,
+        "source": "YUNO_TAX_QUOTE",
+        "tax_quote_id": "txq_2a8a493dcc5c4230b4cf8d9359fd200a"
+      }
+    ]
+  }
+}
+```
+
+Para mostrar um preço local na sua própria página, cote-o com [Criar cotação de câmbio](/reference/fx-rates/create-fx-quote) e cobre o valor local antes que a cotação expire.
+
+## Testes no sandbox {#testing-in-sandbox}
+
+- Use sua conta de teste do Stripe com o Stripe Tax ativo e pelo menos um registro, por exemplo Nova York: um comprador com código postal `10001` recebe 8,875% de sales tax.
+- Um comprador em um país sem registro recebe `NO_TAX`.
+- Confira o resultado no Stripe: uma nova assinatura na moeda do preço e a primeira fatura dela paga, com o imposto.
+
+## É bom saber {#good-to-know}
+
+- **As cotações expiram.** A cotação de imposto dura 30 minutos e a cotação de câmbio dura até o `expires_at` dela. Uma cotação expirada nunca é cobrada: a página cota de novo e o cliente confirma o novo total.
+- **As renovações são na moeda do preço.** O preço local se aplica só ao primeiro pagamento.
+- **Reembolsos.** Um reembolso do primeiro pagamento adiciona uma nota de crédito à fatura dele no Stripe. A assinatura continua ativa: cancele-a no Stripe se o cliente não deve ser cobrado de novo.
+- **Identificadores fiscais.** O identificador fiscal que o cliente informa é salvo no cliente do Stripe, então as próximas faturas mantêm o tratamento de empresa.

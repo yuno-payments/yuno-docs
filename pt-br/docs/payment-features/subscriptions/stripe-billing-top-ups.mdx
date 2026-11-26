@@ -1,0 +1,216 @@
+---
+title: "Pagar uma fatura do Stripe (recargas)"
+description: "Receba o pagamento de uma fatura específica do Stripe com a Yuno, como uma recarga de saldo, e deixe a Yuno informar o resultado na fatura"
+---
+
+Algumas cobranças não fazem parte de uma assinatura: um cliente recarrega um saldo ou paga uma fatura que você criou manualmente. Crie a fatura no Stripe e receba o pagamento com a Yuno, pelos seus próprios provedores e regras de roteamento. A Yuno informa o resultado na fatura, e o Stripe a marca como paga.
+
+Você vincula o pagamento à fatura com o objeto `external_invoice` em [Criar pagamento](/reference/payments/create-payment). Ele funciona para faturas avulsas e para as faturas de assinaturas do Stripe Billing. As [regras de valor](#amount-rules) são diferentes entre os dois casos.
+
+<Warning>
+**O pagamento de faturas do Stripe é habilitado por conta**
+
+O pagamento de faturas do Stripe vem desativado por padrão. A Yuno o ativa para cada conta Yuno que passa pelo onboarding do Stripe Billing e verifica o `account_id` do pagamento: outra conta da mesma organização só fica habilitada quando também passar pelo onboarding. Peça ao seu Technical Account Manager ou Key Account Manager para habilitá-lo, primeiro em sandbox e depois em produção.
+
+Envie `external_invoice` somente a partir de uma conta habilitada. A Yuno não o recusa vindo de outras contas, mas não consegue verificar a fatura antes da cobrança nem informar o pagamento ao Stripe, então o cliente pode ser cobrado enquanto a fatura continua em aberto.
+</Warning>
+
+## Como funciona {#how-it-works}
+
+1. **Crie a fatura no Stripe.** Crie e finalize a fatura para que ela fique em aberto. Guarde o id da fatura (`in_...`) e o id do cliente (`cus_...`).
+2. **Receba o pagamento com a Yuno.** Crie o pagamento a partir do seu backend com o objeto `external_invoice` (veja [Criar o pagamento](#create-the-payment)). Antes de cobrar, a Yuno verifica a fatura no Stripe. Depois, a Yuno cobra pelos seus provedores e pelo seu roteamento.
+3. **A Yuno informa o resultado.** Pouco depois de o pagamento ser bem-sucedido, a Yuno o informa na fatura no Stripe. Quando ele cobre o valor restante, o Stripe marca a fatura como **paid**. Um pagamento recusado é registrado como uma tentativa com falha, e a fatura continua **open**, para que você possa tentar novamente.
+
+## Pré-requisitos {#prerequisites}
+
+* Uma conta Yuno com seus provedores conectados e o roteamento publicado.
+* O mesmo onboarding das [assinaturas do Stripe Billing](/pt-br/docs/payment-features/subscriptions/stripe-billing#prerequisites): a Yuno tem uma chave restrita do Stripe que pode ler faturas, informar pagamentos e reembolsos, anexar pagamentos a faturas e criar notas de crédito, e sua conta Yuno está habilitada para este recurso (veja o aviso acima).
+
+## Criar o pagamento {#create-the-payment}
+
+Crie o pagamento normalmente e adicione o objeto `external_invoice`:
+
+```json
+{
+  "account_id": "<your_account_id>",
+  "merchant_order_id": "<your_order_id>",
+  "description": "Balance top-up",
+  "country": "US",
+  "amount": { "currency": "USD", "value": 50.00 },
+  "checkout": { "session": "<checkout_session_id>" },
+  "customer_payer": { "id": "<yuno_customer_id>" },
+  "payment_method": {
+    "type": "CARD",
+    "token": "<one_time_token_from_sdk>"
+  },
+  "external_invoice": {
+    "id": "in_1QwZzz",
+    "customer_id": "cus_RplXYZ"
+  }
+}
+```
+
+| Campo | Obrigatório | Descrição |
+| --- | --- | --- |
+| `external_invoice.id` | Sim, quando o objeto é enviado | O id da fatura no Stripe (`in_...`). De 3 a 255 caracteres depois de remover os espaços. |
+| `external_invoice.customer_id` | Não | O id do cliente no Stripe (`cus_...`) dono da fatura. De 3 a 255 caracteres depois de remover os espaços. Quando você o envia, ele precisa ser o cliente da fatura. Enviá-lo permite que a Yuno recuse um pagamento de outro cliente antes de cobrar. |
+
+O que você precisa saber:
+
+* Envie o valor em **unidades principais** (50.00, não 5000).
+* Envie um `X-Idempotency-Key` com a requisição. Se você repetir a mesma requisição com a mesma chave, a Yuno retorna o mesmo pagamento e não cobra duas vezes.
+* Um pagamento pode levar no máximo **um** entre `external_subscription`, `external_invoice` e `subscription`. Enviar `external_invoice` junto com um dos outros retorna `400 INVALID_REQUEST`.
+* A conta em `account_id` precisa estar habilitada para este recurso (veja o aviso no início da página).
+
+Quando o pagamento é criado, a resposta devolve o objeto:
+
+```json
+{
+  "id": "<yuno_payment_id>",
+  "account_id": "<your_account_id>",
+  "description": "Balance top-up",
+  "country": "US",
+  "status": "SUCCEEDED",
+  "sub_status": "APPROVED",
+  "merchant_order_id": "<your_order_id>",
+  "amount": { "currency": "USD", "value": 50 },
+  "...": "...",
+  "external_invoice": {
+    "id": "in_1QwZzz",
+    "customer_id": "cus_RplXYZ"
+  }
+}
+```
+
+[Consultar pagamento](/reference/payments/retrieve-payment-by-id) retorna o mesmo objeto, e os [webhooks](/pt-br/docs/webhooks/object-and-examples#payment-webhook-v2) de pagamento também o trazem. Um pagamento criado sem `external_invoice` não tem essa chave.
+
+## Regras de valor {#amount-rules}
+
+O que a Yuno aceita depende da fatura e do valor que você envia, comparado com o **valor restante** da fatura.
+
+| Fatura | Valor menor | Valor igual | Valor maior |
+| --- | --- | --- | --- |
+| Uma fatura avulsa, ou uma fatura de uma assinatura cobrada por fatura (`send_invoice`) | Aceito. A fatura continua em aberto pelo restante. | Aceito. A fatura é paga. | `400 EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING` |
+| Uma fatura de uma assinatura que o Stripe cobra automaticamente (`charge_automatically`): a primeira fatura, uma fatura posterior ou uma fatura de renovação | `400 EXTERNAL_INVOICE_REJECTED` | Aceito. A fatura é paga. | `400 EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING` |
+
+Um valor **maior** que o valor restante é recusado antes da cobrança sempre que a Yuno consegue verificar a fatura (veja [O que a Yuno verifica antes de cobrar](#what-yuno-checks-before-it-charges)).
+
+### Faturas avulsas e faturas cobradas por fatura {#one-off-invoices-and-invoices-collected-by-invoice}
+
+Um valor menor é aceito e a fatura continua em aberto pelo restante, com o valor restante reduzido pelo que foi pago.
+
+**Você cobra o restante.** A Yuno nunca cobra o restante por conta própria. Para cobrá-lo, envie outro pagamento com o mesmo `external_invoice` pelo valor restante. Você pode repetir isso quantas vezes precisar, até a fatura ser paga. Cada pagamento bem-sucedido ganha seu próprio registro de pagamento no Stripe, e a fatura fica paga quando não resta nada.
+
+Se o que sobrar estiver abaixo da cobrança mínima do Stripe para a moeda (USD 0.50 para dólares americanos), o Stripe marca a fatura como paga, reduz o valor devido e adiciona o restante ao saldo do cliente no Stripe, para ser cobrado na próxima fatura do cliente.
+
+### Faturas de assinaturas que o Stripe cobra automaticamente {#invoices-of-subscriptions-that-stripe-charges-automatically}
+
+A primeira fatura, qualquer fatura posterior e toda fatura de renovação de uma assinatura cujo método de cobrança é `charge_automatically` precisam do valor restante **exato**, porque o Stripe não aceita um pagamento de valor diferente nessas faturas.
+
+* Um valor menor retorna `400 EXTERNAL_INVOICE_REJECTED`.
+* Um valor maior retorna `400 EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING`.
+* O valor exato é aceito e a fatura é paga. Quando era a primeira fatura da assinatura, a assinatura fica ativa.
+
+Uma fatura de renovação que o Stripe cria como rascunho não pode ser paga até o Stripe finalizá-la. Até lá, a resposta é `EXTERNAL_INVOICE_NOT_OPEN`.
+
+## O que a Yuno verifica antes de cobrar {#what-yuno-checks-before-it-charges}
+
+Antes de qualquer cartão ser tocado, a Yuno verifica a fatura no Stripe. Quando a verificação recusa o pagamento, nada é cobrado e nenhum pagamento é criado. A resposta é um HTTP 400 com este corpo:
+
+```json
+{
+  "code": "EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING",
+  "messages": [
+    "Invalid Request. The amount can not be greater than the amount remaining on the invoice (12.00 USD)."
+  ]
+}
+```
+
+| Status e código | Quando | Mensagem |
+| --- | --- | --- |
+| `400 EXTERNAL_INVOICE_AMOUNT_EXCEEDS_REMAINING` | O valor está acima do que resta na fatura | Invalid Request. The amount can not be greater than the amount remaining on the invoice (12.00 USD). O valor restante e a moeda são incluídos quando conhecidos. |
+| `400 EXTERNAL_INVOICE_NOT_OPEN` | A fatura está paga, anulada, em rascunho ou incobrável | Invalid Request. The invoice is not open and can not be paid. |
+| `400 EXTERNAL_INVOICE_CUSTOMER_MISMATCH` | O `customer_id` que você enviou não é o cliente da fatura | Invalid Request. The customer of the external_invoice does not match the customer of the invoice. |
+| `400 EXTERNAL_INVOICE_CURRENCY_MISMATCH` | A moeda do pagamento não é a moeda da fatura | Invalid Request. The payment currency does not match the invoice currency. |
+| `400 EXTERNAL_INVOICE_NOT_FOUND` | O Stripe não tem essa fatura | Invalid Request. The invoice does not exist. |
+| `400 EXTERNAL_INVOICE_REJECTED` | Qualquer outra recusa, incluindo um valor menor em uma fatura de uma assinatura que o Stripe cobra automaticamente | Invalid Request. The invoice can not be paid with this payment. |
+
+A Yuno também valida o próprio objeto, antes de verificar a fatura:
+
+| Status e código | Quando | Mensagem |
+| --- | --- | --- |
+| `400 INVALID_REQUEST` | `external_invoice` é enviado junto com `external_subscription` | Invalid Request. external_invoice and external_subscription can not be sent together. Please send only one of them. |
+| `400 INVALID_REQUEST` | `external_invoice` é enviado junto com `subscription` | Invalid Request. external_invoice and subscription can not be sent together. Please send only one of them. |
+| `400 INVALID_REQUEST` | `id` está ausente ou vazio, ou `id` ou `customer_id` tem menos de 3 ou mais de 255 caracteres | Invalid Request. A mensagem indica o campo, por exemplo `external_invoice.id`. |
+
+Se a Yuno não conseguir verificar a fatura naquele momento, por exemplo porque o Stripe não responde a tempo, o pagamento segue sem a verificação e a Yuno o informa na fatura depois. Se a fatura não puder recebê-lo nesse momento, por exemplo porque o valor está acima do que resta ou a fatura já está paga, o cliente é cobrado, mas o pagamento não é aplicado à fatura, e a Yuno não o reembolsa automaticamente. Nesse caso, entre em contato com o seu Technical Account Manager.
+
+## Novas tentativas e duplicidades {#retries-and-duplicates}
+
+* **Repita a mesma requisição.** Uma nova tentativa com o mesmo `X-Idempotency-Key` retorna o mesmo pagamento e não é cobrada duas vezes.
+* **Tente novamente depois de uma recusa.** Um pagamento recusado deixa a fatura em aberto. Para tentar novamente, crie um novo pagamento para a fatura com um novo `X-Idempotency-Key`.
+* **Não pague uma fatura duas vezes.** Assim que o Stripe mostra a fatura como paga, um novo pagamento para ela é recusado com `EXTERNAL_INVOICE_NOT_OPEN`. A Yuno informa um pagamento ao Stripe pouco depois de ele ser bem-sucedido, não no momento da resposta da API, então um segundo pagamento enviado antes disso não é recusado. Envie um pagamento por vez para cada fatura e espere até o Stripe mostrá-lo na fatura antes de enviar outro. Se um cliente for cobrado duas vezes, entre em contato com o seu Technical Account Manager.
+
+## Reembolsos {#refunds}
+
+Reembolse um pagamento feito com `external_invoice` pela API ou pelo dashboard da Yuno, como qualquer pagamento. A Yuno informa o reembolso ao Stripe no registro do pagamento. O que mais ela faz depende da fatura:
+
+* **A fatura está paga.** A Yuno informa o reembolso no registro do pagamento e adiciona à fatura uma **nota de crédito** pelo valor reembolsado, para que a sua contabilidade no Stripe continue consistente. Reembolsos parciais são suportados, cada um com sua própria nota de crédito, e os reembolsos de um pagamento nunca somam mais que o pagamento.
+* **A fatura ainda está em aberto (paga em parte).** A Yuno informa o reembolso no registro do pagamento e **não adiciona nota de crédito**. No Stripe, a fatura continua contando esse pagamento como pago, e qualquer nota de crédito que você adicionar lá também reduz o que o cliente ainda deve, então como quitar o restante da fatura é decisão sua no Stripe.
+
+## Pagar uma fatura do Stripe com um link de pagamento {#pay-a-stripe-invoice-with-a-payment-link}
+
+[`POST /v1/payment-links`](/reference/payment-links/create-payment-link) aceita um objeto `external_invoice` opcional. `id` é obrigatório e precisa ter de 3 a 255 caracteres depois de remover os espaços. `customer_id` é opcional e precisa ter de 3 a 255 caracteres. A resposta do link devolve o objeto.
+
+* `external_invoice` não pode ser combinado com o bloco `subscription`, nem com uma lista `taxes` não vazia. Qualquer um dos dois retorna `400`.
+* Sua conta precisa estar habilitada para faturas externas (veja o aviso no início da página). A Yuno não recusa um link de uma conta que não está habilitada, mas não consegue verificar a fatura quando o cliente paga nem informar o pagamento ao Stripe.
+* Se você enviar um cabeçalho `X-Account-Code`, ele precisa ser a conta em `account_id`. Caso contrário, a API retorna `400 INVALID_REQUEST`: "Invalid Request. The account-code header does not match account_id. With external_invoice, send the same account in both or omit the header."
+* `external_invoice` não pode ser alterado depois que o link é criado. Uma atualização que o inclua retorna `400`.
+
+Quando o cliente paga o link, a Yuno primeiro verifica a fatura do Stripe: ela precisa estar em aberto, o valor do link precisa ser igual ao valor restante da fatura, na mesma moeda, e, quando você enviou `customer_id`, ele precisa ser o cliente da fatura. Se a verificação recusar o pagamento, nada é cobrado, a Yuno cancela o link e a tentativa de pagamento é recusada com `400` e um destes códigos. Crie um novo link assim que a fatura puder ser paga. Criar um link não verifica a fatura e, se a Yuno não conseguir verificá-la quando o cliente paga (por exemplo, o Stripe não responde a tempo), o pagamento segue sem a verificação.
+
+| Status e código | Quando |
+| --- | --- |
+| `400 EXTERNAL_INVOICE_AMOUNT_NOT_EQUAL` | O valor do link não é o valor restante da fatura, seja menor ou maior. |
+| `400 EXTERNAL_INVOICE_NOT_OPEN` | A fatura não está em aberto, então não pode ser paga. |
+| `400 EXTERNAL_INVOICE_CURRENCY_MISMATCH` | A moeda do pagamento não é a moeda da fatura. |
+| `400 EXTERNAL_INVOICE_CUSTOMER_MISMATCH` | O `customer_id` que você enviou não é o cliente da fatura. |
+| `400 EXTERNAL_INVOICE_NOT_FOUND` | O Stripe não tem essa fatura. |
+| `400 EXTERNAL_INVOICE_REJECTED` | Qualquer outra recusa da verificação da fatura. |
+
+Quando o pagamento é bem-sucedido, a Yuno o informa na fatura no Stripe e o anexa a ela, e o Stripe marca a fatura como paga. Se uma tentativa automática anterior na fatura falhou e deixou um registro de pagamento com o mesmo valor e a mesma moeda, o pagamento é adicionado a esse registro. Caso contrário, a Yuno cria um novo.
+
+Para uma fatura de uma assinatura cujos pagamentos a Yuno processa, o cartão usado passa a ser o meio de pagamento padrão da assinatura nas próximas renovações quando você criou o link com `vault_on_success: true` (isso exige `customer_payer.id` e `one_time_use: true`) e o pagador é o cliente da assinatura. Caso contrário, o pagamento é informado mesmo assim e a assinatura mantém o seu meio de pagamento.
+
+Para uma fatura que pertence a uma assinatura, a Yuno segura a próxima nova tentativa automática da fatura pelo Stripe enquanto um pagamento no link está em andamento, para que o cliente não seja cobrado duas vezes. A retenção termina quando o pagamento é bem-sucedido, é recusado ou falha, ou quando o link expira ou é cancelado, e em qualquer caso depois de 24 horas.
+
+## Os metadados do seu pagamento no registro de pagamento do Stripe {#your-payment-metadata-on-the-stripe-payment-record}
+
+A Yuno pode copiar o `metadata` que você envia em um pagamento para o registro de pagamento do Stripe. Isso é habilitado por organização, para todas as suas contas: peça ao seu Technical Account Manager ou Key Account Manager. Abrange:
+
+* o primeiro pagamento de uma assinatura, e toda renovação, nova tentativa e encerramento dessa assinatura, incluindo uma renovação cujo resultado chega atrasado;
+* o reembolso de um pagamento e sua nota de crédito, que levam o `metadata` do pagamento reembolsado (um pagamento de renovação não tem `metadata` próprio, então o reembolso de uma renovação não leva nenhum);
+* pagamentos de recarga.
+
+Uma renovação leva o `metadata` do pagamento que iniciou a assinatura. Assinaturas que começaram antes de isso ser habilitado para a sua organização, e assinaturas que começam com um período de teste gratuito (sem primeiro pagamento), não levam `metadata` nas renovações.
+
+`metadata` é uma lista de objetos `{key, value}`. Um objeto em vez de uma lista retorna `400`. Os metadados são enviados no primeiro informe de um pagamento e em toda tentativa posterior, então o registro sempre leva o conjunto completo.
+
+Criar pagamento aceita até 120 entradas, com chaves de até 48 caracteres e valores de até 512. O Stripe aceita menos, então cada registro de pagamento recebe no máximo 47 entradas suas:
+
+* chaves de até 40 caracteres e valores de até 500 caracteres, contados em caracteres (code points Unicode);
+* um valor com mais de 500 caracteres é cortado em 500 caracteres;
+* chaves com mais de 40 caracteres, e chaves que contêm `[` ou `]`, são ignoradas;
+* se uma chave aparecer mais de uma vez, só um dos seus valores é mantido;
+* se você enviar mais de 47 entradas válidas, as primeiras 47 são mantidas e o restante é descartado.
+
+Nos registros de pagamentos de recarga, a Yuno sempre adiciona `yuno_payment_id` e `external_invoice_id`, e `merchant_order_id` quando o pagamento tem um. Eles têm precedência sobre as suas entradas de mesmo nome e não contam para as 47.
+
+Copiar os metadados para o Stripe nunca faz um pagamento ou o seu registro no Stripe falhar: entradas além dos limites do Stripe são cortadas ou ignoradas.
+
+## Não suportado {#not-supported}
+
+* **`external_invoice` junto com `external_subscription` ou `subscription`.** Cada um desses objetos indica à Yuno onde informar o pagamento: `external_invoice` em uma fatura do Stripe, `external_subscription` em uma assinatura do Stripe Billing e `subscription` em uma assinatura da Yuno. Um pagamento só pode ser informado em um lugar, então a Yuno recusa a combinação com `400 INVALID_REQUEST`. Para pagar uma fatura de uma assinatura do Stripe, envie somente `external_invoice`: o Stripe já vincula a fatura à sua assinatura.
+* **`external_invoice` em `POST /v2/payments` (pagamentos com vários meios).** Somente `POST /v1/payments` lê `external_invoice`. A rota de vários meios não tem esse campo e o ignora sem erro: o pagamento é cobrado, mas não é vinculado à fatura e o Stripe não é atualizado. Use `POST /v1/payments`.
+* **Uma cotação de promoção da Yuno em um pagamento com `external_invoice`.** Promoções não se aplicam ao pagamento de uma fatura do Stripe. O valor desse pagamento é definido pela fatura no Stripe, então a Yuno recusa a cotação com `422 PROMOTION_SUBSCRIPTION_UNSUPPORTED` em vez de cobrar um valor com desconto que a fatura não espera. Para dar um desconto, aplique-o à fatura no Stripe antes de receber o pagamento.
+* **Pagamentos apenas autorizados ou capturados parcialmente.** A Yuno informa um pagamento na fatura somente quando ele é capturado por completo, porque só então o seu valor é definitivo. Uma autorização ainda pode ser liberada ou capturada por um valor menor, então informá-la poderia marcar a fatura como paga com um dinheiro que nunca é recebido. Capture o valor total.

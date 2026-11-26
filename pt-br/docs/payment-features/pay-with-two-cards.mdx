@@ -1,0 +1,284 @@
+---
+title: "Pagar com dois cartões"
+description: "Financie um pagamento com exatamente dois cartões pela Direct API ou pelo Web SDK headless: requisições, resposta, status, estornos e operações."
+---
+
+Um pagamento com dois cartões é um único pagamento financiado por exatamente dois cartões. Cada cartão paga a sua parte do valor, e as duas partes somam o valor do pagamento. Seu cliente paga um pedido, e você concilia um pagamento.
+
+Use esse recurso quando um cliente quiser dividir um pedido entre dois cartões, por exemplo, porque um cartão não tem limite suficiente para o pedido inteiro.
+
+## Limites {#limits}
+
+* Exatamente dois cartões, ambos `type: CARD`.
+* Uma moeda: os valores dos dois cartões usam a moeda do pagamento.
+* `split_marketplace`, `external_subscription` e `amount.currency_conversion` não são permitidos, e cotações de promoção não são aceitas (consulte [Promoções](/docs/payment-features/promotions)).
+* Tudo ou nada: os dois cartões são bem-sucedidos ou o pagamento falha. Consulte [Tudo ou nada](#all-or-nothing).
+* `payment_method.capture` é compartilhado pelos dois cartões.
+
+## Habilitação {#enablement}
+
+Em produção, os pagamentos com dois cartões são habilitados por organização. Até que a Yuno os habilite, `POST /v2/payments` responde:
+
+```json
+{
+  "code": "PRODUCT_NOT_ENABLED",
+  "messages": [
+    "Payments with more than one payment method are enabled per account. Contact your Key Account Manager (KAM) to activate it."
+  ]
+}
+```
+
+com o status HTTP `403`. Entre em contato com seu Key Account Manager para habilitar o recurso. No sandbox, os pagamentos com dois cartões estão habilitados para todas as organizações.
+
+## Crie o pagamento {#create-the-payment}
+
+Envie `POST /v2/payments` (`https://api-sandbox.y.uno/v2/payments` no sandbox, `https://api.y.uno/v2/payments` em produção) com os mesmos cabeçalhos `public-api-key` e `private-secret-key` dos endpoints v1. O cabeçalho `X-Idempotency-Key` é obrigatório nesta requisição e em todas as operações v2; sem ele, a requisição é rejeitada com `400` e a mensagem `The header 'x-idempotency-key' is required.`
+
+| Campo | Descrição |
+| --- | --- |
+| `workflow` | `DIRECT`, `REDIRECT` ou `SDK_CHECKOUT`. |
+| `amount` | Total do pagamento. Deve ser igual à soma dos valores dos dois cartões. |
+| `payment_method.payment_methods` | Somente `DIRECT` e `REDIRECT`. Exatamente dois itens, ambos `type: CARD`. |
+| `payment_method.payment_methods[].amount` | `currency` e `value` da parte que este cartão paga. `value` maior que 0, `currency` igual a `amount.currency`. |
+| `payment_method.payment_methods[].detail.card` | Os dados do cartão. Envie isto ou `vaulted_token`. Não envie `capture` aqui. |
+| `payment_method.payment_methods[].vaulted_token` | O token armazenado de um cartão cadastrado. |
+| `payment_method.payment_methods[].payment_method_owner` | Opcional. O titular do cartão deste cartão, quando não é o pagador. |
+| `payment_method.payment_methods[].account_updater` | Opcional. |
+| `payment_method.token` | Somente `SDK_CHECKOUT`. O token composto. Não envie `payment_methods` junto com ele. |
+| `checkout.session` | Somente `SDK_CHECKOUT`. A sessão de checkout para a qual o token composto foi criado. |
+| `payment_method.capture` | Compartilhado pelos dois cartões. O padrão é `true` (os dois cartões são cobrados). Envie `false` para autorizar os dois cartões e capturar cada um depois. |
+| `customer_payer` | Obrigatório. O pagador, compartilhado pelos dois cartões. |
+| `callback_url` | Opcional. Para onde um desafio 3DS ou um redirecionamento devolve o cliente. |
+
+<CodeGroup>
+
+```bash DIRECT: two new cards
+curl --request POST \
+  --url https://api-sandbox.y.uno/v2/payments \
+  --header 'X-Idempotency-Key: 6f1c2a3b-4d5e-4f60-8a7b-9c0d1e2f3a4b' \
+  --header 'public-api-key: <PUBLIC_API_KEY>' \
+  --header 'private-secret-key: <PRIVATE_SECRET_KEY>' \
+  --header 'content-type: application/json' \
+  --data '{
+    "account_id": "<ACCOUNT_ID>",
+    "merchant_order_id": "order-10045",
+    "description": "Order paid with two cards",
+    "country": "BR",
+    "amount": { "currency": "BRL", "value": 300 },
+    "workflow": "DIRECT",
+    "customer_payer": { "id": "<CUSTOMER_ID>" },
+    "payment_method": {
+      "capture": true,
+      "payment_methods": [
+        {
+          "type": "CARD",
+          "amount": { "currency": "BRL", "value": 200 },
+          "detail": { "card": { "number": "4111111111111111", "expiration_month": 11, "expiration_year": 2029, "security_code": "123", "holder_name": "ANA SOUZA" } }
+        },
+        {
+          "type": "CARD",
+          "amount": { "currency": "BRL", "value": 100 },
+          "detail": { "card": { "number": "5555555555554444", "expiration_month": 3, "expiration_year": 2030, "security_code": "456", "holder_name": "ANA SOUZA" } }
+        }
+      ]
+    }
+  }'
+```
+
+```bash DIRECT: one vaulted card and one new card
+curl --request POST \
+  --url https://api-sandbox.y.uno/v2/payments \
+  --header 'X-Idempotency-Key: 7a2d3b4c-5e6f-4a71-9b8c-0d1e2f3a4b5c' \
+  --header 'public-api-key: <PUBLIC_API_KEY>' \
+  --header 'private-secret-key: <PRIVATE_SECRET_KEY>' \
+  --header 'content-type: application/json' \
+  --data '{
+    "account_id": "<ACCOUNT_ID>",
+    "merchant_order_id": "order-10046",
+    "description": "Order paid with two cards",
+    "country": "BR",
+    "amount": { "currency": "BRL", "value": 300 },
+    "workflow": "DIRECT",
+    "customer_payer": { "id": "<CUSTOMER_ID>" },
+    "payment_method": {
+      "capture": false,
+      "payment_methods": [
+        {
+          "type": "CARD",
+          "amount": { "currency": "BRL", "value": 120 },
+          "vaulted_token": "aad8578e-ac2f-40a0-8065-25b5957f6555"
+        },
+        {
+          "type": "CARD",
+          "amount": { "currency": "BRL", "value": 180 },
+          "detail": { "card": { "number": "4111111111111111", "expiration_month": 11, "expiration_year": 2029, "security_code": "123", "holder_name": "JOAO SOUZA" } },
+          "payment_method_owner": { "first_name": "Joao", "last_name": "Souza", "email": "joao.souza@example.com" }
+        }
+      ]
+    }
+  }'
+```
+
+```bash SDK_CHECKOUT: composite token
+curl --request POST \
+  --url https://api-sandbox.y.uno/v2/payments \
+  --header 'X-Idempotency-Key: 8b3e4c5d-6f7a-4b82-8c9d-1e2f3a4b5c6d' \
+  --header 'public-api-key: <PUBLIC_API_KEY>' \
+  --header 'private-secret-key: <PRIVATE_SECRET_KEY>' \
+  --header 'content-type: application/json' \
+  --data '{
+    "account_id": "<ACCOUNT_ID>",
+    "merchant_order_id": "order-10047",
+    "description": "Order paid with two cards",
+    "country": "BR",
+    "amount": { "currency": "BRL", "value": 300 },
+    "workflow": "SDK_CHECKOUT",
+    "checkout": { "session": "<CHECKOUT_SESSION>" },
+    "customer_payer": { "id": "<CUSTOMER_ID>" },
+    "payment_method": { "token": "<COMPOSITE_TOKEN>", "capture": true },
+    "callback_url": "https://merchant.example.com/checkout/return"
+  }'
+```
+
+</CodeGroup>
+
+No caminho do SDK, crie o token composto com `generateToken` no [Web SDK headless](/docs/sdks/headless-web/payment#split-one-payment-across-two-cards). O token leva os dois cartões e seus valores. No Yuno SDK, passe um array para `start()`: consulte [Dividir um pagamento entre dois cartões](/docs/yuno-sdk/features/split-payment).
+
+Consulte a referência completa em [Create Payment (two cards)](/reference/payments/create-payment-v2).
+
+## Leia a resposta {#read-the-response}
+
+A requisição de criação e [Retrieve Payment (two cards)](/reference/payments/retrieve-payment-two-cards) retornam o mesmo formato:
+
+```json
+{
+  "id": "7c1b6e2a-5f3d-4a8e-9b21-3e4f5a6b7c8d",
+  "status": "SUCCEEDED",
+  "sub_status": "APPROVED",
+  "split_payment_methods": true,
+  "payment_methods_count": 2,
+  "sdk_action_required": false,
+  "amount": { "currency": "BRL", "value": 300 },
+  "payment_method": {
+    "capture": true,
+    "payment_methods": [
+      {
+        "sequence": 1,
+        "type": "CARD",
+        "amount": { "currency": "BRL", "value": 200 },
+        "transactions": [
+          { "id": "d2a4f6b8-1c3e-4a5b-8d7f-9e0a1b2c3d4e", "type": "PURCHASE", "status": "SUCCEEDED", "amount": 200, "response_code": "SUCCEEDED" }
+        ]
+      },
+      {
+        "sequence": 2,
+        "type": "CARD",
+        "amount": { "currency": "BRL", "value": 100 },
+        "transactions": [
+          { "id": "e3b5a7c9-2d4f-4b6c-9e8a-0f1b2c3d4e5f", "type": "PURCHASE", "status": "SUCCEEDED", "amount": 100, "response_code": "SUCCEEDED" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+* `split_payment_methods` é `true` e `payment_methods_count` é `2`.
+* `payment_method.payment_methods` tem uma entrada por cartão, com o seu `sequence` (`1` ou `2`), `type`, `amount` (`currency` e `value`) e `transactions`.
+* Um cartão não tem status próprio. Leia o resultado de cada cartão nas suas `transactions`: a última transação do cartão e o `status` dela informam o que aconteceu com aquele cartão. Um cartão que passou por 3DS mostra `THREE_D_SECURE` seguido de `PURCHASE` (ou `AUTHORIZE` quando `capture` é `false`).
+* Leia o resultado do pagamento nos campos `status` e `sub_status` do pagamento. Quando `sdk_action_required` é `true`, o SDK precisa dar continuidade ao pagamento, por exemplo, para executar um desafio 3DS.
+
+## Status {#statuses}
+
+A Yuno resume os dois cartões no `status` e no `sub_status` do pagamento. A primeira regra que corresponder vence:
+
+| Cartões | `status` | `sub_status` |
+| --- | --- | --- |
+| Algum cartão recusado pela análise de fraude | `DECLINED` | `FRAUD_DECLINED` |
+| Os dois cartões rejeitados | `REJECTED` | `REJECTED` |
+| Algum cartão recusado | `DECLINED` | `DECLINED` |
+| Algum cartão com erro | `ERROR` | `ERROR` |
+| Algum cartão expirado | `EXPIRED` | `EXPIRED` |
+| Um cartão em análise de fraude | `PENDING` | `PENDING_FRAUD_REVIEW` |
+| Um cartão aguardando 3DS | `PENDING` | `WAITING_ADDITIONAL_STEP` |
+| Os dois cartões autorizados (`capture: false`) | `PENDING` | `AUTHORIZED` |
+| Os dois cartões cobrados | `SUCCEEDED` | `APPROVED` |
+| Os dois cartões capturados por você | `SUCCEEDED` | `CAPTURED` |
+| Um cartão capturado, o outro ainda não | `SUCCEEDED` | `PARTIALLY_CAPTURED` |
+| Um cartão reembolsado | `SUCCEEDED` | `PARTIALLY_REFUNDED` |
+| Os dois cartões reembolsados | `REFUNDED` | `REFUNDED` |
+| Um chargeback aberto em um cartão | `IN_DISPUTE` | |
+
+Consulte [Status do pagamento](/reference/payments/status-and-response-codes/payment) para ver todos os status e sub status.
+
+## Tudo ou nada {#all-or-nothing}
+
+Os dois cartões são bem-sucedidos ou o pagamento falha. Se um cartão falhar (recusado, erro ou fraude), a Yuno estorna o outro cartão **antes de responder à requisição de criação**, então a resposta já mostra o resultado final:
+
+* Um cartão que foi cobrado (`PURCHASE` ou capturado) é **reembolsado**.
+* Um cartão que foi apenas autorizado é **cancelado**.
+* Um cartão aguardando 3DS é encerrado pela Yuno, sem chamada ao provedor.
+
+Se um estorno falhar, o pagamento permanece `DECLINED` com o sub status `REFUND_RETRY_IN_PROCESS` ou `CANCEL_RETRY_IN_PROCESS`, e a Yuno tenta o estorno novamente de forma automática. Enquanto o pagamento estiver em um desses sub status, a captura e o cancelamento são rejeitados.
+
+<Warning>
+Não peça ao seu cliente para continuar com o cartão restante após uma falha. Em vez disso, inicie um novo pagamento.
+</Warning>
+
+## Análise de fraude {#fraud-screening}
+
+* Uma rejeição de um cartão antes da autorização recusa o pagamento (`DECLINED / FRAUD_DECLINED`), e a Yuno encerra o outro cartão.
+* Uma recusa após a autorização estorna **os dois** cartões.
+
+## Operações {#operations}
+
+Captura, cancelamento e reembolso são por cartão: envie o `id` da transação do cartão, de `payment_method.payment_methods[].transactions`. Toda operação responde `201` com o pagamento no mesmo formato v2 e exige um `X-Idempotency-Key`.
+
+| Operação | Requisição |
+| --- | --- |
+| Capturar um cartão | [`POST /v2/payments/{payment_id}/transactions/{transaction_id}/capture`](/reference/payments/capture-authorization-v2) |
+| Cancelar um cartão | [`POST /v2/payments/{payment_id}/transactions/{transaction_id}/cancel`](/reference/payments/cancel-payment-v2) |
+| Reembolsar um cartão | [`POST /v2/payments/{payment_id}/transactions/{transaction_id}/refund`](/reference/payments/refund-payment-v2) |
+| Cancelar ou reembolsar um cartão | [`POST /v2/payments/{payment_id}/transactions/{transaction_id}/cancel-or-refund`](/reference/payments/cancel-or-refund-payment-with-transaction-v2) |
+| Cancelar ou reembolsar o pagamento | [`POST /v2/payments/{payment_id}/cancel-or-refund`](/reference/payments/cancel-or-refund-a-payment-v2) |
+
+* Um reembolso em um cartão é limitado ao valor desse cartão menos o que já foi reembolsado nele.
+* O `cancel-or-refund` no nível do pagamento aceita um `amount` opcional. A Yuno distribui esse valor entre os cartões, começando pelo cartão com o maior valor reembolsável. Um `amount` acima do valor total reembolsável é rejeitado.
+* Enquanto um cartão tiver um chargeback aberto, os reembolsos são rejeitados com `INVALID_STATUS`.
+
+## Webhook {#webhook}
+
+O webhook de pagamento tem o mesmo payload dos pagamentos v1, mais:
+
+* `split_payment_methods` e `payment_methods_count`.
+* `payment_method.capture`.
+* `payment_method.payment_methods[]`, com `sequence`, `type`, `amount` e `transactions` para cada cartão.
+
+Também não há status por cartão no webhook: leia o resultado de cada cartão nas suas transações. Consulte [Configurar webhooks](/pt-br/docs/webhooks/configure-webhooks).
+
+## Erros {#errors}
+
+Os erros são `400 INVALID_PARAMETERS`, salvo indicação em contrário. O array `messages` lista todos os problemas encontrados na requisição.
+
+| Caso | Mensagem |
+| --- | --- |
+| Chave de idempotência ausente | `The header 'x-idempotency-key' is required.` |
+| Workflow não permitido | `The field 'workflow' has an invalid value for /v2/payments, the allowed values are: 'DIRECT', 'REDIRECT', 'SDK_CHECKOUT'.` |
+| `SDK_CHECKOUT` sem `checkout.session` | `The field 'checkout.session' is required for the SDK_CHECKOUT workflow.` |
+| `SDK_CHECKOUT` sem `payment_method.token` | `The field 'payment_method.token' is required for the SDK_CHECKOUT workflow.` |
+| `payment_method.token` não é um UUID | `The field 'payment_method.token' must be a valid UUID.` |
+| `payment_methods` com `SDK_CHECKOUT` | `The field 'payment_method.payment_methods' is not allowed for the SDK_CHECKOUT workflow, the one-time token carries the payment methods.` |
+| `token` com `DIRECT` ou `REDIRECT` | `The field 'payment_method.token' is only allowed for the SDK_CHECKOUT workflow, not for DIRECT.` (`not for REDIRECT.` com `REDIRECT`) |
+| `split_marketplace` com dois cartões | `The field 'split_marketplace' is not allowed with more than one payment method.` |
+| `external_subscription` com dois cartões | `The field 'external_subscription' is not allowed with more than one payment method.` |
+| `amount.currency_conversion` com dois cartões | `The field 'amount.currency_conversion' is not allowed with more than one payment method.` |
+| `capture` dentro de `detail.card` | `The field 'payment_method.payment_methods[0].detail.card.capture' is not allowed, use 'payment_method.capture' for every payment method.` |
+| Um cartão que não é `CARD` | `The field 'payment_method.payment_methods[1].type' must be 'CARD'.` |
+| Um valor de cartão igual ou menor que 0 | `The field 'payment_method.payment_methods[0].amount.value' must be greater than 0.` |
+| Uma moeda de cartão diferente da do pagamento | `The field 'payment_method.payment_methods[1].amount.currency' must match 'amount.currency'.` |
+| Valores dos cartões que não fecham a soma | `The sum of 'payment_method.payment_methods[].amount.value' must equal 'amount.value'.` |
+| Token composto já usado | Código `INVALID_TOKEN_USED` |
+| Sessão de checkout inválida para o token | Código `INVALID_CHECKOUT_SESSION` |
+| Token composto inválido | Código `INVALID_TOKEN` |
+| Total do token diferente de `amount` | `Token total does not match the payment amount` |
+| Não habilitado para a organização | `403 PRODUCT_NOT_ENABLED` |

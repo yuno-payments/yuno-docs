@@ -1,0 +1,123 @@
+---
+title: "Resultados da verificação do cartão (AVS e CVV)"
+description: "Entenda como a Yuno disponibiliza os resultados das verificações feitas pelo emissor de endereço (AVS), código postal, nome do titular do cartão e CVV/CVC em todo pagamento com cartão."
+---
+
+Quando um pagamento com cartão é autorizado, o emissor pode retornar o resultado de várias verificações que a bandeira executou sobre os dados do cartão informados pelo cliente, principalmente o **AVS** (Address Verification Service) e a correspondência do **CVV / CVC**. A Yuno repassa esses resultados para você em toda transação com cartão, para que você possa usá-los na sua própria lógica de risco, conciliação ou nova tentativa.
+
+Este guia aborda:
+
+- O que significa cada resultado de verificação
+- Onde encontrá-los na resposta da API e nos webhooks
+- Como interpretar os códigos
+- Como usá-los no seu fluxo de decisão
+
+---
+
+## O que é verificado {#what-gets-checked}
+
+| Verificação | O que ela confirma | Campo |
+|---|---|---|
+| Endereço (AVS) | A primeira linha do endereço de cobrança informado pelo cliente corresponde ao que o emissor tem registrado. | `address_line_1_check` |
+| Código postal / CEP (AVS) | O código postal de cobrança corresponde ao registro do emissor. | `zip_code_check` |
+| Nome do titular do cartão | O nome do titular do cartão na requisição corresponde ao registro do emissor. A cobertura varia muito conforme a bandeira e o país. | `card_holder_name_check` |
+| Código de segurança do cartão (CVV / CVC / CVV2) | O código de segurança de 3 ou 4 dígitos do cartão corresponde. | `card_security_code_check` |
+
+As quatro verificações são feitas pelo emissor: a Yuno não as calcula, ela repassa exatamente o que o adquirente / a bandeira retorna.
+
+---
+
+## Onde encontrá-los na resposta {#where-to-find-them-in-the-response}
+
+O bloco fica no **detalhe do cartão** do meio de pagamento e é duplicado em cada transação que executou uma verificação:
+
+```text
+payment.payment_method.payment_method_detail.card.verification_services
+payment.transactions.payment_method.detail.card.verification_services
+payment.transactions_history[].payment_method.detail.card.verification_services
+```
+
+Ele aparece na resposta de:
+
+- `POST /v1/payments`: Criar pagamento
+- `GET /v1/payments/{id}`: Consultar pagamento
+- `POST /v1/payments/{id}/capture`, `/refund`, `/cancel` etc.
+
+Ele também é incluído nos **eventos de webhook de pagamento** (`payment.created`, `payment.updated`, …), dentro do mesmo caminho `payment_method.detail.card`.
+
+### Exemplo de resposta (trecho) {#example-response-excerpt}
+
+```json
+{
+  "id": "p_01HZK3TJX5W8R7Q2V4N6Y8M1B3",
+  "status": "SUCCEEDED",
+  "payment_method": {
+    "type": "CARD",
+    "payment_method_detail": {
+      "card": {
+        "authorization_code": "123456",
+        "card_data": {
+          "brand": "VISA",
+          "iin": "411111",
+          "lfd": "1111"
+        },
+        "verification_services": {
+          "address_line_1_check":     "PASS",
+          "zip_code_check":           "PASS",
+          "card_holder_name_check":   "UNAVAILABLE",
+          "card_security_code_check": "PASS"
+        }
+      }
+    }
+  }
+}
+```
+
+Se nenhuma das verificações foi executada, o objeto `verification_services` inteiro é omitido da resposta.
+
+---
+
+## Valores do resultado {#result-values}
+
+A Yuno normaliza o resultado de cada verificação retornada pelo emissor / adquirente em um de quatro valores canônicos. Cada um dos quatro campos usa o mesmo enum:
+
+| Valor | Significado |
+|---|---|
+| `PASS` | A verificação foi executada e o valor correspondeu ao registro do emissor. |
+| `FAIL` | A verificação foi executada e o valor **não** correspondeu. |
+| `UNAVAILABLE` | A verificação não pôde ser concluída: o emissor não é certificado, não respondeu ou não oferece a verificação nesta região. |
+| `UNCHECKED` | A verificação não foi executada para esta transação (por exemplo, o lojista não enviou um CVV ou o provedor não executa AVS). |
+
+---
+
+## Como usar esses resultados {#how-to-use-these-results}
+
+Os resultados de AVS e CVV **não** são decisões de autorização: a transação pode ser aprovada mesmo quando as verificações falham. Eles são sinais consultivos que você pode incorporar à sua própria estratégia de risco.
+
+Uma matriz de decisão simples que muitos lojistas usam:
+
+| AVS (address_line_1_check / zip_code_check) | CVV (card_security_code_check) | Ação sugerida |
+|---|---|---|
+| `PASS` | `PASS` | Aceitar. |
+| `PASS` | `FAIL` | Recusa leve / autenticação adicional: os dados de cobrança parecem corretos, mas o código de segurança está errado. |
+| `FAIL` | `PASS` | Revisar: a divergência nos dados de cobrança é um forte sinal de fraude, mesmo com um CVV correto. |
+| `FAIL` | `FAIL` | Recusar. |
+| `UNAVAILABLE` / `UNCHECKED` | qualquer | Tratar como desconhecido: recorrer a outros sinais de risco (resultado do 3DS, pontuação de análise de fraude). |
+
+Como a cobertura da verificação varia conforme o emissor e a região, qualquer decisão que você construir em cima disso deve:
+
+1. **Seguir a decisão de autorização por padrão.** Uma transação `SUCCEEDED` deve seguir adiante, a menos que sua política de risco diga o contrário.
+2. **Combinar sinais.** Junte CVV / AVS com `fraud_screening`, o resultado de `three_d_secure` e `provider_data.iso8583_response_code`.
+3. **Tolerar `UNAVAILABLE` e `UNCHECKED`.** Muitos cartões na América Latina e na EMEA não executam AVS.
+
+---
+
+## Enviar dados de verificação na requisição {#sending-verification-data-on-the-request}
+
+Você também pode enviar `verification_services` **para** a Yuno na requisição de criação de pagamento, por exemplo, ao repassar resultados de autorização anteriores vindos de um sistema de registro. Os mesmos quatro campos são aceitos em:
+
+```text
+payment_method.payment_method_detail.card.verification_services
+```
+
+Quando informados na requisição, a Yuno repassa os valores ao provedor seguinte, quando houver suporte.

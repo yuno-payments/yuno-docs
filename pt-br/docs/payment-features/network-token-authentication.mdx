@@ -1,0 +1,136 @@
+---
+title: "Network Token Authentication"
+description: "Autentique pagamentos com cartão armazenado usando passkeys das bandeiras para aumentar as taxas de aprovação e transferir a responsabilidade por fraude ao emissor"
+---
+
+O Network Token Authentication (NTA) é a solução unificada da Yuno para autenticar pagamentos com cartão por meio de **Network Token Passkeys**, as experiências de autenticação baseadas em passkey oferecidas pelas bandeiras de cartão sobre seus serviços de tokenização. Ele consolida a integração de passkey de cada bandeira em um único produto da Yuno, oferecendo aos lojistas um fluxo, um ponto de configuração e uma experiência do comprador consistentes, independentemente da bandeira subjacente.
+
+O objetivo do NTA é simples: permitir que os lojistas transformem pagamentos com cartão armazenado em transações autenticadas com passkey, sem integrar SDKs específicos de cada bandeira. A Yuno cuida da criptografia, dos redirecionamentos e da infraestrutura específica de cada bandeira, enquanto o lojista controla, por meio das regras de roteamento, quando um pagamento segue o fluxo de passkey.
+
+## O que o produto resolve {#what-the-product-solves}
+
+Os pagamentos com cartão armazenado tradicionalmente dependem de um PAN armazenado e, no máximo, de uma nova digitação estática do CVC. Isso costuma levar a:
+
+- **Baixas taxas de aprovação**: os emissores tratam pagamentos com cartão armazenado não autenticados como de maior risco.
+- **Alto atrito**: as alternativas normalmente envolvem um desafio 3DS completo.
+
+As Network Token Passkeys resolvem os dois problemas. A transação é enviada como um network token com um criptograma, e o comprador se autentica uma vez junto à bandeira usando uma passkey do dispositivo (biometria ou código de uso único). Isso resulta em uma transação ao mesmo tempo tokenizada e autenticada, transferindo a responsabilidade quando aplicável.
+
+## Benefícios para o lojista {#benefits-for-the-merchant}
+
+- **Taxas de aprovação de autorização mais altas**: as transações autenticadas com passkey carregam um forte sinal de autenticação, valorizado pelos emissores.
+- **Transferência de responsabilidade**: a responsabilidade por fraude passa para o emissor nas transações autenticadas, reduzindo a exposição a chargeback.
+- **Conformidade com SCA**: atende aos requisitos de Strong Customer Authentication (SCA) com uma experiência do comprador mais leve do que o 3DS isolado.
+- **Experiência de recompra mais fluida**: depois que uma passkey é registrada, as compras futuras no mesmo dispositivo são mais rápidas e sem atrito.
+- **Menos abandono causado por atrito**: a etapa de passkey é hospedada pela bandeira e otimizada para celular, reduzindo o abandono.
+- **Uma integração para todas as bandeiras**: os lojistas herdam automaticamente as novas integrações de bandeiras à medida que a Yuno as incorpora.
+- **Controlado pelo lojista via roteamento**: decida exatamente quando aplicar o NTA (por exemplo, por país, valor, meio de pagamento, BIN) usando as regras de roteamento padrão da Yuno.
+
+## Bandeiras compatíveis {#supported-brands}
+
+| Bandeira | Produto de passkey | Status |
+| --- | --- | --- |
+| Mastercard | Secure Card on File (SCOF) | Compatível |
+
+Outras bandeiras serão adicionadas à medida que suas integrações de passkey forem disponibilizadas como produto. O fluxo para o lojista permanece idêntico entre as bandeiras.
+
+## Como funciona na Yuno {#how-it-works-at-yuno}
+
+O Network Token Authentication é **ativado por lojista** e controlado inteiramente pela configuração de roteamento. Não há nenhuma mudança na chamada de criação de pagamento; o fluxo de passkey é acionado com base nas regras de roteamento daquela transação específica.
+
+### Etapas de configuração {#setup-steps}
+
+Antes de acionar um fluxo de passkey, conclua a configuração a seguir:
+
+1. **Faça o onboarding em Network Tokens**: habilite sua conta para [Network Tokens](/docs/security-and-compliance/network-tokens).
+2. **Crie uma conexão de Network Token Authentication**: no Dashboard da Yuno, crie uma conexão dedicada do tipo **Network Token Authentication**.
+3. **Carregue as informações de 3DS**: verifique se a conexão do provedor de pagamento que processa a autorização tem as credenciais/configuração de 3DS carregadas.
+4. **Configure o roteamento**: coloque a conexão de NTA como uma etapa executada **antes** da etapa do provedor de pagamento na sua configuração de roteamento.
+
+### Comportamento em tempo de execução {#runtime-behavior}
+
+1. Quando um pagamento é criado, a Yuno avalia as regras de roteamento **antes** de enviar a transação ao adquirente.
+2. Se a rota incluir a etapa de Network Token Authentication, a Yuno aciona o fluxo de passkey com a bandeira correspondente.
+3. Caso contrário, o pagamento segue como uma autorização de cartão padrão.
+
+A Yuno cuida da avaliação do roteamento, do acionamento da passkey, do tratamento do redirecionamento e do retorno do resultado autenticado.
+
+## Integração {#integration}
+
+Quando o NTA é acionado, a Yuno o apresenta como uma ação de continuação `REDIRECT_URL` padrão. Isso segue o mesmo padrão usado pelos APMs baseados em redirecionamento, sem exigir código de frontend específico de cada bandeira.
+
+### 1. Inicialize a Yuno {#1-initialize-yuno}
+
+```js
+const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+```
+
+### 2. Inicie o cliente de pagamento {#2-start-the-payment-client}
+
+```js
+const apiClientPayment = await yuno.apiClientPayment({
+  country_code: "US",
+  checkout_session: "<CHECKOUT_SESSION>",
+})
+```
+
+### 3. Gere o token de uso único {#3-generate-the-one-time-token}
+
+```js
+const oneTimeToken = await apiClientPayment.generateToken({
+  checkout_session: "<CHECKOUT_SESSION>",
+  payment_method: {
+    type: "CARD",
+    vaulted_token: "<VAULTED_TOKEN>",
+    card: { detail: { security_code: "123" } },
+  },
+})
+```
+
+### 4. Crie o pagamento {#4-create-the-payment}
+
+A partir do seu backend, chame o endpoint [Create Payment](https://docs.y.uno/reference/payments/create-payment) da Yuno com `payment_method.token` definido como o token de uso único. Se o NTA for acionado, a resposta conterá `sdk_action_required: true`.
+
+### 5. Obtenha a ação de continuação {#5-get-the-continue-action}
+
+```js
+const data = await apiClientPayment.getContinuePaymentAction({
+  checkoutSession: "<CHECKOUT_SESSION>",
+})
+```
+
+`data.action` será `REDIRECT_URL` e `data.redirect` contém a URL de autenticação hospedada pela bandeira:
+
+```json
+{
+  "action": "REDIRECT_URL",
+  "redirect": {
+    "init_url": "https://...",
+    "success_url": "https://...",
+    "error_url": "https://..."
+  }
+}
+```
+
+### 6. Redirecione o comprador {#6-redirect-the-shopper}
+
+Use um redirecionamento de página inteira no navegador para enviar o comprador para `redirect.init_url`.
+
+```js
+if (data.action === "REDIRECT_URL") {
+  window.location.href = data.redirect.init_url
+}
+```
+
+Após a autenticação, a bandeira redireciona o comprador de volta para o seu site. Use os [Webhooks da Yuno](/pt-br/docs/webhooks/configure-webhooks) ou o [Retrieve Payment by ID](https://docs.y.uno/reference/payments/retrieve-payment-by-id) para ler o status final.
+
+## Quando a autenticação é acionada {#when-authentication-is-triggered}
+
+O NTA é executado **somente** quando:
+1. O lojista fez o onboarding em Network Tokens.
+2. Existe uma conexão de NTA com informações de 3DS na conexão do provedor de pagamento.
+3. A conexão de NTA está posicionada corretamente no roteamento, antes da etapa de pagamento.
+
+## Tratamento do status final {#handling-the-final-status}
+
+O fluxo é assíncrono. Aguarde o resultado via webhook ou consulte periodicamente o status do pagamento. Os estados finais são os status padrão da Yuno (`SUCCEEDED`, `DECLINED`, `CANCELLED`, `EXPIRED`).

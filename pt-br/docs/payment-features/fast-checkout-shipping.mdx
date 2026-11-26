@@ -1,0 +1,93 @@
+---
+title: "Envio no Fast Checkout"
+description: "Permita que os clientes escolham um endereço de entrega salvo e um método de entrega dentro do widget da carteira digital, e receba a escolha de volta no pagamento"
+---
+
+O Fast Checkout permite que o cliente escolha um endereço de entrega salvo e um método de entrega **dentro do widget da carteira digital**, começando pelo Revolut Pay. Como o pagamento é criado antes de o cliente fazer essa escolha, a seleção chega à Yuno de forma assíncrona e é vinculada ao pagamento depois: você a recebe em `GET /payments/{id}` e nos webhooks de pagamento como um nó `shipping` de nível superior.
+
+## Como funciona {#how-it-works}
+
+1. Você cria a sessão de checkout com as opções de entrega que oferece (`shipping_methods`).
+2. A Yuno repassa essas opções para a carteira digital quando o pagamento é criado, e o widget as exibe.
+3. O cliente escolhe um endereço salvo e um método de entrega dentro do widget.
+4. A carteira digital notifica a Yuno, que vincula a seleção ao pagamento e preenche `customer_payer.shipping_address` quando o pagador não tinha um.
+5. Você recebe a seleção no webhook de pagamento e em `GET /payments/{id}`.
+
+<Info>
+  A taxa de entrega é um preço fixo **já incluído no valor do pagamento**: a seleção nunca altera `payment.amount`.
+</Info>
+
+## Ofereça opções de entrega na sessão {#offer-delivery-options-on-the-session}
+
+Envie `shipping_methods` ao criar a [sessão de checkout](/reference/checkout-sessions/create-checkout-session). O primeiro método vem pré-selecionado no widget, e cada método exige o detalhamento `summary_items` (ele define o resumo de preços que a carteira digital exibe). Se você não oferecer métodos de entrega, mas quiser mostrar um detalhamento por item ou personalizar o total da tela da carteira digital, envie em vez disso um array `summary_items` independente na raiz da sessão. Consulte Express checkout para [Apple Pay](/docs/wallets/apple-pay/sdk-integration/express-checkout) e [Google Pay](/docs/wallets/google-pay/sdk-integration/express-checkout).
+
+```json
+{
+  "amount": { "currency": "GBP", "value": 105.00 },
+  "shipping_methods": [
+    {
+      "id": "express",
+      "label": "Express shipping",
+      "detail": "Arrives in 1-2 business days",
+      "amount": { "currency": "GBP", "value": 5.00 },
+      "summary_items": [
+        { "id": "order", "label": "Order", "amount": { "currency": "GBP", "value": 100.00 } },
+        { "id": "shipping", "label": "Express shipping", "amount": { "currency": "GBP", "value": 5.00 } }
+      ]
+    }
+  ]
+}
+```
+
+* `shipping_methods[].id` é definido pelo lojista; a seleção volta fazendo referência a ele.
+* Todos os valores usam a moeda da sessão, em unidades maiores.
+
+## Receba a seleção no pagamento {#receive-the-selection-on-the-payment}
+
+Depois que o cliente confirma, o pagamento traz a seleção. O mesmo nó `shipping` é retornado em `GET /payments/{id}` e nos webhooks de pagamento (payloads V1 e V2); consulte [o objeto de pagamento](/reference/payments/the-payment-object) para a referência dos campos e os [exemplos de webhook](/pt-br/docs/webhooks/object-and-examples).
+
+```json
+{
+  "id": "3455abae-3f3b-4e30-a6d5-8f28b1e176a3",
+  "status": "SUCCEEDED",
+  "amount": { "currency": "GBP", "value": 105.00 },
+  "customer_payer": {
+    "shipping_address": {
+      "address_line_1": "221B Baker Street",
+      "address_line_2": "Flat 2",
+      "city": "London",
+      "state": "England",
+      "zip_code": "NW1 6XE",
+      "country": "GB"
+    }
+  },
+  "shipping": {
+    "method": {
+      "id": "express",
+      "label": "Express shipping",
+      "amount": { "currency": "GBP", "value": 5.00 }
+    },
+    "address": {
+      "address_line_1": "221B Baker Street",
+      "address_line_2": "Flat 2",
+      "city": "London",
+      "state": "England",
+      "zip_code": "NW1 6XE",
+      "country": "GB"
+    }
+  }
+}
+```
+
+## Detalhes do comportamento {#behavior-details}
+
+* A chave `shipping` é **omitida** quando o pagamento não tem seleção de entrega: os pagamentos sem Fast Checkout não são afetados.
+* `shipping.method.id` sempre corresponde a um dos `shipping_methods[].id` que você enviou na sessão; uma seleção que não corresponde é descartada e o status do pagamento é atualizado mesmo assim.
+* `customer_payer.shipping_address` é preenchido a partir de `shipping.address` somente quando o pagador ainda não tinha endereço de entrega: um endereço que você enviou na requisição de pagamento nunca é sobrescrito.
+* A seleção é idempotente: notificações repetidas com a mesma entrega não alteram o pagamento.
+
+## Disponibilidade {#availability}
+
+O envio no Fast Checkout está disponível para o **Revolut Pay** em integrações com o SDK web com `requestShipping` ativado. Fale com o seu representante da Yuno para ativá-lo na sua conta.
+
+Para carteiras digitais que atualizam a tela enquanto o cliente ainda está escolhendo, consulte [Express checkout do Apple Pay no iOS](/docs/wallets/apple-pay/sdk-integration/express-checkout) e [Express checkout do Google Pay no Android](/docs/wallets/google-pay/sdk-integration/express-checkout).
