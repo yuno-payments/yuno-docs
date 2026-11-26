@@ -15,9 +15,9 @@ Coloca este archivo en la raíz de tu proyecto y pide a tu agente de programaci�
 Funciona como `CLAUDE.md`, `AGENTS.md` o como un prompt pegado. Solo lee código y no cambia nada a menos que lo pidas.
 
 Cubre la línea sdk-web v2 ("Yuno SDK 2.x"): `window.SdkPayments`, `SdkPayments.initialize(...)`, y luego
-`sdk.transaction({...})`. Consulta el [changelog de Web SDK](https://docs.y.uno/es/changelog/yuno-sdk/web) para ver la versión actual. Cada versión se sirve en una URL de
-versión completa, como `https://sdk-web.y.uno/v2.x.y/main.js`, documentada en la pestaña "SDK" de docs.y.uno (`docs/yuno-sdk/*`;
-la pestaña "SDKs" es 1.x). Los ejemplos de la documentación pública fijan v2.5.1.
+`sdk.transaction({...})`. Consulta el [changelog de Web SDK](https://docs.y.uno/es/changelog/yuno-sdk/web) para ver la versión actual.
+`https://sdk-web.y.uno/v2/main.js` se mantiene en la versión 2.x actual. Sirve el archivo de entrada, y el SDK carga el resto de esa compilación desde la ruta de versión exacta que lleva incorporada. Una URL de versión completa, como `https://sdk-web.y.uno/v2.7.2/main.js`, fija una versión. Documentado en la pestaña "SDK" de docs.y.uno (`docs/yuno-sdk/*`;
+la pestaña "SDKs" es 1.x).
 
 ## Cómo usarlo {#how-to-use}
 
@@ -27,7 +27,7 @@ Primero confirma que el repositorio usa v2. Busca en el código fuente, las plan
 grep -rn "SdkPayments\|sdk-payments-ready\|window\.Yuno\|yuno-sdk-ready\|YunoSDK\|sdk-web\.[a-z.]*y\.uno\|sdk-static-bundles-ms/sdk-web\|loadScript(\|@yuno-payments/sdk-web\|\.transaction(\|startCheckout\|startSeamlessCheckout\|mountCheckout" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
 ```
 
-- **v2:** una URL `/v2.<minor>.<patch>/main.js`, `sdk.transaction(...)`, `transaction.start(...)`,
+- **v2:** una URL `/v2/main.js` o una URL `/v2.<minor>.<patch>/main.js`, `sdk.transaction(...)`, `transaction.start(...)`,
   `getPaymentMethodsViews(...)`.
 - **v1 (1.x):** `/v1.11/main.js`, `window.Yuno`, `Yuno.initialize`, `startCheckout`, `startSeamlessCheckout`,
   `mountCheckoutLite`, `yunoPaymentResult`. Detente y usa el validador de v1 o el de migración.
@@ -40,7 +40,7 @@ bloqueante, el pago falla o el resultado es incorrecto; **(W)** degradado o frá
 ## El flujo que se valida {#the-flow-being-validated}
 
 ```
-<script src="https://sdk-web.y.uno/v2.<m>.<p>/main.js">   sets window.SdkPayments, fires 'sdk-payments-ready' once
+<script src="https://sdk-web.y.uno/v2/main.js">   sets window.SdkPayments, fires 'sdk-payments-ready' once
 await SdkPayments.initialize(publicApiKey, applicationSession?, options?)   // once per page, stable arguments
   -> sdk.transaction(config)               // sync; validates config; throws on invalid config
        -> transaction.start({ paymentMethod: { type, vaultedToken?, data? } })   // form, or headless with data
@@ -60,15 +60,12 @@ sesión `workflow: "SDK_SEAMLESS"`). La inscripción siempre es administrada. No
 
 ### Carga e inicialización {#loading-and-bootstrap}
 
-**1. El script es v2 y está fijado a una versión completa (V1, B)**
+**1. El script es v2 (V1, B)**
 - Busca con grep `sdk-web\.(y\.uno|sandbox\.y\.uno|staging\.y\.uno|prod\.eu\.y\.uno)/[^"' ]*main\.js`,
   `sdk-static-bundles-ms/sdk-web/`, `loadScript(` y `@yuno-payments/sdk-web`.
-- PASS: la URL coincide con `/v2\.\d+\.\d+/main.js`, o con la URL SRI `.../sdk-web/v2.<m>.<p>/main.js`.
-- FAIL con `/v1.11/`, `/v2/`, `/v2.2/`, `latest`; con `loadScript()` sin `baseUrl` (carga `/v1.11/`); con
-  `loadScript({ sri: true })` (una URL SRI de v1.11.x escrita a mano, la compilación 1.11 fijada por el paquete npm). Para npm,
-  pasa `baseUrl: 'https://sdk-web.y.uno/v2.x.y'`. Las versiones v2 más antiguas, como `v2.0.0`, son válidas si la integración se probó con esa versión.
-- Por qué: un bundle v1 produce `sdk.transaction is not a function`; las carpetas móviles `/v2/`, `/v2.0/`, `/v2.2/`
-  devuelven 404. No existe una carpeta v2 móvil: las actualizaciones son manuales.
+- PASS: la URL es `/v2/main.js` (la entrada 2.x actual), o coincide con `/v2\.\d+\.\d+/main.js`, o es la URL SRI `.../sdk-web/v2.<m>.<p>/main.js`. La misma ruta `/v2/main.js` existe en los hosts de la UE y de sandbox. Con `@yuno-payments/sdk-web` 10.x, `loadScript()` carga 2.x: PASS sin opciones (una compilación 2.x exacta), con `baseUrl: 'https://sdk-web.y.uno/v2'` (la 2.x más reciente, el mismo archivo que la etiqueta script) y con `sri: true`. `sri: true` no se puede combinar con un `baseUrl` `/v2`, porque SRI necesita una versión fija.
+- FAIL con `/v1.11/`, una ruta solo con la versión menor, como `/v2.0/` o `/v2.2/`, y `latest`. FAIL con `loadScript()` de `@yuno-payments/sdk-web` 9.x sin `baseUrl` (carga `/v1.11/`), y con `loadScript({ sri: true })` en ese paquete 9.x (una URL SRI de v1.11 escrita a mano). Las versiones v2 más antiguas, como `v2.0.0`, son válidas si la integración se probó con esa versión.
+- Por qué: un bundle v1 produce `sdk.transaction is not a function`. `/v2/main.js` es el archivo de entrada 2.x actual y cambia cuando se publica una nueva versión 2.x. Las carpetas solo con la versión menor, como `/v2.0/` y `/v2.2/`, no están publicadas. Subresource Integrity necesita la URL del bundle estático que acompaña a su hash en `versions-sri.json` (`https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v2.<m>.<p>/main.js`). Las rutas de `sdk-web.y.uno`, rolling o de versión completa, no coinciden con esos hashes.
 
 **2. Sin globales ni eventos de v1 (V2, B)**
 - Busca con grep `window\.Yuno|\bYuno\.initialize|new Yuno|yuno-sdk-ready|YunoSDK`. FAIL ante cualquier coincidencia en código v2.
@@ -306,10 +303,10 @@ pago). Una nueva `Transaction` reinicia el estado compartido de la instancia, as
 ## Formato del reporte {#report-format}
 
 ```
-CHECK  1  Script v2, full version     PASS  public/index.html:14 https://sdk-web.y.uno/v2.5.1/main.js
+CHECK  1  Script v2                   PASS  public/index.html:14 https://sdk-web.y.uno/v2/main.js
 CHECK  8  Mode vs workflow            FAIL  api/session.ts:31 no workflow, front end has no createPayment
                                             (managed on SDK_CHECKOUT -> INTERNAL_ERROR)
-SDK: v2.5.1 (script tag). Framework: Next.js 14, React StrictMode on.
+SDK: v2 (script tag, /v2/main.js). Framework: Next.js 14, React StrictMode on.
 ```
 
 Termina con los fallos ordenados por impacto, (B) luego (W) luego (I), cada uno con una corrección de una línea.
@@ -322,4 +319,4 @@ Termina con los fallos ordenados por impacto, (B) luego (W) luego (I), cada uno 
 4. La solicitud y la respuesta de Create Payment (sin datos de tarjeta), el framework, StrictMode, cambio de ruta o nuevo render.
 
 Fuentes: el lanzamiento de Web SDK 2.2.0 y el código fuente de v2, el reporte de la API de v2 y la documentación pública de Yuno
-(la pestaña "SDK" y su changelog); sondeos de CDN el 2026-10-29. Fecha de investigación: 2026-10-29.
+(la pestaña "SDK" y su changelog); sondeos de CDN el 2026-10-29. Entrada rolling `https://sdk-web.y.uno/v2/main.js` verificada el 2026-11-26. Fecha de investigación: 2026-10-29.
