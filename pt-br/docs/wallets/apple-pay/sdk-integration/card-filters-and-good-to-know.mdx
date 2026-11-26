@@ -1,0 +1,110 @@
+---
+title: "Filtros de cartão e informações úteis"
+description: "Filtre os cartões aceitos na tela de pagamento do Apple Pay, leia o BIN do DPAN no token de uso único e trate um fluxo do Apple Pay cancelado."
+---
+
+## Filtrar os cartões aceitos {#filter-eligible-cards}
+
+Envie `wallet_card_acceptance` ao criar a sessão de checkout para limitar quais cartões o cliente pode selecionar na tela de pagamento do Apple Pay. Os cartões que não correspondem aparecem acinzentados.
+
+```json
+{
+  "country": "BR",
+  "customer_id": "070a34cb-4649-4a4e-b231-065a53060379",
+  "merchant_order_id": "order-123",
+  "payment_description": "Apple Pay one-time payment",
+  "amount": {
+    "currency": "BRL",
+    "value": 100
+  },
+  "wallet_card_acceptance": {
+    "supported_countries": ["BR"],
+    "supported_networks": ["VISA", "MASTERCARD", "ELO"],
+    "supported_funding_types": ["CREDIT"]
+  }
+}
+```
+
+| Campo | Valores | O que faz |
+|-------|--------|--------------|
+| `supported_countries` | Códigos ISO 3166-1 alpha-2 | Só podem ser selecionados cartões emitidos nesses países. O filtro considera o país que emitiu o cartão, não a localização do cliente: `["BR"]` deixa acinzentado um cartão emitido nos EUA. |
+| `supported_networks` | Bandeiras de cartão, por exemplo `VISA`, `MASTERCARD`, `AMEX`, `ELO` | Só podem ser selecionados cartões dessas bandeiras. Substitui a lista padrão (`AMEX`, `DISCOVER`, `ELECTRON`, `ELO`, `MASTERCARD`, `VISA`, `MAESTRO`): `["VISA"]` permite apenas Visa. |
+| `supported_funding_types` | `CREDIT`, `DEBIT` | Só podem ser selecionados cartões dessas modalidades: `["CREDIT"]` permite apenas cartões de crédito, `["DEBIT"]` apenas cartões de débito e `["CREDIT", "DEBIT"]` ambos. |
+
+- Todos os campos são opcionais. Um campo que você não envia mantém o comportamento padrão.
+- Os valores devem estar em letras maiúsculas. Uma lista vazia é rejeitada com `400 INVALID_PARAMETERS`.
+- O objeto só pode ser definido quando a sessão é criada. Atualizar a sessão não o altera.
+- Os filtros se aplicam apenas à tela de pagamento do Apple Pay. Os cartões digitados no formulário de cartão não são afetados.
+
+<Note>
+  O botão do Apple Pay continua sendo exibido quando nenhum dos cartões do cliente é aceito. O cliente vê todos os cartões acinzentados na tela de pagamento.
+</Note>
+
+<Note>
+  Se a sua conta estiver configurada para processar apenas cartões de crédito, o `supported_funding_types` enviado na sessão tem prioridade para o Apple Pay.
+</Note>
+
+| Plataforma | Versão mínima |
+|----------|-----------------|
+| Web      | 1.11.17         |
+| iOS      | 2.27.0          |
+
+## Obter o BIN do DPAN na resposta do OTT {#obtain-dpan-bin-in-ott-response}
+
+Quando um pagamento é concluído com Apple Pay, o SDK de iOS retorna a resposta completa do serviço de OTT (One-Time Token). Nessa resposta, o objeto `card_data` contém as informações do cartão associadas ao pagamento com Apple Pay, incluindo o BIN do DPAN (os primeiros dígitos do Device Primary Account Number usado na transação).
+
+Os lojistas podem usar esse objeto para obter detalhes do cartão, como bandeira, tipo, emissor e o campo `iin`, que representa o BIN do DPAN. Você pode usá-lo para avaliar promoções e descontos baseados em BIN e para relatórios.
+
+No iOS, implemente `yunoCreatePayment(with:information:)` no seu `YunoPaymentDelegate` em vez de `yunoCreatePayment(with:)`. O dicionário `information` é essa resposta.
+
+<Note>
+  **Limitação**: o `iin` reflete o cartão padrão selecionado na tela de pagamento no momento em que o pagamento é criado. Se o comprador trocar de cartão na tela de pagamento, o `iin` pode não corresponder ao cartão usado no pagamento final. Evite apresentar promoções baseadas em BIN como garantidas até que o pagamento seja confirmado.
+</Note>
+
+### Exemplo de resposta do OTT (SDK de iOS) {#example-ott-response-ios-sdk}
+
+O exemplo a seguir mostra a resposta do SDK com o objeto `card_data` e o campo `iin`:
+
+```json
+{
+  "vault_on_success": false,
+  "country": "US",
+  "card_data": {
+    "category": "CLASSIC",
+    "lfd": "8880",
+    "fingerprint": null,
+    "issuer_name": "BANK",
+    "security_code_length": 0,
+    "brand": "VISA",
+    "issuer_code": null,
+    "type": "CREDIT",
+    "holder_name": "",
+    "country_code": "US",
+    "iin": "49411598",
+    "number_length": 0
+  },
+  "vaulted_token": null,
+  "installment": null,
+  "token": "0ac7f1c8-aba4-4600-b080-f88e9f328c1f",
+  "type": "CARD"
+}
+```
+
+## Fluxo de cancelamento do Apple Pay {#apple-pay-cancel-flow}
+
+Quando um usuário cancela o fluxo do Apple Pay, o Web SDK informa o status `CANCELED_BY_USER` e o SDK de iOS informa `userCancelled` em `Yuno.Result`.
+
+### Metadata e paymentCreated (Web SDK) {#metadata-and-paymentcreated-web-sdk}
+
+O método `oldClosePaymentFlow` (e os eventos de cancelamento relacionados) agora inclui um parâmetro opcional `metadata` com o campo `paymentCreated`. Isso permite que os lojistas saibam se um pagamento já foi criado no backend antes de o usuário cancelar o fluxo.
+
+- **`paymentCreated: true`**: um pagamento foi criado (por exemplo, durante a fase de criação do OTT). Os lojistas devem verificar o status do pagamento e, se for o caso, fazer uma chamada `abandonPayment`.
+- **`paymentCreated: false`**: nenhum pagamento foi criado antes do cancelamento.
+
+O SDK define automaticamente `paymentCreated = true` durante a fase `onvalidatemerchant` para garantir o acompanhamento e o abandono corretos dos pagamentos pendentes.
+
+## Documentação relacionada {#related-documentation}
+
+- [Configuração e pagamentos únicos](/pt-br/docs/wallets/apple-pay/apple-pay-sdk-integration)
+- [Pagamentos recorrentes](/pt-br/docs/wallets/apple-pay/sdk-integration/recurring-payments)
+- [Express checkout](/pt-br/docs/wallets/apple-pay/sdk-integration/express-checkout)

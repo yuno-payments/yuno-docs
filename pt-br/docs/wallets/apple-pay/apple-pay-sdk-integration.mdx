@@ -1,0 +1,151 @@
+---
+title: "Configuração e pagamentos únicos"
+description: "Adicione a capability do Apple Pay ao seu app iOS, crie a sessão de checkout e processe um pagamento único com Apple Pay usando o Yuno SDK."
+---
+
+Este guia apresenta um processo completo para integrar o Apple Pay com o Yuno SDK, tanto para pagamentos únicos quanto para pagamentos recorrentes. O SDK simplifica a integração do Apple Pay ao gerenciar os tokens de pagamento e oferecer segurança integrada.
+
+<Note>
+  **Configuração necessária**
+
+  Antes de implementar pagamentos com Apple Pay, verifique se você concluiu os [pré-requisitos](/pt-br/docs/wallets/apple-pay/prerequisites-apple-pay).
+</Note>
+
+<Note>
+  **Ambiente de testes**
+
+  O Apple Pay não é compatível com o iOS Simulator. Para testar as funcionalidades do Apple Pay, você precisa usar um dispositivo iOS físico.
+</Note>
+
+<Note>
+  O Apple Pay na web não está limitado ao Safari nem a dispositivos Apple. Ele também funciona em navegadores de terceiros no iPhone, iPad e macOS, e em qualquer navegador no Windows por meio do fluxo de pagamento entre dispositivos da Apple. Consulte [Dispositivos e navegadores compatíveis](/docs/apple-pay#supported-devices-and-browsers) para ver a matriz completa.
+</Note>
+
+<Note>
+  **Incorporação em iframe de outra origem (Web SDK 1.11.31+)**
+
+  Ao incorporar o checkout em um iframe hospedado em outro domínio, o Safari exige que a sessão de lojista do Apple Pay seja validada com o domínio da página principal de nível superior. O Web SDK detecta isso automaticamente. O domínio de nível superior precisa estar registrado na conexão do Apple Pay; caso contrário, a sessão usa o domínio do iframe. Você pode especificar explicitamente o domínio principal ou desativar a detecção usando `externalButtons.applePay.topLevelDomain`. Consulte a [referência do Web SDK](/docs/sdks/resources/references/web#apple-pay).
+</Note>
+
+## Visão geral do Apple Pay {#apple-pay-overview}
+
+1. O cliente inicia o pagamento no dispositivo iOS
+2. Receba o `payment_token` pelo SDK da Apple
+3. Crie uma sessão de checkout com a Yuno
+4. A Yuno processa com os provedores configurados e retorna uma resposta
+5. Acompanhe o status da resposta por meio de webhooks
+
+## Adicionar a capability do Apple Pay {#add-apple-pay-capability}
+
+Para adicionar a capability do Apple Pay ao seu app iOS:
+
+1. No Xcode, selecione seu projeto no navegador
+2. Selecione o target do seu app
+3. Acesse a aba **Signing & Capabilities**
+4. Clique em **\+ Capability** e pesquise por "Apple Pay"
+5. Adicione a capability **Apple Pay**
+6. Configure seus Merchant IDs na seção Apple Pay
+
+<Warning>
+  Verifique se o Merchant ID do Apple Pay corresponde ao configurado nas conexões de provedor do seu Dashboard da Yuno.
+</Warning>
+
+## Pagamentos únicos com o SDK {#one-time-payments-with-sdk}
+
+### Criar a sessão de checkout {#create-checkout-session}
+
+Use o endpoint [criar sessão de checkout](/reference/checkout-sessions/create-checkout-session) para criar uma sessão de pagamento para transações únicas com Apple Pay:
+
+```json
+{
+  "country": "US",
+  "customer_id": "070a34cb-4649-4a4e-b231-065a53060379",
+  "merchant_order_id": "order-123",
+  "payment_description": "Apple Pay one-time payment",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  }
+}
+```
+
+#### Personalizar a tela de pagamento (`summary_items`) {#customize-the-payment-sheet-summaryitems}
+
+Para exibir um detalhamento de preços por item ou controlar o que aparece na tela de pagamento do Apple Pay, inclua um array `summary_items` de nível superior ao criar a sessão de checkout:
+
+```json
+{
+  "country": "US",
+  "customer_id": "070a34cb-4649-4a4e-b231-065a53060379",
+  "merchant_order_id": "order-123",
+  "amount": {
+    "currency": "USD",
+    "value": 115
+  },
+  "summary_items": [
+    {
+      "id": "subtotal",
+      "label": "Subtotal",
+      "amount": { "currency": "USD", "value": 100 }
+    },
+    {
+      "id": "tax",
+      "label": "Tax",
+      "amount": { "currency": "USD", "value": 15 }
+    },
+    {
+      "id": "total",
+      "label": "Your Business Name",
+      "amount": { "currency": "USD", "value": 115 }
+    }
+  ]
+}
+```
+
+Os SDKs iOS e Web mapeiam `summary_items` para a tela de pagamento do Apple Pay:
+- Os itens anteriores aparecem como itens de linha individuais.
+- O **último item** representa o total geral.
+- O Apple Pay exibe o rótulo do total logo após "Pay" na tela (por exemplo, "Pay Your Business Name"). Defina esse rótulo com o nome da sua empresa ou do lojista em vez de "Total", para que a tela identifique claramente a sua empresa para o cliente.
+
+A moeda de cada item em `summary_items` deve corresponder à moeda da sessão. Se você também oferece a seleção de entrega dentro da carteira, consulte [Fast Checkout Shipping](/pt-br/docs/payment-features/fast-checkout-shipping) para configurar `summary_items` por método de entrega.
+
+### Processar o pagamento {#process-the-payment}
+
+O SDK trata o fluxo do Apple Pay automaticamente. Quando o cliente conclui a autorização do Apple Pay, o pagamento é processado imediatamente.
+
+### Solicitar informações de contato {#requesting-contact-information}
+
+Você pode configurar quais campos de contato o Apple Pay solicita ao cliente diretamente no [Checkout Builder](/pt-br/docs/using-yuno/dashboard-overview/checkout-builder#required-fields). Os campos disponíveis são:
+
+- Email
+- Telefone
+- Nome do titular
+- Endereço de cobrança
+- Endereço de entrega
+
+Quando algum desses campos está ativado como obrigatório no Checkout Builder, a tela de pagamento do Apple Pay pede ao cliente que informe ou confirme esses dados antes de concluir o pagamento. Os dados coletados são então incluídos na resposta do OTT.
+
+<Note>
+  Cada campo obrigatório adicional acrescenta uma etapa à tela de pagamento do Apple Pay, aumentando o atrito para o cliente. Isso pode afetar negativamente as taxas de conversão. A Yuno recomenda ativar apenas os campos estritamente necessários para o seu negócio ou para requisitos regulatórios.
+</Note>
+
+<Note>
+  O nome do titular (nome do titular do cartão) vem desativado por padrão no Apple Pay, ao contrário dos cartões, em que vem ativado por padrão. Ative-o no Checkout Builder se a sua integração precisar dele.
+</Note>
+
+| Plataforma | Versão mínima |
+|----------|-----------------|
+| Web      | 1.8.0           |
+| iOS      | 2.15.0          |
+
+## Próximas etapas {#next-steps}
+
+- [Pagamentos recorrentes](/pt-br/docs/wallets/apple-pay/sdk-integration/recurring-payments). Transações iniciadas pelo cliente e iniciadas pelo lojista com um token armazenado.
+- [Express checkout](/pt-br/docs/wallets/apple-pay/sdk-integration/express-checkout). Detalhamento do pedido, métodos de envio e atualizações do endereço de entrega na tela de pagamento.
+- [Filtros de cartão e informações úteis](/pt-br/docs/wallets/apple-pay/sdk-integration/card-filters-and-good-to-know). Filtre os cartões elegíveis, leia o BIN do DPAN no token de uso único e trate cancelamentos.
+
+## Documentação relacionada {#related-documentation}
+
+- [Pré-requisitos do Apple Pay](/pt-br/docs/wallets/apple-pay/prerequisites-apple-pay)
+- [Integração direta do Apple Pay](/pt-br/docs/wallets/apple-pay/apple-pay-direct-integration)
+- [Webhooks](/docs/webhooks)

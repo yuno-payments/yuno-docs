@@ -1,0 +1,370 @@
+---
+title: "Checkout expresso"
+description: "Mostre o detalhamento do pedido, ofereça métodos de envio e reaja a mudanças no endereço de entrega na folha do Google Pay usando o SDK Android ou Web."
+---
+
+Disponível a partir do Yuno Android SDK 2.24.0 e do Yuno Web SDK 1.10.8.
+
+O detalhamento do pedido, as atualizações do endereço de entrega e o seletor de método de envio transformam a folha do Google Pay em um checkout expresso:
+
+- **Detalhamento do pedido**: mostre subtotal, frete, impostos e descontos em vez de um único total.
+- **Atualizações do endereço de entrega**: recalcule o pedido quando o cliente escolhe ou muda o endereço de entrega, sem sair da folha.
+- **Seletor de método de envio**: deixe o cliente escolher Standard, Express ou Same-day na folha, com atualização instantânea do preço.
+
+Cada recurso é opcional. Se você não usar nenhum deles, a sua integração com o Google Pay funciona exatamente como antes.
+
+## Requisitos {#requirements}
+
+| Requisito | Valor |
+|---|---|
+| Yuno Android SDK | 2.24.0 ou mais recente, com `minSdkVersion` 23 (Android 6.0) ou superior. Sem mudanças no manifest. |
+| Yuno Web SDK | 1.10.8 ou mais recente |
+| Google Pay | Habilitado na sua conta da Yuno |
+
+<Warning>
+  **No Android, atualizar para a 2.24.0 é uma breaking change.**
+
+  - Defina `minSdkVersion` como 23 ou superior. Com 21 ou 22, o build falha na etapa de merge do manifest.
+  - Se o seu app fixa `com.google.android.gms:play-services-wallet` abaixo de `20.0.0`, remova a fixação ou use `20.0.0` ou superior.
+  - Se você chama `startCheckout`, `startPayment`, `startPaymentLite`, `startPaymentSeamlessLite` ou `continuePayment` passando todos os argumentos por posição, atualize a chamada: um novo parâmetro opcional foi adicionado antes do último callback. Chamadas que usam argumentos nomeados ou uma trailing lambda não precisam de mudança.
+
+  Veja o [changelog do Android SDK](/changelog/android#v2-24-0) para mais detalhes.
+</Warning>
+
+Na Web não há breaking changes nem mudanças na página: o SDK carrega e configura o Google Pay para você. Se você carrega uma versão fixa do SDK (por exemplo, com um hash de integridade), confirme que ela é a 1.10.8 ou mais recente.
+
+## Como funciona {#how-it-works}
+
+1. O seu backend adiciona `summary_items` e/ou `shipping_methods` quando cria a sessão de checkout.
+2. O seu app registra `onShippingAddressChanged` quando inicia o fluxo de pagamento.
+3. Na folha do Google Pay, trocar o método de envio atualiza o preço instantaneamente, sem chamar o seu app. Escolher ou mudar o endereço de entrega chama o seu handler, para que você possa devolver novos totais, novos métodos ou um erro.
+4. Depois que o cliente autoriza, o token de uso único inclui um objeto `shipping` com o método selecionado e o endereço completo.
+
+Duas regras valem em todos os casos:
+
+- Toda lista `summary_items` deve terminar com o total geral. O `amount` dele é o total mostrado na folha, e o `label` dele aparece ao lado (recomendamos o nome da sua loja).
+- Todos os valores devem usar a moeda da sessão. Uma moeda diferente faz o SDK ignorar esse detalhamento ou essa resposta.
+
+## Passo 1: Mostrar o detalhamento do pedido (apenas backend) {#step-1-show-an-order-breakdown-backend-only}
+
+Adicione `summary_items` quando você [criar a sessão de checkout](/reference/checkout-sessions/create-checkout-session):
+
+```json
+{
+  "amount": { "currency": "USD", "value": 108.00 },
+  "customer_id": "customer-uuid",
+  "merchant_order_id": "order-123",
+  "country": "US",
+  "summary_items": [
+    { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+    { "id": "tax", "label": "Tax", "amount": { "currency": "USD", "value": 8.00 } },
+    { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 108.00 } }
+  ]
+}
+```
+
+A folha agora mostra um detalhamento expansível com o total identificado como "ACME Inc.". Não é necessário código no app.
+
+- Os ids `subtotal`, `shipping`, `tax` e `discount` usam os tipos de linha nativos do Google. Qualquer outro id aparece como uma linha comum. O cliente vê apenas os seus labels.
+- A última entrada deve ser o total geral e deve corresponder ao valor da sessão (tolerância de 0.001 no Android e 0.01 na Web). Se não corresponder, a folha mostra apenas o total.
+- Descontos podem ser negativos, por exemplo `-5.00`.
+- Envie pelo menos duas entradas: uma linha mais o total geral. Se a lista for inválida (menos de duas entradas, label ou valor ausente, moedas misturadas, sem total), a folha mostra apenas o total. Nada quebra e o cliente não vê nenhum erro.
+- Sem detalhamento, o Web SDK identifica o valor como "Total" no idioma do checkout (SDK 1.11.17 ou mais recente).
+- Quando você também envia `shipping_methods` (Passo 2) e registra o handler, a folha mostra o detalhamento do primeiro método e esta lista é ignorada.
+
+## Passo 2: Oferecer métodos de envio na folha {#step-2-offer-shipping-methods-on-the-sheet}
+
+Adicione `shipping_methods` à sessão de checkout. Cada método tem os seus próprios `summary_items`, para que a folha possa atualizar o preço assim que o cliente troca de método:
+
+```json
+"shipping_methods": [
+  {
+    "id": "standard",
+    "label": "Standard shipping",
+    "detail": "Arrives in 3-5 business days",
+    "amount": { "currency": "USD", "value": 5.00 },
+    "summary_items": [
+      { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+      { "id": "shipping", "label": "Shipping", "amount": { "currency": "USD", "value": 5.00 } },
+      { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 105.00 } }
+    ]
+  },
+  {
+    "id": "express",
+    "label": "Express shipping",
+    "detail": "Arrives in 1-2 business days",
+    "amount": { "currency": "USD", "value": 12.00 },
+    "summary_items": [
+      { "id": "subtotal", "label": "Subtotal", "amount": { "currency": "USD", "value": 100.00 } },
+      { "id": "shipping", "label": "Shipping", "amount": { "currency": "USD", "value": 12.00 } },
+      { "id": "total", "label": "ACME Inc.", "amount": { "currency": "USD", "value": 112.00 } }
+    ]
+  }
+]
+```
+
+O seletor precisa do handler do Passo 3. Sem ele, a folha ignora os métodos e funciona como antes.
+
+- Cada método precisa de um id único. Se dois métodos compartilham um id, o seletor não é exibido.
+- O primeiro método vem pré-selecionado.
+- O preço aparece no nome da opção, por exemplo "$5.00: Standard shipping". `detail` aparece como a descrição.
+- Trocar de método nunca chama o seu app nem o seu backend. O total vem dos `summary_items` desse método.
+- Os `summary_items` de cada método devem terminar com o total desse método, que pode ser diferente do valor da sessão. Envie pelo menos uma linha mais o total. Um método só com o total não mostra detalhamento e usa o label de total padrão do Google.
+- Se algum método for inválido, o seletor não é exibido.
+- `delivery_estimate` (`{ "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }`) é aceito, mas o Google Pay não o exibe no Android nem na Web.
+
+## Passo 3: Reagir a mudanças no endereço de entrega {#step-3-react-to-shipping-address-changes}
+
+Registre `onShippingAddressChanged` quando você iniciar o fluxo. O seu handler recebe o endereço parcial e responde com novos totais, novos métodos, um erro ou nada, para manter a folha como está.
+
+<Tabs>
+<Tab title="Android">
+
+```kotlin
+import com.yuno.sdk.payments.shipping.*
+
+activity.startCheckout(
+    checkoutSession = session,
+    countryCode = "US",
+    callbackOTT = { token -> /* create the payment on your server */ },
+    onShippingAddressChanged = { paymentMethodType, shippingInfo, complete ->
+        // paymentMethodType is "GOOGLE_PAY"
+        myShippingService.quoteAsync(shippingInfo.shippingAddress) { quote ->
+            complete(quote) // a ShippingUpdate, or null to keep the current values
+        }
+    },
+)
+```
+
+O mesmo parâmetro opcional existe em `startPayment`, `startPaymentLite`, `startPaymentSeamlessLite` e `continuePayment`. Registre-o toda vez que você iniciar um fluxo.
+
+</Tab>
+<Tab title="Web">
+
+Registre `onShippingAddressChanged` na raiz de `externalButtons` quando você iniciar o checkout:
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+
+await yuno.startCheckout({
+  checkoutSession: CHECKOUT_SESSION,
+  elementSelector: '#root',
+  countryCode: 'US',
+  language: 'en',
+  externalButtons: {
+    onShippingAddressChanged: async ({ paymentMethodType, shippingInfo }) => {
+      // paymentMethodType is "GOOGLE_PAY"
+      const quote = await myShippingService.quote(shippingInfo.shippingAddress)
+      return quote // a ShippingUpdate, or null to keep the current values
+    },
+  },
+  async createPayment(oneTimeToken) {
+    // create the payment on your server
+  },
+})
+
+await yuno.mountCheckout()
+```
+
+- O handler deve ser uma função `async` ou retornar uma Promise. Se ele retornar um objeto simples, o SDK ignora a resposta.
+- Ele funciona em todos os fluxos que mostram o botão do Google Pay (`mountCheckout`, `mountExternalButtons` e `mountSeamlessExternalButtons`), desde que você o passe para `startCheckout` ou `startSeamlessCheckout`.
+- Registre-o antes de o botão do Google Pay ser renderizado. O SDK verifica a presença dele uma única vez, quando o botão aparece.
+- O handler é compartilhado com o Apple Pay: quando o cliente paga com Apple Pay, ele é chamado com `paymentMethodType: "APPLE_PAY"`, então crie uma ramificação para esse valor se você calcula o frete de forma diferente por carteira.
+
+</Tab>
+</Tabs>
+
+### O que você recebe: ShippingInfo {#what-you-receive-shippinginfo}
+
+Antes da autorização, o Google compartilha apenas parte do endereço, o suficiente para calcular frete e impostos:
+
+| Campo | Tipo | Exemplo |
+|---|---|---|
+| `shippingAddress.city` | `String?` | `"Mountain View"` |
+| `shippingAddress.state` | `String?` | `"CA"` |
+| `shippingAddress.postalCode` | `String?` | `"94043"` (pode vir encurtado em alguns países) |
+| `shippingAddress.countryCode` | `String?` | `"US"` |
+
+Qualquer campo pode estar ausente: `null` no Android, omitido na Web. O endereço completo chega no token de uso único (Passo 4).
+
+### O que você retorna: ShippingUpdate {#what-you-return-shippingupdate}
+
+Responda com qualquer combinação destes, ou com `null` para manter a folha como está. No Android, chame `complete(...)`; na Web, retorne o valor a partir do handler.
+
+<Tabs>
+<Tab title="Android">
+
+```kotlin
+// A) New totals for this address
+complete(ShippingUpdate(
+    summaryItems = listOf(
+        SummaryItem("subtotal", "Subtotal", SummaryAmount("USD", 100.00)),
+        SummaryItem("tax", "Tax", SummaryAmount("USD", 10.00)),
+        SummaryItem("total", "ACME Inc.", SummaryAmount("USD", 110.00)), // must be last
+    ),
+))
+```
+
+```kotlin
+// B) New shipping methods for this address
+complete(ShippingUpdate(
+    shippingMethods = listOf(
+        ShippingMethod(
+            id = "same-day", label = "Same-day delivery", detail = "Today before 9pm",
+            amount = SummaryAmount("USD", 15.00),
+            summaryItems = listOf(
+                SummaryItem("subtotal", "Subtotal", SummaryAmount("USD", 100.00)),
+                SummaryItem("shipping", "Shipping", SummaryAmount("USD", 15.00)),
+                SummaryItem("total", "ACME Inc.", SummaryAmount("USD", 115.00)),
+            ),
+        ),
+    ),
+))
+```
+
+```kotlin
+// C) An address you can't serve
+complete(ShippingUpdate(
+    errors = listOf(ShippingError(
+        code = "CITY_NOT_SUPPORTED",
+        message = "We don't ship to this city yet", // shown to the customer
+    )),
+))
+```
+
+</Tab>
+<Tab title="Web">
+
+```javascript
+// A) New totals for this address
+return {
+  summaryItems: [
+    { id: 'subtotal', label: 'Subtotal', amount: { currency: 'USD', value: 100.00 } },
+    { id: 'tax', label: 'Tax', amount: { currency: 'USD', value: 10.00 } },
+    { id: 'total', label: 'ACME Inc.', amount: { currency: 'USD', value: 110.00 } }, // must be last
+  ],
+}
+```
+
+```javascript
+// B) New shipping methods for this address
+return {
+  shippingMethods: [
+    {
+      id: 'same-day', label: 'Same-day delivery', detail: 'Today before 9pm',
+      amount: { currency: 'USD', value: 15.00 },
+      summaryItems: [
+        { id: 'subtotal', label: 'Subtotal', amount: { currency: 'USD', value: 100.00 } },
+        { id: 'shipping', label: 'Shipping', amount: { currency: 'USD', value: 15.00 } },
+        { id: 'total', label: 'ACME Inc.', amount: { currency: 'USD', value: 115.00 } },
+      ],
+    },
+  ],
+}
+```
+
+```javascript
+// C) An address you can't serve
+return {
+  errors: [
+    { code: 'CITY_NOT_SUPPORTED', message: "We don't ship to this city yet" }, // shown to the customer
+  ],
+}
+```
+
+</Tab>
+</Tabs>
+
+### Regras {#rules}
+
+| Situação | O que acontece |
+|---|---|
+| Você retorna `null` (ou nada, na Web) | Os valores atuais são mantidos. |
+| Você responde com atraso | Responda o mais rápido possível. O SDK não define um tempo limite próprio, mas o Google define (cerca de 30 a 45 segundos na Web). Depois disso, a folha mostra um aviso de tempo esgotado e mantém os valores atuais. No Android, só a primeira chamada a `complete(...)` conta. |
+| Uma moeda é diferente da moeda da sessão | A resposta inteira é ignorada, inclusive os erros. |
+| Você envia `summaryItems` | A lista deve terminar com o total geral, que passa a ser o total da folha. Ele pode ser diferente do valor da sessão. Sempre envie um label. |
+| Você envia `shippingMethods` | Eles substituem as opções e o primeiro vem pré-selecionado. O detalhamento dele define o total, e qualquer `summaryItems` de nível superior na mesma resposta é ignorado. Inclua `summaryItems` em cada método; caso contrário, o total não muda quando o cliente troca de método. Eles só são exibidos se a sessão já tinha `shipping_methods` válidos; caso contrário, são descartados e os seus `summaryItems` e `errors` continuam valendo. |
+| Um método é inválido ou dois métodos compartilham um id | No Android, a resposta inteira é ignorada. Na Web, os métodos são ignorados e os totais não mudam, mas um erro na mesma resposta ainda é exibido. |
+| Você envia `errors` | O Google mostra o primeiro erro na folha. Estes códigos apontam para o campo do endereço: `CITY_NOT_SUPPORTED`, `STATE_NOT_SUPPORTED`, `COUNTRY_NOT_SUPPORTED`, `POSTAL_CODE_INVALID`, `ADDRESS_NOT_SUPPORTED`. Qualquer outro código aparece como um erro genérico. Se a mesma resposta também tiver totais ou métodos, o Google mostra o erro e os aplica. |
+| O seu handler lança uma exceção (ou rejeita, na Web) | Os valores atuais são mantidos. A folha e o seu app não travam. |
+| A folha abre | O Google normalmente chama o seu handler na hora com o endereço padrão. Faça com que o seu handler possa ser chamado mais de uma vez com segurança e não dependa dessa primeira chamada. Se você retornar métodos nessa chamada, eles substituem os métodos da sessão; retorne `null` para mantê-los. |
+
+Para mudar os preços enquanto o seletor é exibido, retorne a lista completa de `shippingMethods`, cada método com os seus próprios `summaryItems`. Se você retornar apenas `summaryItems`, o total muda, mas na próxima vez que o cliente trocar de método a folha volta ao detalhamento original desse método.
+
+<Warning>
+  Um erro na folha não bloqueia o pagamento. O cliente ainda pode pagar, e o token leva o endereço que você rejeitou. Sempre valide o endereço no seu servidor quando você criar o pagamento. Se uma venda não pode acontecer, não retorne nenhum método de envio disponível para esse endereço.
+</Warning>
+
+## Passo 4: Ler o resultado no token de uso único {#step-4-read-the-result-in-the-one-time-token}
+
+Depois que o cliente autoriza, o token de uso único que você recebe em `callbackOTT` (Android) ou `createPayment` (Web) inclui um objeto `shipping` com o endereço completo e o método selecionado:
+
+```json
+"shipping": {
+  "method": {
+    "id": "express",
+    "label": "Express shipping",
+    "amount": { "currency": "USD", "value": 12.00 }
+  },
+  "address": {
+    "address_line_1": "1600 Amphitheatre Parkway",
+    "address_line_2": "",
+    "city": "Mountain View",
+    "state": "CA",
+    "zip_code": "94043",
+    "country": "US"
+  }
+}
+```
+
+- `method` é o método selecionado na folha, ou o primeiro, se o cliente não o mudou. O label dele é o que você enviou, sem o preço.
+- Campos de endereço vazios voltam como strings vazias no Android e são omitidos na Web.
+- Os `summary_items` não são devolvidos.
+- Se você não registrar um handler, o token não inclui `shipping`.
+
+Use esse objeto no seu servidor para cobrar o valor final, validar o endereço e enviar o pedido.
+
+## O que acontece em cada caso {#what-happens-in-each-case}
+
+| Handler registrado | `summary_items` na sessão | `shipping_methods` na sessão | Folha do Google Pay |
+|---|---|---|---|
+| Não | Não | Não | Igual a antes (total único) |
+| Não | Sim | – | Detalhamento, sem atualizações de endereço |
+| Não | – | Sim | Os métodos são ignorados sem o handler. Um `summary_items` válido ainda é exibido |
+| Sim | Não | Não | Atualizações de endereço; os totais mudam com as suas respostas. Sem seletor |
+| Sim | Sim | Não | Primeiro o detalhamento; as suas respostas podem atualizá-lo |
+| Sim | – | Sim | Experiência completa: seletor, troca instantânea de método e atualizações de endereço |
+
+## Bom saber {#good-to-know}
+
+- Os endereços pertencem à conta Google do cliente. No ambiente TEST do Google Pay, você só verá os endereços de teste do Google; não é possível adicionar os seus.
+- A folha pede um endereço de entrega assim que o handler é registrado. Sem handler, ela só pede quando o endereço de entrega está habilitado como campo obrigatório no Checkout Builder.
+- O método selecionado continua selecionado quando o cliente muda o endereço, a menos que você retorne novos métodos.
+- **Privacidade:** o SDK nunca registra em log endereços, emails ou dados de pagamento.
+- O Google Pay Pix (Brasil) não é afetado.
+
+## Solução de problemas {#troubleshooting}
+
+| Sintoma | Causa provável |
+|---|---|
+| O build falha no merge do manifest depois da atualização (Android) | O seu `minSdkVersion` está abaixo de 23. |
+| O seletor não aparece | O handler não foi registrado neste início de fluxo (na Web, ele não estava registrado quando o botão foi renderizado), dois métodos compartilham um id, um método é inválido (cada um precisa de id, label, valor e `summary_items` terminando no total) ou uma moeda é diferente da moeda da sessão. |
+| O detalhamento não aparece | `summary_items` é inválido (sem total, label vazio, moedas misturadas) ou o total é diferente do valor da sessão. |
+| O meu handler nunca é chamado | Na Web, ele foi adicionado depois que o botão foi renderizado, ou `externalButtons` não foi passado para `startCheckout` ou `startSeamlessCheckout`. Trocar o método de envio nunca o chama; mude o endereço para testá-lo. |
+| O meu handler é executado, mas a folha não muda | Na Web, o handler retorna um objeto simples em vez de uma Promise; torne-o `async`. |
+| Os métodos retornados pelo meu handler não aparecem, mas os totais sim | A sessão não tinha `shipping_methods` válidos, então não há seletor para atualizar. Envie pelo menos um método válido na sessão. |
+| Os meus métodos substituíram os da sessão quando a folha abriu | O Google chama o seu handler quando a folha abre, e a sua resposta é aplicada. Retorne `null` nessa chamada para manter os métodos da sessão. |
+| Trocar de método não muda o total | Os métodos não têm `summaryItems`. Envie um detalhamento para cada método. |
+| Um método mostra o total, mas não o detalhamento | Os `summary_items` dele têm apenas o total. Adicione pelo menos uma linha. |
+| O meu novo total volta ao antigo quando o cliente troca de método | Você retornou apenas `summaryItems` enquanto o seletor era exibido. Retorne a lista completa de `shippingMethods`. |
+| Um cliente pagou com um endereço que eu rejeitei | Erros na folha não bloqueiam o pagamento. Valide o endereço no seu servidor quando você criar o pagamento. |
+| A folha mantém os totais antigos depois da minha resposta | A sua resposta chegou depois do tempo limite do Google, `complete(...)` foi chamado duas vezes (Android) ou uma moeda é diferente da moeda da sessão. |
+| As datas de entrega não aparecem | O Google Pay não exibe `delivery_estimate`. |
+
+## Documentação relacionada {#related-documentation}
+
+* [Visão geral do Google Pay](/docs/google-pay)
+* [Configuração e pagamentos únicos](/pt-br/docs/wallets/google-pay/google-pay-sdk-integration)
+* [Integração do Apple Pay via SDK](/pt-br/docs/wallets/apple-pay/apple-pay-sdk-integration)
+* [Referência do Web SDK: `externalButtons`](/docs/sdks/resources/references/web#express-button-styling-externalbuttons)
+* [Changelog do Android SDK](/changelog/android#v2-24-0) e [changelog do Web SDK](/changelog/web#v1-10-8)

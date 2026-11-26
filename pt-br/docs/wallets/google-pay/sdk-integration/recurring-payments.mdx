@@ -1,0 +1,100 @@
+---
+title: "Pagamentos recorrentes"
+description: "Configure assinaturas com Google Pay usando o Yuno SDK: uma transação iniciada pelo cliente que armazena o token no vault e, depois, cobranças iniciadas pelo lojista com o token armazenado."
+---
+
+Os pagamentos recorrentes com Google Pay seguem as mesmas duas etapas dos cartões: uma transação iniciada pelo cliente (CIT) que armazena o instrumento no vault e, depois, transações iniciadas pelo lojista (MIT) com o `vaulted_token` resultante. A matriz completa de `reason` e `usage` está em [Credenciais armazenadas](/pt-br/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
+
+## Transação iniciada pelo cliente (CIT) {#customer-initiated-transaction-cit}
+
+Na CIT, envie `vault_on_success: true` e coloque `stored_credentials` em `detail.wallet`, porque nesse momento o meio de pagamento ainda é a carteira:
+
+```json
+{
+  "account_id": "your-account-id",
+  "description": "Google Pay recurring setup",
+  "merchant_order_id": "order-123",
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": 5000
+  },
+  "checkout": {
+    "session": "checkout-session-id"
+  },
+  "customer_payer": {
+    "id": "customer-uuid",
+    "email": "customer@example.com"
+  },
+  "payment_method": {
+    "type": "GOOGLE_PAY",
+    "token": "one-time-token-from-the-sdk",
+    "vault_on_success": true,
+    "detail": {
+      "wallet": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "FIRST"
+        }
+      }
+    }
+  },
+  "workflow": "SDK_CHECKOUT"
+}
+```
+
+Os principais parâmetros de uma CIT são:
+
+- **`vault_on_success: true`**: armazena no vault o cartão descriptografado como um registro `CARD` com `parent_payment_method_type: GOOGLE_PAY` e retorna o `vaulted_token` dele na resposta do pagamento. `customer_payer.id` deve referenciar um cliente existente (crie-o antes com [Criar cliente](/reference/customers/create-customer)). Sem ele, o pagamento ainda é bem-sucedido, mas nada é armazenado no vault: a resposta traz um `vaulted_token` vazio e nenhum erro.
+- **`detail.wallet.stored_credentials.usage: "FIRST"`**: marca a primeira transação da série recorrente. A Yuno armazena no registro salvo o `network_transaction_id` retornado pelo provedor.
+
+<Warning>
+  Não coloque `stored_credentials` em `detail.card` na CIT. Ele não é validado em um pagamento com carteira e pode ser descartado, o que deixa o registro salvo sem as flags de credencial armazenada e sem um `network_transaction_id`.
+</Warning>
+
+<Note>
+  O `vaulted_token` é retornado apenas na resposta do pagamento CIT. Os instrumentos armazenados no vault pela carteira não são incluídos, de propósito, em [Consultar meios de pagamento cadastrados](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api), então armazene o token do seu lado quando a CIT for bem-sucedida.
+</Note>
+
+## Transação iniciada pelo lojista (MIT) {#merchant-initiated-transaction-mit}
+
+As cobranças seguintes usam o `vaulted_token` como um cartão armazenado. Não são necessários token do Google Pay nem sessão de checkout:
+
+```json
+{
+  "account_id": "your-account-id",
+  "description": "Google Pay recurring payment",
+  "merchant_order_id": "order-124",
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": 5000
+  },
+  "customer_payer": {
+    "id": "customer-uuid"
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "vaulted-token-from-the-cit-response",
+    "detail": {
+      "card": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED"
+        }
+      }
+    }
+  },
+  "workflow": "DIRECT"
+}
+```
+
+Os principais parâmetros de uma MIT são:
+
+- **`vaulted_token`**: o token retornado na resposta da CIT.
+- **`detail.card.stored_credentials.usage: "USED"`**: marca uma transação seguinte da série. A Yuno anexa automaticamente o `network_transaction_id` da CIT.
+
+## Documentação relacionada {#related-documentation}
+
+* [Configuração e pagamentos únicos](/pt-br/docs/wallets/google-pay/google-pay-sdk-integration)
+* [Credenciais armazenadas](/pt-br/docs/payment-features/stored-credentials)

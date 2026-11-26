@@ -1,0 +1,184 @@
+---
+title: "Pagamentos recorrentes"
+description: "Configure assinaturas com Apple Pay usando o Yuno SDK: uma transação iniciada pelo cliente que armazena o token no vault e, depois, cobranças iniciadas pelo lojista."
+---
+
+Os pagamentos recorrentes usam transações iniciadas pelo cliente (CIT) e transações iniciadas pelo lojista (MIT). O fluxo geral é:
+
+1. Crie uma sessão de checkout com o objeto `recurring_payment`.
+2. Faça uma CIT para autorizar e armazenar no vault o meio de pagamento do cliente.
+3. Depois, use o `vaulted_token` retornado nas cobranças MIT seguintes.
+
+## Criar a sessão de checkout para pagamentos recorrentes {#create-checkout-session-for-recurring-payments}
+
+Antes de criar a transação, você precisa criar a sessão de checkout com o objeto `recurring_payment` preenchido na requisição da sessão de checkout:
+
+**Período de teste gratuito:** ao oferecer um período de teste gratuito, defina o `amount.value` da raiz como `0` e inclua o objeto `trial_billing`, como mostra o exemplo abaixo. A cobrança recorrente real é definida em `regular_billing`, que informa ao cliente o valor que será cobrado quando o período de teste terminar.
+
+```json
+{
+  "account_id": "123444",
+  "merchant_order_id": "12333",
+  "country": "US",
+  "callback_url": "https://your-callback-url.com",
+  "customer_id": "12333",
+  "amount": {
+    "currency": "EUR",
+    "value": 2000
+  },
+  "checkout_session": {
+    "payment_description": "Basic Plan — 3-day free trial",
+    "workflow": "SDK_CHECKOUT"
+  },
+  "recurring_payment": {
+    "description": "Basic Plan",
+    "management_url": "https://yourURL.com/subscriptions",
+    "billing_agreement": "After your 3-day free trial ends, you will be charged EUR 11.99/month until you cancel. Cancel anytime via account settings or by contacting support@test.com.",
+    "regular_billing": {
+      "label": "Monthly Plan",
+      "amount": 11.99,
+      "interval_unit": "month",
+      "interval_count": 1
+    },
+    "trial_billing": {
+      "label": "3-Day Free Trial",
+      "amount": 0,
+      "interval_unit": "day",
+      "interval_count": 3
+    },
+    "availability": {
+      "start_at": "2026-09-13T20:00:00Z",
+      "finish_at": "2026-09-30T16:10:00Z"
+    }
+  }
+}
+```
+
+## Transação iniciada pelo cliente (CIT) {#customer-initiated-transaction-cit}
+
+A CIT é a transação inicial em que o cliente autoriza os pagamentos recorrentes, por exemplo, quando assina um serviço mensal. Essa transação exige a interação do cliente e gera um token para as futuras transações MIT.
+
+O exemplo a seguir mostra uma requisição CIT completa:
+
+```json
+{
+  "account_id": "62fa3145-1408-4044-a599-caa0c2159782",
+  "amount": {
+    "currency": "USD",
+    "value": 2000
+  },
+  "checkout": {
+    "session": "0793c7a5-79c6-40d6-aa5f-13e4e9bdf169"
+  },
+  "payment_method": {
+    "vault_on_success": true,
+    "type": "APPLE_PAY",
+    "token": "684f1f66-5322-4c84-a0b63d",
+    "detail": {
+      "wallet": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "FIRST"
+        },
+        "verify": true
+      }
+    }
+  },
+  "customer_payer": {
+    "id": "070a34cb-4649-4a4e-b231-065a53060379",
+    "nationality": "CO",
+    "browser_info": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15",
+      "accept_header": "application/json",
+      "accept_content": "*/*",
+      "accept_browser": "*/*",
+      "color_depth": "5",
+      "screen_height": "8",
+      "screen_width": "8",
+      "javascript_enabled": true,
+      "java_enabled": false,
+      "browser_time_difference": "300",
+      "language": "en",
+      "platform": "WEB"
+    }
+  },
+  "merchant_order_id": "merchant-order-123",
+  "country": "US",
+  "description": "Apple Pay recurring setup",
+  "workflow": "SDK_CHECKOUT"
+}
+```
+
+Os principais parâmetros de uma CIT são:
+
+- **`vault_on_success: true`**: indica que esta é a configuração de um pagamento recorrente e gera o token para as futuras transações MIT
+- **`customer_payer.id`**: obrigatório junto com `vault_on_success`. Deve referenciar um cliente existente (crie-o antes com [Criar cliente](/reference/customers/create-customer)). Sem ele, o pagamento ainda é bem-sucedido, mas nada é armazenado no vault: a resposta traz um `vaulted_token` vazio e nenhum erro
+- **`detail.wallet.stored_credentials.usage: "FIRST"`**: indica que esta é a transação inicial de uma série recorrente
+- **`verify`**: quando `true`, ativa um fluxo de verificação do cartão pela carteira (por exemplo, uma autorização de valor zero) em vez de uma cobrança de pagamento normal.
+
+<Note>
+  Defina `verify: true` nos fluxos de período de teste gratuito em que `amount` é `0`. Omita o campo nas CITs pagas padrão.
+</Note>
+
+<Warning>
+  Não coloque `stored_credentials` em `detail.card` na CIT. Ele não é validado em um pagamento com carteira, e o fluxo do Apple Pay em duas etapas não o leva para o meio de pagamento salvo, o que deixa o registro sem as flags de credencial armazenada e sem um `network_transaction_id`.
+</Warning>
+
+<Note>
+  O `vaulted_token` é retornado apenas na resposta do pagamento CIT. Os instrumentos armazenados no vault pela carteira não são incluídos, de propósito, em [Consultar meios de pagamento cadastrados](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api), então não dependa da lista de meios de pagamento do cliente para encontrar o token de novo: armazene-o (com os metadados de exibição de que precisar) quando a CIT for bem-sucedida. Um token armazenado ainda pode ser consultado individualmente com [Consultar meio de pagamento cadastrado por ID](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api). Veja [Credenciais armazenadas](/pt-br/docs/payment-features/stored-credentials#wallet-originated-tokens-apple-pay-and-google-pay).
+</Note>
+
+## Transação iniciada pelo lojista (MIT) {#merchant-initiated-transaction-mit}
+
+As transações MIT são processadas automaticamente nos ciclos de cobrança seguintes usando o token gerado durante a CIT.
+
+O exemplo a seguir mostra uma requisição MIT completa:
+
+```json
+{
+  "account_id": "account-id",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  },
+  "payment_method": {
+    "vaulted_token": "98c16e23-ebdd-4d0f-85bd-e0ba7d2fedf6",
+    "detail": {
+      "card": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED"
+        }
+      }
+    },
+    "type": "CARD"
+  },
+  "customer_payer": {
+    "id": "customer-id"
+  },
+  "merchant_order_id": "recurring-order-456",
+  "country": "US",
+  "description": "Apple Pay recurring payment",
+  "workflow": "DIRECT"
+}
+```
+
+Os principais parâmetros de uma MIT são:
+
+- **`vaulted_token`**: o token retornado na resposta da CIT; usado para cobrar o cliente nos ciclos de cobrança seguintes sem exigir uma nova autorização
+- **`type: "CARD"`**: o instrumento armazenado no vault é um registro de cartão. `"APPLE_PAY"` também é aceito junto com um `vaulted_token`
+- **`detail.card.stored_credentials.usage: "USED"`**: indica que esta é uma transação seguinte de uma série recorrente
+- **`workflow: "DIRECT"`**: uma cobrança de servidor para servidor; não são necessários sessão de checkout nem `payment_token`
+
+Acompanhe o status do pagamento por [webhooks](/docs/webhooks) para tratar casos extremos e enviar notificações ao cliente.
+
+## URL de gerenciamento da assinatura {#subscription-management-url}
+
+Para pagamentos recorrentes via SDK, você deve informar uma URL de gerenciamento da assinatura onde os clientes possam gerenciar e cancelar a assinatura. Inclua-a nas suas comunicações com os clientes.
+
+## Documentação relacionada {#related-documentation}
+
+- [Configuração e pagamentos únicos](/pt-br/docs/wallets/apple-pay/apple-pay-sdk-integration)
+- [Credenciais armazenadas](/pt-br/docs/payment-features/stored-credentials)
+- [Gerenciamento de assinaturas](/pt-br/docs/payment-features/subscriptions)
+- [Webhooks](/docs/webhooks)
