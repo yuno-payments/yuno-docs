@@ -1,0 +1,138 @@
+---
+title: "Manejar deeplinks"
+sidebarTitle: "Manejar redirecciones de la app"
+description: "Reenvía las URL entrantes al SDK para que pueda reanudar una transacción después de volver desde una app o página externa."
+---
+
+Cuando una transacción redirige al usuario a un destino externo: otra app, una billetera, un flujo bancario o una página alojada. El usuario eventualmente vuelve a tu app o sitio. Los SDK de iOS, Android y React Native exponen `handleDeeplink` para que puedas reenviar esa URL entrante y dejar que el SDK reanude la transacción.
+
+El SDK de Web no tiene `handleDeeplink`. Cuando el comprador vuelve a tu URL de retorno, la página se carga de nuevo y el SDK no conserva ningún estado a través de la redirección. Lee la sesión de checkout que guardaste, o la que viene en tu URL de retorno, y llama a `sdkPayments.transactionStatus({ checkoutSession, elementSelector })`. El SDK muestra el resultado del pago de esa sesión dentro de `elementSelector`. Pasa `language` y `countryCode` para que coincidan con la transacción original. La pantalla es solo de visualización, así que confirma el resultado mediante webhooks o la API de pagos.
+
+## Comportamiento {#behavior}
+
+`handleDeeplink(url)` acepta cualquier URL. Decide cuándo llamarlo según la propia URL. Por ejemplo, cuando incluye parámetros de consulta como `customer` o `checkoutSession` que la identifican como parte de una transacción de Yuno.
+
+El método devuelve un booleano que indica si la transacción pudo continuar. No refleja el resultado final de la transacción. El estado final sigue llegando mediante `onStatus`.
+
+En iOS, la misma llamada también recibe la URL de retorno de un pago con Revolut Pay cuando el [módulo de Revolut Pay](/es/docs/yuno-sdk/features/native-modules#revolut-pay) está instalado.
+
+## Dónde llamarlo {#where-to-call-it}
+
+Llama a `handleDeeplink` desde donde tu app reciba una URL entrante.
+
+<Tabs>
+  <Tab title="iOS">
+
+Usa `AppDelegate` si usas UIKit, o el ciclo de vida de SwiftUI si tu app está basada en SwiftUI.
+
+**UIKit (`AppDelegate`)**
+
+```swift
+func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey : Any] = [:]
+) -> Bool {
+    if SdkPayments.handleDeeplink(url) {
+        return true
+    }
+    // Handle other URLs here.
+    return false
+}
+```
+
+**SwiftUI (`onOpenURL`)**
+
+```swift
+@main
+struct MyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .onOpenURL { url in
+                    SdkPayments.handleDeeplink(url)
+                }
+        }
+    }
+}
+```
+
+  </Tab>
+  <Tab title="Android">
+
+`handleDeeplink` es un método de `Transaction`. Reenvía el URI desde la Activity que recibe el intent del deeplink, pasando esa Activity como primer argumento: el SDK inicia las pantallas del flujo reanudado desde ella. Cubre tanto el inicio en frío (`onCreate`) como el regreso en caliente (`onNewIntent`). Una sesión incluida en la URL tiene prioridad sobre la de `TransactionConfig`; la sesión de la configuración es la alternativa cuando la URL solo incluye un token.
+
+```kotlin
+class MainActivity : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        intent?.data?.let(::forwardDeeplink)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.data?.let(::forwardDeeplink)
+    }
+
+    private fun forwardDeeplink(uri: Uri) {
+        val handled = Transaction(
+            TransactionConfig(
+                countryCode = "US",
+                checkoutSession = "session-from-backend",
+                controller = controller,
+            ),
+        ).handleDeeplink(this, uri)
+        if (!handled) {
+            // Handle other URLs here.
+        }
+    }
+}
+```
+
+  </Tab>
+  <Tab title="React Native">
+
+Conecta el esquema de URL de tu app con `Linking` de React Native (en iOS, reenvía la URL desde tu `AppDelegate` como describe la documentación de React Native), y luego entrega cada URL a la transacción que iniciaste. En un inicio en frío, pasa la URL de `Linking.getInitialURL()` de la misma manera.
+
+```tsx
+useEffect(() => {
+  const subscription = Linking.addEventListener('url', ({ url }) => {
+    transaction.handleDeeplink(url).then((handled) => {
+      if (!handled) {
+        // Handle other URLs here.
+      }
+    });
+  });
+  return () => subscription.remove();
+}, [transaction]);
+```
+
+`SdkPayments.handleDeeplink(url)` hace lo mismo sin una referencia a la transacción: usa la última transacción iniciada.
+
+  </Tab>
+</Tabs>
+
+## Firma {#signature}
+
+```swift
+// iOS
+@discardableResult
+func handleDeeplink(_ url: URL) -> Bool
+```
+
+```kotlin
+// Android: method of Transaction
+fun handleDeeplink(activity: ComponentActivity, uri: Uri): Boolean
+```
+
+```typescript
+// React Native
+transaction.handleDeeplink(url: string): Promise<boolean>
+SdkPayments.handleDeeplink(url: string): Promise<boolean>
+```
+
+## Relacionado {#related}
+
+- [Transacciones](/es/docs/basic-concepts/transactions). Cómo fluye un pago a través de Yuno.
+- [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). Recibe el estado final de la transacción.

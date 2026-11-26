@@ -1,0 +1,28 @@
+---
+title: "Continuar onboarding"
+openapi: "/openapi/es/recipients-for-marketplace/continue-onboarding.json POST /recipients/{recipient_id}/onboardings/{onboarding_id}/continue"
+description: "Reanuda el onboarding de un destinatario después de proporcionar datos o documentación adicional requeridos"
+---
+
+Continúa el proceso de onboarding de un destinatario. Este endpoint se usa en los flujos de onboarding de dos pasos para ejecutar el paso de KYC después de crear la cuenta.
+
+Este endpoint continúa el proceso de onboarding de un destinatario y ejecuta específicamente el paso de KYC (Know Your Customer) en los flujos de onboarding de dos pasos. Úsalo cuando necesites completar la validación de KYC después de que la creación de la cuenta se haya completado mediante [Create Onboarding](/es/reference/recipients-for-marketplace/create-onboarding).
+
+## Requisitos previos {#prerequisites}
+
+Este endpoint requiere una llamada previa a [Create Onboarding](/es/reference/recipients-for-marketplace/create-onboarding) con `type: "TWO_STEP_ONBOARDING"`, en la que el paso de creación de la cuenta se haya completado correctamente. Este es el segundo paso en los [flujos de onboarding de dos pasos](/es/reference/recipients-for-marketplace/create-onboarding) para el [marketplace de pagos divididos](/es/docs/payment-features/split-payments-marketplace#/).
+
+El proceso de continuación admite dos tipos de flujo de trabajo:
+
+* **HOSTED\_BY\_PROVIDER**: devuelve una URL de redirección de Yuno que registra la actividad y redirige a la interfaz de KYC del proveedor. Usa `workflow: "HOSTED_BY_PROVIDER"`.
+* **DIRECT**: procesa la validación de KYC directamente, sin redirecciones externas. Usa `workflow: "DIRECT"`.
+
+## Envío de una cuenta bancaria {#supplying-a-bank-account}
+
+Para un destinatario existente de un proveedor Zoop o Pagar.me, un `withdrawal_methods.bank` explícito se confirma mediante la ruta de actualización bancaria antes de continuar con el KYC. Esto incluye la primera cuenta bancaria de un vendedor existente.
+
+Después de que el proveedor confirma el banco, Yuno lo guarda para el onboarding seleccionado y continúa con el KYC sin volver a enviar el banco. El valor predeterminado del destinatario no cambia. Una actualización bancaria exitosa no significa que el KYC esté completo: el onboarding aún puede requerir documentos de identidad u otra información.
+
+Un rechazo definitivo del banco devuelve `400`; un resultado sin confirmar devuelve `409`. En cualquiera de los dos casos, esa solicitud no inicia el KYC y el banco sin confirmar no se guarda. Sigue la [guía de errores bancarios y reintentos](/es/reference/recipients-for-marketplace/update-recipient-1#bank-errors-and-retries) antes de reintentar. Si el banco se confirma pero un paso posterior del KYC falla, el cambio bancario no se revierte.
+
+Otros proveedores y el onboarding inicial sin un ID de destinatario del proveedor mantienen su comportamiento de continuación existente.

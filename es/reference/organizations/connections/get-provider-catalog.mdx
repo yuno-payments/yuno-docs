@@ -1,0 +1,181 @@
+---
+title: "Obtener el catálogo de un proveedor"
+description: "Devuelve el esquema que debes completar para crear una conexión con un proveedor determinado."
+openapi: "/openapi/es/organizations/connections/get-provider-catalog.json GET /connections/catalog/{provider_id}"
+---
+
+Devuelve el esquema que debes completar para crear una conexión con un proveedor determinado: qué métodos de pago admite el proveedor y la lista recursiva de parámetros (credenciales, interruptores, opciones) que el proveedor requiere.
+
+Este es el endpoint de descubrimiento: llámalo primero para saber qué espera un proveedor y luego usa su respuesta como entrada de [Crear una conexión](/es/reference/organizations/connections/create-connection).
+
+<Note>
+Este endpoint está limitado al proveedor, no a la conexión. Devuelve un esquema, no tus conexiones existentes.
+</Note>
+
+### Parámetros de ruta {#path-parameters}
+
+<ParamField path="provider_id" type="string" required>
+  Identificador de proveedor de Yuno (`STRIPE`, `ADYEN`, `CYBERSOURCE`, …). Distingue mayúsculas y minúsculas, UPPER_SNAKE_CASE.
+</ParamField>
+
+### Respuesta {#response}
+
+<ResponseField name="payment_method_type" type="string[]">
+  Los enums de método de pago de Yuno que admite este proveedor. Pasa cualquiera de estos valores en `payment_methods[]` en [Crear una conexión](/es/reference/organizations/connections/create-connection).
+</ResponseField>
+
+<ResponseField name="params" type="object[]">
+  Esquema de parámetros recursivo.
+  <Expandable title="elemento">
+    <ResponseField name="param_id" type="string">
+      Identificador que debes devolver en `POST /v1/connections.params[].param_id`. Respeta las mayúsculas y minúsculas **tal cual**.
+    </ResponseField>
+    <ResponseField name="field_type" type="enum">
+      Uno de `string`, `boolean`, `array`, `number`.
+    </ResponseField>
+    <ResponseField name="description" type="string | object">
+      Etiqueta visible. Puede ser un string simple o un objeto de localización `{ "EN": "...", "ES": "...", "PT": "..." }`.
+    </ResponseField>
+    <ResponseField name="placeholder" type="string | object">
+      Texto de marcador opcional. Mismas reglas de estructura que `description`.
+    </ResponseField>
+    <ResponseField name="tooltip" type="string | null">
+      Texto de ayuda opcional.
+    </ResponseField>
+    <ResponseField name="editable_field" type="boolean">
+      Si es `false`, el valor es fijo y de solo lectura.
+    </ResponseField>
+    <ResponseField name="secret" type="boolean">
+      Si es `true`, el valor es sensible: se almacena cifrado y se muestra como `"***"` en lecturas posteriores.
+    </ResponseField>
+    <ResponseField name="allow_custom" type="boolean">
+      Solo tiene sentido cuando `options[]` está presente. Si es `true`, puedes enviar un valor de formato libre junto con las opciones del catálogo (semántica de combobox).
+    </ResponseField>
+    <ResponseField name="optional" type="boolean">
+      Si es `false`, debes proporcionar un valor.
+    </ResponseField>
+    <ResponseField name="is_hidden" type="boolean">
+      Si es `true`, el parámetro existe pero no debe mostrarse a los usuarios finales.
+    </ResponseField>
+    <ResponseField name="sdk_required" type="boolean">
+      Si es `true`, el valor también es obligatorio al configurar el Yuno SDK del lado del cliente.
+    </ResponseField>
+    <ResponseField name="options" type="string[] | object[]">
+      Presente cuando el campo es un enum restringido. Con `field_type = "string"` → selección única. Con `field_type = "array"` → selección múltiple. Strings simples u objetos `{value, params}` (estos últimos cuando una opción lleva sus propios parámetros anidados).
+    </ResponseField>
+    <ResponseField name="params" type="object[]">
+      Hijos anidados: se activan cuando el valor de este nodo es `true` (padre booleano) o coincide con una de las `options` (padre string/array).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/connections/catalog/STRIPE' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK — Stripe
+{
+  "payment_method_type": [
+    "CARD",
+    "GOOGLE_PAY",
+    "APPLE_PAY",
+    "ACH",
+    "KLARNA_PAY_NOW",
+    "KLARNA_PAY_LATER",
+    "IDEAL",
+    "GIROPAY",
+    "BANCONTACT",
+    "SEPA_DEBIT"
+  ],
+  "params": [
+    {
+      "param_id": "API_KEY",
+      "field_type": "string",
+      "secret": true,
+      "description": "Stripe Secret API Key",
+      "editable_field": true,
+      "optional": false
+    },
+    {
+      "param_id": "PUBLISHABLE_KEY",
+      "field_type": "string",
+      "description": "Stripe Publishable Key",
+      "editable_field": true,
+      "optional": false
+    },
+    {
+      "param_id": "INTEGRATION_TYPE",
+      "field_type": "string",
+      "description": "Stripe integration variant",
+      "editable_field": true,
+      "optional": false,
+      "options": [
+        "PAYMENT_INTENTS",
+        "CHARGES",
+        "CONNECT_DESTINATION"
+      ]
+    },
+    {
+      "param_id": "3DS_ENABLED",
+      "field_type": "boolean",
+      "description": "Enable 3DS validation flow",
+      "editable_field": true,
+      "optional": true,
+      "params": [
+        {
+          "param_id": "ORIGIN_URL",
+          "field_type": "string",
+          "description": "Your checkout origin URL",
+          "editable_field": true,
+          "optional": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+```json 404 Not Found
+{
+  "type": "not_found",
+  "code": "PROVIDER_NOT_FOUND",
+  "message": "Provider 'NOT_A_PROVIDER' is not in the Yuno provider catalog",
+  "details": { "provider_id": "NOT_A_PROVIDER" }
+}
+```
+
+```json 403 Forbidden
+{
+  "type": "auth_error",
+  "code": "INSUFFICIENT_SCOPE",
+  "message": "API key is missing required scope 'connections:read'",
+  "details": { "required_scope": "connections:read" }
+}
+```
+</CodeGroup>
+
+### Cómo leer un nodo {#how-to-read-a-node}
+
+| Lo que ves | Qué significa |
+|---|---|
+| `field_type: "string"`, sin `options[]` | Campo de texto de formato libre. |
+| `field_type: "string"`, `secret: true` | Contraseña / clave de API: solo escritura. Se devuelve como `"***"` en `GET`. |
+| `field_type: "string"`, `options[]` presente | Enum de opción única. El valor que envíes debe ser uno de `options[]`. |
+| `field_type: "string"`, `options[]` presente, `allow_custom: true` | Combobox. Envía uno de `options[]` **o** un valor de formato libre. |
+| `field_type: "boolean"` | Interruptor. Establecerlo en `true` activa los `params[]` anidados y hace obligatorios a sus hijos con `optional: false`. |
+| `field_type: "array"`, `options[]` presente | Selección múltiple. Envía un arreglo JSON cuyos elementos sean un subconjunto de `options[]`. |
+| `field_type: "array"`, sin `options[]` | Lista de strings de formato libre. |
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `404` | `PROVIDER_NOT_FOUND` | El `provider_id` no está en el catálogo de proveedores de Yuno. |
+| `403` | `INSUFFICIENT_SCOPE` | A tu clave de API le falta el scope `connections:read`. |
+
+</div>

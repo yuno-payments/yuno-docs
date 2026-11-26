@@ -286,7 +286,7 @@
                           },
                           "taxes": {
                             "type": "array",
-                            "description": "The taxes of the order. This struct is for informational purposes, the taxes amount is already included in the final transaction amount and is not added separately.",
+                            "description": "The taxes of the order. This struct is for informational purposes, the taxes amount is already included in the final transaction amount and is not added separately. For a [tax quote](/reference/taxes/create-tax-quote) of a Stripe Billing subscription, send one entry per line of the quote with `source: YUNO_TAX_QUOTE` and the `tax_quote_id`, and set the payment amount to the quote `total`.",
                             "items": {
                               "properties": {
                                 "type": {
@@ -299,12 +299,13 @@
                                     "VAT_LAW_17934",
                                     "VAT_LAW_19210",
                                     "VAT_EXEMPTION",
-                                    "ISV"
+                                    "ISV",
+                                    "SALES_TAX"
                                   ]
                                 },
                                 "tax_base": {
                                   "type": "number",
-                                  "description": "The amount base to apply the tax defined.",
+                                  "description": "The amount base to apply the tax defined. For a tax quote line, the line's `taxable_amount`.",
                                   "format": "float"
                                 },
                                 "value": {
@@ -316,6 +317,18 @@
                                   "type": "number",
                                   "description": "The percentage of the tax.",
                                   "format": "float"
+                                },
+                                "source": {
+                                  "type": "string",
+                                  "description": "Where the tax line comes from. `YUNO_TAX_QUOTE` for a line of a [tax quote](/reference/taxes/create-tax-quote): after the payment is approved, Yuno adds the quoted tax to the first invoice of the Stripe subscription.",
+                                  "enum": [
+                                    "YUNO_TAX_QUOTE"
+                                  ]
+                                },
+                                "tax_quote_id": {
+                                  "type": "string",
+                                  "description": "The `tax_quote_id` of the tax quote. Required with `source: YUNO_TAX_QUOTE`.",
+                                  "example": "txq_2a8a493dcc5c4230b4cf8d9359fd200a"
                                 }
                               },
                               "required": [
@@ -2394,6 +2407,20 @@
                                 "type": "boolean",
                                 "description": "Determines whether the card payment is captured immediately (`TRUE` = purchase) or only authorized (`FALSE` = requires capture or cancel)."
                               },
+                              "partial_approval": {
+                                "type": "boolean",
+                                "description": "Card payments only. Set to `true` to accept an approval for less than `amount.value`; the approved amount is returned in `amount.authorized`. Applies to purchases (`capture: true`) and authorizations (`capture: false`) and is ignored on verify. When `false` or omitted, or when the provider does not support partial approvals, the payment is processed as a regular card payment.",
+                                "default": false
+                              },
+                              "authorization_type": {
+                                "type": "string",
+                                "enum": [
+                                  "STANDARD",
+                                  "PRE_AUTHORIZATION"
+                                ],
+                                "default": "STANDARD",
+                                "description": "Optional. Declares the authorization intent when `capture` is `false`. `STANDARD` (default) creates a regular authorization — identical to today's behavior when the field is omitted. `PRE_AUTHORIZATION` requests an extended pre-authorization hold, required by some providers to later raise the hold with [incremental authorizations](/reference/payments/increment-authorization). Sending `PRE_AUTHORIZATION` with `capture: true` — or with `capture` omitted, since it defaults to `true` — returns a `400` error with code `INVALID_PARAMETERS`. Providers without a pre-authorization equivalent process the payment as a standard authorization (best effort)."
+                              },
                               "delayed_capture_settings": {
                                 "type": "object",
                                 "description": "Configuration for automatically capturing the full authorized amount after a delay. Only valid when capture = `FALSE`.",
@@ -2716,6 +2743,12 @@
                               "payment_token": {
                                 "type": "string",
                                 "description": "Complete wallet response payload as a JSON string, exactly as returned by the wallet provider"
+                              },
+                              "provider_payment_token": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2048,
+                                "description": "Single-use nonce returned by the provider's client SDK, such as a Braintree PayPal nonce. DIRECT workflow only. Yuno forwards it to the provider connection and does not store it. Cannot be combined with `payment_token`, `cryptogram`, `payment_method.token` or `payment_method.vaulted_token`. With `vault_on_success`, the create and Retrieve Payment responses return the vaulted provider id in `payment_method.payment_method_detail.wallet.provider_token`, and [Retrieve Payment Method](/reference/payment-methods-checkout/retrieve-payment-method-by-id-checkout) returns it as `provider.token`. See [PayPal direct integration with a Braintree nonce](/docs/wallets/paypal#direct-integration-with-a-braintree-nonce)."
                               },
                               "expires_at": {
                                 "type": "string",
@@ -3059,6 +3092,10 @@
                       "account_updater": {
                         "type": "boolean",
                         "description": "Per-card control for Card Account Updater. When set to `false`, the card enrolled or used in this payment is excluded from Card Account Updater and will not receive automatic card-detail updates. When omitted, the card follows your account's Account Updater configuration."
+                      },
+                      "network_token": {
+                        "type": "boolean",
+                        "description": "Optional. Per-card control for [network tokens](/docs/security-and-compliance/network-tokens#choose-per-card). `false`: Yuno never requests or reuses a network token, so the PAN goes to the provider even when the route has the network token toggle on; a token already stored for the card is not deleted. `true`: on a vaulted card (`vaulted_token`, or `vault_on_success: true`), Yuno uses the card's network token, or provisions one, even when the route has the toggle off. Omitted: the route decides, as today. Requires your organization to be onboarded to network tokens and a provider that supports them; when it is not, `true` has no effect and the request does not fail. No effect on guest (non-vaulted) cards, wallets (Apple Pay, Google Pay, Samsung Pay) or network tokens you send with their cryptogram."
                       },
                       "otp": {
                         "type": "object",
@@ -4740,6 +4777,7 @@
                       "updated_at": "2025-04-11T20:30:51.953868Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 15000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -5162,6 +5200,7 @@
                       "updated_at": "2025-06-18T18:25:02.066450Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 20000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -5505,6 +5544,7 @@
                       "updated_at": "2025-06-18T19:01:02.638270Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 2000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -5902,6 +5942,7 @@
                       "updated_at": "2025-06-18T19:03:55.100929Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 100,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -6235,6 +6276,7 @@
                       "updated_at": "2025-06-18T19:12:44.226783Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 5000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -6578,6 +6620,7 @@
                       "updated_at": "2025-06-18T19:13:37.649587Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 5000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -6947,6 +6990,7 @@
                       "updated_at": "2025-06-18T19:16:19.388282Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 5000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -7268,6 +7312,7 @@
                       "updated_at": "2025-06-18T19:19:27.753439Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 5000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -7918,6 +7963,7 @@
                       "updated_at": "2025-06-18T19:22:17.601756Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 5000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -8244,6 +8290,7 @@
                       "updated_at": "2025-06-18T19:23:25.014707Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 5000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -8587,6 +8634,7 @@
                       "updated_at": "2025-06-18T19:24:46.248935Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 5000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -8930,6 +8978,7 @@
                       "updated_at": "2025-06-18T18:25:02.066450Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 20000,
                         "currency": "USD",
                         "currency_conversion": {
                           "code": "ccv_01HVK3Z9M2...",
@@ -9520,6 +9569,7 @@
                       "updated_at": "2024-06-07T12:48:22.097913Z",
                       "amount": {
                         "captured": 0.0,
+                        "authorized": 100.0,
                         "currency": "USD",
                         "refunded": 0.0,
                         "value": 100.0
@@ -9857,7 +9907,8 @@
                         "currency": "USD",
                         "value": 20000,
                         "refunded": 0,
-                        "captured": 0
+                        "captured": 0,
+                        "authorized": 20000
                       },
                       "checkout": {
                         "session": "",
@@ -10380,6 +10431,7 @@
                       "updated_at": "2025-06-18T19:46:01.130039Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 5000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -10773,6 +10825,7 @@
                       "updated_at": "2025-07-30T16:50:08.908690Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 1000,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -11535,6 +11588,7 @@
                       "updated_at": "2025-04-11T20:30:51.953868Z",
                       "amount": {
                         "captured": 0,
+                        "authorized": 13500,
                         "currency": "USD",
                         "currency_conversion": null,
                         "refunded": 0,
@@ -11939,6 +11993,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 15000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -12124,6 +12183,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -12155,6 +12218,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -12813,6 +12881,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -13111,6 +13184,11 @@
                                           "acquirer_reference_number": {
                                             "type": "string",
                                             "example": ""
+                                          },
+                                          "par": {
+                                            "type": "string",
+                                            "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                            "example": "V0010013019000000000000000001"
                                           },
                                           "voucher": {},
                                           "card_data": {
@@ -13449,6 +13527,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 20000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -13529,6 +13612,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -13560,6 +13647,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -13807,6 +13899,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -14091,6 +14188,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -14483,6 +14585,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 2000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -14563,6 +14670,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -14594,6 +14705,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -15086,6 +15202,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -15369,6 +15490,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -15761,6 +15887,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 5000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -15841,6 +15972,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -15872,6 +16007,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -16212,6 +16352,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -16495,6 +16640,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -16887,6 +17037,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 5000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -16967,6 +17122,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -16998,6 +17157,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -17406,6 +17570,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -17689,6 +17858,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -17994,6 +18168,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 5000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -18074,6 +18253,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 3,
@@ -18105,6 +18288,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -18445,6 +18633,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -18728,6 +18921,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -19033,6 +19231,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 5000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -19113,6 +19316,10 @@
                                       "example": false,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -19144,6 +19351,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -19484,6 +19696,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -19767,6 +19984,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -20072,6 +20294,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 5000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -20152,6 +20379,10 @@
                                       "example": false,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -20183,6 +20414,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -20523,6 +20759,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -20822,6 +21063,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -21143,6 +21389,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 5000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -21223,6 +21474,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -21254,6 +21509,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -21591,6 +21851,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -21874,6 +22139,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -22179,6 +22449,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 5000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -22259,6 +22534,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -22290,6 +22569,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -22634,6 +22918,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -22917,6 +23206,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -23222,6 +23516,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 5000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -23302,6 +23601,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -23333,6 +23636,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -23681,6 +23989,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -23968,6 +24281,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -24276,6 +24594,11 @@
                               "type": "integer",
                               "example": 0,
                               "default": 0
+                            },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 52000
                             },
                             "currency": {
                               "type": "string",
@@ -24882,6 +25205,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 100
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -24962,6 +25290,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -24993,6 +25325,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -25408,6 +25745,11 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -25691,6 +26033,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -26013,6 +26360,11 @@
                               "type": "integer",
                               "example": 0,
                               "default": 0
+                            },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 20000
                             }
                           }
                         },
@@ -26076,6 +26428,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -26106,6 +26462,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "network_token": {
@@ -26424,6 +26785,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "network_token": {
@@ -27061,6 +27427,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 500
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -27141,6 +27512,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -27172,6 +27547,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -27436,6 +27816,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": ""
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -27723,6 +28108,11 @@
                                           "acquirer_reference_number": {
                                             "type": "string",
                                             "example": ""
+                                          },
+                                          "par": {
+                                            "type": "string",
+                                            "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                            "example": "V0010013019000000000000000001"
                                           },
                                           "voucher": {},
                                           "card_data": {
@@ -28030,6 +28420,11 @@
                               "example": 0,
                               "default": 0
                             },
+                            "authorized": {
+                              "type": "number",
+                              "description": "The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount. After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Not returned for payments that were not approved or that were created before this field was introduced.",
+                              "example": 5000
+                            },
                             "currency": {
                               "type": "string",
                               "example": "USD"
@@ -28214,6 +28609,10 @@
                                       "example": true,
                                       "default": true
                                     },
+                                    "partial_approval": {
+                                      "type": "boolean",
+                                      "description": "Whether the payment was sent with `partial_approval: true`, accepting an approval for less than `amount.value`. The approved amount is in `amount.authorized`."
+                                    },
                                     "installments": {
                                       "type": "integer",
                                       "example": 1,
@@ -28245,6 +28644,11 @@
                                     "acquirer_reference_number": {
                                       "type": "string",
                                       "example": "2206177255"
+                                    },
+                                    "par": {
+                                      "type": "string",
+                                      "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                      "example": "V0010013019000000000000000001"
                                     },
                                     "voucher": {},
                                     "card_data": {
@@ -28666,6 +29070,11 @@
                                         "acquirer_reference_number": {
                                           "type": "string",
                                           "example": "2206177255"
+                                        },
+                                        "par": {
+                                          "type": "string",
+                                          "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                          "example": "V0010013019000000000000000001"
                                         },
                                         "voucher": {},
                                         "card_data": {
@@ -29670,6 +30079,11 @@
                                           "acquirer_reference_number": {
                                             "type": "string",
                                             "example": "2206177255"
+                                          },
+                                          "par": {
+                                            "type": "string",
+                                            "description": "The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens. Returned for card payments with or without a network token, and omitted when the provider does not send it.",
+                                            "example": "V0010013019000000000000000001"
                                           },
                                           "voucher": {},
                                           "card_data": {

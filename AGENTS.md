@@ -31,19 +31,15 @@ Web SDK v1 (CDN script tag):
 <script src="https://sdk-web.y.uno/v1.11/main.js"></script>
 ```
 
-iOS (CocoaPods):
-
-```ruby
-pod 'YunoSDK', '~> 2.29'
-```
-
 iOS (Swift Package Manager):
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.29.0")
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.31.0")
 ]
 ```
+
+Add `YunoSDK` (dynamic) or `YunoSDK-Static` (static) to your app target, never both. YunoSDK is no longer published on CocoaPods.
 
 Android (Gradle Kotlin DSL, add the repository and the dependency):
 
@@ -96,7 +92,7 @@ Other facts:
 
 - `account_id` identifies the account inside request bodies (the sample project calls it `ACCOUNT_CODE`).
 - Yuno uses a 60-second timeout for all endpoints.
-- Docs MCP for coding tools: `https://docs.y.uno/mcp` (HTTP transport, no auth). Setup at https://docs.y.uno/setup-mcp.
+- Docs MCP for coding tools: `https://docs.y.uno/mcp` (HTTP transport, no auth).
 - API MCP, hosted: `https://mcp.prod.y.uno/mcp` with headers `public-api-key`, `private-secret-key`, and `account-code`.
 - API MCP, local: `npx @yuno-payments/yuno-mcp@latest` with env vars `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, and `YUNO_ACCOUNT_CODE`.
 
@@ -171,7 +167,6 @@ To audit a repository that already integrates Yuno, fetch the validator that mat
 - https://docs.y.uno/llms-full.txt
 - https://docs.y.uno/openapi.json
 - https://docs.y.uno/openapi.yaml
-- https://docs.y.uno/setup-mcp
 - https://docs.y.uno/auth.md
 - https://docs.y.uno/docs/developers
 - https://docs.y.uno/reference/getting-started/api-reference-overview

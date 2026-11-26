@@ -36,6 +36,8 @@ Check these points against your use case before you integrate:
 
 To collect the payment of one specific Stripe invoice instead, such as a balance top-up, see [Pay a Stripe invoice (top-ups)](/docs/payment-features/subscriptions/stripe-billing-top-ups).
 
+To charge the first payment in the customer's local currency and with the tax of their address, see [Local price and taxes](/docs/payment-features/subscriptions/local-price-and-taxes).
+
 ## How it works
 
 Stripe's [third-party payment processing](https://docs.stripe.com/billing/subscriptions/third-party-payment-processing) mode lets an external processor execute the charges for Billing subscriptions. Yuno is that processor.
@@ -281,6 +283,14 @@ Use this flow to change the card of a subscription, including a `past_due` one:
 <Warning>
   A payment in this flow only changes the card. Yuno does not apply it to the open invoice, even when the subscription is `past_due`, and does not report it to Stripe. Stripe retries the invoice on its own schedule, and Yuno charges the new card at that retry. Do not charge the amount due in this payment: the customer would pay twice. To collect the open invoice right away, pay it with `external_invoice` instead. See [Pay a Stripe invoice (top-ups)](/docs/payment-features/subscriptions/stripe-billing-top-ups).
 </Warning>
+
+### Switch to a payment method the customer already enrolled
+
+If the customer already has another payment method vaulted in Yuno, you can move the subscription to it without bringing the customer back to checkout. Call [Change External Subscription Payment Method](/reference/subscriptions/change-external-subscription-payment-method) with the Stripe subscription ID in the path, and send the Yuno customer ID in `customer_payer.id` (not the Stripe `cus_` ID) and the new `vaulted_token`.
+
+No payment is made: Yuno does not charge the customer and does not run a $0 verification or 3DS. Yuno sets the new payment method as the subscription's default in Stripe, and the next renewals charge it. If Stripe does not confirm the change, the subscription keeps its previous payment method and the API returns `502` `BILLING_PLATFORM_ERROR`: retry with a new `X-Idempotency-Key`.
+
+This API is enabled per account. Contact your Key Account Manager to request access.
 
 ## Customer portal
 

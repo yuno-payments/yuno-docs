@@ -1,0 +1,236 @@
+---
+title: Pagos Web
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Integra flujos de pago de full-checkout en Web, desde la inicialización del SDK hasta el manejo del reintento de pago"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+El SDK Web facilita integrar flujos de pago en tus experiencias web y basadas en navegador.
+
+## Recursos adicionales {#additional-resources}
+
+* Yuno ofrece una [biblioteca de TypeScript](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) que complementa el SDK.
+* Consulta [Elegir integración](/es/docs/sdks/overview/choose-integration) si no estás seguro de qué flujo seguir.
+* Consulta la [app de demostración](https://github.com/yuno-payments/yuno-sdk-web) para ver una implementación completa (clónala desde el repositorio).
+
+## Requisitos {#requirements}
+
+* Un [cliente](/es/reference/customers/create-customer) creado en Yuno y una [sesión de checkout](/es/reference/checkout-sessions/create-checkout-session): consulta cada API al configurar tu backend.
+* Clave de API pública (obtenla en el [Yuno Dashboard](https://dashboard.y.uno/) → **Developers** > **Credentials**)
+
+El primer paso es incluir la biblioteca en tu proyecto. La guía de integración ofrece tres métodos flexibles:
+
+1. **Inclusión directa del script en HTML**: agrega la etiqueta script a tu página.
+2. **Inyección dinámica de JavaScript**: carga el SDK en tiempo de ejecución.
+3. **Instalación del módulo NPM**: instálalo con npm (recomendado).
+
+**Opción 1: NPM (recomendada)**
+
+```bash
+npm install @yuno-payments/sdk-web
+```
+
+Al usar el paquete NPM, `loadScript` inyecta el script del SDK y se resuelve con el objeto `Yuno`. Pasa `sri: true` para que el navegador verifique el script contra su hash publicado. La inicialización es un paso aparte: llama a `Yuno.initialize` con tu clave de API pública para obtener la instancia que usarás en el resto de la integración.
+
+```javascript
+import { loadScript } from '@yuno-payments/sdk-web';
+
+const Yuno = await loadScript({ sri: true });
+const yuno = await Yuno.initialize('YOUR_PUBLIC_KEY');
+```
+
+<Tip>
+`loadScript()` solo empieza a descargar el SDK cuando tu app lo llama. Agrega un preload para `main.js` y preconnects a los hosts de Yuno en el `<head>` de tu HTML para que la descarga empiece mientras carga la página. Consulta [Precargar el script del SDK](/es/docs/sdks/resources/references/web#preload-the-sdk-script).
+</Tip>
+
+**Opción 2: etiqueta script de HTML**
+
+```html
+<script 
+  src="https://sdk-web.y.uno/v1.10/main.js"
+  async
+  defer
+></script>
+```
+
+<Note>
+`v1.10` es una ruta global: recibe todos los parches publicados en esa línea, así que obtienes correcciones sin cambiar tu integración.
+
+No agregues un atributo `integrity` a esta URL. Como el archivo se vuelve a publicar con cada parche, cualquier hash que fijes deja de coincidir y el navegador bloquea el script. Subresource Integrity requiere la URL inmutable de la versión completa; consulta [Subresource Integrity](/es/docs/sdks/resources/references/web#subresource-integrity-sri).
+</Note>
+
+**Opción 3: JavaScript dinámico**
+
+```javascript
+const script = document.createElement('script');
+script.src = 'https://sdk-web.y.uno/v1.10/main.js';
+script.async = true;
+script.defer = true;
+document.head.appendChild(script);
+```
+
+Una vez completado el paso 1, continúa con la integración de full-checkout.
+
+## Parámetros {#parameters}
+
+Estos son los parámetros que cubre esta guía. Para ver la lista completa de parámetros y callbacks, consulta la [Referencia común del SDK Web](/es/docs/sdks/resources/references/web).
+
+| Parámetro                         | Descripción                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`                 | ID de la sesión de checkout desde tu backend (API Crear sesión de checkout). Obligatorio en todos los flujos. |
+| `elementSelector`                 | Selector CSS del elemento donde se monta el SDK (p. ej. `#root`).                                             |
+| `countryCode`                     | Código de país ISO donde se procesa el pago (p. ej. `FR`, `US`).                                              |
+| `language`                        | Código de idioma de la interfaz (p. ej. `fr-FR`, `ar`). Opcional; por defecto usa el idioma del navegador cuando está disponible. |
+| `showLoading`                     | Muestra el indicador de carga del SDK. Opcional.                                                              |
+| `showPaymentStatus`               | Muestra la pantalla de resultado del pago. Opcional.                                                          |
+| `createPayment(oneTimeToken, tokenWithInformation)` | Callback: envía el token de un solo uso a tu backend para crear el pago (acepta `tokenWithInformation`, que coincide con el [esquema de la respuesta del token del SDK checkout](/es/reference/checkout-sessions/create-one-time-use-token-sdk-checkout)); luego llama a `await yuno.continuePayment()`. |
+| `paymentResult(status, subStatus)` | Callback: el pago finalizó. Recibe el [estado del pago](/es/reference/payments/status-and-response-codes/payment) (p. ej. `SUCCEEDED`, `DECLINED`, `PENDING`) y un `subStatus` opcional que lo califica. Consulta [Pasos cancelados por el comprador](/es/docs/sdks/resources/references/web#shopper-cancelled-steps). |
+| `error(message, data)`        | Callback: error durante el flujo.                                                                             |
+| `onLoading`                       | Callback: actualizaciones del estado de carga.                                                                |
+| `onChange`                        | Informa si el formulario de pago está completo. Recibe `{ form: { isValid } }`. Úsalo con `showPayButton: false` para controlar tu propio botón de pago. Disponible desde v1.10.11. |
+| `card`                            | Opciones del formulario de tarjeta (p. ej. `onChange`, `isCreditCardProcessingOnly`). Opcional.               |
+
+## full-checkout {#full-checkout}
+
+Implementa la integración Full de Yuno: interfaz de checkout prediseñada con control total sobre la marca, los formularios y el flujo. Úsala cuando quieras que Yuno renderice la experiencia de checkout mientras tú gestionas la creación del cliente y de la sesión de checkout en tu backend.
+
+### Paso 1: incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+Sigue los pasos de [Incluir la biblioteca en tu proyecto](#include-the-library-in-your-project) más arriba.
+
+### Paso 2: inicializa el SDK {#step-2-initialize-the-sdk}
+
+Después de incluir la biblioteca ([paso 1](#step-1-include-the-library-in-your-project)), inicializa el SDK. Consulta la [Guía de inicio rápido](/es/docs/sdks/overview/quickstart#web-sdk-integration) para la inicialización.
+
+### Paso 3: inicia el proceso de checkout {#step-3-start-the-checkout-process}
+
+Usa la función `await yuno.startCheckout()` para iniciar el proceso de checkout con los parámetros necesarios.
+
+Consulta [Parámetros](#parameters) para ver todas las opciones. Para estilos, temas y configuraciones adicionales, consulta [Personalizaciones del SDK](/es/docs/sdks/resources/references/web).
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  elementSelector: "#root",
+  countryCode: "FR",
+  language: "fr-FR",
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+  card: {
+    isCreditCardProcessingOnly: true,
+    onChange: ({ error, data }) => {
+      if (error) {
+        console.log('Card form error:', error);
+      } else {
+        console.log('Card form data:', data);
+      }
+    },
+  },
+  onLoading: (args) => {
+    console.log(args);
+  },
+  onPaymentMethodSelected: () => {
+    console.log("Payment method selected");
+  },
+  paymentResult: (status) => {
+    console.log("Payment result:", status);
+  },
+  error: (message, data) => {
+    console.error("Payment error:", message, data);
+  },
+  async createPayment(oneTimeToken) {
+    await createPayment({ oneTimeToken, checkoutSession });
+    await yuno.continuePayment({ showPaymentStatus: true });
+  },
+});
+```
+
+Por defecto, el SDK de Yuno se renderiza como un modal. Puedes especificar el elemento donde se renderizará el SDK. Consulta [Modo de renderizado](/es/docs/sdks/resources/references/web#render-mode) para más detalles.
+
+Para todos los APM (Google Pay, Apple Pay, PayPal), `onPaymentMethodSelected` se activa cuando el cliente elige el método de pago (antes de que comience el flujo de pago). Define `onPaymentMethodSelected` en `await yuno.startCheckout()` antes de `await yuno.mountCheckout()`. En PayPal, la hoja de pago se abre inmediatamente después de la selección, sin necesidad de un clic de confirmación adicional.
+
+### Paso 4: monta el SDK {#step-4-mount-the-sdk}
+
+Muestra los métodos de pago:
+
+```javascript
+await yuno.mountCheckout();
+```
+
+### Paso 5: inicia el proceso de pago {#step-5-initiate-the-payment-process}
+
+Llama a `await yuno.startPayment()` para iniciar el flujo de pago después de que el usuario seleccione un método de pago:
+
+```javascript
+const PayButton = document.querySelector("#button-pay");
+
+PayButton.addEventListener("click", async () => {
+  await yuno.startPayment();
+});
+```
+
+### Paso 6: obtén el OTT (token de un solo uso) {#step-6-get-the-ott-one-time-token}
+
+Después de que el cliente completa los datos solicitados en los formularios de pago de Yuno, el SDK entrega el token de un solo uso. Entonces se activa la función de configuración `createPayment(oneTimeToken)` con el token de un solo uso.
+
+```javascript
+createPayment(oneTimeToken);
+```
+
+También puedes usar `tokenWithInformation` (o inspeccionarlo como segundo argumento) para recibir información adicional que el cliente proporcionó en el checkout (que coincide con el [esquema del token del SDK checkout](/es/reference/checkout-sessions/create-one-time-use-token-sdk-checkout)), como cuotas, tipo y número de documento o, en transferencias ACH, `tokenWithInformation.bank_transfer?.bank_name` (SDK Web 1.11.24 / 1.10.26; los números de cuenta y de ruta nunca se devuelven):
+
+```javascript
+async function createPayment(oneTimeToken, tokenWithInformation) {
+  // Read ACH bank name if needed:
+  const bankName = tokenWithInformation.bank_transfer?.bank_name;
+  
+  await createPayment({ oneTimeToken, checkoutSession });
+  await yuno.continuePayment({ showPaymentStatus: true });
+}
+```
+
+Cuando una [promoción](/es/docs/payment-features/promotions) aplica a la tarjeta, `tokenWithInformation.quote` contiene su línea de descuento, `{ "type": "YUNO_PROMOTION", "quote_id": "…" }`. Envíala con el token a tu backend y agrégala al pago en el paso 7. Consulta [Promociones](/es/docs/sdks/resources/references/web#promotions).
+
+Usa el loader predeterminado de Yuno o implementa el tuyo con la configuración requerida.
+
+### Paso 7: crea el pago {#step-7-create-the-payment}
+
+Crea un pago con el [endpoint Crear pago](/es/reference/payments/create-payment). El backend del comercio debe llamar a este endpoint para crear el pago en Yuno usando el token de un solo uso y la sesión de checkout. Si `tokenWithInformation.quote` estaba presente, envía el `amount` original y agrega esa línea tal cual: `additional_data.order.discounts: [{ "type": "YUNO_PROMOTION", "quote_id": "<quote_id>" }]`, o el pago se cobra completo.
+
+Después del paso 6, el flujo básico de pago está implementado. Prueba con la sesión de checkout y el token de un solo uso. Para funciones adicionales, consulta [Funciones complementarias](#complementary-features).
+
+**Obligatorio**: después de crear un pago, integra el método `continuePayment`. Cuando la respuesta de la API establece `sdk_action_required` en `true`, llama a `await yuno.continuePayment()` para presentar las pantallas necesarias.
+
+Los pagos con tarjeta que regresan `DECLINED` o `ERROR` también requieren llamar a `continuePayment` para ejecutar el reintento de pago (mantiene abierto el formulario de tarjeta mostrando el rechazo); si ninguno de esos casos aplica, llama a `unmountSdk` para limpiar. Consulta [Reintento de pago](/es/docs/sdks/resources/references/web#payment-retry) para más detalles.
+
+### Valor de retorno de `continuePayment` u null {#continuepayment-return-value-or-null}
+
+Para los métodos de pago que requieren una acción del lado del comercio (p. ej., cuando el proveedor de pago requiere una URL de redirección en un webview), el método `await yuno.continuePayment()` devuelve un objeto con la siguiente estructura o null:
+
+```typescript
+{
+  action: 'REDIRECT_URL'
+  type: string
+  redirect: {
+    init_url: string
+    success_url: string
+    error_url: string
+  }
+} | null
+```
+
+Cuando el método devuelve un objeto, puedes manejar los flujos de pago de tu aplicación que requieren un manejo de redirección personalizado. Cuando devuelve null, no se necesita ninguna acción adicional del lado del comercio.
+
+### Funciones complementarias {#complementary-features}
+
+Para estilos, temas, opciones del formulario y configuraciones adicionales, consulta [Personalizaciones del SDK](/es/docs/sdks/resources/references/web). [Changelog](/es/changelog/web#v1-3-0).
+
+## Referencia común {#common-reference}
+
+Para ver todos los detalles de parámetros y personalización, consulta la [Referencia común del SDK Web](/es/docs/sdks/resources/references/web).

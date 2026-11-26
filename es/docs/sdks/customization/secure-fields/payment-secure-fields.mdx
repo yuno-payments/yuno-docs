@@ -1,0 +1,330 @@
+---
+title: Secure Fields (Pago)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: ''
+  description: ''
+  robots: index
+next:
+  description: ''
+description: "Implementa el checkout con secure-fields en Web, genera un token de un solo uso y gestiona los desafíos 3DS"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Implementa el checkout con secure-fields de Yuno en tu aplicación siguiendo estos pasos.
+
+Yuno ofrece una [biblioteca de TypeScript](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) con todos los métodos disponibles.
+
+## Paso 1: Incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+Antes de continuar con la implementación de secure-fields, consulta la [descripción general de la integración del SDK](/es/docs/sdks/overview/quickstart) para ver las instrucciones detalladas sobre cómo integrar correctamente el SDK en tu proyecto.
+
+La guía de integración ofrece tres métodos flexibles:
+
+1. Inclusión directa del script HTML
+2. Inyección dinámica de JavaScript
+3. Instalación del módulo NPM
+
+Después de integrar el SDK, continúa con los pasos restantes de esta página.
+
+## Paso 2: Inicializa secure fields con la clave pública {#step-2-initialize-secure-fields-with-the-public-key}
+
+En tu aplicación JavaScript, crea una instancia de la clase `Yuno` con una `PUBLIC_API_KEY` válida:
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+Consulta la [página de credenciales](/es/reference/getting-started/authentication) para obtener más información.
+
+## Paso 3: Inicia el proceso de checkout {#step-3-start-the-checkout-process}
+
+Usa la función `secureFields` y proporciona los parámetros de configuración necesarios:
+
+Los parámetros esenciales son `countryCode`, que determina el país para el que se configura el proceso de pago, y `checkoutSession`, que hace referencia a la sesión de checkout del pago actual.
+
+### Parámetros {#parameters}
+
+Configura los secure fields con las siguientes opciones:
+
+| Parámetro           | Descripción                                                                                                                                                                                                                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `countryCode`       | Este parámetro especifica el país para el que se configura el proceso de pago. Usa un valor `ENUM` que represente el código de país deseado. Puedes consultar la lista completa de países compatibles y sus códigos correspondientes en la página [Cobertura por país](/es/docs/sdks/resources/country-coverage). |
+| `checkoutSession`   | Hace referencia a la [sesión de checkout](/es/reference/checkout-sessions/create-checkout-session) del pago actual. `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                            |
+| `installmentEnable` | Este parámetro es opcional y su valor predeterminado es false. Si se establece en True, las cuotas configuradas para la cuenta se mostrarán como un secure field.                                                                                                                                                    |
+
+```javascript
+const secureFields = await yuno.secureFields({
+  countryCode: country,
+  checkoutSession,
+  installmentEnable: false
+});
+```
+
+Los pagos pueden ser iniciados por el cliente (CIT) o iniciados por el comercio (MIT). Consulta [Credenciales almacenadas](/es/docs/payment-features/stored-credentials). Estos pasos cubren las transacciones iniciadas por el cliente (únicas, sin recurrencia).
+
+## Paso 4: Monta los secure-fields {#step-4-mount-the-secure-fields}
+
+Después de definir los parámetros, define, configura y monta los secure-fields. Para cada campo, establece `name` y `options` en `secureFields.create`.
+
+Configuraciones:
+
+| Parámetros                      | Descripción                                                                                                                                                                         |
+| :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                          | Los nombres disponibles para los campos son **cvv**, **pan** o **expiration**.                                                                                                      |
+| `options.placeholder`           | Placeholder predeterminado del campo.                                                                                                                                               |
+| `options.styles`                | Estilos CSS adicionales para el campo actual.                                                                                                                                       |
+| `options.externalFonts`         | Fuentes que se cargan dentro del iframe del campo: `[{ family_name: 'Inter', files: [{ weight: 400, url: 'https://…/inter-400.woff2' }] }]`. Solo carga los archivos; haz referencia a `family_name` desde `font-family` en `options.styles`. Cada campo es su propio iframe, así que pásalo a cada campo que use la fuente. El host de la fuente debe permitir solicitudes de origen cruzado. |
+| `options.label`                 | Etiqueta visible del campo.                                                                                                                                                         |
+| `options.showError`             | Define si se mostrarán los errores. Las opciones disponibles son `true` y `false`.                                                                                                  |
+| `options.onChange`              | Una función auxiliar que puedes configurar y que se ejecuta cuando cambia el contenido del campo. Indica si los campos tienen errores o datos adicionales.                          |
+| `options.onBlur`                | Una función auxiliar que puedes configurar y que se ejecuta cuando el campo pierde el foco.                                                                                         |
+| `options.validationType`        | Cuándo ejecutar la validación. Valores posibles: `'on_change'` (mientras el usuario escribe), `'on_blur'` (cuando el campo pierde el foco), `'on_blur_full'` (validación completa al perder el foco). Valor predeterminado en los flujos de checkout: `'on_blur_full'`. Fuera de los flujos de checkout: no hay valor predeterminado, defínelo explícitamente si quieres validación. Se recomienda en lugar de `validateOnBlur`, que está obsoleto. |
+| `options.validateOnBlur`        | **Obsoleto.** Usa `validationType` en su lugar. Cuando es `true`, la validación se ejecuta cuando el campo pierde el foco. Se reemplaza por `validationType: 'on_blur'` (o `'on_blur_full'` para la validación completa al perder el foco). Todavía se acepta en tiempo de ejecución, pero se eliminó de los tipos de TypeScript. |
+| `options.onFocus`               | Una función auxiliar que puedes configurar y que se ejecuta cuando el campo recibe el foco.                                                                                         |
+| `options.onRenderedSecureField` | Una función auxiliar que puedes configurar y que se ejecuta cuando el elemento termina de renderizarse.                                                                             |
+| `options.errorMessage`          | Permite definir el mensaje de error del campo.                                                                                                                                      |
+| `options.inputMode`             | _(solo v1.2+)_ Define el tipo de teclado que se muestra en los dispositivos móviles. Valores posibles: `'numeric'` (predeterminado) o `'text'`.                                     |
+
+**Comportamiento de la validación (`validationType`):** Usa `options.validationType` para controlar cuándo se valida el campo: `'on_change'` valida mientras el usuario escribe; `'on_blur'` valida cuando el campo pierde el foco; `'on_blur_full'` ejecuta la validación completa al perder el foco. **Valor predeterminado:** en los flujos de checkout, `'on_blur_full'`. Fuera de los flujos de checkout no hay valor predeterminado: especifica `validationType` si quieres validación. Si antes usabas `validateOnBlur: true`, migra a `validationType: 'on_blur'` o, para la validación completa al perder el foco, a `validationType: 'on_blur_full'`.
+
+Una vez que hayas definido el parámetro, renderiza el Secure Field creado con la función `render`, seleccionando un elemento HTML mediante un selector CSS válido (`#`, `.`, `[data-*]`).
+
+Ejemplo (tres secure-fields):
+
+### Datos disponibles en el callback onChange {#data-available-in-onchange-callback}
+
+Cuando se activa el callback `onChange`, el parámetro `data` contiene:
+
+* **Información del IIN de la tarjeta**: detalles del emisor de la tarjeta, como esquema, marca, tipo e información del emisor
+* **Planes de cuotas**: opciones de cuotas disponibles para la cuenta, si están configuradas
+* **Estados de carga**: los indicadores booleanos `isCardIINLoading` y `isInstallmentLoading`
+
+```javascript
+const secureNumber = secureFields.create({
+    name: 'pan',
+    options: {
+      placeholder: '0000 0000 0000 0000',
+      styles: ``,
+      label: 'Card Number',
+      showError: true,
+      errorMessage: "Custom Error",
+      validationType: 'on_blur_full', // validates fully on blur (default in checkout)
+      onChange: ({ error,data }) => {
+        if (error) {
+          console.log('error_pan')
+        } else {
+          console.log('not_error_pan')
+        }
+      },
+      onBlur() {
+        console.log('blur_pan')
+      },
+      onFocus: () => {
+        console.log('focus_pan')
+      },
+      onRenderedSecureField: ()=> {
+        console.log('render completed')
+      }
+    },
+  })
+
+  secureNumber.render('#pan')
+
+  const secureExpiration = secureFields.create({
+    name: 'expiration',
+    options: {
+      placeholder: 'MM / YY',
+      styles: ``,
+      label: 'Card Expiration',
+      showError: true,
+      errorMessage: "Custom Error",
+      onChange: ({ error }) => {
+        if (error) {
+          console.log('error_expiration')
+        } else {
+          console.log('not_error_expiration')
+        }
+      },
+      onBlur() {
+        console.log('blur_expiration')
+      },
+      onFocus: () => {
+        console.log('focus_expiration')
+      },
+      onRenderedSecureField: ()=> {
+        console.log('render completed')
+      }
+    },
+  })
+
+  secureExpiration.render('#expiration')
+
+
+  const secureCvv = secureFields.create({
+    name: 'cvv',
+    options: {
+      placeholder: 'CVV',
+      styles: ``,
+      label: 'CVV',
+      showError: true,
+      errorMessage: "Custom Error",
+      onChange: ({ error }) => {
+        if (error) {
+          console.log('error_cvv')
+        } else {
+          console.log('not_error_cvv')
+        }
+      },
+      onBlur() {
+        console.log('blur_cvv')
+      },
+      onFocus: () => {
+        console.log('focus_cvv')
+      },
+      onRenderedSecureField: ()=> {
+        console.log('render completed')
+      }
+    },
+  })
+
+  secureCvv.render('#cvv')
+```
+
+A continuación, puedes ver un GIF que muestra cómo configurar los secure-fields:
+
+<div
+  style={{
+  backgroundColor: "#FFFFFF",
+  padding: "16px",
+  display: "flex",
+  justifyContent: "center",
+  borderRadius: "14px",
+  maxWidth: "500px",
+  margin: "auto"
+}}
+>
+  <Image align="center" src="https://files.readme.io/9cca28f-secure-fields-checkout-sdk-1.gif" width="500px" />
+</div>
+
+## Paso 5: Genera un OTT (token de un solo uso) {#step-5-generate-an-ott-one-time-token}
+
+Con toda la información del usuario disponible, inicia el pago creando un One-Time Token (OTT) con la función `secureFields.generateToken`. Como es una función asíncrona, usa `try/catch` para gestionar los errores que se produzcan. Cuando usas un token almacenado en el vault con el SDK, toda la información de fraude de los proveedores que configuraste en tu enrutamiento de tarjetas se recopila y se adjunta al token de un solo uso; puedes agregar información de cuotas y un código de seguridad si el proveedor lo requiere.
+
+### Parámetros para generar el token {#generate-token-parameters}
+
+| Parámetro         | Descripción                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `checkoutSession` | Opcional (solo `generateToken`, no lo pases a `generateTokenWithInformation`): ID de una sesión de checkout distinta para conservar los datos de la tarjeta después de errores de pago |
+| `cardHolderName`  | Obligatorio: nombre del titular de la tarjeta                                          |
+| `saveCard`        | Opcional: indica si se guarda la tarjeta para pagos futuros                            |
+| `vaultedToken`    | Opcional: úsalo si tienes un método de pago previamente inscrito                       |
+| `installment`     | Opcional: obligatorio solo si hay un plan de cuotas configurado para la cuenta         |
+
+```javascript
+const oneTimeToken = await secureFields.generateToken({
+  checkoutSession: '{{the checkout session id}}',
+  cardHolderName: 'John Deer',
+  saveCard: true,
+  vaultedToken: "aad8578e-ac2f-40a0-8065-25b5957f6555",
+  installment: {
+            id: string,
+            value: number,
+            amount: {
+                currency: string,
+                value: string,
+                total_value: string,
+            },
+        },
+  customer: {
+    document: {
+      document_number: '1090209924',
+      document_type: 'CC',
+    },
+  },
+  cardType: 'CREDIT'
+})
+```
+
+`cardType` es opcional. Si lo omites, Yuno detecta el tipo de tarjeta a partir del número de tarjeta. Envíalo solo si estás seguro, porque un tipo incorrecto puede provocar un rechazo.
+
+También puedes usar `secureFields.generateTokenWithInformation` para recibir cualquier información adicional que el cliente proporcione en el checkout, como las cuotas o el tipo y número de documento. Crea un token de un solo uso con gestión de errores:
+
+```javascript
+const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformation({ 
+  cardHolderName: 'John Deer',
+  saveCard: true,
+  vaultedToken: "aad8578e-ac2f-40a0-8065-25b5957f6555",
+  installment: {
+            id: string,
+            value: number,
+            amount: {
+                currency: string,
+                value: string,
+                total_value: string,
+            },
+        },
+  customer: {
+    document: {
+      document_number: '1090209924',
+      document_type: 'CC',
+    },
+  },
+  cardType: 'CREDIT'
+})
+```
+
+<Warning>
+No pases `checkoutSession` a `generateTokenWithInformation`: defínelo solo en el objeto `secureFields({ ... })`. Consulta [Reintento de pago](/es/docs/sdks/resources/references/web#payment-retry) para más detalles.
+</Warning>
+
+## Paso 6: Crea el pago {#step-6-create-the-payment}
+
+Después de recibir el token de un solo uso, puedes crear el pago con una de las siguientes opciones:
+
+* Crea el pago con el [endpoint Crear pago](/es/reference/payments/create-payment).
+* Usa la función `createPayment`.
+
+Ambas opciones requieren que proporciones el `oneTimeToken` y la `checkoutSession`. Como la creación del pago puede generar errores, Yuno recomienda usar una función try/catch aquí.
+
+Consulta el estado del pago con `yuno.mountStatusPayment`. Ejemplo (`createPayment` y `mountStatusPayment`):
+
+### Flujo de creación del pago {#payment-creation-flow}
+
+1. **Crear el pago**: usa la función `createPayment` con el token de un solo uso y la sesión de checkout
+2. **Comprobar la acción del SDK**: si `sdk_action_required` es true, llama a `yuno.continuePayment()` para las acciones adicionales del cliente
+3. **Montar el estado**: si no se requiere ninguna acción del SDK, usa `yuno.mountStatusPayment()` para mostrar el estado del pago
+
+### Parámetros de mount status payment {#mount-status-payment-parameters}
+
+| Parámetro           | Descripción                                            |
+| ------------------- | ------------------------------------------------------ |
+| `checkoutSession`   | El ID de la sesión de checkout del pago                |
+| `countryCode`       | Código de país para el proceso de pago                 |
+| `language`          | Idioma para mostrar el estado                          |
+| `paymentResult` | Función callback que recibe las actualizaciones del estado del pago |
+
+```javascript
+const payment = await createPayment({ oneTimeToken, checkoutSession })
+
+if (payment.checkout.sdk_action_required) {
+      await yuno.continuePayment()
+} else {
+  await yuno.mountStatusPayment({
+    checkoutSession: checkoutSession,
+    countryCode: 'US',
+    language: 'en',
+    paymentResult(data) {
+      console.log('paymentResult', data)
+    },
+  })
+}
+```
+
+## Funciones complementarias {#complementary-features}
+
+Para estilos, temas, opciones de formulario y configuraciones adicionales, consulta las [personalizaciones del SDK](/es/docs/sdks/resources/references/web).

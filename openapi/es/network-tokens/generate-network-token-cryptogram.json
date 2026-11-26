@@ -1,0 +1,441 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "network-token-cryptogram",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/network-tokens/cryptograms": {
+      "post": {
+        "summary": "Generar criptograma de token de red",
+        "description": "Genera un criptograma de token de red nuevo y de un solo uso para una tarjeta almacenada en el vault, de modo que pueda autorizarse en un PSP externo. Por defecto, la respuesta también incluye el token de red actual de la tarjeta (DPAN), lo que requiere certificación PCI; con `include_network_token: false` la respuesta contiene solo el criptograma y no lo requiere.",
+        "operationId": "generate-network-token-cryptogram",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "vaulted_token",
+                  "country"
+                ],
+                "properties": {
+                  "vaulted_token": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "El token en el vault de la tarjeta, el mismo identificador que se usa como `payment_method.vaulted_token` en [Create Payment](https://docs.y.uno/es/reference/payments/create-payment). La tarjeta debe ser una tarjeta inscrita de tu organización con un token de red activo.",
+                    "examples": [
+                      "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70"
+                    ]
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Código de país ISO 3166-1 alpha-2 donde se usará el token. Resuelve el onboarding del token de red (organización + marca + país), con la misma semántica que `country` en Create Payment.",
+                    "examples": [
+                      "US"
+                    ]
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Opcional. Se reenvía a la red; se recomienda, ya que algunos flujos de la red vinculan el monto.",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "Código de moneda ISO 4217.",
+                        "examples": [
+                          "USD"
+                        ]
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "Valor del monto en la moneda indicada.",
+                        "examples": [
+                          49.99
+                        ]
+                      }
+                    }
+                  },
+                  "include_network_token": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Opcional. Indica si la respuesta incluye las partes equivalentes al PAN del token de red: `network_token.number` (el DPAN) y `network_token.token_data`. Por defecto es `true`, lo que requiere que tu organización sea un comercio con certificación PCI. Envía `false` para obtener una respuesta con solo el criptograma y sin datos equivalentes al PAN (el objeto `network_token` conserva `network`, `status`, `par` y `network_token_id`): está disponible sin certificación PCI y está diseñado para usarse junto con el [Forward Proxy](https://docs.y.uno/es/docs/security-and-compliance/pci-proxy/forward-proxy), que resuelve el DPAN en el momento del reenvío mediante la expresión `network_token_number`. Una organización sin certificación PCI que envíe `true` u omita el campo recibe `403 NETWORK_TOKEN_RETURN_NOT_ALLOWED`.",
+                    "examples": [
+                      false
+                    ]
+                  }
+                }
+              },
+              "examples": {
+                "cryptogram_only": {
+                  "summary": "Cryptogram-only (no PCI certification required)",
+                  "value": {
+                    "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
+                    "country": "US",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 49.99
+                    },
+                    "include_network_token": false
+                  }
+                },
+                "default": {
+                  "summary": "With the network token (PCI certification required)",
+                  "value": {
+                    "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
+                    "country": "US",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 49.99
+                    },
+                    "include_network_token": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Criptograma generado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "vaulted_token": {
+                      "type": "string",
+                      "description": "Eco del token en el vault de la solicitud."
+                    },
+                    "network_token": {
+                      "type": "object",
+                      "description": "El token de red actual de la tarjeta. Mismo formato que devuelve la recuperación de token de red PCI. **Cuando la solicitud establece `include_network_token: false`, los campos `number` (DPAN) y `token_data` se omiten por completo**: el objeto conserva `network`, `status`, `par` y `network_token_id`.",
+                      "properties": {
+                        "network": {
+                          "type": "string",
+                          "description": "Red de la tarjeta.",
+                          "examples": [
+                            "VISA"
+                          ]
+                        },
+                        "number": {
+                          "type": "string",
+                          "description": "El DPAN actual (PAN del dispositivo o de la red). **Envía siempre este valor junto con el `cryptogram` devuelto**, nunca un DPAN almacenado previamente.",
+                          "examples": [
+                            "4111111111111111"
+                          ]
+                        },
+                        "status": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Estado del token de red.",
+                          "examples": [
+                            "ACTIVE"
+                          ]
+                        },
+                        "par": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Payment Account Reference."
+                        },
+                        "network_token_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Identificador del token de red."
+                        },
+                        "token_data": {
+                          "type": "object",
+                          "properties": {
+                            "iin": {
+                              "type": "string"
+                            },
+                            "lfd": {
+                              "type": "string",
+                              "description": "Últimos cuatro dígitos del DPAN."
+                            },
+                            "expiration_month": {
+                              "type": "integer",
+                              "examples": [
+                                7
+                              ]
+                            },
+                            "expiration_year": {
+                              "type": "integer",
+                              "examples": [
+                                2029
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "cryptogram": {
+                      "type": "string",
+                      "description": "Un criptograma nuevo y de un solo uso de la red, generado en cada llamada. Envíalo junto con `network_token.number` (DPAN) y `eci` a tu PSP.",
+                      "examples": [
+                        "AgAAAAAABk4DWZ4C28yUQAAAAAA="
+                      ]
+                    },
+                    "eci": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Electronic Commerce Indicator. Puede ser `null` en algunos formatos DSRP de Mastercard.",
+                      "examples": [
+                        "05"
+                      ]
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Marca de tiempo de emisión (UTC)."
+                    },
+                    "expires_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "description": "Último momento (UTC) en el que la red acepta este criptograma. Es la vigencia del criptograma, no la del token de red ni la de la tarjeta. `null` cuando la red no publica vigencia para el criptograma (hoy, Visa). En cualquier caso, solicita un criptograma nuevo para cada intento de autorización y no lo guardes en caché.",
+                      "examples": [
+                        "2026-07-21T14:32:10Z"
+                      ]
+                    }
+                  }
+                },
+                "examples": {
+                  "default": {
+                    "summary": "Visa, with the network token (PCI certification required)",
+                    "value": {
+                      "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
+                      "network_token": {
+                        "network": "VISA",
+                        "number": "4111111111111111",
+                        "status": "ACTIVE",
+                        "par": "V0010013022280191",
+                        "network_token_id": "DNITHE302344816910968",
+                        "token_data": {
+                          "iin": "411111",
+                          "lfd": "1111",
+                          "expiration_month": 7,
+                          "expiration_year": 2029
+                        }
+                      },
+                      "cryptogram": "AgAAAAAABk4DWZ4C28yUQAAAAAA=",
+                      "eci": "05",
+                      "created_at": "2026-07-16T14:32:10Z",
+                      "expires_at": null
+                    }
+                  },
+                  "cryptogram_only": {
+                    "summary": "Visa, cryptogram-only (include_network_token: false)",
+                    "value": {
+                      "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
+                      "network_token": {
+                        "network": "VISA",
+                        "status": "ACTIVE",
+                        "par": "V0010013022280191",
+                        "network_token_id": "DNITHE302344816910968"
+                      },
+                      "cryptogram": "AgAAAAAABk4DWZ4C28yUQAAAAAA=",
+                      "eci": "05",
+                      "created_at": "2026-07-16T14:32:10Z",
+                      "expires_at": null
+                    }
+                  },
+                  "mastercard_cryptogram_only": {
+                    "summary": "Mastercard, cryptogram-only (include_network_token: false)",
+                    "value": {
+                      "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
+                      "network_token": {
+                        "network": "MASTERCARD",
+                        "status": "ACTIVE",
+                        "par": "50010013022280191",
+                        "network_token_id": "MDNITHE302344816910968"
+                      },
+                      "cryptogram": "AgAAAAAABk4DWZ4C28yUQAAAAAA=",
+                      "eci": "02",
+                      "created_at": "2026-07-16T14:32:10Z",
+                      "expires_at": "2026-07-21T14:32:10Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitud incorrecta: `INVALID_REQUEST`, `INSTRUMENT_NOT_TOKENIZABLE`, `PAYMENT_METHOD_NOT_ENROLLED`, `NETWORK_TOKEN_NOT_FOUND`, `TOKEN_NOT_ACTIVE`, `NETWORK_NOT_SUPPORTED` o `COUNTRY_NOT_SUPPORTED`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "network_token_not_found": {
+                    "value": {
+                      "code": "NETWORK_TOKEN_NOT_FOUND",
+                      "messages": [
+                        "Payment method has no network token."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Prohibido: `NETWORK_TOKEN_RETURN_NOT_ALLOWED` (la organización no tiene certificación PCI y la solicitud no estableció `include_network_token: false`), `PCI_MERCHANT_REQUIRED` (la organización no es un comercio con certificación PCI) o `PRODUCT_NOT_ENABLED` (el indicador del producto está desactivado para la organización).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "network_token_return_not_allowed": {
+                    "value": {
+                      "code": "NETWORK_TOKEN_RETURN_NOT_ALLOWED",
+                      "messages": [
+                        "Returning the network token requires PCI certification. Send include_network_token: false to receive the cryptogram only, or contact your Key Account Manager (KAM)."
+                      ]
+                    }
+                  },
+                  "pci_merchant_required": {
+                    "value": {
+                      "code": "PCI_MERCHANT_REQUIRED",
+                      "messages": [
+                        "This endpoint is only available to PCI-certified merchants."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No encontrado: `PAYMENT_METHOD_NOT_FOUND`. El `vaulted_token` no existe o no pertenece a tu organización (respuesta idéntica, sin filtrar si existe).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "payment_method_not_found": {
+                    "value": {
+                      "code": "PAYMENT_METHOD_NOT_FOUND",
+                      "messages": [
+                        "Payment method not found."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Error del proveedor: `PROVIDER_ERROR`. No se pudo contactar a la red de la tarjeta (Visa VTS / Mastercard MDES) o esta devolvió un error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "provider_error": {
+                    "value": {
+                      "code": "PROVIDER_ERROR",
+                      "messages": [
+                        "The network token cryptogram service is temporarily unavailable, please retry."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

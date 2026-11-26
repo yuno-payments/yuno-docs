@@ -1,0 +1,170 @@
+---
+title: Headless SDK (Inscripción iOS)
+description: >-
+  Guía paso a paso para integrar el Headless SDK de Yuno (Inscripción iOS) en
+  tu aplicación móvil.
+robots: index
+---
+import GenericOrientation from '/snippets/es/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+El Headless iOS SDK de Yuno te permite inscribir métodos de pago y tokenizar tarjetas para guardarlas y usarlas en el futuro.
+
+Los siguientes pasos describen cómo inscribir un método de pago con el Headless SDK de Yuno.
+
+## Requisitos {#requirements}
+
+Para ejecutar el proceso de inscripción, debes proporcionar el `customer_session` para iniciarlo en el Paso 3. Para obtener el `customer_session`, debes:
+
+1. **Crear un cliente**: se requiere un cliente para inscribir pagos. Usa el endpoint [Create Customer](/es/reference/customers/create-customer) para crear nuevos clientes. En la respuesta recibirás el `id` del cliente, que usarás para crear la sesión de cliente.
+2. **Crear la sesión de cliente**: usa el `id` del cliente y el endpoint [Create Customer Session](/es/reference/customer-sessions-enrollment/create-customer-session) para recibir el `customer_session`.
+
+## Paso 1: incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+El primer paso es instalar el Yuno SDK en tu proyecto iOS.
+
+<Info>
+**Consulta las versiones del iOS SDK**
+
+Para ver todas las versiones disponibles, visita la [página de versiones](https://github.com/yuno-payments/yuno-sdk-ios/releases) en el repositorio del Yuno iOS SDK.
+</Info>
+
+Instalas el Yuno SDK con [Swift Package Manager](https://www.swift.org/package-manager/). YunoSDK ya no se publica en CocoaPods; la última versión en CocoaPods es la 2.30.0. Configura el paquete de Swift y luego agrega el Yuno SDK como dependencia, como se muestra en el siguiente bloque de código:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.31.0"))
+]
+```
+
+Agrega `YunoSDK` (dinámico) o `YunoSDK-Static` (estático, lo que distribuía CocoaPods) al target de tu app, nunca ambos.
+
+## Paso 2: inicializa el Headless SDK con la clave pública {#step-2-initialize-headless-sdk-with-the-public-key}
+
+Para inicializar el Headless SDK, debes importar Yuno y proporcionar una **PUBLIC_API_KEY** válida. Si no tienes tus credenciales de API, accede a la página [Developers (Credentials)](/es/docs/using-yuno/settings/developers-credentials) para ver cómo obtenerlas desde el Dashboard.
+
+El siguiente bloque de código presenta un ejemplo de cómo importar e inicializar `Yuno`.
+
+```swift
+import YunoSDK
+
+Yuno.initialize(
+    apiKey: "PUBLIC_API_KEY",
+    callback: { print("Yuno SDK initialized") }
+)
+```
+
+<Info>
+**Requisitos de concurrencia de Swift 6**
+
+Si usas Swift 6, deberás manejar correctamente la concurrencia al usar los métodos asíncronos del SDK. Consulta la guía [Swift 6 Concurrency](/es/docs/sdks/resources/swift-6-concurrency) para ver opciones de implementación detalladas y mejores prácticas.
+</Info>
+
+<Info>
+**Inicialización con UISceneDelegate**
+
+Si tu aplicación usa un `UISceneDelegate`, puedes inicializar Yuno dentro de tu `SceneDelegate`. Sin embargo, si prefieres inicializar Yuno en otra parte de tu aplicación, también puedes hacerlo. El método de inicialización ofrece un callback que te notifica cuando el proceso ha terminado.
+</Info>
+
+## Paso 3: crea una sesión de cliente {#step-3-create-a-customer-session}
+
+Para iniciar el proceso de inscripción, debes proporcionar el `customer_session`. Primero, debes crear un cliente. Necesitas un cliente con el que inscribir pagos. Usa el endpoint [Create Customer](/es/reference/customers/create-customer) para crear nuevos clientes. En la respuesta recibirás el `id` del cliente, que usarás para crear la sesión de cliente.
+
+Después de crear el cliente, puedes crear la sesión de cliente. Usa el `id` del cliente y el endpoint [Create Customer Session](/es/reference/customer-sessions-enrollment/create-customer-session). El `customer_session` se entregará en la respuesta. Necesitas un nuevo `customer_session` cada vez que inscribas un nuevo método de pago.
+
+## Paso 4: crea un objeto de método de pago de inscripción {#step-4-create-an-enrollment-payment-method-object}
+
+Necesitas un objeto de método de pago de inscripción para configurar la integración del Headless SDK para la inscripción. Puedes crearlo con el endpoint [Enroll Payment Method](/es/reference/payment-methods-checkout/enroll-payment-method-checkout). Al crear el objeto de método de pago, debes definir en qué método de pago puede inscribirse tu cliente. Actualmente, solo CARD está disponible para el Headless SDK.
+
+<Info>
+**Verificación de tarjeta**
+
+Para verificar las tarjetas con una autorización de valor cero antes de la inscripción, incluye el objeto `verify` al crear el objeto de método de pago para la sesión de cliente.
+</Info>
+
+## Paso 5: inicia el proceso de inscripción {#step-5-start-the-enrollment-process}
+
+A continuación, iniciarás el proceso de checkout con la función `apiClientEnroll`, proporcionando los parámetros de configuración necesarios.
+
+<Warning>
+**Manejo de errores**
+
+Este método lanza un error si el Yuno SDK no se ha inicializado antes de llamarlo.
+</Warning>
+
+### Parámetros {#parameters}
+
+La siguiente tabla enumera todos los parámetros obligatorios y sus descripciones.
+
+| Parámetro | Descripción |
+| --- | --- |
+| `countryCode` | Este parámetro determina el país para el cual se configura el proceso de pago. La lista completa de países compatibles y su `countryCode` está disponible en la página [Country coverage](/es/docs/sdks/resources/country-coverage). |
+| `customerSession` | Se refiere a la sesión de cliente de la inscripción actual, recibida como respuesta del endpoint [Create Customer Session](/es/reference/customer-sessions-enrollment/create-customer-session). Ejemplo: '438413b7-4921-41e4-b8f3-28a5a0141638' |
+
+El siguiente bloque de código presenta un ejemplo de la configuración de los parámetros.
+
+```swift
+var apiClientEnroll: YunoEnrollHeadless?
+
+apiClientEnroll = try Yuno.apiClientEnroll(
+    countryCode: "CO",
+    customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+)
+```
+
+## Paso 6: genera un vaulted token {#step-6-generate-a-vaulted-token}
+
+Después de recopilar toda la información del usuario, puedes iniciar la inscripción. Primero, debes crear un `vaulted_token` con la función `apiClientEnroll.continueEnrollment`. Como es una función asíncrona, puedes usar `do/catch` para asegurarte de manejar correctamente los errores que se produzcan. A continuación, encontrarás un ejemplo de cómo crear un `vaulted_token`:
+
+```swift
+let enrollmentCollectedData: EnrollmentCollectedData = EnrollmentCollectedData(
+    customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+    paymentMethod: CollectedData(
+        type: "CARD",
+        card: CardData(
+            detail: CardData.Detail(
+                number: "4111111111111111",
+                expirationMonth: 12,
+                expirationYear: 25,
+                securityCode: "123",
+                holderName: "Andrea",
+                type: .credit
+            )
+        ),
+        customer: Customer()
+    )
+)
+
+let result = try await apiClientEnroll?.continueEnrollment(data: enrollmentCollectedData)
+```
+
+Después de inscribir la nueva tarjeta, recibirás el `vaulted_token`. Puedes usarlo para realizar pagos en el futuro sin pedir los datos de la tarjeta de tu cliente. El siguiente bloque de código presenta un ejemplo de respuesta de la función `apiClientEnroll.continueEnrollment`. La respuesta es un diccionario de tipo `[String: String]` con claves en camelCase: `vaultedToken`, `status` y `customerSession`.
+
+```swift
+[
+    "vaultedToken": "9104911d-5df9-429e-8488-ad41abea1a4b",
+    // status: EXPIRED, REJECTED, READY_TO_ENROLL, ENROLL_IN_PROCESS, UNENROLL_IN_PROCESS,
+    // IN_PROCESS, ENROLLED, DECLINED, CANCELED, ERROR, or UNENROLLED
+    "status": "ENROLLED",
+    "customerSession": "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+]
+```
+
+<Info>
+**Uso de webhooks para el estado de la inscripción**
+
+Considera usar el estado de la inscripción recibido mediante [webhooks](/es/docs/webhooks/index). Yuno recomienda basar siempre las decisiones de negocio de tu plataforma en este estado.
+</Info>
+
+<Info>
+**Accede a la aplicación de demostración**
+
+Además de los ejemplos de código proporcionados, puedes acceder al [repositorio de Yuno](https://github.com/yuno-payments/yuno-sdk-ios) para ver una implementación completa de los iOS SDK de Yuno.
+</Info>
+
+## Manejo de errores {#error-handling}
+
+Maneja en tu aplicación los errores devueltos por el SDK, como pagos fallidos o errores de validación. Para los códigos de estado HTTP y de respuesta, consulta [Códigos de estado y de respuesta](/es/reference/payments/status-and-response-codes/payment) en la referencia de la API.

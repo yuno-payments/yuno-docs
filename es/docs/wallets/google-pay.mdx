@@ -1,0 +1,131 @@
+---
+title: "Google Pay™"
+description: "Compara las opciones de integración de Google Pay y los métodos de autorización para pagos con tarjeta y PIX."
+---
+
+Google Pay™ es una billetera digital que permite a los clientes pagar con las tarjetas de crédito y débito guardadas en su cuenta de Google o en su dispositivo Android. En lugar de compartir los datos de la tarjeta con el comercio, Google Pay genera un token seguro que representa la información de pago y protege los datos del cliente durante toda la transacción.
+
+Yuno admite Google Pay para **pagos con tarjeta** y **pagos con PIX** (solo Brasil).
+
+## Cómo funciona Google Pay con Yuno {#how-google-pay-works-with-yuno}
+
+1. El cliente selecciona Google Pay en el checkout.
+2. Google Pay devuelve un token de pago cifrado que contiene las credenciales de pago del cliente.
+3. El token se envía a Yuno (directamente o a través de un proveedor) para su procesamiento.
+4. Yuno descifra el token y enruta el pago al procesador de pagos que configuraste.
+
+## Opciones de integración {#integration-options}
+
+Yuno ofrece tres formas de agregar Google Pay a tu checkout. Elige la opción que mejor se ajuste a tu arquitectura:
+
+### SDK de Yuno {#yuno-sdk}
+
+El SDK de Yuno gestiona todo el flujo de Google Pay, incluido mostrar el botón de Google Pay, administrar la hoja de pago y procesar el token. Integras el SDK de Yuno en tu app, y Yuno se encarga de la interacción con Google Pay.
+
+**Workflow:** `SDK_CHECKOUT`
+
+<Card title="Guía de integración del SDK" href="/es/docs/wallets/google-pay/google-pay-sdk-integration">
+  Integra Google Pay con el SDK de Yuno para la configuración más rápida.
+</Card>
+
+La guía del SDK se divide en [configuración y pagos únicos](/es/docs/wallets/google-pay/google-pay-sdk-integration), [pagos recurrentes](/es/docs/wallets/google-pay/sdk-integration/recurring-payments) y [checkout exprés](/es/docs/wallets/google-pay/sdk-integration/express-checkout) para Android y Web.
+
+### Directa {#direct}
+
+Te integras directamente con la API de Google Pay en tu frontend, obtienes el token de pago de Google y lo pasas a la API de Yuno. Esto te da control total sobre la experiencia de Google Pay mientras Yuno se encarga del procesamiento del pago en el backend.
+
+**Workflow:** `DIRECT`
+
+<Card title="Guía de integración directa" href="/es/docs/wallets/google-pay/google-pay-direct-integration">
+  Integra directamente con Google Pay y pasa el token a Yuno.
+</Card>
+
+### A través de un proveedor {#via-provider}
+
+La integración de Google Pay la gestiona por completo tu proveedor de pagos (p. ej., Adyen, Cielo). Yuno enruta la transacción al proveedor, que administra el procesamiento del token de Google Pay. Es ideal si ya usas la solución de Google Pay de un proveedor.
+
+<Card title="Guía de integración a través de un proveedor" href="/es/docs/wallets/google-pay/integration-via-provider-google-pay">
+  Usa la integración de Google Pay de tu proveedor de pagos con Yuno.
+</Card>
+
+## Google Pay con PIX {#google-pay-with-pix}
+
+En Brasil, Yuno admite Google Pay como método de pago para transacciones PIX. Los clientes seleccionan Google Pay en el checkout y completan el pago mediante PIX, combinando la comodidad de Google Pay con el sistema de pagos instantáneos de Brasil.
+
+<Card title="Google Pay con PIX" href="/es/docs/wallets/google-pay/google-pay-with-pix">
+  Aprende a aceptar pagos PIX a través de Google Pay en Brasil.
+</Card>
+
+## Redes de tarjetas admitidas {#supported-card-networks}
+
+| Región | Redes admitidas                                     |
+| ------ | --------------------------------------------------- |
+| Global | Visa, Mastercard, American Express, Discover, JCB   |
+| Brasil | Visa, Electron, Mastercard, Maestro, Elo, Elo Debit |
+
+## Métodos de autorización {#authorization-methods}
+
+Yuno admite ambos métodos de autorización de la API de Google Pay:
+
+* **`PAN_ONLY`**: credenciales de tarjeta guardadas en la cuenta de Google del usuario. Cuando se usa, Yuno gestiona automáticamente la autenticación 3D Secure si está habilitada.
+* **`CRYPTOGRAM_3DS`**: credenciales de tarjeta basadas en el dispositivo (de dispositivos Android con NFC) que incluyen autenticación criptográfica integrada. No se requiere procesamiento 3DS adicional.
+
+Incluye ambos métodos en tu arreglo `allowedAuthMethods` para que Google Pay pueda recurrir al que admita el dispositivo o la cuenta del cliente, en lugar de no mostrar ninguna opción de pago cuando solo se configura un método.
+
+## Requisitos {#requirements}
+
+Antes de integrar Google Pay:
+
+1. Verifica que Google Pay esté disponible en los países donde operas usando la [página de soporte de Google Pay](https://support.google.com/googlepay/answer/12429287?hl=en).
+2. Revisa los [procesadores participantes](https://developers.google.com/pay/api/) en el sitio de Google.
+3. Cumple con la [Política de uso aceptable](https://payments.developers.google.com/terms/aup) y los [Términos del servicio](https://payments.developers.google.com/terms/sellertos) de las API de Google Pay.
+
+## Capacidades y limitaciones {#capabilities-and-limitations}
+
+### Por modelo de integración {#by-integration-model}
+
+| Capacidad                            | SDK de Yuno          | Directa                 | A través de un proveedor   |
+| ------------------------------------ | -------------------- | ----------------------- | -------------------------- |
+| Pagos con tarjeta vía Google Pay     | Sí                   | Sí                      | Sí (si el proveedor lo admite) |
+| PIX vía Google Pay (Brasil)          | Sí (si se configura) | Sí (si se configura)    | Depende del proveedor      |
+| Control sobre la UI de Google Pay    | Medio (opciones del SDK) | Total (gestionado por el comercio) | Bajo (controlado por el proveedor) |
+| Responsabilidad del cumplimiento con Google | Yuno          | Comercio                | Proveedor                  |
+| Esfuerzo de implementación en el frontend | Mínimo          | Significativo           | Mínimo                     |
+
+### Comportamiento con tarjetas vs PIX {#cards-vs-pix-behavior}
+
+| Comportamiento           | Google Pay + tarjetas        | Google Pay + PIX                    |
+| ------------------------ | ---------------------------- | ----------------------------------- |
+| Procesamiento            | Normalmente síncrono         | Asíncrono                           |
+| Estados                  | `SUCCEEDED` / `DECLINED`     | `PENDING` / `SUCCEEDED` / `EXPIRED` |
+| Liquidación              | Depende del adquirente       | Instantánea (red PIX)               |
+| Requiere mostrar código QR | No                         | Posiblemente, según el flujo        |
+| Pagos recurrentes        | Admitidos mediante tokens guardados en el vault | No admitidos     |
+| Moneda                   | Varias                       | Solo BRL                            |
+| Disponibilidad           | Global                       | Solo Brasil                         |
+
+## Preguntas frecuentes {#faq}
+
+**¿Tengo que integrarme directamente con Google Pay?**
+
+No. Puedes usar el SDK de Yuno (donde Yuno gestiona la interacción con Google Pay) o la integración de un proveedor (donde el proveedor la gestiona). La integración directa solo es necesaria si quieres control total sobre la configuración, la experiencia de usuario y el cumplimiento de Google Pay.
+
+**¿Google Pay es un pago con tarjeta o un pago con billetera?**
+
+Google Pay es una billetera que normalmente contiene tarjetas. En Yuno, se modela como un método de pago de tipo billetera (`payment_method.type = GOOGLE_PAY`). Para pagos PIX a través de Google Pay en Brasil, usa `payment_method.type = GOOGLE_PAY_PIX` en su lugar. Yuno gestiona el enrutamiento al procesador adecuado en ambos casos.
+
+**¿Cómo habilito Google Pay con PIX?**
+
+1. Confirma con tu gerente de cuenta de Yuno que Google Pay PIX está disponible para tu organización. Actualmente se admite a través de Adyen, Santander e Itau.
+2. Configura una conexión con un proveedor en tu dashboard de Yuno.
+3. Usa `payment_method.type = GOOGLE_PAY_PIX` en tus solicitudes de pago con el país `BR` y la moneda `BRL`. Consulta [Google Pay con PIX](/es/docs/wallets/google-pay/google-pay-with-pix) para ver la guía de integración completa.
+
+**¿Qué pasa si un cliente cierra la pantalla de Google Pay o de PIX sin completar el pago?**
+
+El frontend o el SDK informa que el usuario abandonó el flujo, pero el pago permanece en estado `PENDING` en el backend. La referencia PIX sigue siendo válida y el cliente puede completar la transferencia desde la app de su banco. El pago solo vence cuando se alcanza el plazo de PIX. Consulta [Manejo de la cancelación del usuario](/es/docs/wallets/google-pay/google-pay-with-pix#handling-user-cancellation) para ver una guía de implementación.
+
+## Recursos adicionales {#additional-resources}
+
+* [Documentación de Google Pay para Web](https://developers.google.com/pay/api/web/guides/setup) | [Lista de verificación de integración](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist)
+* [Documentación de Google Pay para Android](https://developers.google.com/pay/api/android/overview) | [Lista de verificación de integración](https://developers.google.com/pay/api/android/guides/test-and-deploy/integration-checklist)
+* [Guías de marca de Google Pay para Web](https://developers.google.com/pay/api/web/guides/brand-guidelines) | [Guías de marca para Android](https://developers.google.com/pay/api/android/guides/brand-guidelines)

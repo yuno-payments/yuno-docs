@@ -1,0 +1,97 @@
+---
+title: "onInstallmentSelected"
+sidebarTitle: "Selección de cuotas (onInstallmentSelected)"
+description: "Se invoca cuando el comprador elige una opción de cuotas en el formulario de tarjeta."
+---
+
+`onInstallmentSelected` se invoca cuando el comprador elige una opción de cuotas en el formulario de tarjeta, incluida la selección automática de la primera opción cuando se carga la lista. Es informativo: la selección viaja con el pago de todos modos, por lo que sobrescribirlo es opcional. Úsalo para reflejar la financiación elegida en tu propia interfaz (por ejemplo, para actualizar el resumen de la orden).
+
+Disponible en Web, iOS, Android y React Native. En Web, defínelo dentro del campo `card` de la configuración de la transacción. El SDK lo llama desde cada formulario de tarjeta que muestra.
+
+## Qué recibes {#what-you-receive}
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `installment` | Int | Número de cuotas elegido. |
+| `label` | String | La etiqueta de la opción exactamente como se muestra al comprador. |
+| `amount.currency` | String | Código de moneda de los montos. |
+| `amount.value` | String | Monto por cuota. |
+| `amount.totalValue` (`amount.total_value` en Web) | String | Monto total de todas las cuotas. |
+| `installmentId` | String? | Solo en Web (1.11.28+ y 2.4.0+). ID del plan de cuotas al que pertenece la opción. Las opciones del mismo plan lo comparten, así que combínalo con `installment` para identificar la opción. Se envía con el token de un solo uso. |
+| `type` | String? | Solo en Web (1.11.28+ y 2.4.0+). El tipo de plan de cuotas. |
+| `rate` | Number? | Solo en Web (1.11.28+ y 2.4.0+). TAE de la opción, tomada de la entrada `APR` de `financialCosts`. `undefined` cuando no hay ninguna. |
+| `financialCosts` | Array? | Solo en Web (1.11.28+ y 2.4.0+). Desglose de los costos financieros de la opción de cuotas, con `type`, `rate` y `formattedValue`. |
+| `additionalData` | Map? | En iOS (`[String: Any]?`), el objeto `additional_data` sin procesar del plan, tal como lo envió el backend, `nil` cuando el backend no envió ninguno o está vacío. Reservado en Android y Web; actualmente `null` (`undefined` en Web). |
+| `isMerchantInstallment` | Boolean? | Reservado en iOS y Android; actualmente `null`. En Web, `true` cuando los planes provienen de tu hook `card.onGetInstallments` y `false` para los planes de Yuno. |
+
+`amount` es `null` (`undefined` en Web) cuando el backend no proporcionó montos para la opción. Cuando los planes provienen de `card.onGetInstallments` (`isMerchantInstallment: true`), `installmentId`, `type`, `rate` y `financialCosts` son `undefined`, y el token de un solo uso se crea con `installment: null`.
+
+## La entrega de `null` {#the-null-delivery}
+
+El controlador recibe `null` (`nil` en iOS) cuando una selección informada anteriormente deja de ser válida: las cuotas disponibles cambiaron, normalmente porque el comprador editó el número de tarjeta y la nueva tarjeta no tiene planes de cuotas. Trátalo como "ya no hay ninguna cuota seleccionada". Se dispara como máximo una vez por invalidación; una nueva selección lo vuelve a habilitar.
+
+## Firma {#signature}
+
+<Tabs>
+  <Tab title="Web">
+
+```typescript
+const transaction = sdkPayments.transaction({
+  checkoutSession,
+  countryCode: 'CO',
+  elementSelector: '#payment-form',
+  onStatus: (result) => console.log(result.status),
+  card: {
+    onInstallmentSelected: (installment) => {
+      if (installment) orderSummary.showFinancing(installment.label)
+      else orderSummary.clearFinancing()
+    },
+  },
+})
+```
+
+  </Tab>
+  <Tab title="iOS">
+
+```swift
+func onInstallmentSelected(_ installment: InstallmentSelected?) {
+    if let installment {
+        orderSummary.showFinancing(installment.label)
+    } else {
+        orderSummary.clearFinancing()
+    }
+}
+```
+
+  </Tab>
+  <Tab title="Android">
+
+```kotlin
+override fun onInstallmentSelected(installment: InstallmentSelected?) {
+    installment?.let {
+        orderSummary.showFinancing(it.label)
+    } ?: orderSummary.clearFinancing()
+}
+```
+
+  </Tab>
+  <Tab title="React Native">
+
+```tsx
+onInstallmentSelected: (installment) => {
+  if (installment) {
+    orderSummary.showFinancing(installment.label);
+  } else {
+    orderSummary.clearFinancing();
+  }
+},
+```
+
+  </Tab>
+</Tabs>
+
+## Relacionado {#related}
+
+- [Escuchar eventos](/es/docs/yuno-sdk/controllers/listen-to-events). Los demás controladores informativos.
+- [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). El resultado final de la transacción.
+- [Resumen de los controladores](/es/docs/yuno-sdk/controllers/overview). Cómo se conectan los controladores en cada plataforma.

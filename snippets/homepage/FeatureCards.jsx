@@ -237,7 +237,7 @@ export const FeatureCards = () => {
                 </CardIcon>
                 <div className="text-xl font-semibold text-white">AI optimization</div>
               </div>
-               <CardCta href="/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp" ai>
+               <CardCta href="/docs/ai-capabilities" ai>
                 Discover AI tools
               </CardCta>
               <ul className="list-none p-0 m-0">
@@ -248,15 +248,15 @@ export const FeatureCards = () => {
                   ai
                 />
                 <FeatureItem
-                   href="/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp"
-                  title="LLM & MCP integrations"
-                  desc=" - Build smarter workflows with language model integrations."
+                   href="/docs/ai-capabilities/use-yuno-with-claude-and-chatgpt"
+                  title="Use Yuno with AI assistants"
+                  desc=" - Connect Claude, ChatGPT, Grok, Cursor, or any MCP client to your Yuno account."
                   ai
                 />
                 <FeatureItem
-                   href="/docs/ai-capabilities/remote-yuno-mcp-server"
-                  title="Remote Yuno MCP Server"
-                  desc=" - AI-driven routing to optimize success rates and costs."
+                   href="/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp"
+                  title="Agent documentation"
+                  desc=" - llms.txt, Markdown pages, and AGENTS.md for LLMs and coding agents."
                   ai
                 />
               </ul>

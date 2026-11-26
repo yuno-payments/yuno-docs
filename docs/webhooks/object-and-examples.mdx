@@ -155,6 +155,10 @@ Example payload:
   Field naming: the customer geolocation is serialized as `geo_location` in webhook payloads and as `geolocation` in the payment retrieve endpoints. Parse each surface accordingly.
 </Info>
 
+<Info>
+  `payment.amount.authorized` is the amount the provider approved, net of any Yuno promotion, as on [the payment object](/reference/payments/the-payment-object). A card payment sent with `partial_approval: true` keeps the status of a full approval after a partial approval, so it is partially approved when `payment.amount.authorized` is lower than `payment.amount.value` minus `payment.discount_amount` (when there is no promotion, lower than `payment.amount.value`). The field is omitted for payments that were not approved or that were created before it was introduced. Both webhook versions carry the field.
+</Info>
+
 ```json
 {
     "type": "payment",
@@ -179,7 +183,8 @@ Example payload:
                 "currency": "UYU",
                 "value": 1458,
                 "refunded": 0,
-                "captured": 0
+                "captured": 0,
+                "authorized": 1458
             },
             "checkout": {
                 "session": "2f3423dd-1234-1234-1234-2c7da5ad1caf",
@@ -508,7 +513,8 @@ Example payload:
                 "currency": "USD",
                 "value": 250.0,
                 "refunded": 0.0,
-                "captured": 0.0
+                "captured": 0.0,
+                "authorized": 225.0
             },
             "discount_amount": {
                 "currency": "USD",
@@ -572,7 +578,8 @@ Example payload:
          "currency":"COP",
          "value":2000.0,
          "refunded":0.0,
-         "captured":0.0
+         "captured":0.0,
+         "authorized":2000.0
       },
       "checkout":{
          "session":"fb98b19d-39c0-42d2-bed6-438605458964",
@@ -798,6 +805,7 @@ Example payload:
             "value":418.0,
             "refunded":0.0,
             "captured":0.0,
+            "authorized":418.0,
             "currency_conversion": {
                "code": "ccv_01HVK3Z9M2...",
                "cardholder_currency": "QAR",
@@ -1324,7 +1332,8 @@ Example payload:
          "currency":"COP",
          "value":2000.0,
          "refunded":0.0,
-         "captured":0.0
+         "captured":0.0,
+         "authorized":2000.0
       },
       "checkout":{
          "session":"fb98b19d-39c0-42d2-bed6-438605458964",
@@ -1493,6 +1502,7 @@ Sent when a pre-chargeback notice or fraud alert is received for a payment, ahea
         "value": 24.9,
         "refunded": 0.0,
         "captured": 0.0,
+        "authorized": 24.9,
         "currency_conversion": null
       },
       "workflow": "DIRECT",
@@ -2506,6 +2516,33 @@ Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification
 
 Sent for plan-based subscriptions when a `$0` cycle is executed, either a trial cycle or a fully discounted one. Those cycles produce no `payment.purchase` webhook, so this event is the only receipt for them. `reason` is `TRIAL` or `FULL_DISCOUNT`, `phase` is the phase the cycle belongs to, and `breakdown` carries the same line-item detail as a paid cycle, with a zero total.
 
+On a discounted cycle of a subscription with an active [promotion](/docs/payment-features/subscriptions/promotions), the event also includes a `promotion` object in `data`. It carries the promotion `id`, the `discount_amount` taken off that charge, and `cycles_remaining`, the number of discounted cycles left after this one. A full-price charge with no promotion does not send this event. A charged discounted cycle carries no `reason`. `reason` is `FULL_DISCOUNT` only when the cycle's charge is 0.
+
+| Cycle | Sent? |
+| :---- | :---- |
+| Approved charge with a discount | Yes. It includes the `promotion` object and is sent after the cycle is counted. |
+| Automatic or forced retry, approved | Yes, once for the cycle, with the `promotion` object. |
+| Late result, approved | Yes, once, when the result arrives. |
+| Declined charge | No. |
+| Trial cycle | Sent only for subscriptions on a plan with phases, as today (reason `TRIAL`). When the trial cycle counts toward a promotion, the event includes the promotion object with `discount_amount` 0. |
+| Phase $0 cycle of a plan with phases, no promotion | Yes, with reason `TRIAL` or `FULL_DISCOUNT`. Unchanged. |
+| 100% cycle (`FULL_DISCOUNT`) | Yes, with reason `FULL_DISCOUNT`. The `promotion` object is included when it can be read. |
+| Full-price charge with no promotion | No. |
+
+```json
+"promotion": {
+  "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+  "discount_amount": 50,
+  "cycles_remaining": 2
+}
+```
+
+<Note>
+**Amounts are JSON numbers**
+
+Amounts in webhook payloads are JSON numbers, so a trailing zero may not be kept: an amount of 50.00 can arrive as 50.0. Compare amounts as numbers, not as text.
+</Note>
+
 ```json JSON
 {
   "type": "subscription",
@@ -2555,6 +2592,74 @@ Sent for plan-based subscriptions when a `$0` cycle is executed, either a trial 
           }
         }
       ]
+    }
+  }
+}
+```
+
+### subscription.promotion_applied
+
+Sent when a promotion is applied to a subscription: at creation, when a payment link creates the subscription, with [Update Subscription](/reference/subscriptions/update-subscription) (a re-apply that replaces the current promotion included), and on a plan change that applies the new plan's promotion. It is sent to webhooks with the `PROMOTION_APPLIED` trigger. `data.promotion` is the [subscription promotion object](/reference/subscriptions/the-subscription-promotion-object), and the embedded subscription carries the same object. No event is sent when a promotion ends; read the subscription to see its state.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.promotion_applied",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+  "status": "ACTIVE",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "promotion": {
+      "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+      "name": "Welcome 50% x3",
+      "status": "ACTIVE",
+      "discount": {
+        "type": "PERCENTAGE",
+        "value": 50
+      },
+      "cycles": {
+        "total": 3,
+        "used": 0,
+        "remaining": 3
+      },
+      "on_pause": "KEEP",
+      "applied_at": "2026-06-14T19:19:32.117629Z",
+      "ended_at": null,
+      "end_reason": null
+    },
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "status": "ACTIVE",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 100
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "promotion": {
+        "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+        "name": "Welcome 50% x3",
+        "status": "ACTIVE",
+        "discount": {
+          "type": "PERCENTAGE",
+          "value": 50
+        },
+        "cycles": {
+          "total": 3,
+          "used": 0,
+          "remaining": 3
+        },
+        "on_pause": "KEEP",
+        "applied_at": "2026-06-14T19:19:32.117629Z",
+        "ended_at": null,
+        "end_reason": null
+      }
     }
   }
 }
@@ -3079,6 +3184,7 @@ The next JSON object presents an example of a data structure related to a `payme
       "value": 30000,
       "refunded": 30000,
       "captured": 0,
+      "authorized": 30000,
       "currency_conversion": {
         "code": "ccv_01HVK3Z9M2...",
         "cardholder_currency": "USD",

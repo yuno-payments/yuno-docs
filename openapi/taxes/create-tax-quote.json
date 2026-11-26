@@ -1,0 +1,316 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Yuno Taxes API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.y.uno/v1"
+    }
+  ],
+  "paths": {
+    "/taxes/quote": {
+      "post": {
+        "summary": "Create tax quote",
+        "operationId": "create-tax-quote",
+        "description": "Quotes the tax of a Stripe Billing subscription for the customer's address and optional tax ID, with Stripe Tax. Use the returned `tax_quote_id` in the tax line of the payment, and charge `total`. A quote is valid for 30 minutes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your public API key."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your private secret key, when you quote from your backend. Never expose it client-side."
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The account the quote is for."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "address"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "Required with a secret key and must be the authenticated account. Optional with a public key, where it must match the checkout session."
+                  },
+                  "checkout_session": {
+                    "type": "string",
+                    "description": "Required with a public key: the checkout session with `tax_collection`, whose `external_subscription` is quoted. Not allowed with a secret key."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Optional. With a public key it must match the checkout session."
+                  },
+                  "external_subscription": {
+                    "type": "object",
+                    "description": "Required with a secret key, not allowed with a public key. The subscription to quote.",
+                    "properties": {
+                      "customer_id": {
+                        "type": "string",
+                        "description": "The customer in Stripe (`cus_...`)."
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "The currency of the prices."
+                      },
+                      "items": {
+                        "type": "array",
+                        "description": "At least one item.",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "price": {
+                              "type": "string",
+                              "description": "The price in Stripe (`price_...`)."
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "description": "Default `1`."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "address": {
+                    "type": "object",
+                    "required": [
+                      "country"
+                    ],
+                    "description": "Where the subscription is consumed.",
+                    "properties": {
+                      "country": {
+                        "type": "string",
+                        "description": "Two-letter ISO country code."
+                      },
+                      "postal_code": {
+                        "type": "string",
+                        "description": "Required for the United States and Canada."
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "line1": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "tax_information": {
+                    "type": "object",
+                    "description": "Optional. The buyer's tax ID, used for business treatment such as reverse charge and saved on the Stripe customer with the subscription.",
+                    "properties": {
+                      "business": {
+                        "type": "boolean",
+                        "description": "Whether the buyer is a business."
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Tax ID type, lowercase, from Stripe's list: `eu_vat`, `gb_vat`, `us_ein`, `mx_rfc`, `br_cnpj`... Required with `id`."
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "Tax ID number, up to 64 characters. Required with `type`."
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "account_id": "<your_account_id>",
+                "external_subscription": {
+                  "customer_id": "cus_RplXYZ",
+                  "items": [
+                    {
+                      "price": "price_1QwAbc",
+                      "quantity": 1
+                    }
+                  ]
+                },
+                "address": {
+                  "country": "US",
+                  "postal_code": "10001"
+                },
+                "tax_information": {
+                  "business": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tax quote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tax_quote_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "TAX_APPLIED",
+                        "NO_TAX",
+                        "NOT_CALCULATED"
+                      ]
+                    },
+                    "no_tax_reason": {
+                      "type": "string",
+                      "enum": [
+                        "REVERSE_CHARGE",
+                        "NOT_COLLECTING",
+                        "EXEMPT",
+                        "ZERO_RATED",
+                        "NOT_SUBJECT_TO_TAX",
+                        "OTHER"
+                      ]
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "subtotal": {
+                      "type": "number"
+                    },
+                    "tax": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "jurisdiction": {
+                            "type": "string"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          },
+                          "taxable_amount": {
+                            "type": "number"
+                          },
+                          "value": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "tax_quote_id": "txq_2a8a493dcc5c4230b4cf8d9359fd200a",
+                  "status": "TAX_APPLIED",
+                  "currency": "USD",
+                  "subtotal": 29,
+                  "tax": 2.57,
+                  "total": 31.57,
+                  "lines": [
+                    {
+                      "type": "sales_tax",
+                      "jurisdiction": "NY",
+                      "percentage": 8.875,
+                      "taxable_amount": 29,
+                      "value": 2.57
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "INVALID_REQUEST",
+                  "messages": [
+                    "address.postal_code is required for US."
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The product is not enabled for your organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "PRODUCT_NOT_ENABLED",
+                  "messages": [
+                    "..."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

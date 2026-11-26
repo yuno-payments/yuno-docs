@@ -1,0 +1,500 @@
+---
+title: Pagos en Android
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Integra los flujos de pago de full-checkout en Android, desde la creación de la sesión de checkout hasta el manejo del estado del pago"
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+El SDK de Android facilita la integración de flujos de pago en tu aplicación Android.
+
+## Recursos adicionales {#additional-resources}
+
+* Accede a las [Notas de la versión](/es/changelog/android) o al [repositorio del SDK de Yuno para Android](https://github.com/yuno-payments/yuno-sdk-android) para verificar la última versión disponible del SDK.
+
+## Requisitos {#requirements}
+
+* **Versión mínima del SDK**: `minSdkVersion` 23 o superior (Android 6.0). Obligatoria desde el SDK de Yuno para Android 2.24.0
+* **Java**: Java 8 habilitado
+* **AndroidX**: usa AndroidX en lugar de las bibliotecas de soporte anteriores
+* **Android Gradle Plugin**: 4.0.0 o superior
+* **ProGuard**: 6.2.2 o superior
+* **Kotlin Gradle Plugin**: 1.4.0 o superior
+* **Compatibilidad con el tamaño de página ELF**: cumple los requisitos de alineación de página ELF de 16 KB de Google (listo para Android 15 / ARMv9)
+
+### Configuración de ProGuard / R8 {#proguard--r8-configuration}
+
+Si tu proyecto tiene `minifyEnabled = true`, agrega estas reglas a tu archivo `proguard-rules.pro` para asegurar que el SDK funcione correctamente, especialmente con el **modo completo de R8 de AGP 8.x+**.
+
+<Accordion title="Reglas oficiales de ProGuard / R8 de Yuno">
+  ```proguard
+  # Preserve generic type signatures and annotations
+  -keepattributes Signature
+  -keepattributes *Annotation*
+
+  # Yuno SDK
+  -keep class com.yuno.** { *; }
+  -dontwarn com.yuno.**
+
+  # Gson — R8 full mode compatibility
+  -keep class com.google.gson.** { *; }
+  -keep,allowobfuscation,allowshrinking,allowoptimization class * extends com.google.gson.reflect.TypeToken
+  -dontwarn com.google.gson.**
+
+  # Retrofit — R8 full mode compatibility
+  -keep,allowobfuscation,allowshrinking interface retrofit2.Call
+  -keep,allowobfuscation,allowshrinking class retrofit2.Response
+  -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+  -dontwarn retrofit2.**
+
+  # OkHttp + Okio — Suppress warnings
+  -dontwarn okhttp3.**
+  -dontwarn okio.**
+  ```
+
+  ### ¿Por qué son necesarias estas reglas?
+
+  AGP 8.x+ habilita el **modo completo de R8** de forma predeterminada, que elimina de manera agresiva las firmas de tipos genéricos. Sin `-keepattributes Signature`, el `TypeToken<T>` de Gson puede fallar en tiempo de ejecución con `java.lang.Class cannot be cast to java.lang.reflect.ParameterizedType`.
+</Accordion>
+
+## Incluye la biblioteca en tu proyecto {#include-the-library-in-your-project}
+
+El primer paso es incluir la biblioteca en tu proyecto. Agrega el SDK de Yuno para Android a tu proyecto mediante Gradle. Agrega el origen del repositorio y la dependencia:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:2.27.0'
+}
+```
+
+Una vez completado el Paso 1, continúa con la integración de full-checkout.
+
+## Parámetros {#parameters}
+
+Para ver la lista completa de parámetros y los detalles de YunoConfig, consulta la [Referencia común del SDK de Android](/es/docs/sdks/resources/references/android).
+
+| Parámetro                 | Descripción                                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `checkoutSession`         | ID de la sesión de checkout de tu backend (API Crear sesión de checkout). Obligatorio.                       |
+| `countryCode`             | Código de país ISO (p. ej., `US`). Obligatorio.                                                              |
+| `callbackPaymentState`    | Callback `(state, subState, message)`: estado del pago (p. ej., SUCCEEDED, FAIL, PROCESSING, REJECT), su subestado y, en los resultados con error, un [`StatusMessage?`](/es/docs/sdks/resources/references/android#statusmessage-error-details). El tercer parámetro se agregó en el SDK `2.22.0`. |
+| `merchantSessionId`       | Identificador opcional de la sesión del comercio.                                                            |
+| `onInstallmentSelected`   | Callback opcional que se activa cuando el comprador selecciona una opción de cuotas en el formulario de tarjeta. Consulta [Callback de selección de cuotas](#installment-selection-callback-oninstallmentselected). Disponible desde el SDK `2.20.0`. |
+| `YunoConfig` (initialize) | Opcional: saveCardEnabled, keepLoader, language, styles. Consulta la Referencia común. |
+
+## full-checkout {#full-checkout}
+
+Implementa Full (Android): interfaz personalizable, gestión de métodos de pago, prevención de fraude y flujos de checkout. Es más completo que Headless, que se centra en el procesamiento básico de pagos. Consulta los [Requisitos](#requirements) más arriba.
+
+### Paso 1: incluye la biblioteca en tu proyecto {#step-1-include-the-library-in-your-project}
+
+Sigue los pasos de [Incluye la biblioteca en tu proyecto](#include-the-library-in-your-project) más arriba.
+
+### Paso 2: inicializa el SDK con la clave pública {#step-2-initialize-sdk-with-the-public-key}
+
+Obtén tus claves públicas de API en el [Dashboard de Yuno](https://dashboard.y.uno/).
+
+Si no has implementado una aplicación personalizada, crea una. En el método `onCreate()` de la clase de tu aplicación, llama a la función de inicialización (`Yuno.initialize`):
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      "<your-public-api-key>",
+      config = YunoConfig(
+        keepLoader = true,
+      ),
+    )
+  }
+}
+```
+
+Consulta la [página de credenciales](/es/reference/getting-started/authentication) para obtener más información. Usa la clase de datos `YunoConfig` para personalizar el comportamiento del SDK. Incluye esta configuración al llamar a `Yuno.initialize()`. Las opciones disponibles son:
+
+```kotlin
+data class YunoConfig(
+    val saveCardEnabled: Boolean = false,
+    val keepLoader: Boolean = false,
+    val language: YunoLanguage? = null,
+    val styles: YunoStyles? = null
+)
+```
+
+<Warning>
+**cardFlow eliminado de YunoConfig**
+
+A partir de la versión **2.11.0**, `cardFlow` ya no forma parte de `YunoConfig`. La configuración del flujo de tarjeta ahora se gestiona exclusivamente mediante **CheckoutBuilder**. Si migras desde una versión anterior, elimina `cardFlow` de tu `YunoConfig` y configúralo en CheckoutBuilder.
+</Warning>
+
+### Opciones de YunoConfig {#yunoconfig-options}
+
+Opciones de personalización:
+
+| Opción de personalización | Descripción                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `saveCardEnabled`       | Habilita la casilla Guardar tarjeta en los flujos de tarjeta. Consulta la sección Guardar tarjeta para obtener más información.                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `keepLoader`            | Cuando es `true`, el loader del SDK persiste desde la generación del OTT hasta que se llama a `continuePayment()`. Para más detalles, consulta [Parámetro keepLoader](/es/docs/sdks/resources/references/android#keeploader-parameter). |
+| `language`              | Define el idioma que se usará en los formularios de pago. Puedes configurarlo con una de las opciones de idioma disponibles: <ul><li>ar (árabe)</li><li>es (español)</li><li>en (inglés)</li><li>pt (portugués)</li><li>fil (filipino)</li><li>id (indonesio)</li><li>ms (malayo)</li><li>th (tailandés)</li><li>zh-TW (chino (tradicional, Taiwán))</li><li>zh-CN (chino (simplificado, China))</li><li>vi (vietnamita)</li><li>fr (francés)</li><li>pl (polaco)</li><li>it (italiano)</li><li>de (alemán)</li><li>ru (ruso)</li><li>tr (turco)</li><li>nl (neerlandés)</li><li>sv (sueco)</li><li>ko (coreano)</li><li>ja (japonés)</li><li>hi (hindi)</li><li>bn (bengalí)</li><li>ml (malayalam)</li><li>ur (urdu)</li></ul> |
+| `styles`                | Habilita la personalización de la interfaz en todo el SDK. Úsalo para definir estilos visuales globales, como la familia de fuentes y la apariencia de los botones (color, relleno, radio, tipografía), mediante un objeto `YunoStyles`. Para más información, consulta la sección de estilos.                                                                                                                                                                                 |
+
+Actualiza tu manifiesto para usar tu aplicación:
+
+```xml
+<application android:name=".CustomApplication"></application>
+```
+
+### Paso 3: crea la sesión de checkout {#step-3-create-the-checkout-session}
+
+Cada pago requiere una nueva `checkout_session`. Usa el endpoint [Crear sesión de checkout](/es/reference/checkout-sessions/create-checkout-session) para crear una; usa esa sesión para iniciar el pago.
+
+Si tu flujo de pago envía a los usuarios a un navegador externo (p. ej., para la autenticación 3DS o redirecciones bancarias), configura `callback_url` al crear tu sesión de checkout. Consulta [Manejar el retorno desde el navegador externo (callback_url)](#step-3-create-the-checkout-session) para más detalles.
+
+### Paso 4: inicia el proceso de checkout {#step-4-start-the-checkout-process}
+
+Llama al método `startCheckout` dentro de la función `onCreate()` de la activity que inicializa el SDK para iniciar un nuevo proceso de pago con Full (Android):
+
+```kotlin
+startCheckout(
+  checkoutSession: "checkout_session",
+  countryCode: "country_code_iso",
+  callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null,
+  merchantSessionId: String? = null,
+  onInstallmentSelected: ((InstallmentSelected?) -> Unit)? = null
+)
+```
+
+Consulta [Parámetros](#parameters). A continuación se muestran los posibles estados devueltos por `callbackPaymentState`:
+
+```kotlin
+const val PAYMENT_STATE_SUCCEEDED = "SUCCEEDED"
+const val PAYMENT_STATE_FAIL = "FAIL"
+const val PAYMENT_STATE_PROCESSING = "PROCESSING"
+const val PAYMENT_STATE_REJECT = "REJECT"
+const val PAYMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
+const val PAYMENT_STATE_STATE_CANCELED_BY_USER = "CANCELED_BY_USER"
+```
+
+Estados posibles:
+
+| **Estado**         | **Descripción**                                                                                                                 | **Acción adicional requerida**                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `SUCCEEDED`        | La transacción o el proceso de pago se completó correctamente y sin errores.                                                    | No.                                                                                                           |
+| `FAIL`             | La transacción falló debido a errores como problemas de validación de datos, fallas de conexión con el servidor o problemas técnicos o de red. | Sí. Investiga la causa de la falla (validación, red, servidor) y toma medidas correctivas.                    |
+| `PROCESSING`       | La transacción está en curso, a la espera de aprobación o verificación.                                                         | No.                                                                                                           |
+| `REJECT`           | La transacción fue rechazada por motivos como fondos insuficientes o sospecha de actividad fraudulenta.                         | Sí. Informa al usuario del rechazo, indica el motivo si es posible y sugiere acciones.                        |
+| `INTERNAL_ERROR`   | Ocurrió un error interno inesperado en el sistema que gestiona el proceso de pago.                                              | Sí. Requiere intervención técnica para revisar el sistema, corregir los problemas internos y reintentar o informar al usuario. |
+| `CANCELED_BY_USER` | El usuario canceló voluntariamente la transacción o abandonó el proceso de pago.                                                | No.                                                                                                           |
+
+El callback recibe tres valores: el estado, su subestado (el detalle del proveedor, cuando existe) y un `StatusMessage?` que es `null` en `SUCCEEDED`, `PROCESSING` y `CANCELED_BY_USER`, siempre está presente en `INTERNAL_ERROR` y está presente en `REJECT` / `FAIL` cuando el backend devolvió un `response_code`:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "country_code_iso",
+  callbackPaymentState = { state, subState, message ->
+    when (state) {
+      "SUCCEEDED" -> showSuccess()
+      "REJECT", "FAIL" -> showDeclined(reason = message?.reason, code = message?.code)
+      "INTERNAL_ERROR" -> reportSdkError(message)   // never null here
+      else -> { }
+    }
+  },
+)
+```
+
+Consulta [StatusMessage (detalles del error)](/es/docs/sdks/resources/references/android#statusmessage-error-details) para ver los campos y cuándo se completa cada uno.
+
+#### Callback de selección de cuotas (`onInstallmentSelected`) {#installment-selection-callback-oninstallmentselected}
+
+Disponible desde el SDK `2.20.0`. Registra el callback opcional `onInstallmentSelected` para mantener sincronizado el total de tu carrito con el plan de cuotas que el comprador elige en el formulario de tarjeta:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "country_code_iso",
+  callbackPaymentState = { state, subState, message -> /* ... */ },
+  onInstallmentSelected = { selection ->
+    if (selection != null) {
+      // Update your cart total, e.g. with selection.amount?.totalValue
+    } else {
+      // Installments are no longer available — restore your base total
+    }
+  },
+)
+```
+
+El callback recibe un payload `InstallmentSelected?`:
+
+| Campo                   | Tipo                  | Descripción                                                                                                   |
+| ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `installment`           | `Int`                 | Número de cuotas seleccionadas (p. ej., `3`).                                                                  |
+| `label`                 | `String`              | La etiqueta exacta de las cuotas que se muestra en el formulario, localizada (p. ej., `3x de R$875.00 - Total R$2,625.00`). |
+| `amount`                | `InstallmentAmount?`  | `currency`, `value` y `totalValue` como cadenas sin procesar, exactamente como los informa el plan de cuotas.  |
+| `additionalData`        | `Map<String, Any?>?`  | Reservado para uso futuro. Actualmente siempre es `null`.                                                      |
+| `isMerchantInstallment` | `Boolean?`            | Reservado para la función de cuotas del comercio. Actualmente siempre es `null` en Android.                    |
+
+Semántica de activación:
+
+* Se activa una vez cuando se preselecciona una cuota predeterminada al renderizarse el plan, de modo que tu total sea correcto desde el primer renderizado.
+* Se activa en cada selección que hace el comprador.
+* Se activa con el valor predeterminado recalculado después de que el plan cambia (por ejemplo, un cambio de BIN).
+* Se activa una vez con `null` cuando las cuotas dejan de estar disponibles después de que ya se informó una selección (por ejemplo, el comprador cambia a una tarjeta sin cuotas): restablece tu total base.
+* No se activa cuando el formulario de tarjeta se renderiza sin cuotas, y no registrar ningún callback mantiene sin cambios el comportamiento del SDK.
+* El callback se ejecuta en el hilo principal. Las excepciones lanzadas dentro de él son capturadas por el SDK y nunca interrumpen el flujo de pago.
+
+#### Validación del estado del pago {#payment-status-validation}
+
+Esta sección explica cómo maneja el SDK el estado del pago cuando los usuarios cancelan o abandonan los flujos de pago, y cómo se relaciona el estado del SDK con el estado del pago en el backend en estos escenarios.
+
+##### Métodos de pago síncronos (Google Pay) {#sync-payment-methods-google-pay}
+
+Para métodos de pago síncronos como Google Pay, cuando un usuario cancela o cierra la interfaz de la billetera antes de recibir la respuesta del proveedor de servicios de pago (PSP):
+
+* **Estado del SDK**: devuelve `CANCELED_BY_USER`
+* **Estado del pago en el backend**: permanece en `PENDING` hasta el timeout del PSP o la cancelación por parte del comercio
+* **Importante**: el SDK no devolverá `REJECT` ni `PROCESSING` en este escenario
+
+Esto asegura que el pago en el backend permanezca en estado pendiente y que el sistema del comercio pueda manejarlo correctamente.
+
+##### Métodos de pago asíncronos (PIX y métodos basados en QR) {#async-payment-methods-pix-and-qr-based-methods}
+
+Para métodos de pago asíncronos, cuando un usuario cierra la ventana de pago antes de completar el pago:
+
+* **Estado del SDK**: devuelve `CANCELED_BY_USER`\*.
+* **Estado del pago en el backend**: permanece en `PENDING` y el código de pago sigue siendo válido hasta que expire.
+* **Reutilización de la sesión de checkout**: al volver a abrir la misma sesión de checkout se puede mostrar el mismo código de pago válido.
+* **Sin cancelación automática**: el pago no se cancela automáticamente en el backend cuando el usuario cierra la ventana.
+* **Confirmación del estado**: `CANCELED_BY_USER` significa que el comprador abandonó la pantalla, no que el pago falló. Confirma el estado final mediante webhook o `GET /v1/payments/{payment_id}` antes de mostrar una cancelación.
+
+<Note>
+\* Los métodos de pago que muestran un código de pago o un comprobante (código QR de PIX, boleto, OXXO y similares), y Pix Parcelado, devuelven `PROCESSING` con subestado `CLOSED_BY_USER` en lugar de `CANCELED_BY_USER` cuando el usuario cierra la pantalla. El pago permanece en `PENDING` en el backend y todavía puede completarse.
+</Note>
+
+##### Pagos asíncronos expirados {#expired-async-payments}
+
+Si un código QR de PIX expira de forma natural:
+
+* **Estado en el backend**: se actualiza a `EXPIRED`
+* **Estado del SDK**: los callbacks del SDK y los endpoints de polling devuelven `EXPIRED` de forma consistente
+
+Esto asegura que los comercios reciban información de estado precisa cuando un método de pago ha expirado.
+
+### Paso 5: agrega la vista del SDK al checkout {#step-5-add-the-sdk-view-to-the-checkout}
+
+Usa el `PaymentMethodListViewComponent` para mostrar los métodos de pago disponibles al implementar Full (Android) con Jetpack Compose. Este componente ofrece callbacks para notificar a tu aplicación cuándo habilitar o deshabilitar el botón de pago y cuándo se elimina correctamente un método de pago inscrito.
+
+#### Firma del componente {#component-signature}
+
+```kotlin
+@Composable
+fun PaymentMethodListViewComponent(
+    activity: Activity,
+    modifier: Modifier? = null,
+    onPaymentSelected: (Boolean, PaymentSelected?) -> Unit,
+    onUnEnrollSuccess: (Boolean) -> Unit = {},
+    onSizeChanged: ((Dp, Dp) -> Unit)? = null
+)
+```
+
+#### Opciones del componente {#component-options}
+
+* `activity: Activity`: `Activity` actual donde se aloja el componente. Obligatorio para los flujos de pago.
+* `modifier: Modifier?` (opcional): diseño y apariencia (p. ej., relleno, espaciado). El valor predeterminado es `null`.
+* `onPaymentSelected: (Boolean, PaymentSelected?) -> Unit`: se invoca cuando se selecciona o deselecciona un método de pago (`true` = método seleccionado, habilita el botón de pago; `false` = ninguno seleccionado). El segundo argumento describe el método seleccionado.
+* `onUnEnrollSuccess: (Boolean) -> Unit` (opcional): se invoca cuando un método de pago almacenado se elimina correctamente.
+* `onSizeChanged: ((Dp, Dp) -> Unit)?` (opcional): se invoca cuando cambian el ancho y el alto del componente. El valor predeterminado es `null`.
+
+#### Ejemplo {#example}
+
+```kotlin
+val coroutineScope = rememberCoroutineScope()
+val snackbarHostState = remember { SnackbarHostState() }
+var paymentMethodIsSelected by remember { mutableStateOf(false) }
+
+Column(
+    modifier = Modifier
+        .weight(1f)
+        .verticalScroll(rememberScrollState())
+) {
+    PaymentMethodListViewComponent(
+        activity = activity,
+        onPaymentSelected = { isSelected, _ ->
+            paymentMethodIsSelected = isSelected
+        },
+        onUnEnrollSuccess = { success ->
+            if (success) {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Your payment method has been removed",
+                    )
+                }
+            }
+        },
+    )
+}
+```
+
+<Danger>
+**Importante**
+
+Envuelve siempre el componente en un `Column` con `.verticalScroll(rememberScrollState())`. Sin esto, es posible que la lista de métodos de pago no se muestre ni se desplace correctamente cuando hay varios métodos disponibles.
+</Danger>
+
+### Paso 6: inicia el proceso de pago {#step-6-initiate-the-payment-process}
+
+Llama al método `startPayment()` para iniciar un proceso de pago:
+
+```kotlin
+startPayment(
+    showPaymentStatus: Boolean,
+    callbackOTT: (String?) -> Unit = this::onTokenUpdated,
+    callBackTokenWithInformation: (OneTimeTokenModel?) -> Unit = this::onTokenComplete
+)
+
+```
+
+#### Opciones {#options}
+
+Configura el pago con las siguientes opciones:
+
+| Parámetro                      | Descripción                                                                                                                                                            |
+| :----------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `showPaymentStatus`            | Un booleano que especifica si el estado del pago debe mostrarse dentro de la interfaz de Yuno.                                                                         |
+| `callbackOTT`                  | Una función obligatoria que devuelve el token de un solo uso (OTT) actualizado necesario para completar el proceso de pago. Este token es necesario para completar el pago. |
+| `callBackTokenWithInformation` | Una función que proporciona información detallada sobre el token de un solo uso, encapsulada en un objeto `OneTimeTokenModel`, lo que permite un manejo completo de los detalles del token. |
+
+#### OneTimeTokenModel {#onetimetokenmodel}
+
+El callback `callBackTokenWithInformation` proporciona información detallada sobre el token de un solo uso mediante el objeto `OneTimeTokenModel`:
+
+```kotlin
+@Parcelize
+data class OneTimeTokenModel(
+    val token: String? = null,
+    val vaultedToken: String? = null,
+    val vaultOnSuccess: Boolean? = null,
+    val type: String? = null,
+    val cardData: CardInformationModel? = null,
+    val customer: CustomerPayerInformationModel? = null,
+) : Parcelable
+```
+
+**Modelo de información de la tarjeta**
+
+```kotlin
+@Parcelize
+data class CardInformationModel(
+    val holderName: String? = null,
+    val iin: String? = null,
+    val lfd: String? = null,
+    val numberLength: Int? = null,
+    val securityCodeLength: Int? = null,
+    val brand: String? = null,
+    val type: String? = null,
+    val category: String? = null,
+    val issuerName: String? = null,
+    val issuerCode: String? = null,
+    val countryCode: String? = null,
+) : Parcelable
+```
+
+**Modelo de información del cliente pagador**
+
+```kotlin
+@Parcelize
+data class CustomerPayerInformationModel(
+    val name: String? = null,
+    val lastName: String? = null,
+    val email: String? = null,
+    val document: Document? = null,
+    val phone: Phone? = null,
+    val address: Address? = null,
+    val deviceFingerPrint: String? = null,
+    val thirdPartySessionId: String? = null,
+) : Parcelable
+```
+
+**Modelos de apoyo**
+
+```kotlin
+@Parcelize
+data class Document(
+    val documentNumber: String? = null,
+    val documentType: String? = null,
+) : Parcelable
+
+@Parcelize
+data class Phone(
+    val number: String,
+    val countryCode: String,
+) : Parcelable
+
+@Parcelize
+data class Address(
+    val addressLine1: String? = null,
+    val addressLine2: String? = null,
+    val country: String? = null,
+    val city: String? = null,
+    val state: String? = null,
+    val zipCode: String? = null,
+    val neighborhood: String? = null,
+) : Parcelable
+```
+
+
+### Paso 7: obtén el token de un solo uso (OTT) {#step-7-get-the-one-time-token-ott}
+
+Después de que el cliente complete los datos solicitados en los formularios de pago de Yuno, obtendrás el token de un solo uso, un parámetro necesario para crear un pago mediante la API de Yuno.
+
+Yuno compartirá el token de un solo uso mediante la función `callbackOTT` que proporcionaste en el Paso 6 al iniciar el pago. El token de un solo uso estará disponible en `onActivityResult`.
+
+Se puede mostrar un loader mientras se genera el token de un solo uso. Usa el predeterminado de Yuno o implementa el tuyo con la configuración requerida.
+
+### Paso 8: crea el pago {#step-8-create-the-payment}
+
+Después de recibir el token de un solo uso del [Paso 7](#step-7-get-the-one-time-token-ott), crea el pago usando el [endpoint Crear pago](/es/reference/payments/create-payment). Usa la `checkout_session` del [Paso 3](#step-3-create-the-checkout-session) y el token de un solo uso para crear el pago.
+
+La respuesta del endpoint Crear pago incluirá el parámetro `sdk_action_required`, que define si se requieren acciones adicionales para finalizar el pago según el tipo de pago.
+
+<Warning>
+**Continúa con la integración del método de pago**
+
+Yuno **requiere** que integres el método `continuePayment` del SDK después de crear el pago, porque ciertos métodos de pago asíncronos requieren acciones adicionales del cliente para completarse. La API te informará de este escenario mediante el campo `sdk_action_required` de la respuesta, que se devolverá como true. La función `yuno.continuePayment()` mostrará pantallas adicionales a los clientes, donde podrán realizar las acciones necesarias para completar el pago sin que tengas que manejar cada escenario.
+</Warning>
+
+### Paso 9: continúa el pago {#step-9-continue-payment}
+
+Yuno requiere integrar el método `continuePayment` del SDK después de crear el pago, ya que ciertos métodos de pago asíncronos requieren acciones adicionales del cliente para completarse. La respuesta del [endpoint Crear pago](/es/reference/payments/create-payment), del Paso 8, incluirá un campo `sdk_action_required`. Si devuelve `TRUE`, debes llamar a la función `continuePayment()` para mostrar pantallas adicionales que permitan al cliente completar el pago. De lo contrario, este paso no es necesario. Llama al método `continuePayment`:
+
+```kotlin
+continuePayment(
+    showPaymentStatus: Boolean = true,
+    checkoutSession: String? = null,
+    countryCode: String? = null,
+    callbackPaymentState: ((String?, String?, StatusMessage?) -> Unit)? = null
+)
+```
+
+Para mostrar tus propias pantallas de estado del pago, envía `FALSE` en el parámetro `showPaymentStatus`. Luego, obtén el estado del pago mediante el callback.
+
+### Mandatos de débito directo y autorización {#direct-debit-mandates-and-authorization}
+
+Para los métodos de pago de débito directo (como ACH, SEPA Direct Debit, Bacs y PAD) o los métodos de pago almacenados, el SDK presenta automáticamente la autorización y el texto del mandato requeridos que proporciona Yuno debajo de los campos de entrada de la cuenta.
+
+* **Presentación del mandato**: muestra el texto de autorización de débito configurado en el backend en el idioma del cliente.
+* **Casilla de aceptación obligatoria**: para los esquemas de pago que requieren el consentimiento explícito del cliente antes de cobrar o almacenar la cuenta bancaria, el SDK muestra una casilla obligatoria. El comprador debe aceptar el mandato antes de poder enviar el formulario. El consentimiento se empaqueta y se devuelve junto con el token de un solo uso.
+* **Configuración**: se gestiona directamente desde el panel [Texto de autorización](/es/docs/using-yuno/dashboard-overview/checkout-builder#authorization-text) de Checkout Builder, sin necesidad de cambios de código en el cliente.
+
+## Referencia común {#common-reference}
+
+Para ver los detalles completos de parámetros y personalización, consulta la [Referencia común del SDK de Android](/es/docs/sdks/resources/references/android).

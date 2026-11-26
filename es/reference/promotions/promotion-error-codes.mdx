@@ -1,0 +1,160 @@
+---
+title: "Códigos de error de promociones"
+description: "Todas las respuestas de los endpoints de promociones y de un pago que lleva un código de promoción, con el código, el motivo y el mensaje de cada una."
+noindex: true
+---
+
+<Warning>
+**Las promociones se habilitan por organización**
+
+Hasta que Yuno habilite las promociones para tu organización, los endpoints de promociones responden `404 PROMOTION_NOT_FOUND`, y un pago que lleva un código se rechaza con `422 PROMOTION_NOT_APPLICABLE` y el motivo `PROMOTIONS_NOT_ENABLED`. Consulta [Promociones](/es/docs/payment-features/promotions#enable-promotions-for-your-organization).
+</Warning>
+
+Todos los errores tienen el cuerpo estándar: un `code` y `messages[]`. Solo un `422 PROMOTION_NOT_APPLICABLE` agrega un `reason`. Ramifica según `code` y `reason`: `messages[]` es texto informativo, por lo que nunca lo analices.
+
+```json
+{
+  "code": "PROMOTION_NOT_APPLICABLE",
+  "messages": ["The promotion reached its limit of uses."],
+  "reason": "USAGE_LIMIT_REACHED"
+}
+```
+
+Para conocer la semántica general de los estados HTTP, consulta [Códigos de respuesta HTTP](/es/reference/getting-started/response-codes).
+
+## Los endpoints de promociones {#the-promotions-endpoints}
+
+Estas respuestas pertenecen a [Crear promoción](/es/reference/promotions/create-promotion), [Obtener promoción](/reference/promotions/retrieve-promotion), [Listar promociones](/reference/promotions/list-promotions) y [Deshabilitar promoción](/reference/promotions/disable-promotion).
+
+| HTTP | `code` | Devuelto por | Cuándo |
+| --- | --- | --- | --- |
+| `400` | `INVALID_PARAMETERS` | Todos | Falta el encabezado `X-Account-Code` (`x-account-code header is required.`). |
+| `400` | `INVALID_PARAMETERS` | Create, Create codes | No hay `X-Idempotency-Key`, está en blanco o tiene más de 64 caracteres (`The header 'X-Idempotency-Key' is required and must not exceed 64 characters.`). |
+| `400` | `INVALID_PARAMETERS` | Create, Create codes | El cuerpo está vacío (`The request body is required.`), no es un JSON válido (`Invalid json.`), no es un objeto JSON (`The request body must be a JSON object.`) o contiene más de un objeto JSON (`The request body must hold one JSON object only.`). |
+| `400` | `INVALID_PARAMETERS` | Create, Create codes | El cuerpo lleva `account_id` (`The field 'account_id' is not accepted in the body: the promotion belongs to the account of the x-account-code header.`). |
+| `400` | `INVALID_PARAMETERS` | Create | El cuerpo repite `redemption`, o uno de sus miembros, con nombres comparados sin distinguir mayúsculas de minúsculas. |
+| `400` | `INVALID_PARAMETERS` | Create | `redemption.mode` no es `CODE` (`The field 'redemption.mode' must be CODE: merchants create promotions that customers redeem with a code.`). |
+| `400` | `INVALID_PARAMETERS` | Retrieve, Disable, Create codes, List codes | El id de la promoción no es un UUID v4 (`The path parameter in url 'promotion_id' must be a valid uuid v4.`). |
+| `400` | `INVALID_PARAMETERS` | Disable | Falta `status` o no es `DISABLED`. |
+| `400` | `INVALID_REQUEST` | Create, Create codes, List, List codes, Disable | Falló una regla de la promoción o de la solicitud. `messages[]` tiene un mensaje `path: RULE` por cada ruta que falló. Consulta [los mensajes](#the-path-rule-messages). Disable también devuelve `INVALID_REQUEST` cuando hay un campo del cuerpo distinto de `status` (`The field 'name' is not allowed`). |
+| `400` | `BAD_REQUEST` | Create, Create codes | Yuno no pudo leer el cuerpo (`The request body could not be read.`). |
+| `400` | `BAD_REQUEST` | Disable | El cuerpo no es un JSON válido (`Invalid json.`), o un campo tiene el tipo incorrecto (`The field 'status' wrong data type.`). |
+| `404` | `PROMOTION_NOT_FOUND` | Retrieve, Disable, Create codes, List codes | Ninguna promoción de la cuenta tiene ese id (`The promotion does not exist on the account.`). Una promoción de otra cuenta responde lo mismo. |
+| `404` | `PROMOTION_NOT_FOUND` | Todos | Las promociones no están habilitadas para tu organización. El cuerpo tiene el `code` y no tiene `messages`. |
+| `409` | `CODE_ALREADY_EXISTS` | Create | Otra promoción de la cuenta que no está deshabilitada tiene el código en un calendario que se superpone, o un código de lote de la cuenta lo tiene (`Another promotion of the account holds this code in an overlapping schedule.`). |
+| `413` | `REQUEST_ENTITY_TOO_LARGE` | Create, Create codes | El cuerpo es mayor de 256 KiB (`The request body must not exceed 256 KiB.`). |
+| `500` | `INTERNAL_ERROR` | Todos | El servicio de promociones falló (`Internal error`). |
+| `500` | `INTERNAL_ERROR` | Create | La solicitud tiene un `redemption.prefix`, y Yuno no pudo construir un código (`Internal error`). Yuno no almacena nada: reintenta la solicitud. |
+| `500` | `INTERNAL_ERROR` | Create codes | El lote no pudo obtener suficientes códigos libres (`Internal error`). Yuno no almacena nada: reintenta la solicitud. |
+| `503` | `PROMOTION_ENGINE_UNAVAILABLE` | Todos | El servicio de promociones no está configurado o no está disponible (`The promotions service is unavailable.`). |
+| `503` | `STORE_UNAVAILABLE` | Todos | El servicio de promociones no pudo leer ni escribir en su almacén (`The store is unavailable.`). |
+| `504` | `PROMOTION_ENGINE_TIMEOUT` | Todos | El servicio de promociones no respondió a tiempo (`The promotions service did not answer in time.`). |
+
+### Los mensajes `path: RULE` {#the-path-rule-messages}
+
+Cada mensaje nombra un campo y la regla que incumplió, por ejemplo `limits.total: RANGE`. Un elemento de una lista lleva su índice, por ejemplo `discount.amounts[0].currency: UNKNOWN_CURRENCY`. Cada ruta tiene un mensaje: su primer fallo.
+
+| Mensaje | Significado |
+| --- | --- |
+| `name: REQUIRED`, `name: LENGTH` | El nombre está en blanco o tiene más de 255 caracteres. |
+| `description: LENGTH` | La descripción tiene más de 1000 caracteres. |
+| `schedule.starts_at: REQUIRED` | La promoción no tiene inicio. |
+| `schedule.starts_at: FORMAT`, `schedule.ends_at: FORMAT` | El valor no es una marca de tiempo RFC 3339. |
+| `schedule.ends_at: NOT_AFTER_START` | El fin es igual o anterior al inicio. |
+| `redemption.mode: REQUIRED` | El cuerpo no tiene `redemption.mode`. |
+| `redemption: CODE_OR_PREFIX_REQUIRED` | El cuerpo no tiene ni `redemption.code` ni `redemption.prefix`. Un `null`, un texto vacío y un texto con solo espacios cuentan como no enviados. La respuesta agrega el mensaje `Send exactly one of redemption.code or redemption.prefix.`. |
+| `redemption: CODE_AND_PREFIX_EXCLUSIVE` | El cuerpo tiene ambos. Un `redemption.code` que no es válido, enviado con un prefijo, también cuenta como ambos. La respuesta agrega el mensaje `Send exactly one of redemption.code or redemption.prefix.`. |
+| `redemption.prefix: FORMAT` | El prefijo tiene un carácter fuera de `A-Z`, `a-z` y `0-9`. Yuno verifica los caracteres antes que la longitud. |
+| `redemption.prefix: LENGTH` | El prefijo tiene más de 8 caracteres (después de que Yuno lo recorta). |
+| `redemption.code: CODE_CHARACTERS` | El código tiene un carácter fuera de `A-Z`, `0-9`, `_` y `-` (después de que Yuno lo convierte a mayúsculas). Yuno verifica los caracteres antes que la longitud. |
+| `redemption.code: CODE_LENGTH` | El código tiene menos de 3 o más de 32 caracteres (después de que Yuno lo recorta). |
+| `discount.type: REQUIRED`, `discount.type: UNKNOWN` | El descuento no tiene tipo, o tiene un tipo distinto de `PERCENTAGE` o `FIXED`. |
+| `discount.value: RANGE`, `discount.value: DECIMALS` | El porcentaje es cero o mayor de 100, o tiene más de dos decimales. |
+| `discount.value: FORBIDDEN` | Un descuento `FIXED` lleva `value`. |
+| `discount.amounts: FORBIDDEN` | Un descuento `PERCENTAGE` lleva `amounts`. |
+| `discount.amounts: REQUIRED`, `discount.amounts: EMPTY`, `discount.amounts: TOO_MANY` | Un descuento `FIXED` no tiene `amounts`, tiene una lista vacía o tiene más de 50 entradas. |
+| `discount.amounts[0].currency: UNKNOWN_CURRENCY`, `discount.amounts[0].currency: DUPLICATE` | La moneda no es un código ISO 4217 que Yuno conozca, o una entrada anterior ya la tiene. |
+| `discount.amounts[0].value: RANGE`, `discount.amounts[0].value: DECIMALS`, `discount.amounts[0].value: EXPONENT_MISMATCH` | El monto es menor que una unidad menor, no es un número entero de unidades menores de la moneda, o su exponente difiere del de la moneda. |
+| `conditions.bins: FORBIDDEN`, `conditions.payment_methods: FORBIDDEN`, `conditions.card_types: FORBIDDEN` | Una promoción por código lleva una condición sobre el BIN de la tarjeta, el método de pago o el tipo de tarjeta. Un código se aplica a todo el pago, sea cual sea el método de pago. |
+| `conditions.countries.values: EMPTY`, `conditions.amounts.values: EMPTY` | La condición está presente con una lista vacía. Omite una condición si no quieres ninguna condición sobre ese aspecto. |
+| `conditions.amounts.values: FIXED_CURRENCY` | Un descuento `FIXED` y la lista de la condición `amounts` indican monedas distintas. |
+| `limits.total: RANGE` | `limits.total` es menor que 1 o mayor que 2147483647. |
+| `<field>: UNKNOWN` | El cuerpo lleva un campo que la solicitud no tiene, por ejemplo `status`. |
+| `body: REQUIRED`, `body: MALFORMED`, `body: TYPE`, `body: TOO_LARGE` | El cuerpo está vacío, no es un JSON válido, no es un objeto JSON o es mayor de 256 KiB. |
+| `quantity: REQUIRED`, `quantity: RANGE` | Create codes: el lote no tiene `quantity`, o no está entre 1 y 1000. |
+| `uses_per_code: RANGE` | Create codes: `uses_per_code` no está entre 1 y 1000000. |
+| `prefix: REQUIRED`, `prefix: FORMAT`, `prefix: LENGTH` | Create codes: el prefijo está en blanco o falta, tiene un carácter fuera de `A-Z` y `0-9`, o tiene más de 8 caracteres. |
+| `code: NOT_ALLOWED` | Create codes: el cuerpo tiene un `code`. Yuno crea cada código de un lote a partir del prefijo. |
+| `status: UNKNOWN`, `limit: RANGE`, `limit: FORMAT`, `cursor: FORMAT` | Los filtros de List: un estado desconocido, un límite fuera del rango de 1 a 100, un límite que no es un número entero de hasta 3 dígitos, o un cursor que no es válido. Para List Promotion Codes se aplican las mismas verificaciones de `limit` y `cursor`, con un rango de 1 a 500. |
+
+## Códigos de lote {#batch-codes}
+
+Estas respuestas provienen de [Crear códigos de promoción](/reference/promotions/create-promotion-codes). Un lote que no se puede crear responde `422 PROMOTION_NOT_APPLICABLE` con uno de estos motivos, y Yuno no almacena nada.
+
+| HTTP | `code` | `reason` | Cuándo |
+| --- | --- | --- | --- |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `NOT_CODE_PROMOTION` | La promoción no tiene código, como ocurre con una promoción `AUTOMATIC`. Solo una promoción por código admite un lote. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `DISABLED` | Deshabilitaste la promoción. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `EXPIRED` | La promoción terminó. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `BATCH_LIMIT_REACHED` | Los nuevos códigos llevarían la promoción a más de 10,000 códigos de lote. |
+## Un pago que lleva un código {#a-payment-that-carries-a-code}
+
+Estas respuestas pertenecen a [Crear pago](/es/reference/payments/create-payment). En todas, no se crea ningún pago. Ninguna respuesta repite tu código.
+
+| HTTP | `code` | `reason` | Cuándo |
+| --- | --- | --- | --- |
+| `400` | `INVALID_PARAMETERS` | | La línea de descuento incumple las reglas de [Envía el código en el pago](/es/docs/payment-features/promotion-codes#send-the-code-on-the-payment). |
+| `400` | `INVALID_PARAMETERS` | | El pago se envía con `X-Dry-Run: true`: una prueba en seco no admite un código de promoción (`Promotion codes can't be used on a dry-run payment (X-Dry-Run). Test promotion codes in the sandbox environment.`). |
+| `400` | `INVALID_PARAMETERS` | | El `X-Idempotency-Key` del pago está vacío después de que Yuno lo recorta (`The header 'x-idempotency-key' is required to apply a promotion code.`). Un pago sin el encabezado `X-Idempotency-Key` recibe `The header 'x-idempotency-key' is required.` |
+| `400` | `INVALID_PARAMETERS` | | El servicio de pagos rechazó la solicitud de cotización por no ser válida. Los mensajes son suyos, con el código reemplazado por `***`. Cuando no da ninguno, el mensaje es `The promotion code request was rejected as invalid, so the payment was not created.` |
+| `404` | `PROMOTION_NOT_FOUND` | | Ninguna promoción de la cuenta tiene el código, o la promoción que lo tiene aún no ha comenzado. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `EXPIRED` | La promoción terminó. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `DISABLED` | Deshabilitaste la promoción. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `USAGE_LIMIT_REACHED` | El código no tiene usos disponibles. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `IDEMPOTENCY_KEY_REUSED` | La clave del pago ya contó un uso de otro código. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `CONDITIONS_NOT_MET` | El país o el monto no cumple las condiciones de la promoción. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `CURRENCY_MISMATCH` | La promoción no indica ninguna regla de monto para la moneda del pago, o es un descuento fijo sin monto en esa moneda. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_DISCOUNT` | La promoción no da ningún descuento sobre este monto. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_CHARGE` | El código es la promoción que se aplica, y al pago se le cobraría cero o menos. Yuno no cuenta ningún uso. Esta verificación va antes de la del límite. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `PROMOTIONS_NOT_ENABLED` | Las promociones no están habilitadas para tu organización. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ENGINE_UNAVAILABLE` | No se pudo verificar el código, por lo que no se creó ningún pago. Este motivo agrupa dos tipos de causa: transitorias, para reintentar más tarde, y una promoción automática que deja un cobro de cero, que un reintento no cambia. Consulta la nota después de esta tabla. |
+| `422` | `PROMOTION_SUBSCRIPTION_UNSUPPORTED` | | El pago lleva un `subscription`, un `external_subscription` o un `external_invoice`. |
+| `422` | `PROMOTION_CONTEXT_MISMATCH` | | El `amount` del pago lleva un `currency_conversion` o un `merchant_currency_conversion`. |
+
+**`ENGINE_UNAVAILABLE` abarca dos causas, y la respuesta no dice cuál es.** Ambas llegan con el mismo `reason` y el mismo mensaje.
+
+* **Transitoria: reintenta más tarde.** El servicio de promociones no respondió a tiempo, respondió con un error, o Yuno deshabilitó temporalmente las promociones. Reintenta el mismo pago más tarde.
+* **No transitoria: un reintento obtiene la misma respuesta.** Una promoción automática gana la selección para este pago y dejaría un cobro de cero. Envía el pago **sin el código**. Un pago sin código se cobra completo, y la verificación de promociones no lo rechaza.
+
+El mensaje dice `Try again.` en ambos casos, por lo que no indica cuál reintentar. Si el mismo pago sigue recibiendo `ENGINE_UNAVAILABLE` después de reintentar más tarde, envíalo sin el código. El cliente entonces paga el precio completo y pierde el descuento de ese código para ese pago.
+
+El texto de cada `reason`:
+
+| `reason` | Mensaje |
+| --- | --- |
+| `EXPIRED` | `The promotion expired.` |
+| `DISABLED` | `The promotion is disabled.` |
+| `USAGE_LIMIT_REACHED` | `The promotion reached its limit of uses.` |
+| `IDEMPOTENCY_KEY_REUSED` | `The idempotency key was used for another promotion code.` |
+| `CONDITIONS_NOT_MET` | `The payment does not meet the conditions of the promotion.` |
+| `CURRENCY_MISMATCH` | `The promotion does not apply to the currency of the payment.` |
+| `ZERO_DISCOUNT` | `The promotion gives no discount on this amount.` |
+| `ZERO_CHARGE` | `The promotion leaves a charge of zero on this amount.` |
+| `PROMOTIONS_NOT_ENABLED` | `Promotion codes are not enabled for this organization, so the payment was not created.` |
+| `ENGINE_UNAVAILABLE` | `The promotion code could not be checked, so the payment was not created. Try again.` |
+
+El mensaje de `PROMOTION_SUBSCRIPTION_UNSUPPORTED` es `YUNO_PROMOTION discount lines are not supported on subscriptions.` para un pago que lleva un `subscription`, y `Subscription payments cannot carry a promotion quote.` para un `external_subscription` o un `external_invoice`. El mensaje de `PROMOTION_CONTEXT_MISMATCH` es `The payment context does not match the promotion quote.` Esos dos cuerpos no tienen `reason`.
+
+Cuando el código se convierte en una cotización, el pago continúa como un pago con cotización, y se le aplican los rechazos de [El cliente paga el precio cotizado, o se rechaza el pago](/es/docs/payment-features/promotions#the-customer-pays-the-quoted-price-or-the-payment-is-rejected).
+
+## Una solicitud de cotización que lleva un código {#a-quote-request-that-carries-a-code}
+
+[Create Promotion Quote](/es/reference/promotions/create-promotion-quote) responde a una solicitud con un `code` de estas formas. El `reason` y el mensaje de cada una son los de las tablas anteriores.
+
+| HTTP | `code` | `reason` | Cuándo |
+| --- | --- | --- | --- |
+| `404` | `PROMOTION_NOT_FOUND` | | Ninguna promoción de la cuenta tiene el código, la promoción que lo tiene aún no ha comenzado, o el código tiene un carácter fuera de `A-Z`, `0-9`, `_` y `-` o una longitud fuera del rango de 3 a 32. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `EXPIRED`, `DISABLED`, `USAGE_LIMIT_REACHED`, `CONDITIONS_NOT_MET`, `CURRENCY_MISMATCH` o `ZERO_DISCOUNT` | El código no se aplica al pago. |
+| `422` | `PROMOTION_NOT_APPLICABLE` | `ZERO_CHARGE` | El código es la promoción que se aplica, y al pago se le cobraría cero o menos. |
+
+Una solicitud de cotización no envía clave de idempotencia, por lo que nunca responde `IDEMPOTENCY_KEY_REUSED`. Responde `ZERO_CHARGE` para un código que deja un cobro de cero, igual que un pago. Una solicitud de cotización para un código que se aplica recibe una vista previa `200`, sin `quote_id` ni `expires_at`. Una promoción automática que dejaría un cobro de cero recibe `204`.

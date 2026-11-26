@@ -1,0 +1,287 @@
+---
+title: "Promociones en planes de suscripción"
+description: "Adjunta un descuento a un plan durante un número determinado de cobros y aplícalo a sus suscripciones, sin crear un plan nuevo ni cambiar el monto de cada suscripción"
+---
+
+Una promoción en un plan es un descuento por tiempo limitado sobre el precio del plan. Por ejemplo, "50% de descuento los primeros 3 meses" te permite ofrecer un precio inicial sin crear un plan nuevo ni cambiar el monto de cada suscripción con un PATCH. El plan conserva su precio completo. Una suscripción que tiene la promoción recibe el descuento en sus próximos cobros y vuelve a pagar el precio completo cuando se agotan los ciclos de la promoción.
+
+<Note>
+**Dónde está disponible**
+
+Las promociones de suscripción funcionan solo en la región US. Las promociones se activan por organización. Mientras tu organización no las tenga activadas, adjuntar o aplicar una promoción devuelve `422 PROMOTION_NOT_APPLICABLE` con el motivo `PROMOTIONS_NOT_ENABLED`. Pide a tu Technical Account Manager o Key Account Manager que las active.
+</Note>
+
+## Cómo funciona {#how-it-works}
+
+1. **Adjunta la promoción a un plan.** Llama a [Attach Promotion to Plan](/es/reference/plans/attach-plan-promotion) con `promotion_id` y `cycles`, el número de cobros que cubre el descuento. Una promoción puede adjuntarse a varios planes, cada uno con su propio `cycles`.
+2. **Aplícala a una suscripción.** Envía `promotion` cuando [crees la suscripción](/es/reference/subscriptions/create-subscription) o [actualízala](/es/reference/subscriptions/update-subscription) más adelante. Puedes aplicarla por `id`, o por `code` en el caso de los códigos de promoción. El descuento se aplica desde el próximo cobro.
+3. **Cada cobro recibe el descuento.** Después de `cycles` cobros contados, la promoción pasa a `COMPLETED` y la suscripción se cobra al precio completo.
+
+<Note>
+**La suscripción conserva su propia copia**
+
+Cuando aplicas una promoción, la suscripción guarda una copia de ella: el ID de la promoción, el descuento, el número de ciclos y el comportamiento ante una pausa. La copia nunca se edita. Quitar la promoción del plan, deshabilitarla o dejar que venza no cambia las suscripciones que ya tienen una copia.
+</Note>
+
+## Ejemplo: 20% de descuento durante 3 meses {#example-20-off-for-3-months}
+
+Un gimnasio vende un plan mensual a USD 100.00. Adjunta la promoción "Welcome 20% x3" al plan con `cycles` en 3 y la aplica a una suscripción:
+
+| Cobro | Precio completo | Descuento | Neto cobrado | Conteo |
+| :----- | :--------- | :------- | :---------- | :---- |
+| Ciclo 1 | USD 100.00 | USD 20.00 | USD 80.00 | 1 de 3 |
+| Ciclo 2 | USD 100.00 | USD 20.00 | USD 80.00 | 2 de 3 |
+| Ciclo 3 | USD 100.00 | USD 20.00 | USD 80.00 | 3 de 3, la promoción pasa a `COMPLETED` |
+| Ciclo 4 | USD 100.00 | ninguno | USD 100.00 | Precio completo |
+
+Cada cobro con descuento lleva el precio completo en `amount`, el descuento en `discount_amount` y una línea de descuento `SUBSCRIPTION_PROMOTION`. Yuno agrega la línea; tú no la envías. El cliente paga el monto neto. Este es el cobro del ciclo 2:
+
+```json Cycle 2 charge
+{
+  "amount": { "currency": "USD", "value": 100.00 },
+  "discount_amount": 20.00,
+  "additional_data": {
+    "order": {
+      "discounts": [
+        {
+          "type": "SUBSCRIPTION_PROMOTION",
+          "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+          "name": "Welcome 20% x3",
+          "unit_amount": 20.00
+        }
+      ]
+    }
+  }
+}
+```
+
+## Adjuntar una promoción a un plan {#attach-a-promotion-to-a-plan}
+
+Al adjuntarla, la promoción queda disponible para las suscripciones de ese plan. La solicitud recibe:
+
+* `promotion_id`: el ID de una promoción existente.
+* `cycles`: el número de cobros que cubre el descuento. Mínimo 1.
+* `on_pause` (opcional): `KEEP` (predeterminado) o `END`. Define qué efecto tiene una pausa en la promoción. Consulta [Pausa, cancelación y reactivación](#pause-cancellation-and-reactivation).
+
+El adjunto no se edita. Para cambiar `cycles`, elimina el adjunto con [Remove Promotion from Plan](/es/reference/plans/remove-plan-promotion) y vuelve a adjuntarlo. Eliminar un adjunto no cambia las suscripciones que ya tienen la promoción.
+
+[Retrieve Plan](/es/reference/plans/retrieve-plan) devuelve las promociones adjuntas en una lista `promotions`. Cada entrada tiene un `status` de `ENABLED` o `DISABLED`, leído del motor de promociones. Si el motor no responde, el `status` de la entrada es `UNKNOWN`.
+
+Adjuntar falla cuando la promoción no existe, venció o ya está adjunta al plan. Consulta [Subscription promotion error codes](/es/reference/subscriptions/subscription-promotion-error-codes).
+
+## Aplicar una promoción a una suscripción {#apply-a-promotion-to-a-subscription}
+
+Aplica una promoción cuando crees una suscripción, o más tarde con una actualización. Ambas reciben un objeto `promotion` con un `id` o un `code`:
+
+```json Apply by ID
+{ "promotion": { "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10" } }
+```
+
+```json Apply by code
+{ "promotion": { "code": "WELCOME50" } }
+```
+
+La suscripción debe cumplir estas condiciones:
+
+* Está `ACTIVE` o `TRIALING`. De lo contrario, la solicitud devuelve `409 SUBSCRIPTION_STATUS_NOT_ELIGIBLE`.
+* Está en un plan. De lo contrario, la solicitud devuelve `422 PROMOTION_NOT_APPLICABLE` con el motivo `SUBSCRIPTION_NOT_ON_A_PLAN`.
+* El plan tiene la promoción adjunta. De lo contrario, la solicitud devuelve `422 PROMOTION_NOT_ATTACHED_TO_PLAN`.
+* La suscripción no tiene `frequency.execution` en `MERCHANT`. Las suscripciones con esa configuración, que incluye las suscripciones que administra un proveedor como Pix Automático, se rechazan con `422 PROMOTION_NOT_APPLICABLE` y el motivo `EXECUTION_TYPE_NOT_SUPPORTED`.
+
+Las condiciones de la promoción (país, moneda y monto, tipo de método de pago, BIN y tipo de la tarjeta almacenada) se verifican una sola vez, cuando aplicas la promoción. No se vuelven a verificar en las renovaciones. Una promoción que no las cumple devuelve `422 PROMOTION_NOT_APPLICABLE` con el motivo `CONDITIONS_NOT_MET`. Un descuento de monto fijo necesita un monto en la moneda de la suscripción, o la solicitud devuelve el motivo `CURRENCY_MISMATCH`.
+
+La primera vez que se aplica una promoción a una suscripción, usa uno de los usos de la promoción. Aplicarla de nuevo a la misma suscripción no usa otro. Cuando no quedan usos, la aplicación falla con el motivo `USAGE_LIMIT_REACHED`.
+
+Una solicitud que aplica una promoción no lleva nada más. Combinada con `plan_change`, responde `400 INVALID_PARAMETERS`. Combinada con cualquier otro campo, como `name` o `metadata`, responde `400 BAD_REQUEST`. En ambos casos no se cambia nada. Envía los otros cambios en una solicitud aparte.
+
+Una aplicación exitosa devuelve la suscripción con un objeto `promotion`. Consulta [The subscription promotion object](/es/reference/subscriptions/the-subscription-promotion-object).
+
+### Aplicar de nuevo reemplaza la promoción actual {#applying-again-replaces-the-current-promotion}
+
+Si ya hay una promoción activa, aplicar otra (o la misma de nuevo) finaliza la copia actual con `end_reason` `REPLACED`. La copia nueva empieza con 0 ciclos usados. Así le das a una suscripción más cobros con descuento. Por ejemplo, a una suscripción en un plan de USD 100.00 se le aplica "Welcome 20% x3". Los ciclos 1 y 2 se cobran a USD 80.00 cada uno. La promoción se aplica de nuevo después de cobrar el ciclo 2. La copia nueva empieza con 0 ciclos usados, así que el conteo se reinicia:
+
+| Cobro | Neto cobrado | Conteo |
+| :----- | :---------- | :---- |
+| Ciclo 1 | USD 80.00 | 1 de 3, primera copia |
+| Ciclo 2 | USD 80.00 | 2 de 3, primera copia, luego `REPLACED` |
+| Ciclo 3 | USD 80.00 | 1 de 3, copia nueva |
+| Ciclo 4 | USD 80.00 | 2 de 3, copia nueva |
+| Ciclo 5 | USD 80.00 | 3 de 3, copia nueva, `COMPLETED` |
+| Ciclo 6 | USD 100.00 | Precio completo |
+
+Después de que una promoción pasa a `COMPLETED` o `ENDED`, puedes aplicar la misma promoción u otra. La copia nueva empieza en 0.
+
+## Qué lleva cada cobro {#what-each-charge-carries}
+
+Mientras los ciclos contados sean menos que `cycles`, cada renovación cobra el precio del plan menos el descuento. El descuento se calcula para cada cobro y se guarda, así que un reintento del mismo cobro usa el mismo monto. Las renovaciones no se cotizan, por lo que no llevan `quote_id`: Yuno agrega la línea `SUBSCRIPTION_PROMOTION` a partir de la copia de la promoción de la suscripción.
+
+Un ciclo cuenta para `cycles` cuando:
+
+* El cobro es aprobado.
+* El ciclo es un ciclo de prueba. Un ciclo de prueba cuenta aunque no tenga pago.
+* El ciclo es un ciclo de 100% (consulta más abajo).
+
+Un cobro rechazado no cuenta. Un reintento aprobado cuenta una sola vez, con el mismo monto con descuento. Un resultado aprobado tardío cuenta cuando llega.
+
+Cuando los ciclos contados alcanzan `cycles`, la promoción pasa a `COMPLETED`. El siguiente cobro, y los que le siguen, se cobran al precio completo sin línea de descuento.
+
+Las renovaciones no llaman al motor de promociones. Una interrupción del motor, o una promoción que está deshabilitada, vencida o eliminada del plan, no cambia el descuento de una renovación que ya está en curso. Las renovaciones tampoco verifican si las promociones están activadas para tu organización.
+
+### Redondeo y tipos de monto {#rounding-and-amount-types}
+
+* Los porcentajes tienen como máximo 2 decimales, por ejemplo `12.5`.
+* Los montos fijos tienen los decimales de la moneda, por ejemplo `25.00`.
+* El descuento se calcula con decimales exactos y se redondea hacia arriba en la mitad a las unidades menores de la moneda (2 para USD). Por ejemplo, 33% de USD 19.99 es 6.5967, que se redondea a 6.60, así que el cobro es de USD 13.39.
+* Un descuento fijo mayor que el precio deja el cobro en 0. El ciclo es entonces un ciclo de 100%.
+
+### Períodos de prueba {#trial-periods}
+
+Una promoción que se aplica a una fase de prueba, o a cualquier otra fase de $0, se aplica a esa misma fase. La promoción existe en la suscripción desde el momento en que se crea, con 0 de `cycles` usados, y el ciclo de prueba cuenta como el primer ciclo promocional (1 de `cycles`). El ciclo de prueba no tiene descuento que restar: no se cobra nada por él.
+
+Por ejemplo, un plan de USD 100.00 con 1 mes de prueba y "50% x3" cobra USD 0.00 en el mes 1 (1 de 3), USD 50.00 en los meses 2 y 3 (2 y 3 de 3), y USD 100.00 desde el mes 4. Con "50% x1", el ciclo de prueba es el único ciclo promocional: la promoción pasa a `COMPLETED` después de él, y el mes 2 se cobra a USD 100.00.
+
+Para un plan con fases, el evento `subscription.cycle_executed` del ciclo de prueba lleva el objeto `promotion` con `discount_amount` 0.
+
+### Ciclos de 100% {#100-cycles}
+
+Si el descuento cubre todo el precio, el ciclo no se cobra. Se marca como `EXECUTED` con el motivo `FULL_DISCOUNT`, cuenta como usado y la suscripción recibe un webhook [`subscription.cycle_executed`](/es/docs/webhooks/events). Por ejemplo, "Free first month" (100% x1) da un primer ciclo que se ejecuta sin cobro y cuenta como 1 de 1.
+
+### Planes con varias fases de precio {#plans-with-several-price-phases}
+
+En un plan con varias fases de precio, el descuento se aplica al precio de cada fase. Consulta [Plans](/es/docs/payment-features/subscriptions/plans) para conocer las fases.
+
+### Facturación basada en el uso {#usage-based-billing}
+
+En un plan con cargos por uso (medidores), una promoción descuenta solo el precio del plan. Nunca descuenta el uso. Consulta [Usage-based billing](/es/docs/payment-features/subscriptions/usage-based-billing).
+
+### Solo se aplica la promoción propia de la suscripción {#only-the-subscriptions-own-promotion-applies}
+
+Un cobro de suscripción usa solo la promoción propia de la suscripción. No se agrega ninguna otra promoción, automática o con código. El monto con descuento es el que calcula el servicio de suscripciones de Yuno.
+
+## Promociones automáticas {#automatic-promotions}
+
+Una promoción de tipo `AUTOMATIC` se aplica sin código. Cuando una promoción `AUTOMATIC` se adjunta a un plan, se aplica una sola vez, cuando se crea una suscripción en ese plan. Las renovaciones no la evalúan de nuevo, y las suscripciones que ya estaban en el plan no la reciben.
+
+Si la solicitud que crea la suscripción también envía una `promotion`, gana el descuento mayor. Las dos promociones no se acumulan.
+
+Si la promoción `AUTOMATIC` no puede aplicarse cuando se crea la suscripción, porque está deshabilitada, vencida o no tiene usos disponibles, la suscripción se crea sin ella y la solicitud igualmente tiene éxito. Si el servicio de promociones no responde, la creación falla con `503` o `504`, no se crea nada y la solicitud puede reintentarse. Consulta [Create Subscription](/es/reference/subscriptions/create-subscription).
+
+Una suscripción creada con `first_period_paid` en `true` tiene su primer período pagado fuera de Yuno. Ese período no cuenta para la promoción, así que el descuento se aplica desde la primera renovación, durante el número de ciclos que permite la promoción. No se envía ningún evento `subscription.cycle_executed` para ese primer período. `first_period_paid` necesita un `subscription_agreement_id` y no se acepta en un plan que empieza con una prueba (400 `BAD_REQUEST` en ambos casos).
+
+<Warning>
+**Una promoción automática de plan también puede descontar pagos únicos**
+
+Una promoción `AUTOMATIC` adjunta a un plan también puede descontar los pagos únicos de la cuenta, es decir, los pagos que no son cobros de suscripción. Adjuntar una promoción a un plan no la limita a las suscripciones. Los cobros de suscripción siguen usando solo el descuento propio de la suscripción, como se describe arriba. Para saber cómo funcionan las promociones de pagos únicos, consulta [Promotions](/es/docs/payment-features/promotions).
+</Warning>
+
+## Cambios de plan {#plan-changes}
+
+Cuando cambias el plan de una suscripción con el objeto `plan_change` de [Update Subscription](/es/reference/subscriptions/update-subscription), eliges qué ocurre con la promoción activa. La elección tiene dos campos:
+
+* `promotion_behavior`: `KEEP` (predeterminado) conserva la promoción, con sus ciclos restantes, en el plan nuevo. `END` la finaliza con el motivo `PLAN_CHANGE`. El campo se ignora cuando la suscripción no tiene una promoción activa.
+* `apply_new_plan_promotion`: `true` (predeterminado) aplica la promoción `AUTOMATIC` del plan nuevo, si tiene una. La promoción actual finaliza con `PLAN_CHANGE` y la promoción del plan nuevo empieza en 0. `false` deja sin aplicar la promoción del plan nuevo, y `promotion_behavior` decide qué ocurre con la actual.
+
+El resultado depende de cuándo entra en vigor el cambio:
+
+| Cuándo entra en vigor el cambio | `effective` | `billing_cycle_behavior` | `promotion_behavior: KEEP` (predeterminado) | `promotion_behavior: END` |
+| :--------------------------- | :---------- | :----------------------- | :----------------------------------- | :------------------------ |
+| Ahora, misma fecha | `IMMEDIATE` | `KEEP` (predeterminado) | El próximo cobro es el precio nuevo menos el descuento. Un porcentaje se recalcula sobre el precio nuevo. Un monto fijo se mantiene igual. | El próximo cobro es el precio completo. |
+| Ahora, reiniciando el ciclo | `IMMEDIATE` | `RESTART` | El primer cobro en el plan nuevo tiene el descuento y cuenta. | El primer cobro en el plan nuevo es el precio completo. |
+| En el próximo ciclo | `NEXT_BILLING_CYCLE` (predeterminado) | No aplica | La promoción pasa a la fecha de entrada en vigor. | La promoción sigue activa hasta la fecha de entrada en vigor y termina ahí. |
+
+Por ejemplo, Basic a USD 10.00 cambia a Pro a USD 20.00 a mitad de un ciclo. La suscripción tiene "Welcome 20% x6" con 3 ciclos ya usados. Con `KEEP`, los próximos tres cobros son de USD 16.00 cada uno (4 de 6, 5 de 6 y 6 de 6), y luego USD 20.00. Con `END`, la promoción termina en el cambio y cada cobro es de USD 20.00.
+
+Otras reglas:
+
+* Un cambio a otra frecuencia de facturación, por ejemplo de mensual a anual, no finaliza la promoción de forma predeterminada. Con `KEEP`, los ciclos restantes continúan en los ciclos de facturación del plan nuevo.
+* Un período de prueba en el plan nuevo que no se omite cuenta para los ciclos restantes.
+* Cancelar un cambio programado también deshace la elección de `promotion_behavior`.
+* Un plan en otra moneda se rechaza con `400`.
+
+Ejemplo: una suscripción Monthly con "Welcome 20%" (1 de 3 ciclos usados) pasa a Plus a USD 150.00, que tiene una promoción `AUTOMATIC` "Plus 30%" por 2 ciclos. De forma predeterminada (`apply_new_plan_promotion: true`), la suscripción paga USD 105.00 en cada uno de esos 2 ciclos, y luego USD 150.00. Con `apply_new_plan_promotion: false` y `promotion_behavior: KEEP`, paga USD 120.00 en cada uno de esos 2 ciclos, y luego USD 150.00.
+
+Cambiar una suscripción que ya está en un plan a otro plan con [Change Subscription Plan](/es/reference/subscriptions/change-subscription-plan) crea una suscripción nueva y cancela la original. La promoción de la original finaliza con el motivo `CANCELED` y no se transfiere. La suscripción nueva recibe la promoción `AUTOMATIC` del plan nuevo, si tiene una. Una suscripción que no está en un plan se adjunta al plan en el mismo lugar: no se reemplaza ni se cancela nada, y no se agrega ninguna promoción automática. Para conservar la promoción actual de una suscripción que ya está en un plan, usa en su lugar un cambio de plan con `promotion_behavior` en `KEEP`.
+
+## Pausa, cancelación y reactivación {#pause-cancellation-and-reactivation}
+
+El valor de `on_pause` que elegiste al adjuntar la promoción define qué efecto tiene una pausa:
+
+| `on_pause` | Qué ocurre cuando la suscripción se pausa |
+| :--------- | :------------------------------------------- |
+| `KEEP` (predeterminado) | La promoción sigue activa. Sus ciclos restantes continúan cuando la suscripción se reanuda. |
+| `END` | La promoción finaliza con el motivo `PAUSE`. Cuando la suscripción se reanuda, se cobra al precio completo. |
+
+Cancelar una suscripción finaliza su promoción con el motivo `CANCELED`. Reactivar la suscripción no reinicia la promoción.
+
+## Quitar una promoción de una suscripción {#remove-a-promotion-from-a-subscription}
+
+Llama a [Remove Promotion from Subscription](/es/reference/subscriptions/remove-subscription-promotion) para quitar la promoción activa. La promoción finaliza con el motivo `REMOVED` y el próximo cobro es el precio completo. Si la suscripción no tiene una promoción activa, la solicitud devuelve `409 SUBSCRIPTION_PROMOTION_NOT_ACTIVE`.
+
+## Estados de la promoción {#promotion-states}
+
+Una promoción aplicada está `ACTIVE` hasta que se usan sus ciclos, lo que la pasa a `COMPLETED`, o hasta que finaliza antes de tiempo, lo que la pasa a `ENDED`. El campo `end_reason` te indica por qué finalizó antes de tiempo:
+
+| `end_reason` | Cuándo ocurre |
+| :----------- | :-------------- |
+| `REPLACED` | Se aplica otra promoción, o la misma, a la suscripción. |
+| `REMOVED` | La promoción se quita de la suscripción. |
+| `PLAN_CHANGE` | El plan cambia y la promoción finaliza, con `promotion_behavior: END` o `apply_new_plan_promotion: true`. |
+| `PAUSE` | La suscripción se pausa y `on_pause` es `END`. |
+| `CANCELED` | La suscripción se cancela. |
+
+| Evento | Efecto en la promoción activa |
+| :---- | :----------------------------- |
+| Cobro aprobado, o ciclo de prueba | Cuenta un ciclo. Cuando el conteo alcanza `cycles`, la promoción pasa a `COMPLETED`. |
+| Cobro rechazado | Nada. El ciclo no cuenta. |
+| Reintento aprobado | El ciclo cuenta una sola vez, con el mismo monto con descuento. |
+| Resultado aprobado tardío | El ciclo cuenta cuando llega el resultado. |
+| Promoción eliminada del plan, deshabilitada o vencida | Nada. La copia en la suscripción continúa. |
+| Organización desactivada | No se pueden aplicar promociones nuevas. Las promociones en curso continúan. |
+
+## Webhooks {#webhooks}
+
+| Evento | Cuándo se envía | Datos de la promoción |
+| :---- | :-------------- | :------------- |
+| `subscription.promotion_applied` | Se aplica una promoción a una suscripción: al crearla (una promoción que envías o la promoción `AUTOMATIC` del plan), cuando un enlace de pago crea la suscripción, con [Update Subscription](/es/reference/subscriptions/update-subscription), incluida una nueva aplicación que reemplaza la promoción actual, y en un cambio de plan con `apply_new_plan_promotion`. Selecciona el disparador `PROMOTION_APPLIED` para recibirlo. | `promotion`, el [objeto de promoción de suscripción](/es/reference/subscriptions/the-subscription-promotion-object), en `data` y dentro de `data.subscription`. |
+| `subscription.cycle_executed` | Se cobra o se ejecuta un ciclo de una suscripción con una promoción, incluido un ciclo de 100%. Un cobro a precio completo sin promoción no envía este evento. | `promotion` con `id`, `discount_amount` y `cycles_remaining`. |
+
+No hay ningún evento cuando una promoción finaliza. Para ver el estado de una promoción, lee la suscripción. Para ver la lista completa de eventos, consulta [Events and Triggers](/es/docs/webhooks/events).
+
+## Enlaces de pago y checkout {#payment-links-and-checkout}
+
+Una suscripción creada desde un enlace de pago puede llevar una promoción en su primer pago. En el checkout y en los enlaces de pago, solo se aplican las promociones `AUTOMATIC` y la promoción que el comercio define en el enlace. El comprador no puede ingresar un código.
+
+La promoción se copia a la suscripción cuando el enlace la crea, antes de que el comprador pague. Hoy los enlaces de pago de suscripción son de un solo uso, guardan la tarjeta, requieren un cliente identificado y aceptan solo tarjetas. Las promociones en estos enlaces siguen las mismas condiciones.
+
+Para adjuntar una promoción a un enlace, envía `promotion` dentro del objeto `subscription` de [Create Payment Link](/es/reference/payment-links/create-payment-link), con un `id` o un `code`. El comercio la define en el enlace y el comprador no tiene un campo de código.
+
+```json
+{ "subscription": { "promotion": { "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10" } } }
+```
+
+Una promoción enviada por `code` se cuenta cuando se crea el enlace. Por eso, un código de un solo uso no puede usarse en un segundo enlace: ese enlace responde `422 PROMOTION_NOT_APPLICABLE` con el motivo `USAGE_LIMIT_REACHED` y no se crea ninguna suscripción. Un enlace que nunca se paga igualmente agota su código. Una promoción enviada por `id`, y una promoción `AUTOMATIC`, se cuenta cuando la suscripción se activa, así que un enlace sin pagar no la agota.
+
+En el primer pago de un enlace, Yuno verifica la promoción antes de cobrar cualquier monto. Si la verificación no puede completarse, el pago se rechaza con `422 PROMOTION_ENGINE_UNAVAILABLE`. Si el monto del pago o la promoción no coincide con el primer cobro de la suscripción, se rechaza con `422 PROMOTION_CONTEXT_MISMATCH`. En ambos casos no se cobra nada.
+
+## No compatible en esta versión {#not-supported-in-this-release}
+
+* Dos promociones en la misma suscripción a la vez. Aplicar una nueva reemplaza la actual.
+* Prorrateo. Un cambio de plan no se cobra en proporción al tiempo usado.
+* Programar una promoción para una fecha futura. Una promoción se aplica desde el próximo cobro.
+* Editar un adjunto o la copia en una suscripción. En su lugar, quítalo y vuelve a adjuntarlo.
+* Suscripciones creadas con un flujo de un solo paso, como un pago que crea la suscripción, por ejemplo Pix Automático.
+* Desactivar de una vez todas las promociones en curso de un comercio. Desactivar la función detiene solo las aplicaciones nuevas.
+* Suscripciones con `frequency.execution` en `MERCHANT`, que incluye las suscripciones que administra un proveedor, como Pix Automático.
+
+## Errores {#errors}
+
+Los códigos de error, sus estados HTTP y los motivos de `PROMOTION_NOT_APPLICABLE` se listan en [Subscription promotion error codes](/es/reference/subscriptions/subscription-promotion-error-codes).
+
+## Relacionado {#related}
+
+* [Plans](/es/docs/payment-features/subscriptions/plans)
+* [Promotions](/es/docs/payment-features/promotions) (promociones en pagos únicos)
+* [Attach Promotion to Plan](/es/reference/plans/attach-plan-promotion)
+* [Remove Promotion from Plan](/es/reference/plans/remove-plan-promotion)
+* [Remove Promotion from Subscription](/es/reference/subscriptions/remove-subscription-promotion)
+* [The Subscription Promotion Object](/es/reference/subscriptions/the-subscription-promotion-object)

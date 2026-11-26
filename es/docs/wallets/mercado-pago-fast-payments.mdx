@@ -1,0 +1,476 @@
+---
+title: "Mercado Pago Fast Payments"
+description: "Permite que los compradores paguen con las tarjetas y el saldo guardados en su cuenta de Mercado Pago, directamente desde el checkout del Yuno Web SDK, sin salir de tu página."
+---
+
+Mercado Pago Fast Payments muestra al comprador los métodos de pago que ya guardó en su cuenta de Mercado Pago (tarjetas y saldo de la cuenta) dentro de tu checkout de Yuno. El comprador elige uno, confirma con Mercado Pago y paga sin volver a escribir los datos de la tarjeta ni salir de tu página.
+
+Yuno muestra la experiencia dentro de la lista de métodos de pago del Yuno SDK 2.0 y en el **Full checkout** y el **Lite checkout** del Web SDK v1.11. Tú creas la sesión de checkout y el pago como lo haces hoy; el SDK se encarga de la parte de Mercado Pago.
+
+<Note>
+Mercado Pago Fast Payments es compatible con el **Yuno SDK 2.0.0** (recomendado) y con el **Web SDK v1.11.21** o posterior (`https://sdk-web.y.uno/v1.11/main.js`).
+
+Los SDK heredados siguen siendo compatibles en paralelo durante la transición y está previsto dejar de darles soporte en **2027**. Yuno recomienda migrar al nuevo Yuno SDK en lugar de permanecer en un SDK heredado. Consulta la [guía de migración](/es/docs/yuno-sdk/migration/overview). Contacta a tu Account Manager para planificar la migración.
+</Note>
+
+## Disponibilidad {#availability}
+
+Fast Payments está disponible en:
+
+* **Lista de métodos de pago del Yuno SDK 2.0** (`getPaymentMethodsViews`), con la sesión de checkout creada con `workflow: 'SDK_SEAMLESS'`
+* **`start()` headless del Yuno SDK** en Web, desde la versión 2.7.1, cuando tu página ejecuta el SDK de Mercado Pago y construye por sí misma la experiencia del comprador. Consulta [Integración headless](#headless-integration).
+* **Full checkout del Web SDK v1.11** (`mountCheckout`)
+* **Lite checkout del Web SDK v1.11** (`mountCheckoutLite`) con `paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN'`, compatible con los modos de renderizado `element` y `modal` (Mercado Pago recomienda `element`).
+
+No está disponible en el Seamless checkout del Web SDK v1, en la lista condensada de métodos de pago, en el checkout de Moon Active ni en los SDK móviles nativos.
+
+### Compatibilidad y plataformas compatibles {#compatibility-and-platform-support}
+
+Fast Payments funciona en contextos web y requiere que el comprador se autentique con Mercado Pago.
+
+| Plataforma / Entorno | Nivel de compatibilidad | Notas |
+| --- | --- | --- |
+| **Desktop Web** | Compatible | Navegadores modernos con actualización continua (Chrome, Safari, Firefox, Edge). |
+| **Mobile Web** | Compatible | Safari en iOS, Chrome en Android y navegadores móviles. |
+| **WebView** | Aún no validado | Fast Payments no se ha validado en un WebView. No des por hecho que sea compatible allí. |
+| **Native Mobile App** | No compatible | Los SDK nativos de iOS y Android no son compatibles actualmente con Fast Payments. |
+
+<Note>
+La visibilidad en los entornos compatibles depende de la **elegibilidad del comprador**. Si el comprador no tiene una cuenta de Mercado Pago válida, o si Mercado Pago no puede autenticar la sesión, Fast Payments no se ofrece. Lo que el comprador ve entonces depende de tu integración, descrita en [Cómo funciona para el comprador](#how-it-works-for-the-shopper).
+</Note>
+
+## Limitaciones funcionales {#functional-limitations}
+
+Antes de planificar tu integración, revisa los límites funcionales en los que Fast Payments no debe usarse:
+
+* **Recurrencia y transacciones iniciadas por el comercio (MIT):** Fast Payments requiere autenticación interactiva del comprador. No se puede usar para el cobro recurrente de suscripciones, el almacenamiento de tarjetas tokenizadas para cargos futuros fuera de sesión ni los flujos MIT.
+* **Cupones y promociones de Mercado Pago:** Los descuentos dentro de la app de Mercado Pago o los códigos de cupón del comercio gestionados dentro de Mercado Pago no se pueden aplicar a través de Fast Payments.
+* **Captura parcial o montos distintos:** No se admite autorizar un monto y capturar después un monto distinto o parcial. El monto capturado debe ser igual al monto de checkout autorizado.
+* **Campos de subadquirente:** Los parámetros personalizados de subadquirente o los indicadores de procesamiento intermediario no se envían a Mercado Pago.
+* **Pagos divididos:** Los pagos divididos 1:1 no son compatibles. Los escenarios de pago dividido 1:N están actualmente en validación y no están disponibles para el lanzamiento general.
+
+## Incorporación y requisitos previos {#onboarding-and-prerequisites}
+
+Activar Mercado Pago Fast Payments requiere una configuración coordinada entre el comercio, Yuno y Mercado Pago:
+
+1. **Habilita Fast Payments** (Mercado Pago y comercio, en Mercado Pago Developers). Solicita la activación de Fast Payments en tu aplicación de Mercado Pago a través de tu account manager de Mercado Pago.
+2. **Autoriza la conexión** (comercio, en el Yuno Dashboard). En **Settings > Connections**, ejecuta **Connect with Mercado Pago** para generar los tokens de acceso del vendedor.
+3. **Configura las claves públicas** (comercio, en el Yuno Dashboard). Agrega la clave pública de cada sitio de Mercado Pago en el que vendes, etiquetada con su país. Agrega una clave etiquetada `GLOBAL` como respaldo.
+4. **Configura el webhook** (comercio, en Mercado Pago Developers). Establece la Notification URL en `https://prod.y.uno/mercadopago-webhook/v1/orders/events` y suscríbete al evento **Order (Mercado Pago)**.
+5. **Habilita las reglas de enrutamiento** (Yuno y comercio, en el Yuno Dashboard). Habilita el método de pago `MERCADO_PAGO_SUPERTOKEN` en tu workflow de enrutamiento del checkout.
+
+<Frame caption="Configuración de la conexión de Mercado Pago Fast Payments en el Yuno Dashboard">
+  <img src="/images/reference/mercado-pago-fast-payments/mercado-pago-fast-payments-dashboard-connection.png" alt="Configuración de la conexión de Mercado Pago en el Yuno Dashboard" />
+</Frame>
+
+## Cómo funciona para el comprador {#how-it-works-for-the-shopper}
+
+### Full checkout {#full-checkout}
+
+En el Full checkout, Mercado Pago siempre aparece como **una sección** en la parte superior de la lista de métodos de pago, encabezada por el logotipo de Mercado Pago. Nunca es una fila seleccionable por sí sola: el comprador selecciona uno de los métodos dentro de la sección. La sección se adapta a lo que Yuno sabe del comprador:
+
+| Situación | Lo que ve el comprador |
+| --- | --- |
+| La sesión de checkout no tiene el correo electrónico del comprador | Un campo que solicita el correo electrónico de su cuenta de Mercado Pago: *"Enter the e-mail of your Mercado Pago account to see your saved payment methods."* |
+| El correo electrónico es conocido y Mercado Pago está cargando sus métodos | Un marcador de posición mientras se carga la lista |
+| Mercado Pago respondió | Sus tarjetas guardadas y el saldo de la cuenta como filas, cada una con su marca y los últimos dígitos. Mercado Pago puede pedir el código de seguridad de la tarjeta antes de pagar con una tarjeta guardada, en un campo que muestra Mercado Pago |
+| No se pudo contactar a Mercado Pago, no devolvió métodos o el comprador no es elegible | La sección de Mercado Pago no se muestra. El comprador ve tus otros métodos de pago. Si Mercado Pago es el único método de pago que tienes habilitado, se muestra en su lugar una sola fila de Mercado Pago para que la lista nunca quede vacía, y al seleccionarla se muestra el mensaje de no disponibilidad |
+
+<Frame caption="Mercado Pago Fast Payments mostrando los métodos de pago guardados del comprador">
+  <img src="/images/reference/mercado-pago-fast-payments/mercado-pago-fast-payments-saved-methods.png" alt="Sección de Mercado Pago que muestra los métodos de pago guardados" />
+</Frame>
+
+En todos los estados, la sección mantiene un aviso de privacidad (*"Learn how we protect your privacy."*) que enlaza a la página de privacidad de Mercado Pago del país del comprador (por ejemplo, `https://www.mercadopago.com.ar/privacidad` para Argentina). Tus otros métodos de pago aparecen a continuación, bajo un encabezado **Other payment methods**.
+
+<Note>
+Ocultar la sección es el comportamiento a partir del Web SDK **1.11.21**. En las versiones **1.11.6** a **1.11.20**, en su lugar permanece una sola fila de Mercado Pago en la lista, y el comprador que selecciona esa fila ve el mensaje *"Mercado Pago is not available right now. Please choose another payment method."* Actualiza a la versión 1.11.21 o posterior para que ese mensaje no aparezca en el recorrido del comprador.
+</Note>
+
+<Tip>
+Envía el correo electrónico del comprador en `customer_payer.email` cuando [crees la sesión de checkout](/es/reference/checkout-sessions/create-checkout-session). Entonces la sección carga de inmediato los métodos guardados en lugar de pedirle el correo electrónico al comprador.
+</Tip>
+
+### Lite checkout {#lite-checkout}
+
+En el Lite checkout, el SDK renderiza el componente de Mercado Pago en el contenedor configurado para `paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN'`. Los compradores seleccionan y se autentican con sus métodos guardados de Mercado Pago directamente dentro de ese componente montado (o modal).
+
+Igual que en el Full checkout, el componente muestra el aviso de privacidad que enlaza a la política de privacidad de Mercado Pago del país del comprador.
+
+Como tu propia página es la dueña de la lista de métodos de pago en el Lite checkout, Yuno no puede quitar de ella la entrada de Mercado Pago. Cuando Mercado Pago no se puede usar, o el comprador no es elegible, el componente montado muestra el mensaje *"Mercado Pago is not available right now. Please choose another payment method."*
+
+## Integración {#integration}
+
+### Correspondencia de workflow {#workflow-mapping}
+
+Establece `workflow` en la sesión de checkout (`POST /v1/checkout/sessions`) según el SDK que integres:
+
+| SDK y experiencia | Valor de `workflow` | Fast Payments | Notas |
+| --- | --- | --- | --- |
+| **Yuno SDK 2.0** (lista de métodos de pago) | `SDK_SEAMLESS` | Sí | Obligatorio en el Yuno SDK 2.0: permite que el SDK cree el pago. Sin él, la transacción termina en `INTERNAL_ERROR`. |
+| **`start()` headless del Yuno SDK** | `SDK_SEAMLESS` | Sí | Tu página ejecuta el SDK de Mercado Pago. Crea una sesión de checkout por cada pago. |
+| **Full checkout del Web SDK v1.11** | `SDK_CHECKOUT` | Sí | La sección de Mercado Pago se muestra en la parte superior de la lista de métodos de pago. |
+| **Lite checkout del Web SDK v1.11** (`element` o `modal`) | `SDK_CHECKOUT` | Sí | Mercado Pago recomienda `element`. |
+| **Seamless checkout del Web SDK v1.11** | `SDK_SEAMLESS` | No | Fast Payments no está disponible en el Seamless checkout de la v1. |
+
+### Ejemplos de integración {#integration-examples}
+
+<Tabs>
+<Tab title="Yuno SDK 2.0 (Recomendado)">
+
+Carga el SDK desde la CDN e inicialízalo una sola vez.
+
+```html
+<script src="https://sdk-web.y.uno/v2/main.js"></script>
+```
+
+La sección de Mercado Pago se muestra en la parte superior de la lista de métodos de pago del SDK:
+
+```javascript
+const sdkPayments = await SdkPayments.initialize('YOUR_PUBLIC_API_KEY');
+
+// Checkout session created by your backend with workflow: 'SDK_SEAMLESS'
+const transaction = sdkPayments.transaction({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  countryCode: 'AR',
+  elementSelector: '#payment-form',
+  onStatus: (result) => {
+    console.log('Final status:', result.status);
+  },
+});
+
+let selectedPaymentMethod = null;
+
+const views = transaction.getPaymentMethodsViews({
+  types: ['paymentMethodList'],
+  onPaymentSelected: (paymentMethod) => {
+    selectedPaymentMethod = paymentMethod;
+  },
+});
+
+await views.paymentMethodList?.mount({ elementSelector: '#payment-list' });
+
+// When the shopper confirms, from your Pay button
+payButton.addEventListener('click', async () => {
+  if (selectedPaymentMethod) {
+    await transaction.start({ paymentMethod: selectedPaymentMethod });
+  }
+});
+```
+
+</Tab>
+<Tab title="Web SDK v1.11 (Heredado)">
+
+```javascript
+// Web SDK v1.11.21+
+const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
+
+await yuno.startCheckout({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  elementSelector: '#root',
+  countryCode: 'AR',
+  // Mercado Pago recommends element render mode
+  renderMode: {
+    type: 'element', // or 'modal'
+    elementSelector: {
+      apmForm: '#apm-form',
+      actionForm: '#action-form',
+    },
+  },
+  // ...your callbacks
+});
+
+await yuno.mountCheckoutLite({
+  paymentMethodType: 'MERCADO_PAGO_SUPERTOKEN',
+});
+
+await yuno.startPayment();
+```
+
+</Tab>
+</Tabs>
+
+### Lite checkout con varios métodos de pago {#lite-checkout-with-several-payment-methods}
+
+En el Lite checkout, tu página es la dueña de la lista de métodos de pago y el SDK renderiza un método a la vez. Para ofrecer Fast Payments junto con tarjetas y otros métodos, monta el método que selecciona el comprador y mantén un solo botón Pay en tu página. Cuatro reglas definen la integración:
+
+* **Un solo método montado a la vez.** `mountCheckoutLite` renderiza el formulario del método elegido en `renderMode.elementSelector.apmForm` (modo element) o en un modal. Si lo llamas de nuevo con otro `paymentMethodType`, reemplaza el formulario anterior, por lo que los datos escritos y el estado de validación nunca pasan de un método al siguiente.
+* **Tu botón Pay.** Con `showPayButton: false`, los formularios de tarjeta y de otros métodos no muestran un botón propio. `onChange` te indica cuándo el formulario montado está completo, y `yuno.submitOneTimeTokenForm()` lo envía.
+* **Mercado Pago confirma dentro de su propio componente.** El componente de Fast Payments conserva sus botones *Continue* y *Pay*, y `showPayButton` y `submitOneTimeTokenForm()` no se aplican a él. En modo element, oculta tu botón Pay mientras Mercado Pago esté seleccionado.
+* **Un método que no pide nada paga al montarse.** Cuando un método no muestra ningún formulario, el SDK crea el token de un solo uso y llama a `createPayment` en cuanto el método se monta. Monta esos métodos cuando el comprador presione Pay, no cuando seleccione el método.
+
+<Tabs>
+<Tab title="Modo de renderizado element">
+
+```html
+<fieldset id="payment-methods">
+  <label><input type="radio" name="payment-method" value="MERCADO_PAGO_SUPERTOKEN" /> Mercado Pago</label>
+  <label><input type="radio" name="payment-method" value="CARD" /> Card</label>
+  <label><input type="radio" name="payment-method" value="PIX" /> Pix</label>
+</fieldset>
+
+<div id="yuno-root"></div>
+<div id="payment-form"></div>   <!-- the selected method's form renders here -->
+<div id="action-form"></div>    <!-- 3DS and other actions render here -->
+<button id="pay-button" type="button" disabled>Pay</button>
+```
+
+```javascript
+// Web SDK v1.11.21+
+const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
+
+const payButton = document.querySelector('#pay-button');
+let selectedType = null;
+let formIsValid = false;
+
+await yuno.startCheckout({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  elementSelector: '#yuno-root',
+  countryCode: 'BR',
+  renderMode: {
+    type: 'element',
+    elementSelector: {
+      apmForm: '#payment-form',
+      actionForm: '#action-form',
+    },
+  },
+  // Card and other-method forms render no Pay button; yours submits them
+  showPayButton: false,
+  onChange: ({ form }) => {
+    formIsValid = form.isValid;
+    refreshPayButton();
+  },
+  async createPayment(oneTimeToken, tokenWithInformation) {
+    // Create the payment from your backend with the one-time token
+    await createPaymentOnYourServer({ oneTimeToken, checkoutSession: 'CHECKOUT_SESSION_ID' });
+    await yuno.continuePayment();
+  },
+  paymentResult(status) {
+    console.log('Payment result:', status);
+  },
+  error(message, data) {
+    console.error('Error:', message, data);
+  },
+});
+
+// Methods that render a form: mount on selection, submit from your Pay button.
+// A method that asks nothing (Pix on this connection) creates the token as soon
+// as it mounts, so it is mounted from the Pay button instead.
+const MOUNT_ON_SELECTION = ['MERCADO_PAGO_SUPERTOKEN', 'CARD'];
+
+async function selectMethod(type) {
+  selectedType = type;
+  formIsValid = false;
+  if (MOUNT_ON_SELECTION.includes(type)) {
+    // Mounting another type replaces the previous form and its validation state
+    await yuno.mountCheckoutLite({ paymentMethodType: type });
+    await yuno.startPayment();
+  } else {
+    // Remove the previous method's form; Pix mounts when the shopper presses Pay
+    await yuno.unmountSdk();
+  }
+  refreshPayButton();
+}
+
+function refreshPayButton() {
+  // Mercado Pago confirms inside its own component
+  payButton.hidden = selectedType === 'MERCADO_PAGO_SUPERTOKEN';
+  // Disable only while a mounted form is incomplete
+  payButton.disabled = MOUNT_ON_SELECTION.includes(selectedType) && !formIsValid;
+}
+
+document.querySelectorAll('input[name="payment-method"]').forEach((radio) => {
+  radio.addEventListener('change', () => selectMethod(radio.value));
+});
+
+payButton.addEventListener('click', async () => {
+  if (MOUNT_ON_SELECTION.includes(selectedType)) {
+    await yuno.submitOneTimeTokenForm();
+    return;
+  }
+  await yuno.mountCheckoutLite({ paymentMethodType: selectedType });
+  await yuno.startPayment();
+});
+```
+
+El componente de Mercado Pago se renderiza en `#payment-form` en cuanto se monta: los métodos guardados cuando el comprador es elegible, o el mensaje de no disponibilidad descrito en [Lite checkout](#lite-checkout) cuando Mercado Pago no se puede usar. En ese caso, el comprador selecciona otro método de tu lista y el siguiente montaje reemplaza el mensaje.
+
+</Tab>
+<Tab title="Modo de renderizado modal">
+
+En el modo de renderizado modal (el predeterminado), el SDK abre el modal del método en cuanto se monta, y el modal incluye el botón Pay propio del SDK. Monta al hacer clic en Pay en lugar de al seleccionar, deja `showPayButton` en su valor predeterminado, y al cerrar el modal el método se desmonta:
+
+```javascript
+// Web SDK v1.11.21+
+const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
+
+let selectedType = null;
+
+await yuno.startCheckout({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  elementSelector: '#yuno-root',
+  countryCode: 'BR',
+  // renderMode defaults to { type: 'modal' }
+  async createPayment(oneTimeToken, tokenWithInformation) {
+    await createPaymentOnYourServer({ oneTimeToken, checkoutSession: 'CHECKOUT_SESSION_ID' });
+    await yuno.continuePayment();
+  },
+  paymentResult(status) {
+    console.log('Payment result:', status);
+  },
+  error(message, data) {
+    console.error('Error:', message, data);
+  },
+});
+
+document.querySelectorAll('input[name="payment-method"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    selectedType = radio.value;
+  });
+});
+
+document.querySelector('#pay-button').addEventListener('click', async () => {
+  await yuno.mountCheckoutLite({ paymentMethodType: selectedType });
+  await yuno.startPayment();
+});
+```
+
+Mercado Pago se abre como un modal con los métodos guardados del comprador, o con el mensaje de no disponibilidad; el comprador lo cierra y elige otro método de tu lista.
+
+</Tab>
+</Tabs>
+
+### Integración headless {#headless-integration}
+
+En una integración headless, tu página ejecuta el SDK de Mercado Pago, muestra los métodos guardados del comprador en tu propia interfaz y obtiene la autorización del comprador. Luego le entregas a Yuno el token autorizado y el método que eligió el comprador con `transaction.start()`. El Yuno SDK no renderiza nada y crea el mismo token de un solo uso que la lista de métodos de pago.
+
+Fast Payments headless está disponible en el Yuno SDK para Web desde la versión 2.7.1. La integración headless del Web SDK v1 no envía los campos de Mercado Pago.
+
+**1. Crea una sesión de checkout para el pago.** Créala desde tu backend con `workflow: 'SDK_SEAMLESS'`. Crea una sesión nueva para cada pago: una vez creado un pago en una sesión, Yuno rechaza otro pago en ella.
+
+**2. Carga los métodos de Mercado Pago del comprador.** Carga el SDK de Mercado Pago e inicialízalo con la clave pública de la misma aplicación de Mercado Pago que conectaste a Yuno, para el país del checkout. Pasa el monto de la sesión de checkout y el correo electrónico de la cuenta de Mercado Pago del comprador:
+
+```html
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+```
+
+```javascript
+const mp = new MercadoPago('YOUR_MERCADO_PAGO_PUBLIC_KEY', { locale: 'es-MX' });
+
+const wallet = await mp.wallet({
+  amount: '150.00',
+  payer: { email: 'shopper@example.com' },
+});
+
+if (!wallet.available) {
+  // Mercado Pago cannot be used for this shopper: offer your other payment methods
+}
+
+// Each method has id, type, name, lastFourDigits, token, securityCode and installments
+const methods = wallet.paymentMethods;
+```
+
+Con un correo electrónico que Mercado Pago no conoce, `wallet()` devuelve `available: false` y ningún método. Cuando el método que elige el comprador tiene `securityCode.required`, monta el campo de código de seguridad de Mercado Pago con `wallet.mountSecurityCode(containerId, { token: method.token })` antes de enviar.
+
+**3. Obtén la autorización del comprador.** Envía el método elegido. El comprador confirma con Mercado Pago, y el resultado incluye el token autorizado:
+
+```javascript
+const result = await wallet.submit({ token: method.token });
+const thirdPartyToken = result?.payment_method?.token ?? method.token;
+```
+
+**4. Inicia la transacción con los datos de la billetera.**
+
+```javascript
+const sdkPayments = await SdkPayments.initialize('YOUR_PUBLIC_API_KEY');
+
+const transaction = sdkPayments.transaction({
+  checkoutSession: 'CHECKOUT_SESSION_ID',
+  countryCode: 'MX',
+  onStatus: (result) => {
+    console.log('Final status:', result.status);
+  },
+});
+
+await transaction.start({
+  paymentMethod: {
+    type: 'MERCADO_PAGO_SUPERTOKEN',
+    data: {
+      wallet: {
+        thirdPartyToken,
+        providerMethodId: method.id,
+        providerMethodType: method.type,
+      },
+      installment: { value: 3 }, // cards only: the installments the shopper chose
+    },
+  },
+});
+```
+
+| Campo | Valor |
+| --- | --- |
+| `wallet.thirdPartyToken` | El token que devuelve `wallet.submit()`. Obligatorio. |
+| `wallet.providerMethodId` | El `id` del método elegido, por ejemplo `visa`, `master` o `account_money`. Obligatorio. |
+| `wallet.providerMethodType` | El `type` del método elegido: `credit_card`, `debit_card` o `account_money`. Obligatorio. |
+| `installment.value` | El número de cuotas que el comprador eligió entre las `installments` del método. Opcional. Sin él, el SDK envía 1. El SDK no envía cuotas para `account_money`. |
+
+Cuando falta cualquiera de los tres campos de `wallet`, el SDK no crea ningún token y `onStatus` recibe `INTERNAL_ERROR` con `message.code` `WALLET_DATA_MISSING`. `message.reason` indica los campos que faltan.
+
+Ambos modos funcionan. Sin `createPayment`, el SDK crea el pago. Con `createPayment`, lo creas desde tu backend con el token de un solo uso, como con cualquier otro método.
+
+### Token de un solo uso y creación del pago {#one-time-token-and-payment-creation}
+
+Cuando el comprador confirma, en la lista de métodos de pago o mediante un `start()` headless, el token de un solo uso del SDK lleva por ti los detalles de Mercado Pago:
+
+```json
+{
+  "payment_method": {
+    "type": "MERCADO_PAGO_SUPERTOKEN",
+    "wallet": {
+      "third_party_token": "<token issued by Mercado Pago for this payment>",
+      "provider_method_id": "master",
+      "provider_method_type": "credit_card"
+    },
+    "installment": { "value": 1, "id": null }
+  }
+}
+```
+
+* `third_party_token` es el token que Mercado Pago emite para el método que eligió el comprador. Yuno lo usa para cobrar el pago; tú nunca ves los datos de la tarjeta.
+* `provider_method_id` y `provider_method_type` identifican el método dentro de la cuenta de Mercado Pago del comprador (una marca de tarjeta como `master`, o `account_money` para el saldo de la cuenta).
+* `installment` se envía para tarjetas, con el número de cuotas que el comprador eligió entre las opciones de Mercado Pago. Se omite para `account_money`.
+
+Crea el pago con el token de un solo uso exactamente como lo haces con cualquier otro método ([Paso 7 de la guía del Full checkout](/es/docs/sdks/full-checkout/web-payments#step-7-create-the-payment)). El pago se procesa a través de tu conexión de Mercado Pago.
+
+## Idempotencia, reintentos y diagnóstico {#idempotency-retries-and-diagnostics}
+
+* **Idempotencia y tiempos de espera del servidor:** Incluye siempre un encabezado `X-Idempotency-Key` al crear pagos mediante `POST /v1/payments`. Si ocurre un tiempo de espera de red durante esta solicitud, tu servidor debe primero reintentar la solicitud con exactamente el mismo `X-Idempotency-Key` o conciliar el estado del pago mediante `GET /v1/payments/{payment_id}`.
+* **Recuperación del estado del checkout (`continuePayment`):** Llama a `yuno.continuePayment()` en el cliente solo después de crear el pago, cuando la respuesta del pago indique que se necesita una acción (como `sdk_action_required`) o cuando una tarjeta devuelva `DECLINED` o `ERROR` y el comprador deba seleccionar otro método o reintentar. No uses `continuePayment()` como sustituto de los reintentos por tiempo de espera del servidor ni de la conciliación de estados.
+* **Diagnóstico para soporte:** Al escalar problemas de pagos o de integración al soporte de Yuno o de Mercado Pago, captura y proporciona siempre estos identificadores:
+  * `checkout_session`: El identificador único de la sesión creada mediante `POST /v1/checkout/sessions`.
+  * `payment_id`: El identificador de la transacción devuelto por Yuno en la respuesta del pago.
+  * `trace_id` / `request_id`: El encabezado de seguimiento de la respuesta HTTP (`X-Trace-Id`) de las solicitudes a la API.
+
+## Países {#countries}
+
+Fast Payments está disponible en Argentina, Brasil, México y Chile. Sigue tu conexión de Mercado Pago: el SDK usa la clave pública etiquetada con el país del checkout, recurre a una clave etiquetada `GLOBAL` y, si no hay ninguna de las dos, usa la primera clave pública de la conexión.
+
+## Pruebas y lanzamiento a producción {#testing-and-production-release}
+
+### Lista de verificación de pruebas {#testing-checklist}
+
+Antes de salir en vivo, valida tu integración en los entornos sandbox de Mercado Pago:
+
+1. **Creación de usuarios de prueba:** Crea cuentas de prueba de comprador y de vendedor en el portal de Mercado Pago Developers para el sitio del país de destino.
+2. **Configuración de métodos de pago:** Asegúrate de que el usuario comprador de prueba tenga métodos de pago guardados en su cuenta de Mercado Pago (tarjeta de crédito y saldo de la cuenta).
+3. **Correo electrónico de la sesión:** En `POST /v1/checkout/sessions`, pasa el email registrado del comprador de prueba en `customer_payer.email`.
+4. **Flujo de autenticación:** Verifica que las tarjetas guardadas se carguen en la sección del checkout. Prueba las solicitudes del código de seguridad y los pasos de desafío simulados.
+5. **Reglas de enrutamiento:** Asegúrate de que las reglas de enrutamiento dirijan las transacciones `MERCADO_PAGO_SUPERTOKEN` a la conexión de prueba de Mercado Pago.
+
+### Lista de verificación del lanzamiento a producción {#production-release-checklist}
+
+Al pasar de sandbox a producción:
+
+1. **Autorización OAuth de producción:** En el Yuno Dashboard, haz clic en **Connect with Mercado Pago** en tu cuenta de producción para generar tokens de vendedor activos.
+2. **Claves públicas de producción:** Asegúrate de que las claves públicas de producción estén asignadas a cada sitio de país activo.
+3. **Verificación del webhook:** Verifica que la Notification URL de producción esté configurada y reciba eventos en Mercado Pago Developers.
+4. **Validación del checkout:** Verifica la experiencia de los compradores no elegibles y de los compradores sin métodos de pago guardados, como se describe en [Cómo funciona para el comprador](#how-it-works-for-the-shopper).

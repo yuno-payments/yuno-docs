@@ -1,0 +1,145 @@
+---
+title: "onStatus"
+sidebarTitle: "Resultado del pago (onStatus)"
+description: "Recibe el estado final de la transacción."
+---
+
+`onStatus` se invoca cuando la transacción llega a su estado final. Es la única forma de saber cómo terminó la transacción.
+
+## Comportamiento {#behavior}
+
+Este controlador no tiene un comportamiento predeterminado. Si no lo implementas, no recibirás el estado final. En Web, `transaction()` también imprime una advertencia en la consola cuando la configuración no tiene una función `onStatus`.
+
+Cuando lo implementas, el SDK entrega el estado a tu handler después de que se completan la tokenización, la creación del pago (o la creación del pago del lado del comercio mediante `createPayment`), 3DS y la resolución del estado.
+
+Algunas entregas no son finales: en iOS y Android un pago asíncrono puede informar `PENDING` primero y su estado final después, y cerrar una pantalla de pago informa lo que hizo el comprador, no cómo terminó el pago. Consulta [Entregas que no son finales](#deliveries-that-are-not-final).
+
+## Firma {#signature}
+
+<Tabs>
+  <Tab title="Web">
+
+Conéctalo como un campo de la configuración.
+
+```typescript
+sdkPayments.transaction({
+  ...,
+  onStatus: (result) => console.log(result.status),
+})
+```
+
+`result` tiene la misma forma en los flujos de pago y de inscripción:
+
+| Campo | Qué contiene |
+| --- | --- |
+| `status` | El estado del backend. Un estado que esta versión del SDK no conoce llega como `INTERNAL_ERROR` (ver más abajo). |
+| `substatus` | El subestado del backend, o `null` cuando el backend no envió ninguno. |
+| `message` | `{ source: 'backend', code: <response_code> }` en un pago `DECLINED`, `REJECTED`, `EXPIRED`, `CANCELED` o `ERROR` cuando el backend envió un código de respuesta. `null` en cualquier otro caso. |
+
+Un estado que esta versión del SDK no conoce no se transmite tal cual. Llega como `INTERNAL_ERROR` con `message.code` `UNSUPPORTED_STATUS` y `message.reason` con el valor `unsupported status: <value>`.
+
+  </Tab>
+
+  <Tab title="iOS">
+
+```swift
+func onStatus(status: SdkPayments.TransactionStatus)
+```
+
+`SdkPayments.TransactionStatus` incluye `status` y `substatus` (los valores del backend, transmitidos sin cambios para los estados que esta versión del SDK conoce) y un `message` opcional que se completa en los resultados con error. Un estado que el SDK no conoce llega como `INTERNAL_ERROR` con `message.code` `UNSUPPORTED_STATUS`, igual que en Web. Los valores de `message.code` que emite el propio SDK se listan en [Status](/es/docs/yuno-sdk/reference/objects-you-receive#status).
+
+  </Tab>
+
+  <Tab title="Android">
+
+```kotlin
+fun onStatus(status: TransactionStatus)
+```
+
+  </Tab>
+
+  <Tab title="React Native">
+
+```typescript
+onStatus(status: TransactionStatus): void
+```
+
+`onStatus` es el único callback que el controlador debe implementar. `status` incluye `status`, `substatus` y `message` exactamente como los entrega el SDK nativo de la plataforma.
+
+  </Tab>
+</Tabs>
+
+Consulta [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status) para ver la forma del payload, el campo `message` y los valores que emite el SDK (`INTERNAL_ERROR`, `USER_CANCEL`).
+
+## Confirma en tu servidor {#confirm-on-your-server}
+
+<Warning>
+`onStatus` es una señal del lado del cliente. Úsalo para controlar tu interfaz, nunca como la fuente de verdad para entregar el pedido.
+</Warning>
+
+`onStatus` se ejecuta en el dispositivo del usuario, por lo que puede perderse (la app se cierra, se cae la red, el usuario cierra la página a mitad del flujo) o manipularse (cualquier cosa que se ejecute en el cliente puede alterarse). Un `SUCCEEDED` entregado a tu handler no es prueba de que el dinero se haya movido.
+
+Antes de enviar productos, otorgar acceso o marcar una orden como pagada, confirma el resultado en tu backend:
+
+- **Webhooks (recomendado).** Configura [webhooks](/es/docs/webhooks) para que Yuno notifique a tu backend cada cambio de estado del pago, independientemente de lo que ocurra en el cliente. Verifica la firma de la notificación antes de confiar en ella.
+- **Consulta la API.** Haz que tu backend llame a [Retrieve Payment by ID](/es/reference/payments/retrieve-payment-by-id) (o [por `merchant_order_id`](/es/reference/payments/retrieve-payment-by-merchant-order-id)) y lea el estado de la respuesta.
+
+Trata `onStatus` como el disparador para actualizar la pantalla, y la confirmación del lado del servidor como el disparador para entregar el pedido.
+
+## Entregas que no son finales {#deliveries-that-are-not-final}
+
+### Pagos asíncronos en móvil {#asynchronous-payments-on-mobile}
+
+En iOS y Android, `onStatus` puede ejecutarse más de una vez para una misma transacción. Los métodos asíncronos (PIX, boleto, OXXO, transferencias bancarias y similares) informan `status` `PENDING` apenas existe el pago y el comprador tiene las instrucciones de pago, con el `substatus` del backend cuando hay uno. El estado final llega en una llamada posterior, una vez que Yuno confirma el pago.
+
+Trata `PENDING` como no final: mantén tu pantalla en estado de espera y confirma el resultado en tu servidor. Las apps de React Native reciben las mismas entregas que el SDK nativo de la plataforma.
+
+### Cuando el comprador cierra una pantalla de pago en móvil {#when-the-shopper-closes-a-payment-screen-on-mobile}
+
+En iOS y Android, lo que recibe `onStatus` depende de la pantalla que cierre el comprador. En todos los casos el pago no se cancela en el backend.
+
+| Pantalla que cierra el comprador | `onStatus` recibe | Qué hacer |
+| --- | --- | --- |
+| Instrucciones de pago: código QR de PIX, boleto, OXXO y otras pantallas de código o comprobante | `PENDING` / `CLOSED_BY_USER` | Mantén la orden abierta. El código sigue siendo pagable hasta que expire, así que espera el webhook. |
+| Página del proveedor de Pix Parcelado | `PENDING` / `CLOSED_BY_USER` | Mantén la orden abierta. El pago aún puede completarse, así que espera el webhook. |
+| Cualquier otra redirección o webview: banco, billetera, PSE y similares | `USER_CANCEL`, sin `substatus` | El comprador cerró la pantalla o presionó atrás, pero el proveedor aún puede completar el pago. Verifícalo en tu servidor antes de mostrar una cancelación o anular la orden. |
+
+### Entregas en Web que mantienen el formulario montado {#web-deliveries-that-keep-the-form-mounted}
+
+En Web, estas entregas no son finales. El formulario sigue montado después de ellas, para que el comprador pueda intentarlo de nuevo:
+
+| `onStatus` recibe | Cuándo | Qué hacer |
+| --- | --- | --- |
+| `INTERNAL_ERROR` con `message.code` `FORM_INVALID` | Enviaste un formulario no válido, con [`transaction.submit()`](/es/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button) o con `transaction.start({ paymentMethod })` en la lista de métodos de pago. | Deja que el comprador corrija los campos y envíe de nuevo. |
+| `DECLINED` o `ERROR` | Un pago con tarjeta que el SDK puede reintentar, cuando sobrescribes `createPayment`. El SDK mueve el formulario a una nueva sesión de checkout, muestra los errores de los campos y mantiene el formulario. | Habilita de nuevo tu botón de pago. El siguiente `submit()` o `start()` paga en la nueva sesión, que `token.checkout_session` lleva a `createPayment`. |
+| `INTERNAL_ERROR` con `message.code` `COLLECT_FAILED` | Sobrescribes `createPayment` y una billetera de Mercado Pago falla antes de producir un token. | Nada. El botón de la billetera sigue montado y el comprador puede intentarlo de nuevo. |
+
+Sin `createPayment`, un formulario montado con `start()` no tiene reintento en el lugar: el rechazo es final y llega a `onStatus`. En la lista de métodos de pago y con secure fields, el SDK reintenta en el lugar y no llama a `onStatus` para el intento rechazado.
+
+En Web, `USER_CANCEL` también llega cuando llamas a `transaction.unmount()` mientras hay un formulario montado y la transacción aún no ha entregado un estado, a menos que haya un pago en curso. Desmonta después de que `onStatus` se haya disparado, o trata esa entrega como que el comprador abandonó el pago.
+
+## Códigos de error en Web {#web-error-codes}
+
+En Web, un `INTERNAL_ERROR` con `message.source` `'sdk'` puede traer estos valores en `message.code`:
+
+| `message.code` | Significado |
+| --- | --- |
+| `FORM_INVALID` | El formulario enviado no es válido. No es final, consulta [Entregas en Web que mantienen el formulario montado](#web-deliveries-that-keep-the-form-mounted). |
+| `COLLECT_FAILED` | Una billetera falló antes de producir un token. `message.reason` indica la causa. |
+| `WALLET_DATA_MISSING` | Un `start()` headless con `MERCADO_PAGO_SUPERTOKEN` omitió `wallet.thirdPartyToken`, `wallet.providerMethodId` o `wallet.providerMethodType`. No se crea ningún token. `message.reason` indica los campos que faltan. |
+| `UNSUPPORTED_STATUS` | El backend devolvió un estado que esta versión del SDK no conoce. `message.reason` es `unsupported status: <value>`. |
+| `ELEMENT_NOT_FOUND` | El elemento pasado a `paymentMethodList.mount()` no está en el documento, o el contenedor del formulario se eliminó mientras el formulario se cargaba. Un `elementSelector` de la configuración que no coincide con nada hace que `start()` se rechace con `elementSelector "<selector>" was not found in the document.` en su lugar. |
+| `UNEXPECTED_ERROR` | Una falla que el SDK no clasifica, incluido un chunk del SDK que no se pudo descargar. `message.reason` lleva el mensaje de error. |
+
+Con `message.source` `'backend'`, `message.code` es el código de error del backend, o el estado HTTP cuando el cuerpo de la respuesta no tiene uno. Ramifica según `message.code` para los casos que manejas y trata el resto como una falla genérica.
+
+## Hilos de ejecución {#threading}
+
+En iOS y Android, `onStatus` se invoca en el hilo principal. Puedes actualizar la interfaz directamente desde este handler. En React Native se ejecuta en el hilo de JavaScript.
+
+## Relacionado {#related}
+
+- [`Status`](/es/docs/yuno-sdk/reference/objects-you-receive#status). Valores e información de subestados.
+- [Transactions](/es/docs/basic-concepts/transactions). Cómo fluye un pago por Yuno.
+- [Payment status values](https://docs.y.uno/es/reference/payments/status-and-response-codes/payment). Referencia de estados y subestados.
+- [`showStatusScreen`](/es/docs/yuno-sdk/reference/objects-you-pass#showstatusscreen). Indicador para habilitar o deshabilitar la pantalla de resultado integrada del SDK.

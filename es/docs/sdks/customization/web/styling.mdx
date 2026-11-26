@@ -1,0 +1,196 @@
+---
+title: Estilos en Web
+sidebarTitle: Estilos
+description: Personaliza la apariencia y el comportamiento del Yuno Web SDK para que coincida con tu marca.
+hidden: false
+metadata:
+  robots: noindex
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+El Yuno Web SDK ofrece varias opciones de configuración para modificar su presentación visual y su flujo funcional. Puedes controlar todo, desde los modos de visualización (Modal o Element) hasta la inyección de CSS detallada para los formularios de tarjeta.
+
+<Tip>
+  Para ver la lista completa de todos los parámetros de inicialización y sus valores posibles, visita la [Referencia del Web SDK](/es/docs/sdks/resources/references/web).
+</Tip>
+
+## Modos de visualización {#display-modes}
+
+El parámetro `renderMode` determina cómo se presentan los formularios de pago a tus clientes. Puedes elegir entre un modal emergente o incrustar el SDK directamente en un elemento HTML de tu página.
+
+| Modo | Descripción |
+| :--- | :--- |
+| `modal` | Muestra el flujo de pago en una superposición centrada en la pantalla. **Modo predeterminado.** |
+| `element` | Renderiza el SDK dentro de un contenedor específico de tu app. Requiere `elementSelector`. |
+
+### Ejemplo: incrustar como un elemento {#example-embedding-as-an-element}
+
+Si eliges `element`, debes proporcionar un selector para el contenedor. Allí se montarán el formulario del APM y el formulario de acción (por ejemplo, el código QR de PIX).
+
+```javascript
+yuno.startCheckout({
+  renderMode: {
+    type: 'element',
+    elementSelector: {
+      apmForm: "#form-element",
+      actionForm: "#action-form-element"
+    } 
+  },
+})
+```
+
+---
+
+## Personalización del formulario de tarjeta {#card-form-customization}
+
+El objeto de configuración `card` te permite modificar la apariencia de los campos de datos sensibles de la tarjeta (número de tarjeta, vencimiento, CVV). Estos campos se renderizan dentro de un iframe seguro para cumplir con PCI.
+
+### Inyección de CSS {#css-injection}
+
+Usa la propiedad `styles` para inyectar CSS personalizado directamente en el iframe del formulario de tarjeta. Esto te permite adaptar el SDK a la estética de tu sitio.
+
+```javascript
+yuno.startCheckout({
+  card: {
+    // Inject a raw CSS string to style inputs and buttons inside the iframe
+    styles: `
+      .Yuno-input {
+        border-radius: 8px;
+        border: 1px solid #E0E0E0;
+        padding: 12px;
+      }
+      .Yuno-label {
+        font-family: 'Inter', sans-serif;
+        color: #333333;
+      }
+    `,
+    cardSaveEnable: true, // Shows the "Save card for future payments" checkbox
+  },
+})
+```
+
+### Fuentes personalizadas {#custom-fonts}
+
+Las fuentes de tu página no están disponibles dentro del iframe de la tarjeta. Usa la propiedad `fonts` para cargar archivos de fuentes dentro de él y luego haz referencia a la familia por nombre desde `styles`. `fonts` solo carga los archivos; `styles` los aplica.
+
+```javascript
+yuno.startCheckout({
+  card: {
+    fonts: [
+      {
+        familyName: 'Inter',
+        files: [
+          { weight: 400, url: 'https://cdn.example.com/fonts/inter-400.woff2' },
+          { weight: 600, url: 'https://cdn.example.com/fonts/inter-600.woff2' },
+        ],
+      },
+    ],
+    styles: `
+      .Yuno-input, .Yuno-label {
+        font-family: 'Inter', sans-serif;
+      }
+    `,
+  },
+})
+```
+
+| Campo | Tipo | Descripción |
+| :--- | :--- | :--- |
+| `familyName` | string | Nombre de la familia a la que haces referencia desde `font-family` en `styles`. |
+| `files` | array | Una entrada por cada grosor. |
+| `files[].weight` | number | Grosor de la fuente del archivo, por ejemplo `400` o `600`. |
+| `files[].url` | string | URL del archivo de la fuente, por ejemplo un `.woff2`. |
+
+<Note>
+  El iframe carga los archivos desde un origen distinto al de tu página, por lo que el host de la fuente debe permitir solicitudes de origen cruzado (enviar un encabezado `Access-Control-Allow-Origin`). Si un archivo no se carga, el formulario recurre a la siguiente fuente de tu lista `font-family`. Para [Secure Fields](/es/docs/sdks/customization/secure-fields/payment-secure-fields), pasa `options.externalFonts` a cada campo.
+</Note>
+
+### Etiquetas y textos personalizados {#custom-labels-and-texts}
+
+Puedes sobrescribir los placeholders y las etiquetas de los botones predeterminados para que se ajusten mejor al tono de tu app o a tus requisitos de idioma.
+
+```javascript
+yuno.startCheckout({
+  card: {
+    texts: {
+      cardPlaceholder: "0000 0000 0000 0000",
+      cvvPlaceholder: "CVC",
+      expirationDatePlaceholder: "MM/YY",
+      submitButton: "Authorize Payment"
+    }
+  },
+})
+```
+
+---
+
+## Controles generales de la UI {#general-ui-controls}
+
+Modifica comportamientos generales del SDK, como los loaders, los formularios de emisor y la visibilidad de los botones.
+
+### Control del loader del SDK {#sdk-loader-control}
+
+De forma predeterminada, Yuno muestra un spinner de carga durante las transiciones. Puedes ocultarlo si prefieres usar el estado de carga de tu propia app.
+
+```javascript
+yuno.startCheckout({
+  showLoading: true, // Set to false to hide the Yuno loading spinner
+})
+```
+
+### Visibilidad del botón de pago {#pay-button-visibility}
+
+En los casos en que quieras activar el pago exactamente desde la lógica de tu propia UI, puedes ocultar el botón "Pay" integrado del SDK.
+
+<Warning>
+  Si ocultas el botón de pago, **debes** llamar a `yuno.submitOneTimeTokenForm()` de forma programática para continuar con el pago.
+</Warning>
+
+```javascript
+yuno.startCheckout({
+  showPayButton: false, // Hides the main payment submission button
+})
+
+// Triggering the submission from your own code
+document.getElementById('my-custom-submit').addEventListener('click', () => {
+  yuno.submitOneTimeTokenForm();
+});
+```
+
+---
+
+## Gestión avanzada del flujo {#advanced-flow-management}
+
+### Rendimiento y reintentos {#performance-and-retries}
+
+Si una transacción falla, puedes actualizar la sesión sin desmontar el formulario, lo que asegura una experiencia más fluida para los reintentos.
+
+| Parámetro | Propósito |
+| :--- | :--- |
+| `automaticallyUnmount` | Defínelo en `false` para mantener montado el formulario de tarjeta después de crear un token, lo que facilita los reintentos. |
+| `updateCheckoutSession` | Método para inyectar una nueva sesión de checkout sin desmontar el SDK. Úsalo para cambiar de método de pago después de un fallo. Consulta [updateCheckoutSession](/es/docs/sdks/resources/references/web#updatecheckoutsession) para más detalles. |
+
+```javascript
+yuno.startCheckout({
+  automaticallyUnmount: false, // Prevents the form from closing after token creation
+});
+
+// On rejection, notify the SDK and update the session
+yuno.notifyError();
+yuno.updateCheckoutSession(newCheckoutSession);
+```
+
+### Consideraciones sobre WebView (Mercado Pago) {#webview-considerations-mercado-pago}
+
+Si estás integrando en un entorno **WebView** y usando Mercado Pago Checkout Pro, debes manejar los resultados de redirección que devuelve `continuePayment()`.
+
+```javascript
+const result = await yuno.continuePayment();
+
+if (result && result.action === 'REDIRECT_URL') {
+   // Redirect the customer manually using result.redirect.init_url
+   window.location.assign(result.redirect.init_url);
+}
+```

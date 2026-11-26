@@ -1,0 +1,349 @@
+---
+title: "Estructura del recurso de enrutamiento"
+description: "Cada enrutamiento es un único recurso atómico en la API pública: una llamada HTTP crea o reemplaza la configuración completa."
+---
+
+Un enrutamiento le indica a Yuno, para un `payment_method` en una cuenta, qué conexiones usar (proveedores de pago, análisis de fraude, pasos de 3DS y autenticación, o un paso de enrutamiento inteligente que elige el proveedor por cada pago), y te permite bifurcar por atributos del comprador (país, moneda, monto, marca de tarjeta, metadatos personalizados, horarios, límites de volumen, …), reaccionar a cada resultado (aprobación, rechazo, grupo de rechazo, Merchant Advice Code, pendiente, error) y terminar la ruta con una acción (cancelar, capturar, retener para revisión, revertir).
+
+### Estructura del recurso {#resource-shape}
+
+```json
+{
+  "id": "8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f",
+  "account_id": "acc-uuid",
+  "payment_method": "CARD",
+  "name": "Card routing",
+  "default_route": {
+    "steps": [
+      { "index": 1, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…" }
+    ]
+  },
+  "condition_sets": [
+    {
+      "sort_number": 1,
+      "name": "US & Canada — high value",
+      "description": "Route US/CA credit card transactions over $500",
+      "conditions": [
+        { "condition_type": "COUNTRY", "conditional": "ONE_OF",       "values": ["US", "CA"] },
+        { "condition_type": "AMOUNT",  "conditional": "GREATER_THAN", "values": ["500"], "currency": "USD" }
+      ],
+      "route": {
+        "steps": [
+          { "index": 1, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…",
+            "output": [
+              { "status": "APPROVED",      "next": 3 },
+              { "status": "DECLINE_GROUP", "group_id": 1044, "next": 2, "retry": true },
+              { "status": "DECLINED",      "next": 2 }
+            ] },
+          { "index": 2, "provider_id": "ADYEN",  "connection_id": "b2c4d5e6-…",
+            "output": [
+              { "status": "APPROVED", "next": 3 }
+            ] },
+          { "index": 3, "action": "CAPTURE", "action_delay": "PT5M" }
+        ]
+      }
+    },
+    {
+      "sort_number": 2,
+      "name": "Brazil — split between three providers",
+      "conditions": [
+        { "condition_type": "COUNTRY", "conditional": "EQUAL", "values": ["BR"] }
+      ],
+      "route": {
+        "start_split": [
+          { "index": 1, "percentage": 45 },
+          { "index": 2, "percentage": 45 },
+          { "index": 3, "percentage": 10 }
+        ],
+        "steps": [
+          { "index": 1, "provider_id": "ADYEN",  "connection_id": "b2c4d5e6-…",
+            "output": [{ "status": "DECLINED",
+                         "next_split": [{ "index": 2, "percentage": 70 }, { "index": 3, "percentage": 30 }] }] },
+          { "index": 2, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…" },
+          { "index": 3, "provider_id": "DLOCAL", "connection_id": "c3d5e6f7-…" }
+        ]
+      }
+    }
+  ],
+  "created_at": "2026-05-12T12:00:00Z",
+  "updated_at": "2026-05-12T12:00:00Z"
+}
+```
+
+**Campos de nivel superior**
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `id` | UUID | Asignado por el servidor. El mismo valor se referencia como `routing_id` en las rutas de URL. |
+| `account_id` | string | La cuenta a la que pertenece el enrutamiento. **Obligatorio** en los cuerpos de `POST` y `PATCH`; en `PATCH` debe ser la cuenta del propio enrutamiento. |
+| `payment_method` | enum | Por ejemplo, `CARD`, `PIX`, `WALLET`. Inmutable por enrutamiento: para enrutar un método distinto, crea un nuevo enrutamiento. |
+| `name` | string | Etiqueta de formato libre. |
+| `default_route` | object | La ruta que se usa cuando no coincide ningún `condition_sets[]`. **Obligatorio.** |
+| `condition_sets[]` | object[] | Opcional. Ordenados por `sort_number`: gana el primer conjunto que coincide. Cada uno tiene una `route`. |
+| `created_at`, `updated_at` | ISO-8601 timestamps | Gestionados por el servidor. |
+
+</div>
+
+**Objeto `route`**
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Obligatorio | Notas |
+|---|---|---|---|
+| `steps[]` | object[] | sí | Los intentos de proveedor y los pasos de acción, ver más abajo. |
+| `start_split[]` | object[] | no | Divide la entrada de la ruta entre varios pasos por porcentaje. Omítelo para iniciar cada pago en `index: 1`. Consulta [Divisiones por porcentaje](#percentage-splits). |
+
+</div>
+
+**`route.steps[]`**
+
+Cada paso es un **paso de proveedor** (`provider_id` + `connection_id`: un proveedor de pago, fraude, 3DS o autenticación, consulta [Tipos de paso de proveedor](#provider-step-kinds)), un **paso de enrutamiento inteligente** (`provider_id: "SMART_ROUTING"` + `smart_routing`, consulta [Pasos de enrutamiento inteligente](#smart-routing-steps)) o un **paso de acción** (`action`). Los valores de `index` son contiguos y empiezan en 1, y cuentan todos los tipos.
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Obligatorio | Notas |
+|---|---|---|---|
+| `index` | int | sí | Ordinal del paso dentro de la ruta. Los ciclos están prohibidos: `output[].next` debe apuntar a un índice mayor. |
+| `provider_id` | string | pasos de proveedor y de enrutamiento inteligente | Debe coincidir con el `provider_id` de la conexión referenciada; `SMART_ROUTING` en un paso de enrutamiento inteligente. Omítelo en un paso de acción. |
+| `connection_id` | UUID | pasos de proveedor | Debe estar `ACTIVE`, en la misma cuenta, y admitir el `payment_method` del enrutamiento. Omítelo en los pasos de acción y de enrutamiento inteligente. |
+| `provider_type` | enum | solo respuesta | El tipo en el que se resuelve el proveedor: `PAYMENT`, `FRAUD`, `THREE_D_SECURE`, `AUTHENTICATION`. Se ignora al escribir. |
+| `fraud` | object | no | Configuración de un paso de proveedor de fraude: `rules`, `blocklists`, `allowlists`, `reviewlists`, `preset` (códigos opacos tomados del dashboard) y `report_only`. Solo en proveedores `FRAUD`. Consulta [Tipos de paso de proveedor](#provider-step-kinds). |
+| `network_token_on` | boolean | no | Solo en pasos de proveedor de pago de un enrutamiento `CARD`. `true` paga con el network token de la tarjeta cuando hay uno disponible. La organización debe estar incorporada a los network tokens y el proveedor debe admitirlos, de lo contrario `400`. Consulta [Ajustes del paso de proveedor](#provider-step-settings). |
+| `three_d_secure_exemptions` | string[] | no | Solo en pasos de proveedor de 3DS. Las [exenciones de SCA](/es/docs/payment-features/sca-exemptions#allowed-values) que este paso puede aplicar. Consulta [Ajustes del paso de proveedor](#provider-step-settings). |
+| `timeout` | int | solo respuesta | Pasos de proveedor. El tiempo de espera en segundos del proveedor, tomado del catálogo de proveedores de Yuno. Se ignora al escribir. |
+| `network_token_enable` | boolean | solo respuesta | Pasos de proveedor de pago. Indica si `network_token_on` puede ser `true` en este paso: la organización está incorporada a los network tokens y el proveedor los admite. Se ignora al escribir. |
+| `smart_routing` | object | pasos de enrutamiento inteligente | `type`, `providers[]`, `no_retry_decline_types[]` y `no_retry_failure_causes[]`. Consulta [Pasos de enrutamiento inteligente](#smart-routing-steps). |
+| `action` | enum | pasos de acción | `CANCEL`, `CAPTURE`, `HOLD_FOR_REVIEW` o `REVERT`. Consulta [Pasos de acción](#action-steps). Omítelo en los pasos de proveedor. |
+| `action_delay` | string | no | Duración ISO-8601, solo con `action = CAPTURE`. Cuánto tiempo después de la aprobación captura Yuno. Consulta [Pasos de acción](#action-steps). |
+| `output[]` | object[] | no | Manejadores por resultado de un paso de proveedor. **Omítelo en pasos terminales sin encadenamiento ni personalización por rechazo**: la ruta ejecutará el paso y terminará con lo que haya devuelto el proveedor. No se permite en un paso de acción; las respuestas lo devuelven como un arreglo vacío allí. |
+
+</div>
+
+**Entradas de `output[]`**
+
+<div className="dense-table">
+
+| Campo | Tipo | Obligatorio | Notas |
+|---|---|---|---|
+| `status` | enum | sí | A qué resultado reacciona esta entrada. Consulta el enum más abajo. |
+| `decline_types[]` | string[] | ver [Grupos de resultados](#outcome-groups) | Subestados de rechazo a los que reacciona la entrada. En `DECLINE_GROUP` es obligatorio a menos que se envíe `group_id`. Las respuestas lo devuelven en las entradas `DECLINE_GROUP` y `MAC_CODE_GROUP`. |
+| `group_id` | int | ver [Grupos de resultados](#outcome-groups) | Id de un grupo de rechazo, de un grupo de Merchant Advice Code o de un grupo de resultados exitosos de la cuenta. Obligatorio en `MAC_CODE_GROUP` y `SUCCEEDED_GROUP`; opcional en `DECLINE_GROUP`. No se permite en otros estados. |
+| `group_name` | string | solo respuesta | Nombre del grupo detrás de `group_id`, tal como se muestra en el dashboard. Se ignora al escribir. |
+| `retry` | boolean | no | `true` ejecuta una vez más el mismo proveedor antes de que se aplique el destino de esta entrada. Solo en `DECLINED`, `INTERNAL_ERROR` y `DECLINE_GROUP`. Las respuestas siempre lo devuelven. Consulta [Reintento](#retry). |
+| `next` | int \| null | no | Índice del paso al que saltar, o `null` para terminar. Cuando `next_split` está definido, Yuno devuelve `next` como su primera entrada y lo acepta solo con ese valor. |
+| `next_split[]` | object[] | no | Divide el salto entre varios pasos por porcentaje en lugar de un único `next`. Consulta [Divisiones por porcentaje](#percentage-splits). |
+
+</div>
+
+**Enum de `status`**
+
+<div className="code-nowrap-table dense-table">
+
+| Valor | Se activa cuando | Campo complementario |
+|---|---|---|
+| `APPROVED` | El proveedor devolvió éxito. Implícito por defecto; indícalo explícitamente solo para enrutamiento posterior a la aprobación, como un [paso `CAPTURE` o `HOLD_FOR_REVIEW`](#action-steps). | — |
+| `DECLINED` | Cualquier rechazo (comodín). Colócalo al final del arreglo. | — |
+| `DECLINE_GROUP` | Rechazo cuyo subestado normalizado, o cuyo [Merchant Advice Code](/es/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac) normalizado, está en el grupo. | `group_id` y/o `decline_types[]` |
+| `MAC_CODE_GROUP` | Rechazo cuyo [Merchant Advice Code](/es/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac) normalizado está en el grupo. El subestado no se compara. | `group_id` |
+| `SUCCEEDED_GROUP` | Resultado exitoso cuyo subestado está en el grupo; hoy es `PENDING_IN_REVIEW`, una autorización que el proveedor retiene para revisión manual. | `group_id` |
+| `PENDING` | Un proveedor de fraude, 3DS o autenticación dejó el pago pendiente (una revisión por resolver, un desafío por completar). Solo en esos pasos. Consulta [Tipos de paso de proveedor](#provider-step-kinds). | — |
+| `INTERNAL_ERROR` | El proveedor devolvió un error (5xx, falla de conexión, tiempo de espera agotado) antes de llegar al emisor. | — |
+
+</div>
+
+<Warning>
+`TIMEOUT` y `ERROR_RATE` aparecían en versiones anteriores de esta página. No son miembros del enum `status`: enviar cualquiera de los dos rechaza todo el enrutamiento con `400`, y `messages` lista los valores permitidos. Un tiempo de espera agotado del proveedor se maneja con `INTERNAL_ERROR`.
+</Warning>
+
+### Tipos de paso de proveedor {#provider-step-kinds}
+
+El tipo de un paso de proveedor se deriva de su `provider_id` y se devuelve como `provider_type`. Decide qué resultados puede tener el paso y qué puede seguirle, igual que lo hace el dashboard.
+
+<div className="dense-table">
+
+| `provider_type` | Proveedores | Resultados | Notas |
+|---|---|---|---|
+| `PAYMENT` | Adquirentes y PSPs (`STRIPE`, `ADYEN`, `DLOCAL`, …) | `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `MAC_CODE_GROUP`, `SUCCEEDED_GROUP`, `INTERNAL_ERROR` | El intento de pago. Las aprobaciones pueden continuar hacia un paso `CAPTURE` / `HOLD_FOR_REVIEW` o hacia un paso de fraude que se ejecuta después del pago. |
+| `FRAUD` | Análisis de fraude (`CYBERSOURCE`, `SIGNIFYD`, `FORTER`, `CLEAR_SALE`, `RISKIFIED`, `YUNO_FRAUD_SCREENING`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | **Antes del pago** (la ruta entra por él, o sigue a otro paso de fraude, 3DS o autenticación): `PENDING` puede continuar hacia otro paso. **Después del pago** (se alcanza desde un output de un paso de pago o de enrutamiento inteligente): `PENDING` es terminal y el paso puede continuar hacia una acción `REVERT`. |
+| `THREE_D_SECURE` | Servidores 3DS (`NETCETERA_3DS`, `CHECKOUT_3DS`, `CYBERSOURCE_3DS`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | `PENDING` es el desafío a la espera de su resultado y puede continuar hacia otro paso. |
+| `AUTHENTICATION` | `NETWORK_TOKEN_AUTHENTICATION` | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | Las mismas reglas que 3DS. |
+
+</div>
+
+`PENDING` en un paso `PAYMENT` o de enrutamiento inteligente se rechaza con `400 INVALID_ROUTE_CONFIGURATION` (`output PENDING is only supported on fraud, 3DS and authentication provider steps`), y también se rechaza un `PENDING` que continúa hacia otro paso en un paso de fraude que se ejecuta después del pago.
+
+**Configuración de fraude.** Un paso `FRAUD` lleva la misma configuración que edita el dashboard, en el objeto `fraud`:
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `rules`, `blocklists`, `allowlists`, `reviewlists`, `preset` | string | Los códigos de las reglas, listas y preajuste que aplica el paso, exactamente como los almacena el dashboard (códigos separados por comas cuando hay varios). Yuno los conserva tal como se envían y nunca los valida contra el proveedor de fraude; cópialos desde la configuración del paso en el dashboard hasta que exista un endpoint de listado. |
+| `report_only` | boolean | El paso puntúa el pago sin actuar sobre el resultado. Solo en un paso de fraude que no es la entrada de la ruta y al que se llega únicamente desde outputs `DECLINED`, `DECLINE_GROUP` o `MAC_CODE_GROUP` de un paso de pago; cualquier otro caso es `400 INVALID_ROUTE_CONFIGURATION`. |
+
+</div>
+
+Las respuestas devuelven `fraud` en cada paso `FRAUD` (los campos sin valor se omiten, `report_only` siempre se incluye). En [Actualizar un enrutamiento](/es/reference/organizations/routing/update-routing), un paso de fraude enviado **sin** `fraud` conserva su configuración almacenada; un paso enviado **con** `fraud` reemplaza los seis campos. Se rechaza `fraud` en un paso que no es un proveedor de fraude.
+
+**Ajustes del paso de proveedor.** Otros dos ajustes del paso de proveedor del dashboard están disponibles en la API, cada uno en el tipo de proveedor al que aplica:
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | En | Notas |
+|---|---|---|
+| `network_token_on` | Pasos `PAYMENT` de un enrutamiento `CARD` | `true` paga con el network token de la tarjeta cuando hay uno disponible, en lugar del número de tarjeta. La organización debe estar incorporada a los network tokens y el proveedor debe admitirlos, que es lo que informa `network_token_enable` en la respuesta; de lo contrario la solicitud se rechaza con `400 NETWORK_TOKEN_NOT_ONBOARDED` o `400 NETWORK_TOKEN_NOT_SUPPORTED`. Enviado en cualquier otro tipo de paso, o `true` en un enrutamiento que no es `CARD`, es `400 INVALID_ROUTE_CONFIGURATION`. Estas comprobaciones se ejecutan solo sobre un valor que difiere del almacenado en el paso, de modo que un enrutamiento actualizado a partir de su propia respuesta `GET` nunca se rechaza por un `network_token_on` que la solicitud no cambió. |
+| `three_d_secure_exemptions` | Pasos `THREE_D_SECURE` | Las exenciones de SCA que el paso está dispuesto a aplicar, como un arreglo de los valores de [Exenciones de SCA](/es/docs/payment-features/sca-exemptions#allowed-values): `LOW_VALUE`, `TRANSACTION_RISK_ANALYSIS`, `SECURE_CORPORATE`, `TRUSTED_BENEFICIARY`, `RECURRING_PAYMENT`, `STRONG_CUSTOMER_AUTHENTICATION`, `OUT_OF_SCOPE`. Al momento del pago, Yuno aplica solo las exenciones de esta lista que el análisis de fraude o el flujo de pago confirman, y omite el paso 3DS cuando las confirmadas incluyen `OUT_OF_SCOPE` o `RECURRING_PAYMENT`. Un valor desconocido, o el campo en un paso que no es un proveedor 3DS, es `400 INVALID_ROUTE_CONFIGURATION`. |
+
+</div>
+
+Las respuestas devuelven `timeout` en cada paso de proveedor, `network_token_enable` y `network_token_on` en cada paso `PAYMENT`, y `three_d_secure_exemptions` en cada paso `THREE_D_SECURE` (un arreglo vacío cuando no hay ninguna). `timeout` y `network_token_enable` son informativos: Yuno los resuelve a partir del catálogo de proveedores y de la incorporación de la organización a los network tokens cuando se guarda el enrutamiento, y los ignora al escribir.
+
+Omitir un ajuste no es lo mismo que borrarlo. En [Actualizar un enrutamiento](/es/reference/organizations/routing/update-routing), un paso de proveedor enviado **sin** `network_token_on` o `three_d_secure_exemptions` conserva el valor almacenado del paso con el mismo `provider_id` y `connection_id`; para borrarlos envía `network_token_on: false` o `three_d_secure_exemptions: []`. Un paso nuevo, o uno cuya conexión cambió, empieza con `false` y `[]`.
+
+**Reglas de evaluación**
+
+1. La ruta entra en `index: 1`, a menos que `start_split` esté definido: entonces Yuno sortea un paso de entrada por cada pago según los porcentajes. Si el paso de entrada es un paso `CANCEL`, el pago se rechaza y la ruta termina.
+2. Se ejecuta la llamada al proveedor.
+3. Yuno recorre `output[]` de arriba abajo; gana la primera entrada cuyo `status` (más el predicado de grupo en `DECLINE_GROUP`, `MAC_CODE_GROUP` y `SUCCEEDED_GROUP`) coincide con el resultado. Una entrada con `retry: true` primero ejecuta una vez más el mismo proveedor; decide el resultado de ese segundo intento.
+4. Si la entrada coincidente tiene `next`, salta a ese paso. Si tiene `next_split`, Yuno sortea uno de sus pasos por cada pago según los porcentajes y salta allí. Si ninguno está definido o ninguna entrada coincide, la ruta termina con el resultado real del proveedor.
+5. Un salto a un paso de acción ejecuta la acción (`CANCEL`, `CAPTURE`, `HOLD_FOR_REVIEW`) y termina la ruta.
+
+### Grupos de resultados {#outcome-groups}
+
+Un grupo es un conjunto con nombre de resultados que mantienes en la cuenta, de modo que varias rutas puedan reaccionar a la misma lista sin repetirla. El dashboard los muestra en los ajustes de enrutamiento; la API los lee con [Listar grupos de rechazo](/es/reference/organizations/routing/list-decline-groups) y [Listar grupos de resultados exitosos](/es/reference/organizations/routing/list-succeeded-groups) y los referencia por `group_id`.
+
+<div className="code-nowrap-table dense-table">
+
+| `status` | Tipo de grupo | Miembros | Cómo referenciarlo |
+|---|---|---|---|
+| `DECLINE_GROUP` | Grupo de rechazo | Subestados de rechazo, como `DECLINED_BY_BANK` o `INSUFFICIENT_FUNDS`. Lista completa en [Estado rechazado](/es/reference/payments/status-and-response-codes/transaction#declined-status). | `group_id` de un grupo existente, o solo `decline_types[]` para que Yuno cree uno. |
+| `MAC_CODE_GROUP` | Grupo de Merchant Advice Code | Valores MAC normalizados, como `NO_RETRY_POLICY` o `RETRY_AFTER_24_H`. Lista completa en [Merchant Advice Codes](/es/reference/payments/status-and-response-codes/transaction#merchant-advice-codes-mac). | `group_id` de un grupo existente. |
+| `SUCCEEDED_GROUP` | Grupo de resultados exitosos | Subestados de éxito. Hoy el único miembro es `PENDING_IN_REVIEW`. | `group_id` de un grupo existente. |
+
+</div>
+
+Reglas:
+
+- `group_id` debe ser un grupo de la cuenta del enrutamiento. `MAC_CODE_GROUP` acepta un grupo de Merchant Advice Code; `DECLINE_GROUP` acepta un grupo de rechazo o un grupo de Merchant Advice Code. Un id desconocido, un id de otra cuenta, o un grupo de rechazo enviado como `MAC_CODE_GROUP` se rechaza con `400 INVALID_ROUTE_CONFIGURATION`; `messages` nombra el `group_id` y el tipo que realmente es.
+- Un grupo de Merchant Advice Code se comporta de forma distinta bajo cada estado, y el estado se conserva tal como lo envías. Como `MAC_CODE_GROUP`, la entrada coincide con un rechazo solo cuando su Merchant Advice Code está en el grupo. Como `DECLINE_GROUP`, también coincide con un rechazo cuyo subestado es uno de los valores del grupo, incluidos los rechazos que no llevan Merchant Advice Code. El dashboard guarda los grupos de Merchant Advice Code como `DECLINE_GROUP`, y un enrutamiento recuperado los devuelve así, por lo que envíalos de vuelta sin cambios para conservar cómo se enrutan. Cambiar el estado cambia qué rechazos atrapa la entrada.
+- `DECLINE_GROUP` con `decline_types[]` y sin `group_id` sigue funcionando como antes: Yuno crea un grupo de rechazo llamado `auto_…` con esos subestados en cada guardado. Prefiere `group_id` cuando el grupo ya existe, para que la cuenta no acumule grupos automáticos.
+- `DECLINE_GROUP` con `group_id` y `decline_types[]` a la vez se acepta solo cuando la lista es igual a los miembros del grupo como conjunto (el orden no importa). Esto es lo que te permite enviar de vuelta un enrutamiento recuperado sin cambios, ya que las respuestas devuelven ambos. Una lista distinta se rechaza: edita el grupo en el dashboard en su lugar.
+- `MAC_CODE_GROUP` y `SUCCEEDED_GROUP` requieren `group_id`; `SUCCEEDED_GROUP` no acepta `decline_types[]`. Crea esos grupos primero en el dashboard.
+- El mismo `group_id` no puede aparecer dos veces en el `output[]` de un paso.
+- Las respuestas devuelven `group_id` y `group_name` en cada entrada de grupo, y `decline_types[]` en las entradas `DECLINE_GROUP` y `MAC_CODE_GROUP`, con el mismo vocabulario de subestados que usan los endpoints de listado.
+
+### Reintento {#retry}
+
+`retry: true` en una entrada `DECLINED`, `INTERNAL_ERROR` o `DECLINE_GROUP` le indica a Yuno que intente **el mismo proveedor una vez más** cuando ocurre ese resultado, antes de seguir el `next` / `next_split` de la entrada. El segundo intento usa los demás outputs del paso como de costumbre: si se aprueba, se aplica la ruta `APPROVED`; si vuelve a fallar, se aplica el destino original de la entrada. Hay como máximo un reintento por entrada y por pago.
+
+- `retry: true` en `APPROVED`, `MAC_CODE_GROUP` o `SUCCEEDED_GROUP` se rechaza con `400 INVALID_ROUTE_CONFIGURATION`; `retry: false` se acepta en cualquier lugar, lo que te permite enviar de vuelta un enrutamiento recuperado sin cambios.
+- `retry: true` en una entrada `DECLINE_GROUP` que referencia un grupo de Merchant Advice Code se acepta solo cuando el enrutamiento almacenado ya reintenta ese grupo en el mismo paso, de modo que un enrutamiento recuperado hace el viaje de ida y vuelta, pero una actualización no puede empezar a reintentar por Merchant Advice Codes. De lo contrario se rechaza con `400 INVALID_ROUTE_CONFIGURATION`. Esto también aplica cuando el reintento se conservaría de la entrada almacenada porque la solicitud omite `retry`: envía `retry: false`.
+- Las respuestas siempre devuelven `retry` en cada entrada (`false` cuando no está definido), para que puedas ver qué ramas reintentan.
+- En [Actualizar un enrutamiento](/es/reference/organizations/routing/update-routing), una entrada enviada **sin** `retry` conserva el valor ya almacenado para esa posición; envía `retry: false` explícitamente para desactivar un reintento.
+
+### Pasos de acción {#action-steps}
+
+Un paso de acción termina la ruta con una acción en lugar de llamar a un proveedor. Tiene `index` y `action`, no tiene `provider_id`, `connection_id` ni `output`, y cuenta en la secuencia contigua de `index`.
+
+```json
+{ "index": 3, "action": "CAPTURE", "action_delay": "PT5M" }
+```
+
+<div className="code-nowrap-table dense-table">
+
+| `action` | Qué ocurre al momento del pago | Dónde puede ubicarse |
+|---|---|---|
+| `CANCEL` | El pago se rechaza sin llamar a ningún proveedor (adicional). El pago termina en `REJECTED` con una transacción `YUNO_ROUTING` y el código de respuesta `YUNO_ROUTING_REJECTED`. | Como único paso de una ruta (rechazar todos los pagos que llegan a ella), o como destino de una entrada `DECLINED`, `INTERNAL_ERROR`, `DECLINE_GROUP`, `MAC_CODE_GROUP` o `PENDING`. Nunca después de un output `APPROVED` o `SUCCEEDED_GROUP` de un paso de pago: el proveedor ya aprobó, por lo que rechazar el pago en Yuno dejaría a ambos desincronizados. |
+| `CAPTURE` | Captura la autorización después de `action_delay`. Aplica a pagos creados como autorizaciones (`capture: false`); un pago que ya fue capturado se deja como está. | Solo como destino de entradas `APPROVED` o `SUCCEEDED_GROUP` de un paso de pago o de enrutamiento inteligente. No como entrada de la ruta, ni desde ningún otro estado o tipo de paso. |
+| `HOLD_FOR_REVIEW` | Deja la autorización pendiente de revisión manual en el dashboard; Yuno no la captura automáticamente. Útil para una autorización que el proveedor retiene para revisión (`PENDING_IN_REVIEW`, un `SUCCEEDED_GROUP`). | La misma ubicación que `CAPTURE`. |
+| `REVERT` | Revierte la autorización después de un análisis de fraude que se ejecutó después del pago (el paso de fraude posterior a la autorización del dashboard). | Solo como destino de las entradas `APPROVED`, `DECLINED` o `INTERNAL_ERROR` de un paso de fraude que se ejecuta después del pago. |
+
+</div>
+
+Reglas de `action_delay`:
+
+- Solo con `action = CAPTURE`; en cualquier otro paso se rechaza.
+- Duración ISO-8601 (`PT5M`, `PT3H`, `P2D`, `P1W`), de al menos **1 minuto** (`PT1M`) y como máximo **7 días** (`P7D`).
+- Omítelo para capturar en cuanto se procesa la aprobación (aproximadamente un minuto).
+
+Un paso que incumple estas reglas de ubicación se rechaza con `400 INVALID_ROUTE_CONFIGURATION`; `messages` nombra el paso y la regla (`step index=N with action=CAPTURE must be reached only from an APPROVED or SUCCEEDED_GROUP output of a payment step`, `... action=REVERT must be reached only from an output of a fraud step that runs after the payment`, `... action=CANCEL must not be reached from an APPROVED or SUCCEEDED_GROUP output of a payment step`). También se rechaza un paso `CAPTURE`, `HOLD_FOR_REVIEW` o `REVERT` colocado como entrada de la ruta o dentro de un `start_split`.
+
+En [Actualizar un enrutamiento](/es/reference/organizations/routing/update-routing), un paso `CAPTURE` o `HOLD_FOR_REVIEW` almacenado se conserva cuando la solicitud lo omite y el output del que colgaba se envía sin `next`, y un paso `CAPTURE` enviado sin `action_delay` conserva el retraso almacenado, la misma regla de "gana lo almacenado" que `retry`. Para cambiar la captura, envía el paso con su nuevo `action_delay`; para eliminarla, apunta ese output a otro paso. Omitir el paso en la solicitud no lo elimina.
+
+### Pasos de enrutamiento inteligente {#smart-routing-steps}
+
+Un paso de enrutamiento inteligente permite que Yuno elija el proveedor por cada pago entre un conjunto de conexiones, por costo o por latencia, en lugar de fijar uno. Es la forma en la API de la caja Smart Routing del dashboard. A diferencia de `CAPTURE` y `HOLD_FOR_REVIEW`, el paso pertenece a la solicitud: una actualización que no lo incluye lo elimina, así que recupera primero el enrutamiento y envía el paso de vuelta cuando cambies otra cosa. Consulta [Actualizar un enrutamiento](/es/reference/organizations/routing/update-routing).
+
+```json
+{
+  "index": 2,
+  "provider_id": "SMART_ROUTING",
+  "smart_routing": {
+    "type": "LATENCY",
+    "providers": [
+      { "provider_id": "ADYEN",  "connection_id": "b2c4d5e6-…", "network_token_on": true },
+      { "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…" }
+    ],
+    "no_retry_decline_types": ["DO_NOT_HONOR"]
+  },
+  "output": [{ "status": "APPROVED", "next": 3 }]
+}
+```
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Obligatorio | Notas |
+|---|---|---|---|
+| `type` | enum | sí | `COSTS` (primero la conexión más barata) o `LATENCY` (primero la más rápida). `COSTS` requiere que todas las conexiones listadas estén activas con sus costos configurados, incluido el costo de "All other payments". |
+| `providers[]` | object[] | sí | De dos a cuatro proveedores de pago, cada uno `{ provider_id, connection_id, network_token_on }`, con conexiones distintas. No se permiten aquí proveedores de fraude, 3DS ni autenticación. `network_token_on` requiere que la organización esté incorporada a los network tokens y que el proveedor los admita. |
+| `no_retry_decline_types[]` | string[] | no | Subestados de rechazo después de los cuales Yuno no prueba el siguiente proveedor del conjunto. Un grupo de rechazo elegido en el dashboard se devuelve expandido en sus subestados, y una actualización almacena la lista tal como se envía. |
+| `no_retry_failure_causes[]` | string[] | no | Causas de falla (por ejemplo `PROVIDER_TIMEOUT`) después de las cuales Yuno no prueba el siguiente proveedor del conjunto. |
+
+</div>
+
+Reglas, las mismas que aplica el dashboard:
+
+- Solo en enrutamientos con `payment_method = "CARD"`, y como máximo un paso de enrutamiento inteligente por ruta.
+- El paso no tiene `connection_id` ni `action`, y su `output[]` es como máximo una entrada `APPROVED`. Esa entrada puede continuar hacia un paso de fraude que se ejecuta después del pago (que no debe enrutar más) o hacia un paso `CAPTURE` / `HOLD_FOR_REVIEW`; los rechazos y errores se manejan dentro del paso.
+- Debe ser alcanzable desde el paso 1. Solo los pasos de fraude, 3DS o autenticación pueden conducir a él, cada uno a través de sus outputs `APPROVED` o `DECLINED` y dirigiendo todos sus `next` a ese mismo paso.
+- Una infracción de las reglas es `400 INVALID_ROUTE_CONFIGURATION`; una configuración de costos faltante o un network token no admitido es `400` con `NETWORK_TOKEN_NOT_ONBOARDED` / `NETWORK_TOKEN_NOT_SUPPORTED`.
+
+Las respuestas devuelven el paso con la misma estructura. En una actualización, la solicitud reemplaza el paso; no se conserva si se omite.
+
+### Divisiones por porcentaje {#percentage-splits}
+
+Tanto `start_split` como `output[].next_split` son listas de entradas `{ "index", "percentage" }`:
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `index` | int | El `steps[].index` al que enviar el tráfico. Debe existir en la misma ruta y, para `next_split`, ser mayor que el paso que posee el output (las rutas solo avanzan). |
+| `percentage` | int | Entero entre `0` y `100`. Las entradas de una división deben sumar exactamente `100`. |
+
+</div>
+
+Cómo se resuelve una división: la división se evalúa **una vez por pago**, antes de que se ejecute el paso. Para un `next_split` de `[{ "index": 2, "percentage": 70 }, { "index": 3, "percentage": 30 }]`, aproximadamente el 70% de los pagos que llegan a ese output continúan en el paso 2 y el 30% en el paso 3; cada pago individual sigue exactamente una rama. Con muchos pagos, el tráfico converge a los porcentajes configurados.
+
+Reglas:
+
+- `start_split` necesita al menos una entrada. Una sola entrada con `percentage: 100` es la forma explícita de enviar todo el tráfico a un paso; omitir `start_split` significa 100% en `index: 1`.
+- `next_split` necesita al menos dos entradas. Para un único destino usa `next`. `next` es opcional junto a `next_split`; si envías ambos, `next` debe ser la primera entrada de `next_split`. Las respuestas siempre incluyen `next` = primera entrada junto con `next_split`, de modo que los clientes que solo leen `next` conservan una alternativa.
+- Todo paso debe ser alcanzable desde la entrada, a través de `start_split`, `next` o `next_split`.
+- Se permite un `percentage` de `0`, para que puedas mantener un paso en la configuración mientras no recibe tráfico.
+- Los porcentajes son enteros. Los decimales se rechazan.
+- Una división que incumple una de estas reglas se rechaza con `400 INVALID_ROUTE_CONFIGURATION`; `messages` nombra la división y la regla. Una estructura incorrecta (un porcentaje decimal, un `percentage` faltante, un `next_split` de una sola entrada) se rechaza antes con `400 INVALID_PARAMETERS` / `BAD_REQUEST`.
+
+<Note>
+Actualizar un enrutamiento reemplaza la configuración completa, divisiones incluidas. Un conjunto de condiciones enviado sin `start_split` vuelve a una única entrada en el paso 1, y un output enviado sin `next_split` conserva solo el `next` que declara, por lo que omitir una división es la forma de eliminarla. Recuperar un enrutamiento siempre devuelve los `start_split` y `next_split` actuales, de modo que un flujo de lectura, modificación y escritura los conserva a menos que los elimines a propósito.
+</Note>
+
+### Lo que la API no muestra {#what-the-api-does-not-show}
+
+Algunas cosas que el dashboard puede configurar no tienen representación aquí: las acciones `REFUND`, `DECLINE` y `END` (que tampoco son acciones de paso en el dashboard), los monitores, y un paso de acción colocado donde las [reglas de ubicación](#action-steps) no lo permiten.
+
+- [Recuperar un enrutamiento](/es/reference/organizations/routing/retrieve-routing) deja fuera de la respuesta esos pasos y ramas.
+- [Actualizar un enrutamiento](/es/reference/organizations/routing/update-routing) **no** los elimina: lo que la respuesta no puede mostrar se conserva exactamente como está almacenado, injertado en el paso del que colgaba, de modo que un recorrido de recuperar y actualizar mantiene el enrutamiento como estaba. Una condición de moneda creada en el dashboard sin monto se lee de vuelta como `CURRENCY` (o como el `AMOUNT` solo de moneda cuando es `EQUAL` en una moneda) y se puede actualizar a través de la API; consulta [Condiciones de enrutamiento](/es/reference/organizations/routing/routing-conditions#special-cases). Una excepción: una condición del dashboard que combina un operador de moneda distinto de `EQUAL` con un rango de montos no tiene forma en la API; se lee de vuelta como filas `CURRENCY_AND_AMOUNT` sin procesar y una actualización que las envía de vuelta se rechaza con `400 INVALID_ROUTE_CONFIGURATION`. Edita esa condición en el dashboard. Los [ajustes del paso de proveedor](#provider-step-settings) que la solicitud omite siguen al paso de proveedor con el mismo `provider_id` y `connection_id`; si reemplazas esa conexión, se van con ella. Un diseño almacenado que la fusión no puede volver a adjuntar de forma segura (la ruta entra por un paso oculto, un output divide el tráfico entre un paso oculto y uno visible, o un paso oculto continúa hacia un proveedor visible) se rechaza con `400 INVALID_ROUTE_CONFIGURATION` y un mensaje que termina con "Edit this routing in the dashboard".
+- Para cambiar cualquiera de esas partes, usa el dashboard.

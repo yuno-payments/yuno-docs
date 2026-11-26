@@ -1,0 +1,1046 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Routing API - Create",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "x-default": "<Your PUBLIC-API-KEY>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "x-default": "<Your PRIVATE-SECRET-KEY>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/routing": {
+      "post": {
+        "summary": "Crear un enrutamiento",
+        "operationId": "create-routing",
+        "description": "Crea un enrutamiento para un par (account_id, payment_method).",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "payment_method",
+                  "name",
+                  "default_route"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "7825fc5e-e50a-4248-9ae8-5d3786afb0be"
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "example": "CARD"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Card routing"
+                  },
+                  "default_route": {
+                    "type": "object",
+                    "required": [
+                      "steps"
+                    ],
+                    "properties": {
+                      "start_split": {
+                        "type": "array",
+                        "description": "Divide la entrada de la ruta entre varios pasos según porcentajes. Omítelo para iniciar todos los pagos en el paso 1. Las entradas deben sumar 100; se devuelve solo cuando la ruta tiene una entrada dividida.",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "index",
+                            "percentage"
+                          ],
+                          "properties": {
+                            "index": {
+                              "type": "integer",
+                              "example": 1
+                            },
+                            "percentage": {
+                              "type": "integer",
+                              "example": 45
+                            }
+                          }
+                        }
+                      },
+                      "steps": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "index"
+                          ],
+                          "properties": {
+                            "index": {
+                              "type": "integer",
+                              "example": 1
+                            },
+                            "provider_id": {
+                              "type": "string",
+                              "example": "STRIPE",
+                              "description": "Obligatorio en los pasos de proveedor (SMART_ROUTING en un paso de enrutamiento inteligente); ausente en los pasos de acción. Debe coincidir con el proveedor de la conexión."
+                            },
+                            "connection_id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "example": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+                              "description": "Obligatorio en los pasos de proveedor; ausente en los pasos de acción y de enrutamiento inteligente. Debe estar ACTIVE y admitir el payment_method."
+                            },
+                            "action": {
+                              "type": "string",
+                              "enum": [
+                                "CANCEL",
+                                "CAPTURE",
+                                "HOLD_FOR_REVIEW",
+                                "REVERT"
+                              ],
+                              "description": "Convierte el paso en un paso de acción que termina la ruta: CANCEL rechaza el pago, CAPTURE captura la autorización después de action_delay, HOLD_FOR_REVIEW lo deja pendiente de revisión manual, REVERT lo revierte después de una evaluación de fraude posterior al pago. CAPTURE y HOLD_FOR_REVIEW siguen a una salida APPROVED o SUCCEEDED_GROUP de un paso de pago o de enrutamiento inteligente, REVERT sigue a las salidas de un paso de fraude que se ejecuta después del pago, CANCEL nunca sigue a una aprobación. Un paso de acción no tiene provider_id, connection_id ni output."
+                            },
+                            "action_delay": {
+                              "type": "string",
+                              "example": "PT5M",
+                              "description": "Solo con action = CAPTURE. Duración ISO-8601 entre la aprobación y la captura, de al menos PT1M y como máximo P7D. Omítelo para capturar en cuanto se procese la aprobación."
+                            },
+                            "output": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "status"
+                                ],
+                                "properties": {
+                                  "status": {
+                                    "type": "string",
+                                    "example": "DECLINED",
+                                    "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (solo en pasos de fraude, 3DS y autenticación) o INTERNAL_ERROR."
+                                  },
+                                  "decline_types": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "description": "Subestados de rechazo. En DECLINE_GROUP, es obligatorio a menos que se envíe group_id; con group_id debe ser igual a los miembros del grupo. No se permite en SUCCEEDED_GROUP."
+                                  },
+                                  "group_id": {
+                                    "type": "integer",
+                                    "example": 1044,
+                                    "description": "Id de un grupo de rechazo, de Merchant Advice Code o de éxito de la cuenta (consulta Listar grupos de rechazo y Listar grupos de éxito). Obligatorio en MAC_CODE_GROUP y SUCCEEDED_GROUP, opcional en DECLINE_GROUP, no permitido en los demás casos. MAC_CODE_GROUP recibe un grupo de Merchant Advice Code; DECLINE_GROUP recibe un grupo de rechazo o un grupo de Merchant Advice Code."
+                                  },
+                                  "retry": {
+                                    "type": "boolean",
+                                    "example": false,
+                                    "description": "true intenta una vez más con el mismo proveedor cuando ocurre este resultado, antes de seguir con next. Solo en DECLINED, INTERNAL_ERROR y DECLINE_GROUP; en una entrada DECLINE_GROUP que referencia un grupo de Merchant Advice Code, solo cuando el enrutamiento guardado ya reintenta ese grupo en el mismo paso, por lo que siempre se rechaza al crear. Al actualizar, si se omite retry se conserva el valor guardado."
+                                  },
+                                  "next": {
+                                    "type": "integer",
+                                    "example": 2
+                                  },
+                                  "next_split": {
+                                    "type": "array",
+                                    "description": "Divide el respaldo (fallback) entre varios pasos según porcentajes: al menos 2 entradas cuyos porcentajes sumen 100. next es opcional junto a este campo y, si se envía, debe ser igual a la primera entrada; las respuestas devuelven next = primera entrada junto con next_split.",
+                                    "items": {
+                                      "type": "object",
+                                      "required": [
+                                        "index",
+                                        "percentage"
+                                      ],
+                                      "properties": {
+                                        "index": {
+                                          "type": "integer",
+                                          "example": 2
+                                        },
+                                        "percentage": {
+                                          "type": "integer",
+                                          "example": 70
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "description": "Manejadores por resultado de un paso de proveedor. No se permite en un paso de acción."
+                            },
+                            "network_token_on": {
+                              "type": "boolean",
+                              "description": "Solo en pasos de proveedor de pago de un enrutamiento CARD. true paga con el token de red de la tarjeta cuando hay uno disponible; requiere que la organización esté habilitada para tokens de red y un proveedor que los admita (network_token_enable en la respuesta); de lo contrario, 400 NETWORK_TOKEN_NOT_ONBOARDED o NETWORK_TOKEN_NOT_SUPPORTED. Si se omite al actualizar, se conserva el valor almacenado; false lo desactiva."
+                            },
+                            "three_d_secure_exemptions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "LOW_VALUE",
+                                  "TRANSACTION_RISK_ANALYSIS",
+                                  "SECURE_CORPORATE",
+                                  "TRUSTED_BENEFICIARY",
+                                  "RECURRING_PAYMENT",
+                                  "STRONG_CUSTOMER_AUTHENTICATION",
+                                  "OUT_OF_SCOPE"
+                                ]
+                              },
+                              "description": "Solo en pasos de proveedor 3DS. Las exenciones de SCA que este paso puede aplicar. Si se omite al actualizar, se conserva la lista almacenada; [] la borra."
+                            },
+                            "fraud": {
+                              "type": "object",
+                              "description": "Configuración de un paso de proveedor de fraude. Solo en proveedores FRAUD; si se omite al actualizar, se conserva la configuración almacenada.",
+                              "properties": {
+                                "rules": {
+                                  "type": "string",
+                                  "example": "rule-a,rule-b"
+                                },
+                                "blocklists": {
+                                  "type": "string"
+                                },
+                                "allowlists": {
+                                  "type": "string"
+                                },
+                                "reviewlists": {
+                                  "type": "string"
+                                },
+                                "preset": {
+                                  "type": "string"
+                                },
+                                "report_only": {
+                                  "type": "boolean",
+                                  "description": "Evalúa el puntaje sin actuar sobre el resultado. Solo en un paso de fraude al que se llega desde salidas rechazadas de un paso de pago."
+                                }
+                              }
+                            },
+                            "smart_routing": {
+                              "type": "object",
+                              "description": "Convierte el paso en un paso de enrutamiento inteligente (provider_id SMART_ROUTING, sin connection_id). Solo enrutamientos de tarjeta, uno por ruta.",
+                              "required": [
+                                "type",
+                                "providers"
+                              ],
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "COSTS",
+                                    "LATENCY"
+                                  ],
+                                  "example": "LATENCY"
+                                },
+                                "providers": {
+                                  "type": "array",
+                                  "minItems": 2,
+                                  "maxItems": 4,
+                                  "items": {
+                                    "type": "object",
+                                    "required": [
+                                      "provider_id",
+                                      "connection_id"
+                                    ],
+                                    "properties": {
+                                      "provider_id": {
+                                        "type": "string",
+                                        "example": "ADYEN"
+                                      },
+                                      "connection_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "network_token_on": {
+                                        "type": "boolean"
+                                      }
+                                    }
+                                  }
+                                },
+                                "no_retry_decline_types": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "description": "Subestados de rechazo después de los cuales no se prueba el siguiente proveedor del conjunto."
+                                },
+                                "no_retry_failure_causes": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "description": "Causas de falla (por ejemplo, PROVIDER_TIMEOUT) después de las cuales no se prueba el siguiente proveedor del conjunto."
+                                }
+                              }
+                            }
+                          },
+                          "description": "Un intento de proveedor (provider_id + connection_id) o un paso de acción (action). Los valores de index son contiguos y comienzan en 1."
+                        }
+                      }
+                    }
+                  },
+                  "condition_sets": {
+                    "type": "array",
+                    "description": "Opcional. Ordenado por sort_number; gana el primer conjunto que coincida.",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "sort_number",
+                        "name",
+                        "conditions",
+                        "route"
+                      ],
+                      "properties": {
+                        "sort_number": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "US & Canada — high value"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "conditions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "condition_type",
+                              "conditional",
+                              "values"
+                            ],
+                            "properties": {
+                              "condition_type": {
+                                "type": "string",
+                                "example": "COUNTRY",
+                                "description": "Consulta Condiciones de enrutamiento para ver el catálogo: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CURRENCY, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, ORDER_ITEMS_AMOUNT, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT, SUBSCRIPTION_RETRY, SUBSCRIPTION_RETRY_COUNT."
+                              },
+                              "conditional": {
+                                "type": "string",
+                                "example": "ONE_OF"
+                              },
+                              "values": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "example": [
+                                  "US",
+                                  "CA"
+                                ],
+                                "description": "En CURRENCY, códigos ISO 4217 en mayúsculas (no XXX, sin repetidos): exactamente 1 con EQUAL o NOT_EQUAL, 1 o más con ONE_OF o NOT_ONE_OF. Vacío solo en una condición AMOUNT con currency, que entonces coincide con cualquier monto en esa moneda. En ORDER_ITEMS_AMOUNT, el umbral numérico para la suma de los ítems: 1 valor, 2 con BETWEEN."
+                              },
+                              "key": {
+                                "type": "string",
+                                "description": "METADATA: la clave de metadata. ADDITIONAL_FIELD: el nombre del campo compatible. ORDER_ITEMS_AMOUNT: el campo del ítem de la orden contra el que se compara item_values, sku_code (por defecto), category o brand."
+                              },
+                              "item_values": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "example": [
+                                  "GC-50",
+                                  "GC-100",
+                                  "GC-200"
+                                ],
+                                "description": "Solo para ORDER_ITEMS_AMOUNT, y obligatorio en ella: lista no vacía de valores de ítems de la orden (exactos, sensibles a mayúsculas) cuya cantidad × unit_amount se suma. Se rechaza en cualquier otro condition_type."
+                              },
+                              "currency": {
+                                "type": "string",
+                                "example": "USD",
+                                "description": "ISO 4217. Obligatorio en AMOUNT, en ORDER_ITEMS_AMOUNT y en VOLUME_PAYMENTS_LIMIT con limit_by = VOLUME. No se envía en CURRENCY, cuyas monedas van en values."
+                              },
+                              "time_period_repeat_amount": {
+                                "type": "integer",
+                                "example": 1,
+                                "description": "TIME_PERIOD y VOLUME_PAYMENTS_LIMIT: cada cuántas unidades de tiempo de time_period_repeat_frequency (programación), o la duración de una ventana DAILY en días, de 1 a 90 (limit)."
+                              },
+                              "time_period_repeat_frequency": {
+                                "type": "string",
+                                "enum": [
+                                  "DAILY",
+                                  "WEEKLY",
+                                  "MONTHLY",
+                                  "QUARTERLY",
+                                  "YEARLY"
+                                ],
+                                "description": "TIME_PERIOD: unidad de recurrencia. VOLUME_PAYMENTS_LIMIT: período del límite, DAILY, MONTHLY o QUARTERLY."
+                              },
+                              "time_period_repetition_days": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "MONDAY",
+                                    "TUESDAY",
+                                    "WEDNESDAY",
+                                    "THURSDAY",
+                                    "FRIDAY",
+                                    "SATURDAY",
+                                    "SUNDAY"
+                                  ]
+                                },
+                                "description": "Solo TIME_PERIOD. Días de la semana a los que se aplica la programación; requiere una frecuencia."
+                              },
+                              "time_period_start_time": {
+                                "type": "string",
+                                "example": "09:00:00",
+                                "description": "Solo TIME_PERIOD. Inicio de la ventana horaria diaria (HH:mm:ss), junto con time_period_end_time."
+                              },
+                              "time_period_end_time": {
+                                "type": "string",
+                                "example": "18:00:00",
+                                "description": "Solo TIME_PERIOD. Fin de la ventana horaria diaria (HH:mm:ss), inclusive."
+                              },
+                              "timezone": {
+                                "type": "string",
+                                "example": "-03:00",
+                                "description": "Desfase UTC. TIME_PERIOD: desfase con el que se lee la programación (por defecto, el desfase de values[0]). VOLUME_PAYMENTS_LIMIT: desfase en horas completas donde comienzan los períodos (por defecto, +00:00)."
+                              },
+                              "limit_by": {
+                                "type": "string",
+                                "enum": [
+                                  "PAYMENTS",
+                                  "VOLUME"
+                                ],
+                                "description": "Solo VOLUME_PAYMENTS_LIMIT. Cuenta pagos (predeterminado) o suma montos en la moneda."
+                              },
+                              "payments_count": {
+                                "type": "string",
+                                "enum": [
+                                  "ALL",
+                                  "SUCCEEDED"
+                                ],
+                                "description": "Solo VOLUME_PAYMENTS_LIMIT. Qué pagos cuentan para el límite. El valor predeterminado es ALL."
+                              }
+                            }
+                          },
+                          "description": "Condiciones combinadas con AND lógico. Consulta Routing Conditions."
+                        },
+                        "route": {
+                          "type": "object",
+                          "description": "Misma estructura que default_route, incluidos start_split, output[].next_split y los pasos de acción."
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
+                "payment_method": "GOOGLE_PAY",
+                "name": "Google Pay routing",
+                "default_route": {
+                  "steps": [
+                    {
+                      "index": 1,
+                      "provider_id": "ADYEN",
+                      "connection_id": "b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f",
+                      "output": [
+                        {
+                          "status": "APPROVED",
+                          "next": 3
+                        },
+                        {
+                          "status": "DECLINED",
+                          "retry": false,
+                          "next_split": [
+                            {
+                              "index": 2,
+                              "percentage": 70
+                            },
+                            {
+                              "index": 4,
+                              "percentage": 30
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "index": 2,
+                      "provider_id": "ADYEN",
+                      "connection_id": "b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f",
+                      "output": [
+                        {
+                          "status": "APPROVED",
+                          "next": 3
+                        }
+                      ]
+                    },
+                    {
+                      "index": 3,
+                      "action": "CAPTURE",
+                      "action_delay": "PT5M"
+                    },
+                    {
+                      "index": 4,
+                      "action": "CANCEL"
+                    }
+                  ]
+                },
+                "condition_sets": [
+                  {
+                    "sort_number": 1,
+                    "name": "US & Canada",
+                    "conditions": [
+                      {
+                        "condition_type": "COUNTRY",
+                        "conditional": "ONE_OF",
+                        "values": [
+                          "US",
+                          "CA"
+                        ]
+                      }
+                    ],
+                    "route": {
+                      "steps": [
+                        {
+                          "index": 1,
+                          "provider_id": "ADYEN",
+                          "connection_id": "b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f"
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "example": "acc-uuid"
+                    },
+                    "payment_method": {
+                      "type": "string",
+                      "example": "CARD"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Card routing"
+                    },
+                    "default_route": {
+                      "type": "object",
+                      "properties": {
+                        "start_split": {
+                          "type": "array",
+                          "description": "Divide la entrada de la ruta entre varios pasos según porcentajes. Omítelo para iniciar todos los pagos en el paso 1. Las entradas deben sumar 100; se devuelve solo cuando la ruta tiene una entrada dividida.",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "index",
+                              "percentage"
+                            ],
+                            "properties": {
+                              "index": {
+                                "type": "integer",
+                                "example": 1
+                              },
+                              "percentage": {
+                                "type": "integer",
+                                "example": 45
+                              }
+                            }
+                          }
+                        },
+                        "steps": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "index": {
+                                "type": "integer",
+                                "example": 1
+                              },
+                              "provider_id": {
+                                "type": "string",
+                                "example": "STRIPE",
+                                "description": "Obligatorio en los pasos de proveedor; ausente en los pasos de acción. Debe coincidir con el proveedor de la conexión."
+                              },
+                              "connection_id": {
+                                "type": "string",
+                                "example": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+                                "description": "Obligatorio en los pasos de proveedor; ausente en los pasos de acción y de enrutamiento inteligente. Debe estar ACTIVE y admitir el payment_method."
+                              },
+                              "provider_type": {
+                                "type": "string",
+                                "enum": [
+                                  "PAYMENT",
+                                  "FRAUD",
+                                  "THREE_D_SECURE",
+                                  "AUTHENTICATION"
+                                ],
+                                "description": "El tipo al que se resuelve el proveedor. Solo en la respuesta."
+                              },
+                              "timeout": {
+                                "type": "integer",
+                                "example": 60,
+                                "description": "Pasos de proveedor. Tiempo de espera del proveedor en segundos, tomado del catálogo de proveedores. Solo en la respuesta."
+                              },
+                              "network_token_enable": {
+                                "type": "boolean",
+                                "description": "Pasos de pago. Indica si network_token_on puede ser true en este paso: la organización está habilitada para tokens de red y el proveedor los admite. Solo en la respuesta."
+                              },
+                              "network_token_on": {
+                                "type": "boolean",
+                                "description": "Pasos de pago. Indica si el paso paga con el token de red de la tarjeta cuando hay uno disponible."
+                              },
+                              "three_d_secure_exemptions": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "LOW_VALUE",
+                                    "TRANSACTION_RISK_ANALYSIS",
+                                    "SECURE_CORPORATE",
+                                    "TRUSTED_BENEFICIARY",
+                                    "RECURRING_PAYMENT",
+                                    "STRONG_CUSTOMER_AUTHENTICATION",
+                                    "OUT_OF_SCOPE"
+                                  ]
+                                },
+                                "description": "Pasos 3DS. Las exenciones de SCA que el paso puede aplicar; un arreglo vacío cuando no hay ninguna."
+                              },
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "CANCEL",
+                                  "CAPTURE",
+                                  "HOLD_FOR_REVIEW",
+                                  "REVERT"
+                                ],
+                                "description": "Convierte el paso en un paso de acción que termina la ruta: CANCEL rechaza el pago, CAPTURE captura la autorización después de action_delay, HOLD_FOR_REVIEW lo deja pendiente de revisión manual, REVERT lo revierte después de una evaluación de fraude posterior al pago. CAPTURE y HOLD_FOR_REVIEW siguen a una salida APPROVED o SUCCEEDED_GROUP de un paso de pago o de enrutamiento inteligente, REVERT sigue a las salidas de un paso de fraude que se ejecuta después del pago, CANCEL nunca sigue a una aprobación. Un paso de acción no tiene provider_id, connection_id ni output."
+                              },
+                              "action_delay": {
+                                "type": "string",
+                                "example": "PT5M",
+                                "description": "Solo con action = CAPTURE. Duración ISO-8601 entre la aprobación y la captura, de al menos PT1M y como máximo P7D. Omítelo para capturar en cuanto se procese la aprobación."
+                              },
+                              "output": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "required": [
+                                    "status"
+                                  ],
+                                  "properties": {
+                                    "status": {
+                                      "type": "string",
+                                      "example": "DECLINED",
+                                      "description": "APPROVED, DECLINED, DECLINE_GROUP, MAC_CODE_GROUP, SUCCEEDED_GROUP, PENDING (solo en pasos de fraude, 3DS y autenticación) o INTERNAL_ERROR."
+                                    },
+                                    "decline_types": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "description": "Miembros del grupo en las salidas DECLINE_GROUP (subestados de rechazo) y MAC_CODE_GROUP (Merchant Advice Codes)."
+                                    },
+                                    "group_id": {
+                                      "type": "integer",
+                                      "example": 1044,
+                                      "description": "Id del grupo detrás de una salida DECLINE_GROUP, MAC_CODE_GROUP o SUCCEEDED_GROUP."
+                                    },
+                                    "group_name": {
+                                      "type": "string",
+                                      "example": "Soft declines",
+                                      "description": "Nombre del grupo detrás de group_id. Se ignora al escribir."
+                                    },
+                                    "retry": {
+                                      "type": "boolean",
+                                      "example": false,
+                                      "description": "Indica si esta salida reintenta una vez con el mismo proveedor antes de seguir next. Siempre se devuelve."
+                                    },
+                                    "next": {
+                                      "type": "integer",
+                                      "example": 2
+                                    },
+                                    "next_split": {
+                                      "type": "array",
+                                      "description": "Divide el respaldo (fallback) entre varios pasos según porcentajes: al menos 2 entradas cuyos porcentajes sumen 100. next es opcional junto a este campo y, si se envía, debe ser igual a la primera entrada; las respuestas devuelven next = primera entrada junto con next_split.",
+                                      "items": {
+                                        "type": "object",
+                                        "required": [
+                                          "index",
+                                          "percentage"
+                                        ],
+                                        "properties": {
+                                          "index": {
+                                            "type": "integer",
+                                            "example": 2
+                                          },
+                                          "percentage": {
+                                            "type": "integer",
+                                            "example": 70
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "description": "Manejadores por resultado. Se devuelve como un arreglo vacío en los pasos de acción."
+                              },
+                              "fraud": {
+                                "type": "object",
+                                "description": "Configuración de un paso de proveedor de fraude, devuelta en los pasos FRAUD.",
+                                "properties": {
+                                  "rules": {
+                                    "type": "string",
+                                    "example": "rule-a,rule-b"
+                                  },
+                                  "blocklists": {
+                                    "type": "string"
+                                  },
+                                  "allowlists": {
+                                    "type": "string"
+                                  },
+                                  "reviewlists": {
+                                    "type": "string"
+                                  },
+                                  "preset": {
+                                    "type": "string"
+                                  },
+                                  "report_only": {
+                                    "type": "boolean",
+                                    "description": "Evalúa el puntaje sin actuar sobre el resultado. Solo en un paso de fraude al que se llega desde salidas rechazadas de un paso de pago."
+                                  }
+                                }
+                              },
+                              "smart_routing": {
+                                "type": "object",
+                                "description": "Se devuelve en los pasos de enrutamiento inteligente.",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "enum": [
+                                      "COSTS",
+                                      "LATENCY"
+                                    ],
+                                    "example": "LATENCY"
+                                  },
+                                  "providers": {
+                                    "type": "array",
+                                    "minItems": 2,
+                                    "maxItems": 4,
+                                    "items": {
+                                      "type": "object",
+                                      "required": [
+                                        "provider_id",
+                                        "connection_id"
+                                      ],
+                                      "properties": {
+                                        "provider_id": {
+                                          "type": "string",
+                                          "example": "ADYEN"
+                                        },
+                                        "connection_id": {
+                                          "type": "string",
+                                          "format": "uuid"
+                                        },
+                                        "network_token_on": {
+                                          "type": "boolean"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "no_retry_decline_types": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "description": "Subestados de rechazo después de los cuales no se prueba el siguiente proveedor del conjunto."
+                                  },
+                                  "no_retry_failure_causes": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "description": "Causas de falla (por ejemplo, PROVIDER_TIMEOUT) después de las cuales no se prueba el siguiente proveedor del conjunto."
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "condition_sets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sort_number": {
+                            "type": "integer",
+                            "example": 1
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "High Value US"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "conditions": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "condition_type": {
+                                  "type": "string",
+                                  "example": "COUNTRY",
+                                  "description": "Consulta Condiciones de enrutamiento para ver el catálogo: COUNTRY, CARD_ISSUER_COUNTRY, AMOUNT, CURRENCY, CARD_TYPE, CARD_BRAND, CARD_BIN, TRANSACTION_TYPE, METADATA, ADDITIONAL_FIELD, ORDER_ITEMS_AMOUNT, TIME_PERIOD, VOLUME_PAYMENTS_LIMIT, SUBSCRIPTION_RETRY, SUBSCRIPTION_RETRY_COUNT."
+                                },
+                                "conditional": {
+                                  "type": "string",
+                                  "example": "ONE_OF"
+                                },
+                                "values": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "example": [
+                                    "US",
+                                    "CA"
+                                  ],
+                                  "description": "En CURRENCY, códigos ISO 4217 en mayúsculas (no XXX, sin repetidos): exactamente 1 con EQUAL o NOT_EQUAL, 1 o más con ONE_OF o NOT_ONE_OF. Vacío solo en una condición AMOUNT con currency, que entonces coincide con cualquier monto en esa moneda. En ORDER_ITEMS_AMOUNT, el umbral numérico para la suma de los ítems: 1 valor, 2 con BETWEEN."
+                                },
+                                "key": {
+                                  "type": "string",
+                                  "description": "METADATA: la clave de metadata. ADDITIONAL_FIELD: el nombre del campo compatible. ORDER_ITEMS_AMOUNT: el campo del ítem de la orden contra el que se compara item_values, sku_code (por defecto), category o brand."
+                                },
+                                "item_values": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "example": [
+                                    "GC-50",
+                                    "GC-100",
+                                    "GC-200"
+                                  ],
+                                  "description": "Solo para ORDER_ITEMS_AMOUNT, y obligatorio en ella: lista no vacía de valores de ítems de la orden (exactos, sensibles a mayúsculas) cuya cantidad × unit_amount se suma. Se rechaza en cualquier otro condition_type."
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "example": "USD",
+                                  "description": "ISO 4217. Obligatorio en AMOUNT, en ORDER_ITEMS_AMOUNT y en VOLUME_PAYMENTS_LIMIT con limit_by = VOLUME. No se envía en CURRENCY, cuyas monedas van en values."
+                                },
+                                "time_period_repeat_amount": {
+                                  "type": "integer",
+                                  "example": 1,
+                                  "description": "TIME_PERIOD y VOLUME_PAYMENTS_LIMIT: cada cuántas unidades de tiempo de time_period_repeat_frequency (programación), o la duración de una ventana DAILY en días, de 1 a 90 (limit)."
+                                },
+                                "time_period_repeat_frequency": {
+                                  "type": "string",
+                                  "enum": [
+                                    "DAILY",
+                                    "WEEKLY",
+                                    "MONTHLY",
+                                    "QUARTERLY",
+                                    "YEARLY"
+                                  ],
+                                  "description": "TIME_PERIOD: unidad de recurrencia. VOLUME_PAYMENTS_LIMIT: período del límite, DAILY, MONTHLY o QUARTERLY."
+                                },
+                                "time_period_repetition_days": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "MONDAY",
+                                      "TUESDAY",
+                                      "WEDNESDAY",
+                                      "THURSDAY",
+                                      "FRIDAY",
+                                      "SATURDAY",
+                                      "SUNDAY"
+                                    ]
+                                  },
+                                  "description": "Solo TIME_PERIOD. Días de la semana a los que se aplica la programación; requiere una frecuencia."
+                                },
+                                "time_period_start_time": {
+                                  "type": "string",
+                                  "example": "09:00:00",
+                                  "description": "Solo TIME_PERIOD. Inicio de la ventana horaria diaria (HH:mm:ss), junto con time_period_end_time."
+                                },
+                                "time_period_end_time": {
+                                  "type": "string",
+                                  "example": "18:00:00",
+                                  "description": "Solo TIME_PERIOD. Fin de la ventana horaria diaria (HH:mm:ss), inclusive."
+                                },
+                                "timezone": {
+                                  "type": "string",
+                                  "example": "-03:00",
+                                  "description": "Desfase UTC. TIME_PERIOD: desfase con el que se lee la programación (por defecto, el desfase de values[0]). VOLUME_PAYMENTS_LIMIT: desfase en horas completas donde comienzan los períodos (por defecto, +00:00)."
+                                },
+                                "limit_by": {
+                                  "type": "string",
+                                  "enum": [
+                                    "PAYMENTS",
+                                    "VOLUME"
+                                  ],
+                                  "description": "Solo VOLUME_PAYMENTS_LIMIT. Cuenta pagos (predeterminado) o suma montos en la moneda."
+                                },
+                                "payments_count": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ALL",
+                                    "SUCCEEDED"
+                                  ],
+                                  "description": "Solo VOLUME_PAYMENTS_LIMIT. Qué pagos cuentan para el límite. El valor predeterminado es ALL."
+                                }
+                              }
+                            },
+                            "description": "Condiciones combinadas con AND lógico. Consulta Routing Conditions."
+                          },
+                          "route": {
+                            "type": "object",
+                            "description": "Misma estructura que default_route, incluidos start_split, output[].next_split y los pasos de acción."
+                          }
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-05-12T14:30:00Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-05-12T14:30:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitud incorrecta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_ROUTE_CONFIGURATION"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "step index=2 with action=CAPTURE must be reached only from an APPROVED output of a provider step"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "ROUTING_ALREADY_EXISTS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "A routing already exists for this payment method"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

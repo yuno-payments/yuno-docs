@@ -1,0 +1,1068 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "payment-links",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/payment-links": {
+      "post": {
+        "summary": "Crear enlace de pago",
+        "description": "",
+        "operationId": "create-payment-link",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "country",
+                  "amount",
+                  "payment_method_types"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "El identificador único de la cuenta. Encuentras esta información en [el Dashboard de Yuno](https://dashboard.y.uno/) (MAX 64; MIN 36)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "La descripción del enlace de pago (MAX 255; MIN 3)."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "El código de país del cliente (MAX 2; MIN 2; [ISO 3166-1](/es/reference/country-reference)) **[Obligatorio]**.",
+                    "enum": [
+                      "AR",
+                      "BO",
+                      "BR",
+                      "CL",
+                      "CO",
+                      "CR",
+                      "EC",
+                      "SV",
+                      "GT",
+                      "HN",
+                      "MX",
+                      "NI",
+                      "PA",
+                      "PY",
+                      "PE",
+                      "US",
+                      "UY"
+                    ]
+                  },
+                  "merchant_order_id": {
+                    "type": "string",
+                    "description": "Identificación de la transacción del enlace de pago definida por el comercio (MAX 255; MIN 3)."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Indica el objeto del monto del pago, con el valor y la moneda.",
+                    "required": [
+                      "value",
+                      "currency"
+                    ],
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "description": "El monto del pago (múltiplo de 0.0001)",
+                        "format": "float"
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "La moneda con la que se hace el pago. Para ver la lista completa de códigos de moneda, consulta [Country reference](/es/reference/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                      }
+                    }
+                  },
+                  "capture": {
+                    "type": "boolean",
+                    "description": "Decide si se autoriza el pago o se captura. Autorizar un pago con tarjeta te permite reservar fondos en la cuenta bancaria de un cliente. Si no se define, el valor predeterminado es true."
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "El tipo de enlace de pago."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "El estado del enlace de pago."
+                  },
+                  "payment_method": {
+                    "type": "object",
+                    "description": "Objeto del método de pago (opcional)."
+                  },
+                  "installments_plan": {
+                    "type": "object",
+                    "description": "Configuración del plan de cuotas (opcional)."
+                  },
+                  "timezone": {
+                    "type": "string",
+                    "description": "Zona horaria de disponibilidad (por ejemplo, UTC +03:00)."
+                  },
+                  "payments_number": {
+                    "type": "integer",
+                    "description": "Número de pagos asociados con este enlace."
+                  },
+                  "split_payment_methods": {
+                    "type": "boolean",
+                    "description": "Permitir métodos de pago divididos."
+                  },
+                  "taxes": {
+                    "type": "array",
+                    "description": "Especifica la lista de impuestos del pago.",
+                    "items": {
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "description": "Tipo de impuesto."
+                        },
+                        "tax_base": {
+                          "type": "number",
+                          "description": "La base imponible sobre la que se aplica el impuesto definido.",
+                          "format": "float"
+                        },
+                        "value": {
+                          "type": "number",
+                          "description": "El monto del impuesto.",
+                          "format": "float"
+                        },
+                        "percentage": {
+                          "type": "number",
+                          "description": "El porcentaje del impuesto.",
+                          "format": "float"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "external_invoice": {
+                    "type": "object",
+                    "description": "La factura de Stripe que paga este enlace de pago. Cuando el cliente paga, Yuno revisa la factura: debe estar abierta, el monto del enlace debe ser igual al monto restante de la factura, en la misma moneda, y el cliente debe ser el de la factura cuando se envía `customer_id`. Si la revisión falla, no se cobra nada y el enlace se cancela. No se puede enviar junto con `subscription` ni con una lista `taxes` que no esté vacía (400 `INVALID_REQUEST`) y no se puede cambiar después de la creación. Consulta [Pagar una factura de Stripe (recargas)](/es/docs/payment-features/subscriptions/stripe-billing-top-ups#pay-a-stripe-invoice-with-a-payment-link).",
+                    "required": [
+                      "id"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "El identificador de la factura en Stripe (`in_...`). Obligatorio cuando el objeto está presente. (MIN 3; MAX 255, después de recortar los espacios)",
+                        "minLength": 3,
+                        "maxLength": 255
+                      },
+                      "customer_id": {
+                        "type": "string",
+                        "description": "El cliente de Stripe (`cus_...`) dueño de la factura. Opcional. Cuando lo envías, debe ser el cliente de la factura. (MIN 3; MAX 255, después de recortar los espacios)",
+                        "minLength": 3,
+                        "maxLength": 255
+                      }
+                    }
+                  },
+                  "customer_payer": {
+                    "type": "object",
+                    "description": "Indica el objeto customer de los pagos.",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "El identificador único del cliente (UUID | MAX 36; MIN 36)."
+                      },
+                      "merchant_customer_id": {
+                        "type": "string",
+                        "description": "El identificador único del cliente en el comercio externo (MAX 255; MIN 3)."
+                      },
+                      "first_name": {
+                        "type": "string",
+                        "description": "El nombre del cliente (MAX 255; MIN 1)."
+                      },
+                      "last_name": {
+                        "type": "string",
+                        "description": "El apellido del cliente (MAX 255; MIN 1)."
+                      },
+                      "gender": {
+                        "type": "string",
+                        "description": "El género del cliente (MAX 2; MIN 1; (M=Masculino/F=Femenino/NA=No aplica/NK=No conocido))."
+                      },
+                      "date_of_birth": {
+                        "type": "string",
+                        "description": "La fecha de nacimiento del cliente en formato YYYY-MM-DD (longitud: 10)."
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "El correo electrónico del cliente (MAX 255; MIN 3)."
+                      },
+                      "nationality": {
+                        "type": "string",
+                        "description": "La nacionalidad del cliente (MAX 2; MIN 2; ISO 3166-1)."
+                      },
+                      "document": {
+                        "type": "object",
+                        "description": "Indica el objeto del documento del cliente, con su número y su tipo.",
+                        "required": [
+                          "document_number"
+                        ],
+                        "properties": {
+                          "document_number": {
+                            "type": "string",
+                            "description": "El número de documento (MAX 40; MIN 3)."
+                          },
+                          "document_type": {
+                            "type": "string",
+                            "description": "Tipo de documento (MAX 6; MIN 3; [Referencia de países](/es/reference/country-reference)).",
+                            "enum": [
+                              "DNI",
+                              "CI",
+                              "LC",
+                              "LE",
+                              "CUIT",
+                              "CUIL",
+                              "PAS",
+                              "CPF",
+                              "RG",
+                              "CNH",
+                              "CNPJ",
+                              "RUT",
+                              "RUN",
+                              "CC",
+                              "CE",
+                              "NIT",
+                              "DUI",
+                              "PIC",
+                              "DPI",
+                              "IFR",
+                              "INE",
+                              "CP",
+                              "RFC",
+                              "CURP",
+                              "CIP",
+                              "CIC",
+                              "CUI",
+                              "RUC",
+                              ""
+                            ]
+                          }
+                        }
+                      },
+                      "phone": {
+                        "type": "object",
+                        "description": "Indica el objeto del número de teléfono del cliente.",
+                        "properties": {
+                          "country_code": {
+                            "type": "string",
+                            "description": "El código de llamada del país del teléfono (MAX 5; MIN 1). Consulta la [referencia de países](/es/reference/country-reference) para ver los códigos telefónicos."
+                          },
+                          "number": {
+                            "type": "string",
+                            "description": "El número de teléfono, sin el código de país (MAX 32; MIN 1)."
+                          }
+                        }
+                      },
+                      "billing_address": {
+                        "type": "object",
+                        "description": "Indica el objeto de la dirección de facturación del cliente.",
+                        "properties": {
+                          "address_line_1": {
+                            "type": "string",
+                            "description": "La línea de dirección principal (MAX 255; MIN 3)."
+                          },
+                          "address_line_2": {
+                            "type": "string",
+                            "description": "La línea de dirección secundaria (MAX 255; MIN 3)."
+                          },
+                          "city": {
+                            "type": "string",
+                            "description": "La ciudad considerada para la dirección (MAX 255; MIN 3)."
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "El país (MAX 2; MIN 2; [ISO 3166-1](/es/reference/country-reference)).",
+                            "enum": [
+                              "AR",
+                              "BO",
+                              "BR",
+                              "CL",
+                              "CO",
+                              "CR",
+                              "EC",
+                              "SV",
+                              "GT",
+                              "HN",
+                              "MX",
+                              "NI",
+                              "PA",
+                              "PY",
+                              "PE",
+                              "US",
+                              "UY"
+                            ]
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "El estado o provincia de la dirección (MAX 255; MIN 3)."
+                          },
+                          "zip_code": {
+                            "type": "string",
+                            "description": "El código postal de la dirección (MAX 10; MIN 5)."
+                          }
+                        }
+                      },
+                      "shipping_address": {
+                        "type": "object",
+                        "description": "Indica el objeto de la dirección de envío del cliente.",
+                        "properties": {
+                          "address_line_1": {
+                            "type": "string",
+                            "description": "La línea de dirección principal (MAX 255; MIN 3)."
+                          },
+                          "address_line_2": {
+                            "type": "string",
+                            "description": "La línea de dirección secundaria (MAX 255; MIN 3)."
+                          },
+                          "city": {
+                            "type": "string",
+                            "description": "La ciudad considerada para la dirección (MAX 255; MIN 3)."
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "El país (MAX 2; MIN 2; [ISO 3166-1](/es/reference/country-reference)).",
+                            "enum": [
+                              "AR",
+                              "BO",
+                              "BR",
+                              "CL",
+                              "CO",
+                              "CR",
+                              "EC",
+                              "SV",
+                              "GT",
+                              "HN",
+                              "MX",
+                              "NI",
+                              "PA",
+                              "PY",
+                              "PE",
+                              "US",
+                              "UY"
+                            ]
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "El estado o provincia de la dirección (MAX 255; MIN 3)."
+                          },
+                          "zip_code": {
+                            "type": "string",
+                            "description": "El código postal de la dirección (MAX 10; MIN 5)."
+                          }
+                        }
+                      },
+                      "ip_address": {
+                        "type": "string",
+                        "description": "Especifica la dirección IP del cliente (MAX 45; MIN 1)."
+                      }
+                    }
+                  },
+                  "additional_data": {
+                    "type": "object",
+                    "description": "Indica el objeto additional_data. Este objeto no es obligatorio. Sin embargo, si envías esta información, la experiencia de pago de tu usuario mejora.",
+                    "properties": {
+                      "order": {
+                        "type": "object",
+                        "description": "Indica el objeto order.",
+                        "properties": {
+                          "shipping_amount": {
+                            "type": "number",
+                            "description": "El monto de envío de la orden (múltiplo de 0.0001)",
+                            "format": "float"
+                          },
+                          "fee_amount": {
+                            "type": "number",
+                            "description": "El monto de la comisión de la orden (múltiplo de 0.0001)",
+                            "format": "float"
+                          },
+                          "items": {
+                            "type": "array",
+                            "description": "Indica el array de objetos items.",
+                            "items": {
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "description": "El identificador único del artículo (MAX 255; MIN 1)."
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "description": "El nombre del artículo (MAX 255; MIN 3)."
+                                },
+                                "quantity": {
+                                  "type": "integer",
+                                  "description": "La cantidad del artículo.",
+                                  "format": "int32"
+                                },
+                                "unit_amount": {
+                                  "type": "number",
+                                  "description": "El monto unitario del artículo (múltiplo de 0.0001).",
+                                  "format": "float"
+                                },
+                                "category": {
+                                  "type": "string",
+                                  "description": "La categoría del artículo. Consulta la referencia de categorías de artículos."
+                                },
+                                "brand": {
+                                  "type": "string",
+                                  "description": "La marca del artículo (MAX 255; MIN 1)."
+                                },
+                                "sku_code": {
+                                  "type": "string",
+                                  "description": "La unidad de mantenimiento de existencias (SKU) del artículo (MAX 255; MIN 1)."
+                                },
+                                "manufacture_part_number": {
+                                  "type": "string",
+                                  "description": "El número de parte del fabricante del artículo (MAX 255; MIN 1)."
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "name",
+                                "quantity",
+                                "unit_amount"
+                              ],
+                              "type": "object"
+                            }
+                          }
+                        }
+                      },
+                      "airline": {
+                        "type": "object",
+                        "description": "Indica el objeto airline.",
+                        "properties": {
+                          "pnr": {
+                            "type": "string",
+                            "description": "Registro del nombre del pasajero (PNR) (MAX 10; MIN 1)."
+                          },
+                          "legs": {
+                            "type": "array",
+                            "description": "Indica el objeto legs.",
+                            "items": {
+                              "properties": {
+                                "departure_airport": {
+                                  "type": "string",
+                                  "description": "Código IATA. Consulta http://www.iata.org (MAX 3; MIN 3)."
+                                },
+                                "departure_datetime": {
+                                  "type": "string",
+                                  "description": "La fecha y hora de salida en UTC (ISO 8601, MAX 27; MIN 27).",
+                                  "format": "date"
+                                },
+                                "departure_airport_timezone": {
+                                  "type": "string",
+                                  "description": "Zona horaria del aeropuerto (MAX 6; MIN 6)."
+                                },
+                                "arrival_airport": {
+                                  "type": "string",
+                                  "description": "Código IATA del aeropuerto. Consulta http://www.iata.org (MAX 3; MIN 3)."
+                                },
+                                "carrier_code": {
+                                  "type": "string",
+                                  "description": "Código IATA de la aerolínea. Consulta http://www.iata.org (MAX 2; MIN 2)."
+                                },
+                                "carrier_name": {
+                                  "type": "string",
+                                  "description": "El nombre de la aerolínea (MAX 100; MIN 1)."
+                                },
+                                "flight_number": {
+                                  "type": "string",
+                                  "description": "El número de vuelo asignado por la aerolínea (MAX 5; MIN 1)."
+                                },
+                                "fare_basis_code": {
+                                  "type": "string",
+                                  "description": "El código de tarifa base da información específica sobre la tarifa además de la clase de servicio; ambos son necesarios para la reserva (MAX 15; MIN 1)."
+                                },
+                                "fare_class_code": {
+                                  "type": "string",
+                                  "description": "El código de clase de tarifa de la aerolínea (MAX 3; MIN 1). Los valores pueden ser letras (A-Z), pero pueden variar según la definición de la aerolínea. Consulta la [referencia de información de aerolíneas](/es/reference/airline-information#fare-class-code)."
+                                },
+                                "base_fare": {
+                                  "type": "number",
+                                  "description": "El monto de la transacción, sin impuestos ni comisiones, en la unidad mínima de la moneda (múltiplo de 0.0001).",
+                                  "format": "float"
+                                },
+                                "base_fare_currency": {
+                                  "type": "string",
+                                  "description": "La moneda utilizada para el monto de la tarifa base (MAX 3; MIN 3; [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217))."
+                                },
+                                "stopover_code": {
+                                  "type": "string",
+                                  "description": "Código de 1 letra que indica si el pasajero puede hacer una escala. Solo se permiten dos caracteres: O: escala permitida (la letra “O”, no el cero) / X: escala no permitida. (MAX 1; MIN 1)."
+                                }
+                              },
+                              "required": [
+                                "departure_airport",
+                                "departure_datetime",
+                                "arrival_airport"
+                              ],
+                              "type": "object"
+                            }
+                          }
+                        }
+                      },
+                      "device": {
+                        "type": "object",
+                        "description": "Especifica el objeto del dispositivo.",
+                        "properties": {
+                          "locale": {
+                            "type": "string",
+                            "description": "La configuración regional del dispositivo (MAX 20; por ejemplo, es-CL)."
+                          },
+                          "geolocation": {
+                            "type": "string",
+                            "description": "La geolocalización del dispositivo en formato lat,long (MAX 255)."
+                          },
+                          "event_uuid": {
+                            "type": "string",
+                            "description": "El identificador único del evento (MAX 64)."
+                          },
+                          "user_agent": {
+                            "type": "string",
+                            "description": "El user agent del dispositivo (MAX 512)."
+                          }
+                        }
+                      },
+                      "payer_risk_data": {
+                        "type": "object",
+                        "description": "Especifica el objeto de datos de riesgo del pagador.",
+                        "properties": {
+                          "login_platform": {
+                            "type": "string",
+                            "description": "La plataforma usada para iniciar sesión (MAX 64; por ejemplo, WEB)."
+                          },
+                          "approved_transactions_2m": {
+                            "type": "integer",
+                            "description": "Número de transacciones aprobadas en los últimos 2 meses (MIN 0).",
+                            "minimum": 0
+                          },
+                          "recent_transactions_3h": {
+                            "type": "integer",
+                            "description": "Número de transacciones en las últimas 3 horas (MIN 0).",
+                            "minimum": 0
+                          },
+                          "is_paid_user": {
+                            "type": "boolean",
+                            "description": "Indica si el pagador es un usuario de pago."
+                          },
+                          "account_creation_date": {
+                            "type": "string",
+                            "description": "La fecha de creación de la cuenta en formato YYYYMMDD (por ejemplo, 20191005)."
+                          }
+                        }
+                      },
+                      "seller_details": {
+                        "type": "object",
+                        "description": "Especifica el objeto de detalles del vendedor. Solo es obligatorio para PSP con información de cuenta de submerchant.",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "La razón social del vendedor (MAX 255; MIN 1)."
+                          },
+                          "email": {
+                            "type": "string",
+                            "description": "El correo electrónico del vendedor (MAX 255; MIN 1)."
+                          },
+                          "reference": {
+                            "type": "string",
+                            "description": "El código de identificación del vendedor (MAX 255; MIN 1)."
+                          },
+                          "website": {
+                            "type": "string",
+                            "description": "La URL del sitio web del vendedor (MAX 255; MIN 1)."
+                          },
+                          "industry": {
+                            "type": "string",
+                            "description": "La industria del vendedor (MAX 255; MIN 3; referencia de categorías de industria)."
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "El país del vendedor (MAX 255; MIN 3; ISO 3166-1)."
+                          },
+                          "document": {
+                            "type": "object",
+                            "description": "Indica el objeto del documento del vendedor.",
+                            "required": [
+                              "document_number"
+                            ],
+                            "properties": {
+                              "document_number": {
+                                "type": "string",
+                                "description": "El número de documento (MAX 40; MIN 3)."
+                              },
+                              "document_type": {
+                                "type": "string",
+                                "description": "Tipo de documento (MAX 6, MIN 1; [Referencia de países](/es/reference/country-reference)).",
+                                "enum": [
+                                  "DNI",
+                                  "CI",
+                                  "LC",
+                                  "LE",
+                                  "CUIT",
+                                  "CUIL",
+                                  "PAS",
+                                  "CPF",
+                                  "RG",
+                                  "CNH",
+                                  "CNPJ",
+                                  "RUT",
+                                  "RUN",
+                                  "CC",
+                                  "CE",
+                                  "NIT",
+                                  "DUI",
+                                  "PIC",
+                                  "DPI",
+                                  "IFR",
+                                  "INE",
+                                  "CP",
+                                  "RFC",
+                                  "CURP",
+                                  "CIP",
+                                  "CIC",
+                                  "CUI",
+                                  "RUC",
+                                  ""
+                                ]
+                              }
+                            }
+                          },
+                          "phone": {
+                            "type": "object",
+                            "description": "Indica el objeto del número de teléfono del vendedor.",
+                            "properties": {
+                              "country_code": {
+                                "type": "string",
+                                "description": "El código de llamada del país del teléfono (MAX 5; MIN 1). Consulta la [referencia de países](/es/reference/country-reference) para ver los códigos telefónicos."
+                              },
+                              "number": {
+                                "type": "string",
+                                "description": "El número de teléfono, sin el código de país (MAX 32; MIN 1)."
+                              }
+                            }
+                          },
+                          "address": {
+                            "type": "object",
+                            "description": "Indica el objeto de la dirección del vendedor.",
+                            "properties": {
+                              "address_line_1": {
+                                "type": "string",
+                                "description": "La línea de dirección principal (MAX 255; MIN 3)."
+                              },
+                              "address_line_2": {
+                                "type": "string",
+                                "description": "La línea de dirección secundaria (MAX 255; MIN 1)."
+                              },
+                              "city": {
+                                "type": "string",
+                                "description": "La ciudad considerada para la dirección (MAX 255; MIN 3)."
+                              },
+                              "country": {
+                                "type": "string",
+                                "description": "El país (MAX 2; MIN 2; [ISO 3166-1](/es/reference/country-reference)).",
+                                "enum": [
+                                  "AR",
+                                  "BO",
+                                  "BR",
+                                  "CL",
+                                  "CO",
+                                  "CR",
+                                  "EC",
+                                  "SV",
+                                  "GT",
+                                  "HN",
+                                  "MX",
+                                  "NI",
+                                  "PA",
+                                  "PY",
+                                  "PE",
+                                  "US",
+                                  "UY"
+                                ]
+                              },
+                              "state": {
+                                "type": "string",
+                                "description": "El estado o provincia de la dirección (MAX 255; MIN 3)."
+                              },
+                              "zip_code": {
+                                "type": "string",
+                                "description": "El código postal de la dirección (MAX 10; MIN 5)."
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "description": "URL a la que se redirige al cliente después del pago (MAX 256)."
+                  },
+                  "one_time_use": {
+                    "type": "boolean",
+                    "description": "`true` permite un solo uso, `false` permite varios pagos"
+                  },
+                  "availability": {
+                    "type": "object",
+                    "description": "El objeto de disponibilidad. Se refiere a la fecha de vencimiento del enlace de pago.",
+                    "properties": {
+                      "start_at": {
+                        "type": "string",
+                        "description": "Inicio del período de vigencia del enlace de pago.",
+                        "format": "date-time"
+                      },
+                      "finish_at": {
+                        "type": "string",
+                        "description": "Fin del período de vigencia del enlace de pago. Debe estar en el futuro. Una fecha pasada devuelve 400 `INVALID_PARAMETERS` (`Invalid finish_at date`).",
+                        "format": "date-time"
+                      }
+                    }
+                  },
+                  "payment_method_types": {
+                    "type": "array",
+                    "description": "La lista de tipos de métodos de pago que los clientes pueden usar. Consulta los métodos de pago disponibles en [Tipo de pago](/es/reference/payment-type-list). Si no se pasa ningún valor, Yuno mostrará los métodos de pago definidos en el Dashboard.",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "metadata": {
+                    "type": "array",
+                    "description": "Especifica una lista de objetos de metadatos. Puedes agregar hasta 50 objetos de metadatos.",
+                    "items": {
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "description": "La clave de la metadata (MAX 48)."
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "El valor de la clave de la metadata (MAX 512)."
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "vault_on_success": {
+                    "type": "boolean",
+                    "description": "Indicador para inscribir la tarjeta después de un pago exitoso"
+                  }
+                }
+              },
+              "examples": {
+                "CREATE PAYMENT LINK": {
+                  "value": {
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "description": "Test",
+                    "country": "AR",
+                    "merchant_order_id": "AA01",
+                    "amount": {
+                      "value": 5000,
+                      "currency": "ARS"
+                    },
+                    "payment_method_types": [
+                      "CARD"
+                    ],
+                    "availability": {
+                      "start_at": "2026-11-01T14:00:12Z",
+                      "finish_at": "2027-12-29T14:00:12Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "CREATE PAYMENT LINK": {
+                    "value": {
+                      "id": "555933df-4eed-4af4-ae83-a32072ef34af",
+                      "country": "US",
+                      "availability": {
+                        "start_at": "2026-11-01T14:00:12Z",
+                        "finish_at": "2027-12-29T14:00:12Z"
+                      },
+                      "status": "CREATED",
+                      "merchant_order_id": "AA01",
+                      "description": "Test",
+                      "amount": {
+                        "currency": "USD",
+                        "value": 5000
+                      },
+                      "capture": true,
+                      "metadata": null,
+                      "split_payment_methods": false,
+                      "payment_method_types": [
+                        "CARD"
+                      ],
+                      "one_time_use": false,
+                      "payments": null,
+                      "callback_url": "https://checkout.sandbox.y.uno/payment/status",
+                      "installments_plan": null,
+                      "customer_payer": null,
+                      "taxes": null,
+                      "external_invoice": {
+                        "id": "in_1QwZzz",
+                        "customer_id": "cus_RplXYZ"
+                      },
+                      "additional_data": {
+                        "airline": null,
+                        "order": null,
+                        "seller_details": null
+                      },
+                      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                      "checkout_url": "https://checkout.sandbox.y.uno/payment?session=2f6d9754-43d0-4dca-b023-6aba4b107179",
+                      "payments_number": 0,
+                      "merchant_image": ""
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "555933df-4eed-4af4-ae83-a32072ef34af"
+                    },
+                    "country": {
+                      "type": "string",
+                      "example": "US"
+                    },
+                    "availability": {
+                      "type": "object",
+                      "properties": {
+                        "start_at": {
+                          "type": "string",
+                          "example": "2026-11-01T14:00:12Z"
+                        },
+                        "finish_at": {
+                          "type": "string",
+                          "example": "2027-12-29T14:00:12Z"
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "CREATED"
+                    },
+                    "merchant_order_id": {
+                      "type": "string",
+                      "example": "AA01"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Test"
+                    },
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "example": "USD"
+                        },
+                        "value": {
+                          "type": "integer",
+                          "example": 5000,
+                          "default": 0
+                        }
+                      }
+                    },
+                    "capture": {
+                      "type": "boolean",
+                      "example": true,
+                      "default": true
+                    },
+                    "metadata": {},
+                    "split_payment_methods": {
+                      "type": "boolean",
+                      "example": false,
+                      "default": true
+                    },
+                    "payment_method_types": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "CARD"
+                      }
+                    },
+                    "one_time_use": {
+                      "type": "boolean",
+                      "example": false,
+                      "default": true
+                    },
+                    "payments": {},
+                    "callback_url": {
+                      "type": "string",
+                      "example": "https://checkout.sandbox.y.uno/payment/status"
+                    },
+                    "installments_plan": {},
+                    "customer_payer": {},
+                    "taxes": {},
+                    "external_invoice": {
+                      "type": "object",
+                      "description": "La factura de Stripe que paga este enlace de pago, tal como se envió cuando se creó el enlace. La clave está ausente en los enlaces creados sin ella.",
+                      "required": [
+                        "id"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "El identificador de la factura en Stripe (`in_...`).",
+                          "example": "in_1QwZzz"
+                        },
+                        "customer_id": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "El cliente de Stripe (`cus_...`) dueño de la factura. Es nulo cuando el enlace se creó sin él.",
+                          "example": "cus_RplXYZ"
+                        }
+                      }
+                    },
+                    "additional_data": {
+                      "type": "object",
+                      "properties": {
+                        "airline": {},
+                        "order": {},
+                        "seller_details": {},
+                        "device": {
+                          "type": "object",
+                          "properties": {
+                            "locale": {
+                              "type": "string",
+                              "example": "es-CL"
+                            },
+                            "geolocation": {
+                              "type": "string"
+                            },
+                            "event_uuid": {
+                              "type": "string"
+                            },
+                            "user_agent": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "payer_risk_data": {
+                          "type": "object",
+                          "properties": {
+                            "login_platform": {
+                              "type": "string",
+                              "example": "WEB"
+                            },
+                            "approved_transactions_2m": {
+                              "type": "integer",
+                              "default": 0
+                            },
+                            "recent_transactions_3h": {
+                              "type": "integer",
+                              "default": 0
+                            },
+                            "is_paid_user": {
+                              "type": "boolean"
+                            },
+                            "account_creation_date": {
+                              "type": "string",
+                              "example": "20191005"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "example": "493e9374-510a-4201-9e09-de669d75f256"
+                    },
+                    "checkout_url": {
+                      "type": "string",
+                      "example": "https://checkout.sandbox.y.uno/payment?session=2f6d9754-43d0-4dca-b023-6aba4b107179"
+                    },
+                    "payments_number": {
+                      "type": "integer",
+                      "example": 0,
+                      "default": 0
+                    },
+                    "merchant_image": {
+                      "type": "string",
+                      "example": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Invalid Request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request"
+                      ]
+                    },
+                    "summary": "Invalid Request"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "key": "charset",
+        "value": "utf-8"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

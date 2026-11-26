@@ -1,0 +1,155 @@
+---
+title: "Resumen de proveedores white-label"
+description: "Referencia para comercios sobre la superficie de la API pública que controla qué proveedores de pago ofrece tu dashboard white-label, y los textos, enlaces y logotipos que muestra para ellos."
+---
+
+Si integras el Yuno Dashboard bajo tu propia marca, tus usuarios ven una pestaña **Providers** cuando agregan una conexión. Estos Endpoints controlan lo que muestra esa pestaña: qué proveedores ofreces, y el nombre, las instrucciones de conexión, el enlace de documentación y el logotipo que se muestran para cada uno.
+
+Lo que guardas aquí es una **capa superpuesta sobre el catálogo de proveedores de Yuno**, no el catálogo en sí. Yuno publica alrededor de 260 proveedores; tu capa indica cuáles de ellos ofrece tu dashboard y dónde tus propios textos reemplazan los de Yuno. Lee el catálogo por separado y combina esta capa encima.
+
+<Note>
+Esta superficie filtra un selector. **No** es una autorización: ocultar un proveedor evita que aparezca en la pestaña Providers, pero no impide que se cree una conexión con él por otros medios.
+</Note>
+
+## Contrato común {#common-contract}
+
+### URLs base {#base-urls}
+
+| Entorno | Modo del dashboard | URL base |
+| --- | --- | --- |
+| Sandbox | Test Mode | `https://api-sandbox.y.uno` |
+| Producción | Live Mode | `https://api.y.uno` |
+
+Cada ruta que aparece a continuación es relativa a `/v1`.
+
+### Autenticación y encabezados {#authentication--headers}
+
+| Encabezado | Obligatorio | Notas |
+| --- | --- | --- |
+| `public-api-key` | sí | Tu clave de API pública. |
+| `private-secret-key` | sí | Tu clave secreta privada. Solo del lado del servidor. |
+| `Content-Type: application/json` | en `PATCH` y `PUT` | |
+
+La **organización propietaria de las claves de API** es el alcance de cada llamada. No hay ningún `account_id` en esta superficie: la capa pertenece a la organización, no a una de sus cuentas. Las claves de sandbox leen y escriben la capa de Test Mode, las claves de producción la de Live Mode, y ambas son completamente independientes.
+
+### Formatos de error {#error-formats}
+
+Recibes dos envolturas, y cuál recibes depende de dónde falló la solicitud.
+
+Errores de validación y autenticación de la API pública:
+
+```json
+{
+  "code": "VALIDATION_ERROR",
+  "messages": ["provider_id is invalid"]
+}
+```
+
+Rechazos del servicio interno, devueltos como `application/problem+json`:
+
+```json
+{
+  "title": "Invalid provider instructions",
+  "status": 400,
+  "detail": "The instruction override was rejected",
+  "violations": [
+    "name: only Yuno's own providers can be renamed; 'STRIPE' cannot"
+  ]
+}
+```
+
+`violations` está presente en los rechazos que validan un documento completo o un logotipo, y enumera **todos** los problemas a la vez en lugar de uno por viaje: corrígelos juntos en lugar de reenviar para descubrir el siguiente.
+
+## Qué debes saber antes de escribir {#what-you-need-to-know-before-writing}
+
+### La lista de permitidos es opt-in {#the-allowlist-is-opt-in}
+
+Un proveedor se ofrece solo cuando una entrada de la lista de permitidos lo nombra. `filtered` te indica si tu organización tiene al menos una entrada:
+
+- `filtered: false`: no tienes ninguna entrada en la lista de permitidos. Para una organización white-label esto significa que **no se ofrece ningún proveedor** en el Dashboard hasta que habilites algunos; no es un estado de "mostrar todo". (La capa solo filtra organizaciones white-label: una organización estándar siempre ve el catálogo completo.)
+- `filtered: true`: tienes una lista de permitidos, y `allowed` en cada proveedor indica si ese proveedor está en ella.
+
+Decide según `filtered`, **nunca** según la longitud de `providers`. La lista tampoco está vacía cuando tus únicas entradas son reemplazos de instrucciones o de logotipo, y un proveedor que tiene textos o un logotipo personalizados sin estar ofrecido aparece en ella con `allowed: false`.
+
+<Warning>
+`DELETE /v1/whitelabel/providers` y `PUT /v1/whitelabel/providers` con un `provider_ids` vacío llegan al mismo estado: cero entradas en la lista de permitidos, `filtered: false`. Bajo la regla opt-in, eso **no** es un interruptor de "mostrar todo". Trata ambos como "eliminar todas las entradas" y reconstruye la lista con `PUT` en lugar de vaciarla para ampliar lo que ofreces.
+</Warning>
+
+### Los reemplazos sustituyen, nunca se combinan {#overrides-replace-they-never-merge}
+
+Un reemplazo de instrucciones es un **documento completo**. `PUT` guarda lo que envías y borra lo que omites, así que un campo que dejas fuera vuelve al valor del catálogo de Yuno. La edición segura es leer con `GET`, cambiar el único campo y volver a enviar el documento completo.
+
+La misma regla se aplica campo por campo al leer: un campo **ausente** significa "conservar el valor del catálogo"; un campo presente pero vacío significa "reemplazarlo por nada".
+
+### La identidad pertenece a los proveedores propios de Yuno {#identity-belongs-to-yunos-own-providers}
+
+Los textos de un proveedor puedes cambiarlos tú. Su **identidad** no:
+
+- `name` y un logotipo personalizado se aceptan **solo para proveedores propiedad de Yuno**: un ID de catálogo que contenga `YUNO`, como `YUNO_3DS` o `YUNO_FRAUD_SCREENING`.
+- Cualquier otro proveedor se rechaza con `400` y una entrada de `violations` que nombra el ID.
+
+Aun así puedes reemplazar las instrucciones, los pasos de configuración y `more_info_url` en todos los proveedores.
+
+### Los enlaces deben ser https {#links-must-be-https}
+
+`more_info_url` y cada `link` dentro de un paso de instrucciones deben ser una URL https: el dashboard los muestra como href. Cualquier otra cosa se rechaza.
+
+### Los logotipos son independientes de las instrucciones, y `logo_url` es efímero {#logos-are-separate-from-instructions-and-logourl-is-ephemeral}
+
+Las instrucciones y los logotipos son recursos independientes: eliminar uno no afecta al otro, y ninguno agrega el proveedor a tu lista de permitidos.
+
+<Warning>
+`logo_url` se **prefirma en cada lectura y dura poco tiempo**. Nunca se almacena y nunca es el mismo dos veces. Muéstralo de inmediato y vuelve a leer el proveedor para obtener uno nuevo: nunca lo persistas, lo guardes en caché ni lo pegues en otro sistema.
+</Warning>
+
+Las cargas de logotipos viajan en base64 dentro de JSON, no como multipart. La imagen debe ser PNG o JPEG (se determina por los bytes del propio archivo, así que un SVG renombrado como `.png` se rechaza), cuadrada, de al menos 200x200 píxeles y de como máximo 64 KB decodificada. Los cuerpos de solicitud de más de 256 KB se rechazan con `413`.
+
+### Las escrituras se atribuyen a la API {#writes-are-attributed-to-the-api}
+
+Una escritura hecha mediante estos Endpoints muestra `created_by` y `updated_by` con el valor centinela de ceros `00000000-0000-0000-0000-000000000000`: "escrito mediante la API" en lugar de por una persona en el dashboard. Las escrituras hechas por un usuario en el Dashboard llevan el ID de ese usuario.
+
+### El Dashboard y la API son los mismos datos {#the-dashboard-and-the-api-are-the-same-data}
+
+Los cambios hechos aquí aparecen de inmediato en la pestaña **Providers** white-label del Dashboard, y los cambios hechos allí los devuelven estos Endpoints. No hay un paso de sincronización ni una segunda fuente de verdad.
+
+## Un flujo típico {#a-typical-script}
+
+<Steps>
+  <Step title="Lee lo que tienes">
+    Llama a [Listar la capa de proveedores white-label](/es/reference/organizations/whitelabel/list-providers). Revisa `filtered` para saber si tienes una lista de permitidos y lee `allowed` por proveedor. Combina el resultado con el catálogo de proveedores de Yuno para mostrar un selector completo.
+  </Step>
+
+  <Step title="Define lo que ofreces">
+    Usa [Actualizar la visibilidad de varios proveedores](/es/reference/organizations/whitelabel/update-providers-visibility) para activar o desactivar unos pocos proveedores sin volver a indicar el resto, o [Reemplazar la lista de proveedores permitidos](/es/reference/organizations/whitelabel/replace-provider-allowlist) cuando tu pantalla guarda el conjunto completo. Desactivar un proveedor conserva su reemplazo de instrucciones, así que tus textos sobreviven al cambio.
+  </Step>
+
+  <Step title="Escribe tus textos, un proveedor a la vez">
+    Para cada proveedor que personalices, lee el documento actual con [Obtener el reemplazo de instrucciones de un proveedor](/es/reference/organizations/whitelabel/retrieve-provider-instructions), edítalo y envíalo completo con [Reemplazar el reemplazo de instrucciones de un proveedor](/es/reference/organizations/whitelabel/replace-provider-instructions). Recuerda que los campos omitidos vuelven al catálogo.
+  </Step>
+
+  <Step title="Agrega logotipos donde puedas hacerlo">
+    Solo para proveedores propiedad de Yuno, sube un PNG o JPEG cuadrado con [Subir el logotipo de un proveedor](/es/reference/organizations/whitelabel/upload-provider-logo).
+  </Step>
+
+  <Step title="Replica Test Mode en Live Mode">
+    Los dos modos tienen capas separadas. Lee toda la capa con tus claves de **sandbox** y luego repite las mismas escrituras contra `https://api.y.uno` con tus claves de **producción**. Como `PUT` reemplaza el documento completo y el `PUT` de la lista de permitidos reemplaza el conjunto completo, repetir una lectura basta para que Live Mode coincida con Test Mode, sin necesidad de comparar diferencias.
+  </Step>
+</Steps>
+
+## Endpoints {#endpoints}
+
+| Endpoint | Método y ruta |
+| --- | --- |
+| [Listar la capa de proveedores white-label](/es/reference/organizations/whitelabel/list-providers) | `GET /v1/whitelabel/providers` |
+| [Recuperar la personalización de un proveedor](/es/reference/organizations/whitelabel/retrieve-provider) | `GET /v1/whitelabel/providers/{provider_id}` |
+| [Actualizar la visibilidad de un proveedor](/es/reference/organizations/whitelabel/update-provider-visibility) | `PATCH /v1/whitelabel/providers/{provider_id}` |
+| [Actualizar la visibilidad de varios proveedores](/es/reference/organizations/whitelabel/update-providers-visibility) | `PATCH /v1/whitelabel/providers` |
+| [Reemplazar la lista de proveedores permitidos](/es/reference/organizations/whitelabel/replace-provider-allowlist) | `PUT /v1/whitelabel/providers` |
+| [Borrar la lista de proveedores permitidos](/es/reference/organizations/whitelabel/clear-provider-allowlist) | `DELETE /v1/whitelabel/providers` |
+| [Recuperar la personalización de instrucciones de un proveedor](/es/reference/organizations/whitelabel/retrieve-provider-instructions) | `GET /v1/whitelabel/providers/{provider_id}/instructions` |
+| [Reemplazar el reemplazo de instrucciones de un proveedor](/es/reference/organizations/whitelabel/replace-provider-instructions) | `PUT /v1/whitelabel/providers/{provider_id}/instructions` |
+| [Eliminar el reemplazo de instrucciones de un proveedor](/es/reference/organizations/whitelabel/delete-provider-instructions) | `DELETE /v1/whitelabel/providers/{provider_id}/instructions` |
+| [Subir el logo de un proveedor](/es/reference/organizations/whitelabel/upload-provider-logo) | `PUT /v1/whitelabel/providers/{provider_id}/logo` |
+| [Eliminar el logo de un proveedor](/es/reference/organizations/whitelabel/delete-provider-logo) | `DELETE /v1/whitelabel/providers/{provider_id}/logo` |
+
+La configuración de las organizaciones, cuentas y usuarios que respaldan un despliegue white-label se describe en [Gestión de organizaciones B2B](/es/docs/using-yuno/b2b-organization-management).

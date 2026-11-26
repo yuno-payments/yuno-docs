@@ -14,7 +14,7 @@ Onboarding is the first step in the [split payments marketplace](/docs/split-pay
 
 The onboarding process supports two flows:
 
-* **Pre-onboarded accounts**: For submerchants already registered with providers. Use `type: "PREVIOUSLY_ONBOARDED"` and send `provider.recipient_id`, which is required for this type.
+* **Pre-onboarded accounts**: For submerchants already registered with providers. Use `type: "PREVIOUSLY_ONBOARDED"` and send `provider.recipient_id`, which is required for this type. See [Previously onboarded accounts](#previously-onboarded-accounts).
 * **Dynamic onboarding**: For new submerchant registration including KYC/KYB (Know Your Customer/Know Your Business) validation. Use `type: "ONE_STEP_ONBOARDING"` or `type: "TWO_STEP_ONBOARDING"` (previously `type: "ONBOARD_ONTO_PROVIDER"`).
 
 <Note>
@@ -22,3 +22,28 @@ The onboarding process supports two flows:
 
 For `type: "TWO_STEP_ONBOARDING"` flows, use the [Continue Onboarding](/reference/continue-onboarding) endpoint to complete the KYC process after account creation.
 </Note>
+
+## Previously onboarded accounts
+
+Use `type: "PREVIOUSLY_ONBOARDED"` to attach an account the submerchant already has at the provider, so Yuno does not create a new one.
+
+Send the provider account ids in the `provider` object, together with `provider.id` and `provider.connection_id`. Yuno forwards the ids to the provider integration exactly as sent:
+
+| Field | Description |
+| --- | --- |
+| `provider.recipient_id` | The recipient's account id at the provider. Required for this type. |
+| `provider.recipient_additional_id` | An additional account id, for providers that identify an account with more than one id. |
+| `provider.balance_account_id` | The recipient's balance account at the provider. |
+| `provider.legal_entity` | The recipient's legal entity at the provider. |
+| `provider.recipient_type` | The type of recipient for the provider. |
+
+Which of these ids a provider needs is defined by its integration. Send every id the provider uses to identify the account.
+
+What happens next depends on whether the provider integration supports adopting existing accounts:
+
+* **The integration supports adopting existing accounts**: Yuno registers the account with the provider. The response is `201` with status `CREATED`, and the onboarding then becomes:
+  * `SUCCEEDED` when the provider accepts the account. You receive the `onboarding.succeeded` webhook.
+  * `ERROR` when the provider rejects it, for example because the account id does not exist at the provider. The provider's message is in `response_message`, and you receive the `onboarding.error` webhook. To fix it, [re-register the account](/reference/recipients-for-marketplace/update-onboarding#previously-onboarded-accounts) with the correct ids.
+* **Any other provider**: the onboarding is recorded as `SUCCEEDED` immediately and no call is made to the provider. The ids are stored as sent and are not validated at the provider, so make sure they are correct.
+
+Which providers adopt existing accounts is Yuno-side configuration per environment, not an API field. To find out whether it is available for your provider connection, contact your Key Account Manager.

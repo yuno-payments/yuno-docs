@@ -1,0 +1,361 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "reports",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/reports": {
+      "post": {
+        "summary": "Crear un reporte",
+        "description": "",
+        "operationId": "create-a-report",
+        "parameters": [
+          {
+            "name": "X-Organization-Code",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Código de la organización asociado a la solicitud."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "start_date",
+                  "end_date"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Tipo de reporte que se va a ejecutar (MAX 255; MIN 3). SETTLEMENT_PAYOUTS está disponible para los comercios que usan el nuevo motor de conciliación de Yuno.",
+                    "enum": [
+                      "PAYOUTS",
+                      "PAYMENTS",
+                      "TRANSACTIONS",
+                      "SETTLEMENTS_FEES",
+                      "RECONCILIATION_OVERVIEW",
+                      "COMMUNICATIONS",
+                      "SETTLEMENT_PAYOUTS"
+                    ]
+                  },
+                  "user_code": {
+                    "type": "string",
+                    "description": "Identificador de usuario que se asociará a la solicitud del reporte."
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "description": "Marca de tiempo inicial de los datos que se incluirán en la ejecución del reporte (MAX 24; MIN 24; [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)). Debe ser anterior a `end_date`; de lo contrario, la API responde 400 REPORT_RANGE_ERROR. También debe ser anterior a la hora actual, excepto en los reportes AGENDA y CASHFLOW, que aceptan fechas futuras. Para los tipos de reporte distintos de TRANSACTIONS, PAYMENTS, FRAUD_TRANSACTIONS, PAYOUTS, AGENDA y CASHFLOW, el rango entre `start_date` y `end_date` es de 62 días como máximo; un rango más largo se rechaza con 400.",
+                    "format": "date-time"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "description": "Marca de tiempo final de los datos que se incluirán en la ejecución del reporte (MAX 24; MIN 24; [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)). Debe ser posterior a `start_date`; de lo contrario, la API responde 400 REPORT_RANGE_ERROR.",
+                    "format": "date-time"
+                  },
+                  "merchant_reference_id": {
+                    "type": "string",
+                    "description": "Identificador único del reporte en el lado del comercio (MAX 255; MIN 3)."
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "Identificador(es) de cuenta. Omítelo para incluir todas las cuentas. Para varias cuentas, envía una lista separada por comas. Para el reporte Settlement Payouts, se compara con el nombre de la cuenta del proveedor y, para los comercios que usan el nuevo motor de conciliación de Yuno, también con la cuenta de Yuno a través del lote de liquidación. Los proveedores cuyos payouts llegan por un endpoint separado (por ejemplo, Pagar.me) no devuelven filas cuando se filtra de esta forma. <br> Ejemplo: `19d28762-c714-4fb0-9ef6-4e1953ed334b, 91d82267-c714-4fb0-9ef6-4e1953ed334b`"
+                  },
+                  "acquirer": {
+                    "type": "string",
+                    "description": "Filtra el reporte de Settlements por adquirente. Acepta un solo valor (sin distinguir mayúsculas de minúsculas; por convención, en mayúsculas). Para el reporte Settlement Payouts, este filtro acepta una lista de valores separados por comas, en mayúsculas. <br> Ejemplo: `BAC_CREDOMATIC`"
+                  },
+                  "provider_id": {
+                    "type": "string",
+                    "description": "Para el reporte Settlement Payouts, filtra las filas por proveedor. Lista separada por comas, con valores en mayúsculas. <br> Ejemplo: `ADYEN,CIELO`"
+                  },
+                  "payment_status": {
+                    "type": "string",
+                    "description": "Estado del pago (MAX 255; MIN 3; [Estado del pago](/es/reference/payments/status-and-response-codes/payment#payments-status)). No envíes este parámetro para solicitar la creación de un reporte con todos los estados de pago. De lo contrario, indica todos los estados que quieras incluir. <br> Ejemplo: `CREATED,READY_TO_PAY,DECLINED`"
+                  },
+                  "payment_sub_status": {
+                    "type": "string",
+                    "description": "Subestado del pago (MAX 255; MIN 3; [Subestado del pago](/es/reference/payments/status-and-response-codes/payment#payments-status)). No envíes este parámetro para solicitar la creación de un reporte con todos los subestados de pago. De lo contrario, indica todos los subestados que quieras incluir. <br> Ejemplo: `READY_TO_PAY,PENDING_FRAUD_REVIEW,EXPIRED`"
+                  },
+                  "payment_method": {
+                    "type": "string",
+                    "description": "Tipo de método de pago seleccionado por el cliente (MAX 255; MIN 3; [Métodos de pago](/es/reference/payment-type-list)). No envíes este parámetro para solicitar la creación de un reporte con todos los métodos de pago. De lo contrario, indica todos los métodos que quieras incluir. <br> Ejemplo: `ADDI,ACUOTAZ,PIX`"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "description": "Moneda usada para realizar el pago (MAX 3; MIN 3; [ISO 4217](/es/reference/country-reference)). No envíes este parámetro para solicitar la creación de un reporte con todas las monedas. De lo contrario, indica todas las monedas que quieras incluir. Para el reporte Settlement Payouts, filtra por la moneda de liquidación (lista separada por comas). <br> Ejemplo: `ARS,BRL,COP`"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "País donde se debe procesar la transacción (MAX 2; MIN 2; [ISO 3166-1](/es/reference/country-reference)). No envíes este parámetro para solicitar la creación de un reporte con todos los países. De lo contrario, indica todos los países que quieras incluir. <br> Ejemplo: `AR,BR,CO`"
+                  },
+                  "transaction_type": {
+                    "type": "string",
+                    "description": "Tipo de transacción (MAX 255; MIN 3; [Tipos de transacción](/es/reference/payments/status-and-response-codes/transaction#types-of-transactions)). No envíes este parámetro para solicitar la creación de un reporte con todos los tipos de transacción. De lo contrario, indica todos los tipos de transacción que quieras incluir. <br> Ejemplo: `PURCHASE,REFUND,VERIFY`"
+                  },
+                  "transaction_status": {
+                    "type": "string",
+                    "description": "Estado de la transacción (MAX 255; MIN 3; [Estado de la transacción](/es/reference/payments/status-and-response-codes/payment#payments-status)). No envíes este parámetro para solicitar la creación de un reporte con todos los estados de transacción. De lo contrario, indica todos los estados de transacción que quieras incluir. <br> Ejemplo: `SUCCEEDED,CREATED,EXPIRED`"
+                  },
+                  "updated_at_start": {
+                    "type": "string",
+                    "description": "Marca de tiempo inicial de los datos que se incluirán en la ejecución del reporte según la fecha de actualización de la operación (MAX 27; MIN 27; [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)).",
+                    "format": "date-time"
+                  },
+                  "updated_at_end": {
+                    "type": "string",
+                    "description": "Marca de tiempo final de los datos que se incluirán en la ejecución del reporte según la fecha de actualización de la operación (MAX 27; MIN 27; [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)).",
+                    "format": "date-time"
+                  },
+                  "columns": {
+                    "type": "string",
+                    "description": "Columnas que se incluirán (solo para los reportes de Payment, Transaction o Settlement Payouts). Consulta los campos disponibles en [Campos de reportes](/es/reference/reports/reports-fields). Para el reporte Settlement Payouts, este parámetro reemplaza la selección de columnas predeterminada en lugar de ampliarla: para agregar una columna opcional, también debes incluir todas las columnas predeterminadas que quieras conservar. <br> Ejemplo: `account_id,amount_value,card_category`. Un nombre que no sea una columna del tipo de reporte elegido devuelve 400 INVALID_COLUMNS."
+                  },
+                  "metadata_fields": {
+                    "type": "string",
+                    "description": "Columnas que se incluirán (solo si el comercio exporta campos de metadatos). Esta opción es exclusiva de los reportes de Transaction y Settlement."
+                  }
+                }
+              },
+              "examples": {
+                "Create a report": {
+                  "value": {
+                    "type": "PAYMENTS",
+                    "start_date": "2023-07-28T21:09:03.327Z",
+                    "end_date": "2023-07-29T21:09:03.327Z",
+                    "merchant_reference_id": "test_id",
+                    "account_id": "19d28762-c714-4fb0-9ef6-4e1953ed334b, 91d82267-c714-4fb0-9ef6-4e1953ed334b",
+                    "payment_status": "CREATED,READY_TO_PAY,DECLINED",
+                    "payment_sub_status": "READY_TO_PAY,PENDING_FRAUD_REVIEW,EXPIRED",
+                    "payment_method": "ADDI,ACUOTAZ,PIX",
+                    "currency": "ARS,BRL,COP",
+                    "country": "AR,BR,CO",
+                    "transaction_type": "PURCHASE,REFUND,VERIFY",
+                    "transaction_status": "SUCCEEDED,CREATED,EXPIRED",
+                    "updated_at_start": "2023-07-28T21:09:03.327Z",
+                    "updated_at_end": "2023-07-28T21:09:03.327Z",
+                    "columns": "account_id,amount_value,card_category"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "id": "6d905149-b388-4522-8c0a-759fed1f39da",
+                      "type": "PAYMENTS",
+                      "start_date": "2023-07-01T00:00:00.000000Z",
+                      "end_date": "2023-07-12T00:00:00.000000Z",
+                      "merchant_reference_id": "payments_1",
+                      "created_at": "2023-07-12T20:10:30.311048Z",
+                      "updated_at": "2023-07-12T20:10:30.311048Z",
+                      "expires_at": "",
+                      "status": "IN_PROCESS"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "6d905149-b388-4522-8c0a-759fed1f39da"
+                    },
+                    "type": {
+                      "type": "string",
+                      "example": "PAYMENTS"
+                    },
+                    "start_date": {
+                      "type": "string",
+                      "example": "2023-07-01 00:00:00 +0000 UTC"
+                    },
+                    "end_date": {
+                      "type": "string",
+                      "example": "2023-07-12 00:00:00 +0000 UTC"
+                    },
+                    "merchant_reference_id": {
+                      "type": "string",
+                      "example": "payments_1"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2023-07-12 20:10:30.311048496 +0000 UTC"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "example": "2023-07-12 20:10:30.311048496 +0000 UTC"
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "example": ""
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "IN_PROCESS"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_CREDENTIALS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid credentials"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "AUTHORIZATION_REQUIRED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "The merchant has no authorization to use this API."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "key": "charset",
+        "value": "utf-8"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

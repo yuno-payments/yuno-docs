@@ -1,0 +1,628 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "pci-proxy-invoke-forward-proxy",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/pci-proxy/forward": {
+      "get": {
+        "summary": "Invocar el proxy de reenvío (GET)",
+        "description": "Igual que `POST /pci-proxy/forward`, enviado con el método `GET`. El proxy reenvía la solicitud al destino con el mismo método y resuelve las expresiones `{{vaulted_token.<TOKEN>.<field>}}` en el cuerpo y en los valores de los encabezados.",
+        "operationId": "invokeForwardProxyGet",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyDestinationUrl"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyTimeout"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyAccountId"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuth"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuthSecretKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "La respuesta del destino, devuelta sin cambios: estado, tipo de contenido y cuerpo. El cuerpo puede ser JSON, XML, texto o estar vacío, por lo que no se aplica ningún esquema.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "Lo que haya devuelto el destino."
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Invocar el proxy de reenvío",
+        "description": "Reenvía tu solicitud al destino indicado en el encabezado `yuno-proxy-destination-url`, reemplazando las expresiones `{{vaulted_token.<TOKEN>.<field>}}` en el cuerpo y en los valores de los encabezados por datos reales de la tarjeta dentro del entorno PCI DSS Nivel 1 de Yuno. El código de estado, los encabezados y el cuerpo del destino se devuelven sin cambios. También se admiten `GET`, `PUT`, `PATCH` y `DELETE`, que se reenvían tal cual. El destino completo (incluidos su ruta y su query string) se especifica en `yuno-proxy-destination-url`; una query string en la propia solicitud a `/pci-proxy/forward` se rechaza. Cada respuesta del proxy incluye un encabezado `yuno-proxy-request-id`; un `401` devuelto antes de que la solicitud llegue al proxy es la única excepción.",
+        "operationId": "invokeForwardProxy",
+        "parameters": [
+          {
+            "name": "yuno-proxy-destination-url",
+            "in": "header",
+            "required": true,
+            "description": "La URL completa del destino, incluidos su ruta y cualquier query string (por ejemplo `https://api.example-processor.com/charges/ch_123/capture?expand=true`). Debe ser un nombre de host HTTPS público en el puerto 443, y el host debe estar registrado en tu lista de destinos permitidos; las direcciones IP y las redes internas se rechazan. No debe contener expresiones `{{vaulted_token...}}` (los datos de la tarjeta nunca deben aparecer en una URL).",
+            "schema": {
+              "type": "string",
+              "example": "https://api.example-processor.com/charges"
+            }
+          },
+          {
+            "name": "yuno-proxy-timeout",
+            "in": "header",
+            "required": false,
+            "description": "Tiempo de espera del destino en segundos. Por defecto 30, máximo 120.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120,
+              "example": 30
+            }
+          },
+          {
+            "name": "yuno-account-id",
+            "in": "header",
+            "required": false,
+            "description": "Ámbito de cuenta opcional. Restringe qué destinos de la lista de permitidos se aceptan para esta solicitud; no afecta la resolución de tokens (los tokens almacenados siempre tienen el ámbito de tu organización). Como todos los encabezados `yuno-*`, se elimina antes de reenviar y nunca llega al destino.",
+            "schema": {
+              "type": "string",
+              "example": "acc_123"
+            }
+          },
+          {
+            "name": "yuno-proxy-auth",
+            "in": "header",
+            "required": false,
+            "description": "Esquema de firma para destinos que requieren firma HMAC de la solicitud sobre el cuerpo. El proxy calcula la firma sobre el cuerpo resuelto (después de sustituir las expresiones) e inyecta los encabezados de autenticación del destino; tu secreto de firma se usa en memoria y se descarta, no se almacena nada. Valor admitido: `DLOCAL_HMAC` (el proxy genera `X-Date` y calcula `Authorization: V2-HMAC-SHA256, Signature: <hex>` sobre `X-Login + X-Date + cuerpo resuelto`; tú envías `X-Login`, `X-Trans-Key` y `X-Version` como encabezados normales del destino). Un valor desconocido, o una solicitud `DLOCAL_HMAC` sin los encabezados `X-Login` o `X-Trans-Key`, se rechaza con `400 INVALID_REQUEST` antes de contactar al destino.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DLOCAL_HMAC"
+              ],
+              "example": "DLOCAL_HMAC"
+            }
+          },
+          {
+            "name": "yuno-proxy-auth-secret-key",
+            "in": "header",
+            "required": false,
+            "description": "Tu secreto de firma para esta solicitud (obligatorio cuando `yuno-proxy-auth` está presente). Como todos los encabezados `yuno-*`, se elimina antes de reenviar y se excluye de los registros.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "El cuerpo que espera la API de destino, con expresiones de token almacenado donde van los datos de la tarjeta. El proxy es transparente al contenido: reenvía tu cuerpo y `Content-Type` sin cambios y resuelve las expresiones `{{vaulted_token.<TOKEN>.<field>}}` en cualquier parte del cuerpo sin procesar, por lo que se admite cualquier tipo de contenido (JSON, form-encoded, XML). El objeto JSON de abajo es ilustrativo. Campos admitidos: `number`, `expiration_month`, `expiration_year`, `holder_name`, `security_code`; cuando la tarjeta tiene un network token, `network_token_number` (DPAN), `network_token_expiration_month`, `network_token_expiration_year`; y `network_transaction_id` (NTID: la referencia del esquema para la transacción original de la tarjeta, para transacciones iniciadas por el comercio). `security_code` se resuelve solo si la tarjeta se inscribió con un código de seguridad, y solo durante una ventana limitada después de la inscripción (consulta la [guía del Forward Proxy](/es/docs/security-and-compliance/pci-proxy/forward-proxy)); cuando no está disponible, la solicitud falla con `EXPRESSION_RESOLUTION_FAILED`. Los criptogramas son por transacción y no se resuelven: incluye el valor directamente en el cuerpo si tu destino lo requiere. Máximo 20 tokens distintos por solicitud; tamaño máximo del cuerpo 1 MB. Las expresiones también se resuelven en los valores de los encabezados. Todo el contenido que no es una expresión se reenvía sin tocar.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "example": {
+                  "amount": 2500,
+                  "currency": "USD",
+                  "card": {
+                    "number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}",
+                    "expiration_month": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}",
+                    "expiration_year": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}",
+                    "holder_name": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}"
+                  }
+                }
+              }
+            },
+            "*/*": {
+              "schema": {
+                "description": "Cualquier otro tipo de contenido (form-encoded, XML, texto plano) se reenvía tal cual, con las expresiones resueltas en el cuerpo sin procesar."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "La respuesta del destino, devuelta sin cambios: estado, tipo de contenido y cuerpo. El cuerpo puede ser JSON, XML, texto o estar vacío, por lo que no se aplica ningún esquema.",
+            "headers": {
+              "yuno-proxy-request-id": {
+                "description": "Identificador único de esta invocación del proxy.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "yuno-proxy-destination-status": {
+                "description": "Código de estado HTTP devuelto por el destino. Solo está presente cuando se alcanzó el destino.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "yuno-proxy-replacements": {
+                "description": "Cantidad de expresiones reemplazadas antes de reenviar.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "yuno-proxy-response-redactions": {
+                "description": "Cantidad de números de tarjeta ocultados en la respuesta del destino (un valor distinto de cero significa que el destino devolvió datos de tarjeta).",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "Lo que haya devuelto el destino."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Falló la autenticación. Se devuelve antes de que la solicitud llegue al proxy, por lo que no incluye encabezados `yuno-proxy-*`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Not authenticated": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "not authenticated"
+                      ]
+                    }
+                  },
+                  "Authorization unavailable": {
+                    "value": {
+                      "code": "AuthenticationFail",
+                      "messages": [
+                        "authorization unavailable"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error de solicitud originado en el proxy (URL de destino no válida, problemas con las expresiones, tiempo de espera no válido, demasiados tokens, o una configuración de firma no válida: `yuno-proxy-auth` desconocido, falta `yuno-proxy-auth-secret-key`, o `DLOCAL_HMAC` sin los encabezados `X-Login` o `X-Trans-Key`). El encabezado `yuno-proxy-destination-status` está ausente porque no se llamó al destino.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Invalid request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "yuno-proxy-destination-url header is required"
+                      ]
+                    }
+                  },
+                  "Expression resolution failed": {
+                    "value": {
+                      "code": "EXPRESSION_RESOLUTION_FAILED",
+                      "messages": [
+                        "a vaulted_token expression could not be resolved: network_transaction_id"
+                      ]
+                    }
+                  },
+                  "Invalid account id": {
+                    "value": {
+                      "code": "INVALID_ACCOUNT_ID",
+                      "messages": [
+                        "account_id is not a valid account"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El destino no está permitido, o PCI Proxy no está activado para tu organización (solo producción).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Destination not allowed": {
+                    "value": {
+                      "code": "DESTINATION_NOT_ALLOWED",
+                      "messages": [
+                        "destination host is not registered on your allowlist"
+                      ]
+                    }
+                  },
+                  "Product not enabled": {
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "The PCI Proxy is enabled per organization. Contact your Key Account Manager (KAM) to activate it."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "El cuerpo de la solicitud supera 1 MB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Request too large": {
+                    "value": {
+                      "code": "REQUEST_TOO_LARGE",
+                      "messages": [
+                        "request body exceeds 1 MB"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Se superó el límite de solicitudes de la cuenta (se aplica en el borde de Yuno).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Too many requests": {
+                    "value": {
+                      "code": "TOO_MANY_REQUESTS",
+                      "messages": [
+                        "rate limit exceeded"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "No se pudo alcanzar el destino o, cuando Yuno está configurado a nivel de servicio para bloquear en lugar de ocultar, su respuesta contenía datos de tarjeta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Destination unreachable": {
+                    "value": {
+                      "code": "DESTINATION_UNREACHABLE",
+                      "messages": [
+                        "connection to destination failed"
+                      ]
+                    }
+                  },
+                  "Response blocked": {
+                    "value": {
+                      "code": "RESPONSE_BLOCKED",
+                      "messages": [
+                        "destination returned card data"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "El destino no respondió dentro del tiempo de espera.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Destination timeout": {
+                    "value": {
+                      "code": "DESTINATION_TIMEOUT",
+                      "messages": [
+                        "destination did not respond within the configured timeout"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error inesperado del lado del proxy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProxyError"
+                },
+                "examples": {
+                  "Proxy error": {
+                    "value": {
+                      "code": "PROXY_ERROR",
+                      "messages": [
+                        "internal error"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Invocar el proxy de reenvío (PUT)",
+        "description": "Igual que `POST /pci-proxy/forward`, enviado con el método `PUT`. El proxy reenvía la solicitud al destino con el mismo método y resuelve las expresiones `{{vaulted_token.<TOKEN>.<field>}}` en el cuerpo y en los valores de los encabezados.",
+        "operationId": "invokeForwardProxyPut",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyDestinationUrl"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyTimeout"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyAccountId"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuth"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuthSecretKey"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Opcional. Mismo formato y mismas reglas de expresiones que el cuerpo de la solicitud `POST`.",
+          "content": {
+            "application/json": {
+              "schema": {}
+            },
+            "*/*": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "La respuesta del destino, devuelta sin cambios: estado, tipo de contenido y cuerpo. El cuerpo puede ser JSON, XML, texto o estar vacío, por lo que no se aplica ningún esquema.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "Lo que haya devuelto el destino."
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Invocar el proxy de reenvío (PATCH)",
+        "description": "Igual que `POST /pci-proxy/forward`, enviado con el método `PATCH`. El proxy reenvía la solicitud al destino con el mismo método y resuelve las expresiones `{{vaulted_token.<TOKEN>.<field>}}` en el cuerpo y en los valores de los encabezados.",
+        "operationId": "invokeForwardProxyPatch",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyDestinationUrl"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyTimeout"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyAccountId"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuth"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuthSecretKey"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Opcional. Mismo formato y mismas reglas de expresiones que el cuerpo de la solicitud `POST`.",
+          "content": {
+            "application/json": {
+              "schema": {}
+            },
+            "*/*": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "La respuesta del destino, devuelta sin cambios: estado, tipo de contenido y cuerpo. El cuerpo puede ser JSON, XML, texto o estar vacío, por lo que no se aplica ningún esquema.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "Lo que haya devuelto el destino."
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Invocar el proxy de reenvío (DELETE)",
+        "description": "Igual que `POST /pci-proxy/forward`, enviado con el método `DELETE`. El proxy reenvía la solicitud al destino con el mismo método y resuelve las expresiones `{{vaulted_token.<TOKEN>.<field>}}` en el cuerpo y en los valores de los encabezados.",
+        "operationId": "invokeForwardProxyDelete",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyDestinationUrl"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyTimeout"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyAccountId"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuth"
+          },
+          {
+            "$ref": "#/components/parameters/ForwardProxyProxyAuthSecretKey"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Opcional. Mismo formato y mismas reglas de expresiones que el cuerpo de la solicitud `POST`.",
+          "content": {
+            "application/json": {
+              "schema": {}
+            },
+            "*/*": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "La respuesta del destino, devuelta sin cambios: estado, tipo de contenido y cuerpo. El cuerpo puede ser JSON, XML, texto o estar vacío, por lo que no se aplica ningún esquema.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "description": "Lo que haya devuelto el destino."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "schemas": {
+      "ProxyError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Código de error legible por máquina.",
+            "enum": [
+              "NOT_AUTHENTICATED",
+              "AuthenticationFail",
+              "INVALID_REQUEST",
+              "EXPRESSION_RESOLUTION_FAILED",
+              "INVALID_ACCOUNT_ID",
+              "DESTINATION_NOT_ALLOWED",
+              "PRODUCT_NOT_ENABLED",
+              "REQUEST_TOO_LARGE",
+              "TOO_MANY_REQUESTS",
+              "DESTINATION_UNREACHABLE",
+              "DESTINATION_TIMEOUT",
+              "RESPONSE_BLOCKED",
+              "PROXY_ERROR"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "ForwardProxyProxyDestinationUrl": {
+        "name": "yuno-proxy-destination-url",
+        "in": "header",
+        "required": true,
+        "description": "La URL completa del destino, incluidos su ruta y cualquier query string (por ejemplo `https://api.example-processor.com/charges/ch_123/capture?expand=true`). Debe ser un nombre de host HTTPS público en el puerto 443, y el host debe estar registrado en tu lista de destinos permitidos; las direcciones IP y las redes internas se rechazan. No debe contener expresiones `{{vaulted_token...}}` (los datos de la tarjeta nunca deben aparecer en una URL).",
+        "schema": {
+          "type": "string",
+          "example": "https://api.example-processor.com/charges"
+        }
+      },
+      "ForwardProxyProxyTimeout": {
+        "name": "yuno-proxy-timeout",
+        "in": "header",
+        "required": false,
+        "description": "Tiempo de espera del destino en segundos. Por defecto 30, máximo 120.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120,
+          "example": 30
+        }
+      },
+      "ForwardProxyAccountId": {
+        "name": "yuno-account-id",
+        "in": "header",
+        "required": false,
+        "description": "Ámbito de cuenta opcional. Restringe qué destinos de la lista de permitidos se aceptan para esta solicitud; no afecta la resolución de tokens (los tokens almacenados siempre tienen el ámbito de tu organización). Como todos los encabezados `yuno-*`, se elimina antes de reenviar y nunca llega al destino.",
+        "schema": {
+          "type": "string",
+          "example": "acc_123"
+        }
+      },
+      "ForwardProxyProxyAuth": {
+        "name": "yuno-proxy-auth",
+        "in": "header",
+        "required": false,
+        "description": "Esquema de firma para destinos que requieren firma HMAC de la solicitud sobre el cuerpo. El proxy calcula la firma sobre el cuerpo resuelto (después de sustituir las expresiones) e inyecta los encabezados de autenticación del destino; tu secreto de firma se usa en memoria y se descarta, no se almacena nada. Valor admitido: `DLOCAL_HMAC` (el proxy genera `X-Date` y calcula `Authorization: V2-HMAC-SHA256, Signature: <hex>` sobre `X-Login + X-Date + cuerpo resuelto`; tú envías `X-Login`, `X-Trans-Key` y `X-Version` como encabezados normales del destino). Un valor desconocido, o una solicitud `DLOCAL_HMAC` sin los encabezados `X-Login` o `X-Trans-Key`, se rechaza con `400 INVALID_REQUEST` antes de contactar al destino.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "DLOCAL_HMAC"
+          ],
+          "example": "DLOCAL_HMAC"
+        }
+      },
+      "ForwardProxyProxyAuthSecretKey": {
+        "name": "yuno-proxy-auth-secret-key",
+        "in": "header",
+        "required": false,
+        "description": "Tu secreto de firma para esta solicitud (obligatorio cuando `yuno-proxy-auth` está presente). Como todos los encabezados `yuno-*`, se elimina antes de reenviar y se excluye de los registros.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

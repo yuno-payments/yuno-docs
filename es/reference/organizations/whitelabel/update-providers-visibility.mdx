@@ -1,0 +1,92 @@
+---
+title: "Actualizar la visibilidad de varios proveedores"
+description: "Activa o desactiva los proveedores indicados en una sola solicitud, sin tocar a ningún otro proveedor."
+openapi: "/openapi/es/organizations/whitelabel/update-providers-visibility.json PATCH /whitelabel/providers"
+---
+
+Activa o desactiva los proveedores indicados en una sola solicitud. **Solo se modifican los proveedores que enumeras**: cualquier otro proveedor conserva lo que tenía, y eso es lo que lo diferencia de [Reemplazar la lista de proveedores permitidos](/es/reference/organizations/whitelabel/replace-provider-allowlist).
+
+Es idempotente, y desactivar un proveedor conserva su reemplazo de instrucciones.
+
+<Note>
+Toda la solicitud se valida antes de escribir la primera fila: un `provider_id` repetido no cambia **nada**, en lugar de cambiar solo la mitad de lo que pediste.
+</Note>
+
+### Cuerpo {#body}
+
+<ParamField body="providers" type="object[]" required>
+  Los proveedores cuya visibilidad cambia en esta solicitud. Máximo 500 entradas, y cada `provider_id` puede aparecer como máximo una vez.
+  <Expandable title="elemento">
+    <ParamField body="provider_id" type="string" required>
+      Id de proveedor del catálogo de Yuno en UPPER_SNAKE_CASE. No distingue mayúsculas y minúsculas: se normaliza a mayúsculas antes de la verificación de repetidos, por lo que `stripe` y `STRIPE` cuentan como la misma entrada.
+    </ParamField>
+    <ParamField body="visible" type="boolean" required>
+      Indica si tu organización ofrece este proveedor. `visible: false` en un proveedor que no está en la lista de permitidos no tiene efecto.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Respuesta {#response}
+
+La capa actualizada, con la misma estructura que [Listar la capa de proveedores white-label](/es/reference/organizations/whitelabel/list-providers).
+
+<ResponseField name="filtered" type="boolean">
+  Indica si tu organización tiene al menos una entrada en la lista de permitidos, después de este cambio.
+</ResponseField>
+<ResponseField name="providers" type="object[]">
+  La unión de tu lista de permitidos, tus personalizaciones de instrucciones y tus personalizaciones de logo.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH 'https://api.y.uno/v1/whitelabel/providers' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "providers": [
+      { "provider_id": "STRIPE", "visible": true },
+      { "provider_id": "DLOCAL", "visible": false }
+    ]
+  }'
+```
+
+```json 200 OK
+{
+  "filtered": true,
+  "providers": [
+    {
+      "provider_id": "ADYEN",
+      "allowed": true,
+      "has_instruction_override": false
+    },
+    {
+      "provider_id": "STRIPE",
+      "allowed": true,
+      "has_instruction_override": true,
+      "more_info_url": "https://docs.example.com/stripe"
+    }
+  ]
+}
+```
+
+```json 400 — repeated provider_id
+{
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "provider_id must appear at most once per request; repeated: STRIPE"
+}
+```
+</CodeGroup>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | Envoltorio | Cuándo |
+|---|---|---|
+| `400` | problem+json | Un `provider_id` aparece más de una vez, un id no es un id de catálogo válido, hay más de 500 entradas o hay un campo desconocido. |
+| `401` | `NOT_AUTHENTICATED` | Claves de API ausentes o no válidas. |
+| `413` | — | Cuerpo de la solicitud mayor de 256 KB. |
+
+</div>

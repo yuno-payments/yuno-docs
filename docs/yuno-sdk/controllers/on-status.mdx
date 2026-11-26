@@ -6,17 +6,13 @@ description: "Receives the final status of the transaction."
 
 `onStatus` is invoked when the transaction reaches its final state. It is the only way to know how the transaction ended.
 
-On iOS, `onStatus` can run more than once for one transaction. Asynchronous methods (PIX, boleto, OXXO, bank transfers and similar) report `status` `PENDING` as soon as the payment exists and the shopper has the payment instructions, with the backend `substatus` when there is one. The final status arrives in a later call, once Yuno confirms the payment. If the shopper closes the instructions screen, the SDK reports `PENDING` with `substatus` `CLOSED_BY_USER`. Treat `PENDING` as not final: keep your screen in a waiting state and confirm the outcome on your server. React Native apps running on iOS receive the same deliveries.
-
-On Web, these deliveries are not final. The form stays mounted after them, so the shopper can try again:
-
-- `INTERNAL_ERROR` with `message.code` `FORM_INVALID`. You submitted a form that is not valid, with [`transaction.submit()`](/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button) or with `transaction.start({ paymentMethod })` on the payment methods list.
-- `DECLINED` or `ERROR` for a card payment the SDK can retry, when you override `createPayment`. The SDK moves the form to a new checkout session, shows the field errors and keeps the form. Enable your pay button again. The next `submit()` or `start()` pays on the new session, which `token.checkout_session` carries into `createPayment`. Without `createPayment`, a form mounted by `start()` has no in-place retry: the decline is final and reaches `onStatus`. On the payment methods list and with secure fields the SDK retries in place and does not call `onStatus` for the declined attempt.
-- `INTERNAL_ERROR` with `message.code` `COLLECT_FAILED`, when you override `createPayment` and a Mercado Pago wallet fails before it produces a token. The wallet button stays mounted.
-
 ## Behavior
 
-This controller has no default behavior. If you don't implement it, you won't receive the final status. On Web, `transaction()` also prints a console warning when the config has no `onStatus` function. When implemented, the SDK delivers the final status to your handler after tokenization, payment creation (or merchant-side payment creation via `createPayment`), 3DS, and status resolution have completed.
+This controller has no default behavior. If you don't implement it, you won't receive the final status. On Web, `transaction()` also prints a console warning when the config has no `onStatus` function.
+
+When implemented, the SDK delivers the status to your handler after tokenization, payment creation (or merchant-side payment creation via `createPayment`), 3DS, and status resolution have completed.
+
+Some deliveries are not final: on iOS and Android an asynchronous payment can report `PENDING` first and its final status later, and closing a payment screen reports what the shopper did, not how the payment ended. See [Deliveries that are not final](#deliveries-that-are-not-final).
 
 ## Signature
 
@@ -32,7 +28,15 @@ sdkPayments.transaction({
 })
 ```
 
-`result` carries `status`, `substatus` and `message`. `status` and `substatus` are the backend values, with `substatus` as `null` when the backend sent none. On a `DECLINED`, `REJECTED`, `EXPIRED`, `CANCELED` or `ERROR` payment, `message` is `{ source: 'backend', code: <response_code> }` when the backend sent a response code, and `null` otherwise. Every other backend status, on payment and enrollment flows, carries `message: null`. A status value this SDK version does not know is not passed through. It arrives as `INTERNAL_ERROR` with `message.code` `UNSUPPORTED_STATUS` and `message.reason` set to `unsupported status: <value>`. It is the same payload shape on payment and enrollment flows. There is no separate result type per flow.
+`result` has the same shape on payment and enrollment flows:
+
+| Field | What it contains |
+| --- | --- |
+| `status` | The backend status. A status this SDK version does not know arrives as `INTERNAL_ERROR` (see below). |
+| `substatus` | The backend substatus, or `null` when the backend sent none. |
+| `message` | `{ source: 'backend', code: <response_code> }` on a `DECLINED`, `REJECTED`, `EXPIRED`, `CANCELED` or `ERROR` payment when the backend sent a response code. `null` in every other case. |
+
+A status this SDK version does not know is not passed through. It arrives as `INTERNAL_ERROR` with `message.code` `UNSUPPORTED_STATUS` and `message.reason` set to `unsupported status: <value>`.
 
   </Tab>
 
@@ -67,18 +71,6 @@ onStatus(status: TransactionStatus): void
 
 See [`Status`](/docs/yuno-sdk/reference/objects-you-receive#status) for the shape of the payload, the `message` field, and the SDK-emitted values (`INTERNAL_ERROR`, `USER_CANCEL`).
 
-On Web, an `INTERNAL_ERROR` with `message.source` `'sdk'` can carry values such as these in `message.code`:
-
-- `FORM_INVALID`. The submitted form is not valid. Not final, see above.
-- `COLLECT_FAILED`. A wallet failed before it produced a token. `message.reason` names the cause.
-- `UNSUPPORTED_STATUS`. The backend returned a status this SDK version does not know. `message.reason` is `unsupported status: <value>`.
-- `ELEMENT_NOT_FOUND`. The element passed to `paymentMethodList.mount()` is not in the document, or the form's container was removed while the form was loading. A config `elementSelector` that matches nothing makes `start()` reject with `elementSelector "<selector>" was not found in the document.` instead.
-- `UNEXPECTED_ERROR`. A failure the SDK does not classify, including an SDK chunk that failed to download. `message.reason` carries the error message.
-
-With `message.source` `'backend'`, `message.code` is the backend error code, or the HTTP status when the response body has none. Branch on `message.code` for the cases you handle and treat the rest as a generic failure.
-
-On Web, `USER_CANCEL` also arrives when you call `transaction.unmount()` while a form is mounted and the transaction has not delivered a status yet, unless a payment is in flight. Unmount after `onStatus` has fired, or treat that delivery as the shopper leaving the payment.
-
 ## Confirm on your server
 
 <Warning>
@@ -93,6 +85,53 @@ Before shipping goods, granting access, or marking an order as paid, confirm the
 - **Query the API.** Have your backend call [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) (or [by `merchant_order_id`](/reference/payments/retrieve-payment-by-merchant-order-id)) and read the status from the response.
 
 Treat `onStatus` as the trigger to update the screen, and the server-side confirmation as the trigger to fulfill.
+
+## Deliveries that are not final
+
+### Asynchronous payments on mobile
+
+On iOS and Android, `onStatus` can run more than once for one transaction. Asynchronous methods (PIX, boleto, OXXO, bank transfers and similar) report `status` `PENDING` as soon as the payment exists and the shopper has the payment instructions, with the backend `substatus` when there is one. The final status arrives in a later call, once Yuno confirms the payment.
+
+Treat `PENDING` as not final: keep your screen in a waiting state and confirm the outcome on your server. React Native apps receive the same deliveries as the native SDK of the platform.
+
+### When the shopper closes a payment screen on mobile
+
+On iOS and Android, what `onStatus` receives depends on the screen the shopper closes. In every case the payment is not cancelled on the backend.
+
+| Screen the shopper closes | `onStatus` receives | What to do |
+| --- | --- | --- |
+| Payment instructions: PIX QR code, boleto, OXXO and other code or voucher screens | `PENDING` / `CLOSED_BY_USER` | Keep the order open. The code stays payable until it expires, so wait for the webhook. |
+| Pix Parcelado provider page | `PENDING` / `CLOSED_BY_USER` | Keep the order open. The payment can still complete, so wait for the webhook. |
+| Any other redirect or webview: bank, wallet, PSE and similar | `USER_CANCEL`, no `substatus` | The shopper closed the screen or pressed back, but the provider may still complete the payment. Check it on your server before you show a cancellation or void the order. |
+
+### Web deliveries that keep the form mounted
+
+On Web, these deliveries are not final. The form stays mounted after them, so the shopper can try again:
+
+| `onStatus` receives | When | What to do |
+| --- | --- | --- |
+| `INTERNAL_ERROR` with `message.code` `FORM_INVALID` | You submitted a form that is not valid, with [`transaction.submit()`](/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button) or with `transaction.start({ paymentMethod })` on the payment methods list. | Let the shopper fix the fields and submit again. |
+| `DECLINED` or `ERROR` | A card payment the SDK can retry, when you override `createPayment`. The SDK moves the form to a new checkout session, shows the field errors and keeps the form. | Enable your pay button again. The next `submit()` or `start()` pays on the new session, which `token.checkout_session` carries into `createPayment`. |
+| `INTERNAL_ERROR` with `message.code` `COLLECT_FAILED` | You override `createPayment` and a Mercado Pago wallet fails before it produces a token. | Nothing. The wallet button stays mounted and the shopper can try again. |
+
+Without `createPayment`, a form mounted by `start()` has no in-place retry: the decline is final and reaches `onStatus`. On the payment methods list and with secure fields the SDK retries in place and does not call `onStatus` for the declined attempt.
+
+On Web, `USER_CANCEL` also arrives when you call `transaction.unmount()` while a form is mounted and the transaction has not delivered a status yet, unless a payment is in flight. Unmount after `onStatus` has fired, or treat that delivery as the shopper leaving the payment.
+
+## Web error codes
+
+On Web, an `INTERNAL_ERROR` with `message.source` `'sdk'` can carry these values in `message.code`:
+
+| `message.code` | Meaning |
+| --- | --- |
+| `FORM_INVALID` | The submitted form is not valid. Not final, see [Web deliveries that keep the form mounted](#web-deliveries-that-keep-the-form-mounted). |
+| `COLLECT_FAILED` | A wallet failed before it produced a token. `message.reason` names the cause. |
+| `WALLET_DATA_MISSING` | A headless `start()` with `MERCADO_PAGO_SUPERTOKEN` left out `wallet.thirdPartyToken`, `wallet.providerMethodId` or `wallet.providerMethodType`. No token is created. `message.reason` names the missing fields. |
+| `UNSUPPORTED_STATUS` | The backend returned a status this SDK version does not know. `message.reason` is `unsupported status: <value>`. |
+| `ELEMENT_NOT_FOUND` | The element passed to `paymentMethodList.mount()` is not in the document, or the form's container was removed while the form was loading. A config `elementSelector` that matches nothing makes `start()` reject with `elementSelector "<selector>" was not found in the document.` instead. |
+| `UNEXPECTED_ERROR` | A failure the SDK does not classify, including an SDK chunk that failed to download. `message.reason` carries the error message. |
+
+With `message.source` `'backend'`, `message.code` is the backend error code, or the HTTP status when the response body has none. Branch on `message.code` for the cases you handle and treat the rest as a generic failure.
 
 ## Threading
 

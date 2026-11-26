@@ -178,6 +178,16 @@ This object represents the payment created after generating the checkout session
       Example: 111111
     </ParamField>
 
+    <ParamField body="authorized" type="number">
+      The amount the provider approved (multiple of 0.0001), net of any Yuno promotion (`value` minus `discount_amount`) and increased by approved incremental authorizations. It equals that net amount on a full approval or when the provider returns no approved amount.
+
+      After a partial approval of a card payment sent with `payment_method.detail.card.partial_approval: true`, the payment keeps the status of a full approval, so it is partially approved when `authorized` is lower than `value` minus `discount_amount` (when there is no promotion, lower than `value`). Captures and refunds of that payment are limited to `authorized`.
+
+      Not returned for payments that were not approved or that were created before this field was introduced.
+
+      Example: 111111
+    </ParamField>
+
   </Expandable>
 </ParamField>
 
@@ -319,6 +329,12 @@ This object represents the payment created after generating the checkout session
               Possible values: `True` or `False`
             </ParamField>
 
+            <ParamField body="partial_approval" type="boolean">
+              Whether the payment was sent accepting an approval for less than `amount.value`. Applies to card purchases and authorizations, not to verify. The approved amount is in `amount.authorized`. Without it, or when the provider does not support partial approvals, the payment is processed as a regular card payment.
+
+              Default: `false`
+            </ParamField>
+
             <ParamField body="installments" type="integer">
               The card installments (MAX 50; MIN 1).
 
@@ -369,6 +385,14 @@ This object represents the payment created after generating the checkout session
               For providers that return an acquirer reference (for example, Adyen), this field carries that value, and `retrieval_reference_number` may be empty for those providers.
 
               Example: 7C9F8E2A1B3D
+            </ParamField>
+
+            <ParamField body="par" type="string">
+              The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens, so the same account keeps one PAR.
+
+              Returned for card payments with or without a network token. When the payment uses a network token, `card_data.network_token.par` carries the same value. The field is omitted when the provider does not send a PAR.
+
+              Example: V0010013019000000000000000001
             </ParamField>
 
             <ParamField body="voucher" type="string">
@@ -831,6 +855,14 @@ This object represents the payment created after generating the checkout session
               For providers that return an acquirer reference (for example, Adyen), this field carries that value, and `retrieval_reference_number` may be empty for those providers.
 
               Example: 7C9F8E2A1B3D
+            </ParamField>
+
+            <ParamField body="par" type="string">
+              The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens, so the same account keeps one PAR.
+
+              Returned for card payments with or without a network token. When the payment uses a network token, `card_data.network_token.par` carries the same value. The field is omitted when the provider does not send a PAR.
+
+              Example: V0010013019000000000000000001
             </ParamField>
 
             <ParamField body="payment_instruction" type="string">
@@ -1601,7 +1633,7 @@ This object represents the payment created after generating the checkout session
       <Expandable title="properties">
 
         <ParamField body="number" type="string">
-          The customer's phone number (MAX 40; MIN 3).
+          The customer's phone number (MAX 40; MIN 3). For some providers and countries, Yuno returns this value masked, showing only the last four digits (for example, `*****3456`), due to local data-protection rules. A masked value is not a valid phone number: do not send it back in later requests (refunds, cancellations or new payments).
 
           Example: 11992149494
         </ParamField>
@@ -2347,13 +2379,19 @@ This object represents the payment created after generating the checkout session
           <Expandable title="properties">
 
             <ParamField body="type" type="enum">
-              The type of the discount line. Possible values, written exactly like this in capitals: `MERCHANT` (a discount you computed; the default) and `YUNO_PROMOTION` (a promotion quote). Any other spelling returns `400`. On a response it is present when the payment carries a Yuno promotion.
+              The type of the discount line. Possible values, written exactly like this in capitals: `MERCHANT` (a discount you computed; the default) and `YUNO_PROMOTION` (a promotion, sent as a quote or as a code). Any other spelling returns `400`. You can leave it out when the line carries a `quote_id`, or a `code` and no `id` or `name`: the line is read as `YUNO_PROMOTION`. On a response it is present when the payment carries a Yuno promotion.
 
               Example: MERCHANT
             </ParamField>
 
             <ParamField body="quote_id" type="string">
-              The promotion quote id (MAX 1000, no whitespace). Required on `YUNO_PROMOTION` lines and not allowed on `MERCHANT` lines.
+              The promotion quote id (MAX 1000, no whitespace). Required on a `YUNO_PROMOTION` line that carries no `code`. Not allowed together with a `code`, and not allowed on `MERCHANT` lines.
+            </ParamField>
+
+            <ParamField body="code" type="string">
+              The promotion code to redeem (MIN 3; MAX 32; letters, digits, `-` and `_`; Yuno trims the spaces around it). Send it on a `YUNO_PROMOTION` line instead of a `quote_id`: a line carries one or the other, never both. On a `MERCHANT` line (a line with `type: MERCHANT`, or with no `type` and an `id` or `name`) the code is ignored without an error, and no promotion is applied. A blank code or a code of another shape returns `400 INVALID_PARAMETERS`, as does a second `YUNO_PROMOTION` line in the payment and a payment sent with `X-Dry-Run: true` (a dry run takes no promotion code: test codes in the sandbox). See [Promotion codes](/reference/payments/create-payment#promotion-codes) for the rules and their messages. A response never carries the code: Yuno swaps it for a quote before it creates the payment, so the Create Payment answer holds the filled `YUNO_PROMOTION` line, with the `quote_id` of that quote.
+
+              Example: SUMMER10
             </ParamField>
 
             <ParamField body="id" type="string">
@@ -3260,6 +3298,14 @@ This object represents the payment created after generating the checkout session
                   Example: 7C9F8E2A1B3D
                 </ParamField>
 
+                <ParamField body="par" type="string">
+                  The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens, so the same account keeps one PAR.
+
+                  Returned for card payments with or without a network token. When the payment uses a network token, `card_data.network_token.par` carries the same value. The field is omitted when the provider does not send a PAR.
+
+                  Example: V0010013019000000000000000001
+                </ParamField>
+
                 <ParamField body="voucher" type="string">
                   The unique identifier of the payment receipt assigned by the issuing bank for a card
                                         transaction.
@@ -3907,6 +3953,14 @@ This object represents the payment created after generating the checkout session
                   Example: 7C9F8E2A1B3D
                 </ParamField>
 
+                <ParamField body="par" type="string">
+                  The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens, so the same account keeps one PAR.
+
+                  Returned for card payments with or without a network token. When the payment uses a network token, `card_data.network_token.par` carries the same value. The field is omitted when the provider does not send a PAR.
+
+                  Example: V0010013019000000000000000001
+                </ParamField>
+
                 <ParamField body="payment_instruction" type="string">
                   Payments instructions related to the payment (MAX 255; MIN 3).
 
@@ -4380,6 +4434,14 @@ This object represents the payment created after generating the checkout session
                   For providers that return an acquirer reference (for example, Adyen), this field carries that value, and `retrieval_reference_number` may be empty for those providers.
 
                   Example: 7C9F8E2A1B3D
+                </ParamField>
+
+                <ParamField body="par" type="string">
+                  The Payment Account Reference (PAR) of the card, as the provider returns it. A PAR identifies the cardholder account across the card number and its network tokens, so the same account keeps one PAR.
+
+                  Returned for card payments with or without a network token. When the payment uses a network token, `card_data.network_token.par` carries the same value. The field is omitted when the provider does not send a PAR.
+
+                  Example: V0010013019000000000000000001
                 </ParamField>
 
                 <ParamField body="voucher" type="string">

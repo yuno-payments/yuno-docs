@@ -1,0 +1,88 @@
+---
+title: "Obtener el uso de la suscripción"
+openapi: "/openapi/es/subscriptions/retrieve-subscription-usage.json GET /subscriptions/{subscription_id}/usage"
+description: "Lee el uso medido que una suscripción ha acumulado en su período de facturación actual, valorizado según los medidores de su plan."
+hidden: true
+---
+
+Devuelve el uso medido que una suscripción ha acumulado en su **período de facturación actual**, valorizado según
+los medidores asociados a su plan: un elemento por medidor, con la cantidad agregada, la cantidad
+que realmente se factura después de consumir los créditos incluidos, el precio unitario y el
+monto resultante, además de un total del período. Es una lectura: no activa la facturación por sí misma.
+Consulta [Facturación basada en el uso](/es/docs/payment-features/subscriptions/usage-based-billing) para saber cómo una
+suscripción acumula medidores, créditos y precios en primer lugar.
+
+## Cómo leer la respuesta {#reading-the-response}
+
+| Campo | Significado |
+| --- | --- |
+| `subscription_code` | La suscripción a la que pertenece el uso: el `id` que enviaste en la ruta. |
+| `currency` | La moneda de la suscripción: en la que están expresados todos los `unit_price`, `amount` y `total` de esta página. |
+| `period.start` / `period.end` | El período de facturación actual de la suscripción: la ventana sobre la que se agrega `items`. |
+| `items[].meter_code` | El medidor que agrega este elemento. |
+| `items[].event_name` | El `event_name` del medidor: aquello contra lo que reportan tus eventos de uso. |
+| `items[].aggregation` | `SUM`, `COUNT` o `LAST`: consulta [Elegir una agregación](/es/docs/payment-features/subscriptions/usage-based-billing#choosing-an-aggregation). |
+| `items[].quantity` | La cantidad agregada reportada para este medidor en el período. |
+| `items[].credits` | Cuántos de los créditos incluidos del medidor consumió la cantidad de este elemento. |
+| `items[].billable_quantity` | La cantidad que realmente se factura después de consumir `credits`. |
+| `items[].remaining_credits` | Créditos incluidos que quedan sin usar para este medidor en el período. |
+| `items[].unit_price` | El precio de una unidad facturable. |
+| `items[].amount` | `billable_quantity` valorizada a `unit_price`. |
+| `items[].events_count` | Cuántos eventos de uso se reportaron contra este medidor en el período. |
+| `items[].last_event_at` | Cuándo se reportó el más reciente de esos eventos. |
+| `total` | La suma del `amount` de todos los elementos del período. Es cero cuando `items` está vacío. |
+
+Toda cantidad y todo monto es un número JSON.
+
+```json A subscription with one metered item
+{
+  "subscription_code": "c2094820-df10-4bd4-b7ef-dbe0d28db857",
+  "period": {
+    "start": "2026-09-15T15:54:32.436443Z",
+    "end": "2026-10-15T15:54:32.272111Z"
+  },
+  "currency": "COP",
+  "items": [
+    {
+      "meter_code": "b7cb6aad-0fcc-4898-ae8b-f500ee6dfbb3",
+      "event_name": "lifecycle_1789487669444",
+      "aggregation": "SUM",
+      "quantity": 20,
+      "credits": 0,
+      "billable_quantity": 20,
+      "remaining_credits": 0,
+      "unit_price": { "currency": "COP", "value": 500 },
+      "amount": { "currency": "COP", "value": 10000 },
+      "events_count": 2,
+      "last_event_at": "2026-09-15T15:54:46.620383Z"
+    }
+  ],
+  "total": { "currency": "COP", "value": 10000 }
+}
+```
+
+## Cuando no hay nada que facturar {#when-there-is-nothing-to-bill}
+
+Una suscripción cuyo plan no tiene medidores, o que no tiene ningún plan, devuelve `items: []` y un
+`total` en cero en lugar de un error.
+
+<Note>
+**El reporte es asíncrono**
+
+`POST /subscriptions/meters/events` responde `202` una vez que el evento se valida, antes de que se
+almacene. Una lectura de uso que ocurre poco después de reportar un evento todavía puede mostrar el total de
+antes de ese evento: los `items` de una suscripción mantuvieron la misma `quantity` y `events_count` en una
+lectura hecha inmediatamente después de reportar otro evento en stg. Espera un breve tiempo antes de
+confiar en que una lectura refleje el último reporte.
+</Note>
+
+## Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `401` | `INVALID_CREDENTIALS` | El par `public-api-key` / `private-secret-key` falta o no es válido. |
+| `404` | `NOT_FOUND` | La suscripción no existe: `"Subscription not found."` |
+
+</div>

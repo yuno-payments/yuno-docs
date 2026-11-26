@@ -1,0 +1,990 @@
+---
+title: "Changelog de la API"
+description: "Últimas actualizaciones e historial de versiones de la API de Yuno"
+---
+
+import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
+
+## v2026-11
+*10 de noviembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Aprobaciones parciales en pagos con tarjeta**  
+  Crear pago acepta un nuevo campo opcional `payment_method.detail.card.partial_approval` (valor predeterminado `false`) en compras y autorizaciones con tarjeta; se ignora en verify. Con `true`, el pago puede aprobarse por menos de `amount.value`. Un nuevo `amount.authorized` en el objeto de pago, las respuestas de las operaciones y los webhooks de pago devuelve el monto que aprobó el proveedor, neto de cualquier promoción de Yuno y aumentado por las autorizaciones incrementales aprobadas; después de una aprobación parcial, el pago conserva el estado de una aprobación completa, por lo que está aprobado parcialmente cuando `amount.authorized` es menor que `amount.value` menos `discount_amount` (cuando no hay promoción, menor que `amount.value`). Para un pago aprobado parcialmente, una captura sin `amount` captura `amount.authorized`, una captura por encima de ese monto se rechaza con `400 INVALID_PARAMETERS` y los reembolsos se limitan a él. Los pagos enviados sin el campo, o procesados por un proveedor que no admite aprobaciones parciales, se comportan exactamente como antes.
+  *Ver también: [El objeto de pago](/es/reference/payments/the-payment-object), [Crear un pago](/es/reference/payments/create-payment), [Capturar autorización](/es/reference/payments/capture-authorization)*
+
+*5 de noviembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="changed" /> **Número de teléfono del pagador enmascarado para algunos proveedores y países**  
+  Donde el enmascaramiento está habilitado para un proveedor y país (debido a normas locales de protección de datos), `customer_payer.phone.number` en la respuesta del pago puede devolverse enmascarado, y muestra solo los últimos cuatro dígitos (por ejemplo, `*****3456`). En el resto de los casos, el número completo se devuelve como antes. Un valor enmascarado no es un número de teléfono válido: no lo envíes de nuevo en solicitudes posteriores (reembolsos, cancelaciones o nuevos pagos).
+  *Ver también: [El objeto de pago](/es/reference/payments/the-payment-object), [Consultar pago por ID](/es/reference/payments/retrieve-payment-by-id-v2)*
+
+## v2026-10
+*19 de octubre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Condiciones de moneda en el enrutamiento con NOT_EQUAL, ONE_OF y NOT_ONE_OF**  
+  Las condiciones de enrutamiento aceptan `CURRENCY` con `EQUAL`, `NOT_EQUAL`, `ONE_OF` o `NOT_ONE_OF` y las monedas en `values` (ISO 4217 en mayúsculas, sin el campo `currency`), de modo que un enrutamiento puede coincidir con "la moneda no es USD" o "la moneda es EUR o GBP" a través de la API. Retrieve a Routing y List Routings devuelven `NOT_EQUAL`, `ONE_OF` y `NOT_ONE_OF` tal como se enviaron; `CURRENCY` con `EQUAL` se devuelve como la condición `AMOUNT` solo de moneda. Las condiciones de moneda creadas en el Dashboard sin un monto ahora pueden actualizarse a través de la API.
+  *Ver también: [Condiciones de enrutamiento](/es/reference/organizations/routing/routing-conditions)*
+
+- <ChangelogBadge type="fixed" /> **Grupos de Merchant Advice Code devueltos como `DECLINE_GROUP` en la API de enrutamiento**  
+  Update a Routing y Create a Routing aceptan una salida `DECLINE_GROUP` que hace referencia a un grupo de Merchant Advice Code, el formato que guarda el Dashboard y que devuelve Retrieve a Routing, de modo que un ciclo de obtener y actualizar de esos enrutamientos ya no falla con `400 INVALID_ROUTE_CONFIGURATION`. El estado se conserva tal como se envió, y `DECLINE_GROUP` y `MAC_CODE_GROUP` coinciden con los rechazos de forma distinta. `retry: true` en una entrada de este tipo se acepta solo cuando el enrutamiento almacenado ya reintenta ese grupo.
+  *Ver también: [Forma del recurso de enrutamiento](/es/reference/organizations/routing/routing-resource-shape#outcome-groups)*
+
+- <ChangelogBadge type="added" /> **Nonce del proveedor en pagos directos con billetera**  
+  `POST /v1/payments` acepta un nuevo campo opcional `payment_method.detail.wallet.provider_payment_token` en el flujo de trabajo `DIRECT`: un nonce de un solo uso del SDK de cliente del proveedor, como un nonce de Braintree PayPal. Yuno lo reenvía a la conexión del proveedor y no lo almacena. Combinado con `vault_on_success`, el pago devuelve un `vaulted_token`, y las respuestas de creación y de Retrieve Payment devuelven el ID almacenado en la bóveda del proveedor en `payment_method.payment_method_detail.wallet.provider_token` (también en Retrieve Payment Method como `provider.token`). `wallet.provider_token` se devuelve para los pagos `PAYPAL_BRAINTREE` cuando Braintree guardó la cuenta en su bóveda, y se omite en caso contrario. El campo se rechaza con `400 INVALID_REQUEST` en otros flujos de trabajo, cuando está en blanco o cuando se combina con otro token de billetera o de método de pago. Las solicitudes sin este campo se comportan exactamente igual que antes.
+  *Ver también: [PayPal y Venmo](/es/docs/wallets/paypal#direct-integration-with-a-braintree-nonce), [Crear un pago](/es/reference/payments/create-payment)*
+
+- <ChangelogBadge type="added" /> **Grupos de resultado, reintento y pasos de acción en la API de enrutamiento**  
+  Las salidas de enrutamiento aceptan `MAC_CODE_GROUP` y `SUCCEEDED_GROUP` junto con `DECLINE_GROUP`, hacen referencia a los grupos de la cuenta mediante `group_id` y llevan `retry` para intentar una vez más con el mismo proveedor antes del respaldo. Los pasos aceptan `action` `CAPTURE` (con `action_delay`) y `HOLD_FOR_REVIEW` después de una salida `APPROVED` o `SUCCEEDED_GROUP`, junto con `CANCEL`. Dos endpoints de solo lectura, `GET /v1/routing/decline-groups` y `GET /v1/routing/succeeded-groups`, listan los grupos de una cuenta. Retrieve a Routing devuelve `retry`, `group_id`, `group_name`, `action` y `action_delay`, de modo que un ciclo de obtener y actualizar conserva el enrutamiento tal como está configurado en el Dashboard.
+  *Ver también: [Forma del recurso de enrutamiento](/es/reference/organizations/routing/routing-resource-shape), [Listar grupos de rechazo](/es/reference/organizations/routing/list-decline-groups), [Listar grupos de éxito](/es/reference/organizations/routing/list-succeeded-groups)*
+
+- <ChangelogBadge type="added" /> **Pasos de fraude, 3DS y enrutamiento inteligente en la API de enrutamiento**  
+  Ahora un paso de proveedor informa su `provider_type`; los pasos de fraude llevan su configuración (`fraud`: reglas, listas de bloqueo, listas de permitidos, listas de revisión, preset, `report_only`) y el resultado `PENDING`, en el que pueden ramificarse los pasos de fraude, 3DS y autenticación; `REVERT` es una acción final después de una verificación de fraude posterior al pago; y un paso de enrutamiento inteligente (`provider_id: "SMART_ROUTING"` con `smart_routing`) puede crearse, actualizarse y leerse en los enrutamientos de tarjeta. Junto con las entradas anteriores, un enrutamiento creado en el Dashboard puede leerse y volver a escribirse a través de la API sin pérdidas.
+  *Ver también: [Forma del recurso de enrutamiento](/es/reference/organizations/routing/routing-resource-shape)*
+
+- <ChangelogBadge type="added" /> **Network token y exenciones 3DS por paso de enrutamiento**  
+  Los pasos de proveedor de un enrutamiento aceptan `network_token_on` en los proveedores de pago de un enrutamiento `CARD` y `three_d_secure_exemptions` en los proveedores 3DS, los ajustes por paso que el Dashboard ya almacena. Retrieve a Routing los devuelve junto con los campos de solo lectura `timeout` y `network_token_enable` de cada paso de proveedor. Al actualizar, un paso enviado sin uno de estos campos conserva el valor almacenado; `network_token_on: false` y `three_d_secure_exemptions: []` lo borran.
+  *Ver también: [Forma del recurso de enrutamiento](/es/reference/organizations/routing/routing-resource-shape), [Exenciones de SCA](/es/docs/payment-features/sca-exemptions)*
+
+- <ChangelogBadge type="added" /> **Horarios, límites de volumen, campos adicionales y condiciones solo de moneda en el enrutamiento**  
+  Las condiciones de enrutamiento admiten `TIME_PERIOD` (rango de fechas con recurrencia, días de la semana y una ventana horaria), `VOLUME_PAYMENTS_LIMIT` (cantidad de pagos o límite de volumen por día, mes o trimestre, con `limit_by` y `payments_count`) y `ADDITIONAL_FIELD` (campos de cliente, dirección, orden, aerolínea y tarjeta por `key`). Una condición `AMOUNT` con `currency` y una lista `values` vacía coincide con cualquier monto en esa moneda. Los campos de horario y límite se devuelven al obtener el enrutamiento y se conservan al actualizar.
+  *Ver también: [Condiciones de enrutamiento](/es/reference/organizations/routing/routing-conditions)*
+
+- <ChangelogBadge type="added" /> **ID de recomendación en las transacciones reportadas**  
+  `POST /v1/reporting/transactions` acepta un nuevo campo opcional `recommendation_id` en cada evento: el valor devuelto por `POST /v1/routing/recommendations` para ese pago, como un UUID v4 en minúsculas. Yuno lo almacena para atribuir el resultado reportado a esa recomendación; no se valida contra las recomendaciones existentes. Los eventos sin este campo se comportan exactamente igual que antes; cualquier otro valor se rechaza por evento con `INVALID_EVENT` y el mensaje "The field 'recommendation_id' must be a UUID."
+  *Ver también: [Reportar transacciones fuera de Yuno](/es/reference/reporting/report-transactions)*
+
+## v2026-09
+*14 de septiembre de 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Iniciación CIT/MIT en las transacciones reportadas**  
+  `POST /v1/reporting/transactions` acepta un nuevo campo opcional `initiation` en cada evento: `CIT` (iniciada por el titular de la tarjeta) o `MIT` (iniciada por el comercio). Yuno lo guarda en el pago reportado y lo usa para construir estadísticas por nivel de iniciación. Los eventos sin este campo se comportan exactamente igual que antes; cualquier otro valor se rechaza por evento con `INVALID_EVENT` y el mensaje "The field 'initiation' must be CIT or MIT."
+  *Ver también: [Reportar transacciones fuera de Yuno](/es/reference/reporting/report-transactions)*
+
+- <ChangelogBadge type="changed" /> **Recomendaciones de enrutamiento por nivel de iniciación**  
+  Ahora `POST /v1/routing/recommendations` clasifica a los candidatos en el segmento de la misma iniciación cuando `payment.initiation` coincide con el historial reportado: en cada nivel prueba primero el historial específico de la iniciación y, si no, recurre al nivel completo, de modo que una solicitud sin `payment.initiation` devuelve la misma clasificación que antes.
+  *Ver también: [Obtener una recomendación de enrutamiento](/es/reference/organizations/routing/get-routing-recommendations)*
+
+## v2026-08
+*31 de agosto de 2026*
+
+**Seguridad**
+
+- <ChangelogBadge type="added" /> **Modo solo criptograma para la API de criptograma de Network Token**  
+  Hay un nuevo campo opcional `include_network_token` (valor predeterminado `true`) disponible en `POST /v1/network-tokens/cryptograms`. Con `false`, la respuesta omite `network_token.number` (DPAN) y `network_token.token_data` y conserva los metadatos que no equivalen a un PAN, de modo que los comercios sin certificación PCI pueden realizar pagos con network token combinando el criptograma con el PCI Proxy, que resuelve el DPAN en el momento del reenvío.
+  *Ver también: [Generar un criptograma de network token](/es/reference/network-tokens/generate-network-token-cryptogram)*
+
+- <ChangelogBadge type="changed" /> **Error explícito para organizaciones sin PCI que solicitan el network token**  
+  En `POST /v1/network-tokens/cryptograms`, una organización sin certificación PCI que solicita el network token completo (`include_network_token` en `true` u omitido) ahora recibe `403 NETWORK_TOKEN_RETURN_NOT_ALLOWED` con una guía para usar el modo solo criptograma, en lugar del genérico `PCI_MERCHANT_REQUIRED`.
+  *Ver también: [Generar un criptograma de network token](/es/reference/network-tokens/generate-network-token-cryptogram)*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **BIN de tarjeta en las transacciones reportadas**  
+  `POST /v1/reporting/transactions` acepta un nuevo campo opcional `payment_method_details.card.bin` en los eventos `CARD`: el BIN de la tarjeta, de exactamente 6 u 8 dígitos. Yuno lo guarda en el pago reportado y lo usa para construir estadísticas por BIN. Los eventos sin este campo se comportan exactamente igual que antes; un valor que no tenga 6 u 8 dígitos se rechaza por evento con `INVALID_EVENT`.
+  *Ver también: [Reportar transacciones fuera de Yuno](/es/reference/reporting/report-transactions)*
+
+- <ChangelogBadge type="changed" /> **Recomendaciones de enrutamiento por BIN**  
+  Ahora `POST /v1/routing/recommendations` clasifica a los candidatos en el segmento del BIN cuando `payment.payment_method.details.card.bin` coincide con el historial reportado (primero el BIN de 8 dígitos y luego el de 6) y, si no, recurre a los segmentos de país y método de pago, de modo que un BIN sin historial devuelve la misma clasificación que antes.
+  *Ver también: [Obtener una recomendación de enrutamiento](/es/reference/organizations/routing/get-routing-recommendations)*
+
+## v2026-07
+*11 de julio de 2026*
+
+**Seguridad**
+
+- <ChangelogBadge type="added" /> **PCI Proxy**  
+  Ahora puedes enviar datos de tarjetas almacenadas a cualquier API de terceros a través del entorno PCI DSS Nivel 1 de Yuno, mediante el nuevo endpoint `/v1/pci-proxy/forward`, sin incorporar tus sistemas al alcance de PCI.
+  *Ver también: [Resumen de PCI Proxy](/es/docs/security-and-compliance/pci-proxy/overview)*
+
+## v2025-06
+*30 de junio de 2025*
+
+- <ChangelogBadge type="changed" /> **Nombre y apellido opcionales para los clientes**  
+  Los campos `first_name` y `last_name` ahora son opcionales al crear un cliente mediante la API. Si un proveedor de pagos los requiere, el formulario del SDK se los pedirá al usuario. Si no usas el SDK de Yuno, asegúrate de enviar estos campos al crear el pago cuando el proveedor los requiera.
+  *Ver también: [Referencia de Crear un cliente](/es/reference/customers/create-customer)*
+
+**Seguridad**
+
+- <ChangelogBadge type="added" /> **Compatibilidad con exenciones de SCA en 3DS**  
+  Hay un nuevo campo opcional `strong_customer_authentication_exemptions` disponible en `payment_method.detail.card.three_d_secure`. Además, Yuno propaga las recomendaciones de exención de tu proveedor de fraude a lo largo de toda la ruta de pago hasta el gateway 3DS, y el tipo de exención aparece en la respuesta del pago, en la API GET y en los webhooks.
+  *Ver también: [Guía de exenciones de SCA](/es/docs/payment-features/sca-exemptions)*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Campo de tipo de viaje de aerolínea**  
+  Se agregó un nuevo campo enum `type` dentro de `additional_data.airline` para especificar el tipo de viaje: `ONE_WAY`, `ROUNDTRIP` o `MULTIPLE_DESTINATIONS`. No se requieren cambios en la integración si no usas datos de aerolínea.
+  *Ver también: [Referencia de Crear un pago](/es/reference/payments/create-payment)*
+
+- <ChangelogBadge type="added" /> **Campos de orden de tramos de aerolínea**  
+  Se agregaron dos nuevos campos enteros, `order` y `route_order`, dentro de `additional_data.airline.legs` para describir el orden de los tramos dentro de una ruta y entre rutas, respectivamente. No se requieren cambios en la integración si no usas datos de tramos de aerolínea.
+  *Ver también: [Referencia de Crear un pago](/es/reference/payments/create-payment)*
+
+- <ChangelogBadge type="added" /> **Estructura de datos de transporte**  
+  Hay un nuevo arreglo `transportations` de objetos disponible dentro de `additional_data` para reservas de viaje que no son de aerolínea, como autobús, tren, barco, tranvía y automóvil. Cada entrada admite los subobjetos legs, passengers y tickets con detalles de salida y llegada.
+  *Ver también: [Referencia de Crear un pago](/es/reference/payments/create-payment)*
+
+## v2025-05
+*31 de mayo de 2025*
+
+**Seguridad**
+
+- <ChangelogBadge type="changed" /> **Inscripción de network tokens para tarjetas guardadas en la bóveda**  
+  Cuando la funcionalidad de network tokens está habilitada, Yuno ahora genera network tokens para todas las tarjetas inscritas y almacenadas en la bóveda. Las tarjetas de un solo uso quedan excluidas. Esto se alinea con los estándares de tokenización de red de Visa y Mastercard y mejora la seguridad y la confiabilidad de los pagos recurrentes.
+  *Ver también: [Guía de network tokens](/es/docs/security-and-compliance/network-tokens)*
+
+**Suscripciones**
+
+- <ChangelogBadge type="added" /> **Control de la fecha de facturación de la suscripción**  
+  Hay una nueva estructura `billing_date` disponible al crear una suscripción, que te permite definir el momento de la facturación como `PREPAID`, `POSTDATE` o un `DAY` específico del mes. Este campo es mutuamente excluyente con el objeto `frequency`.
+  *Ver también: [Guía de suscripciones](/es/docs/payment-features/subscriptions)*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Campo de fecha de vencimiento del método de pago**  
+  Ahora se devuelve un nuevo campo de marca de tiempo `expirates_at` dentro de `payment_method_detail.wallet` para los métodos de pago asíncronos que lo admiten. La disponibilidad depende de la compatibilidad del proveedor.
+  *Ver también: [Referencia de Crear un pago](/es/reference/payments/create-payment)*
+
+<Accordion title="expirates_at en la respuesta de wallet">
+
+```json
+"payment_method": {
+  "type": "NU_PAY",
+  "payment_method_detail": {
+    "wallet": {
+      "expirates_at": "2025-05-14T15:06:48.383418Z"
+    }
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Geolocalización del cliente en los pagos**  
+  Ahora hay un nuevo objeto `geolocation` con los campos `latitude` y `longitude` disponible dentro de `customer_payer` al crear un pago.
+  *Ver también: [Referencia de Crear un pago](/es/reference/payments/create-payment)*
+
+<Accordion title="geolocation en customer_payer">
+
+```json
+"customer_payer": {
+  "id": "b080db73-b12d-4710-a604-d659bce26f01",
+  "geolocation": {
+    "latitude": "-34.4720",
+    "longitude": "-58.5300"
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Cancelar pagos APM en estado PENDING**  
+  Ahora puedes cancelar mediante el endpoint de cancelación un pago `PENDING` creado con un método de pago alternativo (APM). Antes esto estaba restringido solo a las transacciones con tarjeta. La disponibilidad de la funcionalidad depende de la compatibilidad del proveedor.
+  *Ver también: [Referencia de Cancelar un pago](/es/reference/payments/cancel-payment)*
+
+**Webhooks**
+
+- <ChangelogBadge type="added" /> **Compatibilidad con URL de webhook para suscripciones**  
+  Ahora puedes definir un `webhook_url` en la sección Developers del Dashboard para recibir los eventos del ciclo de vida de las suscripciones. Los distintos tipos de evento producen payloads de webhook distintos.
+  *Ver también: [Documentación de webhooks](/es/docs/webhooks/configure-webhooks)*
+
+## v2025-04
+*30 de abril de 2025*
+
+**Seguridad**
+
+- <ChangelogBadge type="changed" /> **Servicio de setup de 3DS eliminado**  
+  Ya no se requiere la llamada separada al servicio de setup para la implementación directa de 3DS. La recopilación de datos y el setup ahora se manejan automáticamente dentro de la creación del pago, lo que simplifica el flujo de integración.
+  *Ver también: [Guía de 3D Secure](/es/docs/security-and-compliance/3d-secure)*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Campos extendidos de tramos de aerolínea**  
+  Se agregaron nuevos campos dentro de `additional_data.airline.legs`: `arrival_airport_country`, `arrival_airport_city`, `departure_airport_country` y `departure_airport_city`. Además, ahora hay un `booking_system_code` y un `booking_system_name` disponibles dentro de `airline.tickets[].issue`. No se requieren cambios en la integración si no usas datos de aerolínea.
+  *Ver también: [Referencia de Crear un pago](/es/reference/payments/create-payment)*
+
+<Accordion title="Tramos de aerolínea con nuevos campos">
+
+```json
+"additional_data": {
+  "airline": {
+    "legs": [
+      {
+        "arrival_airport": "AMS",
+        "arrival_airport_country": "AR",
+        "arrival_airport_city": "BUE",
+        "departure_airport": "EZE",
+        "departure_airport_country": "AR",
+        "departure_airport_city": "BUE"
+      }
+    ],
+    "tickets": [
+      {
+        "issue": {
+          "booking_system_code": "TT01",
+          "booking_system_name": "booking system"
+        }
+      }
+    ]
+  }
+}
+```
+
+</Accordion>
+
+## v2025-03
+*31 de marzo de 2025*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Arreglo de descuentos en los datos de la orden**  
+  Hay un nuevo arreglo `discounts` de objetos disponible dentro de `additional_data.order`. Cada descuento admite los campos `id`, `name` y `unit_amount`.
+  *Ver también: [Guía de detalles del monto del pago](/es/docs/payment-features/payment-amount-details#discounts)*
+
+<Accordion title="discounts en additional_data.order">
+
+```json
+"additional_data": {
+  "order": {
+    "discounts": [
+      {
+        "id": "XYZ",
+        "name": "Offer",
+        "unit_amount": "100"
+      }
+    ]
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Indicador de monitores en las reglas de enrutamiento**  
+  Se agregó un nuevo campo booleano `monitors` dentro del objeto `routing_rules` en la respuesta del pago, que indica si una transacción se procesó mediante la función Monitors. No se requieren cambios en la integración.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+<Accordion title="monitors en la respuesta de routing_rules">
+
+```json
+"routing_rules": {
+  "smart_routing": false,
+  "monitors": true,
+  "condition": {
+    "id": 133892,
+    "name": null,
+    "description": null
+  }
+}
+```
+
+</Accordion>
+
+**Reembolsos**
+
+- <ChangelogBadge type="added" /> **Información del cliente en solicitudes de reembolso**  
+  Las solicitudes de reembolso ahora aceptan un nuevo objeto `customer_payer`, que te permite enviar datos adicionales del cliente (por ejemplo, `document`) a los proveedores que los requieren.
+  *Ver también: [Referencia de reembolso de pago](/es/reference/payments/refund-payment)*
+
+<Accordion title="customer_payer en la solicitud de reembolso">
+
+```json
+{
+  "description": "Duplicate",
+  "reason": "REQUESTED_BY_CUSTOMER",
+  "merchant_reference": "AAB01-432245",
+  "customer_payer": {
+    "document": {
+      "document_type": "DNI",
+      "document_number": "38919283"
+    }
+  }
+}
+```
+
+</Accordion>
+
+## v2025-02
+*28 de febrero de 2025*
+
+**Webhooks**
+
+- <ChangelogBadge type="added" /> **Autenticación OAuth2 para webhooks**  
+  Los webhooks ahora admiten autenticación OAuth2. Configura `authentication_url`, `client_secret_key`, `client_id` y `grant_type` en la sección Developers/Webhooks del dashboard para que Yuno pueda obtener tokens y entregar los webhooks de forma segura.
+  *Ver también: [Guía de configuración de webhooks](/es/docs/webhooks/configure-webhooks)*
+
+- <ChangelogBadge type="added" /> **URL dedicada para webhooks de contracargos**  
+  Ahora puedes configurar una URL de webhook dedicada específicamente para los eventos de contracargo. Antes, los contracargos se enviaban junto con el trigger Purchase. Actualiza la configuración de tus webhooks en el dashboard para usar la nueva URL dedicada de contracargos.
+  *Ver también: [Guía de configuración de webhooks](/es/docs/webhooks/configure-webhooks)*
+
+## v2025-01
+*31 de enero de 2025*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Datos de boletos en las órdenes de pago**  
+  Un nuevo arreglo de objetos `tickets` está disponible dentro de `additional_data.order`, con campos como `id`, `name`, `description`, `type`, `amount` y un objeto anidado `event` con los detalles de la dirección.
+  *Ver también: [Referencia de la API de pagos](/es/reference/payments/status-and-response-codes/payment)*
+
+<Accordion title="tickets en additional_data.order">
+
+```json
+"additional_data": {
+  "order": {
+    "tickets": [
+      {
+        "id": "XYZ",
+        "name": "Music",
+        "type": "VIRTUAL",
+        "amount": {
+          "currency": "COP",
+          "value": 5000
+        },
+        "event": {
+          "id": "ADMKASLMD",
+          "name": "Music festival",
+          "type": "FESTIVAL",
+          "date": "1990-02-28"
+        }
+      }
+    ]
+  }
+}
+```
+
+</Accordion>
+
+**Suscripciones**
+
+- <ChangelogBadge type="added" /> **Validación del pago inicial de la suscripción**  
+  Un nuevo campo booleano `initial_payment_validation` está disponible al crear una suscripción. Configúralo en `true` para continuar la suscripción solo después de un primer pago exitoso, o en `false` para continuar sin importar el resultado del primer pago.
+  *Ver también: [Referencia de creación de suscripción](/es/reference/subscriptions/create-subscription)*
+
+<Accordion title="initial_payment_validation en la suscripción">
+
+```json
+{
+  "initial_payment_validation": true
+}
+```
+
+</Accordion>
+
+## v2024-12
+*31 de diciembre de 2024*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Selección del tipo de tarjeta para tokens de la bóveda**  
+  Al usar un token almacenado en la bóveda para un pago, ahora puedes especificar `card_data.type` como `CREDIT` o `DEBIT` dentro de `payment_method.detail.card`. Es útil en mercados como Brasil, donde la misma tarjeta puede usarse para ambos tipos de transacción.
+  *Ver también: [Referencia de la API de pagos](/es/reference/payments/create-payment)*
+
+<Accordion title="Especificar DEBIT o CREDIT para un token de la bóveda">
+
+```json
+"payment_method": {
+  "type": "CARD",
+  "vaulted_token": "e2961d37-9898-4bac-8408-cc9f02c11cc2",
+  "detail": {
+    "card": {
+      "card_data": {
+        "type": "DEBIT"
+      }
+    }
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Detalles de la transacción de fondeo de cuenta**  
+  Un nuevo objeto `account_funding` está disponible dentro de `additional_data`, con los subobjetos `sender` y `beneficiary` que incluyen los campos de nombre, correo electrónico y documento requeridos para las transacciones de fondeo de cuenta (AFT).
+  *Ver también: [Guía de AFT](/es/docs/payment-features/account-funding-transactions-afts)*
+
+<Accordion title="account_funding en additional_data">
+
+```json
+"additional_data": {
+  "account_funding": {
+    "sender": {
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john.doe@mail.com"
+    },
+    "beneficiary": {
+      "first_name": "Chris",
+      "last_name": "Martin",
+      "document": {
+        "document_number": "38192019",
+        "document_type": "CC"
+      }
+    }
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **ID de transacción de red para credenciales almacenadas**  
+  Un nuevo campo `network_transaction_id` está disponible dentro de `payment_method.detail.card.stored_credentials`. Se recomienda para pagos de suscripciones con tarjetas inscritas, para garantizar la trazabilidad durante todo el ciclo de vida del pago.
+  *Ver también: [Guía de credenciales almacenadas](/es/docs/payment-features/stored-credentials)*
+
+<Accordion title="network_transaction_id en stored_credentials">
+
+```json
+"payment_method": {
+  "type": "CARD",
+  "vaulted_token": "eb8caa17-6407-457b-960e-125d8d7a90c1",
+  "detail": {
+    "card": {
+      "stored_credentials": {
+        "reason": "CARD_ON_FILE",
+        "usage": "USED",
+        "network_transaction_id": "583103536844189"
+      }
+    }
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Indicador de enrutamiento inteligente en la respuesta del pago**  
+  Se agregó un nuevo campo booleano `smart_routing` dentro del objeto `routing_rules` en la respuesta del pago, que indica si la transacción se procesó mediante la función de enrutamiento inteligente. No se requieren cambios en la integración.
+  *Ver también: [Referencia de la API de pagos](/es/reference/payments/create-payment)*
+
+<Accordion title="smart_routing en la respuesta de routing_rules">
+
+```json
+"routing_rules": {
+  "smart_routing": false,
+  "condition": {
+    "id": 133892,
+    "name": null,
+    "description": null
+  }
+}
+```
+
+</Accordion>
+
+**Suscripciones**
+
+- <ChangelogBadge type="added" /> **Periodo de prueba para suscripciones**  
+  Un nuevo objeto `trial_period` está disponible al crear una suscripción. Define `billing_cycles` y un `amount` reducido para ofrecer periodos de prueba parciales o totales (gratuitos) antes de que comience la facturación completa.
+  *Ver también: [Referencia de creación de suscripción](/es/reference/subscriptions/create-subscription)*
+
+<Accordion title="trial_period en la solicitud de suscripción">
+
+```json
+"trial_period": {
+  "billing_cycles": "1",
+  "amount": {
+    "currency": "COP",
+    "value": 2500
+  }
+}
+```
+
+</Accordion>
+
+## v2024-11
+*30 de noviembre de 2024*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Campos de vencimiento de la tarjeta en la respuesta de la transacción**  
+  Ahora se devuelven dos campos nuevos, `expiration_month` y `expiration_year`, dentro de `transactions.card_data` en la respuesta del pago. No se requieren cambios en la integración.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+<Accordion title="expiration_month y expiration_year en card_data">
+
+```json
+"card_data": {
+  "holder_name": "Paco",
+  "iin": "48710499",
+  "brand": "VISA",
+  "fingerprint": "71000db4-f8e7-4ea0-a2cc-9d9ebb76a955",
+  "expiration_month": 3,
+  "expiration_year": 30
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Destinatarios para pagos divididos en marketplace**  
+  Una nueva API de destinatarios (Recipients) te permite registrar destinatarios con varias asignaciones de proveedores antes de enviar pagos divididos. Usa `recipient_id` en el arreglo `split_marketplace` en lugar de los IDs específicos de cada proveedor cuando intervienen varios proveedores.
+  *Ver también: [Guía de pagos divididos en marketplace](/es/docs/payment-features/split-payments-marketplace)*
+
+<Accordion title="Usar recipient_id en split_marketplace">
+
+```json
+"split_marketplace": [
+  {
+    "amount": { "currency": "BRL", "value": 500 },
+    "recipient_id": "09d8bad7-4efe-47e2-b9ee-f4028460bab1",
+    "type": "PURCHASE"
+  },
+  {
+    "amount": { "currency": "BRL", "value": 500 },
+    "recipient_id": "d94e02c1-cc47-4e60-a20a-2b17fe58992d",
+    "type": "PURCHASE"
+  }
+]
+```
+
+</Accordion>
+
+**Reembolsos**
+
+- <ChangelogBadge type="added" /> **Compatibilidad con comprobantes en transacciones de reembolso**  
+  Las solicitudes de reembolso ahora aceptan un booleano `response_additional_data.receipt` y un campo opcional `receipt_language`. Cuando se configuran, se devuelve una URL del comprobante en `payment.transaction.receipt_url` después de procesar el reembolso.
+  *Ver también: [Referencia de reembolso de pago](/es/reference/payments/refund-payment)*
+
+<Accordion title="Solicitar un comprobante en un reembolso">
+
+```json
+{
+  "description": "Duplicate",
+  "reason": "REQUESTED_BY_CUSTOMER",
+  "merchant_reference": "AAB01-432245",
+  "response_additional_data": {
+    "receipt": true,
+    "receipt_language": "ES"
+  }
+}
+```
+
+</Accordion>
+
+**Suscripciones**
+
+- <ChangelogBadge type="added" /> **Datos de artículos para suscripciones**  
+  Ahora hay un nuevo arreglo `additional_data.order.items` disponible al crear una suscripción, que te permite enviar a los proveedores detalles a nivel de artículo (category, id, name, quantity, unit_amount).
+  *Ver también: [Referencia de creación de suscripción](/es/reference/subscriptions/create-subscription)*
+
+<Accordion title="items en additional_data de la suscripción">
+
+```json
+"additional_data": {
+  "order": {
+    "items": [
+      {
+        "category": "art",
+        "id": "AA01",
+        "name": "Test item",
+        "quantity": 1,
+        "unit_amount": 10
+      }
+    ]
+  }
+}
+```
+
+</Accordion>
+
+**Payouts**
+
+- <ChangelogBadge type="added" /> **Payouts a tokens almacenados en la bóveda**  
+  La API de Payouts ahora permite enviar payouts directamente a tarjetas de crédito o débito inscritas, mediante un `vaulted_token` dentro de `withdrawal_method`. Requiere compatibilidad del proveedor.
+  *Ver también: [Referencia de creación de payout](/es/reference/payouts/create-payout)*
+
+<Accordion title="Payout a una tarjeta inscrita">
+
+```json
+"withdrawal_method": {
+  "type": "CARD",
+  "provider_id": "UNLIMINT",
+  "vaulted_token": "your-vaulted-token"
+}
+```
+
+</Accordion>
+
+## v2024-10
+*31 de octubre de 2024*
+
+**Suscripciones**
+
+- <ChangelogBadge type="added" /> **Esquema de reintentos inteligentes para suscripciones**  
+  Las transacciones rechazadas de suscripciones ahora admiten reintentos inteligentes (Smart Retries), que usan aprendizaje automático para determinar el momento óptimo de cada reintento. El calendario de reintentos consta de siete intentos en 96 horas. Se configura desde el dashboard de Suscripciones.
+  *Ver también: [Guía de reintentos de transacciones](/es/docs/payment-features/transaction-retries)*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Campo del tipo de método de pago principal**  
+  Se devuelve un nuevo campo `parent_payment_method_type` dentro de `transactions.payment_method`, que indica el proveedor de billetera (`APPLE_PAY`, `GOOGLE_PAY` o `CLICK_TO_PAY`) usado en una integración directa de billetera. No se requieren cambios en la integración.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+<Accordion title="parent_payment_method_type en la transacción">
+
+```json
+"transactions": {
+  "payment_method": {
+    "vaulted_token": "29b44e45-57fe-41b0-81c8-586deeb699b2",
+    "type": "CARD",
+    "parent_payment_method_type": "CLICK_TO_PAY"
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **ID de conexión en los datos de la transacción**  
+  Se devuelve un nuevo campo `connection_data.id` dentro de cada objeto de transacción, con el identificador único de la conexión de pago usada para procesar la transacción. No se requieren cambios en la integración.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+<Accordion title="connection_data.id en la transacción">
+
+```json
+"connection_data": {
+  "id": "88292fd3-bf5b-4b23-bb95-7186ba4e7f88"
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Compatibilidad con comprobantes en transacciones de cancelación**  
+  Las solicitudes de cancelación ahora aceptan un booleano `response_additional_data.receipt`. Cuando se configura, se devuelve una URL del comprobante en `payment.transaction.receipt_url` después de procesar la cancelación.
+  *Ver también: [Referencia de Cancelar un pago](/es/reference/payments/cancel-payment)*
+
+<Accordion title="Solicitar un comprobante en una cancelación">
+
+```json
+{
+  "description": "Duplicate",
+  "reason": "REQUESTED_BY_CUSTOMER",
+  "merchant_reference": "AAB01-432245",
+  "response_additional_data": {
+    "receipt": true
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Objeto de envío en la solicitud de pago**  
+  Un nuevo objeto `shipping` está disponible al crear un pago, con los campos `type`, `description`, `carrier` y `deliver_at` para especificar los detalles del envío.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+<Accordion title="shipping en la solicitud de pago">
+
+```json
+"shipping": {
+  "type": "STANDARD",
+  "description": "Test shipment",
+  "carrier": "UPS",
+  "deliver_at": "2024-09-17T20:43:54.786342Z"
+}
+```
+
+</Accordion>
+
+## v2024-09
+*30 de septiembre de 2024*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Flujo de inscripción con enlaces de pago**  
+  Los enlaces de pago ahora admiten la inscripción de tarjetas tras un pago exitoso. Configura `one_time_use=true` y `vault_on_success=true` al crear un enlace de pago para generar un nuevo `vaulted_token` para el cliente cuando el pago sea exitoso.
+  *Ver también: [Guía para inscribir tarjetas con enlaces de pago](/es/docs/payment-features/enrollment/enroll-cards-with-payment-link)*
+
+- <ChangelogBadge type="added" /> **Pagos divididos en marketplace**  
+  Un nuevo arreglo `split_marketplace` está disponible en la solicitud de pago, que permite a los comercios dividir un pago entre varios destinatarios con montos, tipos (`PURCHASE`, `COMMISSION`) y configuraciones de responsabilidad personalizables. Requiere compatibilidad del proveedor.
+  *Ver también: [Guía de split marketplace](/es/docs/payment-features/split-payments-marketplace)*
+
+<Accordion title="split_marketplace en la solicitud de pago">
+
+```json
+"split_marketplace": [
+  {
+    "provider_recipient_id": "recipient_123",
+    "type": "PURCHASE",
+    "amount": { "value": 7500, "currency": "COP" },
+    "liability": {
+      "processing_fee": "MERCHANT",
+      "chargebacks": false
+    }
+  },
+  {
+    "provider_recipient_id": "recipient_456",
+    "type": "COMMISSION",
+    "amount": { "percentage": 30, "currency": "COP" },
+    "liability": {
+      "processing_fee": "RECIPIENT",
+      "chargebacks": true
+    }
+  }
+]
+```
+
+</Accordion>
+
+## v2024-08
+*31 de agosto de 2024*
+
+**Suscripciones**
+
+- <ChangelogBadge type="added" /> **Campo de ID del acuerdo de suscripción**  
+  Un nuevo campo `subscription_agreement_id` está disponible dentro de `payment_method.detail.card.stored_credentials`. Algunos mercados y procesadores (por ejemplo, México) lo requieren para incluir el ID del acuerdo con el cliente en los pagos relacionados con suscripciones.
+  *Ver también: [Guía de credenciales almacenadas](/es/docs/payment-features/stored-credentials#subscription-agreement)*
+
+<Accordion title="subscription_agreement_id en stored_credentials">
+
+```json
+"payment_method": {
+  "type": "CARD",
+  "vaulted_token": "eb8caa17-6407-457b-960e-125d8d7a90c1",
+  "detail": {
+    "card": {
+      "stored_credentials": {
+        "reason": "CARD_ON_FILE",
+        "usage": "USED",
+        "subscription_agreement_id": "AA0001"
+      }
+    }
+  }
+}
+```
+
+</Accordion>
+
+**Payouts**
+
+- <ChangelogBadge type="added" /> **Payouts referenciados a partir de transacciones**  
+  Los payouts a métodos de pago con tarjeta ahora admiten un campo `original_transaction_id` dentro de `withdrawal_method`, que permite a los comercios iniciar un payout con los datos de tarjeta de una transacción anterior sin necesidad de cumplir con PCI.
+  *Ver también: [Guía de Payouts](/es/docs/payouts-and-disputes/payouts)*
+
+<Accordion title="Payout que referencia una transacción original">
+
+```json
+"withdrawal_method": {
+  "type": "STP_PAYOUT",
+  "provider_id": "STP",
+  "original_transaction_id": "9104911d-5df9-429e-8488-ad41abea1a4b"
+}
+```
+
+</Accordion>
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Conversión de moneda en los pagos**  
+  Un nuevo objeto `currency_conversion` está disponible dentro de la estructura `amount`, que te permite enviar `provider_currency_conversion_id`, `cardholder_currency` y `cardholder_amount` para la liquidación en dos monedas. Contacta a tu gerente técnico de cuenta para habilitarlo.
+  *Ver también: [Guía de conversión de moneda](/es/docs/additional-services/currency-conversion)*
+
+<Accordion title="currency_conversion en amount">
+
+```json
+"amount": {
+  "currency": "COP",
+  "value": 5000,
+  "currency_conversion": {
+    "provider_currency_conversion_id": "AAA01SADOIAJSDLAKSJM",
+    "cardholder_currency": "ARS",
+    "cardholder_amount": 1146.55
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Código y mensaje de respuesta ISO 8583**  
+  Ahora se devuelven dos campos nuevos, `iso8583_response_code` y `iso8583_response_message`, dentro de `transactions.provider_data`, con la respuesta ISO 8583 directa del proveedor. Los códigos ABECS también se incluyen en estos campos para los proveedores de Brasil.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+<Accordion title="Campos iso8583 en provider_data">
+
+```json
+"provider_data": {
+  "id": "ADYEN",
+  "transaction_id": "FLX4WSXF7SFZDV65",
+  "iso8583_response_code": "05",
+  "iso8583_response_message": "Approved or completed successfully"
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Cancelar o reembolsar un pago por ID de pago**  
+  Un nuevo endpoint te permite cancelar o reembolsar un pago enviando solo el `payment_id`, sin necesidad del `transaction_id`. El endpoint existente a nivel de transacción sigue disponible.
+  *Ver también: [Referencia de cancelación o reembolso de pago](/es/reference/payments/cancel-or-refund-a-payment)*
+
+- <ChangelogBadge type="changed" /> **El historial de transacciones pasa a ser opcional**  
+  El arreglo `transactions_history` del objeto de pago ahora se completa solo cuando el pago se crea con `response_additional_data.transactions_history: true`. Cuando no se envía el indicador, los webhooks y las respuestas de pago entregan `transactions_history` como un arreglo vacío `[]` para mantener pequeño el tamaño de los payloads. Los eventos de contracargo siguen incluyendo automáticamente el historial completo.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object) · [Objeto webhook y ejemplos](/es/docs/webhooks/object-and-examples)*
+
+## v2024-07
+*31 de julio de 2024*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Criptograma de billetera para pagos nativos**  
+  Un nuevo campo `cryptogram` está disponible dentro de `payment_method.detail.wallet` al crear un pago, lo que habilita integraciones directas con las API de Apple Pay y Google Pay sin usar el Yuno SDK.
+  *Ver también: [Guía de integración directa de Apple Pay](/es/docs/wallets/apple-pay/apple-pay-direct-integration)*
+
+- <ChangelogBadge type="added" /> **Arreglo de impuestos en los datos de la orden**  
+  Un nuevo arreglo de objetos `taxes` está disponible dentro de `additional_data.order`, que admite varias líneas de impuestos por pago. El objeto `tax` anterior de nivel superior sigue siendo compatible, pero se recomienda el nuevo arreglo para una mejor gestión de impuestos.
+  *Ver también: [Guía de detalles del monto del pago](/es/docs/payment-features/payment-amount-details#taxes)*
+
+**Reembolsos**
+
+- <ChangelogBadge type="added" /> **Modo simplificado para reintentos de reembolso**  
+  El indicador `simplified_mode: true` ahora es compatible en las solicitudes de reembolso. Yuno devolverá el estado `DECLINED` y reintentará el reembolso automáticamente hasta cinco veces en 24 horas, manteniendo el pago en estado `PENDING`/`RETRY_IN_PROCESS`.
+  *Ver también: [Guía de reintentos de transacciones](/es/docs/payment-features/transaction-retries)*
+
+<Accordion title="simplified_mode en la solicitud de reembolso">
+
+```json
+{
+  "simplified_mode": true,
+  "reason": "REQUESTED_BY_CUSTOMER",
+  "merchant_reference": "AA01"
+}
+```
+
+</Accordion>
+
+## v2024-06
+*30 de junio de 2024*
+
+**Payouts**
+
+- <ChangelogBadge type="added" /> **Lanzamiento del producto Payouts**  
+  Yuno Payouts ya está disponible como un nuevo producto de API para enviar fondos a beneficiarios (usuarios, comercios, proveedores, clientes) a través de bancos, tarjetas y billeteras, mediante varios proveedores. Consulta la documentación de Payouts para comenzar.
+  *Ver también: [Guía de Payouts](/es/docs/payouts-and-disputes/payouts)*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Campo fingerprint del método de pago**  
+  Se devuelve un nuevo campo `fingerprint` en el objeto del método de pago y en la respuesta del pago para transacciones con tarjeta. Identifica de forma única una tarjeta entre varios `vaulted_tokens` dentro de tu organización.
+  *Ver también: [Guía para inscribir métodos de pago](/es/docs/payment-features/enrollment/enroll-payment-methods#step-5-retrieve-payment-methods)*
+
+## v2024-05
+*31 de mayo de 2024*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Modo simplificado para reintentos de captura**  
+  Un nuevo booleano `simplified_mode` está disponible en las solicitudes de captura. Cuando se configura en `true`, Yuno devuelve de inmediato el estado `SUCCEEDED` y reintenta automáticamente las transacciones fallidas hasta cinco veces en un periodo de 24 horas.
+  *Ver también: [Guía de reintentos de transacciones](/es/docs/payment-features/transaction-retries)*
+
+<Accordion title="simplified_mode en la solicitud de captura">
+
+```json
+{
+  "amount": { "currency": "COP", "value": "5000" },
+  "simplified_mode": true,
+  "reason": "PRODUCT_CONFIRMED",
+  "merchant_reference": "AA01"
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Campo de tipo de beneficio para pagos con Pluxee**  
+  Se agregó un nuevo campo `benefity_type` al objeto de pago para el método de pago Pluxee en Chile. Es obligatorio al usar el flujo `DIRECT`.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+## v2024-04
+*30 de abril de 2024*
+
+- <ChangelogBadge type="added" /> **Reglas de enrutamiento en la respuesta del pago**  
+  Ahora se devuelve un nuevo objeto `routing_rules` en la respuesta del pago, con un subobjeto `condition` que contiene el `id`, el `name` y la `description` de la regla de enrutamiento aplicada durante la creación del pago. No se requieren cambios en la integración.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+<Accordion title="routing_rules en la respuesta del pago">
+
+```json
+"routing_rules": {
+  "condition": {
+    "id": 76152,
+    "name": "PAYMENTS_COLOMBIA",
+    "description": "This condition is set for payments made only in Colombia"
+  }
+}
+```
+
+</Accordion>
+
+## v2024-03
+*31 de marzo de 2024*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Campo de fecha de creación del cliente en el comercio**  
+  Un nuevo campo `merchant_customer_created_at` (formato ISO 8601) está disponible en los objetos Customer y `customer_payer`, y representa la fecha en que el cliente se registró en la plataforma del comercio.
+  *Ver también: [Referencia del objeto de cliente](/es/reference/customers/the-customer-object)*
+
+- <ChangelogBadge type="added" /> **Plan de cuotas en la sesión de checkout**  
+  Un nuevo arreglo `installments.plan` y un nuevo campo `installments.plan_id` están disponibles en el objeto de sesión de checkout, que te permiten especificar un plan de cuotas personalizado por sesión. Si se omiten, se usa el plan a nivel de cuenta.
+  *Ver también: [Referencia de creación de sesión de checkout](/es/reference/checkout-sessions/create-checkout-session)*
+
+- <ChangelogBadge type="added" /> **URL de callback para enlaces de pago**  
+  Un nuevo campo `callback_url` está disponible al crear un enlace de pago, y especifica la URL a la que se redirige al cliente después de completar el pago.
+  *Ver también: [Referencia del objeto de enlace de pago](/es/reference/payment-links/the-payment-link-object)*
+
+## v2024-02
+*29 de febrero de 2024*
+
+- <ChangelogBadge type="added" /> **Campo de barrio en los objetos de dirección**  
+  Se agregó un nuevo campo `neighborhood` (de 3 a 255 caracteres) a `shipping_address` y `billing_address` en el objeto Customer.
+  *Ver también: [Referencia del objeto de cliente](/es/reference/customers/the-customer-object)*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Arreglo del historial de transacciones**  
+  Ahora se devuelve un nuevo arreglo `transactions_history` en el objeto de pago, que enumera todas las transacciones asociadas con un pago, incluidas las de varias rutas de proveedores.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+- <ChangelogBadge type="added" /> **Campo de propina en los datos de la orden**  
+  Un nuevo campo `tip_amount` está disponible dentro de `additional_data.order`. Es solo informativo: la propina ya está incluida en el valor total de la transacción y no se suma por separado.
+  *Ver también: [Guía de detalles del monto del pago](/es/docs/payment-features/payment-amount-details)*
+
+<Accordion title="tip_amount en additional_data.order">
+
+```json
+"additional_data": {
+  "order": {
+    "tip_amount": 50.00
+  }
+}
+```
+
+</Accordion>
+
+- <ChangelogBadge type="added" /> **Mensaje de error de captura en curso**  
+  Ahora la API devuelve una respuesta de error específica cuando se intenta una captura mientras otra captura ya está en curso: `INVALID_STATUS` con el mensaje "Invalid transaction status. Transaction already in progress". No se requieren cambios en la integración.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+<Accordion title="Respuesta de error INVALID_STATUS">
+
+```json
+{
+  "code": "INVALID_STATUS",
+  "messages": [
+    "Invalid transaction status. Transaction already in progress"
+  ]
+}
+```
+
+</Accordion>
+
+## v2024-01
+*31 de enero de 2024*
+
+- <ChangelogBadge type="added" /> **Campos de datos del proveedor en la transacción**  
+  Ahora se devuelven tres campos nuevos dentro de `transactions.provider_data`: `response_code` (código de resultado del proveedor), `third_party_account_id` (ID de cuenta del procesador) y `third_party_transaction_id` (ID de transacción del procesador). No se requieren cambios en la integración.
+  *Ver también: [Referencia del objeto de pago](/es/reference/payments/the-payment-object)*
+
+**Seguridad**
+
+- <ChangelogBadge type="added" /> **Compatibilidad con credenciales almacenadas**  
+  Yuno ahora admite las reglas de credenciales almacenadas de Visa y Mastercard, lo que permite a los comercios marcar los pagos como transacciones iniciadas por el cliente (CIT) o transacciones iniciadas por el comercio (MIT) mediante la estructura `stored_credentials` dentro de `payment_method.detail.card`.
+  *Ver también: [Guía de credenciales almacenadas](/es/docs/payment-features/stored-credentials)*

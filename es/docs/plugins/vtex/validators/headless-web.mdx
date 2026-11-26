@@ -1,0 +1,245 @@
+---
+title: "Validador: VTEX headless Web"
+sidebarTitle: "Headless Web"
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Una lista de verificación de solo lectura para agentes de programación con IA que audita una tienda headless de VTEX o una página en WebView que monta el Yuno SDK Web para VTEX."
+---
+
+Coloca este archivo en la raíz del repositorio que sirve la página que monta el Yuno SDK Web para VTEX (tu
+tienda headless, o la página que tu app móvil carga en un WebView) y pídele a Claude Code:
+
+> Valida mi integración de Yuno VTEX headless Web siguiendo este archivo.
+
+Funciona igual con cualquier agente de programación (Cursor, Codex, Copilot): pega el archivo como prompt. Audita el
+código con base en la guía pública *"Headless SDK integration"* (docs.y.uno/docs/plugins/vtex/direct-sdk-integration)
+e informa qué está mal, con archivo y línea. Solo lee código y no cambia nada a menos que lo pidas.
+
+## El flujo que se valida {#the-flow-being-validated}
+
+```
+VTEX headless checkout: orderForm -> POST .../transaction -> POST /api/payments/transactions/{id}/payments
+  -> VTEX calls the Yuno connector (authorize)        -> connector answers paymentAppData.payload
+  -> POST /api/checkout/pub/gatewayCallback/{orderGroup}
+       <- HTTP 428, body paymentAuthorizationAppCollection[].appPayload   (a JSON string: the payload)
+          (VTEX behaviour seen in support cases, not in the guide or in Yuno code)
+  -> await loadScript()                               -> injects https://sdk-web-vtex.y.uno/v1/main.js
+                                                         (script #yuno-vtex-script, event yuno-sdk-vtex-ready)
+  -> await yunoVTEX.mount({ elementRoot, payload, language, domainVTEX, callbacks })
+       the bundle loads sdk-web v1.6 (script #yuno-script), renders the form / wallet button / fraud step
+       -> POST {domainVTEX}{storeBasePath}/api/io/_v/yunopartnerbr.yuno/v4/payments/yuno  (the bundle, never you)
+  -> onPaymentDone({ success, payments[] }) or onError(message, error)   <- your code continues only here
+  -> Yuno webhook -> connector -> VTEX re-polls authorize -> order approved / denied
+```
+
+El bundle nunca se comunica con la API de transacciones de VTEX. Tu página se encarga de todo lo que ocurre después de `onPaymentDone`.
+Las afirmaciones marcadas como "casos de soporte" o "guía pública" son contexto: explican un síntoma, pero nunca son por sí solas una condición de FAIL.
+Cada FAIL de abajo es algo que puedes ver en el código.
+
+## Verificaciones {#checks}
+
+Informa cada una como PASS / FAIL / N/A con la evidencia (archivo:línea). No apruebes una verificación porque el código
+"parezca correcto": cita la línea que lo demuestra. Empieza por encontrar cada uso del SDK:
+`grep -rn "sdk-web-vtex\|YunoVTEX\|loadScript\|\.mount(\|unmount(\|domainVTEX\|proxyUrlVTEX" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .`
+
+### 1. El montaje se ejecuta solo después de que existe el payload del conector {#1-mount-runs-only-after-the-connector-payload-exists}
+
+- Rastrea de dónde viene `payload`. Según la guía pública, es el payload que el conector de Yuno devuelve durante el
+  paso de autorización de esta orden, y debe existir antes de `mount`. Los casos de soporte muestran que VTEX lo entrega como
+  el `appPayload` de una respuesta 428 a `gatewayCallback` (o tu backend retransmitiendo `paymentAppData.payload`).
+- FAIL si `mount` puede ejecutarse antes de que el código haya recibido ese payload (carga de la página, `useEffect` sin protección de payload, un temporizador), con un
+  payload fijo o de ejemplo (el ejemplo del README o de la guía `"{\"isVTEXCard\":true,...}"`), o con un payload guardado en caché
+  de una orden anterior.
+- Por qué: el bundle no tiene contexto de pago propio. Un payload vacío lanza `payload = ... is not valid`;
+  uno obsoleto muestra una sesión de checkout que pertenece a otra orden.
+
+### 2. El payload se pasa como la cadena sin analizar {#2-the-payload-is-passed-as-the-unparsed-string}
+
+- `MountProps.payload` es de tipo `string`; el bundle llama a `JSON.parse(payload)` por su cuenta.
+- FAIL si el código pasa un objeto o vuelve a serializar una copia modificada. Pasar un objeto lanza
+  `value.trim is not a function` desde la validación de mount, antes de que `onError` pueda ejecutarse.
+
+### 3. `elementRoot` es un id de elemento que existe y permanece {#3-elementroot-is-an-element-id-that-exists-and-stays}
+
+- `elementRoot` se pasa a `document.getElementById`, así que es un id simple: `'yuno-sdk-root'`, no
+  `'#yuno-sdk-root'` (el README de npm muestra `'#payment-container'`, que no funciona).
+- El elemento debe estar en el DOM cuando se espera `mount` y no debe reemplazarse mientras el comprador paga
+  (cambio de `key` de React, renderizado condicional, cambio de ruta en una SPA).
+- FAIL si hay un prefijo `#` o `.`, un montaje antes de que el elemento se renderice, o un contenedor que se vuelve a renderizar en medio del pago.
+- Por qué: un elemento ausente llama a `onError('Element with id <x> not found')` y lanza una excepción; un elemento reemplazado deja
+  el checkout desvinculado y al comprador frente a un área en blanco.
+
+### 4. Un montaje por orden y `unmount` al desmontar {#4-one-mount-per-order-and-unmount-on-teardown}
+
+- `window.YunoVTEX` es una única instancia con una sola raíz de React. Un segundo `mount` desmonta en silencio el primero,
+  sin importar qué elemento tenga como destino. Verifica que `mount` se llame una vez por orden: no en el cuerpo de un render, no en un
+  efecto sin una protección de ejecución única, no en un controlador `window.addEventListener('message', ...)` que acepte cualquier
+  mensaje (la demo de WebView de Yuno hace esto; filtra por un `type` propio de tu contrato de bridge e ignora el resto).
+- `await yunoVTEX.unmount()` debe ejecutarse cuando la página o el componente se desmonta (cambio de ruta, destrucción del componente,
+  WebView cerrado). La Payment App lo hace en la limpieza del efecto.
+- FAIL si mount puede ejecutarse dos veces para una misma orden, o si nada llama a `unmount`. `unmount` solo elimina la raíz de React:
+  `window.YunoVTEX`, `window.Yuno` y las dos etiquetas script permanecen, lo cual es lo esperado.
+
+### 5. `domainVTEX` es el origen exacto de la tienda: esquema y host, sin barra final, sin ruta {#5-domainvtex-is-the-exact-store-origin-scheme-and-host-no-trailing-slash-no-path}
+
+- Cita el valor (y de dónde viene: variable de entorno, configuración, cadena). Debe verse como
+  `https://<account>.myvtex.com` o el propio host `https://` de la tienda; las minúsculas están bien (el código también acepta
+  `http://`, que una tienda en producción no debería usar).
+- FAIL si hay: una barra final (`https://mystore.myvtex.com/`), cualquier ruta (`https://store.com/br`), un esquema
+  ausente (`store.myvtex.com`), o un valor construido por concatenación que pueda terminar en `/`.
+- Por qué: el bundle convierte el valor a minúsculas y lo antepone tal cual (`yuno-api.ts`), por lo que una barra final produce
+  `https://<host>//api/io/_v/yunopartnerbr.yuno/v4/payments/yuno`. En un incidente reportado (un flujo de checkout por
+  WhatsApp), VTEX respondió la solicitud preflight de CORS en esa URL con 405 y sin encabezados CORS, el
+  navegador bloqueó la llamada (`Network Error`, sin estado), no se creó ningún pago y las órdenes se cancelaron después
+  de 24 h. Al momento de escribir esto, el bundle de producción no elimina la barra.
+  Un valor sin `http(s)://` lanza `onError('Domain must be https.  It is <value>')`.
+- Las tiendas servidas bajo una subruta usan el campo `Store Base Path` de la afiliación del conector, nunca una ruta en
+  `domainVTEX`. Si la página se sirve desde el propio origen de la tienda, `domainVTEX` puede omitirse.
+
+### 6. `proxyUrlVTEX`, solo si se usa, llega a la ruta de creación de pago {#6-proxyurlvtex-only-if-used-reaches-the-create-payment-route}
+
+- Cuando se define, el bundle envía por POST la creación del pago a este valor tal cual: no se agregan `domainVTEX`, ni la ruta base de la tienda ni
+  ningún sufijo `/api/io/...` (`yuno-api.ts`). El valor no se valida.
+- Se ven dos formas. Un host simple, como en el propio ejemplo de la guía pública (`https://proxy.mystore.com`): el POST
+  va a la raíz del proxy, por lo que el proxy debe reenviar su raíz a
+  `/api/io/_v/yunopartnerbr.yuno/v4/payments/yuno` de la cuenta de la tienda. Una ruta completa: el POST va a esa ruta,
+  que el proxy debe reenviar de la misma manera. Ambas funcionan cuando el proxy las enruta; informa qué forma se usa.
+- FAIL solo si la configuración del proxy está en este repositorio y muestra que el valor no llega a la
+  ruta de creación de pago. De lo contrario, informa "necesita confirmación" con el valor.
+- Nota para el reporte: `proxyUrlVTEX` no se aplica a las cuotas de las wallets (`/installments/apm` usa
+  solo `domainVTEX`), por lo que una tienda que llega a VTEX únicamente a través de un proxy no obtiene el selector de cuotas de wallets.
+
+### 7. Un solo host de cuenta VTEX por orden y sin llamadas directas al conector {#7-one-vtex-account-host-per-order-and-no-direct-connector-calls}
+
+- El host usado para las llamadas de checkout (`orderForm`, `transaction`, `gatewayCallback`) y el host de
+  `domainVTEX` deben ser de la misma cuenta VTEX, y esa cuenta debe tener configurada la afiliación del conector de Yuno. La
+  afiliación en sí no se puede verificar en el código. FAIL solo si los dos hosts nombran visiblemente cuentas distintas;
+  informa "necesita confirmación" si provienen de claves de configuración separadas que pueden divergir.
+- FAIL si tu código llama a `/payments/yuno`, `/payments/yuno/status` o construye por su cuenta cualquier URL `_v/yunopartnerbr.yuno`.
+  El bundle crea el pago con el token de un solo uso; una segunda llamada crea un segundo pago o falla.
+- La verificación de instalación de la Payment App no aplica a headless.
+
+### 8. Solo un Yuno SDK en la página {#8-only-one-yuno-sdk-on-the-page}
+
+- `grep -rn "sdk-web\.y\.uno\|sdk-web\.sandbox\.y\.uno\|@yuno-payments/sdk-web['\"]\|window\.Yuno\b\|yuno-script\|webpackChunksdk_web\|sdk-web-vtex\.y\.uno"`
+  sobre el código fuente, las plantillas HTML y los fragmentos de gestores de etiquetas, y pregunta por scripts de terceros (botones
+  express de VTEX IO, fragmentos de wallets).
+- FAIL si la página también carga sdk-web directamente, o agrega el bundle `sdk-web-vtex` con su propia etiqueta `<script>`
+  junto a `loadScript` (el cargador solo evita duplicar su propio `#yuno-vtex-script`).
+- Por qué: todas las compilaciones de sdk-web comparten la variable global `webpackChunksdk_web`. Una segunda versión de sdk-web corrompe el registro
+  de chunks y `startCheckout` falla con `Cannot read properties of undefined (reading 'call')`: spinner
+  infinito. Si se cargó otro sdk-web con el id `yuno-script`, el bundle reutiliza ese `window.Yuno`
+  en lugar de su propio v1.6. La Payment App lo soluciona con `resetForeignYunoSdk()`; una página headless no tiene
+  tal reinicio. En un incidente reportado, dos copias del bundle en una misma página perdieron confirmaciones de pago.
+
+### 9. Opciones de `loadScript` {#9-loadscript-options}
+
+- `version`: déjala sin definir (por defecto `'v1'`, la carpeta móvil que reemplaza cada versión 1.x). FAIL con cualquier otro
+  valor, a menos que Yuno te lo haya dado por escrito; `v1.11`, `v2` y `v2.0` devuelven 404 hoy.
+- `env`: déjala sin definir (por defecto `'prod'`) en producción, y también en sandbox: el entorno del pago viene
+  del prefijo de `publicApiKeys` dentro del payload, no del host del bundle. FAIL con `'dev'` o `'staging'`
+  en la configuración publicada, e informa cualquier `'sandbox'`: `sdk-web-vtex.sandbox.y.uno` no tiene registro DNS (al momento de escribir esto), por lo que `loadScript` se rechaza con `Failed to load script`.
+- `sdkWebEnv` en `MountProps` es una opción distinta: elige el host de sdk-web que carga el bundle
+  (`'sandbox'` carga `https://sdk-web.sandbox.y.uno/v1.6/main.js`, que sí se resuelve). Déjala sin definir en producción;
+  FAIL con `'dev'` o `'staging'` en la configuración publicada.
+- `sdkWebVersion` no tiene efecto desde el bundle 1.5.0 (el bundle fija sdk-web en v1.6). Infórmala como ruido N/A.
+- Reintento: si un primer `loadScript` falló, la etiqueta `#yuno-vtex-script` permanece en `<head>` y una segunda llamada espera
+  para siempre un evento que ya se disparó. FAIL si la lógica de reintento vuelve a llamar a `loadScript` sin eliminar esa
+  etiqueta (o recargar la página).
+
+### 10. El resultado viene de `onPaymentDone` y los errores se manejan {#10-the-outcome-comes-from-onpaymentdone-and-errors-are-handled}
+
+- `onPaymentDone({ success, payments: [{ status, orderId, paymentId }] })` se dispara una vez por montaje: después de que cada
+  sesión de checkout fue exitosa, o en cuanto una falla. Cualquier error también termina el flujo: se ejecuta `onError` y le
+  sigue `onPaymentDone({ success: false })` (`sdk.main.tsx`), posiblemente antes de que se ejecuten las sesiones posteriores de una
+  orden dividida. Es la única señal para continuar: página de confirmación, mensaje al bridge nativo, lectura de la orden de VTEX.
+  FAIL si el resultado se infiere del DOM, de una URL, de un temporizador o de `onLoading`, o si el código supone que `onError`
+  y `onPaymentDone` son excluyentes (por ejemplo, dos pantallas de fallo, o un reintento iniciado desde `onError` que el
+  `onPaymentDone` siguiente anula).
+- `success` es `true` para `SUCCEEDED`, `PENDING`, `READY_TO_PAY` y `VERIFIED`. FAIL si `success === true` se
+  muestra como "aprobado" sin leer `payments[].status` o el estado de la orden de VTEX (los pagos pendientes se resuelven
+  más tarde mediante el webhook).
+- `onError(message, error)` debe pasarse y debe mostrar algo al comprador o al bridge. FAIL si está ausente
+  o vacío. `mount` debe esperarse dentro de `try/catch`: los fallos de validación llaman a `onError` y además lanzan una excepción.
+- Recomendado en un WebView: enviar el resultado al bridge nativo primero, antes de cualquier otro trabajo de interfaz, y proteger
+  cada `JSON.parse` de los mensajes del bridge (casos de soporte: un cargador que no esperó a `mount` y
+  publicó tarde perdió confirmaciones).
+- Para informar, no es FAIL: el bundle llama a `window.location.reload()` cuando el comprador cancela la hoja de una wallet
+  (`CANCELED_BY_USER`) o toca su botón de cerrar, y permanece en silencio (sin `onError`, sin `onLoading(false)`) si sdk-web
+  no puede cargarse. Un watchdog puede ofrecer un reintento, pero nunca debe decidir el resultado del pago.
+
+### 11. `language` y `deviceFingerprints` {#11-language-and-devicefingerprints}
+
+- `language` es obligatorio. El bundle tiene cadenas para `en`, `es`, `pt` (también acepta variantes regionales por sus
+  primeras dos letras y recurre a `en`), y reenvía el valor sin cambios a sdk-web, cuyo tipo lista `pt`,
+  no `pt-BR`. Recomienda `pt`, `es` o `en`. FAIL si está vacío o se calcula como `undefined`.
+- `deviceFingerprints` es un arreglo de `{ provider_id, session_id }`, con `provider_id` tal como está configurado en Yuno
+  (`RISKIFIED`, `SIGNIFYD`, `CYBERSOURCE`, `CIELO_CYBERSOURCE_FRAUD`). `session_id` debe ser el `orderFormId`
+  de VTEX en cada orden: la guía pública dice que el conector envía ese mismo id del lado del servidor, por lo que el
+  proveedor solo puede asociar los datos del dispositivo cuando el navegador también lo usa (y las órdenes divididas lo requieren). FAIL si hay
+  un objeto en lugar de un arreglo, otros nombres de clave (`providerId`, `sessionId`), o un `session_id` que no es el
+  `orderFormId` para un proveedor configurado.
+
+### 12. Configuración del WebView (solo si la página se ejecuta dentro de una app) {#12-webview-settings-only-if-the-page-runs-inside-an-app}
+
+Revisa el código nativo (`WebView` de Kotlin/Java, `WKWebView` de Swift, `react-native-webview`, webview de Flutter):
+
+- JavaScript habilitado, almacenamiento DOM habilitado, cookies de terceros o compartidas habilitadas y un bridge bidireccional.
+- Google Pay en Android: Payment Request API habilitada (`WebSettingsCompat.setPaymentRequestEnabled`), nuevas ventanas
+  con permiso para abrirse en el mismo WebView (`window.open`; una bloqueada muestra `OR_BIBED_15`) y el manifest
+  `<queries>` con `org.chromium.intent.action.PAY`, `IS_READY_TO_PAY` y `UPDATE_PAYMENT_DETAILS`.
+- Apple Pay en iOS: la página debe ser una URL alojada en un dominio verificado en Apple Developer y registrado en Yuno,
+  nunca un archivo local (`file://`, recursos empaquetados).
+- FAIL por cada configuración faltante que aplique a los métodos de pago que ofrece la tienda.
+
+### 13. Ningún CSS ni JS personalizado depende de nombres internos del SDK {#13-no-custom-css-or-js-depends-on-sdk-internal-names}
+
+- `grep -rn "[yY]uno-" --include=*.{css,scss,less,js,ts,jsx,tsx,html,vue}`, excluyendo tus propios ids.
+- Los nombres de clases e ids del SDK no son un contrato. El bundle carga sdk-web v1.6, que usa `yuno-*` /
+  `Yuno-*`; desde sdk-web 1.9 son `sdk-payments-*`, y el bundle `/v1/` se reemplaza sin ningún despliegue de
+  tu parte. La capa de VTEX mantiene sus propios nombres, que son seguros: `yuno-checkout-root`, `yuno-form-root`,
+  `yuno-external-button-root`, `yuno-vtex-script`, el evento `yuno-sdk-vtex-ready`.
+- FAIL con cualquier selector o `querySelector` sobre un nombre de sdk-web. Ejecuta el escáner y el mapa de renombrado en
+  [la verificación de actualización a 1.11](/es/docs/plugins/vtex/validators/upgrade-check-1-6-to-1-11) (`node yuno-upgrade-check.mjs <dir>`) y adjunta su salida.
+
+## Formato del reporte {#report-format}
+
+```
+CHECK  1  Mount after payload          PASS  src/checkout/pay.tsx:88 (mount inside onGatewayCallback428)
+CHECK  5  domainVTEX origin            FAIL  src/config.ts:12 VTEX_HOST='https://mystore.myvtex.com/'
+                                             (trailing slash -> //api/io, CORS 405, no payment)
+CHECK  9  loadScript options           PASS  src/checkout/pay.tsx:80 loadScript() with defaults
+CHECK 12  WebView settings             N/A   no native code in this repository
+...
+Loader: @yuno-payments/sdk-web-vtex 0.6.1 (package-lock.json)
+```
+
+Termina con los fallos ordenados por impacto (ningún pago creado, luego confirmación perdida, luego experiencia degradada), cada uno
+con la corrección en una línea.
+
+## Diagnósticos que capturar de una ejecución fallida {#diagnostics-to-capture-from-a-failing-run}
+
+1. El `orderId` / `orderGroup` de VTEX y la hora UTC del intento (los eventos del bundle están indexados por `orderId`).
+2. El cuerpo 428 de `gatewayCallback` (la cadena `appPayload`), sin datos personales.
+3. La entrada de red del POST de creación de pago y su preflight `OPTIONS`: URL completa, estado, encabezados de respuesta.
+   Una solicitud ausente después del envío del formulario, o `Network Error` sin estado, apunta a las verificaciones 5 a 7.
+4. La consola del navegador: el bundle registra las acciones `SET_ERROR`, `SET_STATUS` y `SEND_STATUS`.
+5. Qué recibieron `onPaymentDone` / `onError`, el origen de la página (o la ruta `file://`) y, para los WebViews, el dispositivo,
+   el SO y la versión de Android System WebView.
+
+## Versiones {#versions}
+
+El bundle `sdk-web-vtex` 1.11.1 se sirve en `https://sdk-web-vtex.y.uno/v1/main.js` y carga sdk-web v1.6.
+Cargador `@yuno-payments/sdk-web-vtex` 0.6.1. Pendiente al momento de escribir esto: la eliminación de la barra final de
+`domainVTEX`. Hasta que se publique, la verificación 5 es la única protección.
+
+Lo que este validador no cubre: wallets mediante los endpoints de preflight en apps nativas (consulta los validadores de Flutter y
+React Native en esta carpeta), la Payment App de VTEX en sí y la configuración del conector.
+
+Fuentes: la guía pública [Headless SDK integration](/es/docs/plugins/vtex/direct-sdk-integration) y
+[Advanced features](/es/docs/plugins/vtex/advanced-features), el cargador `@yuno-payments/sdk-web-vtex` 0.6.1, el SDK Web
+para VTEX bundle 1.11.1, la Payment App, la demo de WebView de Yuno y el
+[mapa de renombrado de 1.11](/files/validators/web-sdk-1.11-upgrade-check/rename-map.json); sondeos de CDN y DNS del 2026-10-29.
+Los detalles del incidente y el contrato 428 / `appPayload` provienen de casos de soporte y no se volvieron a verificar en el código.

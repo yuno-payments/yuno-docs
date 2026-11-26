@@ -1,0 +1,35 @@
+---
+title: "Incrementar autorización"
+openapi: "/openapi/es/payments/increment-authorization.json POST /payments/{payment_id}/transactions/{transaction_id}/increment"
+description: "Aumenta una retención de autorización existente en un monto delta, sin crear una nueva autorización."
+---
+
+Esta solicitud aumenta el monto de un pago previamente autorizado (una autorización incremental). Está diseñada para escenarios de monto abierto (carga de vehículos eléctricos, combustible, hotelería, alquiler de autos), en los que primero autorizas un monto pequeño y haces crecer la retención a medida que se conoce el monto final, y luego capturas una sola vez con la [API de captura](/es/reference/payments/capture-authorization).
+
+El `amount` que envías es un **delta**: cuánto se suma al monto autorizado actual. Yuno lo traduce a la semántica que espera cada proveedor.
+
+Cada incremento crea su propia transacción `AUTHORIZE_INCREMENT` con un resultado por incremento, visible en [Retrieve Payment](/es/reference/payments/retrieve-payment-by-id-v2). Los incrementos se notifican con el [evento de webhook](/es/docs/webhooks/events) `payment.authorize`, así que suscríbete al disparador `AUTHORIZE` para recibirlos; no existe un evento de incremento separado. Un incremento exitoso aumenta `payment.amount.authorized`; `payment.amount.value` conserva el monto original. Un incremento rechazado deja intacto el monto autorizado previamente. Se pueden hacer varios incrementos sobre la misma autorización, pero deben ser secuenciales: un nuevo incremento solicitado mientras otro anterior sigue en curso devuelve un `400`.
+
+Ten en cuenta que esta solicitud requiere un `X-Idempotency-Key`. Consulta la página [Authentication](/es/reference/getting-started/authentication#idempotency) para obtener más información.
+
+## Capturar después de los incrementos {#capturing-after-increments}
+
+Una [captura](/es/reference/payments/capture-authorization) con un `amount` explícito puede liquidar cualquier monto hasta el total autorizado actual (la autorización original más todos los incrementos exitosos). Una captura **sin monto** liquida la retención actual completa de la transacción: el monto autorizado original más todos los incrementos `SUCCEEDED` de esa transacción. Los incrementos que sigan en `PENDING` al momento de la captura no se incluyen.
+
+<Warning>
+**La autorización original debe estar habilitada para incrementos**
+
+Algunos proveedores solo permiten incrementos en autorizaciones creadas como retenciones de preautorización. Define `authorization_type: "PRE_AUTHORIZATION"` (junto con `capture: false`) al [crear el pago](/es/reference/payments/create-payment); consulta la guía [Cancel and Capture Flow](/es/docs/payment-features/Cancel-and-capture-flow#pre-authorization-holds-authorization_type). Cuando el proveedor rechaza el incremento, porque la autorización original no era una preautorización o porque se superaron los límites de incremento del proveedor (por ejemplo, más de 10 incrementos o un total superior a 5 veces el monto inicial), la transacción de incremento se devuelve con el código de respuesta `AUTHORIZATION_NOT_INCREMENTABLE`.
+</Warning>
+
+## Compatibilidad por proveedor {#provider-support}
+
+La compatibilidad depende del proveedor. Si el proveedor enrutado para el pago no admite autorizaciones incrementales, la llamada igualmente devuelve `201`, pero con una transacción de incremento cuyo `status` es `ERROR` y cuyo `response_code` es `OPERATION_NOT_SUPPORTED_BY_PROVIDER`. No es un error HTTP, por lo que debes basarte en el `status` de la transacción y no en el código de estado HTTP. El monto autorizado previamente queda intacto.
+
+**Revolut** es actualmente el único proveedor con compatibilidad con autorización incremental.
+
+| Proveedor | Resultado | Notas |
+| --- | --- | --- |
+| Revolut | Asíncrono | La transacción se devuelve como `PENDING`; el resultado final se entrega mediante el webhook `payment.authorize`. Los incrementos requieren que la autorización original se haya creado con `authorization_type: "PRE_AUTHORIZATION"`, están disponibles solo con tarjeta, Apple Pay y Google Pay, solo se pueden probar en producción (no están disponibles en sandbox) y se limitan a 10 incrementos secuenciales con un total de hasta 5 veces el monto inicial |
+
+Otros proveedores (Stripe, Adyen, Checkout.com, CyberSource) están en la hoja de ruta y aún no están disponibles; llamar al endpoint con ellos hoy devuelve la transacción `OPERATION_NOT_SUPPORTED_BY_PROVIDER` descrita arriba.

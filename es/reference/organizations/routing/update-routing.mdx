@@ -1,0 +1,300 @@
+---
+title: "Actualizar un enrutamiento"
+description: "Reemplaza la configuración completa de un enrutamiento existente, identificado por su routing_id."
+openapi: "/openapi/es/organizations/routing/update-routing.json PATCH /routing/{routing_id}"
+---
+
+Reemplaza la configuración completa del enrutamiento. El cuerpo tiene la misma estructura que [Crear un enrutamiento](/es/reference/organizations/routing/create-routing): el nuevo `default_route` y los `condition_sets[]` reemplazan por completo el estado activo anterior. **No hay combinación a nivel de campo.**
+
+`account_id` y `payment_method` están fijos para el `routing_id`: se definen al crearlo y `PATCH` no puede cambiarlos. Ambos siguen siendo obligatorios en el cuerpo y deben coincidir con el enrutamiento.
+
+Esto también aplica a las divisiones por porcentaje: un conjunto de condiciones enviado sin `start_split` vuelve a una sola entrada en el paso 1, y una salida enviada sin `next_split` conserva solo el `next` que declara. Consulta primero el enrutamiento si quieres conservar las divisiones que ya tiene.
+
+No todo lo que el cuerpo omite se elimina. Esto es lo que ocurre con cada parte que omite la solicitud:
+
+| Omitido en la solicitud | Resultado |
+|---|---|
+| `retry` en una salida | Se conserva como estaba almacenado para esa posición. Envía `retry: false` para desactivar un reintento. |
+| Un paso `CAPTURE` o `HOLD_FOR_REVIEW` almacenado, con la salida de la que colgaba enviada sin `next` | Se conserva y se vuelve a conectar. Omitirlo **no** elimina una captura automática; en su lugar, apunta esa salida a otro paso. |
+| `action_delay` en un paso `CAPTURE` | Se conserva como estaba almacenado. Envía el paso con su nuevo `action_delay` para cambiarlo. |
+| `fraud` en un paso de fraude | Se conserva como estaba almacenado. Si se envía, los seis campos se reemplazan. |
+| `network_token_on` en un paso de pago | Se conserva como estaba almacenado. Envía `network_token_on: false` para desactivarlo. Enviar de vuelta el valor almacenado no se valida de nuevo; solo un valor modificado pasa por las validaciones de network token. |
+| `three_d_secure_exemptions` en un paso 3DS | Se conserva como estaba almacenado. Envía `three_d_secure_exemptions: []` para borrarlo. |
+| Un paso de smart routing almacenado | **Se elimina.** El paso de smart routing pertenece a la solicitud: un cuerpo que no lo incluye, por ejemplo uno consultado antes de que el smart routing fuera visible en esta API, lo elimina. Consulta primero el enrutamiento y envía el paso de vuelta. |
+| Un paso `CANCEL` o `REVERT` | Se elimina, como cualquier otro paso que el cuerpo no incluya. |
+| `start_split` / `next_split` | Se restablecen: un conjunto de condiciones enviado sin `start_split` vuelve a una sola entrada en el paso 1, y una salida enviada sin `next_split` conserva solo su `next`. |
+| Partes que la API no devuelve (acciones `REFUND`, `DECLINE` y `END`, monitores) | Se conservan exactamente como estaban almacenadas, de modo que enviar de vuelta lo que te dio [Consultar un enrutamiento](/es/reference/organizations/routing/retrieve-routing) mantiene el enrutamiento como estaba. Cambia esas partes en el dashboard. Consulta [Qué no muestra la API](/es/reference/organizations/routing/routing-resource-shape#what-the-api-does-not-show). |
+
+### Parámetros de ruta {#path-parameters}
+
+<ParamField path="routing_id" type="string" required>
+  El id devuelto por [Crear un enrutamiento](/es/reference/organizations/routing/create-routing).
+</ParamField>
+
+### Cuerpo {#body}
+
+<ParamField body="account_id" type="string (UUID)" required>
+  La cuenta a la que pertenece el enrutamiento. Debe coincidir con la cuenta del enrutamiento.
+</ParamField>
+
+<ParamField body="payment_method" type="enum" required>
+  Debe coincidir con el `payment_method` del enrutamiento.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Etiqueta de formato libre.
+</ParamField>
+
+<ParamField body="default_route" type="object" required>
+  La ruta que se usa cuando ningún `condition_sets[]` coincide.
+  <Expandable title="propiedades">
+    <ParamField body="start_split" type="object[]">
+      Opcional. Divide la entrada de la ruta entre varios pasos por porcentaje, como `[{ "index": 1, "percentage": 45 }, { "index": 2, "percentage": 55 }]`. Los porcentajes son enteros que deben sumar `100`. Omítelo para iniciar cada pago en el paso 1. Consulta [Divisiones por porcentaje](/es/reference/organizations/routing/routing-resource-shape#percentage-splits).
+    </ParamField>
+    <ParamField body="steps" type="object[]" required>
+      Cada paso es un intento con un proveedor o un [paso de acción](/es/reference/organizations/routing/routing-resource-shape#action-steps). Los valores de `index` son contiguos y empiezan en 1.
+      <Expandable title="elemento">
+        <ParamField body="index" type="integer" required>
+            Número de orden del paso.
+        </ParamField>
+        <ParamField body="provider_id" type="string">
+            Obligatorio en los pasos de proveedor (un proveedor de pago, fraude, 3DS o autenticación) y `SMART_ROUTING` en un paso de smart routing; omítelo en un paso de acción. Debe coincidir con el proveedor de la conexión.
+        </ParamField>
+        <ParamField body="connection_id" type="UUID">
+            Obligatorio en los pasos de proveedor; omítelo en los pasos de acción y de smart routing. Debe estar `ACTIVE` y ser compatible con el `payment_method`.
+        </ParamField>
+        <ParamField body="fraud" type="object">
+            Configuración de un paso de proveedor de fraude: `rules`, `blocklists`, `allowlists`, `reviewlists`, `preset` (códigos copiados del dashboard, que se conservan tal como se dan) y `report_only`. Solo en proveedores `FRAUD`. Consulta [Tipos de paso de proveedor](/es/reference/organizations/routing/routing-resource-shape#provider-step-kinds).
+        </ParamField>
+        <ParamField body="network_token_on" type="boolean">
+            Solo en los pasos de proveedor de pago de un enrutamiento `CARD`. `true` paga con el network token de la tarjeta cuando hay uno disponible. La organización debe estar inscrita en network tokens y el proveedor debe admitirlos (`network_token_enable` en la respuesta); de lo contrario, `400 NETWORK_TOKEN_NOT_ONBOARDED` o `400 NETWORK_TOKEN_NOT_SUPPORTED`. Si se omite, se conserva el valor almacenado; envía `false` para desactivarlo. Consulta [Configuración del paso de proveedor](/es/reference/organizations/routing/routing-resource-shape#provider-step-settings).
+        </ParamField>
+        <ParamField body="three_d_secure_exemptions" type="string[]">
+            Solo en los pasos de proveedor 3DS. Las [exenciones SCA](/es/docs/payment-features/sca-exemptions#allowed-values) que este paso puede aplicar, p. ej. `["LOW_VALUE", "TRANSACTION_RISK_ANALYSIS"]`. Si se omite, se conserva la lista almacenada; envía `[]` para borrarla. Consulta [Configuración del paso de proveedor](/es/reference/organizations/routing/routing-resource-shape#provider-step-settings).
+        </ParamField>
+        <ParamField body="smart_routing" type="object">
+            Convierte el paso en un paso de smart routing: `type` (`COSTS` o `LATENCY`), `providers` (de dos a cuatro proveedores de pago `{ provider_id, connection_id, network_token_on }`) y `no_retry_decline_types`. Solo enrutamientos de tarjeta, uno por ruta. Consulta [Pasos de smart routing](/es/reference/organizations/routing/routing-resource-shape#smart-routing-steps).
+        </ParamField>
+        <ParamField body="action" type="enum">
+            Convierte el paso en un paso de acción: `CANCEL` rechaza el pago, `CAPTURE` captura la autorización, `HOLD_FOR_REVIEW` lo deja pendiente de revisión manual, `REVERT` lo revierte tras una evaluación de fraude que se ejecutó después del pago. `CAPTURE` y `HOLD_FOR_REVIEW` solo se alcanzan desde salidas `APPROVED` o `SUCCEEDED_GROUP` de un paso de pago o de smart routing, `REVERT` solo desde las salidas de un paso de fraude que se ejecuta después del pago, y `CANCEL` nunca desde una aprobación. Un paso de acción no tiene `provider_id`, `connection_id` ni `output`. Consulta [Pasos de acción](/es/reference/organizations/routing/routing-resource-shape#action-steps).
+        </ParamField>
+        <ParamField body="action_delay" type="string">
+            Solo con `action = CAPTURE`. Duración ISO-8601 entre la aprobación y la captura, de al menos `PT1M` y como máximo `P7D` (p. ej. `PT5M`, `PT3H`, `P2D`). Si se omite, se conserva el retraso almacenado; un paso nuevo sin él captura en cuanto se procesa la aprobación.
+        </ParamField>
+        <ParamField body="output" type="object[]">
+          Define cómo manejar cada resultado posible de este paso. No se permite en un paso de acción.
+          <Expandable title="elemento">
+            <ParamField body="status" type="string" required>
+              El estado del resultado que activa esta regla: `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `MAC_CODE_GROUP`, `SUCCEEDED_GROUP`, `PENDING` (solo en pasos de fraude, 3DS y autenticación) o `INTERNAL_ERROR`.
+            </ParamField>
+            <ParamField body="group_id" type="integer">
+              Id de un grupo de la cuenta, de [Listar grupos de rechazo](/es/reference/organizations/routing/list-decline-groups) o [Listar grupos de éxito](/es/reference/organizations/routing/list-succeeded-groups). Obligatorio cuando `status` es `MAC_CODE_GROUP` o `SUCCEEDED_GROUP`; opcional en `DECLINE_GROUP`; no se permite en los demás casos. `MAC_CODE_GROUP` acepta un grupo de Merchant Advice Code; `DECLINE_GROUP` acepta un grupo de rechazo o un grupo de Merchant Advice Code (consulta [Grupos de resultado](/es/reference/organizations/routing/routing-resource-shape#outcome-groups)).
+            </ParamField>
+            <ParamField body="decline_types" type="string[]">
+              Subestados de rechazo (p. ej., `INSUFFICIENT_FUNDS`, `DECLINED_BY_BANK`). En `DECLINE_GROUP`, es obligatorio a menos que se envíe `group_id`; con `group_id`, debe ser igual a los miembros del grupo. No se permite en `SUCCEEDED_GROUP`.
+            </ParamField>
+            <ParamField body="retry" type="boolean">
+              `true` intenta una vez más con el mismo proveedor cuando ocurre este resultado, antes de seguir `next`. Solo en `DECLINED`, `INTERNAL_ERROR` y `DECLINE_GROUP`. Si se omite, se conserva el valor almacenado. Consulta [Reintento](/es/reference/organizations/routing/routing-resource-shape#retry) para las entradas `DECLINE_GROUP` en un grupo de Merchant Advice Code.
+            </ParamField>
+            <ParamField body="next" type="integer">
+              El `index` del siguiente paso que se ejecutará. Omítelo si no se necesita una alternativa. Opcional junto a `next_split`; si se envían ambos, debe ser la primera entrada de `next_split`.
+            </ParamField>
+            <ParamField body="next_split" type="object[]">
+              Divide la alternativa entre varios pasos por porcentaje, como `[{ "index": 2, "percentage": 70 }, { "index": 3, "percentage": 30 }]`. Al menos dos entradas, porcentajes enteros que sumen `100`. Con esto, `next` no es obligatorio.
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="condition_sets" type="object[]">
+  Opcional. Ordenados por `sort_number`: gana el primer conjunto que coincida.
+  <Expandable title="elemento">
+    <ParamField body="sort_number" type="integer" required>
+        Prioridad del conjunto de condiciones.
+    </ParamField>
+    <ParamField body="name" type="string" required>
+        Etiqueta del conjunto.
+    </ParamField>
+    <ParamField body="conditions" type="object[]" required>
+        Lista de [condiciones](/es/reference/organizations/routing/routing-conditions) que deben coincidir. Además de `condition_type`, `conditional`, `values`, `key` y `currency`, una condición `TIME_PERIOD` incluye sus campos de horario, una condición `VOLUME_PAYMENTS_LIMIT` sus campos `limit_by`, `payments_count` y de periodo, y una condición `ORDER_ITEMS_AMOUNT` sus `item_values`.
+    </ParamField>
+    <ParamField body="route" type="object" required>
+        Los pasos que se ejecutan si este conjunto coincide. Misma estructura que `default_route`, incluidos `start_split`, `output[].next_split` y los pasos de acción.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Respuesta {#response}
+
+<ResponseField name="id" type="string">
+  Identificador único del enrutamiento.
+</ResponseField>
+<ResponseField name="account_id" type="string">
+  Identificador único de la cuenta.
+</ResponseField>
+<ResponseField name="payment_method" type="enum">
+  El método de pago al que se aplica este enrutamiento (p. ej., `CARD`).
+</ResponseField>
+<ResponseField name="name" type="string">
+  Etiqueta del enrutamiento.
+</ResponseField>
+<ResponseField name="default_route" type="object">
+  La lógica de enrutamiento predeterminada, con la estructura descrita en [Consultar un enrutamiento](/es/reference/organizations/routing/retrieve-routing).
+</ResponseField>
+<ResponseField name="condition_sets" type="object[]">
+  Lógica condicional opcional.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  Marca de tiempo ISO 8601.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  Marca de tiempo ISO 8601.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH 'https://api.y.uno/v1/routing/8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Idempotency-Key: <UUID>' \
+  -d '{
+    "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
+    "payment_method": "CARD",
+    "name": "Card routing v2 — business-hours rule and monthly limit",
+    "default_route": {
+      "steps": [
+        {
+          "index": 1,
+          "provider_id": "STRIPE",
+          "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+          "output": [
+            { "status": "DECLINED",       "next": 2, "retry": false },
+            { "status": "INTERNAL_ERROR", "next": 2, "retry": false }
+          ]
+        },
+        {
+          "index": 2,
+          "provider_id": "ADYEN",
+          "connection_id": "b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f"
+        }
+      ]
+    },
+    "condition_sets": [
+      {
+        "sort_number": 1,
+        "name": "First USD 50,000 of the month via dLocal",
+        "conditions": [
+          { "condition_type": "VOLUME_PAYMENTS_LIMIT", "conditional": "LESS_OR_EQUAL_THAN", "values": ["50000"],
+            "currency": "USD", "limit_by": "VOLUME", "payments_count": "ALL",
+            "time_period_repeat_amount": 1, "time_period_repeat_frequency": "MONTHLY", "timezone": "-03:00" }
+        ],
+        "route": {
+          "steps": [
+            { "index": 1, "provider_id": "DLOCAL", "connection_id": "c3d5e6f7-2b3c-4d5e-8f6a-7b8c9d0e1f2a" }
+          ]
+        }
+      },
+      {
+        "sort_number": 2,
+        "name": "Business hours via Adyen",
+        "conditions": [
+          { "condition_type": "TIME_PERIOD", "conditional": "EQUAL", "values": ["2026-10-01T00:00:00-03:00"],
+            "time_period_repeat_amount": 1, "time_period_repeat_frequency": "WEEKLY",
+            "time_period_repetition_days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+            "time_period_start_time": "09:00:00", "time_period_end_time": "18:00:00", "timezone": "-03:00" }
+        ],
+        "route": {
+          "steps": [
+            { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f" }
+          ]
+        }
+      }
+    ]
+  }'
+```
+
+```json 200 OK — Updated
+{
+  "id": "8f2c1d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f",
+  "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
+  "payment_method": "CARD",
+  "name": "Card routing v2 — business-hours rule and monthly limit",
+  "default_route": {
+    "steps": [
+      {
+        "index": 1,
+        "provider_id": "STRIPE",
+        "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+        "output": [
+          { "status": "DECLINED",       "next": 2, "retry": false },
+          { "status": "INTERNAL_ERROR", "next": 2, "retry": false }
+        ]
+      },
+      { "index": 2, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f", "output": [{ "status": "APPROVED", "next": null, "decline_types": null, "retry": false }, { "status": "INTERNAL_ERROR", "next": null, "decline_types": null, "retry": false }] }
+    ]
+  },
+  "condition_sets": [
+    {
+      "sort_number": 1,
+      "name": "First USD 50,000 of the month via dLocal",
+      "conditions": [
+        { "condition_type": "VOLUME_PAYMENTS_LIMIT", "conditional": "LESS_OR_EQUAL_THAN", "values": ["50000"],
+          "currency": "USD", "limit_by": "VOLUME", "payments_count": "ALL",
+          "time_period_repeat_amount": 1, "time_period_repeat_frequency": "MONTHLY", "timezone": "-03:00" }
+      ],
+      "route": { "steps": [ { "index": 1, "provider_id": "DLOCAL", "connection_id": "c3d5e6f7-2b3c-4d5e-8f6a-7b8c9d0e1f2a", "output": [{ "status": "APPROVED", "next": null, "decline_types": null, "retry": false }, { "status": "INTERNAL_ERROR", "next": null, "decline_types": null, "retry": false }] } ] }
+    },
+    {
+      "sort_number": 2,
+      "name": "Business hours via Adyen",
+      "conditions": [
+        { "condition_type": "TIME_PERIOD", "conditional": "EQUAL", "values": ["2026-10-01T00:00:00-03:00"],
+          "time_period_repeat_amount": 1, "time_period_repeat_frequency": "WEEKLY",
+          "time_period_repetition_days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+          "time_period_start_time": "09:00:00", "time_period_end_time": "18:00:00", "timezone": "-03:00" }
+      ],
+      "route": { "steps": [ { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-1a2b-4c3d-8e4f-5a6b7c8d9e0f", "output": [{ "status": "APPROVED", "next": null, "decline_types": null, "retry": false }, { "status": "INTERNAL_ERROR", "next": null, "decline_types": null, "retry": false }] } ] }
+    }
+  ],
+  "created_at": "2026-05-12T14:30:00Z",
+  "updated_at": "2026-05-13T09:18:42Z"
+}
+```
+
+```json 400 — Immutable Payment Method
+{
+  "code": "ROUTING_PAYMENT_METHOD_IMMUTABLE",
+  "messages": ["payment_method cannot be changed once the routing is created. Stored payment_method='CARD', requested='PIX'."]
+}
+```
+
+```json 400 — Group of the wrong kind
+{
+  "code": "INVALID_ROUTE_CONFIGURATION",
+  "messages": ["output.group_id=1044 is a DECLINE_GROUP group and cannot be used with status MAC_CODE_GROUP"]
+}
+```
+</CodeGroup>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` |
+| --- | --- |
+| `404` | `ROUTING_NOT_FOUND`<br />`routing_id` desconocido, o el id pertenece a otra cuenta. |
+| `400` | `INVALID_PARAMETERS`<br />Falta un campo o tiene un valor no válido: un paso sin `provider_id` ni `action`, un `status` o `action` fuera de sus enums, un `action_delay` en un paso que no es `CAPTURE`, un `group_id` con formato incorrecto. `messages` indica el campo que causa el error. |
+| `400` | `INVALID_FORMAT`<br />Un campo tiene un tipo o formato incorrecto: `time_period_start_time` / `time_period_end_time` que no están en formato `HH:mm:ss`, una fecha en `values` de una condición `TIME_PERIOD` que no es ISO-8601, `time_period_repeat_amount` o `sort_number` que no son enteros, `retry` que no es booleano. `messages` indica el campo. |
+| `400` | `INVALID_ROUTE_CONFIGURATION`<br />Violación de una regla de la ruta: índices de paso no contiguos, un `next` o una rama de división hacia un paso inexistente, una división que no suma 100 o deja un paso inalcanzable, un paso `CAPTURE` o `HOLD_FOR_REVIEW` que no se alcanza solo desde `APPROVED`, un `action_delay` menor de 1 minuto o mayor de 7 días, `retry` en un estado que no lo admite o en un grupo de Merchant Advice Code que el enrutamiento almacenado aún no reintenta (consulta [Reintento](/es/reference/organizations/routing/routing-resource-shape#retry)), un `group_id` desconocido, de otra cuenta o del tipo incorrecto, `decline_types` que no coinciden con el grupo, una condición que infringe una regla de su `condition_type`, o un `connection_id` que no se encuentra para la cuenta y el proveedor. `messages` explica qué regla se infringió. |
+| `400` | `INVALID_VOLUME_LIMIT_CURRENCY`, `INVALID_VOLUME_LIMIT_PERIOD`, `UNSUPPORTED_VOLUME_LIMIT_TIMEZONE`<br />Una condición `VOLUME_PAYMENTS_LIMIT` con una moneda, un periodo o una zona horaria no válidos. Consulta [Límites de volumen y de cantidad](/es/reference/organizations/routing/routing-conditions#volume-and-count-limits-volume_payments_limit). |
+| `400` | `INVALID_PROVIDER_ID`<br />`provider_id` tiene un formato no válido. |
+| `400` | `ROUTING_PAYMENT_METHOD_IMMUTABLE`<br />El `payment_method` del cuerpo no coincide con el `payment_method` del enrutamiento. |
+| `409` | `ROUTING_VERSION_CONFLICT`<br />Otro `PATCH` concurrente ganó la carrera de publicación. |
+| `401` | `NOT_AUTHENTICATED`<br />Falta el encabezado `public-api-key` o `private-secret-key`. |
+| `401` | `INVALID_CREDENTIALS`<br />Par de claves incorrecto, o se usó una **Customized API key** del Dashboard. Usa en su lugar una clave de cuenta o de organización. |
+
+</div>

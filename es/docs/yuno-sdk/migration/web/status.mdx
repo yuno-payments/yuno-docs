@@ -1,0 +1,73 @@
+---
+title: "Estado del pago"
+description: "Migra la pantalla de estado independiente de Web (yuno.mountStatusPayment) al SDK unificado."
+---
+
+`yuno.mountStatusPayment(...)` renderizaba una pantalla independiente con el resultado del pago de una sesión de checkout, normalmente mostrada después de que el comprador regresaba de una redirección externa. En la API unificada, esto se convierte en un método de nivel superior en `SdkPayments`: `sdkPayments.transactionStatus(...)`.
+
+No forma parte de una `Transaction`. Igual que `antifraud`, es una operación independiente, por lo que vive directamente en la instancia de `SdkPayments`.
+
+## Antes de empezar {#before-you-start}
+
+- Carga el bundle del SDK unificado en lugar del anterior e inicialízalo como muestra la comparación lado a lado: `window.Yuno.initialize(...)` pasa a ser `SdkPayments.initialize(...)`. Tu clave de API pública y las sesiones de checkout que crea tu backend no cambian ([Antes de comenzar](/es/docs/yuno-sdk/get-started#before-you-begin)).
+
+## Comparación lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```typescript Before. mountStatusPayment
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+yuno.mountStatusPayment({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    paymentResult(data) {
+        console.log('paymentResult', data)
+    },
+})
+```
+
+```typescript After. sdkPayments.transactionStatus
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+await sdkPayments.transactionStatus({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',           // optional
+    language: 'en',              // optional
+    elementSelector: '#status',  // required
+})
+```
+
+</CodeGroup>
+
+## Qué cambia {#what-changes}
+
+Agrupado en el orden en que editas el código. **Renombrado**: mismo rol, nuevo nombre. **Movido**: mismo valor, nuevo propietario. **Eliminado**: no hay nada que llamar. **Nuevo**: sin equivalente anterior. La última columna es lo único que debes hacer además del cambio de nombre.
+
+### Inicialización y configuración {#initialization-and-config}
+
+| Estado | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renombrado | El global es `window.SdkPayments`. Como antes, usa `await`: se resuelve con la instancia de `SdkPayments`. |
+| `checkoutSession` | `checkoutSession` | Movido | Igual. Obligatorio. |
+| `countryCode` | `countryCode?` | Movido | Ahora es opcional. |
+| `language` | `language?` | Movido | Ahora es opcional. |
+| *(contenedor por defecto)* | `elementSelector` | Nuevo | Ahora es obligatorio: pasas el selector CSS del elemento donde renderizar, en lugar de depender del contenedor por defecto del SDK. |
+
+### Callbacks {#callbacks}
+
+| Estado | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `paymentResult(data)` | *(eliminado)* | Eliminado | La pantalla muestra el resultado y es solo de visualización. Confirma el resultado en el servidor mediante [webhooks](/es/docs/webhooks) o la API de pagos como fuente de verdad para el cumplimiento del pedido; dentro de una `Transaction`, el estado final llega en [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). |
+
+### Puntos de entrada {#entry-points}
+
+| Estado | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `yuno.mountStatusPayment({...})` | `sdkPayments.transactionStatus({...})` | Renombrado | Método de nivel superior en `SdkPayments`, no en `Transaction`: una operación independiente, que no forma parte del ciclo de vida de una transacción. Devuelve una `Promise<void>`. |
+
+## Relacionado {#related}
+
+- [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). Recibe el estado final dentro de una `Transaction`.
+- [Get Started](/es/docs/yuno-sdk/get-started). Guía completa de integración.

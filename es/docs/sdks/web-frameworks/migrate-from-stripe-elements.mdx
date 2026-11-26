@@ -1,0 +1,103 @@
+---
+title: "Migrar desde Stripe Elements"
+description: "Relaciona PaymentIntents, SetupIntents, Elements y webhooks de Stripe con sus equivalentes en Yuno."
+---
+import LegacySdkNotice from '/snippets/es/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Si tu checkout funciona hoy con Stripe Elements, pasar a Yuno cambia la capa de checkout, no tu cuenta de Stripe. Yuno se conecta a Stripe como uno más de los proveedores que habilitas, por lo que el procesamiento actual con Stripe sigue funcionando mientras agregas enrutamiento, otros proveedores y el checkout de Yuno. Esta página relaciona cada concepto de Stripe con lo que usas en Yuno.
+
+## Conceptos {#concepts}
+
+| Stripe | Yuno | Notas |
+| :--- | :--- | :--- |
+| PaymentIntent | [Sesión de checkout](/es/reference/checkout-sessions/create-checkout-session) más [Crear pago](/es/reference/payments/create-payment) | La sesión incluye el monto, el país y el cliente, y carga los métodos de pago habilitados en tu cuenta. El pago se crea en tu servidor con el token de un solo uso que devuelve el SDK. |
+| `client_secret` | `checkout_session` | Se crea en tu servidor con tu clave privada y se envía al navegador. Expira a las 2.5 horas en producción. |
+| SetupIntent | [Inscripción](/es/docs/payment-features/enrollment/enroll-payment-methods), o un pago con `vault_on_success: true` | Una sesión de cliente más `mountEnrollmentLite` guarda la tarjeta sin cobrarla. `vault_on_success` la guarda en el primer pago exitoso. Ambos devuelven un `vaulted_token`. |
+| ID de PaymentMethod (`pm_...`) | `vaulted_token` | Cóbralo más adelante enviando `payment_method.vaulted_token` con [credenciales almacenadas](/es/docs/payment-features/stored-credentials). |
+| Customer (`cus_...`) | [Cliente](/es/reference/customers/create-customer) | Crea el cliente antes de la sesión y envía su ID. |
+| `capture_method: 'manual'` | `payment_method.detail.card.capture: false` | Luego [captura](/es/reference/payments/capture-authorization) o [cancela](/es/reference/payments/cancel-payment) la autorización. Consulta [Flujo de cancelación y captura](/es/docs/payment-features/Cancel-and-capture-flow). |
+| `payment_method.card.fingerprint` | `fingerprint` en el objeto Payment Method | Estable por número de tarjeta dentro de tu organización. Consulta [Huella digital de la tarjeta](/es/docs/security-and-compliance/fingerprint). |
+| Reglas de Radar y listas de bloqueo | [Risk Conditions](/es/docs/using-yuno/dashboard-overview/risk-conditions) | Reglas, listas de bloqueo, listas de permitidos y listas de revisión aplicadas en tus rutas. |
+| Suscripciones de Stripe Billing | [Suscripciones](/es/docs/payment-features/subscriptions/index) con [Smart Retries](/es/docs/payment-features/subscriptions/retries) | Si mantienes Stripe Billing, consulta [Procesar suscripciones de Stripe Billing con Yuno](/es/docs/payment-features/subscriptions/stripe-billing). |
+| 3D Secure con Stripe | [3D Secure](/es/docs/security-and-compliance/3d-secure) | Yuno ejecuta 3DS en el proveedor enrutado y devuelve `checkout.sdk_action_required` cuando el comprador debe completar un desafío. |
+
+## Componentes de checkout {#checkout-components}
+
+| Stripe Elements | Yuno Web SDK | Guía |
+| :--- | :--- | :--- |
+| Payment Element | Seamless SDK | [Seamless SDK (Web)](/es/docs/sdks/seamless-sdk/web-payments) |
+| Card Element | Componente de tarjeta de Lite SDK, o Secure Fields cuando controlas el formulario | [Lite SDK (Web)](/es/docs/sdks/lite-web/payment), [Secure Fields](/es/docs/sdks/customization/secure-fields/payment-secure-fields) |
+| Campos de tarjeta separados (`cardNumber`, `cardExpiry`, `cardCvc`) | Secure Fields `pan`, `expiration`, `cvv` | [Secure Fields](/es/docs/sdks/customization/secure-fields/payment-secure-fields) |
+| Express Checkout Element | `mountExternalButtons` de Lite SDK (Apple Pay, Google Pay, PayPal) | [Lite SDK (Web)](/es/docs/sdks/lite-web/payment) |
+| `stripe.confirmPayment` | `yuno.startPayment` y la llamada a Crear pago de tu servidor | [React y Next.js](/es/docs/sdks/web-frameworks/react-and-nextjs) |
+| `stripe.confirmSetup` | `yuno.mountEnrollmentLite` | [Inscripción (Web)](/es/docs/sdks/card-enrollment/web-enrollment) |
+| `elements.update({ amount })` | `yuno.updateCheckoutSession(newSession)` | [Referencia Web](/es/docs/sdks/resources/references/web#updatecheckoutsession) |
+| `@stripe/react-stripe-js` | `@yuno-payments/sdk-web` con los patrones de la página de React | [React y Next.js](/es/docs/sdks/web-frameworks/react-and-nextjs) |
+| Appearance API | Checkout Builder y estilos del SDK | [Checkout Builder](/es/docs/using-yuno/dashboard-overview/checkout-builder), [Estilos](/es/docs/sdks/customization/web/styling) |
+
+## Flujo de pago, lado a lado {#payment-flow-side-by-side}
+
+<Tabs>
+  <Tab title="Stripe Elements">
+    1. El servidor crea un PaymentIntent y devuelve `client_secret`.
+    2. El navegador monta el Payment Element con el secreto.
+    3. El navegador llama a `stripe.confirmPayment`.
+    4. Stripe redirige o resuelve; tu servidor escucha `payment_intent.succeeded`.
+  </Tab>
+  <Tab title="Yuno (Lite SDK / Secure Fields)">
+    1. El servidor crea una [sesión de checkout](/es/reference/checkout-sessions/create-checkout-session) y devuelve `checkout_session`.
+    2. El navegador monta el SDK con la sesión y llama a `yuno.startPayment()`.
+    3. El SDK te entrega un token de un solo uso en `createPayment`; tu servidor llama a [Crear pago](/es/reference/payments/create-payment) con `payment_method.token` y `checkout.session`.
+    4. Si la respuesta incluye `checkout.sdk_action_required: true`, el navegador llama a `yuno.continuePayment()` para 3DS o una redirección. Tu servidor escucha el webhook `payment.purchase` para conocer el estado final.
+  </Tab>
+  <Tab title="Yuno (Seamless SDK)">
+    1. El servidor crea una [sesión de checkout](/es/reference/checkout-sessions/create-checkout-session) y devuelve `checkout_session`.
+    2. El navegador monta el Seamless SDK con la sesión y llama a `yuno.startPayment()`.
+    3. El SDK crea el pago a partir de la sesión de checkout en tu cuenta. Tu servidor escucha el webhook `payment.purchase` para conocer el estado final.
+    4. Para 3DS o una redirección, el SDK gestiona el desafío automáticamente y devuelve el resultado en `paymentResult`.
+  </Tab>
+</Tabs>
+
+Una diferencia estructural en ambos caminos: tu clave privada nunca llega al navegador. La sesión de checkout se crea en tu servidor y, con Lite SDK y Secure Fields, el pago también se crea allí.
+
+## Webhooks {#webhooks}
+
+Yuno envía un tipo de evento por objeto y lleva el estado dentro del payload, por lo que varios eventos de Stripe se reúnen en un solo evento de Yuno. Consulta [Webhooks](/es/docs/webhooks/index) y [Configurar webhooks](/es/docs/webhooks/configure-webhooks).
+
+| Evento de Stripe | Evento de Yuno | Qué leer |
+| :--- | :--- | :--- |
+| `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled` | `payment.purchase` | `status` (`SUCCEEDED`, `DECLINED`, `PENDING`, `ERROR`) y `sub_status` |
+| `charge.captured` | `payment.capture` | Estado de la transacción |
+| `charge.refunded` | `payment.refund` | Estado de la transacción de reembolso |
+| `charge.dispute.created`, `charge.dispute.updated`, `charge.dispute.closed` | `payment.chargeback` | `status` (`IN_DISPUTE`, `CHARGEBACK`, `SUCCEEDED`) y `sub_status` (`RECEIVED`, `PENDING_REVIEW`, `LOST`, `APPROVED`). Consulta [Gestión de contracargos](/es/docs/payouts-and-disputes/chargeback-management). |
+| `setup_intent.succeeded` | `enrollment.enroll` | `status` `ENROLLED` y el `vaulted_token` |
+| `customer.subscription.*`, `invoice.paid`, `invoice.payment_failed` | `subscription.*` (`active`, `past_due`, `cycle_executed`, `cancel` y otros) | Estado de la suscripción y resultado del ciclo |
+| `review.opened`, `review.closed` | `payment.fraud_screening` | Resultado del análisis |
+
+Cada webhook de Yuno incluye `data.idempotency_key` y un encabezado `x-hmac-signature`; verifícalo como se describe en [Verificar firmas de webhooks](/es/docs/webhooks/verify-webhook-signatures-hmac).
+
+## Tarjetas guardadas {#saved-cards}
+
+Las tarjetas guardadas en Stripe se pueden llevar a Yuno para que los clientes recurrentes no tengan que volver a ingresarlas. Yuno admite una migración de tokens de proveedor a proveedor, cifrada con PGP, mediante el [Proceso de migración de tokens](/es/docs/security-and-compliance/data-migration-processes/token-migration-process). Las series recurrentes continúan sin una nueva autenticación porque Yuno almacena el ID de transacción de la red con cada vaulted token; consulta [Credenciales almacenadas](/es/docs/payment-features/stored-credentials).
+
+## Orden de migración {#migration-order}
+
+<Steps>
+  <Step title="Conecta Stripe en Yuno">
+    Agrega tu cuenta de Stripe como una conexión y colócala en una ruta. Por ahora nada cambia para los compradores. Consulta [Configurar una conexión de pago](/es/docs/direct-integration-use-cases/set-up-payment-connection).
+  </Step>
+  <Step title="Reemplaza el checkout">
+    Cambia el Payment Element por el Seamless SDK, o el Card Element por Lite SDK o Secure Fields, siguiendo [React y Next.js](/es/docs/sdks/web-frameworks/react-and-nextjs). Ejecútalo primero con la misma conexión de Stripe para poder comparar las tasas de aprobación en igualdad de condiciones.
+  </Step>
+  <Step title="Mueve los webhooks">
+    Suscribe tus controladores actuales a los eventos de Yuno de la tabla anterior y cambia la lógica de estados a los valores `status` y `sub_status` de Yuno.
+  </Step>
+  <Step title="Migra las tarjetas guardadas">
+    Ejecuta la migración de tokens y cambia los cobros con tarjetas almacenadas a `vaulted_token`.
+  </Step>
+  <Step title="Agrega proveedores y enrutamiento">
+    Cuando el tráfico sea estable, agrega otros proveedores y deja que [Routing](/es/docs/using-yuno/dashboard-overview/routing) y [Monitors](/es/docs/using-yuno/dashboard-overview/monitors) decidan adónde va cada pago.
+  </Step>
+</Steps>

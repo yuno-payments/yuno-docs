@@ -1,0 +1,119 @@
+---
+title: "Recuperar la personalización de instrucciones de un proveedor"
+description: "Devuelve las instrucciones de conexión personalizadas almacenadas para un proveedor: la lectura enfocada que carga un editor antes de guardar."
+openapi: "/openapi/es/organizations/whitelabel/retrieve-provider-instructions.json GET /whitelabel/providers/{provider_id}/instructions"
+---
+
+Devuelve las instrucciones de conexión personalizadas que has almacenado para este proveedor: la lectura enfocada que carga un editor antes de guardar.
+
+Un proveedor sin personalización responde `404`. Usa [Retrieve a Provider Overlay](/es/reference/organizations/whitelabel/retrieve-provider), que nunca devuelve 404, cuando quieras la capa sin importar si existe una personalización.
+
+<Note>
+Un campo que no personalizas está **ausente**: no es `null` ni una lista vacía. Ausente significa "conserva el valor del catálogo de Yuno"; presente y vacío significa "reemplázalo por nada".
+</Note>
+
+### Parámetros de ruta {#path-parameters}
+
+<ParamField path="provider_id" type="string" required>
+  ID de proveedor del catálogo de Yuno en UPPER_SNAKE_CASE. No distingue mayúsculas de minúsculas: se normaliza a mayúsculas.
+</ParamField>
+
+### Respuesta {#response}
+
+<ResponseField name="provider_id" type="string">
+  Id del proveedor del catálogo de Yuno, normalizado a mayúsculas.
+</ResponseField>
+<ResponseField name="instructions" type="object[]">
+  Pasos de conexión que reemplazan los del catálogo. Cada paso acepta `step`, `text`, `text_link`, `link`, `type`, `has_sub_instructions`, `sub_instructions_type` y `sub_instructions` (anidados hasta 3 niveles). `text` y `text_link` son un string simple o un mapa de idiomas como `{"EN": "...", "ES": "..."}`.
+</ResponseField>
+<ResponseField name="setup_instructions" type="object[]">
+  Pasos de configuración agrupados que reemplazan los del catálogo. Cada grupo acepta `title`, `order`, `instructions_type` y `instructions` (la misma forma de paso).
+</ResponseField>
+<ResponseField name="more_info_url" type="string">
+  Enlace de documentación que reemplaza el del catálogo. Siempre https.
+</ResponseField>
+<ResponseField name="name" type="string">
+  Nombre para mostrar que reemplaza el del catálogo. Solo los proveedores propiedad de Yuno pueden llevar uno.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  Marca de tiempo ISO 8601: cuándo se escribió la personalización por primera vez.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  Marca de tiempo ISO 8601: cuándo se escribió la personalización por última vez.
+</ResponseField>
+<ResponseField name="created_by" type="string">
+  El usuario del dashboard que la creó. Las personalizaciones escritas mediante esta API llevan el valor centinela de ceros, que significa "escritas mediante la API" y no por una persona en el Dashboard.
+</ResponseField>
+<ResponseField name="updated_by" type="string">
+  El usuario del dashboard que la actualizó por última vez, con la misma regla del valor centinela que `created_by`.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/whitelabel/providers/STRIPE/instructions' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK
+{
+  "provider_id": "STRIPE",
+  "more_info_url": "https://docs.example.com/stripe",
+  "instructions": [
+    {
+      "step": 1,
+      "text": { "EN": "Open your Stripe dashboard.", "ES": "Abre tu panel de Stripe." },
+      "type": "TEXT"
+    },
+    {
+      "step": 2,
+      "text": "Copy the secret API key and paste it below.",
+      "text_link": "Where do I find my key?",
+      "link": "https://docs.example.com/stripe#api-keys",
+      "type": "LINK"
+    }
+  ],
+  "setup_instructions": [
+    {
+      "title": "Before you start",
+      "order": 1,
+      "instructions_type": "TEXT",
+      "instructions": [
+        { "step": 1, "text": "Make sure your Stripe account is activated." }
+      ]
+    }
+  ],
+  "created_at": "2026-09-02T13:54:13Z",
+  "updated_at": "2026-09-02T13:54:13Z",
+  "created_by": "00000000-0000-0000-0000-000000000000",
+  "updated_by": "00000000-0000-0000-0000-000000000000"
+}
+```
+
+```json 404 — no override
+{
+  "title": "Not Found",
+  "status": 404,
+  "detail": "No instruction override for provider STRIPE"
+}
+```
+
+```json 400 Bad Request
+{
+  "code": "VALIDATION_ERROR",
+  "messages": ["provider_id is invalid"]
+}
+```
+</CodeGroup>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | Envoltorio | Cuándo |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | `provider_id` no es un id de catálogo válido. |
+| `401` | `NOT_AUTHENTICATED` | Faltan las claves de API o no son válidas. |
+| `404` | problem+json | Este proveedor no tiene personalización de instrucciones. |
+
+</div>

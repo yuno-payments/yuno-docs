@@ -1,0 +1,119 @@
+---
+title: "Secure Fields"
+description: "Migra las integraciones de Web Secure Fields (yuno.secureFields) a la Transaction API unificada."
+---
+
+Secure Fields recopilaba los datos de la tarjeta en iframes compatibles con PCI, así que tu código nunca tocaba el PAN sin procesar. Creabas cada campo (`pan`, `expiration`, `cvv`), lo colocabas en tu diseño, generabas un token, lo enviabas con POST desde tu backend y llamabas a `yuno.continuePayment()` para terminar.
+
+En la API unificada **el código de tus campos casi no cambia**: mismos nombres de campo, mismas opciones, mismo `onChange`. El único cambio de nombre: monta un campo con `.mount('#sel')` en lugar de `.render('#sel')`. Lo que cambia a su alrededor es más grande: los campos provienen de la `Transaction` (sin un segundo conjunto de argumentos), y el cierre de tres pasos (`generateTokenWithInformation` → POST del backend → `continuePayment()`) se reduce a un único `start()` repetible.
+
+## Antes de empezar {#before-you-start}
+
+- Carga el bundle del SDK unificado en lugar del heredado e inicialízalo como muestra la comparación lado a lado: `window.Yuno.initialize(...)` pasa a ser `SdkPayments.initialize(...)`. Tu clave de API pública y las sesiones de checkout que crea tu backend no cambian ([Antes de comenzar](/es/docs/yuno-sdk/get-started#before-you-begin)).
+- Decide quién crea el pago. El `workflow` de la sesión de checkout debe coincidir con esa decisión:
+
+| Quién crea el pago | En Secure Fields tenías | En la API unificada | `workflow` de la sesión |
+|---|---|---|---|
+| Tu backend | Siempre: `generateTokenWithInformation`, y luego tu propia llamada al backend | Sobrescribe `createPayment` | Predeterminado (`SDK_CHECKOUT`) |
+| El SDK | Sin equivalente: Secure Fields nunca creaba el pago | Sin sobrescritura | `SDK_SEAMLESS` |
+
+<Warning>
+Una sesión con el workflow predeterminado y sin la sobrescritura de `createPayment` termina en `INTERNAL_ERROR`: el backend rechaza la creación del pago por parte del SDK. Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Comparación lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```typescript Before. Secure Fields
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const secureFields = await yuno.secureFields({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    installmentEnable: true,
+})
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).render('#pan')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).render('#exp')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).render('#cvv')
+
+document.getElementById('pay').addEventListener('click', async () => {
+    const ott = await secureFields.generateTokenWithInformation({
+        cardHolderName: 'John Doe',
+    })
+    await myBackend.pay({ oneTimeToken: ott.token, checkoutSession: ott.checkout_session })
+    yuno.continuePayment()
+})
+```
+
+```typescript After. Unified Transaction
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    createPayment: async (token) => {
+        await myBackend.pay({ oneTimeToken: token.token, checkoutSession: token.checkout_session })
+    },
+    onStatus: (result) => showResult(result),
+})
+
+const secureFields = await transaction.secureFields({ installmentEnable: true })
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).mount('#pan')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).mount('#exp')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).mount('#cvv')
+
+document.getElementById('pay').addEventListener('click', () => {
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { card: { holderName: 'John Doe' } } },
+    })
+})
+```
+
+</CodeGroup>
+
+## Qué cambia {#what-changes}
+
+Agrupado en el orden en que editas el código. **Renombrado**: mismo rol, nuevo nombre. **Movido**: mismo valor, nuevo dueño. **Eliminado**: nada que llamar. La última columna es lo único que tienes que hacer además del cambio de nombre.
+
+### Inicialización y configuración {#initialization-and-config}
+
+| Secure Fields | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renombrado | El global es `window.SdkPayments`. Como antes, usa `await`: se resuelve en la instancia de `SdkPayments` desde la que creas las transacciones. |
+| Argumento `checkoutSession` / `customerSession` de `yuno.secureFields()` | El mismo campo en la configuración de la transacción | Movido | Si es un pago o una inscripción sigue siendo implícito según la sesión que pases. Todos los argumentos de `yuno.secureFields()` excepto `installmentEnable` pasan a la configuración de la transacción: los campos heredan el contexto de la transacción en lugar de duplicarlo. |
+| Argumentos `countryCode`, `language`, `deviceFingerprints` de `yuno.secureFields()` | Los mismos campos en la configuración de la transacción | Movido | `deviceFingerprints` se mueve solo para las transacciones de pago. Una configuración de inscripción (`customerSession`) no lo acepta. |
+| Argumento `installmentEnable` de `yuno.secureFields()` | `transaction.secureFields({ installmentEnable })` | Movido | El único parámetro que la transacción no puede derivar. |
+| Argumentos `enableV2`, `enableMultiplesCard` de `yuno.secureFields()` | *(eliminado)* | Eliminado | Inactivos en v1: se declaraban, pero nunca se leían. |
+
+### Callbacks {#callbacks}
+
+| Secure Fields | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| Tu propio POST al backend después de `generateTokenWithInformation` | `createPayment(token)` en la configuración de la transacción | Movido | Opcional. Si eres dueño del POST del pago, usa el modo manual (`createPayment` + `start()`): conservas la llamada al backend y el SDK se encarga de 3DS y del resultado. Omítelo para que el SDK cree el pago por ti (administrado). Consulta [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment) y [`OneTimeToken`](/es/docs/yuno-sdk/reference/objects-you-receive#one-time-token). |
+| `continuePayment({ paymentResult })` para el resultado | `onStatus(result)` en la configuración de la transacción | Movido | En v1 solo obtenías un estado si recordabas usar `continuePayment({ paymentResult })`, un descuido fácil. En la API unificada `onStatus` es parte de la configuración de la transacción. En modo manual (pasas `createPayment`) también recibe un resultado `DECLINED` o `ERROR` que permite reintentar, para que sepas que debes volver a habilitar tu botón Pay mientras los campos siguen montados (consulta `start()` en Puntos de entrada). En modo administrado el SDK reintenta en el lugar y `onStatus` se dispara solo con el resultado final. Consulta [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). |
+
+### Vistas {#views}
+
+| Secure Fields | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `secureFields.create({ name, options }).render('#sel')` | `secureFields.create({ name, options }).mount('#sel')` | Renombrado | El único cambio en el código de tus campos. Los nombres (`pan`, `expiration`, `cvv`, `cardLoadPreview`, `cardPin`), las opciones y los payloads de `onChange` no cambian. |
+
+### Puntos de entrada {#entry-points}
+
+| Secure Fields | Unificado | Cambio | Qué hacer |
+|---|---|---|---|
+| `yuno.secureFields({ checkoutSession, countryCode, language, ... })` | `sdkPayments.transaction({ checkoutSession, countryCode, language, ... }).secureFields()` | Renombrado | Los campos provienen de la `Transaction`, sin un segundo conjunto de argumentos aparte de `installmentEnable` (consulta Inicialización y configuración). La instancia tipada expone solo `create`, `getElement` y `unmountSync`. |
+| `secureFields.generateTokenWithInformation(...)` + POST al backend + `yuno.continuePayment()` | `transaction.start({ paymentMethod: { type: 'CARD', data: { card: { holderName } } } })` | Renombrado | Tokeniza, crea el pago y ejecuta 3DS en una sola llamada. `holderName` y otros datos que no son PCI viajan en `paymentMethod.data` en lugar de los argumentos de `generateTokenWithInformation`. Los pagos rechazados se pueden reintentar en el lugar: como en v1, el SDK rota la sesión de checkout y muestra errores en los campos después de un rechazo. Novedad: `start()` es **repetible**, y la siguiente llamada tokeniza contra la sesión rotada. En v1 este ciclo requería volver a ejecutar a mano tu secuencia token → POST → `continuePayment`. |
+| `generateToken*` / `generateVaultedToken*` | *(eliminado)* | Eliminado | La tokenización sin procesar ya no es pública: toda la tokenización se ejecuta dentro de `start()`. |
+| `yuno.continuePayment()` | *(eliminado)* | Eliminado | Elimina la llamada. En v1, olvidarla omitía en silencio 3DS y el resultado; `start()` ejecuta toda la cadena automáticamente. Un pago creado fuera de `start()` nunca podía ejecutar 3DS ni informar un estado. |
+| `yuno.updateCheckoutSession(checkoutSession)` | `transaction.updateCheckoutSession(checkoutSession)` | Movido | La misma llamada, ahora en la transacción que es dueña de los campos. Solo para transacciones de pago. |
+
+## Relacionado {#related}
+
+- [Secure Fields](/es/docs/yuno-sdk/features/secure-fields). La referencia completa de la función: campos, opciones, métodos, reintento.
+- [`createPayment`](/es/docs/yuno-sdk/controllers/create-payment). Toma el control de la creación del pago (modo manual).
+- [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). Recibe el resultado final.
+- [`OneTimeToken`](/es/docs/yuno-sdk/reference/objects-you-receive#one-time-token). Payload del token enviado a tu backend.

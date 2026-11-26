@@ -1,0 +1,38 @@
+---
+title: "Actualizar destinatario"
+openapi: "/openapi/es/recipients-for-marketplace/update-recipient-1.json PATCH /recipients/{recipient_id}"
+description: "Actualiza los detalles de un destinatario de marketplace existente, identificado por su recipient_id."
+---
+
+Actualiza un destinatario existente. Solo se actualizarán los campos especificados.
+
+## Actualizaciones de cuenta bancaria {#bank-account-updates}
+
+Para los onboardings de Zoop y Pagar.me con un ID de destinatario del proveedor, una actualización explícita de `withdrawal_methods.bank` espera el resultado del proveedor. Los demás campos del destinatario conservan su comportamiento de actualización actual.
+
+Sin `onboarding_id`, Yuno combina los campos bancarios que envías con la cuenta bancaria guardada del destinatario para formar una sola cuenta para los onboardings elegibles. No combina tu solicitud con la cuenta bancaria distinta de cada proveedor. Envía una cuenta completa si la cuenta guardada no aporta los campos faltantes. Los tipos de cuenta aceptados son `CHECKINGS` y `SAVINGS`.
+
+Con `onboarding_id`, la actualización bancaria se dirige solo a ese onboarding y deja sin cambios el valor predeterminado del destinatario y los demás onboardings. Los campos omitidos se toman de la cuenta guardada del onboarding, o del valor predeterminado del destinatario si el onboarding no tiene un registro bancario guardado. Si el onboarding no muestra ninguna cuenta bancaria, envía una cuenta completa.
+
+Por ejemplo, una tienda cambia su cuenta de payout de A a B. Zoop confirma B, pero Pagar.me no confirma el cambio. Yuno mantiene B para Zoop, conserva la cuenta guardada anterior de Pagar.me y actualiza el valor predeterminado del destinatario a B. La solicitud devuelve un error que describe los resultados. **Un error no significa que todos los proveedores hayan quedado sin cambios.** Los cambios exitosos de los proveedores no se revierten.
+
+El valor predeterminado del destinatario avanza después de que al menos un proveedor confirma la actualización. Si todos los proveedores intentados la rechazan o tienen un resultado desconocido, se mantiene el valor predeterminado anterior. Cuando no hay ningún destino elegible vinculado a un proveedor, la cuenta puede guardarse localmente. Leer una cuenta guardada desde Yuno no es una confirmación independiente de un resultado desconocido del proveedor.
+
+Las actualizaciones bancarias no se aplican a los onboardings en `ERROR`, `BLOCKED`, `CANCELLED`, `INACTIVE`, `TRANSFERRED` o `TERMINATED`. Dirigirse a uno de ellos (con `onboarding_id`, [Actualizar onboarding](/es/reference/recipients-for-marketplace/update-onboarding) o [Continuar onboarding](/es/reference/recipients-for-marketplace/continue-onboarding)) devuelve `400 INVALID_STATE`; una actualización a nivel de destinatario sin `onboarding_id` los omite y conserva su cuenta anterior.
+
+## Errores bancarios y reintentos {#bank-errors-and-retries}
+
+| Respuesta | Significado | Acción |
+| --- | --- | --- |
+| `400 INVALID_PARAMETERS` | La cuenta está incompleta o no es válida, o un proveedor la rechazó explícitamente. Una solicitud con varios proveedores aún puede haberse aplicado a otro proveedor. | Lee todos los mensajes de resultado y corrige los campos indicados. |
+| `400 INVALID_STATE` | El onboarding de destino está en un estado que no acepta actualizaciones bancarias. No se envía ninguna solicitud al proveedor. | No reintentes la actualización bancaria en este onboarding. |
+| `400 REQUEST_CANNOT_BE_PROCESSED` | O bien la admisión de la actualización bancaria no estaba disponible y no se envió ninguna solicitud al proveedor, o bien al menos un proveedor confirmó la cuenta bancaria (listado como `APPLIED` en los mensajes) y una actualización posterior que no es bancaria falló. | Si un proveedor aparece como `APPLIED`, no vuelvas a enviar la cuenta bancaria; reenvía solo los cambios restantes que no son bancarios. De lo contrario, reintenta la misma solicitud prevista. |
+| `400 OPERATION_NOT_SUPPORTED_BY_PROVIDER` | Sin `onboarding_id`, el destinatario también tiene un onboarding cuyo proveedor no admite actualizaciones bancarias. Los proveedores compatibles listados como `APPLIED` fueron actualizados. | Lee los mensajes de resultado. Para cambiar solo un proveedor compatible, envía `onboarding_id`. |
+| `409 PROVIDER_TIMEOUT_AMBIGUOUS` | Al menos un resultado no está confirmado. Esto puede incluir rechazos de proveedores que el conector no puede distinguir de una escritura incierta. | Lee primero los mensajes de resultado. Si indican que el proveedor creó la cuenta pero no la convirtió en la cuenta de liquidación, o que la cuenta de liquidación cambió, corrígelo en el proveedor en lugar de reenviar. De lo contrario, revisa la cuenta del proveedor antes de enviar una cuenta bancaria distinta, y reenvía la misma cuenta prevista después del tiempo de espera de aproximadamente tres minutos. |
+| `409 ONBOARDING_OPERATION_IN_PROGRESS` | Otra operación retiene la cuenta, o no se pudo intentar uno o más destinos. | Sigue la guía de la respuesta y reintenta la misma solicitud prevista. |
+
+El tiempo de espera reduce las operaciones superpuestas; no garantiza que una escritura tardía del proveedor haya terminado. No reintentes automáticamente con una cuenta distinta. Los mensajes de diagnóstico pueden identificar nombres de campo seguros y omitir los detalles sensibles del proveedor.
+
+En una solicitud que contiene tanto campos bancarios como otros campos del destinatario, Yuno procesa primero los bancarios. Cuando se intentan actualizaciones con proveedores, los demás campos se procesan solo después de que al menos un proveedor confirma la cuenta bancaria. Yuno aún puede devolver un error para los proveedores restantes. Los cambios bancarios confirmados no se revierten si una actualización posterior que no es bancaria falla.
+
+Los resultados bancarios no cambian por sí mismos el estado del ciclo de vida del onboarding. Los proveedores pueden enviar eventos de onboarding de forma independiente después de un cambio bancario, por lo que aún puede llegar un webhook de onboarding.

@@ -1,0 +1,182 @@
+---
+title: "Lista de destinos permitidos"
+description: "Registra los hosts de terceros a los que tu PCI Proxy puede llamar. Cada destino debe estar en tu lista de permitidos antes de que el proxy le envíe datos de tarjeta."
+keywords: ["pci proxy", "lista de permitidos", "destino", "seguridad"]
+---
+
+El PCI Proxy solo envía datos de tarjeta a los hosts que hayas registrado explícitamente. Este es
+un control de seguridad deliberado: incluso si tus credenciales de API fueran robadas, un atacante no podría
+reenviar tus tarjetas almacenadas a un servidor que nunca aprobaste. No existe un modo "cualquier host".
+
+Gestionar tu lista de permitidos es autoservicio: un hostname que agregues se puede usar en minutos, sin
+necesidad de abrir un ticket de soporte.
+
+<Warning>
+**Un destino que no está en tu lista de permitidos es rechazado**
+
+Una solicitud al proxy hacia un host no registrado devuelve `403 DESTINATION_NOT_ALLOWED`. Registra primero el
+host con los endpoints que se describen a continuación.
+</Warning>
+
+## Cómo funciona la coincidencia {#how-matching-works}
+
+El proxy solo reenvía a los hosts que están registrados **y habilitados** en tu lista de permitidos.
+La coincidencia es exacta sobre el hostname:
+
+* **Sin distinción entre mayúsculas y minúsculas:** `API.Stripe.com` y `api.stripe.com` son el mismo host.
+* **Sin comodines:** `api.example.com` no autoriza `sandbox.example.com`.
+* **Los subdominios se registran por separado.**
+
+Una solicitud a un host que no está registrado, o que está registrado pero `DISABLED`, se rechaza con
+`403 DESTINATION_NOT_ALLOWED` antes de que se lea cualquier dato de tarjeta.
+
+## Registrar un destino {#register-a-destination}
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hostname": "api.example-processor.com",
+    "purpose": "Direct acquiring — Processor X",
+    "account_id": null
+  }'
+```
+
+Devuelve `201` con la entrada creada, que comienza en el estado `ENABLED`. Un hostname que ya
+está registrado devuelve `409 DESTINATION_EXISTS`; un valor que no es un hostname público simple
+(una URL, un host con puerto o ruta, una dirección IP o un comodín) devuelve `422 INVALID_HOSTNAME`;
+un `account_id` que no es una cuenta válida para tu organización devuelve `400 INVALID_ACCOUNT_ID`.
+
+`account_id` es opcional. Si se deja en `null` (el valor predeterminado), el destino se permite para **todas las
+cuentas** de tu organización. Configúralo con el id de una cuenta específica para limitar el destino a
+esa cuenta únicamente: el host solo se podrá usar entonces en las solicitudes al proxy realizadas bajo esa cuenta.
+
+El objeto de destino devuelve `id`, `hostname`, `purpose`, `account_id`, `status`
+(`ENABLED` / `DISABLED`), `created_at` y `updated_at`. Cuando llamas mediante la API, el actor
+es tu clave de API, por lo que el objeto no incluye el email de un usuario.
+
+<Tip>
+**Autentica los reenvíos a este destino**
+
+Un destino también puede tener autenticación persistente (un perfil de firma HMAC de dLocal o un
+certificado de cliente mTLS), de modo que el proxy autentique cada reenvío por ti en lugar de que
+envíes credenciales en cada solicitud. Agrega un arreglo `authentication` al registrar, o gestiónalo
+más adelante. Consulta [Autenticación de destinos](/es/docs/security-and-compliance/pci-proxy/destination-authentication).
+</Tip>
+
+## Listar tus destinos {#list-your-destinations}
+
+```sh
+curl "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Devuelve `{"destinations": [ ... ]}`. Sin el encabezado que se describe a continuación, devuelve solo los destinos
+de toda la organización (`account_id: null`).
+
+<Warning>
+**Los destinos limitados a una cuenta necesitan el encabezado `X-account-code`**
+
+Como se explica en [Registrar un destino](#register-a-destination) más arriba, un destino registrado
+con `account_id` definido está limitado a esa cuenta. Esta llamada solo lo devuelve cuando pasas
+`X-account-code: {account_id}` en la solicitud:
+
+```sh
+curl "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "X-account-code: $ACCOUNT_ID"
+```
+
+El encabezado es aditivo, no un filtro estricto: con él, obtienes los destinos de esa cuenta
+más los de toda tu organización. Sin él, obtienes solo los de toda la organización (`account_id: null`). Un
+destino limitado a una cuenta no se elimina cuando falta en una lista simple, sin encabezado, simplemente
+se omite. Esa es la causa más común de que un destino registrado correctamente
+nunca parezca aparecer.
+</Warning>
+
+<Note>
+**La llamada de reenvío usa un encabezado de cuenta distinto**
+
+Los endpoints anteriores (listar, registrar, eliminar, habilitar, deshabilitar) usan `X-account-code`. La
+llamada del [proxy de reenvío](/es/docs/security-and-compliance/pci-proxy/forward-proxy) usa un
+encabezado distinto, `yuno-account-id`; ambos llevan el mismo `account_id`. Si omites
+`yuno-account-id` al reenviar a un destino limitado a una cuenta, obtienes el mismo
+`403 DESTINATION_NOT_ALLOWED` que con un host no registrado.
+</Note>
+
+## Eliminar un destino {#remove-a-destination}
+
+```sh
+curl -X DELETE "https://api.y.uno/v1/pci-proxy/destinations/{id}" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Devuelve `204`. Eliminar un destino surte efecto de inmediato: la siguiente solicitud al proxy hacia
+ese host es rechazada.
+
+Si el destino se registró con `account_id` definido, pasa `X-account-code: {account_id}` también en
+esta llamada, igual que al [listar tus destinos](#list-your-destinations),
+de lo contrario se trata como no encontrado.
+
+## Habilitar o deshabilitar un destino {#enable-or-disable-a-destination}
+
+En lugar de eliminar un host, puedes **deshabilitarlo**: el registro (y su historial de auditoría) se conserva,
+pero la ruta de reenvío deja de usarlo. **Habilítalo** de nuevo para volver a activarlo. Esto es útil para
+suspender temporalmente un destino sin perder su configuración.
+
+```sh
+# Turn a destination off (keeps the record)
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations/{id}/disable" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+
+# Re-enable a disabled destination
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations/{id}/enable" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Cada una devuelve `200` con el objeto de destino actualizado (con su `status` en `DISABLED` o
+`ENABLED`). Solo los destinos `ENABLED` son usados por la ruta de reenvío; una solicitud a un host
+`DISABLED` devuelve `403 DESTINATION_NOT_ALLOWED`.
+
+El mismo encabezado `X-account-code: {account_id}` aplica aquí: si el destino se registró
+con `account_id` definido, inclúyelo o la llamada tratará el destino como no encontrado.
+
+Un destino pasa por tres estados:
+
+```text
+      create
+        │
+        ▼
+   ┌───────────┐   disable    ┌────────────┐
+   │  ENABLED  │ ───────────► │  DISABLED  │
+   │ (usable)  │ ◄─────────── │ (blocked)  │
+   └───────────┘    enable    └────────────┘
+        │                           │
+        └──────────── delete ───────┘
+                       │
+                       ▼
+                   (removed)
+```
+
+## Registro de auditoría {#audit-trail}
+
+Cada cambio en la lista de permitidos (**agregar, eliminar, habilitar y deshabilitar**) se escribe en un
+registro de auditoría de solo adición que registra quién hizo el cambio, cuándo y qué hostname. El registro de auditoría persiste
+incluso después de eliminar un destino, de modo que una eliminación nunca es invisible: siempre puedes ver quién
+eliminó un host y cuándo. No hay forma de alterar o borrar estos registros de auditoría mediante la API.
+
+<Note>
+**Toma en serio las alertas de nuevos destinos y eliminaciones**
+
+Agregar o eliminar un destino es una acción sensible: cambia a dónde se pueden enviar tus tarjetas.
+Yuno recomienda restringir quién puede gestionar la lista de permitidos, habilitar las notificaciones sobre los cambios
+en la lista de permitidos y revisar cualquier adición o eliminación inesperada, ya que son la señal de alerta de una
+cuenta de dashboard comprometida.
+</Note>

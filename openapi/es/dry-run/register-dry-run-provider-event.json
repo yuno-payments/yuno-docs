@@ -1,0 +1,472 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Yuno Dry-Run API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "paths": {
+    "/dry-run/provider-events": {
+      "post": {
+        "operationId": "registerDryRunProviderEvent",
+        "summary": "Registrar payloads de solicitud, respuesta y webhook del proveedor",
+        "description": "Almacena el tráfico HTTP que el comercio intercambió directamente con un proveedor\nde pagos (solicitud, respuesta y webhook) para correlacionarlo con un pago de Yuno.\n",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Clave de API pública. Se requiere una de las dos: PUBLIC-API-KEY o PRIVATE-SECRET-KEY."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Clave secreta privada para llamadas de servidor a servidor. Se requiere una de las dos: PUBLIC-API-KEY o PRIVATE-SECRET-KEY."
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "description": "Cadena de formato libre (MAX 64). Ventana de repetición de 24 horas."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DryRunRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Simulación registrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DryRunResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falla de validación",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales faltantes o no válidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pago no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Repetición de idempotencia con un payload distinto"
+          },
+          "413": {
+            "description": "El payload o el lote supera los límites de tamaño"
+          },
+          "415": {
+            "description": "Content-Type no admitido (debe ser application/json)"
+          },
+          "429": {
+            "description": "Se superó el límite de solicitudes"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DryRunRequest": {
+        "type": "object",
+        "required": [
+          "merchant_reference",
+          "events"
+        ],
+        "properties": {
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255,
+            "description": "Identificador asignado por el comercio (MAX 255; MIN 3). Único por cuenta.",
+            "example": "ORD-12345"
+          },
+          "payment_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID del pago de Yuno. Si se envía, se resuelve de inmediato.",
+            "example": "fb9e5fa4-684c-4747-9755-9d332617f16f"
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID de la cuenta de Yuno, con el mismo formato que account_id en POST /v1/payments.",
+            "example": "a389f417-ecd1-4355-89f5-7489564f264d"
+          },
+          "provider_id": {
+            "type": "string",
+            "description": "Identificador del proveedor. Los valores permitidos están alineados con el catálogo de Yuno.",
+            "example": "STRIPE",
+            "enum": [
+              "STRIPE",
+              "ADYEN",
+              "CYBERSOURCE",
+              "BRAINTREE",
+              "NMI",
+              "CHECKOUT",
+              "WORLDPAY",
+              "PAYPAL",
+              "EBANX",
+              "GLOBALPAYMENTS",
+              "NUVEI",
+              "CIELO",
+              "MPGS",
+              "PRISMA",
+              "FISERV",
+              "WORLDLINE",
+              "ANTOM",
+              "ORBITAL",
+              "GOCARDLESS",
+              "AUTHORIZE_NET",
+              "SONY",
+              "CITI",
+              "EPX",
+              "HPAY",
+              "PAYSTACK",
+              "PLAID",
+              "SAFERPAY",
+              "SIKA_HEALTH",
+              "VALIDIFI",
+              "WEPAY",
+              "CARD_CONNECT",
+              "GMO_PG",
+              "MONERIS",
+              "BLUESNAP",
+              "QUICK_GATEWAY",
+              "TWENTYFOUR_HOUR_FITNESS",
+              "MERCHANT_ESOLUTIONS",
+              "NETS",
+              "FAT_ZEBRA",
+              "WINDCAVE",
+              "CHASE_MOBILITY",
+              "HELIX",
+              "ANB",
+              "AMAZON_PAY",
+              "OPAYO",
+              "IP_PAYMENTS",
+              "KLARNA",
+              "BILLDESK",
+              "WELLS_FARGO",
+              "SAGEPAY",
+              "PLANET"
+            ]
+          },
+          "payment_method_type": {
+            "type": "string",
+            "description": "Método de pago que ejercita esta simulación. Mismo vocabulario que payment_method.type en POST /v1/payments.",
+            "example": "CREDIT_CARD",
+            "enum": [
+              "",
+              "CARD",
+              "CREDIT_CARD",
+              "CREDIT_CARD_REFERENCE_TRANSACTION",
+              "DEBIT_CARD",
+              "EPX_TOKEN",
+              "TEST_CREDIT_CARD",
+              "UPC_TOKEN_TRANSACTION",
+              "APPLE_PAY",
+              "GOOGLE_PAY",
+              "PIX",
+              "PSE",
+              "OXXO",
+              "BOLETO",
+              "ALI_PAY",
+              "AMAZON_PAY",
+              "GCASH",
+              "IDEAL",
+              "KAKAO_PAY",
+              "KLARNA",
+              "MOMO_PAY",
+              "NAVER_PAY",
+              "OVO",
+              "PAYPAL",
+              "PAYPAL_CREDIT",
+              "PAYPAY",
+              "PAZE",
+              "TOSS_PAY",
+              "UPI",
+              "VENMO",
+              "ACH",
+              "BANK_TRANSFER",
+              "CRYPTO",
+              "CASH"
+            ]
+          },
+          "events": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "description": "De 1 a 10 entradas de intercambio HTTP para esta simulación (MAX 10; MIN 1).",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            },
+            "example": [
+              {
+                "type": "REQUEST",
+                "http_method": "POST",
+                "operation_type": "PURCHASE",
+                "base_url": "https://api.stripe.com",
+                "endpoint": "/v1/charges",
+                "headers": "eyBDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24gfQ==",
+                "body": "eyBhbW91bnQ6IDIwMDAsIGN1cnJlbmN5OiAidXNkIiB9"
+              }
+            ]
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "required": [
+          "type",
+          "http_method",
+          "operation_type",
+          "headers"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "REQUEST",
+              "RESPONSE",
+              "WEBHOOK"
+            ],
+            "description": "Qué tramo del intercambio captura esta entrada.",
+            "example": "REQUEST"
+          },
+          "http_method": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "PATCH",
+              "DELETE"
+            ],
+            "example": "POST"
+          },
+          "operation_type": {
+            "type": "string",
+            "enum": [
+              "PURCHASE",
+              "AUTHORIZE",
+              "CAPTURE",
+              "CANCEL",
+              "REFUND",
+              "CHARGEBACK",
+              "THREE_D_SECURE"
+            ],
+            "description": "Identifica el tipo de operación de pago que se simula.",
+            "example": "PURCHASE"
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Obligatorio para REQUEST y WEBHOOK. Origen del endpoint del proveedor: esquema + host + puerto (por ejemplo, https://api.stripe.com).",
+            "example": "https://api.stripe.com"
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "Obligatorio para REQUEST y WEBHOOK. Parte de la ruta y la consulta (por ejemplo, /v1/charges?expand=customer).",
+            "example": "/v1/charges"
+          },
+          "http_status_code": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 100,
+            "maximum": 599,
+            "description": "Obligatorio para RESPONSE y WEBHOOK. Omítelo para REQUEST."
+          },
+          "headers": {
+            "type": "string",
+            "format": "byte",
+            "maxLength": 87400,
+            "description": "Payload de encabezados codificado en Base64. El contenido decodificado puede ser un mapa\n`{header-name: header-value}` serializado en JSON o el bloque de encabezados HTTP sin procesar. Límite\nestricto: 64 KB de bytes decodificados por evento.\n",
+            "example": "eyBDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24gfQ=="
+          },
+          "body": {
+            "type": "string",
+            "format": "byte",
+            "maxLength": 1398000,
+            "description": "Payload del cuerpo codificado en Base64. Omítelo para cuerpos vacíos. Límite estricto: 1 MB de\nbytes decodificados por evento. Para cuerpos que no son UTF-8 (protobuf, gzip),\ncodifica en Base64 directamente los bytes sin procesar.\n",
+            "example": "eyBhbW91bnQ6IDIwMDAsIGN1cnJlbmN5OiAidXNkIiB9"
+          }
+        }
+      },
+      "DryRunResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "merchant_reference"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador público del registro de la simulación (nano_id, 21 caracteres).",
+            "example": "drun_1209fnkw428ufwd"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "REGISTERED"
+            ],
+            "description": "Estado del ciclo de vida.",
+            "example": "REGISTERED"
+          },
+          "merchant_reference": {
+            "type": "string",
+            "example": "ORD-12345"
+          },
+          "payment_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "fb9e5fa4-684c-4747-9755-9d332617f16f"
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "a389f417-ecd1-4355-89f5-7489564f264d"
+          },
+          "provider_id": {
+            "type": "string",
+            "example": "STRIPE"
+          },
+          "payment_method_type": {
+            "type": "string",
+            "example": "CARD",
+            "enum": [
+              "",
+              "CARD",
+              "CREDIT_CARD",
+              "CREDIT_CARD_REFERENCE_TRANSACTION",
+              "DEBIT_CARD",
+              "EPX_TOKEN",
+              "TEST_CREDIT_CARD",
+              "UPC_TOKEN_TRANSACTION",
+              "APPLE_PAY",
+              "GOOGLE_PAY",
+              "PIX",
+              "PSE",
+              "OXXO",
+              "BOLETO",
+              "ALI_PAY",
+              "AMAZON_PAY",
+              "GCASH",
+              "IDEAL",
+              "KAKAO_PAY",
+              "KLARNA",
+              "MOMO_PAY",
+              "NAVER_PAY",
+              "OVO",
+              "PAYPAL",
+              "PAYPAL_CREDIT",
+              "PAYPAY",
+              "PAZE",
+              "TOSS_PAY",
+              "UPI",
+              "VENMO",
+              "ACH",
+              "BANK_TRANSFER",
+              "CRYPTO",
+              "CASH"
+            ]
+          },
+          "operation_type": {
+            "type": "string",
+            "example": "PURCHASE"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "messages",
+          "httpCode"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Código de error estable.",
+            "enum": [
+              "NOT_AUTHENTICATED",
+              "AuthenticationFail",
+              "INVALID_PARAMETERS",
+              "TRAFFIC_LOG_VALIDATION_FAILED",
+              "TRAFFIC_LOG_MERCHANT_REFERENCE_REQUIRED",
+              "TRAFFIC_LOG_BODY_ENCODING_MISMATCH",
+              "TRAFFIC_LOG_IDEMPOTENCY_REPLAY",
+              "TRAFFIC_LOG_PAYLOAD_TOO_LARGE",
+              "TRAFFIC_LOG_UNSUPPORTED_CONTENT_TYPE",
+              "TRAFFIC_LOG_SEMANTIC_INVALID",
+              "PAYMENT_NOT_FOUND",
+              "RATE_LIMITED"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Detalles del error legibles para personas."
+          },
+          "httpCode": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    }
+  }
+}

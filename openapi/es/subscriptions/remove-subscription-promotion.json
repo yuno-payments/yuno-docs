@@ -1,0 +1,245 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "subscription",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1",
+      "description": "Production (EMEA)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/subscriptions/{subscription_id}/promotion": {
+      "delete": {
+        "summary": "Eliminar promoción de la suscripción",
+        "description": "Termina la promoción activa de la suscripción. El `status` de la promoción pasa a `ENDED` y su `end_reason` pasa a `REMOVED`. El siguiente cobro es por el precio completo.",
+        "operationId": "remove-subscription-promotion",
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "description": "El identificador único de la suscripción.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200. La suscripción, con su promoción en estado `ENDED` y `end_reason` `REMOVED`.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "id": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+                      "status": "ACTIVE",
+                      "promotion": {
+                        "id": "8f2d6c1e-3b7a-4c55-9a1e-2f4d8b7c6a10",
+                        "name": "Welcome 20% x3",
+                        "discount": {
+                          "type": "PERCENTAGE",
+                          "value": 20
+                        },
+                        "cycles": {
+                          "total": 3,
+                          "used": 1,
+                          "remaining": 2
+                        },
+                        "on_pause": "KEEP",
+                        "status": "ENDED",
+                        "applied_at": "2026-11-02T14:00:00Z",
+                        "ended_at": "2026-11-10T09:00:00Z",
+                        "end_reason": "REMOVED"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "promotion": {
+                      "type": "object",
+                      "description": "La copia de la promoción almacenada en la suscripción. Consulta [El objeto Subscription Promotion](/es/reference/subscriptions/the-subscription-promotion-object).",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "El ID de la promoción (UUID)."
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "discount": {
+                          "type": "object",
+                          "description": "`PERCENTAGE` con `value`, o `FIXED` con `amount` y `currency`.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "PERCENTAGE",
+                                "FIXED"
+                              ]
+                            },
+                            "value": {
+                              "type": "number",
+                              "description": "Solo `PERCENTAGE`. De 0 a 100, con un máximo de 2 decimales."
+                            },
+                            "amount": {
+                              "type": "number",
+                              "description": "Solo `FIXED`. Con los decimales de la moneda."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "Solo `FIXED`. Código ISO 4217."
+                            }
+                          }
+                        },
+                        "cycles": {
+                          "type": "object",
+                          "properties": {
+                            "total": {
+                              "type": "integer"
+                            },
+                            "used": {
+                              "type": "integer",
+                              "description": "Ciclos contados desde que se aplicó: cobros aprobados, ciclos de prueba y ciclos con 100 % de descuento."
+                            },
+                            "remaining": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "on_pause": {
+                          "type": "string",
+                          "enum": [
+                            "KEEP",
+                            "END"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ACTIVE",
+                            "COMPLETED",
+                            "ENDED"
+                          ]
+                        },
+                        "applied_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "ended_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
+                        "end_reason": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            "REPLACED",
+                            "REMOVED",
+                            "PLAN_CHANGE",
+                            "PAUSE",
+                            "CANCELED"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409. La suscripción no tiene una promoción activa. La respuesta incluye `current_status`: el estado de su última promoción (`COMPLETED` o `ENDED`), o `null` si la suscripción nunca tuvo una.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "SUBSCRIPTION_PROMOTION_NOT_ACTIVE",
+                      "messages": [
+                        "The subscription has no active promotion."
+                      ],
+                      "current_status": "COMPLETED"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "current_status": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "El estado de la última promoción de la suscripción, `COMPLETED` o `ENDED`. `null` si la suscripción nunca tuvo una promoción."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

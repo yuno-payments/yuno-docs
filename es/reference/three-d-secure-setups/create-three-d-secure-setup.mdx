@@ -1,0 +1,51 @@
+---
+title: "Crear configuración de 3DS2"
+description: "Registra datos de navegador y dispositivo de 3D Secure 2 para integraciones servidor a servidor y recibe un three_d_secure_setup_id para usar en el pago posterior."
+keywords: ["3DS2", "three_d_secure_setup_id", "browser_info", "device_fingerprints", "server-to-server"]
+openapi: "/openapi/es/three-d-secure-setups/create-three-d-secure-setup.json POST /three-d-secure/setups"
+---
+
+Registra los datos de configuración de 3D Secure 2 que tu integración ha recopilado: el entorno del navegador del titular de la tarjeta y las huellas de dispositivo que ya hayas calculado. A cambio, recibes un `three_d_secure_setup_id` para referenciar en el `POST /v1/payments` posterior.
+
+<Note>
+**Solo para integraciones servidor a servidor**
+
+Usa este endpoint cuando operes una integración servidor a servidor (B2B) y recopiles los datos de dispositivo de 3DS2 de tu lado, mediante tu propio SDK, el recolector de un proveedor de evaluación de fraude o un servidor 3DS2 al que llamas directamente.
+
+Si te integras mediante el SDK Web/Mobile de Yuno y una sesión de checkout, puedes omitir este endpoint por completo. El SDK recopila los datos de dispositivo y los registra automáticamente como parte del flujo de checkout.
+</Note>
+
+<Note>
+**Solo paso de registro**
+
+Este endpoint no llama al emisor, no muestra un desafío y no se vincula a una tarjeta específica. La tarjeta y el `three_d_secure_setup_id` viajan juntos en la llamada de pago.
+</Note>
+
+<Warning>
+**La calidad de los datos de dispositivo importa**
+
+El proveedor de pagos usa `browser_info` y `device_fingerprints` para evaluar el riesgo y decidir entre un flujo sin fricción y un desafío cuando se envía el pago. Los campos faltantes o desactualizados aumentan la tasa de desafíos. Envía los valores exactamente como se observaron en el navegador del titular de la tarjeta en el momento en que llamas a este endpoint.
+</Warning>
+
+<Note>
+**Cómo proporciona el comercio los datos de dispositivo**
+
+El campo `type` le indica a Yuno dónde se recopilaron los datos de dispositivo. `MERCHANT_PROVIDED`, actualmente el único valor admitido, significa que recopilaste de tu lado el entorno del navegador y las huellas de dispositivo y los estás enviando directamente. Yuno no ejecuta su propio recolector para este endpoint. Si necesitas que Yuno capture los datos de navegador/dispositivo, usa en su lugar la [variante con SDK](/es/docs/payment-features/3ds-standalone).
+</Note>
+
+## Cómo usar la respuesta {#how-to-use-the-response}
+
+1. **Guarda el id.** Conserva `three_d_secure_setup_id` asociado a la orden de tu lado.
+2. **Referéncialo en el pago.** En el [Create Payment](/es/reference/payments/create-payment) posterior, envíalo en `payment_method.detail.card.three_d_secure.three_d_secure_setup_id` junto con la tarjeta o el token almacenado. Yuno adjunta los `browser_info` y `device_fingerprints` registrados a la solicitud que envía al proveedor de pagos.
+
+Ten en cuenta que esta solicitud requiere un `X-Idempotency-Key`. La misma clave con el mismo payload devuelve el id de configuración original dentro de una ventana de repetición de 24 horas. Consulta la página [Authentication](/es/reference/getting-started/authentication#idempotency) para más información.
+
+## Reglas de campos y casos límite {#field-rules-and-edge-cases}
+
+| Regla | Comportamiento |
+|---|---|
+| `type` con un valor distinto de `MERCHANT_PROVIDED` | `400 INVALID_PARAMETERS`. Otros valores están reservados para uso futuro. |
+| `browser_info.platform` con un valor no admitido | `400 INVALID_PARAMETERS`. Permitidos: `WEB`, `IOS`, `ANDROID`. |
+| `device_fingerprints` omitido | Se acepta. Yuno omitirá el enriquecimiento con huellas de dispositivo para cualquier proveedor que no se haya proporcionado previamente. |
+| `device_fingerprints[*].provider_id` no encontrado en tu cuenta | La entrada se descarta silenciosamente; la configuración continúa con las entradas restantes. |
+| `account_id` que no pertenece a la clave de API | Se trata como un fallo de autorización (`403`). |

@@ -1,0 +1,346 @@
+---
+title: "Condiciones de enrutamiento"
+description: "Una condición se evalúa contra un atributo del pago entrante."
+---
+
+Una condición se evalúa contra un atributo del pago entrante.
+
+```jsonc
+{
+  "condition_type": "<ENUM>",
+  "conditional":    "<OPERATOR>",
+  "values":         ["..."],
+
+  // Required only on specific condition_types — see "Special cases" below
+  "key":      "<string>",   // METADATA, ADDITIONAL_FIELD and ORDER_ITEMS_AMOUNT only
+  "currency": "<ISO 4217>", // AMOUNT, ORDER_ITEMS_AMOUNT, and VOLUME_PAYMENTS_LIMIT with limit_by = VOLUME; not sent on CURRENCY
+  "item_values": ["..."],   // ORDER_ITEMS_AMOUNT only
+
+  // TIME_PERIOD and VOLUME_PAYMENTS_LIMIT only — see "Schedules" and "Volume and count limits" below
+  "time_period_repeat_amount":    1,
+  "time_period_repeat_frequency": "WEEKLY",
+  "time_period_repetition_days":  ["MONDAY", "FRIDAY"],
+  "time_period_start_time":       "09:00:00",
+  "time_period_end_time":         "18:00:00",
+  "timezone":                     "-03:00",
+  "limit_by":                     "VOLUME",
+  "payments_count":               "ALL"
+}
+```
+
+Las condiciones dentro del mismo `condition_sets[].conditions[]` se combinan con **AND lógico**. Para una semántica OR, divide las condiciones en varios conjuntos de condiciones ordenados por `sort_number`.
+
+#### Catálogo de `condition_type` {#conditiontype-catalog}
+
+| `condition_type` | Se evalúa contra | Formato del valor | `conditional`s aplicables | ¿Solo tarjeta? |
+|---|---|---|---|---|
+| `COUNTRY` | País de la transacción: el campo `country` de nivel superior que envías en `POST /v1/payments` (nunca el de la tarjeta) | ISO 3166-1 alpha-2 (por ejemplo, `"US"`, `"BR"`) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
+| `CARD_ISSUER_COUNTRY` | País del banco emisor de la tarjeta, resuelto por la consulta de BIN de Yuno al momento del procesamiento | ISO 3166-1 alpha-2 | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | sí |
+| `AMOUNT` | Monto de la transacción. Se envía como `AMOUNT` con un campo `currency` hermano; Yuno lo almacena internamente como `CURRENCY_AND_AMOUNT`. Con `currency` y `values` **vacío**, coincide con cualquier monto en esa moneda (consulta [Casos especiales](#special-cases)); para evaluar una moneda con otro operador o varias monedas, usa `CURRENCY` | Decimal como **string** (por ejemplo, `"100.00"`); requiere `currency` hermano | `EQUAL`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`; solo `EQUAL` cuando `values` está vacío | no |
+| `CURRENCY` | Moneda de la transacción, sin importar el monto (consulta [Casos especiales](#special-cases)) | Códigos ISO 4217 en mayúsculas (por ejemplo, `"USD"`, `"EUR"`); sin `currency` hermano | `EQUAL`, `NOT_EQUAL` (exactamente 1 valor), `ONE_OF`, `NOT_ONE_OF` (1 o más valores) | no |
+| `CARD_TYPE` | Fuente de fondos de la tarjeta | `CREDIT`, `DEBIT`, `PREPAID` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | sí |
+| `CARD_BRAND` | Esquema de la tarjeta | Uno de los valores de [Marcas de tarjeta](#card-brands) | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | sí |
+| `CARD_BIN` | Los primeros 6 a 8 dígitos del PAN | Cadena numérica de 6 a 8 dígitos | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `BETWEEN` (consulta [Casos especiales](#special-cases)) | sí |
+| `TRANSACTION_TYPE` | Tipo de intención del pago | `PURCHASE`, `AUTHORIZATION`, `RECURRING`, `MIT`, `CIT` | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF` | no |
+| `METADATA` | `payment.metadata[<key>]` | Cualquier string que defina el comercio; requiere `key` hermano | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `IS`, `IS_NOT`, `GREATER_THAN`, `LESS_THAN`, `BETWEEN`, `CONTAINS` | no |
+| `ADDITIONAL_FIELD` | Un campo de la solicitud de pago indicado por `key`: datos del cliente, dirección, orden, aerolínea o tarjeta. Consulta [Campos adicionales](#additional-fields-additional_field) | Cualquier string; requiere `key` hermano de la lista admitida | `EQUAL`, `NOT_EQUAL`, `ONE_OF`, `NOT_ONE_OF`, `CONTAINS` | no |
+| `ORDER_ITEMS_AMOUNT` | Suma de `quantity × unit_amount` de los ítems de la orden cuyo campo `key` está en `item_values`. Consulta [Monto de los ítems de la orden](#order-items-amount-order_items_amount) | Decimal como **string**: un umbral, dos para `BETWEEN`; requiere los hermanos `currency` e `item_values` | `GREATER_THAN`, `LESS_THAN`, `GREATER_OR_EQUAL_THAN`, `BETWEEN` | no |
+| `TIME_PERIOD` | El momento en que se crea el pago, contra un calendario. Consulta [Calendarios](#schedules-time_period) | Una o dos fechas y horas ISO-8601 **con offset**: el inicio y, opcionalmente, el fin | `EQUAL` | no |
+| `VOLUME_PAYMENTS_LIMIT` | El volumen acumulado de la cuenta o la cantidad de pagos en el período actual, incluido este pago. Consulta [Límites de volumen y cantidad](#volume-and-count-limits-volume_payments_limit) | Exactamente un número positivo como **string**: el límite | `LESS_OR_EQUAL_THAN` | no |
+| `SUBSCRIPTION_RETRY` | Indica si el pago es un reintento automático programado de una suscripción administrada por Yuno (`subscription_context.retry_count > 0`); lo define Yuno en cada intento, nunca lo envías tú | `"true"` o `"false"` | `EQUAL` | no |
+| `SUBSCRIPTION_RETRY_COUNT` | Posición del intento en la escalera de reintentos de la suscripción: `0` en el primer intento de un ciclo de facturación, `1..n` en cada reintento programado | Entero no negativo como **string** (por ejemplo, `"3"`) | `EQUAL`, `GREATER_THAN`, `GREATER_OR_EQUAL_THAN`, `LESS_THAN`, `LESS_OR_EQUAL_THAN`, `BETWEEN`, `ONE_OF` | no |
+
+<Warning>
+`INSTALLMENTS` **no** es un valor válido de `condition_type` por sí solo. Enviarlo rechaza todo el enrutamiento con `400 INVALID_ROUTE_CONFIGURATION`.
+</Warning>
+
+#### Operadores de `conditional` {#conditional-operators}
+
+| Operador | Cardinalidad de `values[]` | Semántica | Rechazado al guardar |
+|---|---|---|---|
+| `EQUAL` | exactamente 1 | `attribute == values[0]` | no |
+| `NOT_EQUAL` | exactamente 1 | `attribute != values[0]` | no |
+| `ONE_OF` | ≥ 1 | `attribute ∈ values` | no |
+| `NOT_ONE_OF` | ≥ 1 | `attribute ∉ values` | no |
+| `GREATER_THAN` | exactamente 1 | `attribute > values[0]` numérico | sí |
+| `LESS_THAN` | exactamente 1 | `attribute < values[0]` numérico | no |
+| `LESS_OR_EQUAL_THAN` | exactamente 1 | `VOLUME_PAYMENTS_LIMIT`: el total del período, incluido este pago, es `<= values[0]`; `SUBSCRIPTION_RETRY_COUNT`: `attribute <= values[0]` numérico | sí |
+| `GREATER_OR_EQUAL_THAN` | exactamente 1 | `attribute >= values[0]` numérico | sí |
+| `BETWEEN` | exactamente 2 | inclusivo en ambos extremos | sí |
+| `CONTAINS` | exactamente 1 | `attribute` contiene `values[0]` como subcadena | sí |
+
+<Warning>
+No existe el operador `NOT_BETWEEN`. No es miembro del enum `conditional`, por lo que enviarlo
+rechaza todo el enrutamiento en la deserialización: usa `BETWEEN` sobre los rangos complementarios en su lugar.
+</Warning>
+
+`LESS_OR_EQUAL_THAN` es el operador de `VOLUME_PAYMENTS_LIMIT`, donde lleva la semántica de umbral propia del límite
+(el total de la cuenta durante un período, ver más abajo) en lugar de una comparación genérica de
+un atributo, y un `<=` numérico simple para `SUBSCRIPTION_RETRY_COUNT`. No está pensado para los otros
+tipos de la tabla.
+
+`SUBSCRIPTION_RETRY` y `SUBSCRIPTION_RETRY_COUNT` leen `subscription_context.retry_count`, que Yuno
+adjunta a los pagos creados por su motor de suscripciones. Cuando está ausente (pagos únicos, o
+reintentos que activas tú mismo con `POST /v1/payments`) `SUBSCRIPTION_RETRY EQUAL "false"` **coincide**
+(el pago cuenta como primer intento) mientras que todos los operadores positivos de `SUBSCRIPTION_RETRY_COUNT`
+no coinciden. Mantén la rama de reintento (`SUBSCRIPTION_RETRY EQUAL "true"`) por encima de tu ruta por defecto y deja que los
+primeros intentos caigan en la ruta por defecto; un conjunto `EQUAL "false"` por encima de la ruta por defecto también captura todos los pagos
+únicos de la cuenta. Un reintento que fuerzas con `POST /v1/subscriptions/{code}/retry` lleva el último
+conteo almacenado, que es `0` hasta que se haya ejecutado un reintento programado. Las reglas que usan estos tipos se evalúan solo
+al momento del pago: los listados de checkout y de cuotas omiten un conjunto que contenga solo estos tipos, y
+cualquiera de esos conjuntos desactiva la resolución de cuotas con varios proveedores para esa cuenta y ese método de pago; el
+simulador de enrutamiento siempre los evalúa como un primer intento.
+
+`CONTAINS` es una prueba de subcadena para `METADATA`. Para `ADDITIONAL_FIELD` compara por igualdad con
+los valores a los que se resuelve el campo: en un campo con varios valores, como `order_fee_item_sku_code`, coincide
+cuando **cualquier** ítem es igual a `values[0]`, que es la forma de probar "la orden contiene este SKU".
+
+La columna **Rechazado al guardar** se refiere solo a la cantidad de valores. Un `sí` significa que
+`POST`/`PUT` devuelve `400` cuando la cantidad no coincide, indicando el tipo de condición y el operador.
+Un `no` significa que la cantidad no se verifica al guardar, y lo que hace una cantidad incorrecta en la evaluación
+depende del operador: no cuentes con que sea inofensiva. `TIME_PERIOD` (uno o dos valores),
+`VOLUME_PAYMENTS_LIMIT` (exactamente uno) y `CURRENCY` (exactamente uno con `EQUAL` o `NOT_EQUAL`, uno o
+más con `ONE_OF` o `NOT_ONE_OF`) siempre se verifican, sin importar el operador.
+
+Donde se aplica la verificación es **exacta**, no un mínimo: un valor sobrante se rechaza igual que
+uno faltante. `BETWEEN` con `["0", "60", "EUR"]` es un `400`, no un rango truncado en silencio.
+
+<Note>
+Una cantidad de valores ya almacenada en una versión de enrutamiento se conserva. Si una versión contiene una condición cuya
+cantidad es anterior a esta verificación, guardar esa versión de nuevo no falla por ella: solo se rechaza una
+cantidad incorrecta recién introducida. Esto también aplica a una versión duplicada a partir de esa fuente.
+</Note>
+
+#### Marcas de tarjeta {#card-brands}
+
+`CARD_BRAND` acepta los valores siguientes. Un valor fuera de la lista se rechaza al guardar con
+`400 INVALID_CARD_BRAND`, indicando el valor que causó el error. La lista se valida contra dos fuentes
+internas al guardar, por lo que un esquema nuevo admitido puede aceptarse antes de aparecer aquí.
+
+```
+ALELO                 AMERICAN_EXPRESS      ARGENCARD             ATM_CARD
+AURA                  BANKCARD_INACTIVE     BELKART               BP_FUEL_CARD
+CABAL                 CARNET                CARTES_BANCAIRES      CHINA_UNION_PAY
+CHJONES_FUEL_CARD     CIRRUS                CMI                   CODENSA
+DANKORT               DINACARD              DINERS                DISCOVER
+DUET                  EBT                   EDENRED               EFTPOS
+ELO                   EUROSHELL_FUEL_CARD   FUEL_CARD             GE_CAPITAL
+GLOBAL_BC             HIPERCARD             HRG_STORE_CARD        HUMOCARD
+JCB                   LOCAL_BRAND           LOYALTY_CARD          LUKOIL_FUEL_CARD
+MAESTRO               MASTERCARD            MEEZA                 NEWDAY
+NSPK_MIR              OUROCARD              PAGOBANCOMAT          PAYPAK
+PAYPAL                PHH_FUEL_CARD         PRIVADAS              PRIVATE_LABEL
+PROSTIR               RBS_GIFT_CARD         RED_FUEL_CARD         RED_LIQUID_FUEL_CARD
+RUPAY                 SBERCARD              SODEXO                STAR_REWARDS
+TARJETA_CENCOSUD      TARJETA_NARANJA       TROY                  UATP
+UK_FUEL_CARD          UZCARD                VERVE                 VISA
+VOYAGER               VPAY                  VR_VALE_REFEICAO      WEXCARD
+YUNO                  YUNO_TEST
+```
+
+<Warning>
+Estos valores no existen en la lista anterior, por lo que una regla que lleve uno nunca coincide con un pago:
+
+| Valor no válido | Usa en su lugar |
+|---|---|
+| `AMEX` | `AMERICAN_EXPRESS` |
+| `AMERICAN EXPRESS` (con un espacio) | `AMERICAN_EXPRESS` |
+| `UNIONPAY` | `CHINA_UNION_PAY` |
+| `CB` | `CARTES_BANCAIRES` |
+| `DINERS_CLUB` | `DINERS` |
+| `DINERS CLUB INTERNATIONAL` | `DINERS` |
+
+`AMEX`, `UNIONPAY` y `CB` aparecían en versiones anteriores de esta página. Los demás son valores que
+se enviaron a la API y se aceptaron antes de que existiera la validación al guardar.
+
+Las reglas existentes que contengan alguno de ellos **no** se rechazan en un guardado posterior: se conservan tal
+como están, pero nunca coincidirán con un pago, así que corrígelas.
+</Warning>
+
+#### Calendarios: `TIME_PERIOD` {#schedules-timeperiod}
+
+`TIME_PERIOD` coincide cuando el pago se crea dentro de un calendario. `values[0]` es cuando empieza el calendario, el `values[1]` opcional es cuando termina, y los campos de recurrencia lo acotan más:
+
+```json
+{
+  "condition_type": "TIME_PERIOD",
+  "conditional": "EQUAL",
+  "values": ["2026-10-01T00:00:00-03:00"],
+  "time_period_repeat_amount": 1,
+  "time_period_repeat_frequency": "WEEKLY",
+  "time_period_repetition_days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+  "time_period_start_time": "09:00:00",
+  "time_period_end_time": "18:00:00",
+  "timezone": "-03:00"
+}
+```
+
+Este conjunto coincide con los pagos creados en días laborables entre las 09:00 y las 18:00 (UTC−3), a partir del 1 de octubre de 2026.
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Obligatorio | Significado |
+|---|---|---|---|
+| `values` | string[] | sí | Una o dos fechas y horas ISO-8601 **con offset** (`2026-10-01T00:00:00-03:00`, `2026-12-31T23:59:59Z`): el inicio y, opcionalmente, el fin. Un pago anterior al inicio o posterior al fin nunca coincide. |
+| `timezone` | string | no | Offset UTC como `-03:00` o `+00:00`, usado para leer la hora del pago y la ventana horaria. Por defecto es el offset de `values[0]`. Las zonas con nombre (`America/Bogota`) se rechazan. |
+| `time_period_repeat_frequency` | enum | con `time_period_repeat_amount` | `DAILY`, `WEEKLY`, `MONTHLY`, `QUARTERLY`, `YEARLY`. La unidad de recurrencia. |
+| `time_period_repeat_amount` | int | con `time_period_repeat_frequency` | Cada cuántas unidades, desde la fecha de inicio: `2` con `WEEKLY` coincide cada dos semanas. Debe ser mayor que cero. |
+| `time_period_repetition_days` | enum[] | no | Días de la semana (`MONDAY` … `SUNDAY`). Solo con una frecuencia. |
+| `time_period_start_time`, `time_period_end_time` | `HH:mm:ss` | juntos | Ventana horaria dentro de cada día coincidente, inclusiva en ambos extremos, leída en `timezone`. Solo con una frecuencia. |
+
+</div>
+
+Sin campos de recurrencia, la condición es un rango de fechas simple: coincide con todos los pagos entre el inicio y el fin. Con una frecuencia, un pago coincide cuando las unidades completas transcurridas desde el inicio son múltiplo de `time_period_repeat_amount`, su día de la semana está en `time_period_repetition_days` (cuando se define) y su hora está dentro de la ventana (cuando se define). `YEARLY` además exige el mismo mes y día que el inicio.
+
+Reglas verificadas al guardar, cada una un `400` que indica el campo: un valor que no es una fecha y hora ISO-8601 con offset, tres o más valores, una frecuencia sin cantidad o al revés, una cantidad igual a cero, una hora de inicio posterior a la de fin, una fecha de inicio posterior a la de fin, un extremo de la ventana horaria sin el otro, días de repetición o una ventana horaria sin frecuencia, un `timezone` que no es un offset, y `limit_by` o `payments_count` en un calendario. Un valor fuera de un enum o una cantidad igual a cero se detecta en el borde de la API como `INVALID_PARAMETERS`; el resto es `INVALID_ROUTE_CONFIGURATION`.
+
+#### Límites de volumen y cantidad: `VOLUME_PAYMENTS_LIMIT` {#volume-and-count-limits-volumepaymentslimit}
+
+`VOLUME_PAYMENTS_LIMIT` coincide mientras la cuenta se mantiene **por debajo de un límite** durante un período, contando el pago que se está enrutando. Úsalo para enviar los primeros N pagos, o los primeros X de volumen, de un día o un mes por una ruta y el resto por otra:
+
+```json
+{
+  "condition_type": "VOLUME_PAYMENTS_LIMIT",
+  "conditional": "LESS_OR_EQUAL_THAN",
+  "values": ["50000"],
+  "currency": "USD",
+  "limit_by": "VOLUME",
+  "payments_count": "ALL",
+  "time_period_repeat_amount": 1,
+  "time_period_repeat_frequency": "MONTHLY",
+  "timezone": "-03:00"
+}
+```
+
+Este conjunto coincide mientras los pagos de la cuenta del mes calendario actual, en USD y incluido el actual, sumen 50,000 o menos.
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Obligatorio | Significado |
+|---|---|---|---|
+| `values` | string[] | sí | Exactamente un número positivo: el límite, en unidades de `currency` para `VOLUME` o en pagos para `PAYMENTS`. |
+| `conditional` | enum | sí | `LESS_OR_EQUAL_THAN`: el total del período **incluido el pago actual** debe ser menor o igual que el límite. |
+| `limit_by` | enum | no | `PAYMENTS` (cuenta pagos, por defecto) o `VOLUME` (suma montos). |
+| `payments_count` | enum | no | Qué pagos cuentan: `ALL` (por defecto) o solo `SUCCEEDED`. |
+| `currency` | ISO 4217 | con `limit_by = VOLUME` | Solo se suman los pagos en esta moneda, y un pago en otra moneda suma cero. Obligatorio y validado para `VOLUME`. |
+| `time_period_repeat_frequency` | enum | no | `DAILY` (por defecto), `MONTHLY` o `QUARTERLY`. |
+| `time_period_repeat_amount` | int | no | Con `DAILY`, la longitud de la ventana en días, de `1` a `90`; la ventana cubre esa cantidad de días que terminan hoy, desde el inicio del primer día. Debe ser `1` con `MONTHLY` y `QUARTERLY`, que cubren el mes o trimestre calendario actual. Por defecto es `1`. |
+| `timezone` | string | no | Offset UTC de horas completas (`-03:00`, `+00:00`) que define dónde empiezan los días, meses y trimestres. Por defecto es `+00:00`. |
+
+</div>
+
+Reglas verificadas al guardar: exactamente un valor numérico mayor que cero; sin `time_period_repetition_days`, `time_period_start_time` ni `time_period_end_time`; una moneda válida cuando `limit_by` es `VOLUME` (`400 INVALID_VOLUME_LIMIT_CURRENCY`); un período admitido (`400 INVALID_VOLUME_LIMIT_PERIOD`); un `timezone` de horas completas (`400 UNSUPPORTED_VOLUME_LIMIT_TIMEZONE`).
+
+<Note>
+Coloca el conjunto del límite antes de la ruta que debe recibir el excedente. Una vez alcanzado el límite, el conjunto deja de coincidir, así que los conjuntos siguientes y la `default_route` reciben los pagos restantes del período.
+</Note>
+
+#### Campos adicionales: `ADDITIONAL_FIELD` {#additional-fields-additionalfield}
+
+`ADDITIONAL_FIELD` evalúa un campo de la solicitud de pago que no tiene un tipo de condición propio. `key` nombra el campo y se valida al guardar; una clave desconocida se rechaza con `400 INVALID_ROUTE_CONFIGURATION`.
+
+```json
+{ "condition_type": "ADDITIONAL_FIELD", "key": "installments", "conditional": "ONE_OF", "values": ["3", "6", "12"] }
+```
+
+<div className="code-nowrap-table dense-table">
+
+| Área | Valores de `key` |
+|---|---|
+| Cuotas | `installments`, `installments_source` |
+| Cliente | `customer_first_name`, `customer_last_name`, `email`, `gender`, `customer_date_of_birth`, `customer_nationality`, `customer_document_type`, `customer_document_number`, `phone_number`, `phone_country_code` |
+| Dirección de facturación | `billing_address_line_1`, `billing_address_line_2`, `billing_address_country`, `billing_address_state`, `billing_address_city`, `billing_address_zip_code` |
+| Dirección de envío | `shipping_address_line_1`, `shipping_address_line_2`, `shipping_address_country`, `shipping_address_state`, `shipping_address_city`, `shipping_address_zip_code` |
+| Orden | `order_shipping_amount`, `order_fee_amount`, y por ítem `order_fee_item_id`, `order_fee_item_name`, `order_fee_item_quantity`, `order_fee_item_unit_amount`, `order_fee_item_category`, `order_fee_item_brand`, `order_fee_item_sku_code`, `order_fee_item_manufacture_part_number` |
+| Aerolínea | `airline_pnr`, y por tramo `airline_departure_airport`, `airline_departure_datetime`, `airline_departure_airport_timezone`, `airline_arrival_airport`, `airline_carrier_code`, `airline_flight_number`, `airline_fare_basis_code`, `airline_fare_class_code`, `airline_base_fare`, `airline_base_fare_currency`, `airline_stopover_code` |
+| Pasajeros de aerolínea | `passenger_first_name`, `passenger_last_name`, `passenger_middle_name`, `passenger_type`, `passenger_date_of_birth`, `passenger_nationality`, `passenger_loyalty_number`, `passenger_loyalty_tier`, `passenger_document_number`, `passenger_document_type`, `passenger_country` |
+| Boleto de aerolínea | `airline_ticket_number`, `airline_ticket_restricted`, `airline_ticket_total_fee_amount`, `airline_ticker_total_tax_amount` (escrito con `ticker`, que es la clave que espera el evaluador), `airline_ticket_total_fare_amount`, `airline_ticket_e_ticket` |
+| Tarjeta | `card_scheme`, `card_issuer_name`, `card_type`, `card_category`, `card_points_mode` |
+
+</div>
+
+Todos los valores se comparan como strings; `email` se compara sin distinguir mayúsculas. En un campo con varios valores (ítems de la orden, tramos de aerolínea, pasajeros) cada ítem debe cumplir el operador, excepto `CONTAINS`, que coincide cuando cualquier ítem es igual a `values[0]`. Un campo ausente del pago nunca coincide, con una excepción: las claves numéricas (`installments`, los montos y las cantidades) se resuelven al string `"null"` cuando están ausentes, por lo que un `NOT_EQUAL` o `NOT_ONE_OF` sobre ellas coincide con los pagos que no llevan el campo.
+
+#### Monto de los ítems de la orden: `ORDER_ITEMS_AMOUNT` {#order-items-amount-orderitemsamount}
+
+`ORDER_ITEMS_AMOUNT` suma `quantity × unit_amount` de los ítems de `additional_data.order.items[]` cuyo campo `key` está en `item_values`, y compara el total con `values` en `currency`. Úsalo para enrutar según qué parte de la canasta pertenece a una lista de productos:
+
+```json
+{
+  "condition_type": "ORDER_ITEMS_AMOUNT",
+  "key": "sku_code",
+  "item_values": ["GC-50", "GC-100", "GC-200"],
+  "currency": "BRL",
+  "conditional": "GREATER_THAN",
+  "values": ["500"]
+}
+```
+
+Esta condición coincide con un pago en BRL cuyos ítems con SKU `GC-50`, `GC-100` o `GC-200` suman más de 500. Una canasta de `GC-50` ×1 (50), `GC-100` ×1 (100), `GC-200` ×2 (monto unitario 200) y un ítem de 1,950 con otro SKU totaliza 550 y coincide; una canasta de ese ítem de 1,950 y `GC-50` totaliza 50 y no coincide.
+
+<div className="code-nowrap-table dense-table">
+
+| Campo | Tipo | Obligatorio | Significado |
+|---|---|---|---|
+| `key` | string | no | El campo del ítem que se compara con `item_values`: `sku_code` (por defecto), `category` o `brand`. Otro valor se rechaza. |
+| `item_values` | string[] | sí | Uno o más valores de ese campo. La coincidencia es exacta y distingue mayúsculas. Enviar `item_values` en cualquier otro `condition_type` se rechaza. |
+| `currency` | ISO 4217 | sí | Moneda del umbral. Un pago en otra moneda, o sin moneda, nunca coincide. |
+| `conditional` | enum | sí | `GREATER_THAN`, `LESS_THAN`, `GREATER_OR_EQUAL_THAN` o `BETWEEN`. |
+| `values` | string[] | sí | El umbral numérico: exactamente un valor, dos para `BETWEEN`. |
+
+</div>
+
+`unit_amount` se lee como el precio de una unidad en la moneda del pago; el total se redondea a 2 decimales. Un pago sin ítems de orden, sin ningún ítem de la lista, o cuyos ítems no llevan el campo `key` totaliza `0`, por lo que `LESS_THAN` y `GREATER_OR_EQUAL_THAN 0` coinciden con ese pago. Las respuestas devuelven la condición con la misma forma, con `key` siempre definido, por lo que se puede reenviar en una actualización sin cambios.
+
+Reglas verificadas al guardar, cada una un `400 INVALID_ROUTE_CONFIGURATION`: un `currency` ausente o que no es ISO 4217, un `item_values` ausente o vacío, un `key` no admitido, otro operador, una cantidad de valores distinta de la indicada arriba, un valor no numérico, y campos de calendario o de límite.
+
+La condición se evalúa solo al momento del pago: los ítems de la orden no se conocen cuando el checkout lista los métodos de pago, por lo que ese listado y el listado de cuotas la ignoran, y el pago la evalúa.
+
+#### Casos especiales {#special-cases}
+
+- **`AMOUNT` requiere `currency`.** Las comparaciones no consideran el tipo de cambio; solo se evalúan los pagos cuya moneda coincide con el `currency` de la regla.
+- **`AMOUNT` con una lista `values` vacía es una condición solo de moneda**: `{ "condition_type": "AMOUNT", "conditional": "EQUAL", "values": [], "currency": "BRL" }` coincide con todos los pagos en BRL, sin importar el monto. En esa forma solo se acepta `EQUAL`; otro operador se rechaza con `400 INVALID_ROUTE_CONFIGURATION`. Las respuestas lo devuelven con esta misma forma. Para excluir una moneda o evaluar varias, usa `CURRENCY`.
+- **`CURRENCY` evalúa solo la moneda del pago**: `{ "condition_type": "CURRENCY", "conditional": "NOT_EQUAL", "values": ["USD"] }` coincide con todos los pagos que no están en USD, y `{ "condition_type": "CURRENCY", "conditional": "ONE_OF", "values": ["EUR", "GBP"] }` con todos los pagos en EUR o GBP. Las monedas van en `values`: `EQUAL` y `NOT_EQUAL` toman exactamente 1, `ONE_OF` y `NOT_ONE_OF` 1 o más. Cada valor es un código ISO 4217 en mayúsculas distinto de `XXX`, y ningún código puede repetirse; no envíes `currency` ni `key` en este tipo. Igual que `AMOUNT`, es válido para todos los métodos de pago. Cualquier otra cosa se rechaza con `400 INVALID_ROUTE_CONFIGURATION`. Las respuestas devuelven `NOT_EQUAL`, `ONE_OF` y `NOT_ONE_OF` exactamente como se enviaron, por lo que la condición recuperada se puede reenviar en una actualización sin cambios. `CURRENCY` con `EQUAL` se almacena como el `AMOUNT` solo de moneda descrito arriba y regresa con esa forma, `{ "condition_type": "AMOUNT", "conditional": "EQUAL", "values": [], "currency": "USD" }`; ambas formas se aceptan al crear y al actualizar.
+- **`METADATA` requiere `key`.** Compara `payment.metadata[key]`. Si la clave está ausente en el pago (o el pago no tiene `metadata`), la condición **no** coincide, sin importar el operador. Esto incluye los operadores negativos: un pago sin la clave tampoco coincide con `NOT_EQUAL` ni con `NOT_ONE_OF`. Consulta la nota de abajo para saber cómo enrutar los pagos que no llevan la clave.
+- **`ADDITIONAL_FIELD` requiere `key`** de la [lista admitida](#additional-fields-additional_field); las claves de `METADATA` son libres, las de `ADDITIONAL_FIELD` no.
+- **`ORDER_ITEMS_AMOUNT` requiere `currency` y un `item_values` no vacío**, y `item_values` no se acepta en ningún otro `condition_type`. Consulta [Monto de los ítems de la orden](#order-items-amount-order_items_amount).
+- **Los tipos de condición exclusivos de tarjeta** (`CARD_ISSUER_COUNTRY`, `CARD_TYPE`, `CARD_BRAND`, `CARD_BIN`) solo son válidos cuando `payment_method = "CARD"`.
+- **`COUNTRY` frente a `CARD_ISSUER_COUNTRY`.** Ambos provienen de fuentes independientes: `COUNTRY` coincide con el país de la transacción que tu backend envía en la solicitud de pago, mientras que `CARD_ISSUER_COUNTRY` coincide con el país del emisor que la consulta de BIN propia de Yuno obtiene del número de tarjeta. El mismo pago puede ser `COUNTRY = US` y `CARD_ISSUER_COUNTRY = GB` a la vez. La consulta de BIN se ejecuta antes de seleccionar un proveedor, es idéntica en sandbox y en producción, y refleja datos reales del registro de BIN, nunca la visión del procesador sobre la tarjeta.
+- **No lo confundas con las Campañas de comunicaciones.** Ese producto tiene su propio motor de reglas, donde `AMOUNT_AND_CURRENCY` con `BETWEEN` toma tres valores `["min", "max", "currency"]`. El `AMOUNT` del enrutamiento toma **dos** valores más un `currency` hermano, y un tercer valor se rechaza.
+- **`CARD_BIN` con `BETWEEN`** expresa un rango de emisor y se valida de forma más estricta que la regla genérica de dos valores: exactamente dos valores, ambos de la misma longitud, que sea 6 u 8, todos dígitos, y el primero menor o igual que el segundo. Cualquier otra cosa es `400 INVALID_ROUTE_CONFIGURATION`, así que `["411111", "41111111"]` (longitudes distintas) y `["500000", "400000"]` (descendente) se rechazan. A diferencia de cualquier otro tipo de condición, un `CARD_BIN BETWEEN` almacenado **no** se mantiene por compatibilidad: una versión que contenga uno mal formado se rechaza en cada guardado posterior hasta que se corrija.
+- **Los campos de calendario y de límite pertenecen solo a `TIME_PERIOD` y `VOLUME_PAYMENTS_LIMIT`.** Cualquiera de ellos en otro `condition_type` se rechaza con `400 INVALID_ROUTE_CONFIGURATION`.
+- **Los valores numéricos se envían como strings** para coincidir con el esquema `values: string[]`. Yuno los interpreta según el `condition_type`.
+
+<Note>
+**Enrutar pagos que no llevan una clave de metadata**
+
+Como una clave ausente nunca coincide, una regla como `METADATA` `QA` `NOT_EQUAL` `"true"` omite todos los pagos que no tienen la clave `QA`. Para dividir el tráfico según la presencia de una clave, haz coincidir los pagos que **sí** la llevan y deja que todo lo demás caiga hacia abajo:
+
+1. Pon primero un conjunto de condiciones con `METADATA` `QA` `EQUAL` `"true"` (menor `sort_number`).
+2. Pon después el conjunto de condiciones para todos los demás pagos, **sin** una condición `METADATA` sobre `QA`.
+
+Los pagos con `QA = "true"` coinciden con el primer conjunto; los pagos sin la clave, o con cualquier otro valor, llegan al segundo.
+</Note>
+
+#### Probar reglas de `CARD_ISSUER_COUNTRY` en sandbox {#testing-cardissuercountry-rules-in-sandbox}
+
+<Warning>
+**Los países de las tarjetas de prueba del proveedor son metadatos del simulador**
+
+El "país" que un proveedor de pago documenta para sus tarjetas de prueba existe solo dentro del propio entorno de pruebas de ese proveedor: es metadato del simulador asociado al PAN, no una propiedad del número en sí. La consulta de BIN de Yuno resuelve en cambio la entrada real del registro, por lo que el país documentado de una tarjeta de prueba y su `card_data.country_code` resuelto en Yuno normalmente difieren.
+</Warning>
+
+Dos ejemplos con las tarjetas de prueba de Stripe:
+
+| Tarjeta de prueba | Documentado por el proveedor como | Se resuelve en Yuno como | Por qué |
+|---|---|---|---|
+| `4242 4242 4242 4242` | US | `GB` (emisor: Stripe Payments UK) | El BIN `424242` está registrado a nombre de Stripe Payments UK Ltd en el registro real de Visa |
+| `4000 0019 6000 0008` | Chipre | `US` | Cualquier tarjeta de prueba de Stripe `4000 00...` resuelve el mismo registro `400000`, que es un rango registrado en EE. UU., sin importar el país que codifiquen los últimos dígitos |
+
+Para verificar de extremo a extremo una regla de `CARD_ISSUER_COUNTRY` hoy, trabaja con los valores resueltos en lugar de los documentados: la consulta es determinista:
+
+1. Ejecuta un pago de sandbox con una tarjeta de prueba candidata.
+2. Lee `card_data.country_code` del pago (detalle del pago en el dashboard, o la respuesta de [Retrieve Payment](/es/reference/payments/retrieve-payment-by-id)).
+3. Crea la regla con ese valor. Por ejemplo, `4242 4242 4242 4242` es una tarjeta `GB` confiable de extremo a extremo.
+
+La misma advertencia aplica a toda condición derivada del BIN (`CARD_TYPE`, `CARD_BRAND`), aunque el país es donde la documentación de tarjetas de prueba de los proveedores diverge con más frecuencia.

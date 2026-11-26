@@ -1,0 +1,90 @@
+---
+title: "Recuperar la personalización de un proveedor"
+description: "Devuelve la personalización de tu organización sobre un único proveedor: si lo ofreces, y cualquier nombre, instrucciones, enlace de documentación y logo personalizados."
+openapi: "/openapi/es/organizations/whitelabel/retrieve-provider.json GET /whitelabel/providers/{provider_id}"
+---
+
+Devuelve la personalización de tu organización sobre un único proveedor: si lo ofreces, y cualquier nombre, instrucciones, enlace de documentación y logo personalizados.
+
+<Note>
+**Este endpoint nunca devuelve `404`.** Un proveedor que nunca has modificado responde `200` con `allowed` y sin campos de personalización: exactamente lo que necesita un editor para mostrar un formulario vacío. Usa [Recuperar la personalización de instrucciones de un proveedor](/es/reference/organizations/whitelabel/retrieve-provider-instructions) cuando necesites saber específicamente si existe una personalización.
+</Note>
+
+Un campo **ausente** significa "conserva el valor del catálogo de Yuno para ese campo". Una personalización reemplaza un campo por completo y nunca se fusiona con él.
+
+### Parámetros de ruta {#path-parameters}
+
+<ParamField path="provider_id" type="string" required>
+  Id del proveedor del catálogo de Yuno en UPPER_SNAKE_CASE (`STRIPE`, `ADYEN`, `YUNO_3DS`, …). No distingue mayúsculas de minúsculas: se normaliza a mayúsculas.
+</ParamField>
+
+### Respuesta {#response}
+
+<ResponseField name="provider_id" type="string">
+  Id del proveedor del catálogo de Yuno, normalizado a mayúsculas.
+</ResponseField>
+<ResponseField name="allowed" type="boolean">
+  Indica si tu organización ofrece este proveedor.
+</ResponseField>
+<ResponseField name="name" type="string">
+  Nombre para mostrar que reemplaza al del catálogo, cuando está personalizado.
+</ResponseField>
+<ResponseField name="instructions" type="object[]">
+  Pasos de conexión que reemplazan a los del catálogo, cuando se personalizan.
+</ResponseField>
+<ResponseField name="setup_instructions" type="object[]">
+  Pasos de configuración agrupados que reemplazan a los del catálogo, cuando se personalizan.
+</ResponseField>
+<ResponseField name="more_info_url" type="string">
+  Enlace de documentación que reemplaza al del catálogo, cuando está personalizado. Siempre https.
+</ResponseField>
+<ResponseField name="logo_url" type="string">
+  Prefirmada en esta lectura, válida solo durante un período corto, y nunca la misma dos veces.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET 'https://api.y.uno/v1/whitelabel/providers/STRIPE' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>'
+```
+
+```json 200 OK — never touched
+{
+  "provider_id": "STRIPE",
+  "allowed": false
+}
+```
+
+```json 200 OK — customized
+{
+  "provider_id": "YUNO_3DS",
+  "allowed": true,
+  "name": "Acme Risk",
+  "more_info_url": "https://docs.example.com/acme-risk",
+  "logo_url": "https://s3.amazonaws.com/whitelabel/logo.png?X-Amz-Signature=..."
+}
+```
+
+```json 400 Bad Request
+{
+  "code": "VALIDATION_ERROR",
+  "messages": ["provider_id is invalid"]
+}
+```
+</CodeGroup>
+
+<Warning>
+`logo_url` se prefirma en cada lectura y caduca poco después. Muéstrala de inmediato; nunca la persistas ni la guardes en caché.
+</Warning>
+
+### Errores {#errors}
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| `400` | `VALIDATION_ERROR` | `provider_id` no es un id de catálogo válido (`[A-Z0-9_]`, máximo 100 caracteres). |
+| `401` | `NOT_AUTHENTICATED` | Faltan las claves de API o no son válidas. |
+
+</div>

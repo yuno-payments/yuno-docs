@@ -1,0 +1,136 @@
+---
+title: "Colecciones de Postman"
+description: "Importa la colección y el entorno de Postman de Yuno y ejecuta un primer pago en sandbox con cinco solicitudes"
+---
+
+La colección de Postman de Yuno incluye todos los endpoints de la [referencia de la API](/es/reference/getting-started/api-reference-overview), en el mismo orden que la barra lateral. Importa dos archivos, pega tus claves de sandbox y envía tu primer pago.
+
+<CardGroup cols={2}>
+  <Card title="Colección" icon="download" href="/files/postman/Yuno_API.postman_collection.json">
+    `Yuno_API.postman_collection.json`
+  </Card>
+  <Card title="Entorno de sandbox" icon="download" href="/files/postman/Yuno_Sandbox.postman_environment.json">
+    `Yuno_Sandbox.postman_environment.json`
+  </Card>
+</CardGroup>
+
+Necesitas:
+
+- [Postman](https://www.postman.com/downloads/), aplicación de escritorio o web
+- Una cuenta de sandbox de Yuno
+- Una conexión de tarjetas con una ruta en esa cuenta. El [Yuno Testing Gateway](/es/docs/direct-integration-use-cases/yuno-testing-gateway) no requiere credenciales. Sin una ruta de tarjetas, el pago de prueba del paso 3 falla.
+
+## Paso 1: importa la colección y el entorno {#step-1-import-the-collection-and-the-environment}
+
+1. En Postman, selecciona **Import**.
+2. Pega esta URL o arrastra el archivo descargado:
+
+```text
+https://docs.y.uno/files/postman/Yuno_API.postman_collection.json
+```
+
+3. Importa el entorno de la misma forma:
+
+```text
+https://docs.y.uno/files/postman/Yuno_Sandbox.postman_environment.json
+```
+
+<Note>
+**La colección y el entorno son independientes**
+
+La colección contiene las solicitudes. El entorno contiene tus claves de API y tu cuenta. Postman necesita los dos.
+</Note>
+
+## Paso 2: agrega tus claves de sandbox {#step-2-add-your-sandbox-keys}
+
+1. Abre **Environments** en el panel izquierdo y selecciona **Yuno Sandbox**.
+
+<Frame>
+  <img className="block dark:hidden" src="/images/reference/postman-collections/image2-light.png" alt="Entorno Yuno Sandbox seleccionado, modo claro" />
+  <img className="hidden dark:block" src="/images/reference/postman-collections/image2-dark.png" alt="Entorno Yuno Sandbox seleccionado, modo oscuro" />
+</Frame>
+
+2. Completa estas tres variables. Las encuentras en el [Yuno Dashboard](https://dashboard.y.uno/developers).
+
+| Variable | Valor |
+| --- | --- |
+| `public_api_key` | Tu clave pública de API |
+| `private_secret_key` | Tu clave secreta privada |
+| `account_id` | La cuenta que procesa los pagos |
+
+<Note>
+**Las claves de sandbox requieren el modo de prueba**
+
+En el Yuno Dashboard, configura el [chip de contexto](/es/docs/using-yuno/account-context) de la barra superior en **Test** antes de copiar tus claves de API. Con el chip en **Live**, las claves tienen alcance de producción y no se autenticarán en el entorno de sandbox.
+</Note>
+
+3. Define **Yuno Sandbox** como entorno activo con el selector de la esquina superior derecha.
+
+<Frame>
+  <img className="block dark:hidden" src="/images/reference/postman-collections/image3-light.png" alt="Menú desplegable del selector de entorno, modo claro" />
+  <img className="hidden dark:block" src="/images/reference/postman-collections/image3-dark.png" alt="Menú desplegable del selector de entorno, modo oscuro" />
+</Frame>
+
+## Paso 3: envía tu primer pago {#step-3-send-your-first-payment}
+
+Abre la carpeta **Start here: your first payment** y envía las cinco solicitudes en orden.
+
+| Solicitud | Qué hace | Qué guarda |
+| --- | --- | --- |
+| 1. Create a customer | Crea al pagador | `customer_id` |
+| 2. Create a checkout session | Abre la sesión que usaría un SDK | `checkout_session` |
+| 3. Create a payment | Cobra una tarjeta de prueba con el workflow `DIRECT` | `payment_id`, `transaction_id` |
+| 4. Retrieve the payment | Consulta el pago y su estado | |
+| 5. Refund the payment | Reembolsa la transacción | |
+
+Cada solicitud guarda los IDs que necesita la siguiente, así que no tienes que copiar y pegar nada. Después del paso 3 el pago tiene `status: SUCCEEDED`. Después del paso 5 tiene `status: REFUNDED`.
+
+<Note>
+El paso 3 envía un número de tarjeta de prueba sin tokenizar. Esto funciona en sandbox. En producción requiere certificación PCI, y las integraciones con SDK envían un token de un solo uso.
+</Note>
+
+## Cómo funciona la colección {#how-the-collection-works}
+
+- **La misma estructura que la referencia de la API.** Cada grupo de la barra lateral es una carpeta, cada página de endpoint es una solicitud y cada solicitud enlaza a su página.
+- **La autenticación ya está configurada.** Los headers `public-api-key` y `private-secret-key` se leen del entorno.
+- **La idempotencia es automática.** `X-Idempotency-Key` recibe un UUID nuevo en cada envío, guardado como `last_idempotency_key`.
+- **Los IDs se encadenan.** Una creación exitosa guarda su ID (`customer_id`, `payment_id`, `subscription_id`, etc.) como variable de la colección, y las solicitudes siguientes lo usan.
+- **Cada escenario documentado es un ejemplo guardado.** Abre los ejemplos de una solicitud, por ejemplo los cuerpos de tarjeta, billetera y transferencia bancaria de **Create Payment**, para ver cada cuerpo y su respuesta.
+- **Los errores se explican.** Una llamada fallida muestra el código de error, los mensajes y el trace ID en la consola de Postman. Envía el trace ID a soporte cuando necesites ayuda.
+
+## Reintenta una solicitud de forma segura {#retry-a-request-safely}
+
+Cuando una solicitud agota el tiempo de espera, no sabes si se procesó. Enviarla de nuevo con una clave de idempotencia nueva puede crear un segundo pago.
+
+1. Abre la pestaña **Variables** de la colección.
+2. Copia el valor de `last_idempotency_key` en `retry_idempotency_key`.
+3. Envía la misma solicitud otra vez. Si la primera solicitud creó un pago, Yuno devuelve ese pago en lugar de crear uno nuevo.
+4. Borra `retry_idempotency_key`, para que las siguientes solicitudes reciban claves nuevas.
+
+Consulta [Idempotencia](/es/reference/getting-started/authentication#idempotency) para ver las otras respuestas que puede devolver un reintento.
+
+## Ejecútala desde la línea de comandos {#run-it-from-the-command-line}
+
+Los mismos archivos se ejecutan con [Newman](https://github.com/postmanlabs/newman), por ejemplo en CI. Usa una copia del archivo de entorno con tus claves completas y mantén esa copia fuera del control de versiones.
+
+```sh
+npx newman run Yuno_API.postman_collection.json \
+  -e Yuno_Sandbox.postman_environment.json \
+  --folder "Start here: your first payment"
+```
+
+## Producción {#production}
+
+Importa [`Yuno_Production.postman_environment.json`](/files/postman/Yuno_Production.postman_environment.json) y completa tus claves de producción. Las solicitudes enviadas con este entorno mueven dinero real. La colección muestra una advertencia en la consola en cada solicitud a producción.
+
+## Siempre sincronizada {#always-in-sync}
+
+La colección se genera a partir de la misma [especificación OpenAPI](/openapi.json) que construye la referencia de la API. Impórtala de nuevo para obtener los endpoints nuevos.
+
+## Recursos útiles {#useful-resources}
+
+- [`Yuno_API.postman_collection.json`](/files/postman/Yuno_API.postman_collection.json)
+- [`Yuno_Sandbox.postman_environment.json`](/files/postman/Yuno_Sandbox.postman_environment.json)
+- [`Yuno_Production.postman_environment.json`](/files/postman/Yuno_Production.postman_environment.json)
+- [Especificación OpenAPI](/openapi.json)
+- [Autenticación](/es/reference/getting-started/authentication)

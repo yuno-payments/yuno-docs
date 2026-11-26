@@ -1,0 +1,45 @@
+---
+title: "Descripción general de conexiones y enrutamiento"
+description: "Referencia orientada al comercio sobre la nueva superficie de la API pública que te permite crear conexiones con proveedores de pago y configurar cómo Yuno enruta los pagos entre ellas."
+---
+
+Las conexiones son la forma de integrar tus cuentas existentes con proveedores de pago (Stripe, Adyen, dLocal, PayU, …) en la orquestación de Yuno. Una vez que existe una conexión, puedes referenciarla desde una regla de enrutamiento para enviar pagos a través de ese proveedor.
+
+Un enrutamiento le indica a Yuno, para un `payment_method` en una cuenta, qué conexión usar, y te permite ramificar por atributos del comprador (país, moneda, monto, marca de la tarjeta, metadata personalizada, …).
+
+## Contrato común {#common-contract}
+
+### URL base {#base-url}
+
+```text
+https://api.y.uno
+```
+
+### Autenticación y encabezados {#authentication--headers}
+
+| Encabezado | Obligatorio | Notas |
+|---|---|---|
+| `public-api-key` | sí | Tu clave de API pública de comercio. La cuenta a la que pertenece esta clave determina sobre qué cuenta opera la solicitud. |
+| `private-secret-key` | sí | Tu clave secreta privada de comercio. |
+| `X-Idempotency-Key` | en `POST` y `PATCH` | UUID, con alcance de 24 horas. Reenviar la misma clave y el mismo cuerpo devuelve la respuesta almacenada en caché; la misma clave con un cuerpo distinto devuelve un `409`. |
+| `Content-Type: application/json` | sí | |
+
+<Note>
+Usa una clave de cuenta o una clave de organización. Las claves de **Developers → Customized API keys** del dashboard se rechazan hoy en todos los endpoints `/v1/routing*` y `/v1/connections*`.
+</Note>
+
+### Convenciones {#conventions}
+
+- Los nombres de campo usan `snake_case` en todas partes: solicitud, respuesta y errores. La única excepción está dentro de `params[]` en la respuesta del **catálogo de proveedores**, donde los valores individuales de `param_id` se pasan con su formato original (`merchantAccount`, `HMAC_KEY`, `apple-merchant-id`, etc.) y debes repetirlos textualmente al crear una conexión.
+- El sobre de error es el mismo en todos los endpoints:
+
+```json
+{
+  "type": "validation_error",
+  "code": "MISSING_REQUIRED_PARAM",
+  "message": "Required param 'merchantAccount' is missing for provider 'ADYEN'",
+  "details": { "provider_id": "ADYEN", "param_id": "merchantAccount" }
+}
+```
+
+Los valores estables de `code` se listan por endpoint.

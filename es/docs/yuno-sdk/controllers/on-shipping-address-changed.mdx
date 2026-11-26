@@ -1,0 +1,122 @@
+---
+title: "onShippingAddressChanged"
+sidebarTitle: "Dirección de envío (onShippingAddressChanged)"
+description: "Se invoca cuando el comprador selecciona o cambia la dirección de envío en la hoja de pago de una wallet."
+---
+
+`onShippingAddressChanged` se invoca cada vez que el comprador selecciona o cambia la dirección de envío en la hoja de pago de la wallet, incluida la dirección predeterminada de la wallet cuando se abre la hoja. El SDK entrega la dirección censurada y aplica en vivo en la hoja lo que devuelvas: nuevos totales, opciones de envío o un error que bloquea el pago hasta que el comprador elija otra dirección. Sobrescribirlo es opcional. Sin él, el flujo de la wallet se comporta exactamente igual que sin callbacks.
+
+## Wallets compatibles {#supported-wallets}
+
+| Plataforma | Wallet | `paymentMethodType` |
+|---|---|---|
+| Web | Apple Pay, Google Pay | `APPLE_PAY`, `GOOGLE_PAY` |
+| iOS | Apple Pay | `APPLE_PAY` |
+| Android | Google Pay | `GOOGLE_PAY` |
+| React Native | Apple Pay en iOS, Google Pay en Android | `APPLE_PAY`, `GOOGLE_PAY` |
+
+Solo flujos de pago. El callback no se dispara para tarjetas ni para ningún otro método de pago.
+
+## Qué recibes {#what-you-receive}
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `paymentMethodType` | String | La wallet que disparó el callback, según la lista de [Wallets compatibles](#supported-wallets). |
+| `shippingInfo.shippingAddress.city` | String? | Ciudad de la dirección seleccionada. |
+| `shippingInfo.shippingAddress.state` | String? | Estado o región. |
+| `shippingInfo.shippingAddress.postalCode` | String? | Código postal. |
+| `shippingInfo.shippingAddress.countryCode` | String? | Código de país. |
+
+Las wallets censuran la dirección hasta que se autoriza el pago, por lo que cualquiera de los campos de la dirección puede estar ausente.
+
+## Qué devuelves {#what-you-return}
+
+Un `ShippingUpdate`, o `null` (`nil` en iOS) para conservar lo que la hoja ya muestra. Todos los campos de la actualización son opcionales: omite uno para conservar su valor actual.
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `errors` | [ShippingError]? | Motivos por los que la selección no se puede cumplir, cada uno con un `code` y un `message`. Devolver uno mantiene la hoja abierta y bloquea el pago hasta que el comprador elija otra dirección. |
+| `summaryItems` | [SummaryItem]? | El desglose de la hoja: `id`, `label` y `amount` por línea. La última línea se muestra como el total general y su etiqueta como la línea del beneficiario. Las etiquetas llegan a la hoja tal cual. |
+| `shippingMethods` | [ShippingMethod]? | Las opciones de envío: `id`, `label`, `detail` opcional, `amount`, `deliveryEstimate` opcional y los `summaryItems` que aplican cuando se selecciona la opción. Al enviarlas, se preselecciona la primera. El SDK responde a los cambios de opción a partir del desglose de cada opción sin volver a llamarte, por lo que una opción sin desglose no puede recalcular el precio de la hoja. |
+
+Los importes son valores `ShippingAmount` (`SummaryAmount` en Android y React Native): `value` en la unidad principal de `currency` (`12.34` para USD 12.34). `currency` debe coincidir con la moneda de la sesión de checkout; una discrepancia invalida toda la actualización. `deliveryEstimate` es un par `from` y `to` de fechas `YYYY-MM-DD`, que se muestra junto a la opción en iOS 15 y posteriores.
+
+## Tiempos {#timing}
+
+En iOS el SDK no establece un plazo propio, por lo que el único límite de tiempo es el de la wallet: la hoja permanece abierta mientras respondes. Si nunca respondes, se aplica el plazo propio de la wallet, la hoja se cierra y la transacción termina como cancelada.
+
+## Firma {#signature}
+
+<Tabs>
+  <Tab title="Web">
+
+Web lo conecta dentro de `externalButtons` en la configuración de la transacción. El SDK lo llama desde cada botón de Apple Pay y Google Pay que renderiza, incluidos los que montas con [`getPaymentMethodsViews()`](/es/docs/yuno-sdk/features/payment-methods-list). Devuelve la actualización, o `null` para conservar lo que muestra la hoja. Un manejador que lanza una excepción también conserva los valores actuales.
+
+```typescript
+const transaction = sdkPayments.transaction({
+  checkoutSession,
+  countryCode: 'CO',
+  onStatus: (result) => console.log(result.status),
+  externalButtons: {
+    onShippingAddressChanged: async ({ paymentMethodType, shippingInfo }) => {
+      const quote = await backend.quoteShipping(shippingInfo.shippingAddress)
+      return { summaryItems: quote.summaryItems, shippingMethods: quote.shippingMethods }
+    },
+  },
+})
+```
+
+  </Tab>
+  <Tab title="iOS">
+
+Haz que el objeto que pasas como `controller` cumpla `ShippingAddressHandling`, un protocolo que hereda de `TransactionController`. El SDK comprueba si el controlador lo adopta; un controlador que no lo adopta no recibe callbacks de envío.
+
+```swift
+final class Checkout: ShippingAddressHandling {
+
+    func onStatus(status: TransactionStatus) { /* ... */ }
+
+    func onShippingAddressChanged(
+        _ paymentMethodType: String,
+        shippingInfo: ShippingInfo
+    ) async -> ShippingUpdate? {
+        let quote = await backend.quoteShipping(to: shippingInfo.shippingAddress)
+        return ShippingUpdate(
+            summaryItems: quote.summaryItems,
+            shippingMethods: quote.shippingMethods
+        )
+    }
+}
+```
+
+  </Tab>
+  <Tab title="Android">
+
+Android lo conecta como un campo en el constructor de pago de [`TransactionConfig`](/es/docs/yuno-sdk/reference/objects-you-pass#transaction-config), de tipo `(suspend (String, ShippingInfo) -> ShippingUpdate?)?` y `null` de forma predeterminada. El constructor de inscripción no lo recibe.
+
+```kotlin
+onShippingAddressChanged = { paymentMethodType, shippingInfo ->
+    backend.quoteShipping(shippingInfo.shippingAddress)
+}
+```
+
+  </Tab>
+  <Tab title="React Native">
+
+Impleméntalo en el controlador. Devuelve la actualización, o `null` para conservar lo que muestra la hoja. Una Promise rechazada también conserva los valores actuales.
+
+```tsx
+onShippingAddressChanged: async (paymentMethodType, shippingInfo) => {
+  const quote = await backend.quoteShipping(shippingInfo.shippingAddress);
+  return { summaryItems: quote.summaryItems, shippingMethods: quote.shippingMethods };
+},
+```
+
+  </Tab>
+</Tabs>
+
+## Relacionado {#related}
+
+- [Escuchar eventos](/es/docs/yuno-sdk/controllers/listen-to-events). Los demás controladores informativos.
+- [`onStatus`](/es/docs/yuno-sdk/controllers/on-status). El resultado final de la transacción.
+- [Resumen de controladores](/es/docs/yuno-sdk/controllers/overview). Cómo se conectan los controladores en cada plataforma.
