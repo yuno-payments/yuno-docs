@@ -1,0 +1,116 @@
+---
+title: "Gestão de organizações B2B"
+description: "Saiba como gerenciar grupos de contas, contas e usuários em parcerias whitelabel."
+---
+
+A Yuno oferece um conjunto de APIs de gestão de organizações B2B criado para plataformas e parceiros whitelabel que precisam gerenciar várias suborganizações e seus usuários. Essas APIs permitem automatizar o onboarding dos seus lojistas criando uma estrutura hierárquica de grupos de contas, contas e usuários.
+
+<Note>
+  **Pré-requisitos**
+  Para usar essas APIs, a sua organização precisa ter a propriedade **whitelabel** habilitada no Dashboard da Yuno. Entre em contato com o seu gerente de conta da Yuno para habilitar esse recurso.
+</Note>
+
+## Fluxo principal de gestão {#core-management-flow}
+
+Siga estes passos para configurar um novo ambiente de lojista.
+
+<Steps>
+  <Step title="Criar um grupo de contas">
+    O grupo de contas atua como a entidade pai do seu lojista, centralizando a gestão das contas relacionadas. Use o endpoint [Create Account Group](/reference/organizations/create-account-group) para criar esse grupo.
+
+    ```bash
+    curl --request POST \
+      --url https://api-sandbox.y.uno/v1/organizations/account-groups \
+      --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+      --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "Acme Payments",
+        "merchant_id": "acme_001"
+      }'
+    ```
+
+    **Resultado e próximos passos**: a resposta incluirá um `id` único para o grupo de contas. Armazene esse ID, pois você vai precisar dele para criar as contas específicas do lojista no próximo passo.
+  </Step>
+
+  <Step title="Criar uma conta">
+    Dentro do grupo de contas recém-criado, você pode criar uma ou mais contas. Essa estrutura permite separar lógicas de negócio, regiões ou linhas de negócio do mesmo lojista. Use o endpoint [Create Account](/reference/organizations/create-account).
+
+    ```bash
+    curl --request POST \
+      --url https://api-sandbox.y.uno/v1/organizations/account-groups/{account_group_id}/accounts \
+      --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+      --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "Acme Production"
+      }'
+    ```
+
+    **Resultado e próximos passos**: você receberá um `id` para a conta do lojista. Esse ID é usado para vincular pagamentos, sessões e configurações especificamente a esse ambiente de lojista.
+  </Step>
+
+  <Step title="Criar um usuário e atribuir permissões">
+    Por fim, crie um usuário físico e conceda a ele acesso à conta ou ao grupo de contas inteiro. Atribuir funções (como `merchant-admin`) garante que o usuário tenha as permissões necessárias para gerenciar o dashboard do lojista. Use o endpoint [Create User](/reference/organizations/create-user).
+
+    ```bash
+    curl --request POST \
+      --url https://api-sandbox.y.uno/v1/organizations/users \
+      --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+      --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "email": "admin@acmepay.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "account_group_permissions": [
+          {
+            "account_group_id": "{account_group_id}",
+            "role_id": "merchant-admin"
+          }
+        ]
+      }'
+    ```
+
+    **Resultado e próximos passos**: o usuário será criado no sistema. Para permitir que ele faça login no seu portal whitelabel, use o endpoint [Authenticate Whitelabel User](/reference/organizations/authenticate-whitelabel-user) para gerar um token de acesso seguro.
+  </Step>
+</Steps>
+
+## Aninhar grupos de contas {#nest-account-groups}
+
+Os grupos de contas podem ser aninhados para refletir a estrutura da sua organização: um grupo pode conter contas e subgrupos, e um subgrupo pode conter grupos próprios. Cada grupo tem no máximo um pai, e um grupo não pode ser aninhado dentro da sua própria subárvore.
+
+Um grupo é sempre criado como raiz. Para aninhá-lo, defina `parent_code` em [Update Account Group](/reference/organizations/update-account-group); envie `parent_code: null` para desvinculá-lo e torná-lo raiz novamente. Toda resposta de grupo de contas informa o pai em `parent_code` (`null` para uma raiz).
+
+```bash
+curl --request PATCH \
+  --url https://api-sandbox.y.uno/v1/organizations/account-groups/{account_group_id} \
+  --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+  --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "parent_code": "{parent_account_group_id}"
+  }'
+```
+
+O aninhamento é apenas estrutural: mover um grupo não concede nem revoga nada, então as permissões existentes dos usuários não são alteradas. Um grupo que ainda tem subgrupos ou contas não pode ser excluído: mova-os ou [remova-os](/reference/organizations/remove-account-from-group) primeiro.
+
+## Gerenciar provedores pela API {#manage-providers-through-the-api}
+
+Depois que os seus lojistas conseguirem fazer login, a aba **Providers** do seu dashboard white-label define a quais provedores de pagamento eles podem se conectar e o que os seus usuários leem enquanto fazem isso. Essa camada pode ser configurada pela API: quais provedores você oferece e o nome, as instruções de conexão, o link da documentação e o logo exibidos para cada um.
+
+Consulte a [Visão geral dos provedores white-label](/reference/organizations/whitelabel/overview) para ver o contrato comum e os endpoints.
+
+## Disponibilidade por ambiente {#environment-availability}
+
+As APIs de gestão de organizações B2B estão disponíveis nos ambientes **Sandbox** e **Produção**. Para saber mais sobre como gerenciar as suas chaves de API e URLs base, acesse a página [Ambientes](/pt-br/docs/using-yuno/environments).
+
+## Próximos passos {#next-steps}
+
+Explore a referência completa da API para ver opções de gestão mais avançadas:
+
+- [Referência de grupos de contas](/reference/organizations/list-account-groups)
+- [Referência de contas](/reference/organizations/list-accounts)
+- [Referência de usuários](/reference/organizations/list-users)
+- [Referência de permissões de usuário](/reference/organizations/retrieve-user-account-permissions)
+- [Referência de provedores white-label](/reference/organizations/whitelabel/overview)

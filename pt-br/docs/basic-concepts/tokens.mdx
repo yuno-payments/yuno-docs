@@ -1,0 +1,110 @@
+---
+title: "Tokens"
+description: "Compara tokens de uso único, tokens armazenados no vault e tokens de rede, e mostra como a tokenização da Yuno reduz o escopo PCI."
+---
+
+A Yuno oferece um serviço de tokenização totalmente gerenciado, com certificação PCI DSS Nível 1. Quando um cliente informa os dados de pagamento, a Yuno substitui os dados sensíveis por um token, uma string não sensível que representa as credenciais originais. Seus sistemas só armazenam e transmitem tokens, nunca dados brutos de cartão.
+
+Essa abordagem reduz bastante o seu escopo de conformidade PCI. Em vez de uma auditoria completa, a maioria dos lojistas que usam o SDK da Yuno só precisa preencher um breve questionário de autoavaliação (SAQ A). Para mais detalhes, consulte [Conformidade PCI](/docs/security-and-compliance/pci-compliance).
+
+## Cobertura da tokenização da Yuno {#yuno-tokenization-coverage}
+
+A plataforma de tokenização da Yuno não se limita a cartões. Os tokens são emitidos para qualquer meio de pagamento processado pela Yuno, incluindo:
+
+* **Cartões de crédito e débito**
+* **Carteiras digitais**, como Apple Pay, Google Pay e Click to Pay
+* **Transferências bancárias e meios de pagamento locais**, incluindo ACH, PIX e alternativas regionais
+* **Meios de pagamento alternativos** para compre agora e pague depois (BNPL), vouchers e mais
+
+Independentemente do meio de pagamento, a abstração do token é a mesma: sua integração armazena um único identificador e o envia para a Yuno no momento do pagamento.
+
+## Tipos de token {#token-types}
+
+A Yuno emite três tipos de tokens, cada um adequado a um cenário de integração diferente.
+
+### Token de uso único {#one-time-use-token}
+
+Ao usar o SDK da Yuno, todas as informações de pagamento necessárias são coletadas e armazenadas em um token de uso único vinculado a uma única [sessão de checkout](/pt-br/docs/basic-concepts/sessions). Esse token é usado uma vez, na criação do pagamento, e não pode ser reutilizado.
+
+Os tokens de uso único são a escolha certa para:
+
+* Checkouts de convidados, sem meio de pagamento armazenado
+* Transações únicas em que não é necessário armazenar no vault
+
+<Note>
+**Vault on success**
+
+Defina `vault_on_success: true` na requisição do token, ou `payment_method.vault_on_success: true` no pagamento, para cadastrar e armazenar no vault automaticamente o meio de pagamento se o pagamento for bem-sucedido. Isso converte um token de uso único em um token persistente armazenado no vault, sem uma etapa de cadastro separada.
+</Note>
+
+### Token armazenado no vault {#vaulted-token}
+
+Um token armazenado no vault é criado quando um meio de pagamento é [cadastrado](/docs/payment-features/enrollment/enroll-payment-methods) e armazenado com segurança no vault centralizado da Yuno, junto com as informações do cliente. Você pode usar o token armazenado no vault para autorizar pagamentos futuros sem que o cliente precise informar os dados novamente.
+
+Os tokens armazenados no vault são a escolha certa para:
+
+* Clientes recorrentes com meios de pagamento salvos
+* Assinaturas e cobranças recorrentes
+* Fluxos de checkout com um clique
+
+Os tokens armazenados no vault permanecem válidos até que o cliente descadastre o meio de pagamento ou que o token seja removido explicitamente. Como ficam em um vault centralizado, os tokens armazenados no vault funcionam com todos os processadores conectados à sua conta da Yuno. Não é necessário tokenizar novamente ao trocar ou adicionar provedores.
+
+### Token de rede {#network-token}
+
+Um token de rede é uma representação digital do Primary Account Number (PAN) de um cartão. Ele é emitido diretamente pelas bandeiras de cartão, como Visa, Mastercard ou American Express. Quando a tokenização de rede está habilitada, a Yuno provisiona e gerencia automaticamente tokens de rede para todos os cartões cadastrados. Esses tokens substituem os dados reais do cartão durante a autorização.
+
+Os tokens de rede são a escolha certa para:
+
+* Transações recorrentes de alto valor em que maximizar as taxas de autorização é importante
+* Cenários que exigem proteção reforçada contra fraude no nível da bandeira
+
+Diferentemente dos tokens armazenados no vault, os tokens de rede são gerenciados pela bandeira do cartão e **atualizados automaticamente** quando um cartão é renovado ou reemitido. Isso reduz as recusas involuntárias sem exigir nenhuma ação do lojista ou do titular do cartão.
+
+<Note>
+**Saiba mais**
+
+Para uma visão completa dos tokens de rede, dos status do ciclo de vida e das opções de integração, consulte [Tokens de rede](/docs/security-and-compliance/network-tokens).
+</Note>
+
+### Token do provedor {#provider-token}
+
+Alguns meios de pagamento são autorizados no provedor, como uma autorização de Pix Automático com EBANX. O provedor identifica essa autorização com uma referência própria, o **token do provedor**. A Yuno o armazena dentro do meio de pagamento do cliente armazenado no vault, então sua integração nunca lida com ele: você cobra com o `vaulted_token` e a Yuno envia o token do provedor com o pagamento. Somente o provedor que o emitiu pode usá-lo, então direcione os pagamentos feitos com esse `vaulted_token` para esse provedor; a Yuno o envia ao provedor que o seu roteamento selecionar.
+
+### Salvar um meio de pagamento durante o pagamento {#saving-a-payment-method-while-paying}
+
+Para Pix com EBANX, a autorização é criada durante o primeiro pagamento: envie `payment_method.vault_on_success: true` nesse pagamento. A Yuno armazena o token do provedor e salva o meio de pagamento para o cliente:
+
+1. **Primeiro pagamento (iniciado pelo cliente):** crie o pagamento com o cliente (`customer_payer.id`), `payment_method.vault_on_success: true` e um bloco `subscription` que descreve a autorização. O cliente a aprova fora da sua página.
+2. **O token armazenado no vault:** o meio de pagamento salvo aparece em [Retrieve Enrolled Payment Methods](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api) assim que o pagamento é criado, e o token dele fica em `transactions[].payment_method.vaulted_token` em [Retrieve Payment](/reference/payments/retrieve-payment-by-id-v2) quando o pagamento chega a `SUCCEEDED`. Ele não está na resposta da criação. Cobre com ele somente depois que o cliente aprovar: antes disso, as cobranças são recusadas.
+3. **Pagamentos posteriores (iniciados pelo lojista):** envie `payment_method.vaulted_token`. A Yuno cobra a autorização armazenada sem uma nova aprovação do cliente.
+4. **Checkout:** clientes recorrentes veem o Pix salvo no checkout do SDK e podem pagar com um clique, quando você cria a sessão de checkout com o `customer_id` deles.
+
+Se você já tem tokens do provedor de cartão criados fora da Yuno, [cadastre cada um](/reference/payment-methods-direct-workflow/enroll-payment-method-api) uma vez com `type: "CARD"`, `provider_data.token_source: "PROVIDER_TOKEN"`, o provedor em `provider_data.id`, a conexão em `provider_data.connection_id` e a referência do provedor em `provider_data.payment_method_token`. A Yuno retorna um `vaulted_token` que você usa da mesma forma.
+
+Para um exemplo completo, consulte [Pix com vault on success](/docs/payment-features/subscriptions/pix-automatico#pix-with-vault-on-success).
+
+## Comparação de tokens {#token-comparison}
+
+|                         | Token de uso único              | Token armazenado no vault                      | Token de rede                                  |
+| :---------------------- | :------------------------------ | :--------------------------------- | :--------------------------------------------- |
+| **Criado por**          | SDK da Yuno, por sessão de checkout  | Yuno, no cadastro                 | Bandeiras de cartão (Visa, Mastercard, Amex)         |
+| **Validade**            | Uma única transação              | Persistente até o descadastro        | Renovado automaticamente pela bandeira do cartão                   |
+| **Caso de uso**            | Checkout de convidados, pagamentos únicos | Clientes recorrentes, assinaturas | Pagamentos recorrentes, taxas de autorização mais altas |
+| **Entre processadores**     | Não                              | Sim                                | Sim                                            |
+| **Exige cadastro** | Não                              | Sim                                | Sim (aplicado automaticamente aos cartões cadastrados)  |
+
+## Recursos adicionais de tokenização {#additional-tokenization-capabilities}
+
+### Fingerprint do cartão {#card-fingerprinting}
+
+Todo cartão cadastrado pela Yuno recebe um `fingerprint`, um identificador criptográfico estável derivado do PAN. Os fingerprints permanecem os mesmos em vários cadastros do mesmo cartão. Isso permite detectar duplicados e eliminar duplicações no seu vault sem nunca acessar nem armazenar números brutos de cartão. Consulte [Card Fingerprint](/docs/security-and-compliance/fingerprint).
+
+### Atualizações automáticas de cartão {#automatic-card-updates}
+
+O Card Account Updater da Yuno atualiza automaticamente os cartões armazenados no vault quando os emissores atualizam números de cartão ou datas de validade. Isso mantém seu vault atualizado sem nenhuma ação do titular do cartão, reduzindo as recusas causadas por dados de cartão desatualizados. Consulte [Card Account Updater](/docs/additional-services/card-account-updater).
+
+### Migração de tokens {#token-migration}
+
+Se você está migrando para a Yuno a partir de outro provedor, a Yuno permite importar seus cartões tokenizados existentes diretamente para o vault da Yuno. Seus clientes mantêm os meios de pagamento salvos, e você mantém o histórico completo deles, sem necessidade de novo cadastro. Consulte [Processo de migração de tokens](/docs/security-and-compliance/data-migration-processes/token-migration-process).
+
+A Yuno também permite exportar tokens, caso você precise mover os dados do seu vault para outro provedor. Consulte [Exportação de tokens da Yuno](/docs/security-and-compliance/data-migration-processes/exporting-tokens-from-yuno).

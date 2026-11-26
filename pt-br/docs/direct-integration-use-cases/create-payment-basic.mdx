@@ -1,0 +1,105 @@
+---
+title: "Criar pagamentos"
+description: "Mostra como criar um cliente e um pagamento básico usando o endpoint Create Payment da Yuno."
+---
+
+Este guia mostra como criar um pagamento básico pela integração direta.
+
+## Requisitos {#requirements}
+
+Antes de seguir as etapas descritas neste guia, você precisa:
+
+* Acessar suas [credenciais de API](/pt-br/docs/using-yuno/settings/developers-credentials) no dashboard da Yuno, que são compostas por:
+  * `public-api-key`
+  * `private-secret-key`
+  * `account_id`
+* [Configurar suas conexões](/pt-br/docs/using-yuno/dashboard-overview/connections) na sua conta do dashboard da Yuno.
+* [Criar uma rota](/pt-br/docs/using-yuno/dashboard-overview/routing) para o meio de pagamento, definindo como ele será processado.
+
+Conclua esses requisitos antes de seguir o guia de criação de pagamento.
+
+<Note>
+**Explore as Postman Collections da Yuno**
+
+A Yuno oferece [Postman Collections](/reference/getting-started/postman-collections) que você pode usar para reproduzir os casos de uso localmente.
+</Note>
+
+<Warning>
+**Habilite o Yuno Test Payment Gateway**
+
+Para testar um pagamento simples com cartão no **ambiente de sandbox**, primeiro você precisa habilitar o [Yuno Test Payment Gateway](/pt-br/docs/direct-integration-use-cases/yuno-testing-gateway). Essa conexão simula um provedor e permite verificar sua integração direta sem usar dados reais de cartão.
+</Warning>
+
+## Resumo das etapas {#steps-summary}
+
+O processo de criação de pagamento normalmente exige concluir as duas etapas abaixo.
+
+1. [Criar um cliente](/reference/customers/create-customer)
+2. [Criar o pagamento](#step-2-create-a-payment)
+
+<Note>
+**Meios de pagamento e funcionalidades adicionais**
+
+Diferentes meios de pagamento, como carteiras específicas ou BNPL, ou funcionalidades, como o split de pagamento, podem exigir etapas adicionais antes da criação do pagamento.
+</Note>
+
+## Criar um pagamento {#create-a-payment}
+
+### Etapa 1: criar um cliente {#step-1-create-a-customer}
+
+Use o [Create Customer](/reference/customers/create-customer) para registrar as informações do cliente. Você vai precisar informar dados pessoais do cliente. Além disso, também precisa enviar o `merchant_customer_id`, um identificador único do cliente usado no seu sistema.
+
+<Note>
+**Informações complementares do cliente**
+
+Ao criar um **cliente**, algumas informações não são obrigatórias, mas podem melhorar a experiência de pagamento do usuário se forem informadas. Telefone, endereço de cobrança e endereço de entrega são exemplos de dados não obrigatórios que você pode enviar.
+
+Se você adicionar informações opcionais, fique atento aos campos obrigatórios.
+</Note>
+
+Ao final do processo de criação do cliente, você recebe um `id`, que identifica o usuário no sistema da Yuno. Use o `id` para inicializar o checkout.
+
+Se você estiver criando um pagamento para um usuário existente, criado anteriormente e que já tinha um `id`, pode pular esta etapa.
+### Etapa 2: criar um pagamento {#step-2-create-a-payment}
+
+Você vai criar um pagamento usando o endpoint [Create Payment](/reference/payments/create-payment). Com a Yuno, você pode criar pagamentos com vários meios de pagamento, usando 3DS ou split de pagamento. No entanto, este guia se concentra em um pagamento simples, sem requisitos adicionais de autenticação, validação ou cadastro.
+
+Abaixo, você encontra uma descrição mais detalhada de como criar um pagamento.
+
+#### 2.1 Informe os atributos obrigatórios {#21-provide-the-required-attributes}
+
+Informe os dados relacionados ao cliente, incluindo o objeto `customer_payer`, que contém o `id` da Etapa 1.
+
+Alguns objetos não são obrigatórios ao criar um pagamento. No entanto, se você enviar essas informações, a experiência de pagamento do usuário será melhor. Fique atento aos campos obrigatórios se quiser enviar essas informações.
+
+#### 2.2 Escolha o tipo de captura {#22-choose-the-capture-type}
+
+A Yuno oferece duas opções de captura do pagamento:
+
+* Etapa única: a autorização e a captura são feitas ao mesmo tempo. Você só precisa criar o pagamento. A autorização e a captura são feitas automaticamente. Para a opção de etapa única, envie o atributo `capture` como `true` na requisição.
+* Duas etapas: a autorização e a captura são feitas em momentos diferentes. Se quiser processar o pagamento em duas etapas, envie `capture` como `false` ao [criar o pagamento](/reference/payments/create-payment) e depois use a requisição [Capture Authorization](/reference/payments/capture-authorization) para concluir o processo.
+
+#### 2.3 Recursos adicionais {#23-additional-features}
+
+A Yuno também permite usar alguns recursos adicionais compatíveis com o processo básico de criação de pagamento:
+
+* `vault_on_success`: se o seu cliente usar um cartão de crédito para fazer o pagamento, você pode cadastrar esse meio de pagamento para o cliente, na mesma etapa, para compras futuras.
+* `installments`: caso você ofereça parcelas aos seus clientes e o processador escolhido as aceite, você pode nos enviar o número de parcelas com que o pagamento deve ser criado.
+
+Os dois campos ficam na seção de detalhes payment\_method do pagamento.
+
+<Note>
+  Para gerar e receber um <code>vaulted\_token</code> quando <code>vault\_on\_success = true</code>, o pagamento precisa referenciar um cliente existente na Yuno por meio de <code>customer\_payer.id</code>. Criar ou enviar os dados do cliente diretamente na requisição do pagamento não cria o cliente do nosso lado, então o armazenamento no vault não acontece. Quando essas condições são atendidas e o status do pagamento é <code>SUCCEEDED</code>, o <code>vaulted\_token</code> é retornado na resposta do pagamento e pode ser usado em transações futuras.
+</Note>
+
+### Etapa 3: verificar o status do pagamento {#step-3-check-the-payment-status}
+
+Depois de fazer a requisição ao endpoint [Create Payment](/reference/payments/create-payment), você pode verificar o status do pagamento analisando o `status` e o `sub_status` da resposta. Consulte a página [Payment Status](/reference/payments/status-and-response-codes/payment) para ver todas as opções que você pode receber em resposta à requisição de criação do pagamento.
+
+Dependendo do processador e do meio de pagamento, o status pode levar algum tempo para ser atualizado. Por isso, talvez você precise usar endpoints para recuperar o status do pagamento. Para isso, você pode usar o [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) ou o [Retrieve Payment by merchant\_order\_id](/reference/payments/retrieve-payment-by-merchant-order-id). Outra opção é usar webhooks para receber notificações após cada evento. A Yuno recomenda usar webhooks para monitorar melhor os pagamentos assíncronos. Consulte o guia de [Webhooks](/docs/webhooks) para saber como configurar a solução de webhooks oferecida pela Yuno.
+
+<Note>
+**Pagamentos com cartão de teste**
+
+Se você precisar testar pagamentos com cartão em geral, a Yuno oferece o Yuno Test Payment Gateway. Ele funciona como uma conexão, mas só está disponível no ambiente de sandbox. Consulte a [página do Yuno Test Payment Gateway](/pt-br/docs/direct-integration-use-cases/yuno-testing-gateway) para conhecer todas as funcionalidades, ou vá direto ao guia de [como testar pagamentos com cartão](/pt-br/docs/direct-integration-use-cases/yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway).
+</Note>
