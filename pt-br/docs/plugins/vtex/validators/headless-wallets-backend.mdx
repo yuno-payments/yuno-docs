@@ -1,0 +1,238 @@
+---
+title: "Validador: carteiras digitais headless da VTEX (backend)"
+sidebarTitle: "Carteiras digitais headless (backend)"
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Um checklist somente leitura para agentes de programação com IA que audita um serviço de backend que chama as rotas de preflight do conector VTEX para Google Pay, Apple Pay, Samsung Pay e Click to Pay em nome de um app ou de um site."
+---
+
+Coloque este arquivo na raiz do seu serviço de backend e peça ao Claude Code:
+
+> Valide o meu backend de carteiras digitais headless da Yuno na VTEX seguindo o CLAUDE.md.
+
+Ele audita o código do servidor em relação ao contrato de preflight diferido do conector VTEX, descrito no fluxo
+abaixo, e informa o que está errado, com arquivo e linha. Ele só lê o código: não altera nada, a menos que você peça.
+
+## Quando usar este validador {#when-to-use-this-validator}
+
+Use-o quando um servidor seu chama as duas rotas de preflight em nome de um app mobile ou de um site: um serviço
+de backend, ou um cliente em Node, Python ou Java que chama estas rotas em `https://<store-host>`:
+
+- `POST /_v/yunopartnerbr.yuno/v4/session/preflight`
+- `POST /_v/yunopartnerbr.yuno/v4/session/preflight/payments`
+
+O seu backend recebe o token da carteira digital do app e o entrega ao conector. O app ou a loja virtual
+nunca chama o conector diretamente.
+
+Quando o app chama estas rotas diretamente, use o validador de [Flutter](/pt-br/docs/plugins/vtex/validators/headless-wallets-flutter)
+ou de [React Native](/pt-br/docs/plugins/vtex/validators/headless-wallets-react-native) no lugar deste. Execute esse validador
+também no app quando o seu backend apenas repassa as chamadas: a inicialização do SDK e o listener do token ficam no app.
+
+## O fluxo validado {#the-flow-being-validated}
+
+```
+App: VTEX cart (Steps 1–5, total final)
+Backend → POST /session/preflight          { orderFormId, amount, currency, country, affiliationName }
+                                           → { checkoutSession, publicApiKey }
+Backend → App: checkoutSession, publicApiKey
+App: SDK initialized with publicApiKey → wallet sheet → one-time token
+App → Backend: token
+Backend → POST /session/preflight/payments { orderFormId, payment (with the token), affiliationName,
+                                             createPaymentInAuth: true }
+                                           → { deferred: true }
+VTEX Step 6 transaction → Step 7 payments → Step 8 gatewayCallback
+  → the connector creates the payment in Yuno during authorization and answers VTEX
+  → the gatewayCallback response + GET /api/checkout/pub/orders/order-group/{orderGroup} → outcome
+```
+
+O pedido VTEX (Etapas 6–8) é feito **somente depois** que `/session/preflight/payments` respondeu
+`{ deferred: true }`. O pagamento não existe na Yuno até a Etapa 8. O resultado vem da VTEX (verificação 11).
+
+As duas rotas são rotas públicas da loja: elas não recebem app key nem token da VTEX. O comportamento abaixo é o
+do conector VTEX 4.2.378.
+
+## Verificações {#checks}
+
+Informe cada uma como PASS / FAIL / N/A com a evidência (arquivo:linha). Não presuma que uma verificação passa porque o
+código "parece certo": cite a linha que comprova isso.
+
+### 1. O preflight da sessão é executado antes da carteira digital, com todos os campos {#1-session-preflight-runs-before-the-wallet-with-every-field}
+
+- O corpo traz `orderFormId`, `amount`, `currency`, `country` e `affiliationName` (verificação 2).
+- `orderFormId` é o order form da VTEX a partir do qual o pedido é feito. Na autorização, o conector encontra a
+  sessão armazenada pelo order form do pedido VTEX, então um id diferente deixa o pagamento armazenado sem uso.
+- `amount` é um **número** JSON **em unidades decimais** (`845.90`), não em centavos (`84590`) e não uma string. Um campo
+  ausente, ou um valor de `0`, responde
+  `400 {"error":"Missing required fields: orderFormId, amount, currency, country"}`. Um valor em string passa
+  nessa verificação e falha depois com `500 {"error":"Failed to create preflight session"}`.
+- `country` é o código alfa-2 (`BR`) ou alfa-3 (`BRA`); o conector normaliza os dois para alfa-2.
+- A resposta é `200 { checkoutSession, publicApiKey }`.
+- FAIL se algum campo puder estar ausente, se o valor for uma string ou estiver em centavos, ou se o preflight puder ser executado antes
+  que o frete, os cupons e as parcelas estejam definidos.
+- Um segundo preflight para o mesmo `orderFormId` substitui a sessão armazenada. Quando o total do carrinho muda, o
+  backend executa o preflight de novo e o app inicia a carteira digital outra vez com o novo `checkoutSession`. FAIL se o
+  carrinho puder mudar enquanto uma sessão está ativa sem executar o preflight de novo.
+
+### 2. As duas chamadas de preflight informam a afiliação de produção {#2-both-preflight-calls-name-the-production-affiliation}
+
+`affiliationName` é opcional nos dois corpos, mas o backend precisa enviá-lo nos dois.
+
+- Sem ele, ou com uma string vazia, o conector usa a primeira afiliação da loja cujo
+  nome de implementação contém "Yuno" (sem diferenciar maiúsculas de minúsculas), na ordem em que a VTEX as lista. Uma afiliação da VTEX não tem indicador de teste ou produção, então uma afiliação
+  de teste (status "Teste" no admin da VTEX) listada antes da de produção é a que será usada. A sessão
+  é então aberta com as credenciais da afiliação de teste e falha quando elas não são válidas em produção
+  (por exemplo, um Account ID que não existe), e o preflight responde
+  `500 {"error":"Failed to create preflight session"}`.
+- Com um nome, o conector procura uma afiliação com exatamente esse nome, mesma grafia e mesmas maiúsculas e minúsculas. Um nome
+  que a loja não tem responde `404 {"error":"Yuno affiliation not found"}` nas duas rotas.
+- O nome é por loja. O backend precisa saber o nome da afiliação Yuno de produção de cada loja, como aparece
+  no admin da VTEX em Payments > Affiliations.
+- Envie o mesmo nome nas duas chamadas. O pagamento fica vinculado à sessão que a primeira chamada abriu e à conta
+  da Yuno da afiliação que a segunda chamada resolve, então dois nomes diferentes combinam a sessão de uma conta com
+  outra conta.
+- FAIL se alguma das chamadas omitir `affiliationName` ou enviar `''`, `null` ou `None`.
+- FAIL se o nome estiver fixo no código com um único valor enquanto o backend atende lojas cuja afiliação de produção
+  tem outro nome.
+- FAIL se as duas chamadas puderem enviar nomes diferentes para um mesmo pedido.
+- Informe o valor enviado em cada chamada, de onde o backend o lê e se a loja tem mais de uma
+  afiliação do provedor Yuno. Quando o código não permitir saber, diga isso e peça a lista de afiliações da loja.
+- Sintoma: o botão da carteira digital falha em algumas lojas e funciona em outras, o preflight responde o 500 acima, e
+  os pagamentos com cartão nessas mesmas lojas funcionam. O mesmo 500 também aparece quando a busca da afiliação da loja falha
+  do lado da VTEX, seja qual for o nome enviado, então um 500 sozinho não prova que o nome está errado.
+
+### 3. O pagamento de preflight é executado somente depois de um token não vazio {#3-the-preflight-payment-runs-only-after-a-non-empty-token}
+
+- O corpo é `{ orderFormId, payment, affiliationName, createPaymentInAuth: true }`, com o mesmo
+  `orderFormId` e o mesmo `affiliationName` do preflight da sessão. `payment` traz `payment_method.type`,
+  `payment_method.token`, `amount.value`, `amount.currency` e `country`.
+- A chamada é feita somente quando o app entregou um token não vazio, nunca antes de a tela da carteira digital fechar e
+  nunca por um temporizador. FAIL se a chamada puder ser feita com `token` vazio, `null` ou ausente.
+- `createPaymentInAuth: true` está no corpo. Sem ele, o conector cria o pagamento na Yuno
+  imediatamente, antes de existir um pedido VTEX. FAIL se ele estiver ausente ou puder ser `false`.
+- A resposta é `200 {"deferred":true}`. FAIL se o pedido VTEX puder ser feito antes de essa resposta chegar.
+- Por quê: o conector aceita um corpo sem token e responde `{ deferred: true }`. A falha só aparece na
+  autorização, como um pedido negado com `Deferred preflight payment creation failed`.
+- A criação diferida funciona somente para `GOOGLE_PAY`, `APPLE_PAY`, `SAMSUNG_PAY` e `CLICK_TO_PAY`. Qualquer outro
+  `payment_method.type` responde
+  `400 {"error":"Deferred payment creation is only supported for GOOGLE_PAY, APPLE_PAY, SAMSUNG_PAY, CLICK_TO_PAY"}`.
+
+### 4. O tipo de meio de pagamento corresponde ao que a VTEX autoriza {#4-payment-method-type-matches-what-vtex-authorizes}
+
+O `payment_method.type` no pagamento de preflight precisa corresponder ao meio de pagamento da VTEX com o qual o pedido é feito
+(`Apple Pay` / `Google Pay` / `Samsung Pay` / `C2P`). Compare o `paymentSystem` usado na Etapa 5 e na Etapa 7
+com o tipo que o backend envia. Uma divergência faz o conector ignorar o pagamento armazenado.
+
+### 5. Valor, moeda e país são os mesmos nas duas chamadas e no pedido {#5-amount-currency-and-country-are-the-same-in-both-calls-and-in-the-order}
+
+- `payment.amount.value`, `payment.amount.currency` e `payment.country` do pagamento de preflight precisam ser
+  `amount`, `currency` e `country` do preflight da sessão. O conector armazena um fingerprint SHA-256 de
+  `amount:currency:country` com a sessão e o recalcula a partir do pagamento de preflight.
+- Uma divergência responde
+  `409 {"error":"Preflight session does not match the current payment payload. Please re-run preflight."}`.
+  Um valor, moeda ou país ausente ou não numérico responde
+  `400 {"error":"Missing required fields for preflight validation: amount, currency, country"}`.
+- Na autorização, o conector recalcula o fingerprint a partir do valor, da moeda e do
+  país do pedido VTEX (o país de cobrança do pedido ou o país enviado no pagamento de preflight) e verifica se a sessão tem menos de 5 horas. Quando alguma das duas verificações falha, o pedido é
+  negado com `Preflight session expired or does not match the order. Please retry.`
+- FAIL se as duas chamadas lerem o valor de fontes diferentes (total do carrinho em uma, total do pedido na
+  outra), ou se o valor enviado puder ser diferente do total do pedido VTEX.
+
+### 6. Um único host de loja por pedido {#6-one-store-host-per-order}
+
+O preflight da sessão, o pagamento de preflight e a criação do pedido usam o mesmo host de loja VTEX. O conector
+lê as afiliações da loja em que é chamado. FAIL se a URL base do conector e a URL base do checkout
+puderem apontar para contas VTEX diferentes, por exemplo um único host configurado para várias lojas.
+
+### 7. Pedidos divididos não são oferecidos com carteiras digitais {#7-split-orders-are-not-offered-with-wallets}
+
+Um carrinho atendido por mais de um seller vira vários pedidos VTEX, e um único token de carteira digital não consegue cobrir todos eles.
+FAIL se as carteiras digitais forem oferecidas sem verificar se o carrinho pode gerar um único pedido.
+
+### 8. O backend nunca chama as rotas do Payment App {#8-the-backend-never-calls-the-payment-app-routes}
+
+- O token vai somente para `/session/preflight/payments`. FAIL se o backend o enviar para `/payments/yuno`,
+  a rota do Payment App do checkout padrão.
+- FAIL se o backend fizer polling em `/payments/yuno/status`. Essa rota precisa da sessão criptografada do checkout
+  padrão; sem ela, o conector responde `200` com um timestamp e nenhum status de pagamento. O resultado vem
+  da VTEX (verificação 11).
+
+### 9. Os erros são tratados, registrados em log e repetidos no máximo uma vez {#9-errors-are-handled-logged-and-retried-at-most-once}
+
+| Rota | Resposta | Significado | O que o backend faz |
+| --- | --- | --- | --- |
+| Preflight da sessão | `400 {"error":"Missing required fields: orderFormId, amount, currency, country"}` | Um campo está ausente, ou o valor é `0` | Corrija a requisição; não repita |
+| Ambas | `404 {"error":"Yuno affiliation not found"}` | O `affiliationName` não existe nesta loja. No pagamento de preflight, também pode vir de uma busca de afiliação que falhou do lado da VTEX | Compare o nome com as afiliações da loja (verificação 2); no pagamento de preflight, repita uma vez antes |
+| Preflight da sessão | `500 {"error":"Failed to create preflight session"}` | Não foi possível criar a sessão | Repita uma vez após um curto intervalo; um segundo 500 indica o nome da afiliação (verificação 2) ou uma busca de afiliação que falhou do lado da VTEX; o corpo é o mesmo nos dois casos |
+| Pagamento de preflight | `400 {"error":"Missing required fields: orderFormId, payment"}` | Um campo está ausente | Corrija a requisição; não repita |
+| Pagamento de preflight | `404 {"error":"Preflight session not found for this orderFormId"}` | Não há preflight da sessão para esse order form | Execute primeiro o preflight da sessão, com o mesmo `orderFormId` |
+| Pagamento de preflight | `409` divergência de fingerprint (verificação 5) | O valor, a moeda ou o país mudou | Execute o preflight de novo e reinicie a carteira digital com a nova sessão |
+| Pagamento de preflight | `500 {"error":"Failed to create preflight payment"}` | Não foi possível armazenar o corpo do pagamento | Repita uma vez após um curto intervalo |
+
+- Executar de novo o preflight da sessão para o mesmo `orderFormId` substitui a sessão armazenada, então uma nova tentativa é
+  segura.
+- Registre em log o host da loja, o `orderFormId`, a rota, o status HTTP e o corpo da resposta de toda chamada
+  que falhar. FAIL se uma falha for ignorada ou transformada em um erro genérico sem status.
+- FAIL se o backend registrar em log o token da carteira digital, a chave de API pública completa ou qualquer chave privada da Yuno.
+- FAIL se o backend repetir as tentativas em loop, ou mantiver vivo um pedido com falha sem executar o preflight de novo.
+
+### 10. A chave de API pública vai para o app sem alterações e não é guardada {#10-the-public-api-key-goes-to-the-app-unchanged-and-is-not-kept}
+
+- O `publicApiKey` da resposta do preflight da sessão é a chave da afiliação que essa chamada resolveu. O
+  SDK do app precisa ser inicializado exatamente com esse valor.
+- FAIL se o backend o substituir por uma chave da própria configuração, guardá-lo em cache por loja ou por instalação
+  do app, ou reutilizá-lo em outro pedido. Leia-o de cada resposta do preflight.
+- O backend não precisa de nenhuma chave privada da Yuno: o conector guarda as credenciais da afiliação. FAIL se o
+  backend estiver configurado com uma chave secreta privada da Yuno para este fluxo.
+
+### 11. O resultado é lido da VTEX, não das respostas do preflight {#11-the-outcome-is-read-from-vtex-not-from-the-preflight-answers}
+
+`{ deferred: true }` significa apenas que o corpo foi armazenado. O resultado vem da Etapa 8 e do pedido:
+
+| Resposta do `gatewayCallback` | Significado | O que o backend faz |
+|---|---|---|
+| **428** | O conector não usou o corpo armazenado e respondeu com o payload do Payment App, por exemplo em uma divergência de meio de pagamento (verificação 4) | Informe um erro ao app; registre a resposta em log |
+| **Outro não 2xx** (ex.: 500 `CHK0223`) | Pagamento negado; o corpo do erro traz a mensagem do conector, por exemplo a sessão expirada ou divergente da verificação 5 | Informe um erro ao app; registre a resposta em log |
+| **2xx** | Não negado: **aprovado ou ainda pendente**; a VTEX responde da mesma forma nos dois casos | Leia o pedido |
+
+Depois de um 2xx, chame `GET /api/checkout/pub/orders/order-group/{orderGroup}` e decida pelo `status` de cada pedido:
+`payment-approved` (ou qualquer estado posterior) é sucesso, e `payment-pending` significa que o pagamento ainda está sendo
+processado.
+
+- FAIL se o backend informar sucesso ao app com `{ deferred: true }`, ou tratar um 2xx como aprovado sem
+  ler o pedido.
+
+## Formato do relatório {#report-format}
+
+```
+CHECK  1  Session preflight fields      PASS  src/vtex/preflight.ts:41
+CHECK  2  Affiliation name              FAIL  src/vtex/preflight.ts:44 — affiliationName not sent; the store has
+                                              two Yuno affiliations, the test one listed first
+CHECK  3  Preflight payment after token PASS  src/vtex/handoff.ts:88
+...
+CHECK 11  Outcome from VTEX             FAIL  src/vtex/order.ts:120 — 2xx from gatewayCallback reported as approved
+Connector routes on: https://<store-host>, affiliationName "<value>"
+```
+
+Termine com as falhas ordenadas por impacto, cada uma com a correção em uma linha.
+
+## Diagnóstico a capturar de um pedido com falha {#diagnostics-to-capture-from-a-failing-order}
+
+Quando as verificações passam e a carteira digital ainda não conclui o pagamento, capture e envie:
+
+1. O host da loja e o `orderFormId`.
+2. O `affiliationName` enviado em cada chamada.
+3. Para cada chamada, o timestamp em UTC, o status HTTP e o corpo da resposta. Deixe de fora o token e as chaves.
+4. O `checkoutSession` da resposta do preflight da sessão.
+5. O `orderGroup` da VTEX, o status HTTP e o corpo do `gatewayCallback`, e o status do pedido lido em seguida.
+6. A versão do conector VTEX instalada na loja, vista no admin da VTEX. O conector não define nenhum cabeçalho
+   de versão nestas rotas.
+
+Isso basta para alinhar as chamadas do seu backend com o trace do servidor para a sessão do lado da Yuno.
+
+## Versões {#versions}
+
+As verificações descrevem o conector VTEX 4.2.378 e posteriores. Para o lado do app no fluxo (inicialização do SDK,
+listener do token, configuração nativa), execute o validador de [Flutter](/pt-br/docs/plugins/vtex/validators/headless-wallets-flutter) ou de
+[React Native](/pt-br/docs/plugins/vtex/validators/headless-wallets-react-native) no app.
