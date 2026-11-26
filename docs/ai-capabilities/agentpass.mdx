@@ -1,40 +1,241 @@
 ---
 title: "AgentPass"
-description: "Let your customers approve each purchase with their Visa Payment Passkey and receive a single-use card credential for it, through the Yuno Wallet API."
+description: "Let AI agents buy on your behalf within limits you approve with your Visa passkey: connect an assistant through MCP, or integrate the partner API to enroll customers and receive single-use credentials."
 ---
 
-{/* TODO: confirm the product name with Pedro Schott. The source guide calls the product and the API "Yuno Wallet"; the Slack thread calls it AgentPass. */}
+AgentPass lets AI agents make purchases within limits you approve. An agent can only propose: you approve the merchant, the maximum per purchase, the budget, and how long the permission lasts, and you confirm with your Visa Payment Passkey. For each purchase, the agent gets a single-use Visa credential checked against those limits. It never sees your card number.
 
-AgentPass lets your customers pay with a Visa card they approve purchase by purchase. Your customer enrolls the card and a Visa Payment Passkey in Yuno Wallet, so they enter their card details there, not in your app. For each purchase, they review the merchant and amount and sign with the passkey, and your backend receives a single-use card credential to complete the payment.
+Yuno builds and operates AgentPass. Cards are stored in Yuno Vault, and Visa purchases use Visa Intelligent Commerce.
 
-## How it works
+There are two ways to use AgentPass:
 
-Your backend calls the API. The consent, card, and passkey steps take place in Yuno Wallet.
+* **[Connect an AI assistant](#connect-an-ai-assistant)**: add the AgentPass MCP server to ChatGPT, Claude, Cursor, or any MCP client, and approve what the agent may buy.
+* **[Partner API](#partner-api)**: build AgentPass into your own checkout, app, or agent platform. Your backend enrolls customers, requests purchase approvals, and receives the credentials under your brand.
+
+<Note>
+  AgentPass provides the technology and the credential. It never submits, captures, or settles a payment, and Yuno does not hold funds. The merchant charges the card as with any other purchase.
+</Note>
+
+## Connect an AI assistant
+
+| Setting | Value |
+| --- | --- |
+| MCP server URL | `https://prod.y.uno/wallet-mcp/mcp` |
+| Transport | Streamable HTTP |
+| Sign-in | OAuth 2.1 with PKCE |
+| Account | Created while connecting, if you don't have one |
+| Access lasts | Until you disconnect, or until the client goes 30 days without refreshing its token |
+
+### Add the server to your assistant
+
+<Tabs>
+  <Tab title="ChatGPT">
+    <Steps>
+      <Step title="Turn on Developer mode">
+        In ChatGPT, open **Settings** → **Security and login** and turn on **Developer mode**.
+      </Step>
+      <Step title="Add the MCP URL">
+        Open **Plugins**, select the plus button, and add the MCP server URL with OAuth authentication.
+      </Step>
+      <Step title="Sign in and approve">
+        Sign in to AgentPass, or create your account, and approve the connection.
+      </Step>
+    </Steps>
+
+    Labels change between ChatGPT versions. If yours differ, follow [OpenAI's connection guide](https://developers.openai.com/plugins/deploy/connect-chatgpt).
+  </Tab>
+  <Tab title="Claude">
+    <Steps>
+      <Step title="Add a custom connector">
+        In Claude (web or desktop), open **Settings** → **Connectors** and choose **Add custom connector**.
+      </Step>
+      <Step title="Paste the URL">
+        Paste the MCP server URL and save.
+      </Step>
+      <Step title="Connect and approve">
+        Choose **Connect**, sign in to AgentPass, and approve the connection.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Claude Code">
+    ```bash
+    claude mcp add --transport http yuno-wallet https://prod.y.uno/wallet-mcp/mcp
+    ```
+
+    Run the command, open `/mcp` in Claude Code, choose **Authenticate**, and approve in AgentPass.
+  </Tab>
+  <Tab title="Codex">
+    ```bash
+    codex mcp add yuno-wallet --url https://prod.y.uno/wallet-mcp/mcp
+    codex mcp login yuno-wallet
+    ```
+
+    Run both commands, sign in to AgentPass in your browser, and start a new Codex session.
+  </Tab>
+  <Tab title="Cursor">
+    Add the server to `~/.cursor/mcp.json`, or to the project's `.cursor/mcp.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "yuno-wallet": {
+          "url": "https://prod.y.uno/wallet-mcp/mcp"
+        }
+      }
+    }
+    ```
+
+    Open **Cursor Settings** → **MCP**, choose **Connect** next to `yuno-wallet`, and approve in AgentPass.
+  </Tab>
+  <Tab title="Other MCP clients">
+    Any client that supports Streamable HTTP and OAuth 2.1 can connect. It discovers everything from the URL:
+
+    * Protected-resource metadata at `/.well-known/oauth-protected-resource`
+    * Authorization-server metadata at `/.well-known/oauth-authorization-server`
+    * Dynamic client registration, then the authorization-code flow with S256 PKCE
+
+    No API key, client secret, or pre-registration is needed.
+  </Tab>
+</Tabs>
+
+After you approve, the assistant appears under **Agents** in AgentPass. Ask it to call `get_account` to confirm the connection.
+
+### Sign-in and permissions
+
+* Connecting uses standard OAuth. The assistant receives its own scoped token; your AgentPass sign-in is never shared with it.
+* Before you approve, you see the assistant's name, the operator it reports, and the website it came from. Connections from chatgpt.com, claude.ai, cursor.com, and grok.com are marked as verified; any other origin is shown as it is.
+* Every new connection needs your consent. Registering a client identifies it; it does not grant access.
+* Each tool checks its scope, your account, and the connection on every call. A tool outside the granted scopes is not listed and cannot be called.
+
+| Scope | Allows | Tools |
+| --- | --- | --- |
+| `wallet:read` | Read masked card metadata, readiness, and authorizations. Check a purchase against an authorization. | `get_account`, `get_payment_setup_link`, `get_authorization`, `check_purchase`, `get_credential_request` |
+| `wallet:authorize` | Propose a spending authorization. Nothing is allowed until you approve it. | `create_authorization` |
+| `wallet:credentials` | Request a single-use Visa credential inside an approved authorization, and report the checkout result. | `issue_purchase_credential`, `report_credential_outcome` |
+| `wallet:purchase` | Issue a synthetic, non-chargeable test card. Only on deployments that allow mock mode. | `issue_temporary_card` |
+
+### Tools
+
+Amounts are integers in minor units (`2500` is 25.00 in USD). Currencies are ISO 4217 codes, and merchants are matched by host.
+
+| Tool | Type | What it does |
+| --- | --- | --- |
+| `get_account` | Read | Returns the connected AgentPass: masked cards (brand and last four digits), the default card, whether it is ready for Visa purchases, and the agent's authorizations. Call it first. Never returns a card number, security code, or token. |
+| `get_payment_setup_link` | Read | Returns the secure AgentPass page where you add a card through Yuno's hosted form. The agent sends you the link and you enter the card yourself; an agent must never ask for card details in the chat. |
+| `create_authorization` | Request | Proposes an authorization: what it is for, the maximum per purchase, a budget and period, allowed merchants, and an expiry. Returns an approval URL for you. The proposal can't be changed; to change a limit, the agent proposes a new one. |
+| `get_authorization` | Read | Reads whether you approved, declined, or revoked an authorization, its limits, its expiry, and the budget left. Agents poll it after sending you the approval link. |
+| `check_purchase` | Read | Checks whether a purchase fits an active authorization and explains any refusal. Issues nothing, reserves nothing, and contacts no merchant. |
+| `issue_purchase_credential` | Credential | Issues one Visa payment credential for one purchase under an approved, passkey-confirmed authorization. The budget is reserved before Visa is called. The credential works once, at that merchant, for that amount, and expires. |
+| `get_credential_request` | Read | Reads a credential request's safe view: status, token last four digits, dynamic data type, and expiry. Never returns the credential values. |
+| `report_credential_outcome` | Request | Records the checkout result (approved, declined, error, or cancelled) and sends the transaction confirmation to Visa. Agents call it after every checkout. Reporting does not move money. |
+| `issue_temporary_card` | Credential | Test deployments only. Issues a synthetic, non-chargeable card bound to one purchase and valid for five minutes at most. |
+
+For `create_authorization` in network mode (your Visa card, confirmed with your passkey), put exactly one merchant hostname in `merchants_allow`. Supported currencies: BHD, BRL, CLP, COP, EUR, GBP, JPY, KWD, MXN, OMR, PEN, TND, and USD. The approval link works for 30 minutes and only for the signed-in owner.
+
+### A purchase, step by step
+
+<Steps>
+  <Step title="Check the card">
+    `get_account` confirms a card is ready. If none is, `get_payment_setup_link` gives you the page to add one.
+  </Step>
+  <Step title="Propose the limits">
+    `create_authorization` proposes the limits. For example:
+
+    ```json
+    {
+      "title": "Coffee beans",
+      "natural_language_description": "Reorder one bag of house-blend coffee beans when we run low.",
+      "mode": "network",
+      "policy": {
+        "currency": "USD",
+        "per_purchase_max_minor": 3000,
+        "budget_minor": 6000,
+        "budget_period": "month",
+        "timezone": "America/New_York",
+        "valid_until": "2026-12-31T23:59:59Z",
+        "merchants_allow": ["shop.example.com"],
+        "categories_allow": []
+      },
+      "idempotency_key": "coffee-2026-11"
+    }
+    ```
+  </Step>
+  <Step title="Approve with your passkey">
+    The agent sends you the `approval_url`. You approve within 30 minutes and confirm with your Visa passkey. `get_authorization` shows your decision.
+  </Step>
+  <Step title="Check the purchase">
+    With the cart ready, `check_purchase` confirms it fits. Nothing is reserved.
+  </Step>
+  <Step title="Get the credential and pay">
+    `issue_purchase_credential` reserves the amount and returns a single-use credential for that merchant and amount. The agent uses it at checkout and follows its handling rules.
+  </Step>
+  <Step title="Report the result">
+    `report_credential_outcome` records the result. Every step appears in **Activity** in AgentPass.
+  </Step>
+</Steps>
+
+### Safety
+
+* **You approve every authorization.** An agent can only propose. Nothing can be spent until you approve it from your own signed-in AgentPass, and Visa purchases also need your passkey.
+* **Limits are checked on every purchase.** Merchant, maximum per purchase, budget, and expiry are checked, and the budget is reserved before any credential is issued. An approved authorization can't be edited, only replaced.
+* **Your card number stays out of the chat.** You add cards through Yuno's hosted form into Yuno Vault, and account reads show saved cards as masked metadata only. Issuing a purchase credential returns the payment data that checkout needs, which can include your billing and shipping address and contact details.
+* **Credentials are single-use.** Each credential is bound to one merchant and amount, works once, and expires. It is never shown again after issuance.
+* **Retries can't double-spend.** Requests that change something take an idempotency key. Retry with the same key and the same inputs; a different purchase needs a new key. Once a credential is issued, a retry returns `CREDENTIAL_ALREADY_ISSUED`.
+* **You can stop anything.** Disconnect an assistant from **Agents**: its token stops working immediately. Revoke an authorization from **Authorizations**: credentials already issued may still complete, but no new ones are issued.
+
+### Troubleshooting
+
+**The assistant can't reach the server**
+
+Check that the URL ends in `/mcp` and is the MCP server URL above, not the AgentPass website address.
+
+**The tools are missing after connecting**
+
+Finish the sign-in and approval in the browser, then start a new conversation or session so the client reloads the tool list.
+
+**The agent says no card is ready**
+
+Add one from **Cards** in AgentPass, or ask the agent for a setup link. Visa purchases need a card enrolled for Visa with a passkey.
+
+**A purchase was refused**
+
+The response explains why: for example, a merchant outside the list, an amount above the limit, or a used budget. The agent can propose a new authorization for you to approve.
+
+**The approval link expired**
+
+Links last 30 minutes. Ask the agent to propose the authorization again.
+
+## Partner API
+
+Build AgentPass into your own checkout, app, or agent platform. Your backend enrolls your customers, requests purchase approvals, and receives the single-use credentials. Your customers approve in AgentPass with their Visa Payment Passkey, so they enter their card details there, not in your app.
+
+### How the partner flow works
+
+Your backend calls the API. The consent, card, and passkey steps take place in AgentPass.
 
 | Step | Action | Where | Result |
 | --- | --- | --- | --- |
 | 1 | Create the customer account through enrollment | API | `customer_id` |
-| 2 | Save the address in the profile | Yuno Wallet | |
-| 3 | Enroll a Visa card | Yuno Wallet | |
-| 4 | Register the Visa Payment Passkey | Yuno Wallet and Visa | |
-| 5 | Verify the passkey | Yuno Wallet and Visa | |
+| 2 | Save the address in the profile | AgentPass | |
+| 3 | Enroll a Visa card | AgentPass | |
+| 4 | Register the Visa Payment Passkey | AgentPass and Visa | |
+| 5 | Verify the passkey | AgentPass and Visa | |
 | 6 | Check that the card is ready | API | `ready: true` |
 | 7 | Create the purchase authorization | API | `requires_action` |
-| 8 | Approve and sign with the passkey | Yuno Wallet | `credential_ready` |
+| 8 | Approve and sign with the passkey | AgentPass | `credential_ready` |
 | 9 | Retrieve the single-use credential | API | `credential_issued` |
 
 **Your side** authenticates the customer, calls the API from your backend, opens the consent screens, and uses the credential in your payment integration.
 
-**Yuno Wallet** handles card enrollment, consent, and passkey verification, manages the authorization, and delivers the credential for the approved purchase.
+**AgentPass** handles card enrollment, consent, and passkey verification, manages the authorization, and delivers the credential for the approved purchase.
 
-## Before you start
+### Before you start
 
-Yuno provisions your partner API key and configures your merchant, country, currency, and approved `return_url`. Keep the API key on your backend.
-
-{/* TODO: production base URL. The source guide only gives the staging URL. */}
+Partner access is enabled per integration: [contact Yuno](https://www.y.uno/en/book-a-demo) to request it. Yuno provisions your partner API key and configures your merchant, country, currency, and approved `return_url`. Keep the API key on your backend.
 
 | Environment | Base URL |
 | --- | --- |
+| Production | `https://prod.y.uno/wallet-api` |
 | Staging | `https://staging.y.uno/wallet-api` |
 
 Send these headers on every request:
@@ -45,7 +246,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-## 1. Enroll the customer
+### 1. Enroll the customer
 
 Create the customer account:
 
@@ -88,10 +289,10 @@ GET /v1/customers/{customer_id}
 
 Proceed when the customer has `status: ready` and the selected card has `ready: true`.
 
-* The cardholder enters their address and card details in Yuno Wallet. This request returns only card metadata.
+* The cardholder enters their address and card details in AgentPass. This request returns only card metadata.
 * Customer identity is scoped to each partner, with no automatic linking by email. To resume an enrollment, reuse the original identity.
 
-## 2. Create and approve the purchase
+### 2. Create and approve the purchase
 
 Create the purchase authorization. Send a unique `Idempotency-Key` for each purchase:
 
@@ -153,7 +354,7 @@ GET /v1/purchases/{purchase_id}
 * The authorization lasts 30 minutes.
 * Links have an `expires_at` timestamp. Renew a link only while the purchase is in `requires_action`. Renewing a link does not extend the authorization.
 
-## 3. Retrieve the credential
+### 3. Retrieve the credential
 
 When the purchase reaches `credential_ready`, request the credential from your backend. Send a unique `Idempotency-Key`:
 
@@ -203,5 +404,3 @@ Each purchase issues one credential: a new idempotency key cannot issue another 
   Issuing the credential does not mean the payment was approved. The payment result comes from your payment integration.
 </Note>
 
-{/* TODO: Rivers' scope. Capture, refunds, cancels, and risk conditions are not in the source guide. */}
-{/* TODO: consumer access through the AgentPass MCP server (agentpass.prod.y.uno/mcp), per Pedro Schott. Waiting on what to say about it. */}
