@@ -61,7 +61,7 @@ const HEADER_VALUES = {
   "x-public-api-key": "{{public_api_key}}",
   "private-secret-key": "{{private_secret_key}}",
   "x-private-secret-key": "{{private_secret_key}}",
-  "x-idempotency-key": "{{$guid}}",
+  "x-idempotency-key": "{{idempotency_key}}",
   "x-account-code": "{{account_id}}",
   "x-organization-code": "{{org_code}}",
   "yuno-account-id": "{{account_id}}",
@@ -83,8 +83,10 @@ const EXTRA_CAPTURES = {
     ["transaction_id", "(Array.isArray(body.transactions) ? (body.transactions[body.transactions.length - 1] || {}).id : (body.transactions || {}).id)"],
     ["vaulted_token", "(body.payment_method || {}).vaulted_token"],
   ],
+  // two-card payments: one transaction per card, nested under each payment method
   "POST /v2/payments": [
-    ["transaction_id", "(Array.isArray(body.transactions) ? (body.transactions[body.transactions.length - 1] || {}).id : (body.transactions || {}).id)"],
+    ["transaction_id", "(((((body.payment_method || {}).payment_methods || [])[0] || {}).transactions || [])[0] || {}).id || (Array.isArray(body.transactions) ? (body.transactions[body.transactions.length - 1] || {}).id : (body.transactions || {}).id)"],
+    ["transaction_id_2", "(((((body.payment_method || {}).payment_methods || [])[1] || {}).transactions || [])[0] || {}).id"],
   ],
   "POST /customers": [["merchant_customer_id", "body.merchant_customer_id"]],
   "POST /checkout/sessions": [["checkout_session", "body.checkout_session"]],
@@ -219,6 +221,8 @@ function singular(seg) {
 // resource in front, so /payment-links/{code} uses {{payment_link_code}}.
 function pathVar(segments, i) {
   const name = segments[i].slice(1, -1);
+  // /banking/accounts/{account_id} is a banking account, not the Yuno account
+  if (name === "account_id" && segments[0] === "banking") return "banking_account_id";
   if (name !== "id" && name !== "code") return name;
   for (let j = i - 1; j >= 0; j--) if (!segments[j].startsWith("{")) return `${singular(segments[j])}_${name}`;
   return name;
@@ -375,6 +379,7 @@ function resolveBinding(binding) {
 /* Request builder                                                     */
 /* ------------------------------------------------------------------ */
 
+const ENV_OWNED = new Set(["account_id", "org_code", "public_api_key", "private_secret_key", "base_url"]);
 const CAPTURED_NAMES = new Set(Object.values(EXTRA_CAPTURES).flatMap((list) => list.map(([name]) => name)));
 const usedVariables = new Set();
 const noteVar = (text) => {
@@ -443,7 +448,11 @@ function buildUrl(method, rootPath, op) {
     const q = { key: p.name, value: String(value ?? "") };
     if (p.description) q.description = p.description;
     // a lookup with a single query parameter is unusable without it
-    if (!p.required && (queryParams.length > 1 || variable.length)) q.disabled = true;
+    // Where an endpoint accepts the account either as this query parameter or
+    // as the X-Account-Code header, one of the two has to be sent: keep it on.
+    // Anywhere else account_id is an optional filter and stays off.
+    const accountSelector = p.name === "account_id" && params.some((h) => h.in === "header" && h.name.toLowerCase() === "x-account-code");
+    if (!p.required && !accountSelector && (queryParams.length > 1 || variable.length)) q.disabled = true;
     query.push(q);
   }
   const enabled = query.filter((q) => !q.disabled).map((q) => `${q.key}=${q.value}`);
@@ -473,9 +482,12 @@ function captures(method, rootPath) {
       if (p.replace(/\{[^}]+\}/g, "{}") !== prefix) continue;
       const segs = p.split("/").filter(Boolean);
       const v = pathVar(segs, segs.length - 1);
-      if (!list.some(([name]) => name === v)) {
+      // account_id, org_code and the keys belong to the environment
+      if (!list.some(([name]) => name === v) && !ENV_OWNED.has(v)) {
         const field = segs[segs.length - 1].slice(1, -1);
-        list.push([v, `body[${JSON.stringify(field)}] || body.id || body.code`]);
+        // only a renamed variable (banking_account_id) must skip the field of the same name
+        const own = v === field || field === "code" || field === "id" ? `body[${JSON.stringify(field)}] || body.id` : "body.id";
+        list.push([v, `${own} || body.code`]);
       }
       break;
     }
@@ -709,6 +721,7 @@ const quickstart = {
     "Before you send:",
     "1. Import and select the **Yuno Sandbox** environment.",
     "2. Fill in `public_api_key`, `private_secret_key` and `account_id` from the [Dashboard](https://dashboard.y.uno/developers), with the context chip on **Test**.",
+    `3. Make sure the account can process cards: connect the Yuno Testing Gateway and route cards to it (${SITE}/docs/direct-integration-use-cases/yuno-testing-gateway). Without a card route, step 3 fails.`,
     "",
     "Each request saves the IDs the next one needs (`customer_id`, `checkout_session`, `payment_id`, `transaction_id`), so you never copy and paste.",
     "",
@@ -727,6 +740,19 @@ const prerequest = [
   "",
   "// v2 endpoints live on the same host as v1.",
   "pm.collectionVariables.set(\"base_url_v2\", baseUrl.replace(/\\/v1\\/?$/, \"\") + \"/v2\");",
+  "",
+  "// Idempotency: a new key on every send. When a request times out and you do",
+  "// not know its outcome, set retry_idempotency_key to last_idempotency_key and",
+  "// send again: Yuno returns the original result and never charges twice.",
+  "// Clear retry_idempotency_key afterwards.",
+  "const retryKey = pm.collectionVariables.get(\"retry_idempotency_key\");",
+  "const idempotencyKey = retryKey || pm.variables.replaceIn(\"{{$guid}}\");",
+  "pm.variables.set(\"idempotency_key\", idempotencyKey);",
+  "// Only a request that sends the header updates last_idempotency_key, so a",
+  "// lookup in between never replaces the key of the request you want to retry.",
+  "const sendsKey = pm.request.headers.has(\"X-Idempotency-Key\");",
+  "if (sendsKey) pm.collectionVariables.set(\"last_idempotency_key\", idempotencyKey);",
+  "if (retryKey && sendsKey) console.warn(\"Yuno: reusing X-Idempotency-Key \" + retryKey + \" (retry_idempotency_key is set).\");",
   "",
   "const missing = [\"public_api_key\", \"private_secret_key\"].filter(function (k) { return !pm.variables.get(k); });",
   "if (missing.length) {",
@@ -764,7 +790,7 @@ const description = [
   "## How it works",
   "- **Same structure as the API reference.** Folders and requests follow the sidebar on docs.y.uno, and every request links to its page.",
   "- **Auth is wired.** `public-api-key` and `private-secret-key` read from the environment. Never commit or share an environment with keys in it.",
-  "- **Idempotency is automatic.** `X-Idempotency-Key` gets a fresh UUID on every send. Replace it with a fixed value to test a retry.",
+  "- **Idempotency is automatic.** `X-Idempotency-Key` gets a fresh UUID on every send, saved as `last_idempotency_key`. When a request times out and you do not know its outcome, copy that value into `retry_idempotency_key` and send again: Yuno returns the original result instead of creating a second payment. Clear `retry_idempotency_key` afterwards.",
   "- **IDs chain.** A successful create saves its ID (`customer_id`, `payment_id`, ...) as a collection variable, and later requests use it.",
   "- **Every documented scenario is a saved example.** Open the examples under a request to see each body and its response.",
   "- **Errors are explained.** A failed call prints the error code, messages and trace ID in the Postman console.",
@@ -793,10 +819,12 @@ if (orphans.length) {
 
 // Captured IDs start empty; base_url defaults to sandbox so the collection
 // works even before an environment is selected.
-const FIXED = new Set(["base_url", "base_url_v2", "public_api_key", "private_secret_key", "account_id", "org_code"]);
+const FIXED = new Set(["base_url", "base_url_v2", "public_api_key", "private_secret_key", "account_id", "org_code", "idempotency_key", "last_idempotency_key", "retry_idempotency_key"]);
 const variables = [
   { key: "base_url", value: SANDBOX_V1, type: "string" },
   { key: "base_url_v2", value: SANDBOX_V1.replace(/\/v1$/, "/v2"), type: "string" },
+  { key: "last_idempotency_key", value: "", type: "string" },
+  { key: "retry_idempotency_key", value: "", type: "string" },
   ...[...usedVariables]
     .filter((v) => !FIXED.has(v))
     .sort()

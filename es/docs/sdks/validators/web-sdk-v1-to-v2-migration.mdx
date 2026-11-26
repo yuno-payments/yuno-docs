@@ -16,10 +16,10 @@ Funciona como `CLAUDE.md`, `AGENTS.md` o como prompt pegado, con Claude Code, Cu
 solo lectura: analiza tu código y reporta, y no cambia nada a menos que lo pidas.
 
 **El destino.** v2 es la línea 2.x de sdk-web ("Yuno SDK 2.x", la Transaction API unificada). Consulta el
-[changelog del Web SDK](https://docs.y.uno/es/changelog/yuno-sdk/web) para ver la versión actual. Cada versión se sirve en una URL con la versión completa, por ejemplo
-`https://sdk-web.y.uno/v2.5.1/main.js`, y `v2.0.0`, `v2.1.0`, `v2.1.2`, `v2.2.0` también están disponibles. No hay una
-carpeta rolling: `/v2/`, `/v2.0/` y `/v2.2/` devuelven 404, por lo que debes fijar una versión completa y actualizarla a mano. La ruta SRI es
-`https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v2.5.1/main.js`. Documentación pública: la pestaña "SDK"
+[changelog del Web SDK](https://docs.y.uno/es/changelog/yuno-sdk/web) para ver la versión actual. Carga
+`https://sdk-web.y.uno/v2/main.js` para mantenerte en la versión 2.x actual. Esa URL solo sirve el archivo de entrada. Luego el SDK carga el resto de la compilación desde la ruta de versión exacta que lleva incorporada. Fija una versión completa, por ejemplo
+`https://sdk-web.y.uno/v2.7.2/main.js`, para quedarte en una versión. Las versiones fijadas anteriores, como `v2.0.0`, `v2.1.0`, `v2.1.2` y `v2.2.0`, siguen publicadas. Una ruta solo con la versión menor, como `/v2.0/` o `/v2.2/`, no está publicada y devuelve 404. Subresource Integrity usa la URL del bundle estático que acompaña a su hash en `versions-sri.json`, no una ruta de `sdk-web.y.uno`. Para la versión actual es
+`https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v2.7.2/main.js`. Documentación pública: la pestaña "SDK"
 (`docs/yuno-sdk/*`, serie de migración en `docs/yuno-sdk/migration/web/*`). La pestaña "SDKs" es la línea 1.x.
 v1.x sigue con soporte en paralelo hasta 2027.
 
@@ -27,7 +27,7 @@ v1.x sigue con soporte en paralelo hasta 2027.
 
 ```
 v1.11                                              v2
-<script .../v1.11/main.js>                         <script .../v2.5.1/main.js>
+<script .../v1.11/main.js>                         <script .../v2/main.js>
 yuno = await Yuno.initialize(key)                  sdk = await SdkPayments.initialize(key)
 yuno.startCheckout(cfg)        (or Seamless)       tx = sdk.transaction(cfg)   (session, country, onStatus,
 yuno.mountCheckoutLite({...})                           createPayment present = manual, absent = managed)
@@ -88,8 +88,8 @@ REMOVED (sin reemplazo), SILENT (v2 acepta e ignora la clave anterior), BLOCKED 
 |---|---|---|---|---|
 | `window.Yuno`, `new Yuno`, `YunoSDK` | `window.SdkPayments` | RENAME | Reemplaza cada referencia | `src/main.ts` en 1.11 frente a 2.2.0 |
 | evento `yuno-sdk-ready` | `sdk-payments-ready` | RENAME | Escucha el evento nuevo; revisa también primero `window.SdkPayments` | igual |
-| `<script .../v1.11/main.js>` | `<script .../v2.x.y/main.js>` | BEHAVIOUR | Fija una versión completa; no hay carpeta rolling | Pruebas de CDN al momento de escribir |
-| npm `loadScript()` | `loadScript({ baseUrl: 'https://sdk-web.y.uno/v2.x.y' })` | BEHAVIOUR | Pasa `baseUrl`; elimina `sri: true` (su URL y sus hashes están fijados a v1.11) | loader de npm `get-url.ts`, `inject-script.ts` |
+| `<script .../v1.11/main.js>` | `<script .../v2/main.js>` | BEHAVIOUR | Entrada rolling de 2.x. Fija `/v2.<m>.<p>/main.js` para quedarte en una compilación. `/v2.0/` y `/v2.2/` no están publicadas | CDN, 2026-11-26 |
+| npm `loadScript()` en 9.x | `@yuno-payments/sdk-web@^10` y `loadScript({ baseUrl: 'https://sdk-web.y.uno/v2' })` | BEHAVIOUR | Sin `baseUrl`, 10.x carga una compilación 2.x exacta. Un `baseUrl` `/v2` carga `/v2/main.js`, el mismo archivo que la etiqueta script, pero no se puede combinar con `sri: true`. Elimina `sri: true` en 9.x: esos hashes son del bundle v1.11 | README del paquete npm 10.2.0 |
 | `@yuno-payments/sdk-web-types` | ninguno publicado | REMOVED | Escribe una declaración local a partir de las páginas públicas de migración a v2 | `@yuno-payments/sdk-web-types` declara `startCheckout`, no `transaction` |
 | `await Yuno.initialize(key, appSession?, opts?)` | `await SdkPayments.initialize(...)` | RENAME + BEHAVIOUR | Mismos argumentos; los mismos argumentos devuelven la misma instancia, argumentos nuevos reemplazan a la anterior | `sdk-payments.ts` |
 
@@ -203,7 +203,7 @@ Busca: `window.Yuno`, `Yuno.initialize`, `yuno-sdk-ready`. Sigue en v1: cualquie
 
 ### 2. URL del script y loader (M2, B) {#2-script-url-and-loader-m2-b}
 
-Busca: etiquetas script, `loadScript`, `sdk-static-bundles-ms`. Sigue en v1: `/v1.11/`, `loadScript()` sin `baseUrl`, `sri: true`; también incorrecto: `/v2/`, `/v2.2/`. Cambio: URL completa `v2.x.y`; en las páginas de la UE, verifica que el host de la UE tenga la versión. Las versiones fijadas de v2 más antiguas, como `v2.0.0`, son válidas si la integración se probó con esa versión. Síntoma: `sdk.transaction is not a function`, o 404.
+Busca: etiquetas script, `loadScript`, `sdk-static-bundles-ms`. Sigue en v1: `/v1.11/`, `loadScript()` en 9.x sin `baseUrl`, `sri: true` en 9.x. También incorrecto: una ruta solo con la versión menor, como `/v2.0/` o `/v2.2/`. `/v2/main.js` es la entrada 2.x actual y es válida, también en el host de la UE. Una URL completa `v2.x.y` fija una versión. Las versiones fijadas de v2 más antiguas, como `v2.0.0`, son válidas si la integración se probó con esa versión. Síntoma: `sdk.transaction is not a function`, o 404.
 
 ### 3. Puntos de entrada de v1 (M3, B) {#3-v1-entry-points-m3-b}
 
@@ -332,4 +332,4 @@ podrían no estar todavía en el bundle 2.2.0.
 
 Fuentes: el código fuente del Web SDK 1.11.47 y 2.2.0, el reporte de la API de v2, el loader de npm
 `@yuno-payments/sdk-web`, `@yuno-payments/sdk-web-types` y la documentación pública de Yuno (la pestaña "SDK", sus guías de migración
-y changelog, y la página de marca blanca); pruebas de CDN. Fecha de la investigación: 2026-10-29.
+y changelog, y la página de marca blanca); pruebas de CDN (entrada rolling `/v2/main.js` verificada el 2026-11-26). Fecha de la investigación: 2026-10-29.

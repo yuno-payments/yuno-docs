@@ -1,0 +1,263 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Yuno FX Rates API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.y.uno/v1"
+    }
+  ],
+  "paths": {
+    "/fx-rates/quote": {
+      "post": {
+        "summary": "Create FX quote",
+        "operationId": "create-fx-quote",
+        "description": "Quotes a USD amount in the customer's local currency, with Yuno's daily reference rate plus your markup, and holds it until `expires_at`. Send the quote with the payment to charge the local amount.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your public API key."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your private secret key, when you quote from your backend. Never expose it client-side."
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The account the quote is for."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "target_currency"
+                ],
+                "properties": {
+                  "checkout_session": {
+                    "type": "string",
+                    "description": "The checkout session the quote is for. Required with a public key."
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "The account the quote is for."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "enum": [
+                          "USD"
+                        ],
+                        "description": "Only `USD`."
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "From 0.0001 to 9999999999."
+                      }
+                    }
+                  },
+                  "target_currency": {
+                    "type": "string",
+                    "description": "Three-letter ISO currency to quote in.",
+                    "example": "BRL"
+                  }
+                }
+              },
+              "example": {
+                "checkout_session": "<checkout_session>",
+                "amount": {
+                  "currency": "USD",
+                  "value": 29
+                },
+                "target_currency": "BRL"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "FX quote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fx_quote_id": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "local_amount": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "reference_rate": {
+                      "type": "number"
+                    },
+                    "markup_percentage": {
+                      "type": "number"
+                    },
+                    "rate": {
+                      "type": "number"
+                    },
+                    "fx_date": {
+                      "type": "string",
+                      "description": "Day of the reference rate."
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "description": "Until when the quote can be charged."
+                    }
+                  }
+                },
+                "example": {
+                  "fx_quote_id": "fxq_D8BBCB40182E44799D4AE3F6BBF2D1FB",
+                  "amount": {
+                    "currency": "USD",
+                    "value": 29
+                  },
+                  "local_amount": {
+                    "currency": "BRL",
+                    "value": 152.55
+                  },
+                  "reference_rate": 5.1572,
+                  "markup_percentage": 2,
+                  "rate": 5.2603,
+                  "fx_date": "2026-11-19",
+                  "expires_at": "2026-11-21T22:24:07Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body, for example an amount that is not in USD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "INVALID_PARAMETERS",
+                  "messages": [
+                    "..."
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The product is not enabled for your organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "PRODUCT_NOT_ENABLED",
+                  "messages": [
+                    "..."
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FX_QUOTE_NOT_AVAILABLE",
+                  "messages": [
+                    "No published rate for BRL on the latest available day."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
