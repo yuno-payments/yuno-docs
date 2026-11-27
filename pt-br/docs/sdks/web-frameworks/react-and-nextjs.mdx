@@ -1,0 +1,439 @@
+---
+title: "React e Next.js"
+description: "Carregue o Yuno Web SDK em um componente somente do cliente no React, no Next.js e em outros frameworks renderizados no servidor"
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+O Yuno Web SDK é um script de navegador. No React, você o carrega uma vez, monta o checkout dentro de um componente que só roda no navegador e o desmonta quando o componente deixa de existir. Esta página mostra esse padrão para o Seamless SDK, o Lite SDK e o Secure Fields, além dos detalhes específicos do Next.js para o App Router e o Pages Router.
+
+Tudo aqui usa os mesmos métodos documentados para JavaScript puro. Consulte [Seamless SDK (Web)](/pt-br/docs/sdks/seamless-sdk/web-payments), [Lite SDK (Web)](/pt-br/docs/sdks/lite-web/payment), [Secure Fields](/docs/sdks/customization/secure-fields/payment-secure-fields) e a [Referência Web](/pt-br/docs/sdks/resources/references/web) para ver todos os parâmetros.
+
+## Escolha a integração {#pick-the-integration}
+
+| Você quer | Use | Monte com |
+| :--- | :--- | :--- |
+| Um checkout completo com todos os meios de pagamento habilitados na sua conta, estilizado a partir do Dashboard | [Seamless SDK](/pt-br/docs/sdks/seamless-sdk/web-payments) | `startSeamlessCheckout` e depois `mountSeamlessCheckout` |
+| Um componente por meio de pagamento, posicionado onde você decidir | [Lite SDK](/pt-br/docs/sdks/lite-web/payment) | `startCheckout` e depois `mountCheckoutLite` |
+| Apenas os campos do cartão, dentro de um formulário seu | [Secure Fields](/docs/sdks/customization/secure-fields/payment-secure-fields) | `secureFields` e depois `create` e `render` |
+| Nenhuma interface da Yuno | [Headless SDK](/pt-br/docs/sdks/headless-web/payment) | `apiClientPayment` |
+
+## Instalação {#install}
+
+Instale o pacote NPM e, opcionalmente, as definições de TypeScript:
+
+```bash
+npm install @yuno-payments/sdk-web
+npm install --save-dev @yuno-payments/sdk-web-types
+```
+
+`loadScript` injeta o script do SDK e resolve com o objeto `Yuno`. A inicialização é um segundo passo: chame `Yuno.initialize` com a sua chave de API pública para obter a instância com a qual você monta. Defina `sri: true` para que o navegador verifique o script em relação ao hash publicado (consulte [Subresource Integrity](/pt-br/docs/sdks/resources/references/web#subresource-integrity-sri)).
+
+```javascript
+import { loadScript } from '@yuno-payments/sdk-web';
+
+const Yuno = await loadScript({ sri: true });
+const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
+```
+
+<Tip>
+  `loadScript()` só começa a baixar o SDK quando o seu app o chama, o que, em um app React, acontece depois que o seu bundle é executado. Adicione um preload para `main.js` e preconnects para os hosts da Yuno no `<head>` do seu HTML para que o download comece enquanto a página carrega. Consulte [Pré-carregue o script do SDK](/pt-br/docs/sdks/resources/references/web#preload-the-sdk-script).
+</Tip>
+
+Se você preferir a tag de script, adicione-a ao seu HTML e chame `Yuno.initialize` a partir do navegador:
+
+```html
+<script src="https://sdk-web.y.uno/v1.10/main.js" async defer></script>
+```
+
+<Warning>
+  As duas opções acessam `window`, por isso precisam rodar no navegador. Nunca importe `@yuno-payments/sdk-web` nem chame `Yuno.initialize` a partir de um server component, de `getServerSideProps` ou de uma server action. As seções abaixo mostram onde colocar cada chamada.
+</Warning>
+
+## Crie a sessão de checkout no seu servidor {#create-the-checkout-session-on-your-server}
+
+O SDK precisa de uma sessão de checkout, e criá-la exige a sua chave privada. Crie-a no seu servidor e passe o id para o componente como prop. A sessão expira depois de 2,5 horas em produção, então crie-a quando o comprador chegar à etapa de pagamento, e não no momento do build da página.
+
+```javascript
+const response = await fetch('https://api-sandbox.y.uno/v1/checkout/sessions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Idempotency-Key': crypto.randomUUID(),
+    'public-api-key': process.env.YUNO_PUBLIC_API_KEY,
+    'private-secret-key': process.env.YUNO_PRIVATE_SECRET_KEY,
+  },
+  body: JSON.stringify({
+    account_id: process.env.YUNO_ACCOUNT_ID,
+    merchant_order_id: order.id,
+    payment_description: order.description,
+    country: 'US',
+    customer_id: customer.id,
+    amount: { currency: 'USD', value: order.total },
+  }),
+});
+
+const { checkout_session } = await response.json();
+```
+
+Consulte [Create Checkout Session](/reference/checkout-sessions/create-checkout-session) para ver todos os campos.
+
+## Carregue o SDK uma vez {#load-the-sdk-once}
+
+Um pequeno hook mantém uma instância do SDK por página e a compartilha entre os componentes. A promise fica em cache no nível do módulo para que o React StrictMode, que executa os effects duas vezes em desenvolvimento, não injete o script duas vezes.
+
+```javascript
+import { useEffect, useState } from 'react';
+import { loadScript } from '@yuno-payments/sdk-web';
+
+let sdkPromise;
+
+export function useYuno() {
+  const [yuno, setYuno] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    sdkPromise ??= loadScript({ sri: true })
+      .then((Yuno) => Yuno.initialize(process.env.NEXT_PUBLIC_YUNO_PUBLIC_API_KEY))
+      .catch((loadError) => {
+        sdkPromise = undefined;
+        throw loadError;
+      });
+    let active = true;
+    sdkPromise.then(
+      (instance) => {
+        if (active) setYuno(instance);
+      },
+      (loadError) => {
+        if (active) setError(loadError);
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return { yuno, error };
+}
+```
+
+Se o script não carregar, a promise em cache é limpa para que a próxima montagem tente novamente, em vez de reutilizar a falha.
+
+## Seamless SDK em um componente {#seamless-sdk-in-a-component}
+
+Monte dentro de `useEffect`, mantenha os callbacks em uma ref para que uma nova renderização não remonte o formulário e chame `unmountSdk` no cleanup. `elementSelector` é o elemento em que o checkout é montado e é obrigatório. Use `renderMode.type: 'element'` para que os formulários do meio de pagamento e de ação também sejam renderizados dentro de elementos seus.
+
+O Seamless SDK cria o próprio pagamento a partir da sessão de checkout, então não há callback `createPayment` nem chamada a Create Payment a partir do seu servidor. Ele também executa por conta própria a [nova tentativa de pagamento](/pt-br/docs/sdks/resources/references/web#payment-retry) para cartões recusados. Você recebe o resultado em `paymentResult`, e o seu servidor o recebe pelo webhook `payment.purchase`.
+
+```javascript
+import { useEffect, useRef } from 'react';
+import { useYuno } from './useYuno';
+
+export function YunoCheckout({ checkoutSession, countryCode, onResult }) {
+  const { yuno } = useYuno();
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult;
+
+  useEffect(() => {
+    if (!yuno || !checkoutSession) return;
+    let cancelled = false;
+
+    async function mount() {
+      await yuno.startSeamlessCheckout({
+        checkoutSession,
+        countryCode,
+        language: 'en',
+        elementSelector: '#yuno-checkout',
+        renderMode: {
+          type: 'element',
+          elementSelector: {
+            apmForm: '#yuno-apm-form',
+            actionForm: '#yuno-action-form',
+          },
+        },
+        paymentResult(status, subStatus) {
+          onResultRef.current?.(status, subStatus);
+        },
+        error(message, data) {
+          console.error('Yuno error', message, data);
+        },
+      });
+      if (cancelled) return;
+      await yuno.mountSeamlessCheckout();
+      if (cancelled) yuno.unmountSdk();
+    }
+
+    mount();
+
+    return () => {
+      cancelled = true;
+      yuno.unmountSdk();
+    };
+  }, [yuno, checkoutSession, countryCode]);
+
+  return (
+    <>
+      <div id="yuno-checkout" />
+      <div id="yuno-apm-form" />
+      <div id="yuno-action-form" />
+      <button type="button" onClick={() => yuno?.startPayment()}>
+        Pay
+      </button>
+    </>
+  );
+}
+```
+
+Três detalhes importam aqui:
+
+* **Dependências**: apenas `yuno`, `checkoutSession` e `countryCode` remontam o formulário. Os callbacks passam por uma ref para que novas renderizações do componente pai não desmontem o checkout.
+* **Cleanup**: `unmountSdk` remove o SDK do DOM. Se o componente for desmontado enquanto `mountSeamlessCheckout` ainda estiver rodando, a verificação `cancelled` o desmonta assim que ele terminar, para que nenhum formulário fique para trás em um elemento desanexado.
+* **Abrindo o formulário**: `startPayment` abre o meio de pagamento selecionado. Chame-o a partir do seu botão de pagar, como mostrado, ou logo depois que `mountSeamlessCheckout` resolver. Se você nunca chamá-lo, o formulário não abre.
+
+<Tip>
+  Quando o comprador precisar de uma nova sessão depois de um pagamento que falhou, chame `yuno.updateCheckoutSession(newSession)` em vez de remontar. Se a nova sessão mudar os meios de pagamento, o estilo ou o país, remonte alterando a prop `checkoutSession`. Consulte [updateCheckoutSession](/pt-br/docs/sdks/resources/references/web#updatecheckoutsession).
+</Tip>
+
+## Lite SDK em um componente {#lite-sdk-in-a-component}
+
+O Lite SDK renderiza um meio de pagamento por chamada. O padrão React é o mesmo, com `startCheckout` e `mountCheckoutLite` em vez dos métodos do Seamless. Os botões express são montados separadamente com `mountExternalButtons`.
+
+Diferente do Seamless, o Lite entrega a você um token de uso único em `createPayment`, e o seu servidor cria o pagamento. A sua rota `/api/payments` chama [Create Payment](/reference/payments/create-payment) com `payment_method.token` e `checkout.session`, e o callback então segue as [regras de nova tentativa de pagamento](/pt-br/docs/sdks/resources/references/web#payment-retry): `continuePayment` para um cartão recusado ou quando `sdk_action_required` for `true`, e `unmountSdk` nos demais casos.
+
+```javascript
+useEffect(() => {
+  if (!yuno || !checkoutSession) return;
+  let cancelled = false;
+
+  async function mount() {
+    await yuno.startCheckout({
+      checkoutSession,
+      countryCode,
+      language: 'en',
+      elementSelector: '#yuno-card',
+      async createPayment(oneTimeToken) {
+        const payment = await fetch('/api/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oneTimeToken, checkoutSession }),
+        }).then((r) => r.json());
+
+        const isCard = payment.payment_method?.type === 'CARD';
+        const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+
+        if (isCard && failed) {
+          await yuno.continuePayment();
+        } else if (payment.checkout?.sdk_action_required) {
+          await yuno.continuePayment({ showPaymentStatus: true });
+        } else {
+          await yuno.unmountSdk();
+        }
+      },
+      paymentResult(status, subStatus) {
+        onResultRef.current?.(status, subStatus);
+      },
+      error(message, data) {
+        console.error('Yuno error', message, data);
+      },
+    });
+    if (cancelled) return;
+    await yuno.mountCheckoutLite({ paymentMethodType: 'CARD' });
+    await yuno.mountExternalButtons([
+      { paymentMethodType: 'APPLE_PAY', elementSelector: '#apple-pay' },
+      { paymentMethodType: 'GOOGLE_PAY', elementSelector: '#google-pay' },
+    ]);
+    if (cancelled) {
+      yuno.unmountAllExternalButtons();
+      yuno.unmountSdk();
+    }
+  }
+
+  mount();
+
+  return () => {
+    cancelled = true;
+    yuno.unmountAllExternalButtons();
+    yuno.unmountSdk();
+  };
+}, [yuno, checkoutSession, countryCode]);
+```
+
+## Secure Fields em um formulário seu {#secure-fields-in-a-form-you-own}
+
+O Secure Fields oferece três campos seguros para PCI (`pan`, `expiration`, `cvv`) que são renderizados em elementos do seu formulário. `yuno.secureFields` é assíncrono, então aguarde-o com await dentro do effect, depois crie os campos e gere o token de uso único no envio.
+
+Os Secure Fields não são removidos por `unmountSdk`. Guarde cada campo e chame o `unmountSync` dele no cleanup; caso contrário, os campos do cartão permanecem na página e o StrictMode os renderiza duas vezes em desenvolvimento.
+
+```javascript
+import { useEffect, useRef, useState } from 'react';
+import { useYuno } from './useYuno';
+
+export function CardForm({ checkoutSession, countryCode }) {
+  const { yuno } = useYuno();
+  const secureFieldsRef = useRef(null);
+  const [holderName, setHolderName] = useState('');
+
+  useEffect(() => {
+    if (!yuno || !checkoutSession) return;
+    let cancelled = false;
+    let fields = [];
+
+    async function mount() {
+      const secureFields = await yuno.secureFields({ countryCode, checkoutSession });
+      if (cancelled) return;
+      secureFieldsRef.current = secureFields;
+
+      const pan = secureFields.create({ name: 'pan', options: { placeholder: 'Card number' } });
+      const expiration = secureFields.create({ name: 'expiration', options: { placeholder: 'MM/YY' } });
+      const cvv = secureFields.create({ name: 'cvv', options: { placeholder: 'CVV' } });
+      fields = [pan, expiration, cvv];
+
+      pan.render('#yuno-pan');
+      expiration.render('#yuno-expiration');
+      cvv.render('#yuno-cvv');
+    }
+
+    mount();
+
+    return () => {
+      cancelled = true;
+      secureFieldsRef.current = null;
+      fields.forEach((field) => field.unmountSync());
+    };
+  }, [yuno, checkoutSession, countryCode]);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const oneTimeToken = await secureFieldsRef.current.generateToken({
+      cardHolderName: holderName,
+    });
+    const payment = await fetch('/api/payments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oneTimeToken, checkoutSession }),
+    }).then((r) => r.json());
+
+    const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+
+    if (failed || payment.checkout?.sdk_action_required) {
+      await yuno.continuePayment();
+    } else {
+      await yuno.mountStatusPayment({
+        checkoutSession,
+        countryCode,
+        language: 'en',
+        paymentResult(data) {
+          console.log(data);
+        },
+      });
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={holderName}
+        onChange={(e) => setHolderName(e.target.value)}
+        placeholder="Name on card"
+      />
+      <div id="yuno-pan" />
+      <div id="yuno-expiration" />
+      <div id="yuno-cvv" />
+      <button type="submit">Pay</button>
+    </form>
+  );
+}
+```
+
+Um cartão recusado ou com falha vai para `continuePayment`, para que a [nova tentativa de pagamento](/pt-br/docs/sdks/resources/references/web#payment-retry) possa manter o formulário aberto mostrando a recusa. Qualquer outro resultado que não precise de mais ações vai para `mountStatusPayment`.
+
+Defina `checkoutSession` em `secureFields({ ... })` e não em `generateTokenWithInformation`; a lógica de [nova tentativa de pagamento](/pt-br/docs/sdks/resources/references/web#payment-retry) depende disso.
+
+## Next.js {#nextjs}
+
+### App Router {#app-router}
+
+Os componentes em `app/` são server components por padrão. Coloque todas as chamadas ao SDK em um arquivo que comece com `'use client'` e crie a sessão em uma server action ou em um route handler.
+
+```javascript
+// app/checkout/page.jsx  (server component)
+import { createCheckoutSession } from '@/lib/yuno';
+import { YunoCheckout } from './YunoCheckout';
+
+export default async function CheckoutPage() {
+  const checkoutSession = await createCheckoutSession();
+  return <YunoCheckout checkoutSession={checkoutSession} countryCode="US" />;
+}
+```
+
+```javascript
+// app/checkout/YunoCheckout.jsx
+'use client';
+
+export { YunoCheckout } from '@/components/YunoCheckout';
+```
+
+Se você preferir manter o componente totalmente fora do bundle do servidor, carregue-o com `next/dynamic` e `ssr: false`:
+
+```javascript
+'use client';
+import dynamic from 'next/dynamic';
+
+const YunoCheckout = dynamic(
+  () => import('@/components/YunoCheckout').then((m) => m.YunoCheckout),
+  { ssr: false, loading: () => <div className="checkout-placeholder" /> },
+);
+```
+
+### Pages Router {#pages-router}
+
+Crie a sessão em `getServerSideProps` e renderize o componente do cliente. O hook `useEffect` só roda no navegador, então o componente acima funciona sem alterações.
+
+```javascript
+export async function getServerSideProps() {
+  const checkoutSession = await createCheckoutSession();
+  return { props: { checkoutSession } };
+}
+```
+
+### Variáveis de ambiente {#environment-variables}
+
+| Variável | Onde é usada |
+| :--- | :--- |
+| `NEXT_PUBLIC_YUNO_PUBLIC_API_KEY` | Navegador, para inicializar o SDK |
+| `YUNO_PUBLIC_API_KEY` e `YUNO_PRIVATE_SECRET_KEY` | Somente no servidor, em todas as chamadas à API |
+| `YUNO_ACCOUNT_ID` | Somente no servidor, nas requisições de sessão de checkout e de pagamento |
+
+A chave secreta privada nunca deve ter o prefixo `NEXT_PUBLIC_`.
+
+## Reduza o layout shift {#reduce-layout-shift}
+
+O checkout carrega depois que a página é renderizada. Reserve o espaço que ele vai ocupar para que a página não pule:
+
+* Dê ao elemento de montagem um `min-height` próximo da altura final do formulário.
+* Mantenha `showLoading: true` (o padrão) para que o SDK mostre o próprio spinner enquanto busca os seus meios de pagamento.
+* Chame `loadScript` na página anterior à etapa de pagamento, se possível, para que o script já esteja em cache quando o comprador chegar. Ele carrega o mesmo arquivo em todas as páginas, então o navegador o baixa uma única vez.
+* Faça o preload de `main.js` e o preconnect com os hosts da Yuno a partir do `<head>` do HTML para que o download não espere o seu bundle. Consulte [Pré-carregue o script do SDK](/pt-br/docs/sdks/resources/references/web#preload-the-sdk-script).
+
+## Solução de problemas {#troubleshooting}
+
+| Sintoma | Causa | Solução |
+| :--- | :--- | :--- |
+| `window is not defined` ou `document is not defined` no momento do build | O SDK foi importado ou inicializado durante a renderização no servidor | Mova o import para dentro de `useEffect`, ou marque o arquivo com `'use client'`, ou carregue o componente com `next/dynamic({ ssr: false })` |
+| Dois formulários de checkout aparecem em desenvolvimento | O React StrictMode executa os effects duas vezes e a primeira montagem não foi limpa | Retorne `() => yuno.unmountSdk()` a partir do effect e coloque em cache a promise de `loadScript`. Para o Secure Fields, chame `unmountSync` em cada campo |
+| O formulário desaparece a cada tecla digitada | O componente é remontado porque um callback ou uma prop de objeto é recriado a cada renderização | Mantenha os callbacks em um `useRef` e limite as dependências do effect a `yuno`, `checkoutSession` e `countryCode` |
+| O formulário de cartão continua aberto depois de uma recusa | `continuePayment` não foi chamado para um pagamento com cartão `DECLINED` ou `ERROR` | Siga as [regras de nova tentativa de pagamento](/pt-br/docs/sdks/resources/references/web#payment-retry): em um cartão recusado ou com erro, chame `yuno.continuePayment()` antes que o comprador tente novamente |
+| O navegador se recusa a executar o script | O Subresource Integrity rejeitou o script | O hash vem dentro de `@yuno-payments/sdk-web`, então atualize o pacote para a versão mais recente. Remova `sri: true` apenas enquanto você isola o problema |
+| Os meios de pagamento não correspondem ao país do comprador | A sessão foi criada para um país e o componente recebeu outro | Crie a sessão e monte o componente com o mesmo valor de `country` |
+
+## Próximos passos {#next-steps}
+
+<CardGroup cols={2}>
+  <Card title="Migre do Stripe Elements" href="/pt-br/docs/sdks/web-frameworks/migrate-from-stripe-elements" icon="arrow-right-arrow-left">
+    Mapeie cada conceito do Elements para o equivalente na Yuno.
+  </Card>
+  <Card title="Referência Web" href="/pt-br/docs/sdks/resources/references/web" icon="book">
+    Todos os parâmetros, callbacks e métodos de ciclo de vida do Web SDK.
+  </Card>
+</CardGroup>

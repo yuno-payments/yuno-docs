@@ -1,0 +1,68 @@
+---
+title: Cadastro no React Native
+sidebarTitle: Cadastro
+description: "Salve os meios de pagamento do cliente para uso futuro com o SDK do React Native."
+---
+
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+
+A Yuno permite salvar meios de pagamento (cadastro) durante um fluxo de pagamento ou como uma etapa independente.
+
+## Salvar durante o pagamento {#save-during-payment}
+
+Para salvar um cartão durante um fluxo de pagamento comum, inclua a flag `vault_on_success` ao criar o pagamento no seu backend.
+
+```typescript
+// When creating payment on backend, include vault_on_success flag
+async function createPayment(token: string, checkoutSession: string) {
+  await fetch('/api/payment/create', {
+    method: 'POST',
+    body: JSON.stringify({
+      one_time_token: token,
+      checkout_session: checkoutSession,
+      vault_on_success: true, // Save after successful payment
+    }),
+  });
+}
+```
+
+## Cadastro separado {#separate-enrollment}
+
+Use o fluxo de cadastro para salvar um meio de pagamento sem processar um pagamento.
+
+```typescript
+// 1. Create customer session on backend
+const customerSession = await createCustomerSession('cus_123');
+
+// 2. Set up listener
+const enrollmentSubscription = YunoSdk.onEnrollmentStatus((state) => {
+  if (state.status === 'SUCCEEDED') {
+    console.log('Card saved successfully');
+  }
+});
+
+// 3. Start enrollment flow
+await YunoSdk.enrollmentPayment({
+  customerSession: customerSession.id,
+  countryCode: 'US',
+  showPaymentStatus: true,
+});
+
+// 4. Clean up
+enrollmentSubscription.remove();
+```
+
+## Listeners {#listeners}
+
+Use `onEnrollmentStatus` para acompanhar o andamento do fluxo de cadastro.
+
+| Status | Descrição |
+| ------ | ----------- |
+| `SUCCEEDED` | O meio de pagamento foi salvo com sucesso. |
+| `FAILED` | O cadastro falhou. |
+| `CANCELED` | O usuário fechou o fluxo de cadastro. |

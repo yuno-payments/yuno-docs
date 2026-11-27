@@ -1,0 +1,385 @@
+---
+title: Lite SDK (Pagamento Web)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Lite SDK (Pagamento Web)
+  description: >-
+    Guia passo a passo para integrar o Lite SDK (Pagamento Web) da Yuno ao
+    seu aplicativo web, com mais controle sobre a exibição dos meios de pagamento.
+  robots: index
+description: "Integre o Lite SDK na Web para exibir meios de pagamento com controle total do checkout"
+---
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Siga este guia passo a passo para implementar e habilitar a funcionalidade de pagamento do Lite Web SDK da Yuno no seu app.
+
+## Passo 1: Inclua a biblioteca no seu projeto {#step-1-include-the-library-in-your-project}
+
+Equivalente no novo SDK para os passos 1 e 2: [Instalar](/pt-br/docs/yuno-sdk/get-started#install).
+
+O guia de integração oferece [três métodos flexíveis](/pt-br/docs/sdks/overview/quickstart):
+
+1. Inclusão direta do script no HTML
+2. Injeção dinâmica via JavaScript
+3. Instalação do módulo NPM
+
+Escolha o método de integração que melhor se adapta ao seu fluxo de desenvolvimento e aos seus requisitos técnicos. Depois de concluir a integração do SDK, você pode seguir com os passos abaixo para implementar a funcionalidade Lite.
+
+<Note>
+**Biblioteca TypeScript**
+
+Se você usa TypeScript, a Yuno oferece uma [biblioteca](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) que dá acesso a todos os métodos disponíveis no Yuno Web SDK.
+</Note>
+
+## Passo 2: Inicialize o SDK com a chave pública {#step-2-initialize-sdk-with-the-public-key}
+
+Inicialize o Yuno SDK na sua aplicação JavaScript informando uma `PUBLIC_API_KEY` válida:
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+<Note>
+**Credenciais**
+
+Consulte a página de credenciais para mais informações: [/reference/getting-started/authentication](/reference/getting-started/authentication)
+</Note>
+
+## Passo 3: Crie uma sessão de checkout {#step-3-create-a-checkout-session}
+
+Equivalente no novo SDK: [Crie a sessão de checkout](/pt-br/docs/yuno-sdk/get-started#create-the-checkout-session-backend).
+
+Para iniciar o fluxo de pagamento, crie uma nova `checkout_session` usando o endpoint [Criar sessão de checkout](/reference/checkout-sessions/create-checkout-session).
+
+* Primeiro, [crie um cliente](/reference/customers/create-customer) ou recupere o ID de um cliente existente
+* Inclua-o ao criar a `checkout_session`
+
+<Note>
+**Controle a autorização e a captura**
+
+Para controlar a autorização e a captura com cartões, envie `payment_method.detail.card.capture` na requisição [Criar pagamento](/reference/payments/create-payment) que o seu backend envia a partir de `createPayment`: defina `false` para apenas autorizar e `true` para capturar imediatamente. A Yuno lê esse campo da requisição de pagamento. Consulte [Fluxo de cancelamento e captura](/pt-br/docs/payment-features/Cancel-and-capture-flow).
+</Note>
+
+### Parâmetros principais {#key-parameters}
+
+| Parâmetro            | Obrigatório | Descrição                                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Sim      | O objeto principal do valor da transação, que contém `currency` (código ISO 4217) e `value` (valor numérico nessa moeda).                                                                                                                                                                                         |
+| `alternative_amount` | Não       | Uma representação do valor da transação em uma moeda alternativa, com a mesma estrutura de `amount` (`currency` e `value`). Útil em cenários com várias moedas. Por exemplo, você pode exibir os preços aos clientes na moeda de preferência deles (por exemplo, USD) enquanto processa o pagamento na moeda local (por exemplo, COP). |
+
+<Note>
+**Evento `onPaymentMethodSelect`**
+
+Para todos os APMs, incluindo Google Pay, Apple Pay e PayPal, `onPaymentMethodSelected` é acionado assim que o cliente escolhe o meio de pagamento (antes de o fluxo de pagamento começar). Defina `onPaymentMethodSelected` em `await yuno.startCheckout()` antes de `await yuno.mountCheckoutLite()`.
+</Note>
+
+## Passo 4: Inicie o processo de checkout {#step-4-start-the-checkout-process}
+
+Equivalente no novo SDK para os passos 4 a 6: [Migração do modo Lite](/pt-br/docs/yuno-sdk/migration/web/lite).
+
+Use a configuração abaixo para oferecer uma experiência de pagamento leve e fácil de usar para os seus clientes:
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  elementSelector: "#root",
+  countryCode: "US",
+  language: "en-US",
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+  onLoading: (args) => console.log(args),
+  renderMode: {
+    type: "modal",
+    elementSelector: {
+      apmForm: "#form-element",
+      actionForm: "#action-form-element",
+    },
+  },
+  card: {
+    type: "extends",
+    styles: "",
+    cardSaveEnable: false,
+    texts: {},
+  },
+  texts: {},
+  async createPayment(oneTimeToken, tokenWithInformation) {
+    // Read ACH bank name if needed: const bankName = tokenWithInformation.bank_transfer?.bank_name;
+    await createPayment({ 
+      oneTimeToken, 
+      checkoutSession,
+      vault_on_success: true 
+    });
+    await yuno.continuePayment({ showPaymentStatus: true });
+  },
+  onPaymentMethodSelected(data) {
+    console.log("Payment method selected:", data);
+  },
+  async paymentResult(data) {
+    console.log("Payment result:", data);
+    await yuno.hideLoader();
+  },
+  async error(error, data) {
+    console.error("An error occurred:", error);
+    await yuno.hideLoader();
+  },
+});
+```
+
+Ao usar `startCheckout`, especifique os callbacks que tratam os pagamentos. Você também pode personalizar a interface do checkout usando os objetos `texts`.
+
+### Parâmetros {#parameters}
+
+Configure o checkout lite com as seguintes opções:
+
+| Parâmetro                   | Descrição                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`           | Refere-se à [sessão de checkout](/reference/checkout-sessions/create-checkout-session) do pagamento atual. Exemplo: `438413b7-4921-41e4-b8f3-28a5a0141638`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `elementSelector`           | O elemento HTML onde o checkout será renderizado.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `countryCode`               | Este parâmetro especifica o país para o qual o processo de pagamento está sendo configurado. Use um valor `ENUM` que represente o código do país desejado. A lista completa de países compatíveis e seus códigos está na página [Cobertura por país](/pt-br/docs/sdks/resources/country-coverage).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `language`                  | Idioma dos formulários de pagamento. Use qualquer código listado em [Idiomas compatíveis](/pt-br/docs/sdks/resources/languages-supported). Exemplo: `en-US`. Por padrão, usa o idioma do navegador quando disponível.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `showLoading`               | Controla a visibilidade da página de carregamento/spinner da Yuno durante o processo de pagamento. Padrão: `true`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `onLoading`                 | Obrigatório para receber notificações sobre chamadas ao servidor ou eventos de carregamento durante o processo de pagamento.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `issuersFormEnable`         | Habilita o formulário do emissor (por exemplo, uma lista de bancos). Padrão: `true`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `showPaymentStatus`         | Exibe a página de status do pagamento da Yuno, útil ao dar continuidade a um pagamento. Padrão: `true`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `showPayButton`             | Controla a visibilidade do botão de pagar no formulário do cliente ou do cartão. Padrão: `true`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `renderMode`                | Especifica como e onde os formulários serão renderizados. As opções disponíveis são:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+|                             | ▪️ `type: modal` (padrão)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|                             | ▪️ `type: element` - Se você selecionar `element`, deve informar o `elementSelector` para especificar onde o formulário deve ser renderizado.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `card`                      | Define a configuração do formulário de cartão. Contém ajustes como estilos personalizados e a opção de salvar o cartão.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `texts`                     | Permite definir textos personalizados para os botões dos formulários de pagamento com cartão e sem cartão.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `createPayment(oneTimeToken, tokenWithInformation)` | Função de callback para criar um pagamento. Recebe `oneTimeToken` e `tokenWithInformation` (de acordo com o [schema do token de checkout do SDK](/reference/checkout-sessions/create-one-time-use-token-sdk-checkout), por exemplo, `tokenWithInformation.bank_transfer?.bank_name` para ACH). Envie o token de uso único ao seu backend para criar o pagamento via API; depois, chame `await yuno.continuePayment()` para retomar o fluxo. Chame `continuePayment` também para pagamentos com cartão que retornarem `DECLINED` ou `ERROR`, para executar a nova tentativa de pagamento; caso contrário, chame `unmountSdk` para fazer a limpeza. Consulte [Nova tentativa de pagamento](/pt-br/docs/sdks/resources/references/web#payment-retry). |
+| `onPaymentMethodSelected` | Callback invocado quando um meio de pagamento é selecionado, com o tipo e o nome do meio.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `paymentResult`         | Callback chamado depois que o pagamento é concluído. Recebe o [status do pagamento](/reference/payments/status-and-response-codes/payment) (por exemplo, `SUCCEEDED`, `DECLINED`, `PENDING`, `ERROR`) e um `subStatus` opcional que o detalha. Consulte [Etapas canceladas pelo comprador](/pt-br/docs/sdks/resources/references/web#shopper-cancelled-steps).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `error`                 | Callback invocado quando ocorre um erro no processo de pagamento. Recebe o tipo do erro e dados adicionais opcionais.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `onChange`                        | Informa o estado do formulário de pagamento. Recebe `{ form: { isValid, paymentMethodType, values, amount, taxQuoteStatus } }`. Use com `showPayButton: false` para controlar o seu próprio botão de pagar. `isValid` está disponível desde a v1.10.11. Em uma sessão de checkout com `tax_collection` (v1.11.56 e posteriores): `values.billingAddress` contém os campos de cobrança, `values.taxInformation` os dados da empresa, `amount` o preço com impostos da última resposta de `onBillingAddressChanged`, e `taxQuoteStatus` é `pending`, `ready` ou `error`. Mantenha o seu botão de pagar desabilitado enquanto ele não for `ready`. |
+| `onBillingAddressChanged`         | Obrigatório quando a sessão de checkout tem `tax_collection` (v1.11.56 e posteriores). O SDK o chama sempre que o país de cobrança, o código postal ou os dados da empresa do meio de pagamento selecionado mudam, e aguarda até 10 segundos pelo preço com impostos. Consulte [Checkouts com impostos](#checkouts-with-taxes). |
+
+### Checkouts com impostos {#checkouts-with-taxes}
+
+Quando a sessão de checkout tem `tax_collection` ([Preço local e impostos](/pt-br/docs/payment-features/subscriptions/local-price-and-taxes)), o formulário pede o país de cobrança, o código postal nos Estados Unidos e no Canadá, e um bloco opcional de empresa (razão social, tipo de identificação fiscal e identificação fiscal). Sempre que um deles muda, o SDK chama `onBillingAddressChanged`. Cote o imposto a partir do seu backend com [Criar cotação de imposto](/reference/taxes/create-tax-quote) e responda com o total. Sem `onBillingAddressChanged`, o SDK não é montado e chama `error` com o código `TAX_COLLECTION_CALLBACK_REQUIRED`.
+
+```javascript
+yuno.startCheckout({
+  checkoutSession: '<checkout_session>',
+  // ...
+  onBillingAddressChanged: async ({ paymentMethodType, billingAddress, taxInformation }) => {
+    // billingAddress: { country: 'US', zip_code: '10001' }
+    // taxInformation: { business: true, name: 'ACME Inc', type: 'us_ein', id: '12-3456789' } or undefined
+    const quote = await fetch('/my-backend/tax-quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ billingAddress, taxInformation }),
+    }).then((response) => response.json())
+
+    if (quote.code) {
+      // Your backend maps the tax quote error to the field the buyer has to fix
+      const fields = { TAX_LOCATION_INVALID: 'zip_code', TAX_ID_INVALID: 'tax_id' }
+      const error = new Error(quote.messages?.[0] ?? 'Tax quote failed')
+      error.code = quote.code
+      error.field = fields[quote.code] // country, zip_code, business_name, tax_id_type or tax_id
+      error.messageId = 'invalid' // invalid, unsupported or country_mismatch
+      throw error
+    }
+    return { amount: { currency: quote.currency, value: quote.total } }
+  },
+})
+```
+
+- Retorne uma promise que resolva `{ amount: { currency, value } }` com um valor igual ou maior que zero. O SDK o exibe como total e mantém o botão de pagar desabilitado até que ele chegue: enquanto isso, o botão mostra "Adding tax…".
+- Se a promise for rejeitada ou levar mais de 10 segundos, o botão mostra "Try again to continue" com uma opção de nova tentativa, e `error` é chamado com o código `TAX_QUOTE_FAILED`. Uma rejeição com `field` e `messageId` marca esse campo com a mensagem correspondente.
+- Guarde o `tax_quote_id` da última cotação: o pagamento que você cria em `createPayment` o leva na linha de imposto (`source: YUNO_TAX_QUOTE`) e cobra o total cotado.
+- Com `tax_collection`, Apple Pay é o único botão expresso. Google Pay, PayPal, Revolut Pay e Samsung Pay aparecem como linhas da lista, com o próprio bloco de cobrança, e o botão deles fica desabilitado até que a cobrança seja válida e o preço tenha sido respondido.
+
+<Note>
+**Promoções**
+
+Quando [Promoções](/docs/payment-features/promotions) está habilitado para a sua organização, o checkout Lite pede uma cotação de promoção enquanto o comprador digita o cartão, e `createPayment` a recebe em `tokenWithInformation.quote`. As carteiras digitais não são um destino compatível nesta versão: `mountExternalButtons` não pede cotação. Consulte [Promoções](/pt-br/docs/sdks/resources/references/web#promotions).
+</Note>
+
+<Note>
+**Transações iniciadas pelo cliente e pelo lojista**
+
+Os pagamentos podem ser iniciados pelo cliente (CIT) ou pelo lojista (MIT). Você encontra mais informações sobre as características deles em [Credenciais armazenadas](/pt-br/docs/payment-features/stored-credentials).
+</Note>
+
+## Passo 5: Monte o SDK {#step-5-mount-the-sdk}
+
+Para apresentar o processo de checkout com base no meio de pagamento selecionado, use a função `await yuno.mountCheckoutLite()`. Este passo garante que o SDK seja montado corretamente no elemento HTML escolhido.
+
+```javascript
+await yuno.mountCheckoutLite({
+  paymentMethodType: PAYMENT_METHOD_TYPE,
+  vaultedToken: VAULTED_TOKEN,
+});
+```
+
+Consulte a página [Tipo de pagamento](/reference/payment-type-list) para ver a lista completa de tipos de meio de pagamento que você pode usar ao montar o SDK.
+
+O `vaultedToken` é opcional. Ele representa um meio de pagamento cadastrado anteriormente. Se você informar o `vaultedToken`, o usuário não precisará informar os dados de pagamento novamente, já que eles foram informados em uma transação anterior.
+
+Depois de montar, você deve iniciar o fluxo de checkout chamando `yuno.startPayment()`. Se você pular essa chamada, o formulário de pagamento não será aberto. Observe que `yuno.startPayment()` também retorna uma promise e deve ser aguardado com await.
+
+## Passo 6: Inicie o fluxo de pagamento (obrigatório) {#step-6-start-the-payment-flow-required}
+
+Chame `await yuno.startPayment()` logo depois de `await yuno.mountCheckoutLite()` para abrir a interface do meio de pagamento selecionado:
+
+```javascript
+await yuno.mountCheckoutLite({
+  paymentMethodType: PAYMENT_METHOD_TYPE,
+  vaultedToken: VAULTED_TOKEN,
+});
+
+await yuno.startPayment();
+```
+
+Como alternativa, você pode disparar o início a partir de uma ação do usuário, como o clique em um botão:
+
+```javascript
+const payButton = document.querySelector('#button-pay');
+payButton.addEventListener('click', async () => {
+  await yuno.startPayment();
+});
+```
+
+<Note>
+**App de demonstração**
+
+Além dos exemplos de código fornecidos, você pode acessar o [App de demonstração](https://github.com/yuno-payments/yuno-sdk-web) para ver uma implementação completa dos SDKs da Yuno (clone a partir do repositório).
+</Note>
+
+## Verifique se um meio de pagamento será renderizado antes de listá-lo {#check-that-a-payment-method-will-render-before-listing-it}
+
+Se você desenha a sua própria lista de meios de pagamento, pergunte ao SDK quais meios serão de fato renderizados para este comprador e esta sessão de checkout antes de exibi-los. Chame `isPaymentMethodAvailable` depois de `startCheckout` e oculte todo meio que resolver para `false`. Caso contrário, o comprador pode escolher um meio que não está habilitado para a sessão, ou uma carteira digital que o dispositivo não pode usar, e ver uma caixa vazia onde deveriam estar o formulário ou o botão.
+
+```javascript
+await yuno.startCheckout({ checkoutSession, elementSelector: '#root', countryCode: 'US' });
+
+const methods = ['CARD', 'GOOGLE_PAY', 'APPLE_PAY', 'PAYPAL'];
+const answers = await Promise.all(
+  methods.map((paymentMethodType) => yuno.isPaymentMethodAvailable({ paymentMethodType }))
+);
+const availableMethods = methods.filter((_, index) => answers[index]);
+
+renderMyPaymentList(availableMethods);
+```
+
+A resposta é a mesma decisão que o SDK toma ao renderizar esse meio, e o método nunca é rejeitado. Consulte [`isPaymentMethodAvailable`](/pt-br/docs/sdks/resources/references/web#ispaymentmethodavailable) para ver o que é verificado em cada meio.
+
+## Monte botões externos {#mount-external-buttons}
+
+Você pode usar o método `mountExternalButtons` para renderizar os botões do Google Pay e do Apple Pay em locais personalizados da sua interface. Isso dá a você controle sobre onde esses botões são exibidos. Chame-o depois de `startCheckout`.
+
+```javascript
+await yuno.startCheckout({ checkoutSession, elementSelector: '#root', countryCode: 'US' });
+
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay',
+  },
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay',
+  },
+]);
+```
+
+<Note>
+Um botão de carteira digital só é renderizado quando o meio de pagamento está habilitado para a sessão de checkout e passa na verificação de dispositivo e navegador do SDK, por exemplo o `isReadyToPay()` do Google Pay para a configuração da sessão. Por isso, o mesmo código pode exibir um botão de carteira digital em um dispositivo ou navegador e não em outro. No Web SDK 1.11.43 e posteriores, ou 1.10.35 e posteriores, chame [`isPaymentMethodAvailable`](/pt-br/docs/sdks/resources/references/web#ispaymentmethodavailable) para cada carteira digital antes de montá-la, e exiba apenas os contêineres das carteiras que resolverem para `true`.
+</Note>
+
+### Parâmetros dos botões externos {#external-button-parameters}
+
+| Parâmetro           | Descrição                                                                                                    |
+| :------------------ | :------------------------------------------------------------------------------------------------------------- |
+| `paymentMethodType` | O tipo de meio de pagamento. Deve ser `'APPLE_PAY'` ou `'GOOGLE_PAY'`.                                       |
+| `elementSelector`   | O seletor CSS do elemento HTML onde o botão deve ser renderizado (por exemplo, `'#apple-pay'`, `'.button'`). |
+
+### Desmontagem dos botões {#unmounting-buttons}
+
+Você pode desmontar um único botão externo pelo tipo de meio de pagamento:
+
+```javascript
+await yuno.unmountExternalButton('APPLE_PAY');
+```
+
+Ou desmontar todos os botões externos de uma vez:
+
+```javascript
+await yuno.unmountAllExternalButtons();
+```
+
+### Desmontagem do SDK {#unmounting-the-sdk}
+
+Para fazer uma limpeza explícita do Yuno SDK, por exemplo quando um usuário cancela o fluxo ou você precisa remover o SDK do DOM, use o método `unmountSdk()`:
+
+```javascript
+await yuno.unmountSdk();
+```
+
+## Fluxo REDIRECT do PayPal {#paypal-redirect-workflow}
+
+O Yuno SDK oferece suporte a um fluxo `REDIRECT` para o PayPal. Esse fluxo é útil quando o PayPal não foi inicializado no início do SDK ou quando você usa um `orderId` do PayPal já existente.
+
+- **PaypalButtonModal**: se o PayPal não estiver inicializado, o SDK pode renderizar o botão do PayPal dentro de um modal.
+- **Fluxo**: o fluxo `REDIRECT` pula a detecção de fraude e a criação do OTT, usando o `orderId` fornecido.
+
+```javascript
+// Example PayPal configuration
+await yuno.startCheckout({
+  // ... other config
+  paypal: {
+    workflow: 'REDIRECT',
+    orderId: 'PAYPAL_ORDER_ID',
+  }
+});
+```
+
+## Cadastro de meios de pagamento no fluxo lite {#enrolling-payment-methods-in-lite-flow}
+
+Equivalente no novo SDK: [Cadastro](/pt-br/docs/yuno-sdk/features/enrollment).
+
+Você pode cadastrar meios de pagamento (armazenar cartões para uso futuro) diretamente durante o fluxo de pagamento lite definindo `payment_method.vault_on_success = true` na requisição [Criar pagamento](/reference/payments/create-payment) que o seu backend envia a partir de `createPayment`, aninhado em `payment_method`, como mostrado abaixo. No fluxo Lite, é o seu servidor que cria o pagamento, então é aqui que a flag deve ficar; defini-la na sessão de checkout é o padrão do Seamless, em que o SDK cria o pagamento.
+
+Quando `vault_on_success` está definido como `true`:
+
+* O meio de pagamento será cadastrado automaticamente se o status do pagamento for `SUCCEEDED`
+* Se o pagamento não for bem-sucedido, nenhum armazenamento ocorrerá
+* A resposta do pagamento incluirá um `vaulted_token` que você pode usar em transações futuras
+
+**Exemplo** (trecho parcial, apenas com os campos relevantes):
+
+```json
+{
+    "account_id": "...",
+    ...
+    "payment_method": {
+        "vault_on_success": true
+    }
+}
+```
+
+<Note>
+**Requisitos de armazenamento**
+
+Para gerar e receber um `vaulted_token` quando `vault_on_success = true`, o pagamento deve referenciar um cliente existente da Yuno por meio de `customer_payer.id` na sessão de checkout. Criar ou enviar os dados do cliente diretamente na requisição de pagamento não cria o cliente no sistema da Yuno, então nenhum armazenamento ocorrerá.
+</Note>
+
+Para mais informações sobre o cadastro de meios de pagamento, consulte [Cadastrar meios de pagamento](/pt-br/docs/payment-features/enrollment/enroll-payment-methods).
+
+## Tratamento de erros {#error-handling}
+
+Equivalente no novo SDK: o controller [onStatus](/pt-br/docs/yuno-sdk/controllers/on-status).
+
+Trate os erros retornados pelo SDK no seu app, como pagamentos com falha ou erros de validação. Para status HTTP e códigos de resposta, consulte [Status e códigos de resposta](/reference/getting-started/response-codes) na referência da API.
+
+## Fique por dentro {#stay-updated}
+
+Acesse o [changelog](/changelog/web) para ver as atualizações mais recentes e o histórico de versões do SDK.

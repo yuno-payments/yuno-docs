@@ -1,0 +1,132 @@
+---
+title: White Label
+description: Hospede e sirva o Yuno Web SDK a partir da sua própria origem sem expor a marca Yuno.
+hidden: false
+metadata:
+  robots: noindex
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+O suporte a white-label permite que um parceiro sirva o Yuno Web SDK a partir da própria origem sem que a string `Yuno` vaze para a página do lojista: nem no DOM, nem em globais, eventos disparados ou tráfego de rede de saída.
+
+<Tip>
+  Lançado no Web SDK 1.9.1. A global legada `window.Yuno` e o evento `yuno-sdk-ready` continuam como aliases de retrocompatibilidade, então as integrações existentes continuam funcionando sem alterações.
+</Tip>
+
+## O que o SDK expõe {#what-the-sdk-exposes}
+
+| Aspecto | Principal (white-label) | Alias legado (ainda funciona) |
+| :--- | :--- | :--- |
+| Objeto global | `window.SdkPayments` | `window.Yuno` |
+| Evento de pronto | `'sdk-payments-ready'` | `'yuno-sdk-ready'` |
+| Prefixo de classe CSS | `sdk-payments-*` | - |
+| `id` do DOM, `data-testid`, id do link da fonte | `sdk-payments-*` | - |
+| Família de fonte | `Sdk-Payments-Inter` | `Yuno-Inter` (mantida como fallback) |
+
+Tanto a global nova quanto a legada referenciam o mesmo objeto, e os dois eventos são disparados no carregamento do bundle, então você pode misturá-los durante uma migração sem quebrar nenhuma das formas.
+
+## Substituições de URL em tempo de execução {#runtime-url-overrides}
+
+Parceiros que hospedam o SDK na própria origem apontam o SDK para endpoints personalizados no momento do `initialize()`, em vez de depender dos padrões definidos em tempo de compilação.
+
+```javascript
+SdkPayments.initialize(publicApiKey, applicationSession, {
+  // Overrides the API base URL the SDK calls (REST + WebSocket).
+  // Also forwarded into the card-form and secure-fields iframes so
+  // their internal calls land on the partner origin too.
+  apiUrl: 'https://payments.example.com',
+
+  // Overrides the host that serves SDK static assets — 3DS pages,
+  // card-form bundle, fonts, and (in recent SDK builds) the icons,
+  // brand logos, and country flags that the SDK otherwise loads straight
+  // from icons.prod.y.uno / sdk.prod.y.uno.
+  assetUrl: 'https://payments.example.com',
+})
+```
+
+O que cada substituição afeta de ponta a ponta:
+
+| Opção | Afeta |
+| :--- | :--- |
+| `apiUrl` | Chamadas REST do SDK, upgrades de WebSocket, forwarder de monitoramento/Datadog, mediador do secure-fields, base da API do iframe do card-form. |
+| `assetUrl` | Páginas de desafio / redirecionamento / session-id do 3DS, URL do micro-app do card-form, CSS de fontes, `__webpack_public_path__` em tempo de execução para chunks com code splitting, e os assets fixos no código de ícones / logos de marcas / bandeiras de países em `icons.prod.y.uno` / `sdk.prod.y.uno` (com troca de host, caminho preservado; builds recentes do SDK). |
+
+<Note>
+  Para uma implantação white-label típica, passe o mesmo valor para as duas opções. O SDK usa o valor literalmente: ele não acrescenta mais um segmento `/v<x.y>` quando `assetUrl` já termina com um, e não adiciona um prefixo regional às substituições.
+
+  A troca de host da CDN estática (ícones, logos de marcas, bandeiras) direciona para `assetUrl` quando definido, caso contrário recorre a `apiUrl`, então passar o mesmo valor para os dois envia todas as requisições por uma única origem. Apenas URLs de assets `*.y.uno` são reescritas; ícones fornecidos pelo lojista em CDNs externas não são alterados.
+</Note>
+
+## Callbacks neutros do lojista {#neutral-merchant-callbacks}
+
+Os nomes de callbacks ganharam aliases neutros para white-label. Os nomes legados `yuno*` ainda são aceitos e encaminhados internamente, mas estão obsoletos e serão removidos em uma futura versão major.
+
+| Callback legado | Novo nome neutro |
+| :--- | :--- |
+| `yunoCreatePayment` | `createPayment` |
+| `yunoPaymentMethodSelected` | `paymentMethodSelected` |
+| `yunoPaymentResult` | `paymentResult` |
+| `yunoError` | `error` |
+
+## Exemplo de integração {#integration-example}
+
+```html
+<!-- Loaded from the partner origin, not sdk-web.y.uno -->
+<script src="https://payments.example.com/v1.9/main.js"></script>
+<script>
+  async function startYuno() {
+    const sdk = SdkPayments.initialize(PUBLIC_API_KEY, APPLICATION_SESSION, {
+      apiUrl: 'https://payments.example.com',
+      assetUrl: 'https://payments.example.com',
+    })
+
+    await sdk.startCheckout({
+      checkoutSession: CHECKOUT_SESSION,
+      createPayment:  (ott, info) => { /* ... */ },
+      paymentResult:  (status)    => { /* ... */ },
+      error:          (msg, data) => { /* ... */ },
+    })
+
+    sdk.mountCheckout()
+  }
+
+  if (window.SdkPayments) startYuno()
+  else window.addEventListener('sdk-payments-ready', startYuno)
+</script>
+```
+
+## Verificando uma configuração white-label {#verifying-a-white-label-setup}
+
+Depois de carregar o SDK a partir de uma origem que não é da Yuno, nada do que segue deve aparecer na página do lojista:
+
+- Elementos com `class="yuno-*"` ou `id="yuno-*"`.
+- Uma família de fonte resolvida como `Yuno-Inter`.
+- Requisições de rede para hosts `*.y.uno`, incluindo as CDNs estáticas `icons.prod.y.uno` e `sdk.prod.y.uno` para ícones, logos de marcas e bandeiras. Elas só têm o host trocado para a sua origem em builds recentes do SDK; builds mais antigos ainda as buscam diretamente na CDN.
+- A partir do SDK 1.10.9, um `404` para `/sdk-static-bundles-ms/…` na sua origem (a folha de estilo da fonte). Seu proxy precisa encaminhar `/sdk-static-bundles-ms/*` para `prod.y.uno`. Veja [Rotas que um proxy de parceiro precisa encaminhar](/pt-br/docs/sdks/customization/web/white-label-proxy-server#routes-a-partner-proxy-must-forward).
+
+E estes devem estar presentes:
+
+- `window.SdkPayments` resolve para a factory de instâncias do SDK.
+- `'sdk-payments-ready'` dispara uma vez no carregamento do bundle.
+- Os nós do DOM usam `class="sdk-payments-*"` / `id="sdk-payments-*"`.
+
+## Ambiente de teste local {#local-test-harness}
+
+Um servidor proxy descartável fica no repositório [`yuno-payments/yuno-sdk-web`](https://github.com/yuno-payments/yuno-sdk-web/tree/main/white-label-proxy-server) em `white-label-proxy-server/`. Ele escuta em `http://localhost:9090`, serve uma landing page a partir de uma origem que não é da Yuno e faz proxy transparente do tráfego de assets / API / WebSocket do SDK para o upstream. Aponte o `<script src>` de uma página de teste do parceiro para `http://localhost:9090/v1.7/main.js` para exercitar os caminhos de código white-label de ponta a ponta.
+
+<Note>
+  A versão `v1.7` acima e a versão `v1.9` no [Exemplo de integração](#integration-example) são ambas intencionais, não um erro de digitação: `v1.9` mostra uma versão real de produção do SDK, enquanto `v1.7` é apenas a versão de fallback fixa no código do próprio ambiente de teste local (veja [Normalização de versão](/pt-br/docs/sdks/customization/web/white-label-proxy-server#version-normalization)).
+</Note>
+
+```shell
+cd yuno-sdk-web/white-label-proxy-server
+cp .env.example .env   # tweak SDK_UPSTREAM / BACKEND_URL if needed
+npm install
+npm start              # http://localhost:9090
+```
+
+O mesmo ambiente de teste também fica na frente do **checkout hospedado do link de pagamento** (normalmente `checkout.<env>.y.uno`), para que essa superfície também possa receber white-label em uma origem/subcaminho do lojista. Para o fluxo voltado ao lojista (reescrever a URL de redirecionamento e acrescentar `apiUrl` / `assetUrl`), veja [White Label do link de pagamento](/pt-br/docs/sdks/customization/web/payment-link-white-label).
+
+Veja [White Label Proxy Server](/pt-br/docs/sdks/customization/web/white-label-proxy-server) para a arquitetura completa, o fluxo de [white-label do checkout hospedado](/pt-br/docs/sdks/customization/web/white-label-proxy-server#hosted-checkout-white-label-payment-link), o comportamento de fixação de versão `SDK_MAIN_JS`, a matriz de variáveis de ambiente (upstreams de prod / staging / dev) e a tabela de roteamento.

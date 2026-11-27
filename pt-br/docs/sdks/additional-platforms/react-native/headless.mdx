@@ -1,0 +1,90 @@
+---
+title: Headless no React Native
+sidebarTitle: Headless
+description: Crie uma UI totalmente personalizada para os seus pagamentos com a integração Headless.
+---
+
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+
+Crie formulários de pagamento totalmente personalizados quando você precisar de controle completo sobre cada elemento da UI, de uma experiência de checkout altamente sob medida, ou quando tiver os recursos de desenvolvimento para construir a sua própria UI.
+
+## Fluxo de integração {#integration-workflow}
+
+```typescript
+import { YunoSdk } from '@yuno-payments/yuno-sdk-react-native';
+
+const CustomPaymentForm = () => {
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  
+  const processPayment = async () => {
+    try {
+      // 1. Use headless API to generate a one-time token
+      const result = await YunoSdk.generateToken({
+        checkoutSession: 'session_id',
+        paymentMethod: {
+          type: 'CARD',
+          card: {
+            number: cardNumber,
+            expirationMonth: parseInt(expiry.split('/')[0]),
+            expirationYear: parseInt(expiry.split('/')[1]),
+            securityCode: cvv,
+            holderName: 'John Doe',
+            type: 'CREDIT',
+          },
+        },
+      }, 'session_id', 'US');
+      
+      
+      // 2. Create payment with token on your backend
+      await createPayment(result.token);
+      
+      // 3. Handle 3DS if needed - use getThreeDSecureChallenge
+      const challengeResult = await YunoSdk.getThreeDSecureChallenge('session_id', 'US');
+      if (challengeResult.type === 'URL') {
+        // Open 3DS URL in WebView, then continue payment
+        await YunoSdk.continuePayment('session_id', 'US', true);
+      }
+      
+    } catch (error) {
+      console.error('Payment error:', error);
+    }
+  };
+  
+  return (
+    <View>
+      <TextInput
+        placeholder="Card Number"
+        value={cardNumber}
+        onChangeText={setCardNumber}
+      />
+      <TextInput
+        placeholder="MM/YY"
+        value={expiry}
+        onChangeText={setExpiry}
+      />
+      <TextInput
+        placeholder="CVV"
+        value={cvv}
+        onChangeText={setCvv}
+        secureTextEntry
+      />
+      <Button title="Pay" onPress={processPayment} />
+    </View>
+  );
+};
+```
+
+## Tratamento do 3DS {#handling-3ds}
+
+Em integrações headless, você precisa disparar manualmente o desafio 3DS se o pagamento exigir autenticação.
+
+1.  Depois de criar o pagamento no seu backend, se o status for `WAITING_FOR_ACTION`, chame `YunoSdk.getThreeDSecureChallenge`.
+2.  Se uma URL for retornada, exiba-a ao usuário.
+3.  Quando o usuário concluir o desafio, chame `YunoSdk.continuePayment` para finalizar a transação.

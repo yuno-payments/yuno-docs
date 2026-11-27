@@ -1,0 +1,146 @@
+---
+title: "SDKs nativos de 3DS (Android)"
+sidebarTitle: "Netcetera 3DS (Android)"
+description: "Execute desafios 3D Secure de forma nativa no seu app Android com o SDK de 3DS da Netcetera."
+robots: index
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+O SDK Android da Yuno permite executar desafios 3D Secure (3DS) de forma nativa dentro do seu app usando o **SDK de 3DS da Netcetera**. O 3DS nativo oferece uma UX mais fluida do que o fallback baseado em WebView (sem saltar para um navegador dentro do app) e pode ser exigido por alguns adquirentes para autenticação sem fricção.
+
+<Note>
+  O 3DS nativo via Netcetera se aplica aos fluxos de **pagamento** e de **cadastro** (cadastro desde o SDK Android da Yuno 2.22.0).
+</Note>
+
+<Note>
+  O 3DS nativo é **opcional**: você só precisa instalar o módulo do provedor se a sua integração executa desafios 3DS dentro do app. Se você não vai habilitar o 3DS, pode pular este guia.
+</Note>
+
+<Note>
+  Este é um módulo separado (cerca de 3-4 MB), então você só o adiciona se precisar de 3DS nativo. Se o seu app já personaliza os estilos do Yuno SDK, esses estilos são aplicados automaticamente à tela do desafio, sem necessidade de configuração adicional de UI.
+</Note>
+
+Este guia cobre o que é específico da Netcetera. A instalação e a ativação seguem as mesmas regras de todos os outros módulos, veja [Módulos nativos externos (Android)](/pt-br/docs/sdks/external-native-modules/android-overview).
+
+## Requisitos {#requirements}
+
+- Android **6.0 (API level 23)** ou superior, o mínimo do SDK Android da Yuno desde a versão 2.24.0.
+- **Yuno Payments SDK 2.16.0 ou superior** já instalado no seu app (`com.yuno.payments:android-sdk`).
+- O módulo do provedor Netcetera 3DS (`com.yuno.payments:yuno-sdk-3ds-netcetera`), instalado via Gradle (veja abaixo).
+
+## Compatibilidade {#compatibility}
+
+Cada versão deste módulo é compilada e testada com uma versão mínima do Yuno Payments SDK. O POM do módulo não fixa uma versão específica do core. Versões abaixo do mínimo podem não expor as APIs de que este módulo depende e podem falhar em tempo de execução com `NoSuchMethodError` / `NoSuchFieldError`.
+
+| Yuno 3DS Netcetera | Requer o Yuno Payments SDK |
+|---|---|
+| `1.0.1` | `≥ 2.16.0` |
+
+Ao atualizar qualquer uma das dependências, atualize as duas juntas para que a combinação continue sendo um par suportado.
+
+## Etapa 1: Declare o repositório Maven da Netcetera {#step-1-declare-the-netcetera-maven-repository}
+
+O SDK de 3DS da Netcetera fica hospedado no servidor Maven público da Netcetera. Como o Gradle não propaga repositórios transitivos pelos metadados do POM, seu app precisa declarar o repositório explicitamente para conseguir resolver a dependência do SDK da Netcetera.
+
+Adicione a entrada no arquivo de settings do seu projeto, dentro de `dependencyResolutionManagement.repositories`:
+
+<Tabs>
+  <Tab title="Groovy DSL">
+    Em `settings.gradle`:
+
+    ```groovy
+    dependencyResolutionManagement {
+        repositories {
+            google()
+            mavenCentral()
+            maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+            // Required by Yuno 3DS Netcetera module
+            maven { url "https://nexus.extranet.netcetera.biz/nexus/repository/public-repository-maven/" }
+        }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Kotlin DSL">
+    Em `settings.gradle.kts`:
+
+    ```kotlin
+    dependencyResolutionManagement {
+        repositories {
+            google()
+            mavenCentral()
+            maven { url = uri("https://yunopayments.jfrog.io/artifactory/snapshots-libs-release") }
+            // Required by Yuno 3DS Netcetera module
+            maven { url = uri("https://nexus.extranet.netcetera.biz/nexus/repository/public-repository-maven/") }
+        }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Info>
+  Você ainda pode estar usando o bloco legado `allprojects { repositories { … } }` no `build.gradle` raiz. Nesse caso, adicione a mesma linha `maven { url "…" }` da Netcetera ali.
+</Info>
+
+## Etapa 2: Adicione a dependência {#step-2-add-the-dependency}
+
+Adicione a dependência do Yuno 3DS Netcetera ao arquivo de build do módulo do seu app:
+
+<Tabs>
+  <Tab title="Groovy DSL">
+    Em `build.gradle`:
+
+    ```groovy
+    dependencies {
+        implementation "com.yuno.payments:android-sdk:2.27.0"
+        implementation "com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1"
+    }
+    ```
+  </Tab>
+
+  <Tab title="Kotlin DSL">
+    Em `build.gradle.kts`:
+
+    ```kotlin
+    dependencies {
+        implementation("com.yuno.payments:android-sdk:2.27.0")
+        implementation("com.yuno.payments:yuno-sdk-3ds-netcetera:1.0.1")
+    }
+    ```
+  </Tab>
+</Tabs>
+
+O SDK de 3DS original da Netcetera, encapsulado por `yuno-sdk-3ds-netcetera`, e a dependência obrigatória `androidx.startup` são incluídos de forma transitiva. Você não precisa declará-los.
+
+## Ativar o provedor de 3DS {#activating-the-3ds-provider}
+
+O módulo **se registra automaticamente** no Yuno Payments SDK quando o processo do seu app é iniciado (via [Jetpack App Startup](https://developer.android.com/topic/libraries/app-startup)). **Nenhum código extra é necessário**: basta inicializar o Yuno SDK como de costume:
+
+```kotlin
+import com.yuno.sdk.Yuno
+
+Yuno.initialize(
+    applicationContext = this,
+    apiKey = "YOUR_API_KEY",
+)
+```
+
+<Tip>
+  Depois de registrado, o Yuno Payments SDK encaminha automaticamente qualquer desafio 3DS durante o checkout ou o cadastro pelo provedor Netcetera.
+</Tip>
+
+### Permissões {#permissions}
+
+`android.permission.INTERNET` é declarada pelo manifest do módulo e mesclada automaticamente ao seu app. Nenhuma ação é necessária.
+
+## Certificado de sandbox {#sandbox-certificate}
+
+Ao testar no ambiente de sandbox da Yuno, o SDK da Netcetera exige que um certificado da bandeira do cartão esteja presente no seu app.
+
+<Info>
+  **Entre em contato com o seu TAM (Technical Account Manager) da Yuno para obter o certificado.** Ele não é distribuído publicamente.
+</Info>
+
+Isso só é necessário para testes em sandbox, não em produção.

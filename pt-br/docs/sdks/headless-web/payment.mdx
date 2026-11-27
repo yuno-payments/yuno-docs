@@ -1,0 +1,769 @@
+---
+title: Headless SDK (Payment Web)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Headless SDK (Payment Web)
+  description: >-
+    Guia passo a passo para integrar o Headless SDK (Payment Web) da Yuno à
+    sua aplicação web, incluindo a geração de token e o tratamento do 3DS.
+  robots: index
+description: "Crie pagamentos usando o Headless SDK na Web, gerando tokens de uso único e tratando as ações de 3DS"
+---
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+<br />
+
+O Headless SDK da Yuno permite que você crie pagamentos. Ao usar o Headless SDK, observe que você precisará solicitar e enviar via API todos os campos obrigatórios exigidos pelo provedor de pagamento. Esses campos são necessários para gerar o pagamento na API dele.
+
+O Headless SDK da Yuno permite que você crie pagamentos em dois cenários diferentes:
+
+* Criar um [token de uso único](/pt-br/docs/basic-concepts/tokens) usando as informações do cartão de crédito e, depois, criar um pagamento.
+* Criar um [token de uso único](/pt-br/docs/basic-concepts/tokens) usando um `vaulted_token` de um cartão de crédito cadastrado anteriormente e, depois, criar um pagamento.
+
+As etapas a seguir descrevem como criar um pagamento usando o Headless SDK da Yuno.
+
+## Etapa 1: Inclua a biblioteca no seu projeto {#step-1-include-the-library-in-your-project}
+
+Antes de prosseguir com a implementação do Headless SDK, consulte a [visão geral da integração do SDK](/pt-br/docs/sdks/overview/quickstart) para ver instruções detalhadas sobre como integrar corretamente o SDK ao seu projeto.
+
+O guia de integração oferece três métodos flexíveis:
+
+1. Inclusão direta do script no HTML
+2. Injeção dinâmica via JavaScript
+3. Instalação do módulo NPM
+
+Escolha o método de integração que melhor se adapta ao seu fluxo de desenvolvimento e aos seus requisitos técnicos. Depois de concluir a integração do SDK, você pode seguir as etapas abaixo para implementar a funcionalidade de checkout Headless.
+
+<Note>
+**Biblioteca TypeScript**
+
+Se você usa TypeScript, a Yuno oferece uma [biblioteca](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) que você pode usar para ver todos os métodos disponíveis no Yuno Web SDK.
+</Note>
+
+## Etapa 2: Inicialize o Headless SDK com a chave pública {#step-2-initialize-headless-sdk-with-the-public-key}
+
+No seu app JavaScript, crie uma instância da classe `Yuno` informando uma `PUBLIC_API_KEY` válida.
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+<Note>
+**Credenciais**
+
+Consulte a página de credenciais para mais informações: [/reference/getting-started/authentication](/reference/getting-started/authentication)
+</Note>
+
+## Etapa 3: Inicie o processo de checkout {#step-3-start-the-checkout-process}
+
+Em seguida, você vai iniciar o processo de checkout usando a função `apiClientPayment`, informando os parâmetros de configuração necessários.
+
+### Parâmetros {#parameters}
+
+Configure o pagamento com as seguintes opções:
+
+| Parâmetro          | Descrição                                                                                                                                                                                                                                                                                   |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `country_code`     | Este parâmetro especifica o país para o qual o processo de pagamento está sendo configurado. Use um valor `ENUM` que represente o código do país desejado. Você encontra a lista completa de países compatíveis e seus códigos na página [Cobertura por país](/pt-br/docs/sdks/resources/country-coverage). |
+| `checkout_session` | Refere-se à sessão de checkout do pagamento atual, criada com o endpoint [Create Checkout Session](/reference/checkout-sessions/create-checkout-session). Exemplo: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                         |
+
+```javascript
+const apiClientPayment = await yuno.apiClientPayment({
+  country_code: "US",
+  checkout_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+});
+```
+
+### Pré-carregamento dos fingerprints de fraude {#preloading-fraud-fingerprints}
+
+Se a sua conta usa [análise de fraude](/docs/basic-concepts/fraud) com um provedor cujo script de fingerprint pode levar mais tempo do que o timeout de fraude configurado, chame `executeFraudCheck` quando o formulário de pagamento for renderizado, e não no momento em que o seu cliente clicar em "Pagar". Os scripts de fingerprint de alguns provedores levam mais tempo do que o timeout para carregar em certas regiões. Chamar `apiClientPayment` e `generateToken` em sequência no momento do clique pode gerar o token de uso único antes que o fingerprint termine de carregar. Isso significa que o token seria criado sem o fingerprint do dispositivo.
+
+```javascript
+// Wrong: calling everything at "Pay" click time
+payButton.onclick = async () => {
+  const apiClientPayment = await yuno.apiClientPayment({ country_code, checkout_session });
+  const oneTimeToken = await apiClientPayment.generateToken({ checkout_session, payment_method });
+};
+// The fraud provider's beacon may not have loaded in time, so the fingerprint can be missing from the token
+```
+
+```javascript
+// Correct: preload the fraud fingerprint when the form renders
+await yuno.executeFraudCheck({ checkout_session, country_code });
+
+// Later, when the customer clicks "Pay":
+payButton.onclick = async () => {
+  const apiClientPayment = await yuno.apiClientPayment({ country_code, checkout_session });
+  const oneTimeToken = await apiClientPayment.generateToken({ checkout_session, payment_method });
+  // The fingerprint is already cached, no race condition
+};
+```
+
+## Etapa 4: Gere o token {#step-4-generate-token}
+
+Depois de coletar todas as informações do usuário, você pode iniciar o pagamento. Primeiro, você precisa criar um token de uso único (OTT) usando a função `apiClientpayment.generateToken`. Como é uma função assíncrona, você pode usar `try/catch` para garantir que vai tratar corretamente os erros disparados. Os exemplos a seguir mostram diferentes cenários para criar o token de uso único:
+
+1. **Exemplo 1**: Crie um token de uso único utilizando um cartão como meio de pagamento e incluindo todas as informações necessárias do cartão.
+2. **Exemplo 2**: Crie um token de uso único usando as informações do `vaulted_token`.
+
+Para dividir um pagamento entre dois cartões, passe um array em `payment_method`. Consulte [Divida um pagamento entre dois cartões](#split-one-payment-across-two-cards).
+
+<Note>
+**Benefícios de usar um vaulted token**
+
+Quando você usa um vaulted token com o SDK, todas as informações de fraude dos provedores que você configurou no roteamento de cartões são coletadas. Essas informações são anexadas ao token de uso único. Além disso, você pode adicionar informações de parcelamento e um código de segurança, caso o provedor exija.
+</Note>
+
+```javascript Example 1
+const oneTimeToken = await apiClientPayment.generateToken({
+  checkout_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+  payment_method: {
+    type: "CARD",
+    vaulted_token: null,
+    card: {
+      save: false,
+      detail: {
+        expiration_month: 11,
+        expiration_year: 25,
+        number: "4111111111111111",
+        security_code: "123",
+        holder_name: "ANDREA B",
+        type: "CREDIT"
+      },
+      installment: {
+        id: "64ceacef-0886-4c81-9779-b2b3029c4e8b",
+        value: 1
+      }
+    },
+    customer: {},
+    device_fingerprint: "0753b47f-bb43-86ab-647b-d735b67baac6",
+    third_party_session_id: "QbJU2KolVUm1fhQR0s9qgrS0ArEQmEfE"
+  }
+});
+```
+
+### Parâmetros do Exemplo 1 {#parameters-for-example-1}
+
+| Parâmetro                      | Descrição                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| `checkout_session`             | A sessão de checkout criada com o endpoint Create Checkout Session       |
+| `payment_method.type`          | Tipo de meio de pagamento, definido como "CARD"                                            |
+| `payment_method.vaulted_token` | Opcional: use se você tiver um meio de pagamento cadastrado anteriormente                |
+| `card.save`                    | Opcional: defina como "true" para gerar um vaulted token para o cartão              |
+| `card.detail`                  | Informações do cartão, incluindo número, validade, código de segurança e nome do titular |
+| `card.detail.type`             | Opcional: "CREDIT" ou "DEBIT". Se você não informar, a Yuno detecta o tipo pelo número do cartão. Envie somente se tiver certeza, porque um tipo errado pode causar uma recusa |
+| `card.installment`             | Opcional: obrigatório somente se houver um plano de parcelamento configurado                  |
+| `customer`                     | Opcional: objeto com as informações do cliente                                         |
+| `device_fingerprint`           | Opcional: obrigatório somente se a análise de fraude estiver configurada                      |
+| `third_party_session_id`       | Opcional: obrigatório somente se houver configuração de terceiros                   |
+
+```javascript Example 2
+const oneTimeToken = await apiClientPayment.generateToken({
+  checkout_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+  payment_method: {
+    type: "CARD",
+    vaulted_token: "aad8578e-ac2f-40a0-8065-25b5957f6555",
+    card: {
+      detail: {
+        security_code: "123"
+      },
+      installment: {
+        id: "64ceacef-0886-4c81-9779-b2b3029c4e8b",
+        value: 1
+      }
+    }
+  }
+});
+```
+
+### Parâmetros do Exemplo 2 {#parameters-for-example-2}
+
+| Parâmetro                      | Descrição                                                             |
+| ------------------------------ | ----------------------------------------------------------------------- |
+| `checkout_session`             | A sessão de checkout criada com o endpoint Create Checkout Session |
+| `payment_method.type`          | Tipo de meio de pagamento, definido como "CARD"                                      |
+| `payment_method.vaulted_token` | Use o vaulted token de um meio de pagamento cadastrado anteriormente         |
+| `card.detail.security_code`    | Código de segurança do cartão cadastrado                                     |
+| `card.installment`             | Opcional: obrigatório somente se houver um plano de parcelamento configurado            |
+
+O bloco de código a seguir mostra as respostas da função `apiClientPayment.generateToken` para os dois exemplos acima:
+
+```json Example 1
+{
+  "token": "ee78bc2a-63b4-45bb-bd28-3e6829ab1c3d",
+  "vaulted_token": null,
+  "vault_on_success": false,
+  "type": "CARD",
+  "card_data": {
+    "holder_name": "ANDREA B",
+    "iin": "41111111",
+    "lfd": "1111",
+    "number_length": 16,
+    "security_code_length": 3,
+    "brand": "VISA",
+    "type": "CREDIT",
+    "category": "CREDIT",
+    "issuer_name": "JPMORGAN CHASE BANK N A",
+    "issuer_code": null
+  },
+  "customer": {
+    "first_name": "Cesar",
+    "last_name": "Sanchez",
+    "email": "cesar.sanchez@y.uno",
+    "gender": "",
+    "phone": null,
+    "billing_address": null,
+    "document": null,
+    "browser_info": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+      "accept_header": "*/*",
+      "accept_content": "*/*",
+      "accept_browser": "*/*",
+      "color_depth": "24",
+      "screen_height": "1080",
+      "screen_width": "2560",
+      "javascript_enabled": true,
+      "java_enabled": false,
+      "browser_time_difference": "300",
+      "language": "en-US"
+    },
+    "device_fingerprint": "19764508-c9df-a90b-a365-83b2d718c12e"
+  },
+  "installment": null,
+  "country": "CO"
+}
+```
+
+```json Example 2
+{
+  token: 'ee78bc2a-63b4-45bb-bd28-3e6829ab1c3d',
+  vaulted_token: aad8578e-ac2f-40a0-8065-25b5957f6555,
+  vault_on_success: false,
+  type: 'CARD',
+  card_data: {
+    holder_name: 'ANDREA B',
+    iin: '41111111',
+    lfd: '1111',
+    number_length: 16,
+    security_code_length: 3,
+    brand: 'VISA',
+    type: 'CREDIT',
+    category: 'CREDIT',
+    issuer_name: 'JPMORGAN CHASE BANK N A',
+    issuer_code: null,
+  },
+  customer: {
+    first_name: 'Cesar',
+    last_name: 'Sanchez',
+    email: 'cesar.sanchez@y.uno',
+    gender: '',
+    phone: null,
+    billing_address: null,
+    document: null,
+    browser_info: {
+      user_agent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+      accept_header: '*/*',
+      accept_content: '*/*',
+      accept_browser: '*/*',
+      color_depth: '24',
+      screen_height: '1080',
+      screen_width: '2560',
+      javascript_enabled: true,
+      java_enabled: false,
+      browser_time_difference: '300',
+      language: 'en-US',
+    },
+    device_fingerprint: '19764508-c9df-a90b-a365-83b2d718c12e',
+  },
+  installment: null,
+  country: 'CO',
+}
+```
+
+## Etapa 5: Crie o pagamento {#step-5-create-the-payment}
+
+Depois de receber o token de uso único, você pode criar o pagamento usando o [endpoint Create Payment](/reference/payments/create-payment) para obter o resultado final do pagamento. Você vai informar o token de uso único recebido na [Etapa 4](#step-4-generate-token) por meio do parâmetro `payment_method.token` da requisição. O bloco de código a seguir mostra um exemplo de requisição para criar um pagamento:
+
+```json
+{
+  "merchant_order_id": "0000022",
+  "country": "US",
+  "account_id": "<Your account_id>",
+  "description": "Test",
+  "amount": {
+    "currency": "USD",
+    "value": 500
+  },
+  "customer_payer": {
+    "id": "cfae0941-7234-427a-a739-ef4fce966c79"
+  },
+  "checkout": {
+    "session": "<checkout session>"
+  },
+  "workflow": "SDK_CHECKOUT",
+  "payment_method": {
+    "type": "CARD",
+    "token": "2cd31999-e44e-4de3-bbe4-179981ff4295"
+  }
+}
+```
+
+A resposta do endpoint traz o parâmetro `sdk_action_required`, que define se ações adicionais são necessárias para concluir o pagamento:
+
+* Se o seu cliente selecionar um meio de pagamento síncrono, o pagamento é concluído na hora. Nesse cenário, o campo `sdk_action_required` na resposta da API será `false`, e o processo de pagamento termina nesta etapa.
+* Quando uma interação adicional do SDK for necessária para concluir o fluxo de pagamento, `sdk_action_required` será `true`. Nesse caso, você precisa seguir as instruções da [Etapa 6](#step-6-get-the-3ds-challenge-url).
+
+## Etapa 6: Obtenha a URL do desafio 3DS {#step-6-get-the-3ds-challenge-url}
+
+Como descrito na página [Verificação de cartão com 3DS](/pt-br/docs/security-and-compliance/3d-secure), um pagamento com 3DS pode exigir um desafio adicional para verificar a identidade do cliente. Se for necessária uma etapa de verificação adicional relacionada a um desafio de verificação 3DS, a resposta do endpoint [Create Payment](/reference/payments/create-payment) terá as seguintes informações:
+
+* Um tipo de transação `THREE_D_SECURE `.
+* Status igual a `PENDING` e sub status igual a `WAITING_ADDITIONAL_STEP`.
+* O `sdk_action_required` definido como `true`.
+
+Para obter a URL do desafio 3DS, você deve chamar a função `getThreeDSecureChallenge`, informando a `checkoutSession` usada para criar o pagamento.
+
+```javascript
+const data = await apiClientPayment.getThreeDSecureChallenge(checkoutSession?: string): Promise<{url: string}>
+```
+
+Se o cartão não exigir um desafio para verificar a identidade do cliente, a `url` retornará `null`.
+
+Para um pagamento dividido entre dois cartões, chame essa função uma vez por cartão. Consulte [Execute o desafio 3DS de cada cartão](#run-the-3ds-challenge-of-each-card).
+
+Em um navegador web, você pode abrir a URL em uma nova aba ou em um IFrame. Para abrir a URL em um iframe, você deve definir o parâmetro `embedded = true`. Caso contrário, você pode omitir esse parâmetro, cujo valor padrão é `false`. O bloco de código a seguir mostra um exemplo de exibição do conteúdo do desafio 3DS em um IFrame:
+
+```javascript
+document.querySelector('#element').innerHTML = `
+   <iframe
+     src="${data.url}&embedded=true"
+     height="700px"
+     width="100%"
+     border="0"
+     frameBorder="0">
+   </iframe>
+ `;
+
+window.addEventListener('message', (event) => {
+   if (
+        !event.origin.toLocaleLowerCase().includes('sdk-3ds') ||
+        event?.data?.origin !== 'CHALLENGE'
+   ) {
+     return
+   }
+   document.querySelector('#element').innerHTML = '';
+   if (event.data.status === 'ERROR') {
+     document.querySelector('#element').innerHTML = 'There was an error';
+   } else {
+     document.querySelector('#element').innerHTML = 'Challenge was finished';
+   }
+});
+```
+
+Você é responsável por redirecionar seus clientes para a URL informada em `redirect_url` para concluírem o desafio. Assim que o cliente concluir o desafio 3DS com sucesso, ele será redirecionado automaticamente para a `callback_url`. Você informou essa `callback_url` ao criar a `checkout_session` com o endpoint [Create Checkout Session](/reference/checkout-sessions/create-checkout-session).
+
+Para concluir o fluxo de pagamento do Headless SDK, você precisa usar os [webhooks da Yuno](/pt-br/docs/webhooks/configure-webhooks). Os webhooks notificam você prontamente sobre o resultado do desafio 3DS e o status final do pagamento, garantindo que você receba atualizações em tempo real sobre o andamento da transação de pagamento. Além dos webhooks, você pode consultar as informações do pagamento usando o endpoint [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id).
+
+## Etapa 7: Obtenha as ações do pagamento {#step-7-get-payment-actions}
+
+Às vezes, o pagamento pode exigir uma ação extra para continuar o fluxo de pagamento. Para determinar qual ação é necessária, você deve chamar o método `getContinuePaymentAction`, informando a `checkoutSession` usada para criar o pagamento.
+
+```javascript
+const data = await apiClientPayment.getContinuePaymentAction({ checkoutSession: string }): Promise<ContinuePaymentAction>
+```
+
+O método `getContinuePaymentAction` retorna um objeto `ContinuePaymentAction`. Esse objeto descreve a ação específica necessária para continuar o fluxo de pagamento, dependendo do provedor e da etapa específica exigida.
+
+### Estrutura da resposta de `ContinuePaymentAction` {#continuepaymentaction-response-structure}
+
+A resposta contém informações sobre o tipo de ação exigida e os dados necessários para executar essa ação:
+
+```typescript
+type ContinuePaymentAction = {
+  type: Provider.Type;
+  action: Provider.Action;
+  payment_code?: {
+    code: string;
+    reference: string;
+    expiration_time?: number;
+  };
+  image?: {
+    type: string;
+    value: string;
+    reference: string;
+    expiration_time?: number;
+    additional_data?: Record<string, undefined>;
+  };
+  redirect?: {
+    init_url: string;
+    success_url: string;
+    error_url: string;
+  };
+  otp?: {
+    length: number;
+    expiration_time: number;
+    retries: {
+      accepts: boolean;
+      number: number;
+    };
+    resend: {
+      timer: number;
+      number: number;
+    };
+    payment_instructions: string;
+  };
+  three_d_secure_redirect?: {
+    init_url: string;
+    access_token: string;
+    redirect_url?: string;
+  };
+  transaction_id?: string;
+  request_html?: {
+    body?: Record<string, string>;
+    headers?: Record<string, string>;
+    method?: "POST" | "GET" | "PUT" | "PATCH" | "DELETE";
+    url: string;
+  };
+  sdk_provider?: {
+    client_id?: string;
+    intent?: string;
+    components?: string;
+    gateway: string;
+    init_url?: string;
+    merchant_id: string;
+    amount: {
+      currency: string;
+      value: number;
+    };
+    protocol_version?: string;
+    provider_id?: string;
+    payment_methods?: string[];
+    supported_networks?: string[];
+    session?: {
+      epoch_timestamp: number;
+      expires_at: number;
+      merchant_session_identifier: string;
+      nonce: string;
+      merchant_identifier: string;
+      domain_name: string;
+      display_name: string;
+      signature: string;
+      operational_analytics_identifier: string;
+      retries: number;
+      psp_id: string;
+    };
+    provider_token_id?: string;
+  };
+  render_html?: {
+    content?: string;
+    redirect_url?: string;
+  };
+  info?: {
+    screen_info?: string;
+  };
+  render_iframe: {
+    init_url: string;
+    access_token: string;
+    redirect_url?: string;
+  };
+};
+```
+
+### Campos de `ContinuePaymentAction` {#continuepaymentaction-fields}
+
+| Campo                     | Descrição                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------- |
+| `type`                    | Tipo de provedor de pagamento (por exemplo, MERCADO_PAGO, DLOCAL etc.)                      |
+| `action`                  | Ação específica exigida para continuar o pagamento (por exemplo, REDIRECT_URL, OTP etc.) |
+| `payment_code`            | Usado quando o provedor de pagamento emite um código de pagamento para pagamentos em dinheiro     |
+| `image`                   | Usado quando uma imagem (por exemplo, um QR code) precisa ser exibida ao usuário                 |
+| `redirect`                | Usado quando é necessário um redirecionamento em fluxos de pagamento de terceiros                     |
+| `otp`                     | Usado quando o fluxo exige validação por OTP (One-Time Password)                   |
+| `three_d_secure_redirect` | Usado em fluxos de 3DS que redirecionam o usuário para uma etapa de verificação segura          |
+| `transaction_id`          | ID único da transação, se disponível                                              |
+| `request_html`            | Usado para renderizar um formulário de pagamento com HTML dinâmico e cabeçalhos                      |
+| `sdk_provider`            | Usado para provedores baseados em SDK (por exemplo, Apple Pay, Google Pay)                       |
+| `render_html`             | Usado para exibir conteúdo HTML diretamente no app                                 |
+| `info`                    | Informações ou mensagens gerais (por exemplo, exibir uma mensagem de confirmação)               |
+| `render_iframe`           | Usado quando o provedor precisa renderizar um iframe para a interação do usuário            |
+
+### Tipos de provedor e ações {#provider-types-and-actions}
+
+Os enums a seguir definem os provedores de pagamento compatíveis e as ações possíveis:
+
+```typescript
+export declare namespace Provider {
+  enum Type {
+    MERCADO_PAGO = "MERCADO_PAGO",
+    WOMPI = "WOMPI",
+    PAYMENTEZ = "PAYMENTEZ",
+    GETNET = "GETNET",
+    TRANSFEERA = "TRANSFEERA",
+    CYBERSOURCE_3DS = "CYBERSOURCE_3DS",
+    NETCETERA_3DS = "NETCETERA_3DS",
+    XENDIT_3DS = "XENDIT_3DS",
+    DLOCAL = "DLOCAL",
+    CIELO = "CIELO",
+    INSWITCH = "INSWITCH",
+    PAGALEVE = "PAGALEVE",
+    UNLIMINT_3DS = "UNLIMINT_3DS"
+  }
+
+  enum Action {
+    PAYMENT_CODE = "PAYMENT_CODE",
+    IMAGE = "IMAGE",
+    REDIRECT_URL = "REDIRECT_URL",
+    FORM = "FORM",
+    INFO = "INFO",
+    OTP = "OTP",
+    SDK_PROVIDER = "SDK_PROVIDER",
+    THREE_D_SECURE_REDIRECT_URL = "THREE_D_SECURE_REDIRECT_URL",
+    REQUEST_HTML = "REQUEST_HTML",
+    RENDER_HTML = "RENDER_HTML",
+    RENDER_IFRAME = "RENDER_IFRAME"
+  }
+}
+```
+
+### Referência de tipos de provedor e ações {#provider-types-and-actions-reference}
+
+| Tipo de provedor     | Descrição                   |
+| ----------------- | ----------------------------- |
+| `MERCADO_PAGO`    | Provedor de pagamento Mercado Pago |
+| `WOMPI`           | Provedor de pagamento Wompi        |
+| `PAYMENTEZ`       | Provedor de pagamento Paymentez    |
+| `GETNET`          | Provedor de pagamento Getnet       |
+| `TRANSFEERA`      | Provedor de pagamento Transfeera   |
+| `CYBERSOURCE_3DS` | Provedor de 3DS Cybersource      |
+| `NETCETERA_3DS`   | Provedor de 3DS Netcetera        |
+| `XENDIT_3DS`      | Provedor de 3DS Xendit           |
+| `DLOCAL`          | Provedor de pagamento DLocal       |
+| `CIELO`           | Provedor de pagamento Cielo        |
+| `INSWITCH`        | Provedor de pagamento Inswitch     |
+| `PAGALEVE`        | Provedor de pagamento Pagaleve     |
+| `UNLIMINT_3DS`    | Provedor de 3DS Unlimint         |
+
+| Tipo de ação                   | Descrição                         |
+| ----------------------------- | ----------------------------------- |
+| `PAYMENT_CODE`                | Exibir o código de pagamento ao usuário           |
+| `IMAGE`                       | Exibir uma imagem (por exemplo, um QR code)          |
+| `REDIRECT_URL`                | Redirecionar o usuário para uma página externa  |
+| `FORM`                        | Renderizar um formulário para coletar dados do usuário |
+| `INFO`                        | Exibir uma tela informativa        |
+| `OTP`                         | Solicitar ao usuário a digitação do OTP         |
+| `SDK_PROVIDER`                | Usar o SDK para processar o pagamento          |
+| `THREE_D_SECURE_REDIRECT_URL` | Iniciar a autenticação 3DS            |
+| `REQUEST_HTML`                | Enviar uma requisição de formulário HTML         |
+| `RENDER_HTML`                 | Renderizar HTML estático no app       |
+| `RENDER_IFRAME`               | Renderizar um iframe para a interface do provedor       |
+
+### Tratamento dos diferentes tipos de ação {#handling-different-action-types}
+
+Com base no campo `action` da resposta, você deve tratar cada tipo de ação da forma adequada:
+
+#### Ação `REDIRECT_URL` {#redirecturl-action}
+
+Quando a ação for `REDIRECT_URL`, você deve redirecionar o usuário para a URL informada em `data.redirect.init_url`:
+
+```javascript
+if (data.action === "REDIRECT_URL") {
+  window.location.href = data.redirect.init_url;
+}
+```
+
+#### Outros tipos de ação {#other-action-types}
+
+Cada tipo de ação exige um tratamento específico, com base nos dados fornecidos:
+
+* **PAYMENT_CODE**: exiba o código de pagamento e a referência ao usuário
+* **IMAGE**: mostre um QR code ou outra imagem ao usuário
+* **OTP**: apresente ao usuário um formulário para digitar o OTP
+* **SDK_PROVIDER**: inicialize o SDK do provedor específico
+* **RENDER_IFRAME**: exiba um iframe com a interface do provedor
+
+<Note>
+**Tratamento das ações de pagamento**
+
+A implementação específica para tratar cada tipo de ação vai depender do framework de UI e dos requisitos da sua aplicação. Garanta que você trata todos os tipos de ação possíveis que os provedores de pagamento configurados podem retornar.
+</Note>
+
+<Note>
+**App de demonstração**
+
+Além dos exemplos de código fornecidos, você pode acessar o [App de demonstração](https://github.com/yuno-payments/yuno-sdk-web) para ver uma implementação completa dos SDKs da Yuno (clone a partir do repositório).
+</Note>
+
+## Divida um pagamento entre dois cartões {#split-one-payment-across-two-cards}
+
+A partir do Web SDK 1.11.43, `generateToken` pode criar um token para um pagamento que dois cartões financiam juntos. Cada cartão paga a sua parte do valor. O fluxo é somente headless: não existe UI de checkout para ele. Para habilitação, status, estornos, operações e erros, consulte [Pague com dois cartões](/pt-br/docs/payment-features/pay-with-two-cards).
+
+<Note>
+**Versão**
+
+Você precisa do Web SDK 1.11.43 ou posterior. Se você carrega o SDK de `https://sdk-web.y.uno/v1.11/main.js`, você já tem essa versão. Se você o instala pelo npm, execute `npm install @yuno-payments/sdk-web@^9`: o pacote 9.x carrega a linha `v1.11` pela CDN, que entrega a 1.11.43 ou posterior. A versão 10.x do pacote carrega o Web SDK v2.
+</Note>
+
+### Gere um token para os dois cartões {#generate-one-token-for-both-cards}
+
+Passe `payment_method` como um array com exatamente dois itens, um por cartão, em vez de um único objeto. Cada item aceita os mesmos campos de um único meio de pagamento (`type`, `card` ou `vaulted_token`, `customer`, `device_fingerprints`, `third_party_data`), mais o `amount` que aquele cartão paga. Envie `total` junto de `payment_method`: sem ele, o pagamento é rejeitado mais adiante.
+
+```javascript
+const compositeToken = await apiClientPayment.generateToken({
+  checkout_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+  total: { currency: "USD", value: 100 },
+  payment_method: [
+    {
+      type: "CARD",
+      amount: { currency: "USD", value: 60 },
+      card: {
+        detail: {
+          expiration_month: 11,
+          expiration_year: 29,
+          number: "4111111111111111",
+          security_code: "123",
+          holder_name: "ANDREA B",
+          type: "CREDIT"
+        }
+      }
+    },
+    {
+      type: "CARD",
+      amount: { currency: "USD", value: 40 },
+      vaulted_token: "aad8578e-ac2f-40a0-8065-25b5957f6555",
+      card: {
+        detail: {
+          security_code: "123"
+        }
+      }
+    }
+  ]
+});
+```
+
+| Parâmetro                         | Descrição                                                                                                                                  |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `payment_method`                  | Um array de exatamente dois itens, um por cartão. A ordem dos itens é a ordem em que os cartões passam pelo 3DS.                          |
+| `payment_method[].type`           | Tipo de meio de pagamento, definido como "CARD".                                                                                                          |
+| `payment_method[].card`           | Informações do cartão, como no Exemplo 1. Cada item precisa de `card` ou `vaulted_token`.                                                                |
+| `payment_method[].vaulted_token`  | Use o vaulted token de um cartão cadastrado anteriormente, como no Exemplo 2.                                                                        |
+| `payment_method[].amount.currency`| Moeda da parte que este cartão paga. Não pode ficar vazia.                                                                                      |
+| `payment_method[].amount.value`   | Valor que este cartão paga, como um número maior que zero.                                                                                        |
+| `total`                           | Obrigatório para criar o pagamento. Todos os itens devem usar `total.currency` e os valores dos itens devem somar `total.value`. A Yuno também confere esse total com o valor da sessão de checkout. |
+
+O SDK coleta os dados de fraude e as informações do navegador de cada item, como faz para um único cartão. Quando você passa um array, a função resolve para um único token composto:
+
+```json
+{
+  "token": "ee78bc2a-63b4-45bb-bd28-3e6829ab1c3d",
+  "checkout_session": "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+  "expires_at": "2026-10-22T15:30:00Z"
+}
+```
+
+Quando você passa um objeto, `generateToken` se comporta como antes e retorna a resposta mostrada na [Etapa 4](#step-4-generate-token). As integrações existentes não mudam.
+
+O SDK verifica o array antes de enviar qualquer requisição e lança um erro que indica o item com problema. Envolva a chamada em `try/catch`.
+
+| Entrada                                                     | Mensagem de erro                                                                          |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Menos de dois itens                                      | `payment_method must have at least two items; use an object for one payment method`   |
+| Um item sem `card` ou `vaulted_token`                 | `payment_method[1] needs card or vaulted_token`                                        |
+| Um `amount.value` ausente, zero ou negativo                | `payment_method[0].amount.value=0 is not valid`                                        |
+| Um `amount.currency` vazio                                | `payment_method[0].amount.currency= is not valid`                                      |
+| Um `type` desconhecido                                         | `payment_method[0].type=CARDS is not valid`                                            |
+| A moeda de um item diferente de `total.currency`          | `payment_method[1].amount.currency=EUR does not match total.currency=USD`              |
+| Valores dos itens que não somam `total.value`          | `payment_method amounts add up to 60 + 30 but total.value=100`                         |
+
+### Crie o pagamento {#create-the-payment}
+
+Crie o pagamento a partir do seu servidor com `POST /v2/payments` (`https://api.y.uno/v2/payments` em produção, ou `https://api-sandbox.y.uno/v2/payments` em sandbox). Use os mesmos cabeçalhos de autenticação dos outros endpoints de pagamento. O [endpoint Create Payment](/reference/payments/create-payment) v1 da [Etapa 5](#step-5-create-the-payment) serve para um token de um único meio de pagamento; um token composto vai para `POST /v2/payments`.
+
+```json
+{
+  "merchant_order_id": "0000023",
+  "country": "US",
+  "account_id": "<Your account_id>",
+  "description": "Order paid with two cards",
+  "amount": {
+    "currency": "USD",
+    "value": 100
+  },
+  "customer_payer": {
+    "first_name": "Andrea",
+    "last_name": "B",
+    "email": "andrea.b@example.com"
+  },
+  "checkout": {
+    "session": "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+  },
+  "workflow": "SDK_CHECKOUT",
+  "payment_method": {
+    "token": "ee78bc2a-63b4-45bb-bd28-3e6829ab1c3d",
+    "capture": true
+  },
+  "callback_url": "https://merchant.example.com/checkout/return"
+}
+```
+
+| Campo                   | Descrição                                                                                                       |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `amount.value`          | O total do pagamento: a soma dos valores dos cartões.                                                            |
+| `amount.currency`       | A mesma moeda dos valores dos cartões.                                                                            |
+| `checkout.session`      | A sessão de checkout para a qual você criou o token composto.                                                         |
+| `workflow`              | Defina como `SDK_CHECKOUT`.                                                                                            |
+| `payment_method.token`  | O token composto. `payment_method.type` não é necessário: o token já identifica os cartões.                 |
+| `payment_method.capture`| Se o pagamento deve ser capturado.                                                                                   |
+| `callback_url`          | Opcional. Para onde o desafio 3DS de cada cartão devolve o seu cliente. Envie quando algum cartão puder precisar de 3DS.                |
+
+Para ler o resultado de cada cartão, chame `GET /v2/payments/{payment_id}` a partir do seu servidor com os mesmos cabeçalhos de autenticação. O array `payment_method.payment_methods` da resposta tem uma entrada por cartão, cada uma com a sua `sequence` (a posição do cartão no token), `type`, `amount` e `transactions`. Um cartão não tem status próprio: leia o resultado de cada cartão nas transações dele, em que a transação `THREE_D_SECURE` do cartão traz o resultado do desafio. O `status` e o `sub_status` no nível do pagamento resumem os dois cartões. O endpoint Retrieve Payment v1 mostra o pagamento como um todo, não cada cartão. Consulte [Pague com dois cartões](/pt-br/docs/payment-features/pay-with-two-cards) para ver a resposta completa, os status e as operações, e a referência [Retrieve Payment (two cards)](/reference/payments/retrieve-payment-two-cards).
+
+### Execute o desafio 3DS de cada cartão {#run-the-3ds-challenge-of-each-card}
+
+Quando os cartões precisarem de 3DS, chame `getThreeDSecureChallenge` uma vez por cartão, na ordem do array `payment_method`. Renderize cada URL retornada como descrito na [Etapa 6](#step-6-get-the-3ds-challenge-url) e espere esse desafio terminar antes de chamar a função novamente. Cada chamada retorna o desafio do primeiro cartão, na ordem do array, que ainda está aguardando o 3DS. Um cartão que não precisa de desafio é pulado, então a próxima chamada já retorna o próximo cartão que precisa de um. Quando nenhum cartão estiver mais aguardando o 3DS, a chamada resolve com `url: null`: esse é o sinal para parar, nunca um indício de que um cartão foi isento. A Yuno registra o resultado de um desafio alguns segundos depois que o cliente o conclui, então espere até que a transação `THREE_D_SECURE` do cartão saia de `PENDING` (pelo seu webhook ou por `GET /v2/payments/{payment_id}`) antes de chamar `getThreeDSecureChallenge` para o próximo cartão; uma chamada feita antes disso pode devolver de novo o desafio do mesmo cartão.
+
+```javascript
+// showChallenge renders the URL in an iframe, as in Step 6,
+// and resolves with event.data.status when the CHALLENGE message arrives.
+// waitForCardResult asks your server to poll GET /v2/payments/{payment_id}
+// until the THREE_D_SECURE transaction of that card is no longer PENDING.
+async function runCardChallenges(checkoutSession, paymentId, cardCount) {
+  for (let sequence = 1; sequence <= cardCount; sequence++) {
+    const { url } = await apiClientPayment.getThreeDSecureChallenge(checkoutSession);
+
+    if (!url) {
+      return; // No card is waiting for 3DS
+    }
+
+    const status = await showChallenge(url);
+
+    if (status === 'ERROR') {
+      return; // The payment has ended: do not offer the other card
+    }
+
+    await waitForCardResult(paymentId, sequence);
+  }
+}
+```
+
+Um pagamento feito com um único cartão se comporta como antes: uma chamada, um desafio.
+
+### Como a Yuno processa os dois cartões {#how-yuno-processes-the-two-cards}
+
+* Um cartão que precisa de 3DS é cobrado assim que o seu próprio desafio termina. Um cartão que não precisa de 3DS é cobrado quando o pagamento é criado.
+* Se o desafio de um cartão falhar ou se o emissor recusar o cartão, o pagamento inteiro é encerrado. A Yuno estorna a cobrança de um cartão que já tenha sido cobrado e cancela o 3DS pendente do outro cartão. Não peça ao seu cliente para continuar com o cartão restante: inicie um novo pagamento.
+* O pagamento final tem uma entrada por cartão em `payment_method.payment_methods`, cada uma com a sua `sequence`, `type`, `amount` e `transactions`. Não existe status por cartão: leia o resultado de cada cartão nas transações dele. Leia isso nos seus [webhooks](/pt-br/docs/webhooks/configure-webhooks) ou com `GET /v2/payments/{payment_id}`.
+
+## Tratamento de erros {#error-handling}
+
+Trate no seu app os erros retornados pelo SDK, como pagamentos com falha ou erros de validação. Para status HTTP e códigos de resposta, consulte [Status e códigos de resposta](/reference/getting-started/response-codes) na referência da API. Para reembolsar um pagamento, consulte [Reembolse pagamentos](/pt-br/docs/direct-integration-use-cases/refund-payments) e a API [Refund payment](/reference/payments/refund-payment).
+
+## Fique por dentro {#stay-updated}
+
+Acesse o [changelog](/changelog/web#v1-6-0) para ver as atualizações mais recentes do SDK e o histórico de versões.

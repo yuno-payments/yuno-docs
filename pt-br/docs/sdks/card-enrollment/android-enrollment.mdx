@@ -1,0 +1,200 @@
+---
+title: Cadastro no Android
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Cadastre meios de pagamento no Android usando o full-checkout com UI pronta e configuração do ProGuard"
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+O SDK Android facilita a implementação de fluxos de cadastro para salvar meios de pagamento na conta de um cliente.
+
+Inclua a biblioteca no seu projeto seguindo os mesmos passos do [full-checkout](/docs/sdks/full-checkout/android-payments#include-the-library-in-your-project).
+
+## Recursos adicionais {#additional-resources}
+
+- Veja [Escolha a integração certa para você](/pt-br/docs/sdks/overview/choose-integration) se não tiver certeza de qual fluxo seguir.
+- Acesse as [Notas de versão](/changelog/android) ou o [repositório do Yuno Android SDK](https://github.com/yuno-payments/yuno-sdk-android) para verificar a versão mais recente do SDK disponível.
+
+- [Cadastro com full-checkout (Android)](#full-checkout-enrollment-android): cadastro automático com componentes de UI prontos
+
+## Requisitos {#requirements}
+
+* **Versão mínima do SDK**: `minSdkVersion` 23 ou superior (Android 6.0). Obrigatória desde o Yuno Android SDK 2.24.0
+* **Java**: Java 8 habilitado
+* **AndroidX**: use o AndroidX em vez das bibliotecas de suporte antigas
+* **Android Gradle Plugin**: 4.0.0 ou superior
+* **ProGuard**: 6.2.2 ou superior
+* **Kotlin Gradle Plugin**: 1.4.0 ou superior
+* **Suporte a tamanho de página ELF**: compatível com os requisitos de alinhamento de página ELF de 16 KB do Google (pronto para Android 15 / ARMv9)
+
+### Configuração do ProGuard / R8 {#proguard--r8-configuration}
+
+Se o seu projeto tiver `minifyEnabled = true`, adicione estas regras ao seu arquivo `proguard-rules.pro` para garantir que o SDK funcione corretamente, principalmente com o **modo completo do R8 no AGP 8.x+**.
+
+<Accordion title="Regras oficiais de ProGuard / R8 da Yuno">
+  ```proguard
+  # Preserve generic type signatures and annotations
+  -keepattributes Signature
+  -keepattributes *Annotation*
+
+  # Yuno SDK
+  -keep class com.yuno.** { *; }
+  -dontwarn com.yuno.**
+
+  # Gson — R8 full mode compatibility
+  -keep class com.google.gson.** { *; }
+  -keep,allowobfuscation,allowshrinking,allowoptimization class * extends com.google.gson.reflect.TypeToken
+  -dontwarn com.google.gson.**
+
+  # Retrofit — R8 full mode compatibility
+  -keep,allowobfuscation,allowshrinking interface retrofit2.Call
+  -keep,allowobfuscation,allowshrinking class retrofit2.Response
+  -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+  -dontwarn retrofit2.**
+
+  # OkHttp + Okio — Suppress warnings
+  -dontwarn okhttp3.**
+  -dontwarn okio.**
+  ```
+
+  ### Por que essas regras são necessárias?
+
+  O AGP 8.x+ habilita o **modo completo do R8** por padrão, que remove de forma agressiva as assinaturas de tipos genéricos. Sem `-keepattributes Signature`, o `TypeToken<T>` do Gson pode falhar em tempo de execução com `java.lang.Class cannot be cast to java.lang.reflect.ParameterizedType`.
+</Accordion>
+
+## Parâmetros {#parameters}
+
+Para a lista completa de parâmetros, veja a [Referência comum do Android SDK](/pt-br/docs/sdks/resources/references/android).
+
+| Parâmetro | Descrição |
+|-----------|-------------|
+| `customerSession` | ID da sessão do cliente obtido na API Create customer session. Obrigatório para `apiClientEnroll`. |
+| `countryCode` | Código ISO do país. Obrigatório para `apiClientEnroll`. |
+| `showEnrollmentStatus` | Exibe a tela de resultado do cadastro. Opcional; padrão true. |
+| `callbackEnrollmentState` | Callback `(state, message)`: estado do cadastro e, em `INTERNAL_ERROR`, um [`StatusMessage?`](/pt-br/docs/sdks/resources/references/android#statusmessage-error-details). Opcional; exige `initEnrollment` no onCreate. Segundo parâmetro adicionado no SDK `2.22.0`. |
+| `keepLoader` | Se `true`, o loader do SDK permanece durante o cadastro, evitando que a UI pisque. |
+
+## Cadastro com full-checkout (Android) {#full-checkout-enrollment-android}
+
+O full-checkout da Yuno para Android oferece cadastro com UI pronta, cadastro de cartão, tratamento de status e gerenciamento básico de erros. Veja a seção [Requisitos](#requirements) acima.
+
+### Passo 1: Criar um cliente {#step-1-create-a-customer}
+
+Crie um cliente no sistema da Yuno usando o [endpoint Create customer](/reference/customers/create-customer) antes de cadastrar meios de pagamento. Esse endpoint retorna um `customer_id`. Depois, crie uma sessão de cliente usando o endpoint [Create Customer Session](/reference/customer-sessions-enrollment/create-customer-session); use o `customer_session` retornado ao chamar os métodos de cadastro.
+
+No seu servidor, crie também um [objeto de meio de pagamento para cadastro](/reference/payment-methods-checkout/enroll-payment-method-checkout) para essa sessão de cliente, definindo qual meio de pagamento o cliente pode cadastrar. Mantenha suas chaves de API privadas no servidor.
+
+### Passo 2: Incluir a biblioteca no seu projeto {#step-2-include-the-library-in-your-project}
+
+Adicione a biblioteca da Yuno ao seu projeto Android:
+
+#### Adicionar o repositório {#add-the-repository}
+
+Adicione o repositório Maven da Yuno à configuração do Gradle do seu projeto:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+Adicione a dependência no `build.gradle`:
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:2.27.0'
+}
+```
+
+#### Permissões {#permissions}
+
+O Yuno SDK inclui a permissão `INTERNET` por padrão, necessária para fazer requisições de rede.
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+### Passo 3: Inicializar o SDK com a chave pública {#step-3-initialize-sdk-with-the-public-key}
+
+Inicialize o SDK:
+
+1. Obtenha sua chave de API pública no [Dashboard da Yuno](https://dashboard.y.uno/)
+2. Crie uma classe de aplicação personalizada, se ainda não tiver feito isso
+3. No método `onCreate()` da sua classe de aplicação, chame `Yuno.initialize()` com sua chave de API:
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      PUBLIC_API_KEY,
+      config = YunoConfig(
+        keepLoader = true,
+      ),
+    )
+  }
+}
+```
+
+Use a data class `YunoConfig` para personalizar o comportamento do SDK. Inclua essa configuração ao chamar `Yuno.initialize()`. As opções disponíveis são:
+
+```kotlin
+data class YunoConfig(
+    val saveCardEnabled: Boolean = false,
+    val keepLoader: Boolean = false,
+    val language: YunoLanguage? = null,
+    val styles: YunoStyles? = null
+)
+```
+
+<Info>
+  Para uma explicação detalhada do parâmetro `keepLoader` e do tratamento de erros obrigatório, veja o [Guia de referência do Android](/pt-br/docs/sdks/resources/references/android#keeploader-parameter).
+</Info>
+<Warning>
+**cardFlow removido do YunoConfig**
+
+A partir da versão **2.11.0**, `cardFlow` não faz mais parte do `YunoConfig`. A configuração do fluxo de cartão agora é feita exclusivamente pelo **CheckoutBuilder**.
+</Warning>
+
+### Passo 4: Cadastrar um novo meio de pagamento {#step-4-enroll-a-new-payment-method}
+
+O processo de cadastro é um fluxo em dois passos. Primeiro, inicialize o processo para configurar os componentes necessários. Depois, inicie o fluxo de UI para permitir que o usuário cadastre um meio de pagamento.
+
+#### 4.1 Inicializar o processo de cadastro {#41-initialize-the-enrollment-process}
+
+Chame o método `initEnrollment` dentro do método `onCreate` da sua activity para preparar seu app para lidar com o fluxo de cadastro. Esse é um passo de configuração obrigatório, exigido pelo sistema operacional Android para registrar o contrato que permite ao SDK enviar o status final do cadastro de volta ao seu app.
+
+```kotlin
+fun ComponentActivity.initEnrollment(
+    callbackEnrollmentState: ((String?, StatusMessage?) -> Unit)? = null
+)
+```
+
+#### 4.2 Iniciar o fluxo de cadastro {#42-start-the-enrollment-flow}
+
+Chame o método `startEnrollment` para abrir a interface do usuário e começar o cadastro de um novo meio de pagamento. Você pode chamar esse método a qualquer momento depois que `initEnrollment` tiver sido executado, por exemplo, quando o usuário tocar em um botão "Cadastrar novo meio de pagamento".
+
+```kotlin
+fun Context.startEnrollment(
+    customerSession: String,
+    countryCode: String,
+    showEnrollmentStatus: Boolean = true,
+    callbackEnrollmentState: ((String?, StatusMessage?) -> Unit)? = null
+)
+```
+
+Parâmetros de `startEnrollment`:
+
+| Parâmetro                 | Descrição                                                                                                                                                                                                                                                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`         | A sessão do cliente associada ao processo de cadastro atual.                                                                                                                                                                                                                                                     |
+| `countryCode`             | Código do país onde o pagamento é feito. Veja [Cobertura por país](/pt-br/docs/sdks/resources/country-coverage) para a lista completa de países compatíveis e seus códigos. |
+| `showEnrollmentStatus`    | Indica se o status do cadastro deve ser exibido. Esse parâmetro é opcional e o padrão é `true`.                                                                                                                                                                                                                  |
+| `callbackEnrollmentState` | Uma função `(state, message)` que retorna o estado atual do processo de cadastro e, em `INTERNAL_ERROR`, um [`StatusMessage?`](/pt-br/docs/sdks/resources/references/android#statusmessage-error-details) descrevendo a falha (cadastros recusados não trazem mensagem). Opcional, o padrão é `null`. Para registrar esse callback, você precisa chamar `initEnrollment` no método `onCreate` da activity. Confira os estados que podem ser retornados. |
+
+## Referência comum {#common-reference}
+
+Para todos os detalhes de parâmetros e personalização, veja a [Referência comum do Android SDK](/pt-br/docs/sdks/resources/references/android).

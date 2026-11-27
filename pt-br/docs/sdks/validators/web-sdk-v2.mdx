@@ -1,0 +1,325 @@
+---
+title: "Validador: Web SDK v2"
+sidebarTitle: "Web SDK v2"
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Um checklist somente leitura para agentes de programação com IA que audita uma integração do Yuno Web SDK 2.x construída sobre SdkPayments.initialize e sdk.transaction."
+---
+
+Coloque este arquivo na raiz do seu projeto e peça ao seu agente de programação:
+
+> Valide minha integração do Yuno Web SDK v2 seguindo este arquivo
+
+Ele funciona como `CLAUDE.md`, `AGENTS.md` ou como um prompt colado. Ele apenas lê o código e não altera nada, a menos que você peça.
+
+Ele cobre a linha sdk-web v2 ("Yuno SDK 2.x"): `window.SdkPayments`, `SdkPayments.initialize(...)` e depois
+`sdk.transaction({...})`. Consulte o [changelog do Web SDK](https://docs.y.uno/changelog/yuno-sdk/web) para ver a versão atual. Cada release é servido em uma URL de versão
+completa, como `https://sdk-web.y.uno/v2.x.y/main.js`, documentada na aba "SDK" do docs.y.uno (`docs/yuno-sdk/*`;
+a aba "SDKs" é a 1.x). Os exemplos da documentação pública fixam a v2.5.1.
+
+## Como usar {#how-to-use}
+
+Primeiro confirme que o repositório está na v2. Pesquise no código-fonte, nos templates HTML, nos templates de servidor e no `package.json`:
+
+```
+grep -rn "SdkPayments\|sdk-payments-ready\|window\.Yuno\|yuno-sdk-ready\|YunoSDK\|sdk-web\.[a-z.]*y\.uno\|sdk-static-bundles-ms/sdk-web\|loadScript(\|@yuno-payments/sdk-web\|\.transaction(\|startCheckout\|startSeamlessCheckout\|mountCheckout" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build .
+```
+
+- **v2:** uma URL `/v2.<minor>.<patch>/main.js`, `sdk.transaction(...)`, `transaction.start(...)`,
+  `getPaymentMethodsViews(...)`.
+- **v1 (1.x):** `/v1.11/main.js`, `window.Yuno`, `Yuno.initialize`, `startCheckout`, `startSeamlessCheckout`,
+  `mountCheckoutLite`, `yunoPaymentResult`. Pare e use o validador da v1 ou o de migração.
+- O nome global não decide: desde a 1.9.0, a v1 também define `window.SdkPayments` e dispara
+  `sdk-payments-ready`. A v2 tem `typeof sdk.transaction === 'function'`; a v1 tem `startCheckout` no lugar.
+
+Informe cada verificação como PASS / FAIL / N/A com arquivo:linha, citando a linha que a comprova. Severidade: **(B)**
+bloqueante, o pagamento falha ou o resultado está errado; **(W)** degradado ou frágil; **(I)** informação.
+
+## O fluxo validado {#the-flow-being-validated}
+
+```
+<script src="https://sdk-web.y.uno/v2.<m>.<p>/main.js">   sets window.SdkPayments, fires 'sdk-payments-ready' once
+await SdkPayments.initialize(publicApiKey, applicationSession?, options?)   // once per page, stable arguments
+  -> sdk.transaction(config)               // sync; validates config; throws on invalid config
+       -> transaction.start({ paymentMethod: { type, vaultedToken?, data? } })   // form, or headless with data
+       -> transaction.getPaymentMethodsViews({ types, onPaymentSelected }) -> views.<x>.mount({ elementSelector })
+       -> transaction.submit()             // only for a form that start() mounted, with showPayButton:false
+       -> await transaction.secureFields(options?) -> .create({ name, options }).mount(selector)
+       -> await transaction.unmount()
+  -> sdk.transactionStatus({ checkoutSession, elementSelector, ... })
+  -> sdk.antifraud({ checkoutSession, countryCode, ... })
+  -> onStatus({ status, substatus, message })   // client signal only; confirm by webhook or GET payment
+```
+
+Modo: `createPayment` com um `checkoutSession` é manual; sem ele, o SDK cria o pagamento (gerenciado,
+sessão com `workflow: "SDK_SEAMLESS"`). O cadastro é sempre gerenciado. Não existe `on()` nem `close()`.
+
+## Verificações {#checks}
+
+### Carregamento e bootstrap {#loading-and-bootstrap}
+
+**1. O script é v2 e fixado em uma versão completa (V1, B)**
+- Pesquise `sdk-web\.(y\.uno|sandbox\.y\.uno|staging\.y\.uno|prod\.eu\.y\.uno)/[^"' ]*main\.js`,
+  `sdk-static-bundles-ms/sdk-web/`, `loadScript(` e `@yuno-payments/sdk-web`.
+- PASS: a URL corresponde a `/v2\.\d+\.\d+/main.js`, ou à URL SRI `.../sdk-web/v2.<m>.<p>/main.js`.
+- FAIL em `/v1.11/`, `/v2/`, `/v2.2/`, `latest`; em `loadScript()` sem `baseUrl` (ele carrega `/v1.11/`); em
+  `loadScript({ sri: true })` (uma URL SRI v1.11.x fixa no código, o build 1.11 fixado pelo pacote npm). Para npm,
+  passe `baseUrl: 'https://sdk-web.y.uno/v2.x.y'`. Versões v2 fixadas mais antigas, como `v2.0.0`, são válidas se a integração foi testada com essa versão.
+- Por quê: um bundle v1 gera `sdk.transaction is not a function`; as pastas móveis `/v2/`, `/v2.0/`, `/v2.2/`
+  retornam 404. Não existe pasta móvel da v2: as atualizações de versão são manuais.
+
+**2. Nenhum global ou evento da v1 (V2, B)**
+- Pesquise `window\.Yuno|\bYuno\.initialize|new Yuno|yuno-sdk-ready|YunoSDK`. FAIL em qualquer ocorrência no código v2.
+- Por quê: a v2 define apenas `window.SdkPayments`: `Yuno is not defined`, ou `yuno-sdk-ready` nunca dispara.
+
+**3. O tratamento de "pronto" cobre o caso "script já carregado" (V3, B)**
+- Pesquise `sdk-payments-ready` e `SdkPayments`. PASS: `if (window.SdkPayments) start(); else
+  window.addEventListener('sdk-payments-ready', start)`, ou um `loadScript` com await / uma promise de carregamento própria.
+- FAIL em um `addEventListener` isolado (o evento dispara uma vez, no carregamento), ou `initialize` antes de o script rodar.
+- Por quê: o checkout nunca inicia nas páginas em que o script carregou primeiro; `SdkPayments is not defined`.
+
+**4. `initialize` é aguardado, no lado do cliente, apenas com a chave pública (V4, B)**
+- Pesquise `SdkPayments\.initialize\(`; verifique `await` ou `.then`; verifique que não está em código de servidor
+  (`getServerSideProps`, server components, route handlers); verifique que não há chave secreta privada no código de front-end.
+- FAIL se o resultado for usado sem `await`, se rodar no servidor ou se uma chave privada estiver no bundle.
+- Por quê: ele retorna `Promise<SdkPayments>`: `sdk.transaction is not a function`; em um servidor, `window is not defined`.
+
+**5. Os argumentos de `initialize` são estáveis e uma única instância é reutilizada (V5, W)**
+- Procure `initialize` em funções de render, em effects sem cache no nível do módulo, ou com um argumento
+  que muda a cada chamada (`applicationSession` por checkout, `Date.now()`, valores aleatórios).
+- FAIL em mais de um conjunto distinto de argumentos durante a vida da página, ou um `initialize` por transação.
+- Por quê: os mesmos argumentos retornam a mesma instância e registram `SdkPayments.initialize() was called again with the
+  same arguments. The existing instance was returned; the SDK was not re-initialized.` (inofensivo). Argumentos
+  diferentes destroem a instância antiga e o formulário montado desaparece. `transaction()`, `transactionStatus()`,
+  `start()`, `submit()` e `secureFields()` nela lançam `This SdkPayments instance is no longer active: a
+  later initialize() replaced it. Use the instance returned by the most recent initialize().` Um
+  `antifraud()` substituído resolve `{ status: 'error' }` e `isPaymentMethodAvailable()` resolve `false`, silenciosamente.
+
+### Configuração e resultado da transação {#transaction-config-and-result}
+
+**6. A configuração da transação é válida (V6, B)**
+- Para cada chamada `.transaction(`. PASS: exatamente um entre `checkoutSession` / `customerSession`; `countryCode`;
+  `onStatus` é uma função; `createPayment`, se presente, é uma função. Repositórios TypeScript também precisam passar
+  `language` e `showStatusScreen` (exigidos pelo tipo, embora a documentação os chame de opcionais).
+- Por quê, erros lançados literalmente: `` Provide either `checkoutSession` or `customerSession`, not both. ``,
+  `` A `checkoutSession` or `customerSession` is required. ``, `` `countryCode` is required. ``,
+  `` `createPayment` must be a function when provided. `` Sem `onStatus`, o console avisa
+  `` SdkPayments transaction() was created without an `onStatus` function. The payment result will not be
+  delivered to your integration. Pass `onStatus` in the transaction config to receive the result. ``
+- Chaves desconhecidas e exclusivas da v1 passam sem erro. A maioria nunca é lida, mas três ainda agem: `onLoading`
+  ainda é chamado (verificação 19); `paymentMethodSelected` / `yunoPaymentMethodSelected` disparam em toda seleção da
+  lista, então, ao lado de `onPaymentSelected`, cada seleção chama o lojista duas vezes; `yunoCreatePayment` é
+  mesclado em `createPayment`. Sinalize toda chave que não está no tipo v2 e todo nome de callback da v1.
+
+**7. `onStatus` trata o contrato de status completo (V7, B)**
+- Leia o handler. PASS: lê `result.status`, `result.substatus`, `result.message`; trata
+  `INTERNAL_ERROR` (ramifica por `message.code`; `substatus` é `null` para erros do SDK) e `USER_CANCEL`;
+  trata `INTERNAL_ERROR` com `message.code` `FORM_INVALID` ou `COLLECT_FAILED`, e, no modo manual, um
+  `DECLINED` / `ERROR` que permite nova tentativa, como não finais.
+- FAIL em valores da v1 (`'FAIL'`, `'REJECT'`, `'PROCESSING'`, `'READY'`), dois argumentos posicionais, ramificação
+  por `substatus` para códigos de erro do SDK, um redirecionamento ou desmontagem a cada chamada, ou o pedido marcado como pago
+  no lado do cliente em `SUCCEEDED`.
+- Por quê: as ramificações nunca correspondem, uma primeira recusa encerra o ciclo de novas tentativas, ou pedidos são atendidos sem pagamento.
+  Com `showStatusScreen: true` (padrão), `onStatus` dispara quando o comprador fecha a tela de resultado do SDK.
+
+**8. O modo corresponde ao `workflow` da sessão de checkout (V8, B)**
+- Front-end: `createPayment` está presente? Backend: pesquise `checkout/sessions` e `workflow`. PASS: `createPayment`
+  com uma sessão de workflow padrão; nenhum `createPayment` com `workflow: "SDK_SEAMLESS"`.
+- Por quê: uma divergência termina em `onStatus` `INTERNAL_ERROR`; o backend rejeita a criação do pagamento pelo SDK.
+
+**9. `createPayment` segue o contrato de Promise com um argumento (V9, B)**
+- Pesquise `createPayment\s*[:=(]`. PASS: um parâmetro `token`; envia `token.token` e `token.checkout_session`
+  ao backend do lojista; retorna uma Promise que se resolve em todos os caminhos; rejeita em caso de falha do backend.
+- FAIL em `(ott, info, cs)`; o argumento usado como a string do token; o `checkoutSession` da configuração usado no lugar
+  de `token.checkout_session`; `catch {}` que resolve; um caminho que nunca se resolve; uma chamada `continuePayment()`.
+- Por quê: um objeto enviado como token gera um 4xx no Create Payment; a sessão muda após uma recusa que permite nova tentativa,
+  então a da configuração fica desatualizada; não existe timeout, então uma promise travada deixa o formulário carregando para sempre. Uma
+  rejeição termina em `INTERNAL_ERROR` com `message.code` `MERCHANT_CREATE_PAYMENT_FAILED`, com o formulário ainda montado.
+- Verifique em tempo de execução: o modo é escolhido apenas a partir de `createPayment`, então uma configuração só com o nome v1
+  `yunoCreatePayment` (mesclado no estado com a assinatura v1 de três argumentos) pode rodar como gerenciado, não manual.
+
+**10. `autoContinuePayment: false` é intencional (V10, W)**
+- Pesquise `autoContinuePayment`. PASS: ausente, ou `false` com o status controlado pelo webhook e uma nova sessão para qualquer
+  `start()` posterior.
+- Por quê: com `false`, o SDK não executa consulta de status, nem 3DS, nem `onStatus` depois que `createPayment` resolve, e
+  reutilizar a sessão lança o erro "already finished" (verificação 18). O PayPal clássico e o cadastro PayPal
+  ignoram `false`; `paypalBraintree` o respeita.
+
+### Montagem e pagamento {#mounting-and-paying}
+
+**11. `elementSelector` é resolvido no momento da chamada (V11, B)**
+- Verifique `elementSelector` na configuração da transação, em cada `.mount({ elementSelector })` de view e em
+  `transactionStatus`. O nó precisa existir e estar conectado quando `start()` / `mount()` roda.
+- Apenas a configuração da transação (o formulário que `start()` monta, e o cadastro) aceita uma string ou um
+  `HTMLElement`. Montagens de views e `transactionStatus` aceitam apenas string.
+- FAIL em um `HTMLElement` passado para a montagem de uma view ou para `transactionStatus`; um nó ainda não renderizado,
+  renderizado condicionalmente ou desconectado; nenhum seletor para um pagamento por formulário.
+- Por quê, literalmente: `elementSelector=[object HTMLDivElement] is not valid` (elemento na montagem da lista),
+  `elementSelector=undefined is not valid` (`start()` de formulário sem seletor), `elementSelector "<sel>" was not
+  found in the document.`, `elementSelector is detached from the document.`, `Element <sel> doesn't exist in
+  the DOM` com `onStatus` `INTERNAL_ERROR` e `message.code` `ELEMENT_NOT_FOUND`.
+
+**12. `start()` é aguardado com tratamento de erro e não é a conclusão do pagamento (V12, B)**
+- Pesquise `\.start\(`. PASS: dentro de try/catch ou `.catch`; `paymentMethod.type` sempre definido; resultado lido apenas em
+  `onStatus`. Um `start()` de formulário resolve quando o formulário está na página, não quando o pagamento é feito.
+- FAIL em ausência de catch; `.start()` sem `paymentMethod` em um pagamento; UI de "sucesso" depois de `await start()`; um
+  segundo `start()` no mesmo formulário montado em vez de `submit()`.
+- Por quê, rejeições literais: `` `paymentMethod.type` is required for a payment transaction. ``,
+  `` `start()` has already been called on this transaction. Call `submit()` to submit the form it mounted. ``,
+  `A payment is in progress on this transaction. Wait for it to settle before starting another payment
+  method.` Uma tela de "pago" antes de o comprador pagar é o sintoma visível para o lojista.
+
+**13. O próprio botão Pagar do lojista está conectado corretamente (V13, W)**
+- Verifique `showPayButton` e o handler de clique. Formulário: `showPayButton:false`, `await start({ paymentMethod })`,
+  depois `transaction.submit()`. Lista: o botão chama `start({ paymentMethod: selected })` com o valor de
+  `onPaymentSelected` armazenado; `selectionSource === 'auto'` (pré-seleção do SDK) não o habilita.
+- FAIL em `submit()` antes de `start()` resolver, ou em uma lista, carteira digital ou cadastro; Pagar habilitado em `auto`; o
+  botão não desabilitado enquanto um pagamento roda; um callback de seleção da v1 mantido ao lado de `onPaymentSelected`.
+- Por quê, literalmente: `` `submit()` needs a form mounted by `start({ paymentMethod })`. Call `start()` first and wait
+  for it to resolve. ``, `` `submit()` does not pay from the payment method list. Call `start({ paymentMethod })`
+  with the selected method. ``, `` `submit()` cannot pay a wallet. The shopper pays by tapping the wallet
+  button. ``, `` `submit()` found no form to submit: the form `start()` mounted is no longer on the page. Call
+  `start({ paymentMethod })` again. `` Um `submit()` enquanto `start()` ainda está montando não lança erro: assim como um
+  formulário inválido, ele entrega um `INTERNAL_ERROR` não final com `message.code` `FORM_INVALID`.
+
+**14. As views são solicitadas e montadas corretamente (V14, W)**
+- Pesquise `getPaymentMethodsViews` e `\.mount\(`. PASS: `types` apenas entre `paymentMethodList`, `applePay`,
+  `googlePay`, `samsungPay`, `paypal`, `paypalBraintree`, `revolutPay`; apenas as views solicitadas são construídas, então uma
+  view usada sem estar em `types` é protegida (`?.` ou uma verificação);
+  cada `mount` com await ou com `.catch` (tipado como `void`, retorna uma Promise); carteiras digitais pagam no toque, sem `start()`.
+- FAIL em nomes da v1 (`GOOGLE_PAY`), `views.x.mount` sem proteção, ausência de catch, views em uma transação de cadastro.
+- Por quê: `Cannot read properties of undefined (reading 'mount')`; rejeição não tratada `There are not valid
+  payment methods`; lançado `` `getPaymentMethodsViews` is not available for enrollment transactions. Use
+  `secureFields()` to collect card data. `` As views de carteiras digitais continuam montadas depois de `transaction.unmount()`; não existe
+  desmontagem por view. Verifique em tempo de execução: uma lista mais carteiras digitais a partir de uma transação.
+
+**15. Os dados headless usam o envelope da v2 e não são registrados em log (V15, B)**
+- Pesquise `data:\s*\{\s*card`. PASS: `data.card.{holderName, number, securityCode, expirationMonth,
+  expirationYear}` em camelCase; um `start()` por transação; dados do cartão nunca registrados em log nem armazenados. Um cartão salvo
+  com um CVV novo é `vaultedToken` mais `data.card.securityCode`.
+- FAIL em snake_case (`holder_name`, `security_code`, `payment_method.card.detail`), um segundo `start()`
+  headless (uso único), ou `data` enquanto um formulário de lista inline está montado.
+- Por quê: a tokenização falha ou os campos chegam vazios; `` `start()` has already been called on this transaction. ``
+
+**16. Os Secure Fields usam a superfície da v2 (V16, B)**
+- Pesquise `secureFields(`, `\.create\(`, `\.render\(`, `\.mount\(`, `generateToken`, `isFieldComplete`.
+- PASS: `const fields = await transaction.secureFields({ installmentEnable? })`;
+  `fields.create({ name, options }).mount('#sel')`; Pagar condicionado a `!error && isDirty` por campo; pagamento por
+  `transaction.start({ paymentMethod: { type: 'CARD', data: { card: { holderName } } } })`.
+- FAIL em `.render(` (v1), `generateToken*` ou `continuePayment`, `isFieldComplete` como condição, chaves PCI em
+  `data.card`.
+- Por quê: `render is not a function`; um erro lançado que começa com `Secure fields collect the card data inside the mounted
+  iframes` e continua com `` remove <keys> from `paymentMethod.data.card`. Only non-PCI metadata (holderName,
+  type, installment, customer, vaultOnSuccess) may be passed here. ``; um botão Pagar desabilitado para PANs curtos válidos.
+
+**17. O fluxo de cadastro está correto (V17, B)**
+- Pesquise `customerSession`. PASS: nenhum `checkoutSession`, `createPayment`, `showPayButton` ou
+  `autoContinuePayment` junto com ele; `start()` sem argumentos para a UI, `start({ paymentMethod: { type, data
+  } })` para headless; o sucesso é `ENROLLED` (UI) ou `CREATED` (headless e Secure Fields).
+- FAIL ao ler `result.vaultedToken` (nunca entregue; busque-o no lado do servidor), `submit()` ou views.
+- Por quê: um vaulted token `undefined` é salvo; lançado `` `submit()` is not available for enrollment
+  transactions. `` ou `` `paymentMethod.type` is required for a headless enrollment. ``
+
+### Re-render e ciclo de vida do framework {#re-render-and-framework-lifecycle}
+
+**18. Uma instância, uma transação por montagem, limpeza na desmontagem, seguro com StrictMode (V18, B)**
+
+Nenhum documento da v2 cobre frameworks; estas regras seguem o código. Os mesmos argumentos de `initialize` retornam a mesma
+instância. Um segundo `start()` de um formulário montado lança erro de propósito (um effect do React executado duas vezes já criou um
+pagamento). Uma nova `Transaction` redefine o estado compartilhado da instância, então, com duas transações ativas, a última montagem vence.
+`unmount()` é assíncrono, entrega `USER_CANCEL` para uma tentativa não concluída e mantém as carteiras digitais. Sessões concluídas são finais.
+
+- **Todos os frameworks:** `initialize` atrás de uma promise no nível do módulo (ou sempre com os mesmos argumentos); uma
+  `transaction()` por checkout montado, criada onde o contêiner já existe; uma superfície de cartão ativa
+  por página; uma nova sessão de checkout significa uma nova transação. FAIL em `initialize` ou `transaction()` no
+  corpo do render, ou em duas transações montadas ao mesmo tempo.
+- **React:** a transação é mantida em um `useRef` e criada no `useEffect` dono do contêiner;
+  `start()` roda uma vez por transação (proteja com o ref); a limpeza chama `await transaction.unmount()` e
+  limpa o ref; os callbacks (`onStatus`, `createPayment`) leem as props mais recentes por meio de um ref, para que um re-render
+  não reconstrua a transação. Com StrictMode, o effect roda, faz a limpeza e roda de novo: PASS apenas se
+  a segunda execução construir uma transação nova depois da limpeza, nunca um segundo `start()` na primeira.
+  FAIL em `start()` em um effect sem limpeza, ou em dependências do effect que mudam a cada render.
+- **Next.js:** o código do SDK roda apenas no navegador: um componente `'use client'` chamando `initialize` dentro de um
+  effect, ou um componente carregado com `dynamic(..., { ssr: false })`. FAIL em `SdkPayments` em um server
+  component, `getServerSideProps`, um route handler ou no nível superior do módulo de um arquivo renderizado no servidor.
+- **Vue e Angular (orientação):** crie a transação em `onMounted` / `ngAfterViewInit`, desmonte em
+  `onBeforeUnmount` / `ngOnDestroy` e mantenha-a fora do estado reativo (`shallowRef` ou uma variável simples).
+- **Desmontagem em SPA:** sair da rota de checkout chama `await transaction.unmount()`; o `USER_CANCEL` que ele
+  entrega não é exibido como erro nem tratado como abandono; os contêineres das carteiras digitais são removidos com a rota.
+- Por quê: formulários duplicados ou que desaparecem, tentativas de pagamento duplas, `` `start()` has already been called on this
+  transaction. ``, `The payment on this checkout session already finished. Create a new checkout session and
+  transaction to pay again.`, ou um banner de erro a cada mudança de rota.
+- Verifique em tempo de execução: `transaction.unmount()` lê a raiz compartilhada depois dos seus awaits, e nenhum teste cobre uma
+  remontagem com StrictMode. Informe os achados de StrictMode como "não verificado contra uma remontagem real".
+
+### Opções e casos-limite {#options-and-edges}
+
+**19. `showLoading` é uma função e o lojista controla o loader (V19, W)**
+- Pesquise `showLoading` e `onLoading`. PASS: `showLoading: (isLoading) => void` que mostra e esconde o
+  loader do lojista; um handler registrado substitui o overlay do SDK.
+- FAIL em `showLoading: true|false`, em `onLoading` (nome da v1, ainda chamado pela v2 com o
+  payload `{ isLoading, type }` da v1, ao lado do overlay do SDK), ou em um handler sem UI por trás.
+- Por quê: `showLoading: true` lança um TypeError na primeira mudança de carregamento, citando uma variável minificada, não
+  `showLoading`. `showLoading: false` é tratado como ausência de handler: o overlay do SDK volta silenciosamente.
+
+**20. A opção da tela de status usa o nome da v2 (V20, W)**
+- Pesquise `showPaymentStatus|showStatusScreen|transactionStatus`. PASS: `showStatusScreen`; `transactionStatus`
+  recebe `elementSelector` (obrigatório). FAIL em `showPaymentStatus` (ignorado, a tela de resultado ainda aparece).
+- Por quê: UI de resultado duplicada, e `onStatus` atrasado até o comprador fechar a tela do SDK.
+
+**21. As opções de cartão usam nomes da v2 (V21, W)**
+- Pesquise `card:\s*\{`. PASS: `saveCardEnabled`, `styles`, `type`, `vaultOnSuccess`, `texts`, `documentEnable`,
+  `isCreditCardProcessingOnly`, `fonts`. FAIL em `cardSaveEnable` ou `requiredFieldsOrderedEnabled`.
+- Por quê: `cardSaveEnable` é ignorado silenciosamente e a caixa de seleção de salvar cartão desaparece. Informe
+  `externalButtons.applePay.topLevelDomain` como ignorado (I): a v2 detecta o domínio do Apple Pay sozinha.
+
+**22. O antifraude lê a união de resultados (V22, W)**
+- Pesquise `\.antifraud\(`. PASS: verifica `result.status === 'success'` antes de usar `result.deviceFingerprints`.
+  FAIL em ausência de verificação, ou em depender de uma rejeição (ele nunca rejeita). Por quê: fingerprints `undefined` são enviados.
+
+**23. Overrides de CSS, white-label, CSP e suposições sobre o host (V23, W)**
+- Execute sempre esta parte: pesquise em todas as folhas de estilo e estilos de componentes (`*.css`, `*.scss`, `*.less`, blocos
+  styled em `*.ts`, `*.tsx`, `*.vue`, `*.svelte`) por `yuno-` e `Yuno-`. Depois verifique `apiUrl`, `assetUrl`,
+  cabeçalhos CSP e regras de proxy, quando presentes.
+- As classes de formulário do SDK são `sdk-payments-*` na v1.11 e na v2; as poucas strings `yuno-*` que restam na v1.11 são ids, nomes de eventos, nomes de chunks e o fallback de fonte `Yuno-Inter` (o mapa de renomeação as lista como inalteradas), não classes de elementos. A própria v2 renderiza
+  `yuno-container-spinner-content` e `yuno-container-spinner-ring` (o spinner de toda montagem), além de
+  `<style id="yuno-container-spinner-style">` e `data-yuno-placeholder`. Seletores sobre eles são legítimos.
+- PASS: os overrides visam `sdk-payments-*` ou as duas classes de spinner; um proxy encaminha
+  `/sdk-static-bundles-ms/*`; `apiUrl` e `assetUrl` definidos juntos; o host da v2 está no `script-src` do CSP; em uma
+  página white-label, um seletor `HTMLElement` tem seu próprio `id` (os nomes do spinner sempre permanecem no DOM).
+- FAIL em qualquer outro seletor `yuno-` / `Yuno-` (ele não corresponde a nada que o SDK renderiza), um host ausente no CSP, ou
+  um elemento sem id em uma página white-label.
+- Por quê: os overrides deixam de ser aplicados, o script é bloqueado, ou o SDK atribui `yuno-view-<random>` como id.
+  Verifique em tempo de execução: apenas três nomes de classe foram comparados com a v1, então confira cada override visualmente.
+
+### Lado do servidor {#server-side}
+
+**24. O atendimento do pedido é confirmado no servidor, e os tipos TypeScript são da v2 (V24, B)**
+- Encontre o handler de webhook ou a verificação `GET /v1/payments/...` que conduz o atendimento do pedido, e qualquer `.d.ts` para
+  `window.SdkPayments`. PASS: atendimento do pedido a partir do webhook ou de `GET payment`; um `.d.ts` local copiado do relatório
+  de API da v2.
+- FAIL em atendimento do pedido a partir de `onStatus` (pedidos pagos sem um pagamento), ou `@yuno-payments/sdk-web-types` para
+  chamadas da v2 (formato v1, sem `transaction`: erros de compilação ou `any` silencioso; só esta parte é (W)).
+
+## Formato do relatório {#report-format}
+
+```
+CHECK  1  Script v2, full version     PASS  public/index.html:14 https://sdk-web.y.uno/v2.5.1/main.js
+CHECK  8  Mode vs workflow            FAIL  api/session.ts:31 no workflow, front end has no createPayment
+                                            (managed on SDK_CHECKOUT -> INTERNAL_ERROR)
+SDK: v2.5.1 (script tag). Framework: Next.js 14, React StrictMode on.
+```
+
+Termine com as falhas ordenadas por impacto, (B), depois (W), depois (I), cada uma com uma correção de uma linha.
+
+## Diagnósticos a coletar {#diagnostics-to-capture}
+
+1. A URL do script servido, `typeof sdk.transaction`, o id da sessão de checkout, seu `workflow`, o horário UTC.
+2. Cada payload de `onStatus` recebido (`status`, `substatus`, `message.code`, `message.reason`).
+3. Avisos e erros do SDK no console, citados literalmente (initialize, substituído, onStatus ausente).
+4. A requisição e a resposta do Create Payment (sem dados do cartão), framework, StrictMode, mudança de rota ou re-render.
+
+Fontes: o release 2.2.0 do Web SDK e o código-fonte da v2, o relatório de API da v2 e a documentação pública da Yuno
+(a aba "SDK" e seu changelog); sondagens da CDN em 2026-10-29. Data da pesquisa: 2026-10-29.

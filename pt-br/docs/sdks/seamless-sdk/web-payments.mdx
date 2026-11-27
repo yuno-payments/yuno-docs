@@ -1,0 +1,427 @@
+---
+title: Seamless SDK (Payment Web)
+hidden: false
+description: "Integre o Seamless SDK Web da Yuno para ter uma experiência de pagamento flexível com componentes de UI prontos."
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Siga este guia passo a passo para implementar e habilitar o recurso de pagamento do Seamless SDK Web da Yuno no seu app.
+
+<Tip>
+**SDK recomendado**
+
+A Yuno recomenda usar o **Web Seamless SDK** para ter uma experiência de integração tranquila. Essa opção oferece uma solução de pagamento flexível, com componentes de UI prontos e opções de personalização.
+</Tip>
+
+<Note>
+**Devo usar o Seamless SDK Lite ou Full?**
+
+Use o Full Seamless SDK para ter a listagem automática de meios de pagamento e a exibição separada dos botões de pagamento (como PayPal). O Lite Seamless SDK dá a você mais controle sobre como os meios de pagamento são exibidos e organizados.
+</Note>
+
+<img
+  className="block"
+  src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png"
+  alt="Visão geral do Seamless SDK Web"
+/>
+
+## Etapa 1: Inclua a biblioteca no seu projeto {#step-1-include-the-library-in-your-project}
+
+O guia de integração oferece [três métodos flexíveis](/pt-br/docs/sdks/overview/quickstart):
+
+1. Inclusão direta do script no HTML
+2. Injeção dinâmica via JavaScript
+3. Instalação do módulo NPM
+
+Escolha o método de integração que melhor atende ao seu fluxo de desenvolvimento e aos seus requisitos técnicos. Depois de concluir a integração do SDK, você pode seguir as etapas abaixo para implementar a funcionalidade Seamless.
+
+<Info>
+**Biblioteca TypeScript**
+
+Se você usa TypeScript, a Yuno oferece uma [biblioteca](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) que dá acesso a todos os métodos disponíveis no Yuno Web SDK.
+</Info>
+
+## Etapa 2: Inicialize o SDK com a chave pública {#step-2-initialize-sdk-with-the-public-key}
+
+Inicialize o Yuno SDK na sua aplicação JavaScript informando uma `PUBLIC_API_KEY` válida:
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+<Note>
+**Credenciais**
+
+Consulte a página de credenciais para mais informações: [Autenticação](/reference/getting-started/authentication)
+</Note>
+
+## Etapa 3: Crie uma sessão de checkout {#step-3-create-a-checkout-session}
+
+<Info>
+  Se o seu fluxo exigir o envio do objeto `additional_data`, ele pode ser enviado como parte da sessão de checkout.
+</Info>
+
+Para iniciar o fluxo de pagamento, crie uma nova `checkout_session` usando o endpoint [Criar sessão de checkout](/reference/checkout-sessions/create-checkout-session).
+
+* Primeiro, [crie um cliente](/reference/customers/create-customer) ou recupere o ID de um cliente existente
+* Inclua esse ID ao criar a `checkout_session`
+
+<Info>
+  Para controlar a autorização e a captura com cartões, inclua `payment_method.detail.card.capture` na sessão de checkout: defina `false` para apenas autorizar e `true` para capturar imediatamente.
+</Info>
+
+### Parâmetros principais {#key-parameters}
+
+| Parâmetro | Obrigatório | Descrição |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount` | Sim | O objeto do valor principal da transação, que contém `currency` (código ISO 4217) e `value` (valor numérico nessa moeda). |
+| `alternative_amount` | Não | Uma representação do valor da transação em uma moeda alternativa, com a mesma estrutura de `amount` (`currency` e `value`). Útil em cenários com várias moedas. Por exemplo, você pode exibir os preços aos clientes na moeda de preferência deles (por exemplo, USD) enquanto processa o pagamento na moeda local (por exemplo, COP). |
+
+<Info>
+**Evento `onPaymentMethodSelect`**
+
+Para todos os APMs, incluindo Google Pay, Apple Pay e PayPal, o `onPaymentMethodSelected` é disparado assim que o cliente escolhe o meio de pagamento (antes de o fluxo de pagamento começar). Defina o `onPaymentMethodSelected` em `startSeamlessCheckout` antes de `mountSeamlessCheckout`.
+</Info>
+
+<Info>
+**Exibição do Google Pay e do Apple Pay**
+
+A partir da versão 1.5 do SDK, o Google Pay e o Apple Pay aparecem como botões diretos, e não como botões de opção, na lista de meios de pagamento. Eles são exibidos separadamente dos outros meios de pagamento.
+</Info>
+
+## Etapa 4: Inicie o processo de checkout {#step-4-start-the-checkout-process}
+
+Use a configuração abaixo para oferecer uma experiência de pagamento fluida e fácil de usar aos seus clientes:
+
+```javascript
+await yuno.startSeamlessCheckout({
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  elementSelector: "#root",
+  countryCode: "US",
+  language: "en-US",
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+  onLoading: (args) => console.log(args),
+  renderMode: {
+    type: "modal",
+    elementSelector: {
+      apmForm: "#form-element",
+      actionForm: "#action-form-element",
+    },
+  },
+  card: {
+    type: "extends",
+    styles: "",
+    cardSaveEnable: false,
+    texts: {},
+  },
+  texts: {},
+  onPaymentMethodSelected(data) {
+    console.log("Payment method selected:", data);
+  },
+  async paymentResult(status, subStatus) {
+    console.log("Payment result:", status, subStatus);
+    await yuno.hideLoader();
+  },
+  async error(error, data) {
+    console.error("An error occurred:", error);
+    await yuno.hideLoader();
+  },
+});
+```
+
+Ao usar `startSeamlessCheckout`, especifique os callbacks que tratam os pagamentos. Você também pode personalizar a interface do checkout com os objetos `texts`.
+
+O Seamless SDK cria o próprio pagamento a partir da sessão de checkout, por isso não existe o callback `createPayment` nem a chamada Create Payment a partir do seu servidor. Você recebe o resultado em `paymentResult`, e o seu servidor o recebe pelo webhook `payment.purchase`. O SDK também executa sozinho a [nova tentativa de pagamento](#payment-retry) para cartões recusados, então você não chama `continuePayment`.
+
+### Parâmetros {#parameters}
+
+Configure o checkout seamless com as seguintes opções:
+
+| Parâmetro | Descrição |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession` | Refere-se à [sessão de checkout](/reference/checkout-sessions/the-checkout-session-object) do pagamento atual. Exemplo: `438413b7-4921-41e4-b8f3-28a5a0141638`. |
+| `elementSelector` | O elemento HTML em que o checkout será renderizado. |
+| `countryCode` | Este parâmetro especifica o país para o qual o processo de pagamento está sendo configurado. Use um valor `ENUM` que represente o código do país desejado. Consulte a página [Cobertura por país](/pt-br/docs/sdks/resources/country-coverage) para ver a lista completa de países compatíveis e seus códigos. |
+| `language` | Idioma dos formulários de pagamento. Use qualquer código listado em [Idiomas compatíveis](/pt-br/docs/sdks/resources/languages-supported). Exemplo: `en-US`. Usa o idioma do navegador por padrão, quando disponível. |
+| `showLoading` | Controla a visibilidade da página de carregamento/spinner da Yuno durante o processo de pagamento. Padrão: `true`. |
+| `onLoading` | Obrigatório para receber notificações sobre chamadas ao servidor ou eventos de carregamento durante o processo de pagamento. |
+| `issuersFormEnable` | Habilita o formulário do emissor (por exemplo, uma lista de bancos). Padrão: `true`. |
+| `showPaymentStatus` | Mostra a página de status do pagamento da Yuno, útil ao dar continuidade a um pagamento. Padrão: `true`. |
+| `showPayButton` | Controla a visibilidade do botão de pagar no formulário do cliente ou do cartão. Padrão: `true`. |
+| `renderMode` | Especifica como e onde os formulários serão renderizados. As opções disponíveis são: |
+| | ▪️ `type: modal` (padrão) |
+| | ▪️ `type: element` - Se você selecionar `element`, deve informar o `elementSelector` para especificar onde o formulário deve ser renderizado. |
+| `card` | Define a configuração do formulário de cartão. Contém configurações como estilos personalizados e a opção de salvar o cartão. |
+| `texts` | Permite definir textos personalizados para os botões dos formulários de pagamento com cartão e sem cartão. |
+| `onPaymentMethodSelected` | Callback chamado quando um meio de pagamento é selecionado, junto com o tipo e o nome do meio. |
+| `paymentResult` | Callback chamado depois que o pagamento é concluído. Recebe o [status do pagamento](/reference/payments/status-and-response-codes/payment) (por exemplo, `SUCCEEDED`, `DECLINED`, `PENDING`, `ERROR`) e um `subStatus` opcional que o detalha. Consulte [Etapas canceladas pelo cliente](/pt-br/docs/sdks/resources/references/web#shopper-cancelled-steps). |
+| `error` | Callback chamado quando ocorre um erro no processo de pagamento. Recebe o tipo do erro e dados adicionais opcionais. |
+| `onChange` | Informa se o formulário de pagamento está completo. Recebe `{ form: { isValid } }`. Use com `showPayButton: false` para controlar o seu próprio botão de pagar. Disponível desde a v1.10.11. |
+
+<Note>
+**Promoções**
+
+As promoções não são aplicadas quando o SDK cria o próprio pagamento (`mountSeamlessCheckout` e `mountSeamlessCheckoutLite`): ele não pede uma cotação de [promoção](/docs/payment-features/promotions) nem envia uma linha de desconto. Para usar promoções na web, faça a integração com o checkout Full ou Lite, em que o seu servidor cria o pagamento.
+</Note>
+
+<Note>
+**Transações iniciadas pelo cliente e pelo lojista**
+
+Os pagamentos podem ser iniciados pelo cliente (CIT) ou pelo lojista (MIT). Você encontra mais informações sobre as características de cada um em [Credenciais armazenadas](/pt-br/docs/payment-features/stored-credentials).
+
+O passo a passo desta página se refere a uma transação iniciada pelo cliente sem a opção de recorrência. Normalmente, ela é usada em compras online únicas, compras em loja, saques em caixas eletrônicos etc.
+</Note>
+
+## Etapa 5: Monte o SDK {#step-5-mount-the-sdk}
+
+Para apresentar o processo de checkout, use a função `await yuno.mountSeamlessCheckout()`. Esta etapa garante que o SDK seja montado corretamente no elemento HTML que você escolheu.
+
+```javascript
+await yuno.mountSeamlessCheckout();
+```
+
+Depois de montar, você precisa iniciar o fluxo de checkout chamando `await yuno.startPayment()`. Se você pular essa chamada, o formulário de pagamento não será aberto.
+
+## Etapa 6: Inicie o fluxo de pagamento (obrigatório) {#step-6-start-the-payment-flow-required}
+
+Chame `await yuno.startPayment()` logo depois de `await yuno.mountSeamlessCheckout()` para abrir a UI do meio de pagamento selecionado:
+
+```javascript
+await yuno.mountSeamlessCheckout();
+
+await yuno.startPayment();
+```
+
+Como alternativa, você pode disparar o início a partir de uma ação do usuário, como o clique em um botão:
+
+```javascript
+const payButton = document.querySelector('#button-pay');
+payButton.addEventListener('click', async () => {
+  await yuno.startPayment();
+});
+```
+
+<Note>
+**App de demonstração**
+
+Além dos exemplos de código fornecidos, você pode acessar o [App de demonstração](https://github.com/yuno-payments/yuno-sdk-web) para ver uma implementação completa dos SDKs da Yuno (clone a partir do repositório).
+</Note>
+
+## Montar botões externos {#mount-external-buttons}
+
+Você pode usar o método `mountExternalButtons` para renderizar os botões do Google Pay e do Apple Pay em locais personalizados da sua UI. Isso dá a você controle sobre onde esses botões são exibidos.
+
+```javascript
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay',
+  },
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay',
+  },
+]);
+```
+
+### Parâmetros {#parameters-1}
+
+| Parâmetro | Descrição |
+| :------------------ | :------------------------------------------------------------------------------------------------------------- |
+| `paymentMethodType` | O tipo de meio de pagamento. Deve ser `'APPLE_PAY'` ou `'GOOGLE_PAY'`. |
+| `elementSelector` | O seletor CSS do elemento HTML em que o botão deve ser renderizado (por exemplo, `'#apple-pay'`, `'.button'`). |
+
+### Desmontar botões {#unmounting-buttons}
+
+Você pode desmontar um único botão externo pelo tipo de meio de pagamento:
+
+```javascript
+await yuno.unmountExternalButton('APPLE_PAY');
+```
+
+Ou desmontar todos os botões externos de uma vez:
+
+```javascript
+await yuno.unmountAllExternalButtons();
+```
+
+### Desmontar o SDK {#unmounting-the-sdk}
+
+Para fazer uma limpeza explícita do Yuno SDK (por exemplo, quando um usuário cancela o fluxo ou você precisa remover o SDK do DOM), use o método `unmountSdk()`:
+
+```javascript
+await yuno.unmountSdk();
+```
+
+## Revolut Pay {#revolut-pay}
+
+Há duas formas de renderizar o botão do Revolut Pay:
+
+1. **Checkout completo**: o botão aparece dentro da lista de meios de pagamento renderizada pelo SDK.
+2. **Botões externos** (`mountExternalButtons`): o lojista decide em qual contêiner da página dele o botão será montado.
+
+Nos dois casos, a configuração do botão fica em `externalButtons.revolutPay`, dentro de `startCheckout`. Ao contrário dos outros botões, o widget é renderizado pelo próprio SDK da Revolut, então a configuração corresponde diretamente às opções de botão da Revolut.
+
+### Integração com botões externos {#external-buttons-integration}
+
+O lojista define um contêiner no HTML dele e monta o botão ali:
+
+```html
+<div id="revolut-pay-element"></div>
+```
+
+```javascript
+const yuno = await window.Yuno.initialize(PUBLIC_API_KEY);
+
+await yuno.startCheckout({
+  checkoutSession,
+  elementSelector: '#root',
+  countryCode,
+  language,
+
+  // Receives the one-time token when the buyer confirms in the Revolut widget.
+  // IMPORTANT: create the payment in your backend RIGHT AWAY and call
+  // continuePayment() — the Revolut widget stays open waiting for the order
+  // to be completed with the created payment.
+  async createPayment(oneTimeToken, tokenWithInformation) {
+    // For ACH payments, inspect bank details: tokenWithInformation.bank_transfer?.bank_name
+    await createPaymentInYourBackend({ oneTimeToken, checkoutSession });
+    yuno.continuePayment();
+  },
+
+  paymentResult(status, subStatus) { /* final payment status */ },
+  error: (error) => { /* flow errors (including widget cancellation) */ },
+
+  // Receives { isLoading, type } — Revolut Pay emits type: 'OTT' while the
+  // token is generated and type: 'CREATE_PAYMENT' in the SDK-driven flow.
+  onLoading: (data) => { /* show/hide your loader */ },
+
+  // Button configuration (see Configuration section below)
+  externalButtons: {
+    revolutPay: {
+      variant: 'dark',
+      size: 'large',
+      radius: 'round',
+      action: 'pay',
+      locale: 'es',
+    },
+  },
+});
+
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'REVOLUT_PAY',
+    elementSelector: '#revolut-pay-element',
+  },
+]);
+```
+
+Para desmontar o botão do Revolut Pay, use os mesmos métodos descritos em [Desmontar botões](#unmounting-buttons):
+
+```javascript
+yuno.unmountExternalButton('REVOLUT_PAY'); // this button only
+yuno.unmountAllExternalButtons(); // all external buttons
+```
+
+### Requisitos da sessão de checkout {#checkout-session-requirements}
+
+Para que o Revolut Pay funcione, a sessão de checkout que o lojista cria (de backend para backend) deve incluir estes campos. O SDK os lê da sessão, e nada é configurado no frontend:
+
+- `amount.value` e `amount.currency`: obrigatórios; usados para criar o pedido da Revolut exibido no widget.
+- `callback_url`: obrigatório; usado como a URL de redirecionamento no celular para voltar à página do lojista (veja [Redirecionamentos no celular](#mobile-redirects-callback_url) abaixo).
+
+### Configuração (`externalButtons.revolutPay`) {#configuration-externalbuttonsrevolutpay}
+
+Toda a configuração é opcional. O botão é renderizado pela Revolut, então as opções correspondem aos estilos oficiais de botão da Revolut:
+
+<div className="nowrap-col1-table dense-table">
+
+| Opção | Valores | Padrão | O que faz |
+| :-------- | :--------------------------------------------------- | :-------------------------- | :---------------------------------------------------------------------------- |
+| `variant` | `'dark'` \| `'light'` \| `'light-outlined'` | A Revolut decide | Esquema de cores do botão |
+| `size` | `'large'` \| `'small'` | `'large'` (largura total) | Tamanho do botão (`small` é renderizado inline) |
+| `radius` | `'none'` \| `'small'` \| `'large'` \| `'round'` | A Revolut decide | Raio dos cantos (`none` 0px / `small` 4px / `large` 16px / `round` pílula) |
+| `action` | `'pay'` \| `'buy'` \| `'donate'` \| `'subscribe'` | `'pay'` | Rótulo do botão |
+| `locale` | Locale ISO (por exemplo, `'en'`, `'es'`, `'pt-BR'`) ou `'auto'` | `'auto'` | Idioma do botão. Valores inválidos voltam para `'auto'` |
+
+</div>
+
+### Redirecionamentos no celular (`callback_url`) {#mobile-redirects-callbackurl}
+
+No celular, o fluxo da Revolut pode passar para o app da Revolut (ou para um navegador dentro do app) em vez de permanecer no popup. Para voltar à página do lojista, o SDK precisa de URLs de redirecionamento. Ele as obtém automaticamente a partir da `callback_url` que o lojista já envia ao criar a sessão de checkout (de backend para backend):
+
+- A `callback_url` da sessão é usada para os três resultados: `success`, `failure` e `cancel`.
+- Nada mais é necessário na configuração do SDK: se a sessão tiver uma `callback_url`, os redirecionamentos no celular funcionam; se não tiver, o fluxo fica só na web.
+- Quando o comprador volta do app da Revolut, a URL inclui um parâmetro de query `_rp_fr` adicionado pela Revolut. Ele é inofensivo, mas lojistas que fazem o parsing estrito da URL de retorno devem estar cientes dele.
+
+<Note>
+**Redirecionamentos no desktop e no celular**
+
+Só as URLs de redirecionamento *no celular* são configuradas pelo SDK. Os fluxos no desktop sempre são resolvidos dentro do widget/popup, então nenhum redirecionamento acontece.
+</Note>
+
+## Fluxo REDIRECT do PayPal {#paypal-redirect-workflow}
+
+O Yuno SDK oferece suporte a um fluxo `REDIRECT` para o PayPal. Esse fluxo é útil quando o PayPal não foi inicializado no início do SDK ou quando você usa um `orderId` do PayPal já existente.
+
+- **PaypalButtonModal**: se o PayPal não estiver inicializado, o SDK pode renderizar o botão do PayPal dentro de um modal.
+- **Fluxo**: o fluxo `REDIRECT` pula a detecção de fraude e a criação do OTT, usando o `orderId` fornecido.
+
+```javascript
+// Example PayPal configuration
+await yuno.startSeamlessCheckout({
+  // ... other config
+  paypal: {
+    workflow: 'REDIRECT',
+    orderId: 'PAYPAL_ORDER_ID',
+  }
+});
+```
+
+## Cadastrar meios de pagamento no fluxo seamless {#enrolling-payment-methods-in-seamless-flow}
+
+Você pode cadastrar meios de pagamento (armazenar cartões para uso futuro) diretamente durante o fluxo de pagamento seamless definindo `payment_method.vault_on_success = true` na [criação da sessão de checkout](/reference/checkout-sessions/the-checkout-session-object).
+
+Quando `vault_on_success` está definido como `true`:
+
+* O meio de pagamento será cadastrado automaticamente se o status do pagamento for `SUCCEEDED`
+* Se o pagamento não for bem-sucedido, nada será armazenado no vault
+* A resposta do pagamento incluirá um `vaulted_token` que você pode usar em transações futuras
+
+**Exemplo:**
+
+```json
+{
+    "account_id": "...",
+    ...
+    "payment_method": {
+        "vault_on_success": true
+    }
+}
+```
+
+<Info>
+**Requisitos para armazenar no vault**
+
+Para gerar e receber um `vaulted_token` quando `vault_on_success = true`, o pagamento deve fazer referência a um cliente da Yuno existente por meio de `customer_payer.id` na sessão de checkout. Criar ou enviar os dados do cliente inline dentro da requisição de pagamento não cria o cliente do nosso lado, então nada será armazenado no vault.
+</Info>
+
+Para mais informações sobre o cadastro de meios de pagamento, consulte [Cadastrar meios de pagamento](/pt-br/docs/payment-features/enrollment/enroll-payment-methods).
+
+## Tratamento de erros {#error-handling}
+
+Trate no seu app os erros retornados pelo SDK, como pagamentos com falha ou erros de validação. Para status HTTP e códigos de resposta, consulte [Status e códigos de resposta](/reference/payments/status-and-response-codes/payment) na referência da API.
+
+### Nova tentativa de pagamento {#payment-retry}
+
+Quando um pagamento com **cartão** volta como `DECLINED` ou `ERROR`, a nova tentativa de pagamento mantém o formulário do cartão aberto para que o cliente possa corrigir os dados e tentar de novo sem reiniciar o checkout. Esse recurso vem desativado por padrão e é ativado por organização pela Yuno, mediante solicitação. É uma flag do lado do servidor, e não uma configuração do Dashboard ou do Checkout Builder.
+
+No fluxo **seamless**, isso é automático: o SDK mantém o formulário aberto e conduz a nova tentativa por você. Nos fluxos Full Checkout, Lite e Secure Fields, você precisa chamar `continuePayment` em um pagamento com cartão recusado ou com erro para dispará-la. Consulte [Nova tentativa de pagamento](/pt-br/docs/sdks/resources/references/web#payment-retry) na Referência Web para mais detalhes.
+
+## Fique por dentro {#stay-updated}
+
+Acesse o [changelog](/changelog/web#v1-6-0) para ver as atualizações mais recentes do SDK e o histórico de versões.

@@ -1,0 +1,525 @@
+---
+title: Flutter
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Integre o SDK Flutter da Yuno para fluxos de pagamento e cadastro, incluindo estilização, personalização e solução de problemas"
+---
+Integre o SDK Flutter da Yuno para fluxos Lite de pagamento e cadastro seguindo estes passos.
+
+## Requisitos {#requirements}
+
+* Flutter SDK instalado (Dart incluído).
+* iOS 14.0 ou superior.
+* Android minSdkVersion 21 ou superior.
+* Java 8 habilitado e AndroidX habilitado.
+* Android Gradle plugin 4.0.0 ou superior.
+* Proguard 6.2.2 ou superior.
+* Kotlin Gradle plugin 1.4.0 ou superior.
+* `FlutterFragmentActivity` para `MainActivity` no Android.
+
+## Adicionando o SDK ao seu projeto {#adding-the-sdk-to-your-project}
+
+Esta seção se aplica aos fluxos de Pagamento e de Cadastro. Conclua estes passos antes de implementar qualquer um dos fluxos.
+
+### Pacote Flutter {#flutter-package}
+
+Adicione o pacote da Yuno ao seu projeto Flutter:
+
+```bash
+flutter pub add yuno
+```
+
+### Configuração do Android {#android-configuration}
+
+Adicione o repositório Maven da Yuno ao `android/build.gradle` no nível do projeto:
+
+```groovy
+allprojects {
+  repositories {
+    google()
+    mavenCentral()
+    maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+  }
+}
+```
+
+Use `FlutterFragmentActivity` em `MainActivity.kt`:
+
+```kotlin
+class MainActivity: FlutterFragmentActivity()
+```
+
+Crie uma `Application` personalizada e inicialize o SDK nativo:
+
+```kotlin
+import android.app.Application
+import com.yuno_flutter.yuno_sdk_android.YunoSdkAndroidPlugin
+
+class MyApp : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    YunoSdkAndroidPlugin.initSdk(this, "YUNO_API_KEY")
+  }
+}
+```
+
+Em seguida, registre a classe da aplicação em `AndroidManifest.xml`:
+
+```xml
+<application
+  android:name=".MyApp">
+```
+
+### Configuração do iOS {#ios-configuration}
+
+Nenhuma configuração adicional específica do iOS é necessária além da instalação do pacote Flutter. A personalização da aparência no iOS é configurada por meio de `IosConfig` durante a inicialização do SDK (consulte a seção [Personalizações](#customizations)).
+
+## Pagamento {#payment}
+
+Siga estes passos para integrar o fluxo de pagamento da Yuno no seu app Flutter.
+
+<Steps>
+  <Step title="Crie um cliente e uma sessão de checkout">
+    Antes de iniciar um pagamento, crie um cliente e uma sessão de checkout usando a API server-side da Yuno.
+    * Use [Criar cliente](/reference/customers/create-customer) para representar a pessoa que faz o pagamento.
+    * Use [Criar sessão de checkout](/reference/checkout-sessions/create-checkout-session) para definir os detalhes da transação.
+    Guarde o ID `checkout_session` retornado para os próximos passos.
+  </Step>
+
+  <Step title="Inicialize o SDK">
+    Inicialize o Yuno SDK no seu app Flutter, normalmente antes de `runApp` em `main.dart`.
+    ```dart
+    await Yuno.init(
+      apiKey: 'YOUR_PUBLIC_API_KEY',
+      countryCode: 'CO',
+      yunoConfig: const YunoConfig(),
+      iosConfig: const IosConfig(),
+    );
+    ```
+  </Step>
+
+  <Step title="Inicie o processo de checkout">
+    Configure um listener de pagamento (por exemplo, `YunoPaymentListener`) na sua árvore de widgets para receber eventos.
+    ```dart
+    YunoPaymentListener(
+      listener: (context, state) {
+        final ott = state.token;
+        if (ott.isNotEmpty) {
+          // Send ott to your backend
+        }
+      },
+      child: YourWidget(),
+    )
+    ```
+  </Step>
+
+  <Step title="Inicie o pagamento">
+    Inicie o fluxo de pagamento Lite chamando `startPaymentLite` com o meio de pagamento selecionado.
+    ```dart
+    await Yuno.startPaymentLite(
+      arguments: StartPayment(
+        checkoutSession: checkoutSessionId,
+        methodSelected: const MethodSelected(
+          paymentMethodType: 'CARD',
+        ),
+      ),
+    );
+    ```
+  </Step>
+
+  <Step title="Obtenha o OTT (token de uso único)">
+    Depois que o usuário preenche o formulário, o SDK gera um OTT entregue ao seu `YunoPaymentListener`.
+    ```dart
+    listener: (context, state) {
+      final ott = state.token;
+      if (ott.isNotEmpty) {
+        // Send ott to your backend
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Crie o pagamento">
+    Use o OTT do Passo 5 para criar o pagamento no seu backend por meio do endpoint [Criar pagamento](/reference/payments/create-payment).
+  </Step>
+
+  <Step title="Continue o pagamento">
+    Se a resposta incluir `sdk_action_required: true`, chame `continuePayment` para lidar com 3DS ou redirecionamentos.
+    ```dart
+    await Yuno.continuePayment(showPaymentStatus: true);
+    ```
+  </Step>
+</Steps>
+
+### Validação do status do pagamento {#payment-status-validation}
+
+O SDK gerencia a relação entre o status do SDK no frontend e o status do pagamento no backend quando os usuários interagem com os fluxos de pagamento. Entender essa diferença ajuda você a tratar corretamente os estados do pagamento no seu app.
+
+#### Meios de pagamento síncronos (Apple Pay e Google Pay) {#sync-payment-methods-apple-pay-and-google-pay}
+
+Para meios de pagamento síncronos como Apple Pay e Google Pay, quando um usuário cancela ou fecha a interface da carteira antes de receber uma resposta do provedor de serviços de pagamento (PSP):
+
+* **Status do SDK**: retorna `cancelByUser` (CANCELLED_BY_USER)
+* **Status do pagamento no backend**: permanece `PENDING` até o timeout do PSP ou o cancelamento pelo lojista
+* **Importante**: o SDK não retornará `reject` nem `processing` nesse cenário
+
+#### Meios de pagamento assíncronos (PIX e métodos baseados em QR) {#async-payment-methods-pix-and-qr-based-methods}
+
+Para meios de pagamento assíncronos, quando um usuário fecha a janela de pagamento antes de concluir o pagamento:
+
+* **Status do SDK**: retorna `cancelByUser`\*.
+* **Status do pagamento no backend**: permanece `PENDING` e o código de pagamento continua válido até expirar.
+* **Reutilização da sessão de checkout**: reabrir a mesma sessão de checkout pode exibir o mesmo código de pagamento válido.
+* **Sem cancelamento automático**: o pagamento não é cancelado automaticamente no backend quando o usuário fecha a janela.
+* **Confirmação do status**: `cancelByUser` significa que o comprador saiu da tela, não que o pagamento falhou. Confirme o estado final via webhook ou `GET /v1/payments/{payment_id}` antes de exibir um cancelamento.
+
+<Note>
+\* Meios de pagamento que exibem um código de pagamento ou voucher (QR code PIX, boleto, OXXO e similares), e o Pix Parcelado, retornam `processing` com o substatus `CLOSED_BY_USER` em vez de `cancelByUser` quando o usuário fecha a tela. O pagamento permanece `PENDING` no backend e ainda pode ser concluído.
+</Note>
+
+#### Pagamentos assíncronos expirados {#expired-async-payments}
+
+Se um QR code PIX expirar naturalmente:
+
+* **Status no backend**: atualizado para `EXPIRED`
+* **Status do SDK**: os callbacks do SDK e os endpoints de polling retornam `EXPIRED` de forma consistente
+
+### Lendo a mensagem de status e o substatus {#reading-the-status-message-and-substatus}
+
+A partir do `yuno` **1.0.19** (SDK nativo Android 2.22.0 / iOS 2.23.1), os resultados de pagamento e de cadastro trazem detalhes extras que você pode ler do `state` do listener, junto com o status:
+
+```dart
+YunoPaymentListener(
+  listener: (context, state) {
+    final status = state.paymentStatus; // reject, succeeded, fail, processing, internalError, cancelByUser
+    final substatus = state.substatus;  // e.g. CLOSED_BY_USER (nullable)
+    final message = state.message;      // structured detail (nullable)
+
+    if (message != null) {
+      debugPrint('${message.source} · ${message.code} · ${message.reason}');
+    }
+  },
+  child: YourWidget(),
+)
+```
+
+Os mesmos campos estão disponíveis em `YunoEnrollmentListener` por meio de `state.enrollmentStatus`, `state.substatus` e `state.message`.
+
+**`state.message` (`YunoStatusMessage?`)**
+
+| Campo | Tipo | Descrição |
+| --- | --- | --- |
+| `source` | `String` | Onde a mensagem se originou, normalmente `backend` ou `sdk`. |
+| `code` | `String?` | Código legível por máquina para o status. |
+| `reason` | `String?` | Explicação legível por pessoas. |
+| `raw` | `String?` | Payload bruto fornecido pelo SDK nativo. |
+| `context` | `String?` | Contexto adicional sobre o status. |
+
+**`state.substatus` (`String?`)**
+
+Um status mais detalhado. No iOS, ele corresponde a `Yuno.Result.substatus`; no Android, ao valor nativo de `PaymentSubStates` (por exemplo, `CLOSED_BY_USER`). Ele é `null` quando a camada nativa não fornece um, incluindo o cadastro no Android.
+
+<Note>
+`state.message` só é preenchido quando a transação é **recusada** ou **rejeitada**, ou quando o status é um **erro interno**. Para qualquer outro resultado (como um pagamento bem-sucedido ou em processamento), ele é `null`.
+</Note>
+
+Tanto `message` quanto `substatus` podem ser `null`, então sempre verifique se são nulos antes de usar.
+
+## Cadastro {#enrollment}
+
+Siga estes passos para cadastrar meios de pagamento no seu app Flutter.
+
+<Steps>
+  <Step title="Crie o cliente e a sessão">
+    Crie um cliente e uma `customer_session` no seu backend usando o endpoint [Criar sessão de cliente](/reference/customer-sessions-enrollment/create-customer-session).
+  </Step>
+
+  <Step title="Inicialize o SDK">
+    Garanta que o SDK esteja inicializado com sua chave de API e sua configuração.
+    ```dart
+    await Yuno.init(
+      apiKey: 'YOUR_PUBLIC_API_KEY',
+      countryCode: 'CO',
+    );
+    ```
+  </Step>
+
+  <Step title="Inicie o processo de cadastro">
+    Configure um `YunoEnrollmentListener` para receber atualizações de status.
+    ```dart
+    YunoEnrollmentListener(
+      listener: (context, state) {
+        final status = state.enrollmentStatus;
+        // Handle status updates
+      },
+      child: YourWidget(),
+    )
+    ```
+  </Step>
+
+  <Step title="Inicie o cadastro">
+    Chame `enrollmentPayment` com o ID da sessão de cliente.
+    ```dart
+    await Yuno.enrollmentPayment(
+      arguments: EnrollmentArguments(
+        customerSession: customerSessionId,
+        showPaymentStatus: true,
+      ),
+    );
+    ```
+  </Step>
+
+  <Step title="Acompanhe o status">
+    Monitore o status do cadastro pelo callback do seu listener.
+    ```dart
+    listener: (context, state) {
+      final status = state.enrollmentStatus;
+      // Handle completion or errors
+    }
+    ```
+  </Step>
+
+  <Step title="Trate deep links (opcional)">
+    Para métodos que usam autenticação externa, passe a URL de redirecionamento para o SDK. Consulte [Tratando o retorno do deeplink](#handling-the-deeplink-return) para saber como capturar `uri`.
+    ```dart
+    await Yuno.receiveDeeplink(url: uri);
+    ```
+  </Step>
+</Steps>
+
+## Tratando o retorno do deeplink {#handling-the-deeplink-return}
+
+Métodos baseados em redirecionamento (alguns APMs, 3DS externo e cadastro com autenticação externa) levam o usuário para fora do seu app e o trazem de volta por meio de um deeplink. Capture essa URL de retorno e passe-a para `Yuno.receiveDeeplink`. Isso se aplica aos fluxos de Pagamento e de Cadastro.
+
+Escute os links recebidos (por exemplo, com o pacote [`app_links`](https://pub.dev/packages/app_links)) e passe a URL para `Yuno.receiveDeeplink`. Trate tanto o link de cold start (app aberto pelo deeplink) quanto os links recebidos enquanto o app já está em execução.
+
+```dart
+late AppLinks _appLinks;
+StreamSubscription<Uri>? _linkSubscription;
+
+Future<void> _initDeepLinks() async {
+  _appLinks = AppLinks();
+
+  // App opened from a deeplink (cold start)
+  final initialLink = await _appLinks.getInitialLink();
+  if (initialLink != null) _handleDeepLink(initialLink);
+
+  // App already running
+  _linkSubscription = _appLinks.uriLinkStream.listen(_handleDeepLink);
+}
+
+void _handleDeepLink(Uri uri) {
+  // Forward the redirect back to the SDK
+  // (optionally gate on your own callback scheme/host)
+  Yuno.receiveDeeplink(url: uri);
+}
+```
+
+## Parâmetros {#parameters}
+
+Para a lista completa de parâmetros e opções, consulte as subseções a seguir.
+
+### `Yuno.init` {#yunoinit}
+
+| Parâmetro     | Descrição                                                                     |
+| :------------ | :------------------------------------------------------------------------------ |
+| `apiKey`      | Sua chave de API pública da Yuno.                                                       |
+| `countryCode` | País onde o pagamento é realizado. Consulte [Cobertura por país](/pt-br/docs/sdks/resources/country-coverage). |
+| `yunoConfig`  | Opções de configuração do SDK. Consulte `YunoConfig` abaixo.                              |
+| `iosConfig`   | Configuração de aparência do iOS. Consulte `IosConfig` abaixo.                            |
+
+### `YunoConfig` {#yunoconfig}
+
+| Parâmetro             | Descrição                                                                                                                                                                                                                                                                                                                                   |
+| :-------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lang`                | Define o idioma usado nos formulários de pagamento. Defina-o com uma das opções disponíveis: en (inglês), es (espanhol), pt (português), ms (malaio), id (indonésio), th (tailandês), ar (árabe), hi (hindi), bn (bengali), ml (malaiala), ur (urdu). Consulte [Idiomas compatíveis](#supported-languages) para mais detalhes.                                                                                       |
+| `saveCardEnable`      | Habilita a caixa de seleção Salvar cartão nos fluxos de cartão, permitindo que os usuários salvem o cartão para pagamentos futuros. Padrão: `false`.                                                                                                                                                                                                                    |
+| `keepLoader`          | Mantém o loader do SDK visível durante o fluxo para que você possa ocultá-lo manualmente com `Yuno.hideLoader()`. Padrão: `false`.                                                                                                                                                                                                                        |
+
+### `IosConfig` {#iosconfig}
+
+| Parâmetro    | Descrição                                                                                                                                                  |
+| :----------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `appearance` | Personalização de aparência exclusiva do iOS. Consulte [`Appearance`](#appearance-ios) abaixo e a seção [Personalizações](#customizations) para opções detalhadas de estilo. |
+
+### `Appearance` (iOS) {#appearance-ios}
+
+| Parâmetro                              | Descrição                                      |
+| :------------------------------------- | :----------------------------------------------- |
+| `fontFamily`                           | Nome da família de fontes do iOS.                            |
+| `accentColor`                          | Cor de destaque para realces e elementos ativos. |
+| `buttonBackgrounColor`                | Cor de fundo do botão primário.                 |
+| `buttonTitleBackgrounColor`           | Cor do título do botão primário.                      |
+| `buttonBorderBackgrounColor`          | Cor da borda do botão primário.                     |
+| `secondaryButtonBackgrounColor`       | Cor de fundo do botão secundário.               |
+| `secondaryButtonTitleBackgrounColor`  | Cor do título do botão secundário.                    |
+| `secondaryButtonBorderBackgrounColor` | Cor da borda do botão secundário.                   |
+| `disableButtonBackgrounColor`         | Cor de fundo do botão desabilitado.                |
+| `disableButtonTitleBackgrounColor`    | Cor do título do botão desabilitado.                     |
+| `checkboxColor`                        | Cor da caixa de seleção.                                  |
+
+### `StartPayment` (Lite) {#startpayment-lite}
+
+| Parâmetro           | Descrição                                                                                                                                                                                      |
+| :------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`   | O ID `checkout_session` criado no seu backend usando o endpoint [Criar sessão de checkout](/reference/checkout-sessions/create-checkout-session). Esse identificador de sessão é obrigatório para inicializar o fluxo de pagamento. |
+| `methodSelected`    | As informações do meio de pagamento selecionado. Consulte `MethodSelected` abaixo para detalhes sobre como especificar o tipo de meio de pagamento e o token armazenado opcional.                                                |
+| `showPaymentStatus` | Controla se o SDK exibe as próprias telas de status do pagamento após a conclusão do pagamento. Defina como `false` se quiser tratar a exibição do status na sua própria interface. Padrão: `true`.             |
+
+### `MethodSelected` {#methodselected}
+
+| Parâmetro           | Descrição                                                                                                                                                                                                               |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `paymentMethodType` | Tipo de meio de pagamento selecionado pelo usuário. Valores comuns incluem: `CARD`, `PIX`, `PAYPAL`, `MERCADO_PAGO`, `GOOGLE_PAY`, `APPLE_PAY`. Esse valor deve corresponder a um dos meios de pagamento disponíveis na sua sessão de checkout. |
+| `vaultedToken`      | Token armazenado opcional para reutilizar um meio de pagamento salvo anteriormente. Quando informado, o SDK usará o meio de pagamento salvo em vez de solicitar novos dados de pagamento. Deixe vazio para novos meios de pagamento.            |
+
+### `EnrollmentArguments` {#enrollmentarguments}
+
+| Parâmetro           | Descrição                                                                                                                                                                                                          |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`   | O ID `customer_session` criado no seu backend usando o endpoint [Criar sessão de cliente](/reference/customer-sessions-enrollment/create-customer-session). Essa sessão é usada para associar o meio de pagamento cadastrado a um cliente específico. |
+| `showPaymentStatus` | Controla se o SDK exibe as próprias telas de status do cadastro após a conclusão do cadastro. Defina como `false` se quiser tratar a exibição do status na sua própria interface. Padrão: `true`.                           |
+| `countryCode`       | Substituição opcional do código do país para este cadastro. Se não for informado, o SDK usa o código do país de `Yuno.init()`. Consulte [Cobertura por país](/pt-br/docs/sdks/resources/country-coverage) para ver os países compatíveis.                               |
+
+## Personalizações {#customizations}
+
+Você pode personalizar o comportamento e a aparência do SDK usando as opções de configuração:
+
+* `YunoConfig` para idioma, salvamento de cartão e tratamento do loader
+* `IosConfig.appearance` para estilização da interface no iOS
+* Estilização do Android por meio da configuração nativa (veja abaixo)
+
+### Personalização no iOS {#ios-customization}
+
+A aparência no iOS é totalmente personalizável por meio do parâmetro `IosConfig.appearance` em `Yuno.init()`. Você pode modificar a estilização visual para combinar com a identidade da sua marca, incluindo cores, fontes e design dos botões.
+
+#### Opções de personalização disponíveis no iOS {#available-ios-customization-options}
+
+| Parâmetro                              | Tipo   | Descrição                                                                                                 |
+| -------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| `fontFamily`                           | String | Nome da família de fontes personalizada para todo o texto do SDK. Use o nome da fonte como registrado no Info.plist do seu projeto iOS. |
+| `accentColor`                          | Color  | Cor de destaque principal usada em realces, estados ativos e elementos interativos em todo o SDK.     |
+| `buttonBackgrounColor`                | Color  | Cor de fundo dos botões de ação primária (por exemplo, "Pagar", "Confirmar").                                       |
+| `buttonTitleBackgrounColor`           | Color  | Cor do texto dos rótulos dos botões primários.                                                                       |
+| `buttonBorderBackgrounColor`          | Color  | Cor da borda dos botões primários. Defina igual ao fundo para botões sem borda.                         |
+| `secondaryButtonBackgrounColor`       | Color  | Cor de fundo dos botões secundários/de cancelamento.                                                              |
+| `secondaryButtonTitleBackgrounColor`  | Color  | Cor do texto dos rótulos dos botões secundários.                                                                     |
+| `secondaryButtonBorderBackgrounColor` | Color  | Cor da borda dos botões secundários.                                                                         |
+| `disableButtonBackgrounColor`         | Color  | Cor de fundo dos botões desabilitados (quando o usuário não pode prosseguir).                                          |
+| `disableButtonTitleBackgrounColor`    | Color  | Cor do texto dos rótulos dos botões desabilitados.                                                                      |
+| `checkboxColor`                        | Color  | Cor das caixas de seleção, como "Salvar cartão para pagamentos futuros".                                                  |
+
+Ao usar `Color(0xFF...)` para personalizar a aparência no iOS, adicione `import 'dart:ui';` no início do seu arquivo.
+
+Para mais opções de personalização no iOS, consulte [Personalizações do SDK (iOS)](/pt-br/docs/sdks/customization/ios).
+
+### Personalização no Android {#android-customization}
+
+No Android, o SDK Flutter usa o sistema de estilização do SDK nativo do Android. A personalização é feita na camada nativa do Android com código Kotlin/Java ao inicializar o SDK por meio de `YunoSdkAndroidPlugin.initSdk()`.
+
+#### YunoConfig (Android) {#yunoconfig-android}
+
+O SDK Android oferece estilização completa por meio da data class `YunoConfig`:
+
+<Warning>
+**cardFlow removido do YunoConfig (Android 2.11.0+)**
+
+A configuração do fluxo de cartão agora é feita exclusivamente pelo **CheckoutBuilder** no Dashboard. Omita `cardFlow` do `YunoConfig`.
+</Warning>
+
+```dart
+class YunoConfig {
+  bool saveCardEnable;
+  YunoConfig({
+    this.saveCardEnable = false,
+  });
+}
+```
+
+#### YunoStyles {#yunostyles}
+
+Controle a aparência visual dos componentes do SDK:
+
+```kotlin
+data class YunoStyles(
+    val buttonStyles: YunoButtonStyles? = null,
+    val fontFamily: FontFamily? = null
+)
+```
+
+| Parâmetro      | Tipo             | Descrição                                                                                                                                                        |
+| -------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `buttonStyles` | YunoButtonStyles | Personaliza todos os botões de ação primária exibidos no SDK, incluindo fundo, texto, bordas e cores de estado. Consulte YunoButtonStyles abaixo para opções detalhadas. |
+| `fontFamily`   | FontFamily       | Define uma família de fontes personalizada para todos os elementos de texto do SDK. Use uma FontFamily registrada no seu app Android.                                               |
+
+#### YunoButtonStyles {#yunobuttonstyles}
+
+Ajuste a aparência dos botões com estas opções:
+
+```kotlin
+data class YunoButtonStyles(
+    val backgroundColor: Color? = null,
+    val contentColor: Color? = null,
+    val cornerRadius: Dp? = null,
+    val elevation: Dp? = null,
+    val padding: Dp? = null,
+    val fontFamily: FontFamily? = null,
+    val fontSize: TextUnit? = null,
+    val fontStyle: FontStyle? = null
+)
+```
+
+| Parâmetro         | Tipo       | Descrição                                                              |
+| ----------------- | ---------- | ------------------------------------------------------------------------ |
+| `backgroundColor` | Color      | Cor de fundo dos botões.                                            |
+| `contentColor`    | Color      | Cor do texto e dos ícones dos botões.                                         |
+| `cornerRadius`    | Dp         | Raio dos cantos do botão para cantos arredondados. Use `0.dp` para botões quadrados. |
+| `elevation`       | Dp         | Elevação da sombra para o efeito de elevação do Material Design.                   |
+| `padding`         | Dp         | Espaçamento interno dos botões.                                        |
+| `fontFamily`      | FontFamily | Família de fontes específica para o texto dos botões (substitui a fontFamily global).  |
+| `fontSize`        | TextUnit   | Tamanho da fonte do texto dos botões.                                               |
+| `fontStyle`       | FontStyle  | Estilo da fonte (normal, itálico, negrito) do texto dos botões.                      |
+
+Configure os estilos na sua classe `Application` durante a inicialização do SDK em `MyApp.kt`. Para mais opções de personalização no Android, incluindo temas XML e personalização de drawables, consulte [Personalizações do SDK (Android)](/pt-br/docs/sdks/customization/android).
+
+## Variáveis de ambiente (recomendado) {#environment-variables-recommended}
+
+Use `--dart-define` para evitar deixar chaves fixas no código:
+
+```bash
+flutter run --dart-define="YUNO_API_KEY=apiKey"
+```
+
+Em seguida, leia-a no Dart:
+
+```dart
+const apiKey = String.fromEnvironment('YUNO_API_KEY', defaultValue: '');
+```
+
+Se você também precisar da chave no lado nativo do Android, mapeie os `dart-defines` para o `BuildConfig`. Em seguida, leia `BuildConfig.YUNO_API_KEY` em `MyApp` (consulte o README do SDK Flutter para o trecho completo).
+
+## Solução de problemas {#troubleshooting}
+
+| Problema                                                            | Causa                                                                                                                                                 | Solução                                                                                                                                                                                                                                                  |
+| :--------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Country code has not been initialized. Call Yuno.init() first.` | `Yuno.init()` não foi chamado ou falhou antes da chamada dos métodos de pagamento/cadastro.                                                                     | Garanta que `Yuno.init()` seja concluído antes de qualquer chamada ao SDK e evite o hot reload para mudanças de configuração do Android. Faça uma reinicialização completa após mudanças na inicialização.                                                                                     |
+| A inicialização nativa do Android falha silenciosamente                     | O SDK nativo do Android não foi inicializado na classe `Application`, ou a classe `Application` personalizada não foi registrada em `AndroidManifest.xml`. | Verifique se: 1) `YunoSdkAndroidPlugin.initSdk()` é chamado no `onCreate()` da sua classe `Application` personalizada, 2) a classe `Application` personalizada está registrada em `AndroidManifest.xml` com `android:name=".MyApp"`, 3) a chave de API está correta.        |
+| O hot reload causa problemas na inicialização do Android                 | O hot reload do Flutter não executa novamente o código de inicialização nativo da plataforma.                                                                        | Faça uma reinicialização completa do app (pare e reinicie) em vez do hot reload ao fazer mudanças em `Yuno.init()` ou na configuração nativa do Android.                                                                                                            |
+| O listener de status do pagamento não é acionado                            | O widget do listener não está na árvore de widgets acima do ponto onde o pagamento é iniciado, ou o listener é recriado durante a navegação.                 | Garanta que `YunoPaymentListener` ou `YunoMultiListener` envolva a parte relevante da sua árvore de widgets e persista durante a navegação. Posicione-o no alto da árvore de widgets (por exemplo, envolvendo `MaterialApp` ou uma tela de nível superior).                               |
+| O build do Android falha com erro de repositório Maven                  | O repositório Maven da Yuno não foi adicionado ou foi adicionado no local errado em `build.gradle`.                                                                         | Adicione `maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }` ao bloco `repositories` do `android/build.gradle` no nível do projeto (não no `build.gradle` no nível do app). Garanta que ele esteja dentro da seção `allprojects`. |
+| `MainActivity` trava no Android                                | `MainActivity` não estende `FlutterFragmentActivity`, como exige o Yuno SDK.                                                                  | Altere sua `MainActivity` para estender `FlutterFragmentActivity` em vez de `FlutterActivity`: `class MainActivity: FlutterFragmentActivity()`                                                                                                         |
+| O token está vazio ou nulo no listener de pagamento                       | A validação do formulário de pagamento falhou, ou o usuário cancelou antes de preencher o formulário.                                                                      | Verifique se há erros de validação no formulário de pagamento. Garanta que todos os campos obrigatórios estejam preenchidos corretamente. Adicione verificações de nulo/vazio no seu listener antes de usar o token.                                                                                     |
+| Personalização não aplicada                                        | Personalização específica da plataforma configurada incorretamente ou artefatos de build em cache.                                                                   | No iOS: verifique se `IosConfig.appearance` está definido corretamente em `Yuno.init()`. No Android: confira a estilização nativa em XML ou na configuração programática. Limpe o cache de build com `flutter clean` e faça o build novamente.                                                 |
+
+## Observações {#notes}
+
+* O fluxo de pagamento Lite exige que você renderize a lista de meios de pagamento e passe o `paymentMethodType` selecionado.
+* Use `YunoPaymentListener`/`YunoEnrollmentListener` para receber atualizações de OTT/status e conduzir as chamadas ao backend.
+
+## Idiomas compatíveis {#supported-languages}
+
+O SDK Flutter oferece suporte aos seguintes valores de `YunoLanguage`:
+
+`en` (inglês), `es` (espanhol), `pt` (português), `ms` (malaio), `id` (indonésio), `th` (tailandês), `ar` (árabe), `hi` (hindi), `bn` (bengali), `ml` (malaiala), `ur` (urdu).
