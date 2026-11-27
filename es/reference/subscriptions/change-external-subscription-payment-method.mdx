@@ -23,7 +23,7 @@ Yuno no cobra al cliente y no ejecuta una verificación de $0 ni 3DS. Yuno estab
 | `account_id` | La cuenta de Yuno incorporada al puente de facturación (UUID). |
 | `customer_payer.id` | El **ID de cliente de Yuno** (UUID) propietario de la suscripción. No es el ID de cliente de Stripe (`cus_...`). |
 | `vaulted_token` | El token almacenado (UUID) de uno de los métodos de pago registrados de ese cliente. |
-| `external_customer_id` | El **ID de cliente de Stripe** (`cus_...`) de la suscripción, de entre 3 y 255 caracteres. Obligatorio para vincular una suscripción que todavía no está vinculada. Opcional para mover una vinculada: si lo envías, Yuno verifica que sea el cliente de Stripe de la suscripción. |
+| `external_customer_id` | El **ID de cliente de Stripe** (`cus_...`) de la suscripción, de entre 3 y 255 caracteres. Obligatorio para vincular una suscripción que todavía no está vinculada. Opcional para mover una vinculada: si lo envías, Yuno verifica que sea el cliente de Stripe de la suscripción. Un valor vacío cuenta como no enviado. |
 
 El encabezado `X-Idempotency-Key` es obligatorio. Repetir la misma clave con la misma solicitud devuelve el primer resultado.
 
@@ -50,7 +50,7 @@ Esta API se habilita por cuenta. Contacta a tu Key Account Manager para solicita
 | `400` | `INVALID_PARAMETERS` | Falta un campo o el encabezado `X-Idempotency-Key`, o tiene un formato incorrecto, o la clave ya se usó para otra suscripción o método de pago. | Corrige la solicitud. Usa una clave nueva para un cambio diferente. |
 | `400` | `CUSTOMER_NOT_FOUND` | El cliente no existe en la cuenta. | Verifica que `customer_payer.id` sea el ID de cliente de Yuno, no el ID `cus_` de Stripe. |
 | `400` | `VAULTED_TOKEN_NOT_FOUND` | El `vaulted_token` no es uno de los métodos de pago del cliente. | Usa un token de los [métodos de pago registrados](/es/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-methods-api) del cliente. |
-| `400` | `VAULTED_TOKEN_NOT_ENROLLED` | El método de pago no está registrado. | Usa un método de pago con estado `ENROLLED`. |
+| `400` | `VAULTED_TOKEN_NOT_ENROLLED` | El método de pago no está registrado. Solo cuando la solicitud envía `external_customer_id`. | Usa un método de pago con estado `ENROLLED`. |
 | `400` | `VAULTED_TOKEN_WITHOUT_COUNTRY` | El método de pago no tiene país, y vincular una suscripción lo necesita. | Usa otro método de pago del cliente o vuelve a registrar la tarjeta. |
 | `400` | `VAULTED_TOKEN_WITHOUT_NETWORK_TRANSACTION_ID` | La tarjeta nunca se verificó, así que Yuno no puede cobrar las renovaciones como iniciadas por el comercio. | Verifica la tarjeta primero: ejecuta una verificación de $0 con el objeto `external_subscription`, como en una [prueba gratuita](/es/docs/payment-features/subscriptions/stripe-billing#free-trials). |
 | `400` | `EXTERNAL_SUBSCRIPTION_NOT_FOUND` | Stripe no tiene una suscripción con este ID para la cuenta, o la solicitud no envió `external_customer_id` y la suscripción no está vinculada a Yuno. | Verifica el ID de la suscripción de Stripe y la cuenta. Para vincular la suscripción, envía `external_customer_id`. |
@@ -59,5 +59,5 @@ Esta API se habilita por cuenta. Contacta a tu Key Account Manager para solicita
 | `400` | `CUSTOMER_MISMATCH` | La suscripción pertenece a otro cliente, o `external_customer_id` no es el cliente de Stripe de la suscripción. | Envía los clientes propietarios de la suscripción. |
 | `403` | `PRODUCT_NOT_ENABLED` | La cuenta no está habilitada para el puente de facturación. | Contacta a tu Key Account Manager. |
 | `409` | `CONCURRENT_CHANGE` | Otro cambio de método de pago de esta suscripción se completó primero. | Revisa la suscripción en Stripe antes de enviar otro cambio. |
-| `409` | `EXTERNAL_SUBSCRIPTION_PENDING_ACTIVATION` | La suscripción se está migrando a Yuno. | Reintenta cuando termine la migración. |
+| `409` | `EXTERNAL_SUBSCRIPTION_PENDING_ACTIVATION` | La suscripción se está migrando a Yuno. Solo cuando la solicitud envía `external_customer_id`; sin ese campo, la respuesta es `EXTERNAL_SUBSCRIPTION_NOT_FOUND`. | Reintenta cuando termine la migración. |
 | `502` | `BILLING_PLATFORM_ERROR` | La plataforma de facturación no pudo confirmar el cambio. Se mantiene el método de pago anterior, o la suscripción sigue sin vincular. | Reintenta con un nuevo `X-Idempotency-Key`. |
