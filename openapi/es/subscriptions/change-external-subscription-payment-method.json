@@ -24,7 +24,7 @@
     "/external-subscriptions/{external_subscription_id}/payment-method": {
       "post": {
         "summary": "Set External Subscription Payment Method",
-        "description": "Define el método de pago que cobra una suscripción de Stripe Billing, sin un pago. Úsalo en dos casos:\n\n- **La suscripción todavía no está vinculada a Yuno**: Yuno la vincula a una tarjeta que el cliente ya verificó en Yuno. La suscripción de Stripe tiene que estar `active` o `trialing`, cobrarse automáticamente (`collection_method: charge_automatically`) y pertenecer a `external_customer_id`. La tarjeta tiene que haberse verificado antes, para que Yuno pueda cobrar las renovaciones como iniciadas por el comercio.\n- **La suscripción ya está vinculada**: Yuno la mueve a otro método de pago que el cliente ya inscribió en Yuno.\n\nNo se realiza ningún pago: Yuno no cobra al cliente y no ejecuta una verificación de $0 ni 3DS. Las próximas renovaciones cobran el método de pago de `vaulted_token`.\n\n`customer_payer.id` es el ID de cliente de Yuno; `external_customer_id` es el ID de cliente de Stripe (`cus_...`). Enviar el método de pago que la suscripción ya cobra devuelve `200` con `result` `NO_CHANGE`.\n\nEsta API se habilita por cuenta: contacta a tu Key Account Manager para solicitar acceso.",
+        "description": "Define el método de pago que cobra una suscripción de Stripe Billing, sin un pago. Úsalo en dos casos:\n\n- **La suscripción todavía no está vinculada a Yuno**: Envía `external_customer_id` y Yuno la vincula a una tarjeta que el cliente ya verificó en Yuno. La suscripción de Stripe tiene que estar `active` o `trialing`, cobrarse automáticamente (`collection_method: charge_automatically`) y pertenecer a `external_customer_id`. La tarjeta tiene que haberse verificado antes, para que Yuno pueda cobrar las renovaciones como iniciadas por el comercio.\n- **La suscripción ya está vinculada**: Yuno la mueve a otro método de pago que el cliente ya inscribió en Yuno. En este caso `external_customer_id` es opcional.\n\nNo se realiza ningún pago: Yuno no cobra al cliente y no ejecuta una verificación de $0 ni 3DS. Las próximas renovaciones cobran el método de pago de `vaulted_token`.\n\n`customer_payer.id` es el ID de cliente de Yuno; `external_customer_id` es el ID de cliente de Stripe (`cus_...`). Enviar el método de pago que la suscripción ya cobra devuelve `200` y no cambia nada (`result` `NO_CHANGE`). La respuesta incluye `external_customer_id` y `result` cuando la solicitud envía `external_customer_id`.\n\nEsta API se habilita por cuenta: contacta a tu Key Account Manager para solicitar acceso.",
         "operationId": "change-external-subscription-payment-method",
         "parameters": [
           {
@@ -59,8 +59,7 @@
                 "required": [
                   "account_id",
                   "customer_payer",
-                  "vaulted_token",
-                  "external_customer_id"
+                  "vaulted_token"
                 ],
                 "properties": {
                   "account_id": {
@@ -100,7 +99,7 @@
                     "type": "string",
                     "minLength": 3,
                     "maxLength": 255,
-                    "description": "El ID de cliente de Stripe (`cus_...`) de la suscripción. Entre 3 y 255 caracteres. Yuno verifica que la suscripción de Stripe pertenezca a este cliente.",
+                    "description": "El ID de cliente de Stripe (`cus_...`) de la suscripción. Entre 3 y 255 caracteres. Obligatorio para vincular una suscripción que todavía no está vinculada; opcional para mover una vinculada. Si se envía, Yuno verifica que la suscripción de Stripe pertenezca a este cliente.",
                     "examples": [
                       "cus_RplXYZ"
                     ]
@@ -156,7 +155,7 @@
                     },
                     "external_customer_id": {
                       "type": "string",
-                      "description": "El ID de cliente de Stripe de la solicitud."
+                      "description": "El ID de cliente de Stripe de la solicitud. Solo cuando la solicitud envía `external_customer_id`."
                     },
                     "result": {
                       "type": "string",
@@ -165,7 +164,7 @@
                         "PAYMENT_METHOD_CHANGED",
                         "NO_CHANGE"
                       ],
-                      "description": "`LINKED` cuando la suscripción todavía no estaba vinculada a Yuno, `PAYMENT_METHOD_CHANGED` cuando pasó a este método de pago, `NO_CHANGE` cuando ya lo cobraba."
+                      "description": "Solo cuando la solicitud envía `external_customer_id`. `LINKED` cuando la suscripción todavía no estaba vinculada a Yuno, `PAYMENT_METHOD_CHANGED` cuando pasó a este método de pago, `NO_CHANGE` cuando ya lo cobraba."
                     }
                   }
                 },

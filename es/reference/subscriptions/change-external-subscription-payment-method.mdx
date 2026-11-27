@@ -23,11 +23,11 @@ Yuno no cobra al cliente y no ejecuta una verificación de $0 ni 3DS. Yuno estab
 | `account_id` | La cuenta de Yuno incorporada al puente de facturación (UUID). |
 | `customer_payer.id` | El **ID de cliente de Yuno** (UUID) propietario de la suscripción. No es el ID de cliente de Stripe (`cus_...`). |
 | `vaulted_token` | El token almacenado (UUID) de uno de los métodos de pago registrados de ese cliente. |
-| `external_customer_id` | El **ID de cliente de Stripe** (`cus_...`) de la suscripción, de entre 3 y 255 caracteres. |
+| `external_customer_id` | El **ID de cliente de Stripe** (`cus_...`) de la suscripción, de entre 3 y 255 caracteres. Obligatorio para vincular una suscripción que todavía no está vinculada. Opcional para mover una vinculada: si lo envías, Yuno verifica que sea el cliente de Stripe de la suscripción. |
 
 El encabezado `X-Idempotency-Key` es obligatorio. Repetir la misma clave con la misma solicitud devuelve el primer resultado.
 
-La respuesta devuelve los campos de la solicitud y `result`:
+La respuesta devuelve los campos de la solicitud. Cuando la solicitud envía `external_customer_id`, también devuelve `external_customer_id` y `result`:
 
 | `result` | Significado |
 |---|---|
@@ -37,6 +37,7 @@ La respuesta devuelve los campos de la solicitud y `result`:
 
 Para vincular una suscripción que todavía no está vinculada:
 
+- La solicitud tiene que enviar `external_customer_id`. Sin ese campo, una suscripción que no está vinculada devuelve `EXTERNAL_SUBSCRIPTION_NOT_FOUND`.
 - La suscripción de Stripe tiene que estar `active` o `trialing` y cobrarse automáticamente (`collection_method: charge_automatically`), y su cliente tiene que ser `external_customer_id`.
 - La tarjeta tiene que haberse verificado antes en Yuno, por ejemplo con una verificación de $0 al registrarla. Yuno usa esa verificación para cobrar las renovaciones como iniciadas por el comercio.
 
@@ -52,7 +53,7 @@ Esta API se habilita por cuenta. Contacta a tu Key Account Manager para solicita
 | `400` | `VAULTED_TOKEN_NOT_ENROLLED` | El método de pago no está registrado. | Usa un método de pago con estado `ENROLLED`. |
 | `400` | `VAULTED_TOKEN_WITHOUT_COUNTRY` | El método de pago no tiene país, y vincular una suscripción lo necesita. | Usa otro método de pago del cliente o vuelve a registrar la tarjeta. |
 | `400` | `VAULTED_TOKEN_WITHOUT_NETWORK_TRANSACTION_ID` | La tarjeta nunca se verificó, así que Yuno no puede cobrar las renovaciones como iniciadas por el comercio. | Verifica la tarjeta primero: ejecuta una verificación de $0 con el objeto `external_subscription`, como en una [prueba gratuita](/es/docs/payment-features/subscriptions/stripe-billing#free-trials). |
-| `400` | `EXTERNAL_SUBSCRIPTION_NOT_FOUND` | Stripe no tiene una suscripción con este ID para la cuenta. | Verifica el ID de la suscripción de Stripe y la cuenta. |
+| `400` | `EXTERNAL_SUBSCRIPTION_NOT_FOUND` | Stripe no tiene una suscripción con este ID para la cuenta, o la solicitud no envió `external_customer_id` y la suscripción no está vinculada a Yuno. | Verifica el ID de la suscripción de Stripe y la cuenta. Para vincular la suscripción, envía `external_customer_id`. |
 | `400` | `EXTERNAL_SUBSCRIPTION_NOT_ACTIVE` | La suscripción de Stripe no está `active` ni `trialing`. | Solo se pueden vincular suscripciones activas o en prueba. |
 | `400` | `EXTERNAL_SUBSCRIPTION_NOT_CHARGED_AUTOMATICALLY` | La suscripción de Stripe envía facturas en lugar de cobrarse automáticamente. | Configura `collection_method` como `charge_automatically` en Stripe. |
 | `400` | `CUSTOMER_MISMATCH` | La suscripción pertenece a otro cliente, o `external_customer_id` no es el cliente de Stripe de la suscripción. | Envía los clientes propietarios de la suscripción. |

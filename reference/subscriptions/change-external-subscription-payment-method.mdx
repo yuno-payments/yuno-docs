@@ -23,11 +23,11 @@ Yuno does not charge the customer and does not run a $0 verification or 3DS. Yun
 | `account_id` | The Yuno account onboarded to the billing bridge (UUID). |
 | `customer_payer.id` | The **Yuno customer ID** (UUID) that owns the subscription. It is not the Stripe customer ID (`cus_...`). |
 | `vaulted_token` | The vaulted token (UUID) of one of that customer's enrolled payment methods. |
-| `external_customer_id` | The **Stripe customer ID** (`cus_...`) of the subscription, between 3 and 255 characters. |
+| `external_customer_id` | The **Stripe customer ID** (`cus_...`) of the subscription, between 3 and 255 characters. Required to link a subscription that is not linked yet. Optional to move a linked one: when you send it, Yuno checks that it is the subscription's Stripe customer. |
 
 The `X-Idempotency-Key` header is required. Replaying the same key with the same request returns the first result.
 
-The response returns the request fields and `result`:
+The response returns the request fields. When the request sends `external_customer_id`, it also returns `external_customer_id` and `result`:
 
 | `result` | Meaning |
 |---|---|
@@ -37,6 +37,7 @@ The response returns the request fields and `result`:
 
 To link a subscription that is not linked yet:
 
+- The request must send `external_customer_id`. Without it, a subscription that is not linked returns `EXTERNAL_SUBSCRIPTION_NOT_FOUND`.
 - The Stripe subscription must be `active` or `trialing` and charged automatically (`collection_method: charge_automatically`), and its customer must be `external_customer_id`.
 - The card must have been verified in Yuno before, for example with a $0 verification when it was enrolled. Yuno uses that verification to charge the renewals as merchant-initiated.
 
@@ -52,7 +53,7 @@ This API is enabled per account. Contact your Key Account Manager to request acc
 | `400` | `VAULTED_TOKEN_NOT_ENROLLED` | The payment method is not enrolled. | Use a payment method with status `ENROLLED`. |
 | `400` | `VAULTED_TOKEN_WITHOUT_COUNTRY` | The payment method has no country, and linking a subscription needs it. | Use another payment method of the customer, or enroll the card again. |
 | `400` | `VAULTED_TOKEN_WITHOUT_NETWORK_TRANSACTION_ID` | The card was never verified, so Yuno cannot charge the renewals as merchant-initiated. | Verify the card first: run a $0 verification with the `external_subscription` object, as for a [free trial](/docs/payment-features/subscriptions/stripe-billing#free-trials). |
-| `400` | `EXTERNAL_SUBSCRIPTION_NOT_FOUND` | Stripe has no subscription with this ID for the account. | Check the Stripe subscription ID and the account. |
+| `400` | `EXTERNAL_SUBSCRIPTION_NOT_FOUND` | Stripe has no subscription with this ID for the account, or the request did not send `external_customer_id` and the subscription is not linked to Yuno. | Check the Stripe subscription ID and the account. To link the subscription, send `external_customer_id`. |
 | `400` | `EXTERNAL_SUBSCRIPTION_NOT_ACTIVE` | The Stripe subscription is neither `active` nor `trialing`. | Only active or trialing subscriptions can be linked. |
 | `400` | `EXTERNAL_SUBSCRIPTION_NOT_CHARGED_AUTOMATICALLY` | The Stripe subscription sends invoices instead of charging automatically. | Set `collection_method` to `charge_automatically` in Stripe. |
 | `400` | `CUSTOMER_MISMATCH` | The subscription belongs to another customer, or `external_customer_id` is not the subscription's Stripe customer. | Send the customers that own the subscription. |
