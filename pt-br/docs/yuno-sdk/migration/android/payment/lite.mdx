@@ -1,0 +1,168 @@
+---
+title: "Modo Lite"
+description: "Migre integrações Lite no Android (Activity.startCheckout + Activity.startPaymentLite) para a API unificada de Transaction."
+---
+
+O modo Lite pré-selecionava o meio de pagamento no lado do lojista e depois passava o controle ao SDK para renderizar o formulário, tokenizar, criar o pagamento, tratar o 3DS e informar o resultado. Na API unificada, esse é o **comportamento padrão** de `Transaction.start(paymentSelected:)`. Não é preciso sobrescrever nenhum controller além de `onStatus`.
+
+## Antes de começar {#before-you-start}
+
+- Substitua os imports `com.yuno.sdk.*` e `com.yuno.presentation.*` pelos equivalentes em `com.yuno.payments.sdk.api.*` (a comparação lado a lado os lista). Sua chave de API pública e as sessões de checkout que seu backend cria não mudam ([Antes de começar](/pt-br/docs/yuno-sdk/get-started#before-you-begin)).
+- Decida quem cria o pagamento. O `workflow` da sessão de checkout precisa corresponder a essa decisão:
+
+| Quem cria o pagamento | No Lite você tinha | Na API unificada | `workflow` da sessão |
+|---|---|---|---|
+| Seu backend | `callbackOTT` implementado (a variante headless) | Sobrescreva `createPayment` | Padrão (`SDK_CHECKOUT`) |
+| O SDK | Sem `callbackOTT` | Sem sobrescrita | `SDK_SEAMLESS` |
+
+<Warning>
+Uma sessão com o workflow padrão e sem sobrescrita de `createPayment` termina em `INTERNAL_ERROR`: o backend rejeita a criação do pagamento pelo SDK. Veja [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```kotlin Before. Lite mode
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.YunoConfig
+import com.yuno.sdk.payments.startCheckout
+import com.yuno.sdk.payments.startPaymentLite
+import com.yuno.presentation.core.components.PaymentSelected
+
+class CheckoutActivity : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1. Initialize once at app startup (usually in Application.onCreate)
+        Yuno.initialize(
+            applicationContext,
+            apiKey = "your-public-api-key",
+            config = YunoConfig(
+                saveCardEnabled = true,
+                keepLoader = false,
+                styles = customStyles,
+            ),
+        )
+
+        // 2. Set up the checkout launcher and the result callbacks
+        startCheckout(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            callbackPaymentState = { state, subState ->
+                when (state) {
+                    "SUCCEEDED"         -> println("Success")
+                    "REJECT"            -> println("Rejected")
+                    "FAIL"              -> println("Failed")
+                    "PROCESSING"        -> println("Processing")
+                    "INTERNAL_ERROR"    -> println("Internal error")
+                    "CANCELED_BY_USER"  -> println("User cancelled")
+                }
+            },
+        )
+    }
+
+    // 3. Trigger the payment with a pre-selected method
+    fun pay(paymentSelected: PaymentSelected) {
+        startPaymentLite(
+            paymentSelected = paymentSelected,
+            showPaymentStatus = true,
+        )
+    }
+}
+```
+
+```kotlin After. Unified Transaction
+import com.yuno.payments.sdk.api.SdkPayments
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
+
+class CheckoutActivity : ComponentActivity(), TransactionController {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1. Initialize once at app startup (usually in Application.onCreate)
+        SdkPayments.initialize(applicationContext, apiKey = "your-public-api-key")
+    }
+
+    // 2. Implement the controller
+    override fun onStatus(status: TransactionStatus) {
+        when (status.status) {
+            "SUCCEEDED"      -> println("Success")
+            "DECLINED"       -> println("Declined")
+            "REJECTED"       -> println("Rejected")
+            "ERROR"          -> println("Error")
+            "PENDING"        -> println("Pending")
+            "INTERNAL_ERROR" -> println("Internal error")
+            "USER_CANCEL"    -> println("User cancelled")
+        }
+    }
+
+    // 3. Trigger the payment with a pre-selected method
+    fun pay(paymentSelected: PaymentMethodSelected) {
+        val config = TransactionConfig(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            language = "en",
+            appearance = customAppearance,      // optional
+            controller = this,
+            showStatusScreen = true,
+        )
+
+        Transaction(config = config)
+            .start(activity = this, paymentSelected = paymentSelected)
+    }
+}
+```
+
+</CodeGroup>
+
+## O que muda {#what-changes}
+
+Agrupado na ordem em que você edita o código. **Renomeado**: mesma função, novo nome. **Movido**: mesmo valor, novo dono. **Removido**: nada a chamar. **Novo**: sem equivalente legado. A última coluna é a única coisa que você precisa fazer além da renomeação.
+
+### Inicialização e configuração {#initialization-and-config}
+
+| Lite | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `import com.yuno.sdk.*` | `import com.yuno.payments.sdk.api.*` | Renomeado | |
+| `Yuno.initialize(context, apiKey, YunoConfig)` | `SdkPayments.initialize(context, apiKey)` | Renomeado | `YunoConfig` deixa de existir: seus campos vão para `TransactionConfig` ou desaparecem (próximas linhas). |
+| `YunoConfig.styles` | `TransactionConfig.appearance` | Movido | Passe-o em cada transação em vez de uma vez na inicialização. |
+| `YunoConfig.language` | `TransactionConfig.language` | Movido | Passe-o em cada transação em vez de uma vez na inicialização. |
+| `YunoConfig.saveCardEnabled` | *(removido)* | Removido | Exclua-o: a flag agora é controlada no servidor pelo serviço de configurações, e o cliente não a passa mais. |
+| `YunoConfig.keepLoader` | *(removido)* | Removido | O SDK mantém o próprio loader. Sobrescreva `showLoading` só se quiser usar o seu (veja Controller). |
+| `YunoConfig.isDynamicViewEnabled` | *(removido)* | Removido | Exclua-o: o fluxo de visualização dinâmica é o único fluxo na API unificada. |
+| Argumentos `checkoutSession` e `countryCode` de `startCheckout` | Os mesmos campos em `TransactionConfig` | Movido | Os argumentos da chamada de configuração viram campos de configuração. |
+| Argumento `merchantSessionId` | *(removido)* | Removido | Reservado: o ID de sessão antifraude agora é configurado no servidor e não é mais passado pelo cliente. |
+| Argumento `showPaymentStatus` de `startPaymentLite` | `TransactionConfig.showStatusScreen` | Movido | Veja a nota abaixo. |
+
+<Note>
+**A tela de resultado do SDK agora vem desativada por padrão.** Defina `showStatusScreen = true` para mantê-la.
+</Note>
+
+### Controller {#controller}
+
+| Lite | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| Lambdas passadas para `startCheckout` (`callbackPaymentState`, `callbackOTT`) | `TransactionController` | Renomeado | As lambdas viram uma interface: implemente `TransactionController` na classe que você mantém durante a transação (sua `Activity`, `ViewModel` ou um state holder dedicado) e passe-a como `TransactionConfig.controller`. O SDK não a retém: mantenha-a viva durante toda a transação. |
+| `callbackPaymentState: (state, subState) -> Unit` | `onStatus(status: TransactionStatus)` | Renomeado | Continua sendo o único callback de resultado, chamado uma vez por transação no status final, inclusive quando o SDK mostra a tela de resultado, para que você possa controlar sua própria UI por cima. O par de strings `(state, subState)` vira um objeto `TransactionStatus`: `status` e `substatus` vêm do backend, como o backend os retorna. As strings legadas `REJECT`, `FAIL` e `PROCESSING` não são mais emitidas: trate `DECLINED`, `REJECTED`, `ERROR` e `PENDING` no lugar delas. `CANCELED_BY_USER` agora é `USER_CANCEL`; `subState` corresponde 1 para 1 a `substatus`. O próprio SDK só emite `INTERNAL_ERROR` e `USER_CANCEL`. Veja [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `callbackOTT: (String?) -> Unit` | `createPayment(token: Map<String, Any>)` | Renomeado | Opcional. No Lite, essa lambda só era disparada na variante headless; no fluxo Lite gerenciado pelo SDK você não precisa dela. Se o seu backend cria o pagamento, sobrescreva-o: `token` é o token de uso único completo como um map, não só a string do token. Crie o pagamento e retorne; o SDK então consulta o status, executa o 3DS se necessário e chama `onStatus`. Se o handler lançar uma exceção, o fluxo para e `onStatus` não é chamado, então mostre o erro você mesmo. Veja [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment) e [Migração do Headless](/pt-br/docs/yuno-sdk/migration/android/payment/headless). |
+| *(nenhum)* | `showLoading(isLoading: Boolean)` | Novo | Opcional. O Lite não tinha callback de loader: o SDK sempre mostrava o próprio loader. Ele continua mostrando, a menos que você sobrescreva `showLoading`; depois de sobrescrito, o SDK esconde o próprio loader e informa o estado a você. Veja [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading). |
+
+### Pontos de entrada {#entry-points}
+
+| Lite | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `startCheckout(…)` + `startPaymentLite(paymentSelected, …, showPaymentStatus)` | `Transaction(config).start(activity, paymentSelected)` | Renomeado | Monte a configuração e depois chame `start`. Você continua escolhendo o meio e passando-o. As duas funções de extensão de `Activity` viram uma única chamada em uma instância comum de `Transaction`: você não precisa de uma `Activity` para construí-la (só precisa de uma `Activity`/`Context` se quiser abrir a UI do SDK). `showPaymentStatus` foi para a configuração (veja Inicialização e configuração). |
+| `PaymentSelected` | `PaymentMethodSelected` | Renomeado | Mesma função: o valor que você passa para `start`. |
+
+## Relacionados {#related}
+
+- [Primeiros passos](/pt-br/docs/yuno-sdk/get-started). Passo a passo completo da API unificada.
+- [`TransactionConfig`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referência completa dos campos.
+- [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). Valores e substatus.

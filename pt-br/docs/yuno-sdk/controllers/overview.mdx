@@ -1,0 +1,40 @@
+---
+title: "Visão geral"
+sidebarTitle: "O que são controllers?"
+description: "Sobrescreva controllers para controlar como o SDK renderiza, envia e finaliza transações."
+---
+
+Os controllers são a forma como o seu código recebe os eventos do SDK e, quando necessário, sobrescreve o comportamento padrão. Implemente apenas os que você precisar.
+
+## Padrões {#defaults}
+
+| Controller | Não sobrescrito | Sobrescrito |
+|---|---|---|
+| [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status) | Você não recebe o status final. | Recebe o status da transação (`status`, `substatus`, `message`) quando a transação atinge um estado final. Na Web, também recebe alguns resultados que permitem nova tentativa e mantêm o formulário montado. Consulte [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status). |
+| [`showView`](/pt-br/docs/yuno-sdk/controllers/show-view) (iOS, Android, React Native) | O SDK apresenta os formulários e as views de ação (por exemplo, 3DS) em tela cheia. | O SDK entrega a view e um `TransactionProcess` a você; incorpore-a e chame `process.onSubmit()`. |
+| [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading) | O SDK exibe o próprio loader. | O SDK suprime o loader dele e emite `isLoading: true/false`. |
+| [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment) | O SDK cria o pagamento após a tokenização. | O SDK entrega o token de uso único; você cria o pagamento a partir do seu backend e resolve. |
+| [`onInstallmentSelected`](/pt-br/docs/yuno-sdk/controllers/on-installment-selected) | Nada acontece: a seleção continua indo junto com o pagamento. | Recebe a opção de parcelamento que o comprador escolhe no formulário de cartão, e `null` quando essa seleção deixa de ser válida. |
+| [`onCardInfoChanged`](/pt-br/docs/yuno-sdk/controllers/on-card-info-changed) (iOS, Android) | Nada acontece. | Recebe a bandeira, o tipo, a categoria, o emissor e o país do cartão que o comprador está digitando, e `null` quando esse cartão deixa de se aplicar. |
+| [`onShippingAddressChanged`](/pt-br/docs/yuno-sdk/controllers/on-shipping-address-changed) | A tela da carteira digital mantém os totais; nenhuma opção de entrega ou erro é aplicado. | Recebe cada seleção de endereço de entrega e retorna os totais, as opções de entrega ou o erro que a tela deve exibir. |
+| `onChange` (Web) | Nada acontece. | Recebe `{ form: { isValid } }` quando a transação começa e sempre que a validade do formulário renderizado pelo SDK muda. |
+
+Implemente `onStatus` em toda integração. Os demais são opcionais.
+
+A Web não tem `showView`: o SDK renderiza o formulário dentro do seu `elementSelector`. Para enviá-lo a partir do seu próprio botão, defina `showPayButton: false` e chame [`transaction.submit()`](/pt-br/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button).
+
+## Como configurar os controllers {#how-to-wire-controllers}
+
+- **Web.** Cada evento é uma função simples definida na configuração da transação. `onStatus`, `showLoading`, `createPayment` e `onChange` são campos de nível superior. `onInstallmentSelected` fica dentro de `card` (`card: { onInstallmentSelected }`) e `onShippingAddressChanged` dentro de `externalButtons` (`externalButtons: { onShippingAddressChanged }`).
+- **iOS, Android.** Implemente `TransactionController` no objeto que deve reagir aos eventos (o seu view model, a sua activity ou uma classe dedicada) e passe-o pelo campo `controller` de `TransactionConfig`. Cada evento corresponde a um método desse objeto. `showView` só está disponível no mobile. No Android, `onCardInfoChanged` não é um método do controller: encadeie-o no `TransactionConfig` (`TransactionConfig(...).onCardInfoChanged { }`).
+- **React Native.** Passe um objeto simples como o campo `controller` de `TransactionConfig`. Cada evento corresponde a um método desse objeto, e os métodos que você omitir mantêm o padrão do SDK. Para devolver uma chamada ao SDK a partir de um método que você implementa, chame `SdkPayments.defaultShowView`, `SdkPayments.defaultShowLoading` ou `SdkPayments.defaultCreatePayment` com os argumentos que ele recebeu.
+
+## Threads {#threading}
+
+No iOS e no Android, todo método de controller é invocado na thread principal. Você pode atualizar a UI diretamente dentro dele. Tire você mesmo da thread principal qualquer trabalho bloqueante (por exemplo, chamadas ao backend dentro de `createPayment`). No React Native, os métodos de controller são executados na thread do JavaScript.
+
+## Páginas por controller {#per-controller-pages}
+
+- [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status). Obrigatório. O resultado final da transação.
+- [Assumir o controle do SDK](/docs/yuno-sdk/controllers/take-over-the-sdk): [`showView`](/pt-br/docs/yuno-sdk/controllers/show-view) (iOS, Android, React Native), [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading), [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment). Sobrescreva um deles e o SDK deixa de executar essa etapa por conta própria.
+- [Escutar eventos](/docs/yuno-sdk/controllers/listen-to-events): [`onInstallmentSelected`](/pt-br/docs/yuno-sdk/controllers/on-installment-selected), [`onCardInfoChanged`](/pt-br/docs/yuno-sdk/controllers/on-card-info-changed) (iOS, Android), [`onShippingAddressChanged`](/pt-br/docs/yuno-sdk/controllers/on-shipping-address-changed), `onChange` (Web). Informativos; o SDK se comporta da mesma forma com ou sem eles.

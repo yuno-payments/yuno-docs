@@ -1,0 +1,153 @@
+---
+title: "Cadastro"
+description: "Migre integrações de cadastro Web (yuno.mountEnrollmentLite + yuno.apiClientEnroll) para a Transaction API unificada."
+---
+
+O cadastro tinha dois submodos paralelos aos modos de pagamento: um fluxo com UI (`mountEnrollmentLite`) e um fluxo headless (`apiClientEnroll`). Os dois se unem na mesma classe `Transaction` na API unificada. O que muda é a **sessão que você passa** (`customerSession` em vez de `checkoutSession`) e **se você fornece dados pré-coletados** em `paymentMethod.data`.
+
+## Antes de começar {#before-you-start}
+
+- Carregue o bundle do SDK unificado em vez do legado e inicialize-o como mostra o lado a lado: `window.Yuno.initialize(...)` passa a ser `SdkPayments.initialize(...)`. A sua chave de API pública e as sessões de cliente que o seu backend cria não mudam ([Antes de começar](/pt-br/docs/yuno-sdk/get-started#before-you-begin)).
+- Não há pagamento a criar. Uma config de cadastro não aceita `createPayment`, `showPayButton` nem os outros campos exclusivos de pagamento. Remova-os.
+
+## Lado a lado {#side-by-side}
+
+### Cadastro Lite (UI) {#enrollment-lite-ui}
+
+<CodeGroup>
+
+```typescript Before. Enrollment Lite
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+await yuno.mountEnrollmentLite({
+    customerSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    showPaymentStatus: true,
+    yunoEnrollmentStatus: ({ status, vaultedToken }) => {
+        if (status === 'CREATED' && vaultedToken) {
+            // Store against customer
+            console.log('vault token:', vaultedToken)
+        }
+    },
+})
+```
+
+```typescript After. Unified Transaction (enrollment)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    elementSelector: '#root',
+    onStatus: (result) => {
+        // Same payload shape as payment flows: status / substatus / message.
+        if (result.status === 'ENROLLED') {
+            // Enrollment succeeded. Retrieve the vaulted token from your
+            // backend's list-customer-payment-methods endpoint.
+        }
+    },
+})
+
+await transaction.start()
+```
+
+</CodeGroup>
+
+### Cadastro Headless {#enrollment-headless}
+
+<CodeGroup>
+
+```typescript Before. Enrollment headless
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const apiClientEnroll = await yuno.apiClientEnroll({
+    customer_session: 'session-from-backend',
+    country_code: 'CO',
+})
+
+const enrollment = await apiClientEnroll.continueEnrollment({
+    payment_method: {
+        type: 'CARD',
+        card: {
+            detail: {
+                holder_name: 'John Doe',
+                number: '4111111111111111',
+                security_code: '123',
+                expiration_month: 12,
+                expiration_year: 28,
+            },
+        },
+    },
+})
+
+console.log('vault token:', enrollment.vaulted_token)
+```
+
+```typescript After. Unified Transaction (enrollment headless)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'CO',
+    onStatus: (result) => {
+        if (result.status === 'ENROLLED') {
+            // Enrollment succeeded. Retrieve the vaulted token from your
+            // backend's list-customer-payment-methods endpoint.
+        }
+    },
+})
+
+await transaction.start({
+    paymentMethod: {
+        type: 'CARD',
+        data: {
+            card: {
+                holderName: 'John Doe',
+                number: '4111111111111111',
+                securityCode: '123',
+                expirationMonth: 12,
+                expirationYear: 28,
+            },
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+## O que muda {#what-changes}
+
+Agrupado na ordem em que você edita o código. **Renomeado**: mesma função, novo nome. **Movido**: mesmo valor, novo dono. **Removido**: nada a chamar. A última coluna é a única coisa que você precisa fazer além da renomeação.
+
+### Inicialização e config {#initialization-and-config}
+
+| Cadastro | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renomeado | O global é `window.SdkPayments`. Como antes, use `await` nele: ele resolve para a instância de `SdkPayments` a partir da qual você cria as transações. |
+| `customerSession` em `mountEnrollmentLite` / argumento `customer_session` de `apiClientEnroll` | `customerSession` na config da transação | Movido | Uma única factory: a sessão que você passa decide o fluxo, `checkoutSession` para um pagamento, `customerSession` para um cadastro. `createPayment`, `showPayButton` e os outros campos de config exclusivos de pagamento não fazem parte da config de cadastro, já que não existe equivalente a `/v1/payments` para o cadastro. |
+| `countryCode`, `language` em `mountEnrollmentLite` | Os mesmos campos na config da transação | Movido | |
+| *(nenhum: o SDK anexava o próprio contêiner ao `body`)* | `elementSelector` na config da transação | Novo | Opcional: o formulário de cadastro é renderizado dentro desse elemento. Sem ele, o SDK anexa o próprio contêiner ao `body`, como antes. O cadastro headless o ignora. |
+| `showPaymentStatus: true` | `showStatusScreen: true` | Renomeado | Mesmo campo em `TransactionConfig`. O padrão é `true` para cadastro. |
+| `holder_name`, `number`, `security_code`, `expiration_month`, `expiration_year` sob `payment_method.card.detail` (argumento de `continueEnrollment`) | `holderName`, `number`, `securityCode`, `expirationMonth`, `expirationYear` sob `paymentMethod.data.card` | Movido | Os dados de cartão pré-coletados vão inline em `start()` (veja Pontos de entrada). |
+
+### Callbacks {#callbacks}
+
+| Cadastro | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `yunoEnrollmentStatus({ status, vaultedToken })` | `onStatus(result)` | Renomeado | `result` traz `status`, `substatus` e `message`, o mesmo formato dos fluxos de pagamento. `result.status` traz o status do cadastro como a API o informa (`CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`, `PENDING`) mais dois valores do SDK: `INTERNAL_ERROR` (detalhes em `result.message`) e `USER_CANCEL` (você desmontou antes de um resultado). Um cadastro bem-sucedido chega como `status: 'ENROLLED'` com `substatus: 'CREATED'`: verifique `result.status === 'ENROLLED'`. **O `vaultedToken` não é mais entregue ao client**: recupere-o no endpoint list-customer-payment-methods do seu backend e armazene-o associado ao seu cliente. Veja [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `yunoError(message, data?)` | *(removido)* | Removido | Os erros chegam por `onStatus` (um `TransactionStatus` com `message` definido) ou por uma Promise de `start()` rejeitada. |
+
+### Pontos de entrada {#entry-points}
+
+| Cadastro | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `yuno.mountEnrollmentLite({ customerSession, … })` | `sdkPayments.transaction({ customerSession, elementSelector, … }).start()` | Renomeado | `start()` sem argumento é o cadastro com UI: com `elementSelector` na config, o SDK renderiza dentro desse elemento o formulário do meio para o qual a sessão de cliente foi criada. |
+| `yuno.apiClientEnroll({ customer_session, country_code })` + `.continueEnrollment({ payment_method })` | `sdkPayments.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data: { card } } })` | Renomeado | `start({ paymentMethod: { type, data } })` é o cadastro headless: mesmo formato do pagamento headless, mas com `customerSession`; o `elementSelector` da config é ignorado. A chamada não retorna mais o vaulted token (veja Callbacks). |
+
+## Relacionados {#related}
+
+- [Cadastro](/pt-br/docs/yuno-sdk/features/enrollment). Guia completo de cadastro.
+- [`TransactionConfig`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referência completa dos campos.
+- [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). Formato do payload e valores de status.

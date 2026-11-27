@@ -1,0 +1,162 @@
+---
+title: "Objetos que você recebe"
+sidebarTitle: "Objetos que você recebe"
+description: "Os objetos que o SDK devolve ao seu app: Status e OneTimeToken."
+---
+
+Os objetos que o SDK devolve ao seu app: o status final de uma transação e o token de uso único quando você cria o pagamento a partir do seu backend.
+
+<Tabs>
+<Tab title="Status" id="status">
+
+O objeto de status informa como a transação terminou. O SDK o entrega por meio de [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status).
+
+## O que você recebe {#what-you-receive}
+
+O payload traz três partes:
+
+- `status`: repassado exatamente como o backend o retorna, para os status que esta versão do SDK conhece. Na Web, eles são (pagamentos: `CREATED`, `SUCCEEDED`, `PENDING`, `DECLINED`, `REJECTED`, `CANCELED`, `ERROR`, `EXPIRED`, `REFUNDED`, `VERIFIED`, `READY_TO_PAY`; cadastros: `ENROLLED`, `ENROLL_IN_PROCESS`, `UNENROLLED`, `UNENROLL_IN_PROCESS`, `READY_TO_ENROLL`, `CREATED`, `PENDING`, `DECLINED`, `REJECTED`, `CANCELED`, `ERROR`, `EXPIRED`). Em todas as plataformas, qualquer outro valor chega como `INTERNAL_ERROR`, com `message.code` `UNSUPPORTED_STATUS` e `message.reason` definido como `unsupported status: <value>`.
+- `substatus`: repassado exatamente como o backend o retorna. Na Web, um substatus vazio ou ausente chega como `null`.
+- `message`: contexto adicional. O formato depende da origem:
+
+| Origem | Formato de `message` |
+|---|---|
+| O backend retornou `ERROR` / uma resposta com falha | `{ "source": "backend", "code": <backend error code>, "reason": <backend reason>, "raw": <raw backend payload> }`. Na Web e no iOS, esse formato se aplica quando o backend rejeita uma chamada do SDK (status `INTERNAL_ERROR`), e `code` é o status HTTP quando o corpo não tem `code`. |
+| O pagamento terminou em `DECLINED`, `REJECTED`, `EXPIRED`, `CANCELED` ou `ERROR` | `{ "source": "backend", "code": <transaction response_code> }`, ou `null` quando o backend não enviou código de resposta. No iOS, `reason` também traz o `response_message` da transação. Os resultados de cadastro na Web sempre trazem `null`. |
+| O SDK falhou (falha de renderização, erro interno do SDK, rede, exceção inesperada) | `{ "source": "sdk", "code": <sdk code>, "reason": <human-readable reason>, "context": <render step / module / call site> }` |
+| Cancelamento pelo usuário | `null` (não é um erro) |
+
+Na Web, todos os outros status de pagamento, e todos os status de cadastro, trazem `message: null`.
+
+No React Native, `onStatus` recebe sem alterações o status do SDK nativo subjacente: um app rodando no iOS recebe os valores de iOS desta página, e um app rodando no Android, os de Android.
+
+## Status emitidos pelo próprio SDK {#statuses-emitted-by-the-sdk-itself}
+
+Dois status não são repassados do backend, o SDK os emite localmente:
+
+- `INTERNAL_ERROR`: gerado quando uma chamada a um serviço do backend falhou ou quando algo falhou dentro do SDK (carregamento, renderização da view, rede, exceção inesperada).
+- `USER_CANCEL`: gerado quando o usuário fecha um formulário ou uma view sem concluir o fluxo.
+
+Na Web, `INTERNAL_ERROR` com `message.code` `FORM_INVALID` não é final. O SDK o gera quando você envia um formulário que não é válido, com [`transaction.submit()`](/pt-br/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button) ou com `transaction.start({ paymentMethod })` na lista de meios de pagamento. O formulário continua montado e o usuário pode corrigi-lo.
+
+Na Web, os valores de `message.code` para `source: "sdk"` incluem:
+
+- `UNSUPPORTED_STATUS`. O backend retornou um status que o SDK não conhece. `message.reason` é `unsupported status: <value>`.
+- `FORM_INVALID`. O formulário enviado não é válido. Não é final.
+- `ELEMENT_NOT_FOUND`. O elemento passado para `paymentMethodList.mount()` não está no DOM, ou o contêiner do formulário foi removido enquanto o formulário carregava. Um `elementSelector` na configuração que não corresponde a nada faz `start()` ser rejeitado com `elementSelector "<selector>" was not found in the document.` em vez disso.
+- `COLLECT_FAILED`. No modo manual (você passa `createPayment`), a carteira do Mercado Pago não conseguiu coletar os dados do pagamento. `message.reason` começa com `MERCADO_PAGO_`.
+- `UNEXPECTED_ERROR`. Uma falha que o SDK não classifica. `message.reason` traz a mensagem de erro.
+
+No iOS, os valores de `message.code` para `source: "sdk"` são estes. `message.context` indica o ponto de chamada que gerou o erro.
+
+| Código | Quando | `context` |
+|---|---|---|
+| `UNSUPPORTED_STATUS` | O backend retornou um status que o SDK não conhece. `reason` é `unsupported status: <value>`. | `status mapping` |
+| `NETWORK_ERROR` | Uma requisição excedeu o tempo limite (`reason` é `request timed out`) ou falhou na camada de transporte (`reason` é a descrição do sistema). | A chamada que falhou, por exemplo `Transaction.runPayment`, `Transaction.runEnrollment`, `SdkPayments.defaultCreatePayment` ou `MethodsViewImplementation.getPaymentMethods` |
+| `THREEDS_ERROR` | A configuração ou o desafio nativo de 3DS falhou. `reason` descreve a causa, por exemplo `3DS provider unavailable` ou `3DS challenge timed out`. | `BaseThreeDSSetupSDKAction.execute` ou `PaymentThreeDSChallengeAction.execute` |
+| `CLICK_TO_PAY_FAILED` | O Click to Pay falhou, ou as configurações de passkey dele estão incompletas. | `PaymentFlowClickToPay` ou `PaymentFlowC2PPasskey` |
+| `LOADER_TIMEOUT` | O loader do SDK ficou na tela além do limite. `reason` é `loader timeout after <seconds>s`. | `LoaderViewController.timeout` |
+| `INVALID_BROWSER_URL` | Uma URL de redirecionamento não pôde ser aberta no navegador dentro do app. | `YunoViewRouter.showInAppBrowser` |
+| `WEBSOCKET_ERROR` | A conexão de status de um pagamento assíncrono falhou. | `Websocket` |
+| `NO_PRESENTATION_ANCHOR` | `start` não encontrou nenhum view controller a partir do qual apresentar. Veja [`viewController`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#viewcontroller-ios-only). | `Transaction.start` |
+| `REVOLUT_PAY_FAILED` | O Revolut Pay não conseguiu iniciar ou falhou. Veja [Revolut Pay](/pt-br/docs/yuno-sdk/features/native-modules#revolut-pay). | `PaymentFlowBase.executePaymentAction` |
+| `INVALID_SPLIT_PAYMENT` | O array passado para `start(paymentsSelected:)` não é válido, ou a transação não pode executar um split de pagamento. `reason` indica o cartão, por exemplo `paymentsSelected[2].transactionData.amount is required`. Veja [Split de pagamento](/pt-br/docs/yuno-sdk/features/split-payment#sdk-validations). | `SplitPaymentFlow` |
+| `UNEXPECTED_ERROR` | Uma falha que o SDK não classifica. `reason` traz a descrição do erro. | A chamada que falhou |
+
+Na Web, um cancelamento durante um desafio de 3DS, por exemplo fechar o desafio ou pressionar o botão voltar do navegador, chega como `status: "PENDING"` com `substatus: "USER_CANCEL"` e `message: null`, porque o pagamento já existe no backend. Chamar `transaction.unmount()` em uma transação iniciada que ainda não entregou um status também emite `USER_CANCEL`, a menos que haja um pagamento em andamento.
+
+### Falha do backend ou falha do SDK? Leia `message.source` {#backend-failure-or-sdk-failure-read-messagesource}
+
+`INTERNAL_ERROR` cobre os dois casos, então o `status` sozinho não diz de onde veio a falha. Uma rejeição do backend (por exemplo, uma sessão de checkout inválida ou expirada) chega como:
+
+```json
+{
+  "status": "INTERNAL_ERROR",
+  "substatus": null,
+  "message": {
+    "source": "backend",
+    "code": "INVALID_CHECKOUT_SESSION",
+    "reason": "checkout session expired or already used",
+    "raw": "<raw backend error payload>"
+  }
+}
+```
+
+Uma falha do lado do SDK (rede, renderização, exceção inesperada) chega como:
+
+```json
+{
+  "status": "INTERNAL_ERROR",
+  "substatus": null,
+  "message": {
+    "source": "sdk",
+    "code": "NETWORK_ERROR",
+    "reason": "request timed out",
+    "context": "Transaction.runPayment"
+  }
+}
+```
+
+Na Web, `reason` é o `messages[]`, `message` ou `description` do backend. Para `INVALID_CHECKOUT_SESSION`, o SDK acrescenta uma dica de que uma transação headless precisa de uma sessão criada com o workflow `SDK_SEAMLESS`.
+
+Quando `message.source` é `"backend"`, a API da Yuno rejeitou uma chamada: `code` e `raw` trazem o próprio erro do backend, então comece a depuração por aí (validade da sessão, workflow, credenciais). Quando é `"sdk"`, a falha se originou dentro do SDK e `context` indica o módulo ou o ponto de chamada que a gerou.
+
+## Valores de status do backend {#backend-status-values}
+
+O conjunto de valores possíveis de `status` e `substatus` é definido pelo backend. Veja a referência do workflow de cada fluxo:
+
+- [Status de pagamento e códigos de resposta](https://docs.y.uno/reference/payments/status-and-response-codes/payment)
+- [Status do workflow de cadastro](https://docs.y.uno/reference/customer-sessions-enrollment/enrollment-workflow#enrollment-status)
+- [Status do workflow de payout](https://docs.y.uno/reference/payouts/payout-workflow#payout-status)
+
+</Tab>
+<Tab title="OneTimeToken" id="one-time-token">
+
+`OneTimeToken` é o que o SDK entrega ao seu handler `createPayment` quando você assume a criação do pagamento. Você o envia via POST para `/v1/payments` a partir do seu backend.
+
+No iOS e no Android, o token é entregue como um dicionário/mapa (`[String: Any]` / `Map<String, Any>`) com exatamente os campos que o backend retorna; não há nenhuma reformatação do lado do SDK. No React Native, é um objeto simples (`Record<string, unknown>`) com os campos do token nativo. Uma exceção no iOS: um pagamento com Click to Pay concluído com uma passkey entrega apenas `token`. Na Web, é um **objeto tipado** com os mesmos campos (`token`, `vaulted_token`, `vault_on_success`, `type`, `card_data`, `customer`, `bank_transfer`), em que `vaulted_token` é `null` quando não existe token de vault; o valor passado para `createPayment` traz, além disso, `recognitionToken` e `checkout_session`. O tipo de contêiner por plataforma é mostrado em [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment).
+
+Para a estrutura e o significado de cada campo, veja [Token de uso único](https://docs.y.uno/pt-br/docs/basic-concepts/tokens#one-time-use-token).
+
+</Tab>
+</Tabs>
+
+## Verificar a disponibilidade de um meio de pagamento (Web) {#checking-payment-method-availability-web}
+
+Ao criar uma interface personalizada de seleção de meio de pagamento em vez de usar `paymentMethodList`, você pode consultar se um meio de pagamento específico é compatível com o dispositivo do comprador e está habilitado para a sessão de checkout atual antes de renderizar a opção dele.
+
+Chame `transaction.isPaymentMethodAvailable`:
+
+```javascript
+const isApplePayAvailable = await transaction.isPaymentMethodAvailable({
+  paymentMethodType: 'APPLE_PAY',
+})
+
+if (isApplePayAvailable) {
+  // Render Apple Pay option in your custom payment list
+}
+```
+
+### Parâmetros {#parameters}
+
+<ParamField body="paymentMethodType" type="string" required>
+  O tipo de meio de pagamento a verificar (por exemplo, `APPLE_PAY`, `GOOGLE_PAY`, `PAYPAL`, `CARD`).
+</ParamField>
+
+### Valor de retorno {#return-value}
+
+Retorna uma `Promise<boolean>`:
+* Resolve como `true` se o meio de pagamento estiver habilitado na sessão de checkout e for compatível com os recursos do dispositivo/navegador (por exemplo, verificando se o dispositivo está pronto para Apple Pay ou Google Pay).
+* Resolve como `false` se o meio estiver desabilitado na sessão, não for compatível com o dispositivo/navegador do comprador, ou se a transação tiver sido substituída.
+* Nunca é rejeitada: erros e chamadas de rede abortadas resolvem com segurança como `false`.
+* Disponível apenas em transações de pagamento. Chamá-lo em uma transação de cadastro lança um erro.
+
+<Note>
+Disponível no Yuno SDK Web 2.1.2 e posteriores.
+</Note>
+
+## Relacionados {#related}
+
+- [Objetos que você passa](/pt-br/docs/yuno-sdk/reference/objects-you-pass). O que o seu app entrega ao SDK.
+- [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status). Onde `Status` é entregue.
+- [Assuma o controle do SDK](/pt-br/docs/yuno-sdk/controllers/create-payment). Onde `OneTimeToken` é entregue.

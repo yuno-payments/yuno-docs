@@ -1,0 +1,524 @@
+---
+title: "Divida um pagamento entre dois cartões"
+sidebarTitle: "Split de pagamento"
+description: "Monte o objeto que divide um pagamento entre dois cartões, inicie-o, crie o pagamento e leia o resultado na Web, no iOS, no Android e no React Native."
+---
+
+Um split de pagamento permite que o comprador pague um pedido com dois cartões. Cada cartão paga sua própria parte do total, você cria um pagamento e recebe um resultado.
+
+O método é `start` em todas as plataformas. Para um split de pagamento, ele recebe um array de meios de pagamento em vez de um só. O SDK cria um token composto, entrega-o a [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment), executa o 3DS de cada cartão e informa o resultado em [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status).
+
+Para dividir um pagamento entre recebedores de um marketplace, veja [Split de pagamento em marketplace](/pt-br/docs/payment-features/split-payments-marketplace).
+
+## Disponibilidade {#availability}
+
+| Plataforma | Versão mínima | Ponto de entrada |
+|---|---|---|
+| Web | `2.6.0` | `transaction.start([...])` |
+| iOS | `3.1.0` | `transaction.start(paymentsSelected:)` |
+| Android | `3.1.0` | `transaction.start(activity, paymentsSelected)` |
+| React Native | `2.1.0` | `transaction.start([...])` |
+
+## Antes de começar {#before-you-start}
+
+- **Peça à Yuno para habilitar.** O split de pagamento é habilitado por conta. Sem isso, a requisição do token falha com `SPLIT_NOT_ENABLED`.
+- **Crie a sessão de checkout com o valor total.** Use o total do pedido e o workflow padrão `SDK_CHECKOUT`.
+- **Sobrescreva `createPayment`.** Você cria o pagamento a partir do seu backend. Veja [Crie o pagamento](#create-the-payment).
+- **Colete os dados do cartão na sua própria interface.** Passe-os no objeto. O fluxo não monta um formulário do SDK nem uma lista de meios de pagamento para os cartões.
+- **Passe cada valor com as casas decimais da sua moeda.** O SDK envia `value` como você o informa, e o backend rejeita casas decimais a mais com `AMOUNT_PRECISION`.
+
+## Monte o objeto {#build-the-object}
+
+Você monta o mesmo objeto de meio de pagamento usado em um pagamento com um cartão, uma vez por cartão, e passa os dois para `start` como um array. Cada um acrescenta o `amount` que aquele cartão paga.
+
+<Tabs>
+  <Tab title="Web">
+
+```typescript
+start([{ paymentMethod }])
+```
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `paymentMethod.type` | String | `"CARD"`. |
+| `paymentMethod.data.amount.currency` | String | Obrigatório. Moeda da parte deste cartão. |
+| `paymentMethod.data.amount.value` | Number | Obrigatório. Valor que este cartão paga, maior que 0, com as casas decimais da moeda. |
+| `paymentMethod.data.card` | Object | Os dados do cartão. Envie este campo ou `vaultedToken`. |
+| `paymentMethod.vaultedToken` | String | O token salvo de um cartão cadastrado. Envie este campo ou `data.card`. |
+
+```typescript
+await transaction.start([
+  {
+    paymentMethod: {
+      type: 'CARD',
+      data: {
+        amount: { currency: 'BRL', value: 200 },
+        card: {
+          number: '4111111111111111',
+          securityCode: '123',
+          expirationMonth: 11,
+          expirationYear: 29,
+          holderName: 'John Doe',
+        },
+      },
+    },
+  },
+  {
+    paymentMethod: {
+      type: 'CARD',
+      vaultedToken: 'aad8578e-ac2f-40a0-8065-25b5957f6555',
+      data: {
+        amount: { currency: 'BRL', value: 100 },
+      },
+    },
+  },
+])
+```
+
+  </Tab>
+  <Tab title="iOS">
+
+```swift
+start(paymentsSelected: [SdkPayments.PaymentMethodSelected])
+```
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `paymentMethodType` | `String` | `"CARD"`. |
+| `transactionData.amount` | `AmountTransactionData(currency: String, value: Double)` | Obrigatório. Moeda e valor que este cartão paga, com valor maior que 0 e as casas decimais da moeda. |
+| `transactionData.card` | `CardTransactionData` | Os dados do cartão. Envie este campo ou `vaultedToken`. |
+| `vaultedToken` | `String?` | O token salvo de um cartão cadastrado. Envie este campo ou `transactionData.card`. |
+
+```swift
+transaction.start(paymentsSelected: [
+    SdkPayments.PaymentMethodSelected(
+        paymentMethodType: "CARD",
+        transactionData: SdkPayments.TransactionData(
+            card: SdkPayments.CardTransactionData(
+                number: "4111111111111111",
+                securityCode: "123",
+                expirationMonth: 11,
+                expirationYear: 29,
+                holderName: "John Doe"
+            ),
+            amount: SdkPayments.AmountTransactionData(currency: "BRL", value: 200)
+        )
+    ),
+    SdkPayments.PaymentMethodSelected(
+        paymentMethodType: "CARD",
+        vaultedToken: "aad8578e-ac2f-40a0-8065-25b5957f6555",
+        transactionData: SdkPayments.TransactionData(
+            amount: SdkPayments.AmountTransactionData(currency: "BRL", value: 100)
+        )
+    )
+])
+```
+
+  </Tab>
+  <Tab title="Android">
+
+```kotlin
+start(activity, paymentsSelected: List<PaymentMethodSelected>)
+```
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `type` | `String` | `"CARD"`. |
+| `transactionData.amount` | `PaymentAmount(currency: String, value: Double)` | Obrigatório. Moeda e valor que este cartão paga, com valor maior que 0 e as casas decimais da moeda. |
+| `transactionData.card` | `CardData` | Os dados do cartão. Envie este campo ou `vaultedToken`. |
+| `vaultedToken` | `String?` | O token salvo de um cartão cadastrado. Envie este campo ou `transactionData.card`. |
+
+```kotlin
+transaction.start(
+    activity = this,
+    paymentsSelected = listOf(
+        PaymentMethodSelected(
+            type = "CARD",
+            transactionData = TransactionData(
+                card = CardData(
+                    number = "4111111111111111",
+                    securityCode = "123",
+                    expirationMonth = 11,
+                    expirationYear = 29,
+                    holderName = "John Doe",
+                ),
+                amount = PaymentAmount(currency = "BRL", value = 200.0),
+            ),
+        ),
+        PaymentMethodSelected(
+            type = "CARD",
+            vaultedToken = "aad8578e-ac2f-40a0-8065-25b5957f6555",
+            transactionData = TransactionData(
+                amount = PaymentAmount(currency = "BRL", value = 100.0),
+            ),
+        ),
+    ),
+)
+```
+
+  </Tab>
+  <Tab title="React Native">
+
+```typescript
+start(selection: PaymentMethodSelected | PaymentMethodSelected[]): Promise<void>
+```
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `type` | `string` | `'CARD'`. |
+| `transactionData.amount` | `PaymentAmount` (`{ currency: string, value: number }`) | Obrigatório. Moeda e valor que este cartão paga, com valor maior que 0 e as casas decimais da moeda. |
+| `transactionData.card` | `CardData` | Os dados do cartão. Envie este campo ou `vaultedToken`. |
+| `vaultedToken` | `string` | O token salvo de um cartão cadastrado. Envie este campo ou `transactionData.card`. |
+
+```typescript
+await transaction.start([
+  {
+    type: 'CARD',
+    transactionData: {
+      card: {
+        number: '4111111111111111',
+        securityCode: '123',
+        expirationMonth: 11,
+        expirationYear: 29,
+        holderName: 'John Doe',
+      },
+      amount: { currency: 'BRL', value: 200 },
+    },
+  },
+  {
+    type: 'CARD',
+    vaultedToken: 'aad8578e-ac2f-40a0-8065-25b5957f6555',
+    transactionData: {
+      amount: { currency: 'BRL', value: 100 },
+    },
+  },
+])
+```
+
+  </Tab>
+</Tabs>
+
+### Regras para os itens {#rules-for-the-items}
+
+- **Número de itens:** dois, um por cartão.
+- **Ordem:** o primeiro item é cobrado e autenticado primeiro, depois o segundo.
+- **`amount`:** obrigatório em todos os itens, com `currency` e `value`.
+- **Dados do cartão:** todo item leva um cartão ou um token salvo. O backend rejeita um item sem nenhum dos dois ou com os dois.
+- **Mesmo cartão duas vezes:** não é permitido. O SDK compara os números dos cartões e os tokens salvos.
+- **Moeda:** a mesma em todos os itens, e a moeda da sessão de checkout. O SDK compara os itens entre si e o backend os compara com a sessão.
+- **Soma dos valores:** deve ser igual ao valor da sessão de checkout. O backend valida isso.
+
+## Exemplo completo {#complete-example}
+
+Monte o objeto, inicie o pagamento, crie-o em `createPayment` e receba o resultado em `onStatus`. Este exemplo divide uma sessão de checkout de 300 BRL em 200 BRL em um cartão novo e 100 BRL em um cartão salvo.
+
+<Tabs>
+  <Tab title="Web">
+
+```typescript
+const sdkPayments = await SdkPayments.initialize('<PUBLIC_API_KEY>')
+
+const transaction = sdkPayments.transaction({
+  checkoutSession: '<CHECKOUT_SESSION>',
+  countryCode: 'BR',
+  createPayment: async (token) => {
+    // Your backend calls POST /v2/payments with the composite token
+    await myBackend.createSplitPayment({
+      token: token.token,
+      checkout_session: token.checkout_session,
+    })
+  },
+  onStatus: (result) => {
+    // One result for the whole payment
+    console.log(result.status, result.substatus)
+  },
+})
+
+try {
+  await transaction.start([
+    {
+      paymentMethod: {
+        type: 'CARD',
+        data: {
+          amount: { currency: 'BRL', value: 200 },
+          card: {
+            number: '4111111111111111',
+            securityCode: '123',
+            expirationMonth: 11,
+            expirationYear: 29,
+            holderName: 'John Doe',
+          },
+        },
+      },
+    },
+    {
+      paymentMethod: {
+        type: 'CARD',
+        vaultedToken: 'aad8578e-ac2f-40a0-8065-25b5957f6555',
+        data: {
+          amount: { currency: 'BRL', value: 100 },
+        },
+      },
+    },
+  ])
+} catch (error) {
+  // An invalid array rejects start() before any request
+  if (error.code === 'INVALID_SPLIT_PAYMENT') {
+    console.error(error.message)
+  }
+}
+```
+
+  </Tab>
+  <Tab title="iOS">
+
+```swift
+import SdkPayments
+
+final class Checkout: SdkPayments.TransactionController {
+
+    private var transaction: SdkPayments.Transaction?
+
+    func createPayment(token: [String: Any]) async throws {
+        // Your backend calls POST /v2/payments with the composite token
+        try await createSplitPaymentOnBackend(token: token["token"] as? String ?? "")
+    }
+
+    func onStatus(status: SdkPayments.TransactionStatus) {
+        // One result for the whole payment
+        print(status.status, status.substatus ?? "", status.message?.code ?? "")
+    }
+
+    func pay() {
+        let config = SdkPayments.TransactionConfig(
+            checkoutSession: "<CHECKOUT_SESSION>",
+            countryCode: "BR",
+            controller: self
+        )
+        let transaction = SdkPayments.Transaction(config: config)
+        self.transaction = transaction
+
+        transaction.start(paymentsSelected: [
+            SdkPayments.PaymentMethodSelected(
+                paymentMethodType: "CARD",
+                transactionData: SdkPayments.TransactionData(
+                    card: SdkPayments.CardTransactionData(
+                        number: "4111111111111111",
+                        securityCode: "123",
+                        expirationMonth: 11,
+                        expirationYear: 29,
+                        holderName: "John Doe"
+                    ),
+                    amount: SdkPayments.AmountTransactionData(currency: "BRL", value: 200)
+                )
+            ),
+            SdkPayments.PaymentMethodSelected(
+                paymentMethodType: "CARD",
+                vaultedToken: "aad8578e-ac2f-40a0-8065-25b5957f6555",
+                transactionData: SdkPayments.TransactionData(
+                    amount: SdkPayments.AmountTransactionData(currency: "BRL", value: 100)
+                )
+            )
+        ])
+    }
+}
+```
+
+Chame `SdkPayments.initialize(apiKey:)` uma vez na inicialização do app. O SDK não retém o controller: mantenha-o ativo durante toda a transação.
+
+  </Tab>
+  <Tab title="Android">
+
+```kotlin
+import android.util.Log
+import androidx.activity.ComponentActivity
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.CardData
+import com.yuno.payments.sdk.api.models.PaymentAmount
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionData
+import com.yuno.payments.sdk.api.models.TransactionStatus
+
+class CheckoutActivity : ComponentActivity(), TransactionController {
+
+    override suspend fun createPayment(token: Map<String, Any>) {
+        // Your backend calls POST /v2/payments with the composite token
+        createSplitPaymentOnBackend(token["token"] as? String ?: "")
+    }
+
+    override fun onStatus(status: TransactionStatus) {
+        // One result for the whole payment
+        Log.d("Checkout", "${status.status} ${status.substatus} ${status.message?.code}")
+    }
+
+    fun pay() {
+        val config = TransactionConfig(
+            checkoutSession = "<CHECKOUT_SESSION>",
+            countryCode = "BR",
+            controller = this,
+        )
+
+        Transaction(config = config).start(
+            activity = this,
+            paymentsSelected = listOf(
+                PaymentMethodSelected(
+                    type = "CARD",
+                    transactionData = TransactionData(
+                        card = CardData(
+                            number = "4111111111111111",
+                            securityCode = "123",
+                            expirationMonth = 11,
+                            expirationYear = 29,
+                            holderName = "John Doe",
+                        ),
+                        amount = PaymentAmount(currency = "BRL", value = 200.0),
+                    ),
+                ),
+                PaymentMethodSelected(
+                    type = "CARD",
+                    vaultedToken = "aad8578e-ac2f-40a0-8065-25b5957f6555",
+                    transactionData = TransactionData(
+                        amount = PaymentAmount(currency = "BRL", value = 100.0),
+                    ),
+                ),
+            ),
+        )
+    }
+}
+```
+
+Chame `SdkPayments.initialize(applicationContext, apiKey = "<PUBLIC_API_KEY>")` uma vez na inicialização do app.
+
+  </Tab>
+  <Tab title="React Native">
+
+```typescript
+import { SdkPayments, Transaction } from '@yuno-payments/yuno-sdk-react-native'
+
+await SdkPayments.initialize('<PUBLIC_API_KEY>')
+
+const transaction = new Transaction({
+  checkoutSession: '<CHECKOUT_SESSION>',
+  countryCode: 'BR',
+  controller: {
+    createPayment: async (token) => {
+      // Your backend calls POST /v2/payments with the composite token
+      await myBackend.createSplitPayment({
+        token: token.token,
+        checkout_session: token.checkout_session,
+      })
+    },
+    onStatus: (status) => {
+      // One result for the whole payment
+      console.log(status.status, status.substatus, status.message?.code)
+    },
+  },
+})
+
+await transaction.start([
+  {
+    type: 'CARD',
+    transactionData: {
+      card: {
+        number: '4111111111111111',
+        securityCode: '123',
+        expirationMonth: 11,
+        expirationYear: 29,
+        holderName: 'John Doe',
+      },
+      amount: { currency: 'BRL', value: 200 },
+    },
+  },
+  {
+    type: 'CARD',
+    vaultedToken: 'aad8578e-ac2f-40a0-8065-25b5957f6555',
+    transactionData: {
+      amount: { currency: 'BRL', value: 100 },
+    },
+  },
+])
+```
+
+Chame `SdkPayments.initialize` uma vez na inicialização do app. O React Native passa o array para o SDK nativo de cada plataforma, então as validações e os resultados são os mesmos do iOS e do Android.
+
+  </Tab>
+</Tabs>
+
+## Crie o pagamento {#create-the-payment}
+
+O token que você recebe em `createPayment` é um único token composto para os dois cartões. Ele traz `token`, `checkout_session` e `expires_at`. Leia-o pela chave `token`. A partir do seu backend, envie-o para `POST /v2/payments` com `workflow: "SDK_CHECKOUT"`, como `payment_method.token`.
+
+<Warning>
+`POST /v1/payments` rejeita um token composto. Use `POST /v2/payments`.
+</Warning>
+
+A requisição, seus campos e a resposta estão em [Pague com dois cartões](/pt-br/docs/payment-features/pay-with-two-cards#create-the-payment), no exemplo `SDK_CHECKOUT`, e na referência [Create Payment (two cards)](/reference/payments/create-payment-v2).
+
+## Receba o resultado {#receive-the-result}
+
+Você recebe o resultado em `onStatus`, no nível do pagamento. Não há callback por cartão.
+
+O SDK processa o cartão 1 e depois o cartão 2. Se o cartão 1 falhar, o cartão 2 não é iniciado e `onStatus` informa o status do pagamento.
+
+Se o cartão 2 falhar depois que o cartão 1 foi autorizado, o que acontece com o cartão 1 é tratado no backend. A resposta do pagamento no seu servidor mostra o estado final de cada cartão: veja [Pague com dois cartões](/pt-br/docs/payment-features/pay-with-two-cards).
+
+No iOS, também a partir do React Native, `onStatus` pode informar primeiro um `PENDING` não final, como em qualquer pagamento. Veja [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status) e confirme o resultado no seu servidor antes de atender o pedido.
+
+## Erros {#errors}
+
+### Validações do SDK {#sdk-validations}
+
+O SDK verifica o formato do array antes de solicitar o token, então um array inválido não envia nenhuma requisição. O código é `INVALID_SPLIT_PAYMENT` e a mensagem está em inglês. A mensagem é para seus desenvolvedores: não a mostre ao comprador.
+
+| Plataforma | Como você recebe |
+|---|---|
+| Web | `start()` é rejeitado com um erro que traz `code` e `message`. `onStatus` não é chamado. |
+| iOS, Android, React Native | `onStatus` recebe `status: "INTERNAL_ERROR"`, com `INVALID_SPLIT_PAYMENT` em `message.code` e o texto em `message.reason`. |
+
+O SDK verifica, nesta ordem, que:
+
+- O array tem dois itens.
+- Todo item tem um `amount` com um `value` maior que 0 e uma `currency`.
+- Todo item tem a mesma moeda que o primeiro.
+- Nenhum cartão ou token salvo aparece duas vezes.
+
+A mensagem indica o item que falhou.
+
+Todo o resto, como o tipo de meio de pagamento, um item sem cartão nem token salvo, a soma dos valores e a moeda da sessão, é validado pelo backend com os códigos de [Erros do backend](#backend-errors).
+
+### Onde o array não está disponível {#where-the-array-is-not-available}
+
+O array é para transações de pagamento. Em uma transação de cadastro (`customerSession`):
+
+| Plataforma | Como você recebe |
+|---|---|
+| Web | `start()` é rejeitado com ``An array of `paymentMethod` is not available for enrollment transactions.`` |
+| iOS, Android, React Native | `onStatus` recebe `INTERNAL_ERROR` com `message.code` `INVALID_SPLIT_PAYMENT` e `message.reason` `paymentsSelected is not available for enrollment`. |
+
+### Erros do backend {#backend-errors}
+
+O backend valida a requisição do token composto. Quando ele rejeita a requisição, `onStatus` recebe `status: "INTERNAL_ERROR"` com `message.source` `backend` e nenhum token chega a `createPayment`.
+
+| Código | Significado |
+|---|---|
+| `SPLIT_NOT_ENABLED` | O split de pagamento não está habilitado para a conta. Peça à Yuno para habilitá-lo. |
+| `METHOD_COUNT_OUT_OF_RANGE` | O número de itens está fora do que a conta permite. |
+| `METHOD_TYPE_NOT_ALLOWED` | O tipo de meio de pagamento não é permitido para split de pagamento. |
+| `AMOUNT_SUM_MISMATCH` | A soma dos valores é diferente do valor da sessão de checkout. |
+| `CURRENCY_MISMATCH` | Uma moeda é diferente da moeda da sessão de checkout. |
+| `AMOUNT_NOT_POSITIVE` | Um valor não é maior que 0. |
+| `AMOUNT_PRECISION` | Um valor tem mais casas decimais do que a moeda permite. |
+| `DUPLICATE_INSTRUMENT` | O mesmo cartão ou token salvo aparece em dois itens. |
+| `CARD_TOKEN_INVALID` | Um item não tem cartão nem token salvo, tem os dois ou usa um token salvo que não pertence ao cliente. |
+| `INSTALLMENT_PLAN_UNAVAILABLE` | O plano de parcelamento de um item não está disponível. |
+| `INSTALLMENT_PLAN_LOOKUP_FAILED` | A Yuno não conseguiu consultar o plano de parcelamento. |
+| `SEQUENCE_INVALID`, `TOTAL_MISMATCH`, `CAPTURE_MODE_MISMATCH`, `INVALID_REQUEST` | A requisição não atende ao contrato do token. Verifique a mensagem do backend em `message.reason` ou `message.raw`. |
+
+## Relacionados {#related}
+
+- [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment). O controller que recebe o token composto.
+- [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status). O controller que recebe o resultado.
+- [`PaymentMethodSelected`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) e [`TransactionData`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-data). Os objetos a partir dos quais cada item é montado.
+- [Pague com dois cartões](/pt-br/docs/payment-features/pay-with-two-cards). A resposta do pagamento, os status e as operações em cada cartão.

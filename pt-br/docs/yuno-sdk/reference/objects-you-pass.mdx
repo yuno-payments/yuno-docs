@@ -1,0 +1,483 @@
+---
+title: "Objetos que você passa"
+sidebarTitle: "Objetos que você passa"
+description: "Os objetos que o seu app monta e entrega ao SDK: TransactionConfig, PaymentMethodSelected e TransactionData."
+---
+
+Os objetos que o seu app monta e entrega ao SDK: a configuração por transação, o meio de pagamento que o comprador escolheu e os dados que você mesmo coletou quando dispensa os formulários do SDK.
+
+<Tabs>
+<Tab title="TransactionConfig" id="transaction-config">
+
+`TransactionConfig` é o objeto de configuração passado ao construtor de `Transaction`. Ele define a sessão, o idioma, os controllers e as flags de comportamento de uma única transação.
+
+<Note>
+Na Web, `TransactionConfig` é um objeto simples passado diretamente para `sdkPayments.transaction(config)`.
+</Note>
+
+## Campos {#fields}
+
+<Tabs>
+<Tab title="Web">
+
+| Campo | Tipo | Obrigatório | Padrão |
+|---|---|---|---|
+| [`checkoutSession`](#checkoutsession) | String | Um dos dois |  |
+| [`customerSession`](#customersession) | String | Um dos dois |  |
+| [`countryCode`](#countrycode) | String | Sim |  |
+| [`language`](#language) | String? | Não | Idioma do navegador |
+| [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status) | (status) => void | Não |  |
+| [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading) | (isLoading) => void | Não |  |
+| [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment) | (token) => void \| Promise | Não |  |
+| [`onChange`](#onchange-web-only) | (state) => void | Não |  |
+| [`showStatusScreen`](#showstatusscreen) | Bool | Não | `true` |
+| [`autoContinuePayment`](#autocontinuepayment) | Bool | Não | `true` |
+| [`elementSelector`](#elementselector-web-only) | String \| HTMLElement | Sim para pagamentos com formulário |  |
+| [`showPayButton`](#showpaybutton-web-only) | Bool | Não | `true` |
+| [`card`](#card-web-only) | Object | Não |  |
+| [`texts`](#texts-web-only) | Object | Não |  |
+| [`externalButtons`](#externalbuttons-web-only) | Object | Não |  |
+
+Na Web não existe o campo `controller`: conecte os eventos (`onStatus`, `showLoading`, `createPayment`) diretamente como campos da config. Veja [`controller`](#controller-ios-android). Sem `onStatus`, o SDK registra um aviso no console e nunca entrega o resultado. `createPayment` precisa ser uma função quando estiver presente. Caso contrário, o construtor lança um erro.
+
+Campos exclusivos de pagamento na Web. Uma config de cadastro não os aceita, e também não aceita `createPayment`, `showPayButton` nem `autoContinuePayment`.
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `deviceFingerprints` | Array | Sessões de provedores de fraude, cada uma no formato `{ provider_id, session_id }`, que o SDK anexa ao token de uso único. |
+| `showOnlyThesePaymentMethods` | String[] | Tipos de meio de pagamento que a lista de meios de pagamento exibe. A lista oculta todos os outros tipos. |
+| `paymentListConfig` | Object | Opções de rolagem da lista de meios de pagamento: `scrollContainerSelector`, `visibleTriggerOffsetPx` e `bottomOffsetPx`. `paymentMethodList.mount()` aceita as mesmas opções. |
+| `savePaymentMethodEnabled` | Bool | Exibe a caixa de seleção para salvar em meios que não são cartão e que permitem salvar, quando a sessão tem um cliente. |
+| `inputDesignType` | String | Estilo do rótulo dos inputs do SDK: `'float-label'` (padrão), `'float-label-static'` ou `'label-placeholder'`. |
+| `c2p` | Object | Opções do Click to Pay: `recognitionToken`, `onRecognitionTokenCreated` e `onRecognitionTokenDeleted`. |
+
+</Tab>
+<Tab title="iOS">
+
+| Campo | Tipo | Obrigatório | Padrão |
+|---|---|---|---|
+| [`checkoutSession`](#checkoutsession) | String | Um dos dois |  |
+| [`customerSession`](#customersession) | String | Um dos dois |  |
+| [`countryCode`](#countrycode) | String | Sim |  |
+| [`language`](#language) | String? | Não | Idioma do dispositivo |
+| [`controller`](#controller-ios-android) | TransactionController | Sim |  |
+| [`showStatusScreen`](#showstatusscreen) | Bool | Não | `false` |
+| [`autoContinuePayment`](#autocontinuepayment) | Bool | Não | `true` |
+| [`saveCardEnabled`](#savecardenabled-ios) | Bool | Não | `false` |
+| [`appearance`](#appearance-ios-android) | Appearance? | Não | `null` |
+| [`viewController`](#viewcontroller-ios-only) | UIViewController? | Não | `null` |
+
+`autoContinuePayment` e `saveCardEnabled` são exclusivos de pagamento: o inicializador de cadastro, `init(customerSession:...)`, não os aceita.
+
+Os callbacks de envio não são um campo da config no iOS: faça o objeto `controller` conformar com `ShippingAddressHandling`. Veja [`onShippingAddressChanged`](/pt-br/docs/yuno-sdk/controllers/on-shipping-address-changed).
+
+</Tab>
+<Tab title="Android">
+
+O Android expõe `TransactionConfig` por meio de **dois construtores**: o mesmo objeto, acessado de duas formas. O construtor que você chama define o fluxo, e os campos exclusivos de pagamento simplesmente não existem no de cadastro. Passar as duas sessões, ou nenhuma, gera um erro de compilação: não existe construtor para essa combinação.
+
+**Pagamento**: `TransactionConfig(checkoutSession = …)`
+
+| Campo | Tipo | Obrigatório | Padrão |
+|---|---|---|---|
+| [`checkoutSession`](#checkoutsession) | String | Sim |  |
+| [`countryCode`](#countrycode) | String | Sim |  |
+| [`controller`](#controller-ios-android) | TransactionController | Sim |  |
+| [`language`](#language) | String? | Não | Idioma do dispositivo |
+| [`appearance`](#appearance-ios-android) | Appearance? | Não | `null` |
+| [`autoContinuePayment`](#autocontinuepayment) | Bool | Não | `true` |
+| [`showStatusScreen`](#showstatusscreen) | Bool | Não | `false` |
+| [`onShippingAddressChanged`](/pt-br/docs/yuno-sdk/controllers/on-shipping-address-changed) | (suspend (String, ShippingInfo) → ShippingUpdate?)? | Não | `null` |
+
+**Cadastro**: `TransactionConfig(customerSession = …)`
+
+| Campo | Tipo | Obrigatório | Padrão |
+|---|---|---|---|
+| [`customerSession`](#customersession) | String | Sim |  |
+| [`countryCode`](#countrycode) | String | Sim |  |
+| [`controller`](#controller-ios-android) | TransactionController | Sim |  |
+| [`language`](#language) | String? | Não | Idioma do dispositivo |
+| [`appearance`](#appearance-ios-android) | Appearance? | Não | `null` |
+| [`showStatusScreen`](#showstatusscreen) | Bool | Não | `false` |
+
+`autoContinuePayment` e `onShippingAddressChanged` são exclusivos de pagamento: o construtor de cadastro não os aceita.
+
+</Tab>
+<Tab title="React Native">
+
+| Campo | Tipo | Obrigatório | Padrão |
+|---|---|---|---|
+| [`checkoutSession`](#checkoutsession) | string | Um dos dois |  |
+| [`customerSession`](#customersession) | string | Um dos dois |  |
+| [`countryCode`](#countrycode) | string | Sim |  |
+| [`language`](#language) | string | Não | Idioma do dispositivo |
+| [`controller`](#controller-ios-android) | TransactionController | Sim |  |
+| [`showStatusScreen`](#showstatusscreen) | boolean | Não | `false` |
+| [`autoContinuePayment`](#autocontinuepayment) | boolean | Não | `true` |
+| [`saveCardEnabled`](#savecardenabled-ios) | boolean | Não | `false` |
+| `savePaymentMethodEnabled` | boolean | Não | `false` |
+| [`appearance`](#appearance-ios-android) | Appearance | Não |  |
+
+`TransactionConfig` é um objeto simples passado para `new Transaction(config)`. `autoContinuePayment`, `saveCardEnabled` e `savePaymentMethodEnabled` são exclusivos de pagamento. `savePaymentMethodEnabled` exibe a opção de salvar em meios que não são cartão no Android; o SDK de iOS não oferece suporte a ele, e em desenvolvimento o wrapper emite um aviso quando você o define no iOS.
+
+Os callbacks de envio não são um campo da config no React Native: implemente [`onShippingAddressChanged`](/pt-br/docs/yuno-sdk/controllers/on-shipping-address-changed) no `controller`.
+
+</Tab>
+</Tabs>
+
+Você precisa passar `checkoutSession` ou `customerSession`, mas não os dois. Veja [Validação](#validation).
+
+---
+
+## `checkoutSession` {#checkoutsession}
+
+ID da sessão para um fluxo de pagamento. Passe o valor retornado pelo seu backend após chamar [`POST /v1/checkout/sessions`](https://docs.y.uno/reference/checkout-sessions/create-checkout-session).
+
+Mutuamente exclusivo com `customerSession`.
+
+Veja [Sessões](/pt-br/docs/basic-concepts/sessions) para saber mais.
+
+## `customerSession` {#customersession}
+
+ID da sessão para um fluxo de cadastro. Passe o valor retornado pelo seu backend após chamar [`POST /v1/customers/sessions`](https://docs.y.uno/reference/customer-sessions-enrollment/create-customer-session).
+
+Mutuamente exclusivo com `checkoutSession`.
+
+Veja [Sessões](/pt-br/docs/basic-concepts/sessions) para saber mais.
+
+## `countryCode` {#countrycode}
+
+Código ISO do país do pagamento (por exemplo, `US`, `CO`).
+
+No iOS, no Android e no React Native, o SDK não valida o valor. Na Web, um `start()` de pagamento que monta um formulário ou roda em modo headless confere o valor com a lista de países do SDK. Um valor fora dessa lista faz `start()` rejeitar com `countryCode=<value> is not valid`. Um `start()` de cadastro confere apenas se o valor é uma string não vazia. Veja [Cobertura de países](/docs/sdks/resources/country-coverage) para a lista de países com suporte.
+
+## `language` {#language}
+
+Código de idioma ISO-639. Se omitido, usa o idioma do dispositivo ou do navegador.
+
+Veja [Idiomas com suporte](/docs/sdks/resources/languages-supported).
+
+## `controller` (iOS, Android) {#controller-ios-android}
+
+Objeto que implementa a interface `TransactionController`. Usado para receber os eventos da transação (`onStatus`, `showLoading`, `createPayment`).
+
+No iOS e no Android, `controller` é **obrigatório**: `onStatus` é o único mecanismo para receber o resultado da transação, então uma config sem controller não entregaria nenhum resultado a ninguém. No iOS, o SDK mantém uma referência fraca, então mantenha a instância viva durante toda a transação.
+
+No React Native, `controller` é um objeto simples com os métodos de que você precisa. Apenas `onStatus` é obrigatório: sem ele, `new Transaction(config)` lança `TransactionConfig.controller must implement onStatus`.
+
+Na Web, os controllers são conectados diretamente como campos da config (`onStatus`, `showLoading`, `createPayment`). No iOS e no Android, você passa um único objeto controller pelo campo `controller`.
+
+Veja [Controllers](/pt-br/docs/yuno-sdk/controllers/overview).
+
+## `showStatusScreen` {#showstatusscreen}
+
+Flag que controla se o SDK apresenta a própria tela de resultado depois que a transação termina.
+
+- `false` (padrão no iOS, no Android e no React Native). O SDK não mostra uma tela de resultado. Você recebe o status final por `onStatus` e renderiza a sua própria UI.
+- `true` (padrão na Web). O SDK apresenta a sua tela de resultado. No iOS, a tela não é exibida para `USER_CANCEL`.
+
+`onStatus` é sempre invocado, independentemente dessa flag.
+
+## `autoContinuePayment` {#autocontinuepayment}
+
+Controla se o SDK continua automaticamente o fluxo de pagamento depois de criá-lo. Quando `true` (padrão), o SDK cuida internamente do 3DS e da consulta periódica do status. Defina como `false` se você quiser controlar manualmente o fluxo após a criação.
+
+Na Web, a flag se aplica apenas quando você passa `createPayment`. Sem um handler, o SDK cria e continua o pagamento por conta própria. O PayPal ignora `false` e sempre continua, porque o seu popup é concluído dentro da etapa de continuação do SDK.
+
+No iOS, a flag se aplica quer você sobrescreva `createPayment` ou não. Com `false` e o handler padrão, o SDK cria o pagamento, fecha as próprias views e para.
+
+Com `false`, o SDK para assim que o pagamento é criado: ele não consulta o status, não executa o 3DS e `onStatus` não é invocado para a transação.
+
+## `saveCardEnabled` (iOS) {#savecardenabled-ios}
+
+Flag que controla se o formulário de cartão oferece a caixa de seleção para salvar o cartão em pagamentos. O padrão é `false`.
+
+- `false` (padrão). O formulário de cartão não tem a caixa de seleção para salvar o cartão.
+- `true`. O formulário de cartão mostra a caixa de seleção, desmarcada. Se o usuário marcá-la, o cartão é armazenado quando o pagamento for bem-sucedido.
+
+Apenas fluxos de pagamento. O inicializador de cadastro não a aceita.
+
+O React Native aceita a mesma flag nas duas plataformas.
+
+Na Web, a flag fica dentro do objeto `card`. Veja [`card`](#card-web-only).
+
+## `elementSelector` (apenas Web) {#elementselector-web-only}
+
+Seletor CSS, ou o próprio `HTMLElement`, do nó em que o SDK renderiza um formulário. Obrigatório quando `start({ paymentMethod })` monta um formulário de pagamento. Sem ele, `start()` rejeita com `elementSelector=undefined is not valid`. Opcional para o formulário de cadastro, que, caso contrário, é renderizado em um contêiner que o SDK anexa ao `<body>`. Os fluxos headless e os secure fields o ignoram. As views de wallet e de lista aceitam o próprio `elementSelector` em `.mount()`.
+
+## `showPayButton` (apenas Web) {#showpaybutton-web-only}
+
+Define se o formulário que o SDK monta exibe o botão Pay do próprio SDK. Defina como `false` para usar o seu próprio botão: monte o formulário com `transaction.start({ paymentMethod })` e chame [`transaction.submit()`](/pt-br/docs/yuno-sdk/controllers/show-view#web-submit-from-your-own-button) quando o usuário confirmar.
+
+Apenas fluxos de pagamento. Os formulários de cadastro sempre exibem o botão do SDK.
+
+## `onChange` (apenas Web) {#onchange-web-only}
+
+Callback que o SDK chama com `{ form: { isValid } }` cada vez que a validade do formulário montado muda. `isValid` é `true` quando todos os campos obrigatórios, incluindo os secure fields, são válidos.
+
+## `card` (apenas Web) {#card-web-only}
+
+Opções do formulário de cartão: `styles`, `type`, `saveCardEnabled`, `vaultOnSuccess`, `texts`, `documentEnable`, `isCreditCardProcessingOnly` e `fonts`, além dos callbacks `onChange`, `onGetInstallments` e `onInstallmentSelected`. Veja [Estilização](/pt-br/docs/yuno-sdk/features/styling) e [`onInstallmentSelected`](/pt-br/docs/yuno-sdk/controllers/on-installment-selected).
+
+## `texts` (apenas Web) {#texts-web-only}
+
+Substituições dos rótulos dos botões: `customerForm.submitButton` e `paymentOtp.sendOtpButton`.
+
+## `externalButtons` (apenas Web) {#externalbuttons-web-only}
+
+Opções de botão por wallet (`googlePay`, `applePay`, `samsungPay`, `paypal`, `paypalBraintree`, `revolutPay`) e o callback [`onShippingAddressChanged`](/pt-br/docs/yuno-sdk/controllers/on-shipping-address-changed). O `.mount()` de cada view de wallet aceita as mesmas opções de botão.
+
+## `appearance` (iOS, Android) {#appearance-ios-android}
+
+Objeto de personalização visual das views nativas do SDK: família da fonte e cores. Não disponível na Web. No React Native, as cores são strings hexadecimais.
+
+Veja [Estilização](/pt-br/docs/yuno-sdk/features/styling) para o conjunto completo de opções.
+
+## `viewController` (apenas iOS) {#viewcontroller-ios-only}
+
+Referência opcional ao `UIViewController` que o SDK deve usar para apresentar a sua UI.
+
+Opcional quando o seu app é construído inteiramente com SwiftUI. Obrigatório se você quiser que o SDK apresente a partir de um view controller UIKit específico.
+
+Quando você passa `nil`, o SDK apresenta a partir do root view controller da key window. Se ainda não houver janela, por exemplo quando `start` roda antes de a cena estar ativa, a transação termina com `INTERNAL_ERROR`, `message.code` `NO_PRESENTATION_ANCHOR` e `message.context` `Transaction.start`. Passe `viewController` ou inicie depois que a janela existir.
+
+Este campo existe apenas no iOS.
+
+---
+
+## Validação {#validation}
+
+A config rejeita que `checkoutSession` e `customerSession` estejam ambos definidos, ou nenhum deles. A forma como cada plataforma aplica isso é diferente:
+
+| Plataforma | Aplicação |
+|---|---|
+| iOS | Em tempo de compilação. `TransactionConfig` tem dois inicializadores que não lançam erros (`init(checkoutSession:...)` e `init(customerSession:...)`), então não é possível construir uma config com as duas sessões ou com nenhuma. Não é preciso usar `try`. |
+| Android | Em tempo de compilação. `TransactionConfig` tem dois construtores (`TransactionConfig(checkoutSession = …)` e `TransactionConfig(customerSession = …)`), então não é possível construir uma config com as duas sessões ou com nenhuma. |
+| Web | Em tempo de execução. Lança um erro do Yuno SDK |
+| React Native | Em tempo de execução. `new Transaction(config)` lança `Exactly one of checkoutSession or customerSession must be provided`. |
+
+Na Web, o construtor também lança um erro se `countryCode` estiver ausente ou se `createPayment` for definido como algo que não seja uma função. Se `onStatus` estiver ausente, o construtor não lança erro. Ele registra um aviso no console e o resultado da transação nunca é entregue.
+
+Além dessas verificações, o SDK não valida os *valores* de `countryCode`, `language` ou de outros campos. Valores inválidos podem aparecer depois como erros do backend ou comportamento inesperado. Na Web, `start()` verifica `countryCode` e `elementSelector` mais tarde. Veja [`countryCode`](#countrycode) e [`elementSelector`](#elementselector-web-only).
+
+</Tab>
+<Tab title="PaymentMethodSelected" id="payment-method-selected">
+
+`PaymentMethodSelected` é o objeto que você passa para `Transaction.start()` para informar ao SDK qual meio de pagamento o usuário escolheu. Você pode montá-lo a partir do resultado da [Lista de meios de pagamento](/pt-br/docs/yuno-sdk/features/payment-methods-list) ou do serviço de meios de pagamento retornado pela API da Yuno.
+
+## Campos {#fields-1}
+
+<Tabs>
+<Tab title="Web">
+
+| Campo | Tipo | Obrigatório |
+|---|---|---|
+| [`type`](#paymentmethodtype) | String | Sim |
+| [`vaultedToken`](#vaultedtoken) | String? | Não |
+| [`data`](#transactiondata) | TransactionData | Não (apenas `start()`) |
+
+O objeto que a lista de meios de pagamento entrega a `onPaymentSelected` traz `type`, `vaultedToken`, um `name` opcional para exibição e `selectionSource` (`'auto'` quando o SDK pré-selecionou o meio, `'user'` quando o comprador o escolheu). Ele nunca traz `data`. Você pode passá-lo para `start()` como está.
+
+</Tab>
+<Tab title="iOS">
+
+| Campo | Tipo | Obrigatório |
+|---|---|---|
+| [`paymentMethodType`](#paymentmethodtype) | String | Sim |
+| [`vaultedToken`](#vaultedtoken) | String? | Não |
+| [`transactionData`](#transactiondata) | TransactionData | Não |
+
+O objeto que a lista de meios de pagamento entrega a `onPaymentSelected` também traz `selectionSource` (`.auto` quando o SDK pré-selecionou o meio, `.user` quando o comprador o escolheu). Ele é somente leitura: em um objeto que você mesmo monta, o valor é `nil`.
+
+`Transaction.start` ignora uma segunda chamada enquanto uma transação está em andamento, então um toque duplo não inicia duas transações.
+
+</Tab>
+<Tab title="Android">
+
+| Campo | Tipo | Obrigatório |
+|---|---|---|
+| [`type`](#paymentmethodtype) | String | Sim |
+| [`vaultedToken`](#vaultedtoken) | String? | Não |
+| [`transactionData`](#transactiondata) | TransactionData | Não |
+
+</Tab>
+<Tab title="React Native">
+
+| Campo | Tipo | Obrigatório |
+|---|---|---|
+| [`type`](#paymentmethodtype) | string | Sim |
+| [`vaultedToken`](#vaultedtoken) | string | Não |
+| [`transactionData`](#transactiondata) | TransactionData | Não |
+| `metadata` | object | Não |
+
+`metadata` chega apenas ao SDK de Android; o SDK de iOS o ignora. O objeto que a lista de meios de pagamento entrega a `onPaymentSelected` também traz `selectionSource` (`'AUTO'` quando o SDK pré-selecionou o meio, `'USER'` quando o comprador o escolheu). Você pode passá-lo para `start()` como está.
+
+</Tab>
+</Tabs>
+
+Apenas `paymentMethodType` (iOS) ou `type` (Web, Android e React Native) é obrigatório. No iOS, no Android e no React Native, o SDK não valida esse objeto.
+
+Na Web, `start()` o valida. Para um pagamento, `type` precisa ser uma string não vazia. Para um cadastro headless que passa `data`, `type` também é obrigatório. Com secure fields montados, `data.card` não pode conter `number`, `securityCode`, `expirationMonth` nem `expirationYear`. No modo manual, um `start()` de formulário rejeita tipos de wallet expressa, como `GOOGLE_PAY` e `APPLE_PAY`, porque os botões deles são montados por meio de `getPaymentMethodsViews()`. Fora isso, o SDK não verifica os valores.
+
+---
+
+## `paymentMethodType` {#paymentmethodtype}
+
+String que identifica o tipo de meio de pagamento (por exemplo, `CARD`, `GOOGLE_PAY`, `APPLE_PAY`).
+
+A lista de valores válidos não é fixa. A Yuno pode adicionar novos tipos de meio de pagamento com o tempo. Use o valor retornado pela API da Yuno ou pelo controller da [Lista de meios de pagamento](/pt-br/docs/yuno-sdk/features/payment-methods-list).
+
+## `vaultedToken` {#vaultedtoken}
+
+Token de um meio de pagamento salvo anteriormente, retornado pela Yuno quando o cliente cadastrou o meio ou quando um pagamento anterior foi feito com `vault_on_success: true`.
+
+Use-o quando o cliente estiver pagando com um meio salvo em vez de inserir os dados novamente.
+
+## `transactionData` {#transactiondata}
+
+Dados de pagamento coletados previamente. Quando informados, o SDK pula os formulários nativos e tokeniza diretamente.
+
+Na Web, dois casos mantêm o formulário. Com secure fields montados, `data` apenas complementa o cartão que os iframes coletam (`card.holderName`, `card.type`, `installment`, `customer` e `vaultOnSuccess`). Quando a lista de meios de pagamento tem um formulário inline montado para o meio selecionado, `start()` com `data` lança um erro. Chame `start({ paymentMethod })` sem `data` para enviar esse formulário.
+
+Veja [TransactionData](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-data) para o formato desse objeto.
+
+</Tab>
+<Tab title="TransactionData" id="transaction-data">
+
+`TransactionData` é o objeto que você passa dentro de [`PaymentMethodSelected`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) quando já coletou os dados de pagamento do seu lado. Quando informado, o SDK pula os formulários nativos e tokeniza diretamente com os valores que você fornece.
+
+`TransactionData` é a união de vários objetos aninhados, cada um cobrindo um aspecto diferente do pagamento (dados do cartão, parcelas, configuração do 3DS, dados do cliente etc.). Você preenche apenas as partes que se aplicam ao seu cenário. Todo objeto aninhado é opcional, a menos que seja exigido pelo meio de pagamento ou pelo recurso específico que você está usando.
+
+## Formato {#shape}
+
+O formato completo de `TransactionData` é o seguinte. Este JSON é ilustrativo: em cada plataforma você monta um objeto (JavaScript na Web, Swift no iOS, Kotlin no Android, TypeScript no React Native) que produz essa estrutura. Todos os nomes de campo estão em camelCase no SDK. Todo campo é opcional; preencha apenas o que se aplica ao seu cenário.
+
+```json
+{
+  "card": {
+    "number": "4111111111111111",
+    "expirationMonth": 12,
+    "expirationYear": 28,
+    "securityCode": "123",
+    "holderName": "John Doe",
+    "brand": "VISA",
+    "type": "CREDIT"
+  },
+  "vaultOnSuccess": true,
+  "installment": {
+    "id": "installment_xxx",
+    "value": 3
+  },
+  "threeDSecure": {
+    "setupId": "setup_xxx"
+  },
+  "customer": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "document": {
+      "documentNumber": "1090209924",
+      "documentType": "CC"
+    },
+    "phone": {
+      "countryCode": "57",
+      "number": "3001234567"
+    },
+    "merchantCustomerId": "customer_xxx",
+    "billingAddress": {
+      "addressLine1": "Calle 34 # 56 - 78",
+      "addressLine2": "Apartamento 502, Torre I",
+      "city": "Bogotá",
+      "country": "CO",
+      "state": "Cundinamarca",
+      "zipCode": "111111",
+      "neighborhood": "Chapinero"
+    },
+    "shippingAddress": {
+      "addressLine1": "Calle 34 # 56 - 78",
+      "addressLine2": "Apartamento 502, Torre I",
+      "city": "Bogotá",
+      "country": "CO",
+      "state": "Cundinamarca",
+      "zipCode": "111111"
+    }
+  },
+  "bankTransfer": {
+    "bankAccount": "1234567890",
+    "routingNumber": "021000021",
+    "beneficiaryName": "John Doe"
+  },
+  "issuerId": "issuer_xxx",
+  "otp": "123456",
+  "ticket": {
+    "benefitType": "FOOD"
+  },
+  "wallet": {
+    "cardData": {
+      "type": "CREDIT"
+    }
+  }
+}
+```
+
+`type` e `vaultedToken` não fazem parte de `TransactionData`; eles ficam em [`PaymentMethodSelected`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected).
+
+Na Web, no iOS, no Android e no React Native, `TransactionData` também aceita `amount` (`currency` e `value`), a parte que um cartão paga em um [split de pagamento](/pt-br/docs/yuno-sdk/features/split-payment). Ele é obrigatório nesse caso e ignorado por um `start()` com um único meio de pagamento. Passe `value` com as casas decimais da moeda: o SDK o envia sem alterações, e o backend rejeita casas decimais a mais com `AMOUNT_PRECISION`.
+
+Na Web e no iOS, `bankTransfer` também aceita `accountType` e `accountHolderType`. Na Web, `TransactionData` também aceita um objeto `additionalData` de nível superior. Cada chave de `additionalData` indica o objeto ao qual os seus campos extras pertencem, por exemplo `card`. O SDK incorpora cada entrada a esse objeto antes do envio, então não existe uma chave `additional_data` na requisição. `card.type` é `CREDIT` ou `DEBIT`, e `card.brand` é opcional.
+
+Na Web, um `start()` headless com `type` `MERCADO_PAGO_SUPERTOKEN` lê `wallet.thirdPartyToken`, `wallet.providerMethodId` e `wallet.providerMethodType`, o resultado do checkout do Mercado Pago que a sua página executou, e envia `installment.value` como o número de parcelas. Sem um dos três campos de `wallet`, `onStatus` recebe `INTERNAL_ERROR` com `message.code` `WALLET_DATA_MISSING` e nenhum token é criado. Veja [Mercado Pago Fast Payments](/pt-br/docs/wallets/mercado-pago-fast-payments#headless-integration).
+
+No iOS, o formato difere em quatro pontos. Não existe `otp`. `bankTransfer` chama os campos da conta de `accountNumber` e `routingId`. `wallet` traz os campos de um checkout de wallet que você mesmo executou, e não `cardData`. E `customer` envia apenas parte do que aceita. Veja [Tipos do iOS](#ios-types).
+
+No Android não existe `otp`, `card.brand` nem `customer.merchantCustomerId`.
+
+No React Native, `TransactionData` aceita a união dos campos do iOS e do Android, com os nomes do iOS para `bankTransfer` (`accountNumber`, `routingId`) e sem `otp`. Cada SDK nativo usa os campos que suporta e ignora o restante: no Android, `card.brand`, os campos de `wallet` do iOS e `customer.id`, `merchantCustomerId`, `gender`, `dateOfBirth`, `nationality`, `country` e `neighborhood`; no iOS, os campos de `wallet` do Android (`token`, `integrationCode`, `providerResponse`). Em desenvolvimento, o wrapper registra um aviso com o nome de cada campo ignorado.
+
+Com secure fields montados, o SDK lê de `data` apenas `card.holderName`, `card.type`, `vaultOnSuccess`, `installment` e `customer`. Os outros objetos se aplicam apenas ao `start()` headless.
+
+<Warning>
+`card.expirationYear` é o ano com **dois dígitos**: `28` significa 2028. O SDK repassa `TransactionData` literalmente: ele não normaliza um ano de quatro dígitos, então `2028` chega ao backend como está e não é um valor válido.
+</Warning>
+
+## Objetos de nível superior {#top-level-objects}
+
+| Campo | Descrição |
+|---|---|
+| `issuerId` | Identificador do emissor do meio de pagamento, quando aplicável. |
+| `vaultOnSuccess` | Quando `true`, salva o meio de pagamento do cliente se o pagamento for bem-sucedido. |
+| `card` | Dados do cartão (número, validade, código de segurança, titular, bandeira, tipo). `expirationYear` tem dois dígitos (`28` para 2028). |
+| `installment` | Plano e valor das parcelas. |
+| `threeDSecure` | Identificador da configuração de 3DS quando o 3DS é configurado separadamente. |
+| `bankTransfer` | Dados da transferência bancária (beneficiário, conta, roteamento). |
+| `wallet` | Dados da wallet. Na Web, dados de cartão específicos da wallet (por exemplo, tipo de cartão) ou os campos do Mercado Pago Fast Payments `thirdPartyToken`, `providerMethodId` e `providerMethodType`. No iOS, o resultado de um checkout de wallet que você executou fora do SDK. |
+| `ticket` | Dados de pagamento baseado em ticket (por exemplo, tipo de benefício para vales-alimentação/refeição). |
+| `otp` | Senha de uso único, quando o meio de pagamento exige. Não disponível no iOS. |
+| `customer` | Informações do cliente (nome, email, documento, telefone, endereços de cobrança e de entrega). |
+
+## Tipos do iOS {#ios-types}
+
+No iOS, você monta `SdkPayments.TransactionData` a partir destas structs. Todo argumento de `TransactionData` tem um valor padrão, então passe apenas as partes que você tem. Os argumentos estão listados na ordem de declaração.
+
+| Campo | Tipo | Inicializador |
+|---|---|---|
+| `issuerId` | `String?` |  |
+| `vaultOnSuccess` | `Bool`, padrão `false` |  |
+| `card` | `CardTransactionData` | `(number:securityCode:expirationMonth:expirationYear:holderName:brand:type:)`. `number`, `securityCode` e `holderName` são `String`; `expirationMonth` e `expirationYear` são `Int`; `brand` é `String?`; `type` é `CardTransactionData.CardType?`, `.credit` ou `.debit`. |
+| `installment` | `InstallmentTransactionData` | `(id: String, value: Int)` |
+| `threeDSecure` | `ThreeDSecureTransactionData` | `(setupId: String)` |
+| `bankTransfer` | `BankTransferTransactionData` | `(beneficiaryName:accountNumber:routingId:accountType:accountHolderType:)`, todos `String?`. |
+| `wallet` | `WalletTransactionData` | `(accountIntegrationCode:integrationType:checkoutResponse:thirdPartyToken:flowID:merchantTransactionID:)`, todos `String?`. |
+| `ticket` | `TicketTransactionData` | `(benefitType: String?)` |
+| `customer` | `Customer` | Todos os argumentos são opcionais. `gender` é um `Customer.Gender` (`.male`, `.female`, `.noBinary`). `document` é um `Customer.Document(documentNumber:documentType:)`, `phone` é um `Customer.Phone(countryCode:number:)`, e `billingAddress` e `shippingAddress` são um `Customer.Address(addressLine1:addressLine2:city:country:state:zipCode:neighborhood:)`, em que todos os argumentos, exceto `neighborhood`, são `String` obrigatórias. |
+
+O token traz estes campos de `customer`: `firstName`, `lastName`, `email`, `gender`, `document`, `phone`, `billingAddress` e `shippingAddress`. O inicializador também aceita `id`, `merchantCustomerId`, `dateOfBirth`, `nationality`, `country` e `neighborhood`, mas o SDK não os envia.
+
+</Tab>
+</Tabs>
+
+## Relacionados {#related}
+
+- [Objetos que você recebe](/pt-br/docs/yuno-sdk/reference/objects-you-receive). O que o SDK devolve: `Status` e `OneTimeToken`.
+- [Visão geral dos controllers](/pt-br/docs/yuno-sdk/controllers/overview). Os callbacks que você passa dentro de `TransactionConfig`.
+- [Primeiros passos](/pt-br/docs/yuno-sdk/get-started). O passo a passo da API unificada.

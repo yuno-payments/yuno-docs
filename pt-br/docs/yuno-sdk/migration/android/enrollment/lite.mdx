@@ -1,0 +1,114 @@
+---
+title: "Cadastro Lite"
+description: "Migre o cadastro Lite do Android (Activity.startEnrollment) para a Transaction API unificada."
+---
+
+`startEnrollment` executava o fluxo de cadastro de ponta a ponta: o lojista escolhia o meio, e o SDK renderizava o formulário e a tela de resultado. O equivalente unificado é `Transaction.start(activity = this, paymentSelected = PaymentMethodSelected(paymentMethodType = "<type>"))`: sem `transactionData`, o SDK renderiza o formulário para esse tipo. Nenhuma sobrescrita de controller além de `onStatus`.
+
+## Antes de começar {#before-you-start}
+
+- Substitua os imports `com.yuno.sdk.*` pelos equivalentes `com.yuno.payments.sdk.api.*` (o lado a lado lista todos). A sua chave de API pública e as sessões de cliente que o seu backend cria não mudam ([Antes de começar](/pt-br/docs/yuno-sdk/get-started#before-you-begin)).
+- Não há pagamento a criar: `createPayment` não é chamado durante o cadastro, então sobrescrevê-lo não tem efeito.
+
+## Lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```kotlin Before. Lite enrollment
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.enrollment.initEnrollment
+import com.yuno.sdk.enrollment.startEnrollment
+
+class EnrollmentActivity : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        Yuno.initialize(applicationContext, apiKey = "your-public-api-key")
+
+        initEnrollment { state ->
+            // state: "SUCCEEDED" / "REJECT" / "FAIL" / "PROCESSING" / "INTERNAL_ERROR" / "CANCELED"
+        }
+    }
+
+    fun enroll() {
+        startEnrollment(
+            customerSession = "session-from-backend",
+            countryCode = "CO",
+            showEnrollmentStatus = true,
+        )
+    }
+}
+```
+
+```kotlin After. Unified Transaction
+import com.yuno.payments.sdk.api.SdkPayments
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
+
+class EnrollmentActivity : ComponentActivity(), TransactionController {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        SdkPayments.initialize(applicationContext, apiKey = "your-public-api-key")
+    }
+
+    override fun onStatus(status: TransactionStatus) {
+        // status.status comes from the backend. See /reference/status.
+    }
+
+    fun enroll() {
+        val config = TransactionConfig(
+            customerSession = "session-from-backend",
+            countryCode = "CO",
+            language = "en",
+            controller = this,
+            showStatusScreen = true,
+        )
+
+        Transaction(config = config)
+            .start(activity = this, paymentSelected = PaymentMethodSelected(type = "CARD"))
+    }
+}
+```
+
+</CodeGroup>
+
+## O que muda {#what-changes}
+
+Agrupado na ordem em que você edita o código. **Renomeado**: mesma função, novo nome. **Movido**: mesmo valor, novo dono. **Removido**: nada a chamar. **Novo**: sem equivalente legado. A última coluna é a única coisa que você precisa fazer além da renomeação.
+
+### Inicialização e config {#initialization-and-config}
+
+| Lite | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `import com.yuno.sdk.*` | `import com.yuno.payments.sdk.api.*` | Renomeado | |
+| `Yuno.initialize(context, apiKey)` | `SdkPayments.initialize(context, apiKey)` | Renomeado | Ele guarda o contexto da aplicação: nenhuma chamada posterior recebe um argumento `Context`. |
+| Argumento `customerSession` de `startEnrollment` | `TransactionConfig.customerSession` | Movido | O argumento passa a ser um campo da config. Mutuamente exclusivo com `checkoutSession`. |
+| Argumento `countryCode` de `startEnrollment` | `TransactionConfig.countryCode` | Movido | O argumento passa a ser um campo da config. |
+| `YunoConfig.styles` / `YunoConfig.language` | `TransactionConfig.appearance` / `TransactionConfig.language` | Movido | Passe-os a cada transação, em vez de uma vez na inicialização. |
+| Argumento `showEnrollmentStatus` de `startEnrollment` | `TransactionConfig.showStatusScreen` | Movido | Mesma função. |
+| *(nenhum)* | `PaymentMethodSelected` | Novo | Crie-o com o `type` a cadastrar e passe-o para `start`: `paymentSelected` nunca é nulo. |
+
+### Controller {#controller}
+
+| Lite | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| Lambda passada para `initEnrollment` (`callbackEnrollmentState`) | `TransactionController` | Renomeado | A lambda vira uma interface: implemente `TransactionController` e passe-a como `TransactionConfig.controller`. O SDK não a retém: mantenha-a viva durante toda a transação. |
+| `callbackEnrollmentState: (String?) -> Unit` | `onStatus(status: TransactionStatus)` | Renomeado | Continua sendo o único callback de resultado, uma vez por transação, inclusive quando o SDK mostra a sua tela de resultado. A string bruta de estado vira um objeto `TransactionStatus`: `status` e `substatus` são repassados do backend; o próprio SDK só emite `INTERNAL_ERROR` e `USER_CANCEL`. Veja [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Pontos de entrada {#entry-points}
+
+| Lite | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `initEnrollment(callback)` + `startEnrollment(customerSession, countryCode, showEnrollmentStatus)` | `Transaction(config).start(activity, paymentSelected)` | Renomeado | Monte a config e, em seguida, chame `start`. Como antes, você escolhe o meio: passe-o via `paymentMethodType`. O SDK não renderiza uma lista de meios cadastráveis. |
+
+## Relacionados {#related}
+
+- [Funcionalidade de cadastro](/pt-br/docs/yuno-sdk/features/enrollment). Passo a passo do cadastro com a API unificada.
+- [Cadastro Render](/pt-br/docs/yuno-sdk/migration/android/enrollment/render). Incorpore o formulário você mesmo.
+- [Cadastro Headless](/pt-br/docs/yuno-sdk/migration/android/enrollment/headless). Colete os dados na sua própria UI.
+- [`TransactionConfig`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referência completa dos campos (incluindo `customerSession`).

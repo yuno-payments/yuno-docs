@@ -1,0 +1,110 @@
+---
+title: "Cadastro Lite"
+description: "Migre o cadastro Lite do iOS (Yuno.enrollPayment) para a API unificada de Transaction."
+---
+
+`Yuno.enrollPayment` executava o fluxo de cadastro de ponta a ponta: o SDK lia na sessão de cliente o meio a ser cadastrado, renderizava o formulário e a tela de resultado. O equivalente unificado é o comportamento padrão de `Transaction.start(paymentSelected:)`. Nenhuma sobrescrita de controller além de `onStatus`.
+
+## Antes de começar {#before-you-start}
+
+- Substitua `import YunoSDK` por `import SdkPayments`. A sua chave de API pública e as sessões de cliente que o seu backend cria não mudam ([Antes de começar](/pt-br/docs/yuno-sdk/get-started#before-you-begin)).
+- Não há pagamento a criar: `createPayment` não é invocado durante o cadastro, então sobrescrevê-lo não tem efeito.
+
+## Lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```swift Before. Lite enrollment
+import YunoSDK
+
+Yuno.initialize(apiKey: "your-public-api-key")
+
+final class EnrollmentModel: YunoEnrollmentDelegate {
+    var customerSession: String = "session-from-backend"
+    var countryCode: String = "CO"
+    var language: String? = "en"
+    var viewController: UIViewController?
+
+    func yunoEnrollmentResult(_ result: Yuno.Result) {
+        // result.status: .succeeded / .reject / .fail / etc.
+    }
+
+    func enroll() {
+        Yuno.enrollPayment(with: self, showPaymentStatus: true)
+    }
+}
+```
+
+```swift After. Unified Transaction
+import SdkPayments
+
+SdkPayments.initialize(apiKey: "your-public-api-key")
+
+final class EnrollmentModel: SdkPayments.TransactionController {
+
+    func onStatus(status: SdkPayments.TransactionStatus) {
+        // status.status comes from the backend. See /reference/status.
+    }
+
+    func enroll() {
+        let config = SdkPayments.TransactionConfig(
+            customerSession: "session-from-backend",
+            countryCode: "CO",
+            language: "en",
+            controller: self,
+            showStatusScreen: true
+        )
+
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: "CARD"
+        )
+
+        SdkPayments.Transaction(config: config)
+            .start(paymentSelected: paymentSelected)
+    }
+}
+```
+
+</CodeGroup>
+
+## O que muda {#what-changes}
+
+Agrupado na ordem em que você edita o código. **Renomeado**: mesmo papel, novo nome. **Movido**: mesmo valor, novo dono. **Removido**: nada a chamar. **Novo**: sem equivalente legado. A última coluna é a única coisa que você precisa fazer além da renomeação.
+
+### Inicialização e config {#initialization-and-config}
+
+| Lite | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `import YunoSDK` | `import SdkPayments` | Renomeado | |
+| `Yuno.initialize(apiKey:)` | `SdkPayments.initialize(apiKey:)` | Renomeado | O parâmetro `callback:` deixou de existir; use a sobrecarga `async` se precisar aguardar. |
+| `Yuno.Appearance` passado em `YunoConfig.appearance` | `SdkPayments.Appearance` em `SdkPayments.TransactionConfig.appearance` | Renomeado | Mesmo inicializador; remova o prefixo `Yuno.` e passe-o a cada transação, em vez de uma vez na inicialização. |
+| `YunoEnrollmentDelegate.customerSession` | `SdkPayments.TransactionConfig.customerSession` | Movido | A propriedade do delegate passa a ser um campo da config. Mutuamente exclusivo com `checkoutSession`. |
+| `YunoEnrollmentDelegate.countryCode`, `.language`, `.viewController` | Os mesmos campos em `SdkPayments.TransactionConfig` | Movido | As propriedades do delegate passam a ser campos da config. `viewController` continua exclusivo do iOS e opcional em SwiftUI. |
+| Argumento `showPaymentStatus:` de `enrollPayment` | `SdkPayments.TransactionConfig.showStatusScreen` | Movido | Veja a nota abaixo. |
+| *(nenhum)* | `SdkPayments.PaymentMethodSelected` | Novo | `start` exige esse objeto. Passe o `paymentMethodType` com o qual a sessão de cliente foi criada: como antes, a sessão determina o meio efetivamente cadastrado. |
+
+<Note>
+**A tela de resultado do SDK agora vem desativada por padrão.** Defina `showStatusScreen: true` para mantê-la.
+</Note>
+
+### Controller {#controller}
+
+| Lite | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `YunoEnrollmentDelegate` | `SdkPayments.TransactionController` | Renomeado | Faça a mesma classe conformar com o protocolo e passe-a como `TransactionConfig.controller`. Como antes, o SDK não a retém: mantenha-a viva durante toda a transação. |
+| `yunoEnrollmentResult(_:)` | `onStatus(status:)` | Renomeado | Continua sendo o único callback de resultado, uma vez por transação, inclusive quando o SDK mostra a sua tela de resultado. `status` e `substatus` vêm do backend; o próprio SDK emite apenas `INTERNAL_ERROR` e `USER_CANCEL`. Veja [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `onLoading(isLoading:)` | `showLoading(isLoading:)` | Renomeado | Opcional nos dois. O cadastro Lite nunca o invocava: o SDK sempre mostrava o próprio loader. Ele continua mostrando, a menos que você sobrescreva `showLoading`; depois de sobrescrito, o SDK oculta o próprio loader e informa o estado a você. Veja [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading). |
+
+### Pontos de entrada {#entry-points}
+
+| Lite | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `Yuno.enrollPayment(with:showPaymentStatus:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Renomeado | Monte a config e o `PaymentMethodSelected` e, em seguida, chame `start`. O SDK continua sem renderizar uma lista de meios cadastráveis. |
+| `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Renomeado | Mesmo papel: encaminhe a URL que o seu app recebe após um redirecionamento externo. Veja [Tratar deeplinks](/pt-br/docs/yuno-sdk/features/handle-deeplinks). |
+
+## Relacionados {#related}
+
+- [Recurso de cadastro](/pt-br/docs/yuno-sdk/features/enrollment). Passo a passo do cadastro com a API unificada.
+- [Cadastro Render](/pt-br/docs/yuno-sdk/migration/ios/enrollment/render). Incorpore o formulário você mesmo.
+- [Cadastro Headless](/pt-br/docs/yuno-sdk/migration/ios/enrollment/headless). Colete os dados na sua própria UI.
+- [`TransactionConfig`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referência completa dos campos (incluindo `customerSession`).

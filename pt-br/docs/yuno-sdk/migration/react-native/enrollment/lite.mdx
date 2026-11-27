@@ -1,0 +1,96 @@
+---
+title: "Cadastro Lite"
+description: "Migre o cadastro do React Native (YunoSdk.enrollmentPayment) para a Transaction API unificada."
+---
+
+`YunoSdk.enrollmentPayment` abria o formulário de cadastro do SDK para uma sessão de cliente e informava o resultado por meio de `onEnrollmentStatus`. Na API unificada, o cadastro é a mesma `Transaction` que um pagamento: passe `customerSession` em vez de `checkoutSession` e chame `start()`. O SDK apresenta o formulário, cadastra o meio e informa o resultado por meio de `onStatus`.
+
+## Antes de começar {#before-you-start}
+
+- Atualize o `@yuno-payments/yuno-sdk-react-native` para a 2.0.0 e execute `pod install`. A sua chave de API pública e as sessões de cliente que o seu backend cria não mudam ([Cadastro: antes de começar](/pt-br/docs/yuno-sdk/features/enrollment#before-you-start)).
+- No Android, o `minSdkVersion` agora é 23. Se o seu `android/build.gradle` aplica o plugin do compilador Compose ao módulo da Yuno (uma solução alternativa da 1.x), remova esse bloco: com a 2.0.0, o build falha com "The Compose Compiler requires the Compose Runtime to be on the class path".
+- Não há pagamento a criar: `createPayment` não é chamado durante o cadastro.
+
+## Lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```tsx Before. Lite enrollment
+import { YunoSdk, YunoStatus } from '@yuno-payments/yuno-sdk-react-native';
+
+const subscription = YunoSdk.onEnrollmentStatus((state) => {
+  if (state.status === YunoStatus.SUCCEEDED) {
+    console.log('Card saved');
+  }
+});
+
+await YunoSdk.enrollmentPayment({
+  customerSession,
+  countryCode: 'CO',
+  showPaymentStatus: true,
+});
+
+// When the screen goes away
+subscription.remove();
+```
+
+```tsx After. Unified Transaction
+import { Transaction } from '@yuno-payments/yuno-sdk-react-native';
+
+const enrollment = new Transaction({
+  customerSession,
+  countryCode: 'CO',
+  showStatusScreen: true,
+  controller: {
+    onStatus: (status) => {
+      if (status.status === 'ENROLLED') {
+        console.log('Card saved');
+      }
+    },
+  },
+});
+
+await enrollment.start({ type: 'CARD' });
+
+// When the screen goes away
+enrollment.dispose();
+```
+
+</CodeGroup>
+
+## O que muda {#what-changes}
+
+Agrupado na ordem em que você edita o código. **Renomeado**: mesma função, novo nome. **Movido**: mesmo valor, novo dono. **Removido**: nada a chamar. **Novo**: sem equivalente legado. A última coluna é a única coisa que você precisa fazer além da renomeação.
+
+### Inicialização e config {#initialization-and-config}
+
+| Cadastro Lite | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `YunoSdk.initialize({ apiKey, countryCode, yunoConfig })` | `SdkPayments.initialize(apiKey)` | Renomeado | Agora recebe só a chave. `countryCode` e `language` passam para `TransactionConfig`. |
+| `customerSession` de `enrollmentPayment` | `TransactionConfig.customerSession` | Movido | O tipo de sessão é o que faz da transação um cadastro. Não passe também `checkoutSession`: o construtor lança um erro. |
+| `countryCode` de `enrollmentPayment` | `TransactionConfig.countryCode` | Movido | |
+| `showPaymentStatus` de `enrollmentPayment` | `TransactionConfig.showStatusScreen` | Movido | Agora vem desativado por padrão: defina `showStatusScreen: true` para manter a tela de resultado do SDK. |
+
+### Controller {#controller}
+
+| Cadastro Lite | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `YunoSdk.onEnrollmentStatus((state) => …)` | `onStatus(status)` | Renomeado | Implemente-o no `controller` da config; não há assinatura de evento para remover. `status` e `substatus` vêm do backend: um cadastro bem-sucedido informa `ENROLLED` em vez do `SUCCEEDED` da 1.x, e `USER_CANCEL` substitui `CANCELLED_BY_USER`. O próprio SDK só emite `INTERNAL_ERROR` e `USER_CANCEL`. Veja [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). |
+| *(nenhum)* | `showView(view, process, step)` | Novo | Opcional. Incorpore o formulário de cadastro na sua própria tela com `<YunoView>` e envie-o pelo seu próprio botão com `process.onSubmit()`. Veja [`showView`](/pt-br/docs/yuno-sdk/controllers/show-view). |
+| *(nenhum)* | `showLoading(isLoading)` | Novo | Opcional. Mostre o seu próprio loader. Veja [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading). |
+
+### Pontos de entrada {#entry-points}
+
+| Cadastro Lite | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `YunoSdk.enrollmentPayment({ customerSession, countryCode, showPaymentStatus })` | `new Transaction(config).start(paymentSelected)` | Renomeado | Monte a config com a sessão de cliente e, em seguida, chame `start` com o meio a cadastrar, por exemplo `{ type: 'CARD' }`. |
+
+<Note>
+O vaulted token não é retornado ao app. Depois que o status de sucesso chegar, busque-o no endpoint list-customer-payment-methods do seu backend e armazene-o associado ao seu cliente.
+</Note>
+
+## Relacionados {#related}
+
+- [Cadastro](/pt-br/docs/yuno-sdk/features/enrollment). Passo a passo do cadastro com a API unificada.
+- [Cadastro Headless](/pt-br/docs/yuno-sdk/migration/react-native/enrollment/headless). Cadastre com dados que você mesmo coletou.
+- [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). Valores e substatus.
