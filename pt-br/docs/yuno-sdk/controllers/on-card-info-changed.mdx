@@ -1,0 +1,114 @@
+---
+title: "onCardInfoChanged"
+sidebarTitle: "Informações do cartão (onCardInfoChanged)"
+description: "Chamado com a bandeira, o tipo, a categoria, o emissor e o país do cartão enquanto o comprador digita o número do cartão."
+---
+
+`onCardInfoChanged` é chamado com a bandeira, o tipo, a categoria, o emissor e o país do cartão enquanto o comprador digita o número do cartão no formulário de cartão. Você recebe esses detalhes antes de o comprador enviar o formulário, então pode adaptar o seu checkout em tempo real: mostrar a bandeira do cartão ou o banco emissor no resumo do pedido, explicar uma promoção que vale apenas para cartões de crédito ou adaptar uma mensagem ao país do banco emissor.
+
+Ele é informativo: o pagamento funciona da mesma forma com ou sem ele. O SDK já consulta os detalhes do cartão a partir do sexto dígito para mostrar a bandeira e carregar as parcelas, e este controller entrega a você o resultado dessa mesma consulta. Ele não faz nenhuma chamada de rede extra e nunca inclui o número completo do cartão, o código de segurança, a data de validade nem o nome do titular do cartão.
+
+Disponível no iOS e no Android a partir do SDK `3.1.0`. O SDK o chama em todo formulário de cartão que mostra para um cartão novo, em pagamentos e em cadastros. Ele não é chamado para cartões salvos, porque o comprador não digita um número.
+
+## O que você recebe {#what-you-receive}
+
+Um objeto `CardInfo`, ou `null` (`nil` no iOS).
+
+| Campo | Chave | Tipo | Descrição |
+|---|---|---|---|
+| `iin` | `iin` | String (String? no Android) | Primeiros dígitos do número do cartão, entre 6 e 8. Nunca o número completo. |
+| `brand` | `brand` | String? | Bandeira do cartão, por exemplo `VISA` ou `MASTERCARD`. |
+| `scheme` | `scheme` | String? | Esquema do cartão. |
+| `type` | `type` | String? | Tipo do cartão, normalmente `CREDIT` ou `DEBIT`. |
+| `category` | `category` | String? | Categoria ou nível do cartão, por exemplo `GOLD` ou `PREPAID`. Cartões pré-pagos são sinalizados aqui, não em `type`. |
+| `issuerName` | `issuer_name` | String? | Nome do banco emissor. |
+| `issuerCode` | `issuer_code` | String? | Código do banco emissor. |
+| `countryCode` | `country_code` | String? | Código ISO do país do banco emissor, por exemplo `BR`. |
+| `countryName` | `country_name` | String? | Nome do país do banco emissor. |
+
+- Os valores são repassados exatamente como a consulta do cartão os retorna. O SDK não os traduz nem os normaliza.
+- Um valor que a consulta não retorna é `null` (`nil` no iOS). Alguns campos, como `issuerCode`, costumam vir vazios, então não os torne obrigatórios na sua lógica.
+- O tamanho de `iin` varia entre 6 e 8 dígitos. Não dependa dele.
+- Cada valor também está disponível por chave: `rawData` no iOS e `toMap()` no Android sempre retornam as nove chaves acima. No iOS, um valor ausente em `rawData` é `NSNull`.
+
+## Quando é chamado {#when-it-is-called}
+
+- Depois que a consulta do cartão responde, assim que o comprador digitou pelo menos 6 dígitos.
+- De novo apenas quando o resultado muda. Digitar mais dígitos do mesmo cartão não o chama de novo, a menos que a consulta retorne detalhes diferentes. No iOS, uma nova chamada também pode chegar quando a consulta corresponde a um prefixo mais longo do mesmo cartão, com apenas `iin` alterado.
+- Na thread principal, então você pode atualizar a sua UI diretamente.
+
+Se o comprador continuar digitando ou editar o número enquanto uma consulta está em andamento, as respostas desatualizadas são descartadas, então você nunca recebe os detalhes de um número que o comprador já alterou.
+
+Cada formulário de cartão começa do zero. Se o comprador fechar o formulário e abri-lo de novo, o primeiro resultado no novo formulário é entregue mesmo que seja o mesmo cartão de antes.
+
+| O que o comprador faz | O que você recebe |
+|---|---|
+| Digita os 5 primeiros dígitos | Nada. |
+| Digita o 6º dígito | Os detalhes do cartão, assim que a consulta responde. |
+| Continua digitando o mesmo cartão | Nada, a menos que a consulta retorne detalhes diferentes. |
+| Apaga dígitos até restarem menos de 6 | `null` (`nil` no iOS). |
+| Digita o número de outro cartão | Os detalhes do novo cartão. |
+| A consulta falha, por exemplo sem conexão | `null` (`nil` no iOS), se você já tinha recebido um cartão antes. |
+| Paga, fecha o formulário ou escolhe outro meio | Nada mais. O último valor permanece. |
+
+## A entrega de `null` {#the-null-delivery}
+
+O controller recebe `null` (`nil` no iOS) quando um cartão que você já recebeu deixa de valer: o número fica com menos de 6 dígitos, o campo é limpo ou a consulta falha. Limpe ou oculte o que você mostrou para o cartão anterior. A primeira chamada nunca é `null`.
+
+Nada é enviado quando o formulário de cartão fecha, quando o comprador paga ou quando o comprador escolhe outro meio de pagamento. Se a sua UI precisar ser redefinida nesses casos, faça isso do seu lado.
+
+## Assinatura {#signature}
+
+No iOS, implemente o método no seu `TransactionController`. No Android, encadeie `onCardInfoChanged` no `TransactionConfig` do pagamento ou do cadastro: ele retorna uma nova config, então use o valor retornado.
+
+<Tabs>
+  <Tab title="iOS">
+
+```swift
+func onCardInfoChanged(_ cardInfo: CardInfo?) {
+    if let cardInfo {
+        orderSummary.showCardDetails(
+            brand: cardInfo.brand,
+            type: cardInfo.type,
+            issuer: cardInfo.issuerName,
+            country: cardInfo.countryCode
+        )
+    } else {
+        orderSummary.clearCardDetails()
+    }
+}
+```
+
+  </Tab>
+  <Tab title="Android">
+
+```kotlin
+val config = TransactionConfig(
+    countryCode = countryCode,
+    checkoutSession = checkoutSession,
+    controller = controller,
+).onCardInfoChanged { cardInfo ->
+    if (cardInfo != null) {
+        orderSummary.showCardDetails(cardInfo.brand, cardInfo.type, cardInfo.issuerName, cardInfo.countryCode)
+    } else {
+        orderSummary.clearCardDetails()
+    }
+}
+```
+
+  </Tab>
+</Tabs>
+
+No Android, cada transação usa o callback da sua própria config. Uma config criada sem `onCardInfoChanged`, ou com `onCardInfoChanged(null)`, não recebe nada.
+
+## Boas práticas {#best-practices}
+
+- Mantenha o handler leve. Ele roda na thread principal enquanto o comprador digita, então tire da thread principal qualquer trabalho lento, como uma chamada ao seu backend.
+- Trate cada chamada como o estado atual do formulário, não como um valor final. O comprador ainda pode alterar o número antes de pagar.
+- Não bloqueie nem atrase o pagamento com base nesses valores. O SDK valida o cartão por conta própria.
+
+## Relacionados {#related}
+
+- [Escutar eventos](/docs/yuno-sdk/controllers/listen-to-events). Os outros controllers informativos.
+- [`onInstallmentSelected`](/pt-br/docs/yuno-sdk/controllers/on-installment-selected). A opção de parcelamento que o comprador escolhe no mesmo formulário de cartão.
+- [Visão geral dos controllers](/pt-br/docs/yuno-sdk/controllers/overview). Como os controllers são conectados em cada plataforma.

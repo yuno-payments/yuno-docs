@@ -1,0 +1,137 @@
+---
+title: "Modo Seamless"
+description: "Migre integrações Seamless do iOS (Yuno.startPaymentSeamlessLite) para a Transaction API unificada."
+---
+
+O Seamless era o ponto de entrada legado mais simples: uma única chamada com `await` que retornava o resultado final. Sem delegate, sem callbacks. Você entregava um `SeamlessParams` e um `PaymentMethodSelected`; o SDK renderizava o formulário, tokenizava, criava o pagamento, executava o 3DS e retornava um `Yuno.Result`.
+
+Na API unificada, o mesmo fluxo é o **comportamento padrão** de `Transaction.start(paymentSelected:)`. Não é preciso sobrescrever nada no controller além de `onStatus`. A única mudança estrutural é o modelo de entrega do resultado: era um retorno assíncrono, agora é um callback por meio de `onStatus`.
+
+## Antes de começar {#before-you-start}
+
+- Substitua `import YunoSDK` por `import SdkPayments`. A sua chave de API pública e as sessões de checkout que o seu backend cria não mudam ([Antes de começar](/pt-br/docs/yuno-sdk/get-started#before-you-begin)).
+- Decida quem cria o pagamento. O `workflow` da sessão de checkout precisa corresponder a essa decisão:
+
+| Quem cria o pagamento | No Seamless você tinha | Na API unificada | `workflow` da sessão |
+|---|---|---|---|
+| O seu backend | Sem equivalente: o Seamless nunca deixava você criá-lo | Sobrescreva `createPayment` | Padrão (`SDK_CHECKOUT`) |
+| O SDK | Sempre | Nenhuma sobrescrita | `SDK_SEAMLESS` |
+
+<Warning>
+Uma sessão com o workflow padrão sem sobrescrever `createPayment` termina em `INTERNAL_ERROR`: o backend rejeita a criação do pagamento pelo SDK. Veja [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```swift Before. Seamless mode
+import YunoSDK
+
+// 1. Initialize once at app startup
+Yuno.initialize(apiKey: "your-public-api-key")
+
+// 2. Trigger the payment from a single async call
+func pay(paymentSelected: PaymentMethodSelected) async {
+    let params = SeamlessParams(
+        checkoutSession: "session-from-backend",
+        countryCode: "CO",
+        language: "en",
+        viewController: nil
+    )
+
+    let result = await Yuno.startPaymentSeamlessLite(
+        with: params,
+        paymentSelected: paymentSelected,
+        showPaymentStatus: true
+    )
+
+    switch result.status {
+    case .succeeded:      print("Success")
+    case .reject:         print("Rejected")
+    case .fail:           print("Failed")
+    case .processing:     print("Processing")
+    case .internalError:  print("Internal error")
+    case .userCancelled:  print("User cancelled")
+    @unknown default:     break
+    }
+}
+```
+
+```swift After. Unified Transaction
+import SdkPayments
+
+// 1. Initialize once at app startup
+SdkPayments.initialize(apiKey: "your-public-api-key")
+
+// 2. Implement a minimal controller
+final class Checkout: SdkPayments.TransactionController {
+
+    func onStatus(status: SdkPayments.TransactionStatus) {
+        switch status.status {
+        case "INTERNAL_ERROR":  print("Internal error")
+        case "USER_CANCEL":     print("User cancelled")
+        // Handle other backend statuses (e.g. SUCCEEDED, DECLINED, PENDING) as needed.
+        default:                break
+        }
+    }
+
+    // 3. Trigger the payment
+    func pay(paymentSelected: SdkPayments.PaymentMethodSelected) {
+        let config = SdkPayments.TransactionConfig(
+            checkoutSession: "session-from-backend",
+            countryCode: "CO",
+            language: "en",
+            controller: self,
+            showStatusScreen: true,
+            viewController: nil
+        )
+
+        SdkPayments.Transaction(config: config)
+            .start(paymentSelected: paymentSelected)
+    }
+}
+```
+
+</CodeGroup>
+
+## O que muda {#what-changes}
+
+Agrupado na ordem em que você edita o código. **Renomeado**: mesma função, novo nome. **Movido**: mesmo valor, novo dono. **Removido**: nada a chamar. **Novo**: sem equivalente legado. A última coluna é a única coisa que você precisa fazer além da renomeação.
+
+### Inicialização e config {#initialization-and-config}
+
+| Seamless | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `import YunoSDK` | `import SdkPayments` | Renomeado | |
+| `Yuno.initialize(apiKey:)` | `SdkPayments.initialize(apiKey:)` | Renomeado | O parâmetro `callback:` deixou de existir; use a sobrecarga `async` se precisar aguardar. |
+| `Yuno.Appearance` passado em `YunoConfig.appearance` | `SdkPayments.Appearance` em `SdkPayments.TransactionConfig.appearance` | Renomeado | Mesmo inicializador; remova o prefixo `Yuno.` e passe-o por transação, em vez de uma vez na inicialização. |
+| `SeamlessParams.checkoutSession`, `.countryCode`, `.language`, `.viewController` | Os mesmos campos em `SdkPayments.TransactionConfig` | Movido | Mesmos valores; `viewController` continua exclusivo do iOS e opcional no SwiftUI. A config também recebe o `controller` (veja Controller). |
+| Argumento `showPaymentStatus:` de `startPaymentSeamlessLite` | `SdkPayments.TransactionConfig.showStatusScreen` | Movido | Veja a nota abaixo. |
+
+<Note>
+**A tela de resultado do SDK agora vem desativada por padrão.** Defina `showStatusScreen: true` para mantê-la.
+</Note>
+
+### Controller {#controller}
+
+| Seamless | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| *(sem delegate)* | `SdkPayments.TransactionController` | Novo | Até o caso mais simples precisa de uma instância de controller: faça uma classe conformar ao protocolo apenas com `onStatus` e passe-a como `TransactionConfig.controller`. O SDK não a retém: mantenha-a viva durante toda a transação. |
+| `Yuno.Result` retornado por `await` | `onStatus(status:)` com `SdkPayments.TransactionStatus` | Movido | O resultado agora é baseado em callback: você não pode usar `await` inline, então, se o seu código encadeava lógica no valor retornado ou o devolvia a quem chamou, refatore-o para reagir dentro de `onStatus`. Continua sendo o único callback de resultado, uma vez por transação, inclusive quando o SDK mostra a tela de resultado. `status` e `substatus` vêm do backend; o próprio SDK só emite `INTERNAL_ERROR` e `USER_CANCEL`. Veja [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `Yuno.Result.message` | `SdkPayments.TransactionStatus.message` | Renomeado | Mesma função. `source` agora é um enum (`.sdk` / `.backend`) e `code` não é mais opcional. |
+
+### Pontos de entrada {#entry-points}
+
+| Seamless | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `Yuno.startPaymentSeamlessLite(with:paymentSelected:showPaymentStatus:)`, tanto a sobrecarga `async` quanto a `callback:` | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Renomeado | Crie a config e depois chame `start`. Nada para `await` e nenhum callback a passar: o resultado chega em `onStatus`. Você continua escolhendo o meio e passando-o. |
+| `Yuno.receiveDeeplink(_:)` | `SdkPayments.handleDeeplink(_:)` | Renomeado | Mesma função: encaminhe a URL que o seu app recebe após um redirecionamento externo. Veja [Tratar deeplinks](/pt-br/docs/yuno-sdk/features/handle-deeplinks). |
+| `Yuno.hideLoader()` | *(removido)* | Removido | Apague a chamada: o SDK fecha o próprio loader. Com uma sobrescrita de `showLoading`, você recebe `isLoading: false` em vez disso. |
+
+## Relacionados {#related}
+
+- [Primeiros passos](/pt-br/docs/yuno-sdk/get-started). O passo a passo da API unificada; o novo "equivalente ao Seamless" agora é o caminho padrão.
+- [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status). Controller que entrega o status final.
+- [`TransactionConfig`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referência completa dos campos.
+- [Migração / Lite](/pt-br/docs/yuno-sdk/migration/ios/payment/lite). Migração quase idêntica; Seamless e Lite se unem no mesmo caminho padrão da API unificada.

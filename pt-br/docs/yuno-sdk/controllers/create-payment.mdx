@@ -1,0 +1,122 @@
+---
+title: "createPayment"
+sidebarTitle: "Pagar a partir do seu backend (createPayment)"
+description: "Sobrescreva para criar o pagamento no seu próprio backend."
+---
+
+`createPayment` é o controller que você sobrescreve quando quer criar o pagamento no seu próprio backend em vez de deixar o SDK fazer isso. O SDK entrega o token de uso único ao seu handler e espera que você sinalize que o pagamento foi criado.
+
+## Comportamento {#behavior}
+
+Se você não sobrescrever este controller, o SDK cria o pagamento automaticamente após a tokenização, trata o 3DS se necessário e entrega o status final a `onStatus`.
+
+Quando você o sobrescreve, o SDK entrega o token ao seu handler e espera a Promise/Task retornada ser resolvida antes de continuar. Na Web, o SDK não define timeout para o seu handler. Conclua a Promise em todos os caminhos, inclusive em uma falha de rede, ou a transação fica em andamento. Resolva a Promise/Task assim que seu backend tiver criado o pagamento chamando a [API Create Payment](https://docs.y.uno/reference/payments/create-payment) (`POST /v1/payments`); o SDK então consulta o status do pagamento, trata o 3DS se necessário e invoca `onStatus`.
+
+Na Web, envie `token.token` como o token de uso único e `token.checkout_session` como a sessão de checkout. Após uma recusa de cartão que permite nova tentativa, o SDK move o formulário para uma nova sessão de checkout, então a sessão na configuração da sua transação pode estar desatualizada. Se você definir [`autoContinuePayment: false`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#autocontinuepayment), o SDK para depois que seu handler é resolvido. Ele não consulta o status nem executa o 3DS, não chama `onStatus` e marca a sessão de checkout como finalizada, então um `start()` ou `submit()` posterior nela lança um erro. O botão do PayPal ignora a flag e sempre continua.
+
+Se a Promise/Task for rejeitada, o SDK interrompe o fluxo. Na Web, `onStatus` é então disparado com `status: "INTERNAL_ERROR"` e `message.code: "MERCHANT_CREATE_PAYMENT_FAILED"`. `showLoading` emite `isLoading: false` e a visualização é fechada nesse momento. Você é responsável por mostrar o erro ao seu usuário. No React Native, o resultado segue o SDK nativo por baixo: no Android, `onStatus` recebe `INTERNAL_ERROR` com `message.code: "MERCHANT_CREATE_PAYMENT_FAILED"` e sua mensagem de erro em `message.reason`; no iOS, o fluxo é fechado sem status.
+
+No iOS, você pode criar o pagamento por conta própria só para alguns meios. Chame `SdkPayments.defaultCreatePayment(token:)` a partir da sua sobrescrita para recorrer à criação de pagamento do próprio SDK, que exige uma sessão criada com `workflow: "SDK_SEAMLESS"`:
+
+```swift
+func createPayment(token: [String: Any]) async throws {
+    guard createsPaymentsOnBackend else {
+        try await SdkPayments.defaultCreatePayment(token: token)
+        return
+    }
+    try await myBackend.createPayment(token: token)
+}
+```
+
+No React Native, retorne `SdkPayments.defaultCreatePayment(token)` a partir da sua sobrescrita. Ele é resolvido assim que o SDK cria o pagamento, com o mesmo requisito de `workflow: "SDK_SEAMLESS"`:
+
+```tsx
+createPayment: async (token) => {
+  if (!createsPaymentsOnBackend) {
+    return SdkPayments.defaultCreatePayment(token);
+  }
+  await myBackend.createPayment(token);
+},
+```
+
+Em um fluxo de cadastro, este controller não é invocado com dados de pagamento, e sobrescrevê-lo não tem efeito. Na Web, a configuração de cadastro não aceita `createPayment`. O TypeScript o rejeita e o JavaScript o ignora.
+
+<Warning>
+Faça o `workflow` da sessão de checkout corresponder a essa decisão. Sessões criadas com o workflow padrão (`SDK_CHECKOUT`) exigem esta sobrescrita, porque o backend rejeita a criação de pagamento vinda do SDK. Se você não sobrescrever `createPayment`, crie a sessão com `workflow: "SDK_SEAMLESS"`. O campo fica no [corpo de `POST /v1/checkout/sessions`](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow), não em `TransactionConfig`.
+</Warning>
+
+Em um [split de pagamento](/pt-br/docs/yuno-sdk/features/split-payment), o token é um token composto. Envie-o para `POST /v2/payments` com `workflow: "SDK_CHECKOUT"`, porque `POST /v1/payments` o rejeita.
+
+## Assinatura {#signature}
+
+<Tabs>
+  <Tab title="Web">
+
+```typescript
+sdkPayments.transaction({
+  ...,
+  createPayment: async (token) => {
+    await myBackend.pay({
+      token: token.token,
+      checkout_session: token.checkout_session,
+    })
+  },
+})
+```
+
+  </Tab>
+
+  <Tab title="iOS">
+
+```swift
+func createPayment(token: [String: Any]) async throws
+```
+
+  </Tab>
+
+  <Tab title="Android">
+
+```kotlin
+suspend fun createPayment(token: Map<String, Any>)
+```
+
+  </Tab>
+
+  <Tab title="React Native">
+
+```typescript
+createPayment?(token: OneTimeToken): Promise<void>
+```
+
+Resolva a Promise assim que seu backend tiver criado o pagamento; rejeite-a para interromper o fluxo. No Android, o SDK nativo para de esperar após 60 segundos e informa `INTERNAL_ERROR` com `message.code: "OperationTimeout"`.
+
+  </Tab>
+</Tabs>
+
+<Tip>
+A chamada do seu backend precisa seguir a [referência da API Create Payment](https://docs.y.uno/reference/payments/create-payment), incluindo os cabeçalhos obrigatórios.
+</Tip>
+
+## OneTimeToken {#onetimetoken}
+
+`OneTimeToken` é um dicionário/map que contém o valor do token mais os metadados associados.
+
+| Plataforma | Tipo |
+|---|---|
+| Web | `CreatePaymentTokenInformation`. Os campos de `OneTimeToken` (`token`, `type`, `vaulted_token`, `vault_on_success`, `customer`, `card_data`, `bank_transfer`) mais `checkout_session`, e `recognitionToken` e `quote` quando presentes. |
+| iOS | `[String: Any]` |
+| Android | `Map<String, Any>` |
+| React Native | `OneTimeToken` (`Record<string, unknown>`), com as chaves do token nativo da plataforma |
+
+Veja [`OneTimeToken`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#one-time-token) para a referência completa.
+
+## Threading {#threading}
+
+No iOS e no Android, `createPayment` é invocado na thread principal. Você pode atualizar a UI diretamente dentro desse handler. Mas lembre-se de que qualquer chamada ao backend que você fizer deve acontecer fora da thread principal. No React Native, ele é executado na thread do JavaScript, e o SDK nativo espera a Promise retornada.
+
+## Relacionados {#related}
+
+- [Transações](/pt-br/docs/basic-concepts/transactions). Como um pagamento flui pela Yuno.
+- [Valores de status de pagamento](https://docs.y.uno/reference/payments/status-and-response-codes/payment). Referência de status e substatus.
+- [`OneTimeToken`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#one-time-token). A referência do objeto de token.
+- [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status). Invocado depois que o SDK consulta o status do pagamento.

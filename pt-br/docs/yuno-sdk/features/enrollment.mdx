@@ -1,0 +1,135 @@
+---
+title: "Cadastro"
+sidebarTitle: "Salvar um meio de pagamento"
+description: "Salve o meio de pagamento de um cliente para uso futuro, sem cobrar."
+---
+
+O cadastro permite tokenizar e salvar o meio de pagamento de um cliente sem processar uma cobrança. Use-o para registrar um cartão ou outro meio que o cliente possa usar em pagamentos futuros.
+
+A mesma classe `Transaction` trata o cadastro. Só o tipo de sessão muda. Na Web, a transação de cadastro expõe `start()`, `secureFields()` e `unmount()`. Os métodos exclusivos de pagamento (`getPaymentMethodsViews`, `submit`, `updateCheckoutSession`) e os campos de configuração exclusivos de pagamento não estão disponíveis.
+
+<Note>
+O tipo de sessão é o que seleciona o modo: passar `checkoutSession` executa um **pagamento**, enquanto passar `customerSession` executa um **cadastro**. Exatamente um dos dois deve ser fornecido. No iOS, a escolha é feita em tempo de compilação: `TransactionConfig` tem um inicializador por tipo de sessão, então não é possível escrever uma configuração com os dois ou com nenhum. No Android e na Web, fornecer os dois, ou nenhum, falha no momento da construção com um erro de validação. No Android, a mensagem é `Exactly one of checkoutSession or customerSession must be provided`. Na Web, a mensagem é `Provide either checkoutSession or customerSession, not both.` ou `A checkoutSession or customerSession is required.` No React Native, `new Transaction(config)` lança `Exactly one of checkoutSession or customerSession must be provided`. Consulte [Por onde eu começo?](/pt-br/docs/yuno-sdk/where-do-i-start) para o guia de decisão completo.
+</Note>
+
+## Antes de começar {#before-you-start}
+
+O seu backend deve criar os recursos necessários para o cadastro:
+
+- Crie o cliente. Consulte [`POST /v1/customers`](https://docs.y.uno/reference/customers/the-customer-object).
+- Crie a sessão de cliente. Consulte [`POST /v1/customers/sessions`](https://docs.y.uno/reference/customer-sessions-enrollment/create-customer-session).
+- Crie o meio de pagamento. Consulte [`POST /v1/customers/sessions/{customer_session}/payment-methods`](https://docs.y.uno/reference/payment-methods-checkout/enroll-payment-method-checkout). Essa chamada exige um cabeçalho `X-Idempotency-Key`; sem ele, a API retorna `400 INVALID_PARAMETERS`.
+
+## Implementação {#implementation}
+
+Passe a `customerSession` (em vez de `checkoutSession`) em `TransactionConfig` e chame `start()`. No Android, passe em `paymentSelected` o meio que o cliente escolheu, da mesma forma que você faz para um pagamento. No iOS, `start(paymentSelected:)` recebe o mesmo objeto, mas o meio a cadastrar é aquele que o seu backend criou na sessão de cliente: o SDK o lê da sessão e não usa `paymentMethodType` para selecioná-lo. Na Web, `start()` renderiza o formulário do SDK para o meio que o seu backend cadastrou na sessão de cliente, e `paymentMethod` só é necessário para um cadastro headless (consulte Pular o formulário). No React Native, `start(paymentSelected)` se comporta como o SDK nativo da plataforma. O SDK entrega o status final para `onStatus` quando o cadastro é concluído.
+
+Renderizar e selecionar o meio de pagamento a cadastrar é responsabilidade sua. O SDK não apresenta uma lista de meios cadastráveis. Para buscar os meios disponíveis, chame [`GET /v1/customers/sessions/{customer_session}/payment-methods`](https://docs.y.uno/reference/payment-methods-checkout/retrieve-payment-methods-to-enroll-checkout). No iOS e na Web, a escolha chega ao SDK pela sessão de cliente, com a chamada `POST` de Antes de começar.
+
+<Tabs>
+  <Tab title="Web">
+
+```typescript
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'US',
+    language: 'en', // optional, falls back to browser language
+    elementSelector: '#enrollment-form',
+    onStatus: (result) => {
+        console.log('Enrollment status:', result.status)
+    },
+})
+
+await transaction.start()
+// For headless enrollment, call start({ paymentMethod: { type: 'CARD', data } })
+// instead. The config's elementSelector is ignored. See "Skip the form" below.
+```
+
+`elementSelector` é opcional na Web. Sem ele, o SDK adiciona o próprio contêiner ao final de `<body>` e renderiza o formulário ali.
+
+  </Tab>
+
+  <Tab title="iOS">
+
+```swift
+let config = SdkPayments.TransactionConfig(
+    customerSession: "session-from-backend",
+    countryCode: "US",
+    language: "en",          // optional, falls back to device language
+    appearance: nil,         // optional
+    controller: self
+)
+
+let paymentSelected = SdkPayments.PaymentMethodSelected(
+    paymentMethodType: "CARD"  // The customer session decides the method to enroll.
+    // transactionData: ...   // optional. See "Skip the form" below.
+)
+
+SdkPayments.Transaction(config: config)
+    .start(paymentSelected: paymentSelected)
+```
+
+  </Tab>
+
+  <Tab title="Android">
+
+```kotlin
+val config = TransactionConfig(
+    customerSession = "session-from-backend",
+    countryCode = "US",
+    language = "en",          // optional, falls back to device language
+    appearance = null,        // optional
+    controller = this
+)
+
+val paymentSelected = PaymentMethodSelected(
+    type = "CARD",
+    // transactionData = ... // optional. See "Skip the form" below.
+)
+
+Transaction(config)
+    .start(activity = this, paymentSelected = paymentSelected)
+```
+
+  </Tab>
+
+  <Tab title="React Native">
+
+```tsx
+const enrollment = new Transaction({
+  customerSession: 'session-from-backend',
+  countryCode: 'US',
+  language: 'en', // optional, falls back to device language
+  controller: {
+    onStatus: (status) => console.log('Enrollment status:', status.status),
+  },
+});
+
+await enrollment.start({
+  type: 'CARD',
+  // transactionData: ... // optional. See "Skip the form" below.
+});
+```
+
+  </Tab>
+</Tabs>
+
+### Pular o formulário {#skip-the-form}
+
+Se você coleta os dados do cliente na sua própria UI, passe-os via `transactionData` (`data` na Web) no `PaymentMethodSelected`. O SDK pulará o formulário integrado e tokenizará diretamente: um fluxo headless, que ignora o `elementSelector` na configuração da transação (ele só se aplica a fluxos baseados em formulário). Consulte [`TransactionData`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-data) para o formato completo dos dados.
+
+<Note>
+`vaultedToken` em `PaymentMethodSelected` é ignorado durante o cadastro. O objetivo do fluxo é produzir um novo token armazenado, então ainda não há nada vinculado a referenciar.
+</Note>
+
+## Observações {#notes}
+
+- Um desafio 3DS pode ocorrer durante o cadastro.
+- `createPayment` não se aplica porque não há pagamento a criar. Na Web, a configuração de cadastro não o aceita (o TypeScript rejeita a propriedade). No iOS, no Android e no React Native, ele não é invocado.
+- Quando o cadastro é bem-sucedido, `onStatus` entrega o status final, com o mesmo formato de payload dos fluxos de pagamento (`status`, `substatus`, `message`). O token armazenado não é exposto ao cliente: recupere-o pelo endpoint de listagem dos meios de pagamento do cliente no seu backend depois que o status de sucesso chegar, e armazene-o associado ao seu cliente para usar em pagamentos futuros.
+
+## Relacionados {#related}
+
+- [Sessões](/pt-br/docs/basic-concepts/sessions). Sessões de checkout e sessões de cliente.
+- [`TransactionConfig`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referência completa.
+- [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status). Recebe o status final.

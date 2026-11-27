@@ -1,0 +1,171 @@
+---
+title: "Modo Full"
+description: "Migre integrações Full no React Native (YunoPaymentMethods + YunoSdk.startPayment) para a API unificada de Transaction."
+---
+
+O modo Full renderizava a lista de meios de pagamento da Yuno com o componente `<YunoPaymentMethods>`, e `YunoSdk.startPayment()` pagava com o meio que o comprador escolhia. Na API unificada, a lista é uma view que você solicita à transação com `getPaymentMethodsViews` e renderiza com `<YunoView>`. A escolha do comprador chega em `onPaymentSelected`, e você a passa para `transaction.start()`.
+
+## Antes de começar {#before-you-start}
+
+- Atualize `@yuno-payments/yuno-sdk-react-native` para a 2.0.0 e execute `pod install`. A sua chave de API pública e as sessões de checkout que o seu backend cria não mudam ([Antes de começar](/pt-br/docs/yuno-sdk/get-started#before-you-begin)).
+- No Android, o `minSdkVersion` agora é 23. Se o seu `android/build.gradle` aplica o plugin do compilador Compose ao módulo da Yuno (uma solução alternativa da 1.x), remova esse bloco: com a 2.0.0, o build falha com "The Compose Compiler requires the Compose Runtime to be on the class path".
+- Decida quem cria o pagamento. O `workflow` da sessão de checkout precisa corresponder a essa decisão:
+
+| Quem cria o pagamento | No Full você tinha | Na API unificada | `workflow` da sessão |
+|---|---|---|---|
+| O seu backend | `onOneTimeToken`, a sua chamada ao backend e depois `continuePayment` | Implemente `createPayment` | Padrão (`SDK_CHECKOUT`) |
+| O SDK | Sem equivalente no Full | Não implemente `createPayment` | `SDK_SEAMLESS` |
+
+<Warning>
+Uma sessão com o workflow padrão e sem `createPayment` no controller termina em `INTERNAL_ERROR`: o backend rejeita a criação do pagamento pelo SDK. Consulte [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```tsx Before. Full mode
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
+
+function PaymentScreen({ checkoutSession }) {
+  const [isMethodSelected, setIsMethodSelected] = useState(false);
+
+  useEffect(() => {
+    const tokenSubscription = YunoSdk.onOneTimeToken(async (token) => {
+      await myBackend.createPayment(token);
+      await YunoSdk.continuePayment(checkoutSession, 'CO', true);
+    });
+    const statusSubscription = YunoSdk.onPaymentStatus((state) => {
+      console.log('Final status:', state.status);
+    });
+    return () => {
+      tokenSubscription.remove();
+      statusSubscription.remove();
+    };
+  }, [checkoutSession]);
+
+  return (
+    <>
+      <YunoPaymentMethods
+        checkoutSession={checkoutSession}
+        countryCode="CO"
+        onPaymentMethodSelected={(event) => setIsMethodSelected(event.isSelected)}
+        onPaymentMethodError={(event) => console.warn(event.message)}
+      />
+      <Button
+        title="Pay"
+        disabled={!isMethodSelected}
+        onPress={() => YunoSdk.startPayment(true)}
+      />
+    </>
+  );
+}
+```
+
+```tsx After. Unified Transaction
+import {
+  Transaction,
+  YunoView,
+  type PaymentMethodSelected,
+  type YunoViewHandle,
+} from '@yuno-payments/yuno-sdk-react-native';
+
+function PaymentScreen({ checkoutSession }) {
+  const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const [listView, setListView] = useState<YunoViewHandle | null>(null);
+  const [selected, setSelected] = useState<PaymentMethodSelected | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const created = new Transaction({
+      checkoutSession,
+      countryCode: 'CO',
+      showStatusScreen: true,
+      controller: {
+        createPayment: async (token) => {
+          await myBackend.createPayment(token);
+        },
+        onStatus: (status) => {
+          console.log('Final status:', status.status);
+        },
+      },
+    });
+    setTransaction(created);
+    created
+      .getPaymentMethodsViews([{ kind: 'PAYMENT_METHOD_LIST' }], {
+        onPaymentSelected: setSelected,
+      })
+      .then((views) => {
+        if (active) setListView(views[0]?.view ?? null);
+      })
+      .catch((error) => {
+        if (active) console.warn('Could not load the payment methods', error);
+      });
+    return () => {
+      active = false;
+      created.dispose();
+    };
+  }, [checkoutSession]);
+
+  return (
+    <>
+      {listView ? <YunoView view={listView} /> : null}
+      <Button
+        title="Pay"
+        disabled={!transaction || !selected}
+        onPress={() => selected && transaction?.start(selected)}
+      />
+    </>
+  );
+}
+```
+
+</CodeGroup>
+
+## O que muda {#what-changes}
+
+Agrupado na ordem em que você edita o código. **Renomeado**: mesmo papel, novo nome. **Movido**: mesmo valor, novo dono. **Removido**: nada a chamar. **Novo**: sem equivalente legado. A última coluna é a única coisa que você precisa fazer além da renomeação.
+
+### Inicialização e config {#initialization-and-config}
+
+| Full | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `YunoSdk.initialize({ apiKey, countryCode, yunoConfig, iosConfig, androidConfig })` | `SdkPayments.initialize(apiKey)` | Renomeado | Agora recebe só a chave. Os outros argumentos passam para `TransactionConfig` ou desaparecem (próximas linhas). |
+| `countryCode` de `initialize` e de `<YunoPaymentMethods>` | `TransactionConfig.countryCode` | Movido | Passe-o uma vez por transação. |
+| `checkoutSession` de `<YunoPaymentMethods>` | `TransactionConfig.checkoutSession` | Movido | A lista lê a sessão da transação que a solicita. |
+| `yunoConfig.language`, `yunoConfig.saveCardEnabled` | `TransactionConfig.language`, `TransactionConfig.saveCardEnabled` | Movido | Passe-os a cada transação, em vez de uma vez na inicialização. |
+| `yunoConfig.keepLoader`, `isDynamicViewEnabled`, `cardFormDeployed`, `iosConfig`, `androidConfig`, o enum `CardFlow` | *(removido)* | Removido | Apague-os. O SDK mantém o loader dele, a menos que você implemente `showLoading`, tem um único formulário de cartão, e a lista expandida é definida no Checkout Builder do seu Dashboard. |
+| Argumento `showPaymentStatus` de `startPayment` | `TransactionConfig.showStatusScreen` | Movido | Agora vem desativado por padrão: defina `showStatusScreen: true` para manter a tela de resultado do SDK. |
+
+### Lista de meios de pagamento {#payment-methods-list}
+
+| Full | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `<YunoPaymentMethods checkoutSession countryCode />` | `transaction.getPaymentMethodsViews([{ kind: 'PAYMENT_METHOD_LIST' }], listController)` + `<YunoView view={view} />` | Renomeado | Solicite a lista à transação e depois renderize a view que ela retorna. Os botões de carteira vêm da mesma chamada: `{ kind: 'GOOGLE_PAY' }` no Android, `{ kind: 'APPLE_PAY' }` no iOS. Consulte [Lista de meios de pagamento](/pt-br/docs/yuno-sdk/features/payment-methods-list). |
+| `onPaymentMethodSelected({ isSelected })` | `listController.onPaymentSelected(paymentSelected)` | Renomeado | Agora você recebe o próprio `PaymentMethodSelected`, com `selectionSource` `'AUTO'` para a pré-seleção do SDK e `'USER'` para um toque. Guarde-o e passe-o para `start()`. |
+| `onSizeChanged({ height })` | Dimensionamento de `<YunoView>`, `listController.onHeightChange(height)` | Renomeado | `<YunoView>` se dimensiona conforme o conteúdo nativo. Implemente `onHeightChange` só se você mesmo posicionar a lista. |
+| `onPaymentMethodError({ message })` | `controller.onStatus(status)` | Movido | Uma lista que não carrega informa `INTERNAL_ERROR` por meio de `onStatus`. |
+| *(nenhum)* | `listController.onUnenroll(success)` | Novo | Opcional. Informa a remoção de um meio salvo da lista. |
+
+### Controller {#controller}
+
+| Full | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| Inscrições em eventos (`onPaymentStatus`, `onOneTimeToken`) | `TransactionConfig.controller` | Renomeado | Os listeners passam a ser um único objeto simples com métodos, passado na config. Não há inscrições a remover: chame `transaction.dispose()` quando a tela for descartada. |
+| `YunoSdk.onPaymentStatus((state) => …)` | `onStatus(status)` | Renomeado | `state.status` passa a ser `status.status`, com `substatus` e `message` ao lado. `status` e `substatus` vêm do backend: trate `DECLINED`, `REJECTED`, `ERROR` e `PENDING` em vez dos `FAILED` e `PROCESSING` da 1.x, e `USER_CANCEL` em vez de `CANCELLED_BY_USER`. O próprio SDK só emite `INTERNAL_ERROR` e `USER_CANCEL`. Consulte [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). |
+| `onOneTimeToken(listener)` + a sua chamada ao backend + `YunoSdk.continuePayment(…)` | `createPayment(token)` | Renomeado | Crie o pagamento e resolva a Promise retornada: o SDK continua sozinho (3DS, status). `token` é o objeto completo do token de uso único: envie `token.token` ao seu backend. Consulte [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment). |
+| `getLastOneTimeToken*`, `clearLast*` | *(removido)* | Removido | O token chega em `createPayment` e o resultado em `onStatus`. |
+| `YunoSdk.hideLoader()` | `showLoading(isLoading)` | Renomeado | Opcional. Implemente-o para mostrar o seu próprio loader. Consulte [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading). |
+
+### Pontos de entrada {#entry-points}
+
+| Full | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `YunoSdk.startPayment(showPaymentStatus)` | `transaction.start(selected)` | Renomeado | Passe o `PaymentMethodSelected` que o seu list controller recebeu. Os botões de carteira expressos iniciam o pagamento sozinhos quando tocados. |
+| `YunoSdk.receiveDeeplink(url)` | `transaction.handleDeeplink(url)` | Renomeado | Consulte [Lidar com deeplinks](/pt-br/docs/yuno-sdk/features/handle-deeplinks). |
+
+## Relacionados {#related}
+
+- [Lista de meios de pagamento](/pt-br/docs/yuno-sdk/features/payment-methods-list). Tipos, list controller e botões expressos.
+- [Primeiros passos](/pt-br/docs/yuno-sdk/get-started). Passo a passo completo da API unificada.
+- [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). Valores e substatus.

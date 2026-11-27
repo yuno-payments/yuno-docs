@@ -1,0 +1,746 @@
+---
+title: "Por onde começo?"
+description: "Decida quais parâmetros e controllers usar com base no que você quer construir."
+mode: "wide"
+---
+
+import { ConfigBuilder } from "/snippets/ConfigBuilder.jsx";
+import { ExplainerVideo } from "/snippets/pt-br/ExplainerVideo.jsx";
+
+<div className="ysdk-qs-intro">
+
+<div className="ysdk-qs-intro-text">
+
+Os SDKs da Yuno expõem uma única classe `Transaction`. O que muda entre 
+as integrações é **quais parâmetros você passa** e **quais controllers você 
+sobrescreve**. Cada decisão é independente. Combine-as livremente.
+
+Esta página percorre as decisões que você vai tomar e indica a 
+documentação relevante para cada uma.
+
+Mude a chave em cada etapa e o código à direita se monta sozinho para a sua plataforma. Cada bloco que o código usa também está escrito abaixo da sua etapa, então você pode compor à mão: comece pela base e depois adicione o bloco de cada etapa em que você escolheu a resposta diferente da padrão. Um bloco de configuração substitui o `TransactionConfig`, um bloco de meio de pagamento substitui o `PaymentMethodSelected`, uma linha de flag vai dentro do `TransactionConfig`, e um bloco de controller vai dentro da sua classe de controller ou, na Web, dentro das opções da transação.
+
+</div>
+
+<ExplainerVideo compact src="/videos/explainers/pick-your-integration.mp4" poster="/videos/explainers/pick-your-integration.jpg" title="Escolha a sua integração" duration="66 s" />
+
+</div>
+
+<div className="ysdk-qs">
+
+<div className="ysdk-qs-main">
+
+## Base {#base}
+
+O SDK faz tudo: mostra o formulário, cria o pagamento, trata o 3DS e informa o resultado para `onStatus`. Crie a sessão de checkout com `workflow: "SDK_SEAMLESS"` para esta base.
+
+<Accordion title="Código base">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="base" data-platform="ios" data-mode="base">
+
+```swift
+import SwiftUI
+import SdkPayments
+
+final class Checkout: SdkPayments.TransactionController {
+
+    func start() {
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: "CARD"
+        )
+
+        let config = SdkPayments.TransactionConfig(
+            checkoutSession: "session-from-backend",
+            countryCode: "US",
+            language: "en",
+            controller: self
+        )
+
+        SdkPayments.Transaction(config: config)
+            .start(paymentSelected: paymentSelected)
+    }
+
+    func onStatus(status: SdkPayments.TransactionStatus) {
+        print("Final status: \(status.status)")
+    }
+}
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="base" data-platform="android" data-mode="base">
+
+```kotlin
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
+
+class CheckoutActivity : ComponentActivity(), TransactionController {
+
+    private fun startCheckout() {
+        val paymentSelected = PaymentMethodSelected(
+            type = "CARD"
+        )
+
+        val config = TransactionConfig(
+            checkoutSession = "session-from-backend",
+            countryCode = "US",
+            language = "en",
+            controller = this
+        )
+
+        Transaction(config)
+            .start(activity = this, paymentSelected = paymentSelected)
+    }
+
+    override fun onStatus(status: TransactionStatus) {
+        println("Final status: ${status.status}")
+    }
+}
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="base" data-platform="web" data-mode="base">
+
+```typescript
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'US',
+    language: 'en',
+    elementSelector: '#payment-form',
+    onStatus: (result) => {
+        console.log('Final status:', result.status)
+    },
+})
+
+const paymentMethod = { type: 'CARD' }
+
+await transaction.start({ paymentMethod })
+```
+
+</div>
+
+  </Tab>
+  <Tab title="React Native">
+
+<div data-fragment="base" data-platform="react-native" data-mode="base">
+
+```tsx
+import { Transaction, type TransactionConfig } from '@yuno-payments/yuno-sdk-react-native';
+
+export async function startCheckout() {
+  const paymentSelected = { type: 'CARD' };
+
+  const config: TransactionConfig = {
+    checkoutSession: 'session-from-backend',
+    countryCode: 'US',
+    language: 'en',
+    controller: {
+      onStatus: (status) => {
+        console.log('Final status:', status.status);
+      },
+    },
+  };
+
+  await new Transaction(config).start(paymentSelected);
+}
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+<div data-decision="enrollment">
+
+## 1. Você está processando um pagamento ou salvando um meio de pagamento? {#1-are-you-processing-a-payment-or-saving-a-payment-method}
+
+<div data-toggle="enrollment"></div>
+
+Esta decisão define qual tipo de sessão você cria no seu backend e 
+passa para o SDK.
+
+- **Para processar um pagamento**, crie uma sessão de checkout e passe-a para o 
+  `TransactionConfig` como `checkoutSession`. Use esta opção quando quiser 
+  cobrar o cliente.
+- **Para salvar um meio de pagamento sem cobrar**, crie uma sessão de 
+  cliente e passe-a como `customerSession`. Use esta opção quando quiser 
+  cadastrar um cartão ou outro meio para uso futuro.
+- **Para pagar e cadastrar ao mesmo tempo**, passe apenas `checkoutSession`:
+  - **Cartões.** Habilite a flag "save card on payment" no seu 
+    Checkout Builder. O SDK cobra o cliente e armazena o 
+    cartão para uso futuro.
+  - **Outros meios de pagamento.** Confirme que a variante cadastrável 
+    do meio foi adicionada às suas conexões. Quando foi, o SDK 
+    trata o pagamento e o cadastro juntos com base apenas na sessão de 
+    checkout. Na Web, passe também `savePaymentMethodEnabled: true` 
+    no `TransactionConfig` e crie a sessão de checkout com um 
+    `customer_id`. O SDK então adiciona uma opção de salvar ao formulário.
+
+Você não pode passar `checkoutSession` e `customerSession` ao mesmo 
+tempo.
+
+Consulte [Sessões](/pt-br/docs/basic-concepts/sessions) e 
+[Cadastro](/pt-br/docs/yuno-sdk/features/enrollment).
+
+<Accordion title="Use esta configuração para cadastrar em vez de cobrar">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="enrollment" data-platform="ios" data-mode="config">
+
+```swift
+        let config = SdkPayments.TransactionConfig(
+            customerSession: "session-from-backend",
+            countryCode: "US",
+            language: "en",
+            controller: self
+        )
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="enrollment" data-platform="android" data-mode="config">
+
+```kotlin
+        val config = TransactionConfig(
+            customerSession = "session-from-backend",
+            countryCode = "US",
+            language = "en",
+            controller = this
+        )
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="enrollment" data-platform="web" data-mode="config">
+
+```typescript
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'US',
+    language: 'en',
+    elementSelector: '#enrollment-form',
+    onStatus: (result) => {
+        console.log('Final status:', result.status)
+    },
+})
+```
+
+</div>
+
+  </Tab>
+  <Tab title="React Native">
+
+<div data-fragment="enrollment" data-platform="react-native" data-mode="config">
+
+```tsx
+  const config: TransactionConfig = {
+    customerSession: 'session-from-backend',
+    countryCode: 'US',
+    language: 'en',
+    controller: {
+      onStatus: (status) => {
+        console.log('Final status:', status.status);
+      },
+    },
+  };
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="create-payment">
+
+## 2. Quem cria o pagamento? {#2-who-creates-the-payment}
+
+<div data-toggle="create-payment"></div>
+
+Esta decisão define se você sobrescreve `createPayment`.
+
+- **Padrão. O SDK cria o pagamento.** Depois da tokenização, o 
+  SDK chama a Yuno para criar o pagamento, trata o 3DS se necessário e 
+  emite o status final para `onStatus`. Você não sobrescreve nada. 
+  Crie a sessão de checkout com `workflow: "SDK_SEAMLESS"` para que o 
+  SDK conduza a criação do pagamento de ponta a ponta. Consulte o 
+  [campo `workflow`](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow).
+- **Você cria o pagamento.** Sobrescreva `createPayment` para receber o 
+  token. Envie-o para o seu backend, crie o pagamento chamando 
+  [`POST /v1/payments`](https://docs.y.uno/reference/payments/create-payment) e resolva a 
+  Promise/Task. O SDK então consulta o status e continua o fluxo.
+
+<Warning>
+  `workflow` é um campo do corpo da requisição `POST /v1/checkout/sessions`. 
+  Ele **não** faz parte do `TransactionConfig` e não pode ser definido 
+  pelo SDK. Ele precisa corresponder a esta decisão:
+
+  - O SDK cria o pagamento (sem sobrescrita) → crie a sessão com 
+    `workflow: "SDK_SEAMLESS"`.
+  - Você cria o pagamento (sobrescrita de `createPayment`) → use o 
+    workflow padrão (`SDK_CHECKOUT`).
+
+  Com o `SDK_CHECKOUT` padrão e **sem** sobrescrita de `createPayment`, 
+  o backend rejeita a criação do pagamento pelo SDK e a transação 
+  termina em `INTERNAL_ERROR` com `message.source: "backend"`, então o 
+  fluxo não pode ser concluído.
+</Warning>
+
+<Note>
+  Em um fluxo de **cadastro** (quando você passa `customerSession`), 
+  `createPayment` não é invocado com dados de pagamento. Não há 
+  pagamento a criar. Sobrescrever este controller não tem efeito no 
+  cadastro.
+</Note>
+
+Consulte [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment).
+
+<Accordion title="Adicione este bloco ao seu controller quando você criar o pagamento">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="create-payment" data-platform="ios" data-mode="controller">
+
+```swift
+    func createPayment(token: [String: Any]) async throws {
+        // Create the payment from your backend with POST /v1/payments, then return.
+        try await myBackend.createPayment(token: token)
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="create-payment" data-platform="android" data-mode="controller">
+
+```kotlin
+    override suspend fun createPayment(token: Map<String, Any>) {
+        // Create the payment from your backend with POST /v1/payments, then return.
+        myBackend.createPayment(token)
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="create-payment" data-platform="web" data-mode="controller">
+
+```typescript
+    createPayment: async (token) => {
+        // Create the payment from your backend with POST /v1/payments, then resolve.
+        await myBackend.createPayment(token.token)
+    },
+```
+
+</div>
+
+  </Tab>
+  <Tab title="React Native">
+
+<div data-fragment="create-payment" data-platform="react-native" data-mode="controller">
+
+```tsx
+      createPayment: async (token) => {
+        // Create the payment from your backend with POST /v1/payments, then resolve.
+        await myBackend.createPayment(token);
+      },
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="transaction-data">
+
+## 3. Quem coleta os dados de pagamento? {#3-who-collects-the-payment-data}
+
+<div data-toggle="transaction-data"></div>
+
+Esta decisão define se você passa `transactionData` em 
+`PaymentMethodSelected`.
+
+- **Padrão. O SDK mostra os formulários.** O SDK apresenta o formulário 
+  adequado (formulário de cartão, formulário de dados de APM etc.) e coleta os dados do 
+  usuário.
+- **Você fornece os dados.** Passe `transactionData` (`data` na Web) em 
+  `PaymentMethodSelected` com os valores já coletados (por 
+  exemplo, dados do cartão capturados pela sua própria UI). O SDK pula os 
+  formulários e tokeniza diretamente.
+
+Consulte [`PaymentMethodSelected`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#payment-method-selected) 
+e [`TransactionData`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-data).
+
+<Accordion title="Use este `PaymentMethodSelected` quando você mesmo coletar os dados">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="transaction-data" data-platform="ios" data-mode="selected">
+
+```swift
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
+            paymentMethodType: "CARD",
+            transactionData: SdkPayments.TransactionData(
+                card: SdkPayments.CardTransactionData(
+                    number: cardNumber,
+                    securityCode: cvv,
+                    expirationMonth: expMonth,
+                    expirationYear: expYear,
+                    holderName: holder
+                )
+            )
+        )
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="transaction-data" data-platform="android" data-mode="selected">
+
+```kotlin
+        val paymentSelected = PaymentMethodSelected(
+            type = "CARD",
+            transactionData = TransactionData(
+                card = CardData(
+                    number = number,
+                    securityCode = cvv,
+                    expirationMonth = expMonth,
+                    expirationYear = expYear,
+                    holderName = holder
+                )
+            )
+        )
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="transaction-data" data-platform="web" data-mode="selected">
+
+```typescript
+const paymentMethod = {
+    type: 'CARD',
+    data: {
+        card: {
+            holderName: 'John Doe',
+            number: '4111111111111111',
+            securityCode: '123',
+            expirationMonth: 12,
+            expirationYear: 28,
+        },
+    },
+}
+```
+
+</div>
+
+  </Tab>
+  <Tab title="React Native">
+
+<div data-fragment="transaction-data" data-platform="react-native" data-mode="selected">
+
+```tsx
+  const paymentSelected = {
+    type: 'CARD',
+    transactionData: {
+      card: {
+        number: cardNumber,
+        securityCode: cvv,
+        expirationMonth: expMonth,
+        expirationYear: expYear,
+        holderName: holder,
+      },
+    },
+  };
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="show-view">
+
+## 4. Quem controla a UI do formulário? (iOS, Android, React Native) {#4-who-controls-the-forms-ui-ios-android-react-native}
+
+<div data-toggle="show-view"></div>
+
+Esta decisão define se você sobrescreve `showView`.
+
+- **Padrão. O SDK apresenta o formulário em tela cheia.** O SDK mostra 
+  o formulário com o próprio cabeçalho e botão de envio.
+- **Você incorpora o formulário.** Sobrescreva `showView` para receber a view 
+  do formulário e um controle `TransactionProcess`. Coloque a view no seu próprio 
+  layout e chame `process.onSubmit()` para controlar o envio.
+
+Este controller está disponível apenas no iOS, no Android e no React Native.
+
+### Na Web: o seu próprio botão de pagar em vez de `showView` {#on-web-your-own-pay-button-instead-of-showview}
+
+Na Web, o SDK renderiza o formulário dentro do elemento que você passa como `elementSelector`, então o formulário já fica no seu layout. Para usar o seu próprio botão de envio, defina `showPayButton: false` no `TransactionConfig` e chame `transaction.submit()` a partir do seu botão depois que `start()` for resolvido. Se o formulário estiver incompleto, `submit()` informa `INTERNAL_ERROR` com o código `FORM_INVALID` por `onStatus` e mantém o formulário montado. `submit()` não está disponível para transações de cadastro.
+
+Consulte [`showView`](/pt-br/docs/yuno-sdk/controllers/show-view).
+
+<Accordion title="Adicione este bloco ao seu controller quando você incorporar o formulário">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="show-view" data-platform="ios" data-mode="controller">
+
+```swift
+    func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep) {
+        // Place `view` in your own layout. Call process.onSubmit() from your own button.
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="show-view" data-platform="android" data-mode="controller">
+
+```kotlin
+    override fun showView(view: Fragment, process: TransactionProcess, step: TransactionViewStep) {
+        // Place the fragment in your own layout. Call process.onSubmit() from your own button.
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="React Native">
+
+<div data-fragment="show-view" data-platform="react-native" data-mode="controller">
+
+```tsx
+      showView: (view, process, step) => {
+        // Render <YunoView view={view} /> in your own layout. Call process.onSubmit() from your own button.
+      },
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="show-loading">
+
+## 5. Quem mostra o indicador de carregamento? {#5-who-shows-the-loader}
+
+<div data-toggle="show-loading"></div>
+
+Esta decisão define se você sobrescreve `showLoading`.
+
+- **Padrão. O SDK mostra o próprio indicador de carregamento** durante a tokenização, 
+  a criação do pagamento e a consulta de status.
+- **Você mostra o seu próprio indicador de carregamento.** Sobrescreva `showLoading` para receber 
+  `isLoading: true | false` e renderizar a sua própria UI.
+
+Consulte [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading).
+
+<Accordion title="Adicione este bloco ao seu controller quando você mostrar o seu próprio indicador de carregamento">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="show-loading" data-platform="ios" data-mode="controller">
+
+```swift
+    func showLoading(isLoading: Bool) {
+        // Show or hide your own loader.
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="show-loading" data-platform="android" data-mode="controller">
+
+```kotlin
+    override fun showLoading(isLoading: Boolean) {
+        // Show or hide your own loader.
+    }
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="show-loading" data-platform="web" data-mode="controller">
+
+```typescript
+    showLoading: (isLoading) => mySpinner.toggle(isLoading),
+```
+
+</div>
+
+  </Tab>
+  <Tab title="React Native">
+
+<div data-fragment="show-loading" data-platform="react-native" data-mode="controller">
+
+```tsx
+      showLoading: (isLoading) => {
+        // Show or hide your own loader.
+      },
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+<div data-decision="status-screen">
+
+## 6. O SDK deve mostrar uma tela de resultado depois da transação? {#6-should-the-sdk-show-a-result-screen-after-the-transaction}
+
+<div data-toggle="status-screen"></div>
+
+Defina a flag [`showStatusScreen`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#showstatusscreen) 
+no `TransactionConfig`.
+
+<Accordion title="Adicione esta linha ao `TransactionConfig` para mostrar a tela de resultado do SDK">
+
+<Tabs>
+  <Tab title="iOS">
+
+<div data-fragment="status-screen" data-platform="ios" data-mode="config-insert">
+
+```swift
+            showStatusScreen: true
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Android">
+
+<div data-fragment="status-screen" data-platform="android" data-mode="config-insert">
+
+```kotlin
+            showStatusScreen = true,
+```
+
+</div>
+
+  </Tab>
+  <Tab title="Web">
+
+<div data-fragment="status-screen" data-platform="web" data-mode="config-insert">
+
+```typescript
+    showStatusScreen: true,
+```
+
+</div>
+
+  </Tab>
+  <Tab title="React Native">
+
+<div data-fragment="status-screen" data-platform="react-native" data-mode="config-insert">
+
+```tsx
+    showStatusScreen: true,
+```
+
+</div>
+
+  </Tab>
+</Tabs>
+
+</Accordion>
+
+</div>
+
+## Sempre implemente `onStatus` {#always-implement-onstatus}
+
+Independentemente das decisões que você tomar acima, sempre 
+implemente `onStatus`. É a única forma de saber como a transação 
+terminou. Consulte [`onStatus`](/pt-br/docs/yuno-sdk/controllers/on-status) para saber quando 
+ele é executado e os status que informa em cada plataforma, e 
+[`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status) para o 
+objeto que você recebe.
+
+## Referência rápida {#quick-reference}
+
+| Decisão | Padrão | Para mudar | Leia |
+|---|---|---|---|
+| Tipo de sessão |  | Passe `checkoutSession` ou `customerSession` | [Cadastro](/pt-br/docs/yuno-sdk/features/enrollment) |
+| Quem cria o pagamento | SDK | Sobrescreva `createPayment` | [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment) |
+| Quem coleta os dados | O SDK mostra os formulários | Passe `transactionData` | [`TransactionData`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-data) |
+| Pagar com dois cartões | Um meio de pagamento | Passe um array de dois itens para `start()`, cada um com o seu `amount` (Web, iOS, Android, React Native) | [Split de pagamento](/pt-br/docs/yuno-sdk/features/split-payment) |
+| Quem renderiza a UI do formulário (iOS, Android, React Native) | O SDK apresenta em tela cheia | Sobrescreva `showView` | [`showView`](/pt-br/docs/yuno-sdk/controllers/show-view) |
+| Quem mostra o indicador de carregamento | O SDK mostra o próprio indicador | Sobrescreva `showLoading` | [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading) |
+| Mostrar a tela de resultado do SDK? | Não (Web: Sim) | Defina `showStatusScreen: true` no `TransactionConfig` (Web: `showStatusScreen: false` para ocultá-la) | [`TransactionConfig`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-config) |
+
+## Próximos passos {#next-steps}
+
+- [Primeiros passos](/pt-br/docs/yuno-sdk/get-started). Instale o SDK e execute a sua 
+  primeira transação.
+- [Configuração](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-config). Referência completa de 
+  `TransactionConfig`, `PaymentMethodSelected` e `TransactionData`.
+- [Controllers](/pt-br/docs/yuno-sdk/controllers/overview). Referência completa de cada controller 
+  e do que muda quando você o sobrescreve.
+
+</div>
+
+<ConfigBuilder />
+
+</div>

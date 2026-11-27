@@ -1,0 +1,141 @@
+---
+title: "Fraude"
+description: "Migre integrações de fraude na Web (yuno.mountFraud + yuno.executeFraudCheck) para o SDK unificado."
+---
+
+A análise de fraude tinha dois pontos de entrada legados na Web:
+
+- `yuno.mountFraud(...)`: modo UI. Renderizava um widget de fraude E criava o pagamento pelo próprio `yunoCreatePayment`.
+- `yuno.executeFraudCheck(...)`: Headless. Retornava identificadores de device fingerprint; sem UI.
+
+Na API unificada, a análise de fraude é executada **automaticamente dentro de `Transaction`** durante a tokenização (você não precisa conectar nada). A verificação headless avulsa vira um método de nível superior em `SdkPayments` (não em `Transaction`, porque é uma consulta, não uma transação). A variante com UI deixa de existir: suas responsabilidades são absorvidas por `Transaction`.
+
+## Antes de começar {#before-you-start}
+
+- Carregue o bundle do SDK unificado em vez do legado e inicialize-o como mostra a comparação lado a lado: `window.Yuno.initialize(...)` vira `SdkPayments.initialize(...)`. Sua chave de API pública e as sessões de checkout que seu backend cria não mudam ([Antes de começar](/pt-br/docs/yuno-sdk/get-started#before-you-begin)).
+- Se você está substituindo `mountFraud` por uma `Transaction`, decida quem cria o pagamento. O `workflow` da sessão de checkout precisa corresponder a essa decisão:
+
+| Quem cria o pagamento | Na UI de fraude você tinha | Na API unificada | `workflow` da sessão |
+|---|---|---|---|
+| Seu backend | `yunoCreatePayment` em `mountFraud` | Sobrescreva `createPayment` | Padrão (`SDK_CHECKOUT`) |
+| O SDK | Sem equivalente: `mountFraud` criava o pagamento por meio de `yunoCreatePayment` | Sem sobrescrita | `SDK_SEAMLESS` |
+
+<Warning>
+Uma sessão com o workflow padrão e sem sobrescrita de `createPayment` termina em `INTERNAL_ERROR`: o backend rejeita a criação do pagamento pelo SDK. Veja [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment).
+</Warning>
+
+## Lado a lado {#side-by-side}
+
+### Verificação de fraude headless {#headless-fraud-check}
+
+<CodeGroup>
+
+```typescript Before. executeFraudCheck
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const result = await yuno.executeFraudCheck({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    paymentType: 'CARD',
+    deviceFingerprints: [],
+})
+
+if (result.status === 'success') {
+    console.log('fingerprints:', result.deviceFingerprints)
+} else {
+    console.error('fraud check failed:', result.error)
+}
+```
+
+```typescript After. sdkPayments.antifraud
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const result = await sdkPayments.antifraud({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    paymentType: 'CARD',
+})
+
+if (result.status === 'success') {
+    for (const fp of result.deviceFingerprints) {
+        console.log('fingerprint:', fp.providerId, fp.sessionId)
+    }
+} else {
+    console.error('fraud check failed:', result.error)
+}
+```
+
+</CodeGroup>
+
+### UI de fraude {#fraud-ui}
+
+<CodeGroup>
+
+```typescript Before. mountFraud (UI)
+await yuno.mountFraud({
+    checkoutSession: 'session-from-backend',
+    language: 'en',
+    deviceFingerprints: [],
+    type: 'CARD',
+    yunoCreatePayment: async (oneTimeToken, info) => {
+        await myBackend.pay(oneTimeToken)
+        yuno.continuePayment()
+    },
+    yunoError: (msg) => console.error(msg),
+})
+```
+
+```typescript After. Normal Transaction, fraud is automatic
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    elementSelector: '#root',
+    deviceFingerprints: [],            // optional: inject your own
+    createPayment: async (token) => {
+        await myBackend.pay(token.token)
+    },
+    showLoading: (isLoading) => mySpinner.toggle(isLoading),
+    onStatus: (result) => console.log('done:', result.status),
+})
+
+await transaction.start({ paymentMethod: { type: 'CARD' } })
+```
+
+</CodeGroup>
+
+## O que muda {#what-changes}
+
+Agrupado na ordem em que você edita o código. **Renomeado**: mesma função, novo nome. **Movido**: mesmo valor, novo dono. **Removido**: nada a chamar. **Novo**: sem equivalente legado. A última coluna é a única coisa que você precisa fazer além da renomeação.
+
+### Inicialização e configuração {#initialization-and-config}
+
+| Fraude | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `window.Yuno.initialize(publicApiKey)` | `SdkPayments.initialize(publicApiKey)` | Renomeado | O global é `window.SdkPayments`. Como antes, use `await`: ele resolve para a instância de `SdkPayments`. |
+| Argumentos `checkoutSession` e `countryCode` de `executeFraudCheck` | Os mesmos argumentos de `sdkPayments.antifraud` | Movido | |
+| `executeFraudCheck.paymentType` (`CARD` por padrão internamente) | `antifraud.paymentType?` | Movido | Mesmo padrão. |
+| `executeFraudCheck.deviceFingerprints?` | `antifraud.deviceFingerprints?` | Movido | Mesmo formato (`ExternalProviderId[]`). |
+| `deviceFingerprints?: ExternalProviderId[]` passado para `mountFraud` junto com os dados de pagamento | `deviceFingerprints?: ExternalProviderId[]` em `TransactionConfig` | Movido | Opcional: injete os seus. |
+| `checkoutSession`, `language`, `type` em `mountFraud` | `checkoutSession`, `language` na configuração da transação; `type` vira `paymentMethod.type` em `start()` | Movido | |
+
+### Callbacks {#callbacks}
+
+| Fraude | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `yunoCreatePayment(oneTimeToken, info)` em `mountFraud` | `createPayment(token)` na configuração da transação | Renomeado | A criação do pagamento não vem mais junto com a fraude: ela é feita em `createPayment` (ou gerenciada pelo SDK, veja Antes de começar). Baseado em Promise, com um único argumento. Crie o pagamento e resolva: resolver é o que antes era `yuno.continuePayment()`. Veja [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment). |
+| `yunoError(msg)` em `mountFraud` | *(removido)* | Removido | A transação informa o resultado por meio de `onStatus`. |
+| *(nenhum)* | `showLoading(isLoading)` | Novo | Opcional. Use se precisar de feedback de UI personalizado agora que o widget de fraude não existe mais. Veja [`showLoading`](/pt-br/docs/yuno-sdk/controllers/show-loading). |
+| *(nenhum)* | `onStatus(result)` | Novo | A transação informa o status final aqui. Veja [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Pontos de entrada {#entry-points}
+
+| Fraude | Unificado | Mudança | O que fazer |
+|---|---|---|---|
+| `yuno.executeFraudCheck({...})` | `sdkPayments.antifraud({...})` | Renomeado | Método de nível superior em `SdkPayments`, não em `Transaction`: uma consulta avulsa, que não faz parte do ciclo de vida de uma transação. Use se precisar de uma análise prévia antes de criar uma sessão de checkout. |
+| `ExecuteFraudCheckReturn` (`status`, `deviceFingerprints`, `error`) | Union discriminada `FraudResult` | Renomeado | A Promise nunca é rejeitada. `status: 'success'` → `deviceFingerprints` presente (`{ providerId: string; sessionId: string }[]`); `status: 'error'` → `error: Error` presente. Em comparação com a v1, em que `error` era sempre opcional junto com `deviceFingerprints`, o novo formato obriga você a verificar `status` antes de ler qualquer um dos campos (o TS faz o narrowing): sem mais campos opcionais. |
+| `yuno.mountFraud({...})` | *(removido)* | Removido | Sem substituto direto: um `sdkPayments.transaction(config).start({ paymentMethod })` comum ocupa o lugar dele. As responsabilidades do widget agora fazem parte de `Transaction`: os sinais de fraude são coletados automaticamente durante a tokenização nos fluxos normais, e a criação do pagamento vai para `createPayment` (veja Callbacks). |
+| `yuno.continuePayment()` dentro de `yunoCreatePayment` | *(removido)* | Removido | Exclua a chamada: resolver `createPayment` continua o fluxo. |
+
+## Relacionados {#related}
+
+- [`createPayment`](/pt-br/docs/yuno-sdk/controllers/create-payment). Para a criação manual do pagamento em fluxos normais de `Transaction`.

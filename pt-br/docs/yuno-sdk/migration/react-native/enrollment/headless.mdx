@@ -1,0 +1,109 @@
+---
+title: "Cadastro Headless"
+description: "Migre o cadastro headless do React Native (YunoSdk.continueEnrollment) para a Transaction API unificada."
+---
+
+O cadastro Headless era uma chamada de tokenização pura: você coletava os dados na sua própria UI, chamava `YunoSdk.continueEnrollment(collectedData, customerSession, countryCode)` e recebia de volta `{ vaultedToken }`. Na API unificada, ele é a mesma `Transaction` de cadastro com `transactionData` definido no `PaymentMethodSelected`. O SDK pula o próprio formulário, executa o cadastro e informa a conclusão por meio de `onStatus`.
+
+## Antes de começar {#before-you-start}
+
+- Atualize o `@yuno-payments/yuno-sdk-react-native` para a 2.0.0 e execute `pod install`. A sua chave de API pública e as sessões de cliente que o seu backend cria não mudam ([Cadastro: antes de começar](/pt-br/docs/yuno-sdk/features/enrollment#before-you-start)).
+- No Android, o `minSdkVersion` agora é 23. Se o seu `android/build.gradle` aplica o plugin do compilador Compose ao módulo da Yuno (uma solução alternativa da 1.x), remova esse bloco: com a 2.0.0, o build falha com "The Compose Compiler requires the Compose Runtime to be on the class path".
+- Não há pagamento a criar: `createPayment` não é chamado durante o cadastro.
+
+## Lado a lado {#side-by-side}
+
+<CodeGroup>
+
+```tsx Before. Headless enrollment
+import { YunoSdk, CardType } from '@yuno-payments/yuno-sdk-react-native';
+
+const { vaultedToken } = await YunoSdk.continueEnrollment(
+  {
+    customerSession,
+    paymentMethod: {
+      type: 'CARD',
+      card: {
+        save: true,
+        detail: {
+          number: cardNumber,
+          securityCode: cvv,
+          expirationMonth: 12,
+          expirationYear: 28,
+          holderName: holder,
+          type: CardType.CREDIT,
+        },
+      },
+    },
+  },
+  customerSession,
+  'CO'
+);
+```
+
+```tsx After. Unified Transaction
+import { Transaction } from '@yuno-payments/yuno-sdk-react-native';
+
+const enrollment = new Transaction({
+  customerSession,
+  countryCode: 'CO',
+  controller: {
+    onStatus: (status) => {
+      console.log('Enrollment status:', status.status);
+    },
+  },
+});
+
+await enrollment.start({
+  type: 'CARD',
+  transactionData: {
+    card: {
+      number: cardNumber,
+      securityCode: cvv,
+      expirationMonth: 12,
+      expirationYear: 28,
+      holderName: holder,
+      type: 'CREDIT',
+    },
+  },
+});
+```
+
+</CodeGroup>
+
+## O que muda {#what-changes}
+
+Agrupado na ordem em que você edita o código. **Renomeado**: mesma função, novo nome. **Movido**: mesmo valor, novo dono. **Removido**: nada a chamar. **Novo**: sem equivalente legado. A última coluna é a única coisa que você precisa fazer além da renomeação.
+
+### Inicialização e config {#initialization-and-config}
+
+| Headless | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `YunoSdk.initialize({ apiKey, countryCode, yunoConfig })` | `SdkPayments.initialize(apiKey)` | Renomeado | Agora recebe só a chave. `countryCode` e `language` passam para `TransactionConfig`. |
+| `EnrollmentCollectedData` / `EnrollmentMethod` | `PaymentMethodSelected` + `TransactionData` | Renomeado | O wrapper se divide em dois: o meio vai em `PaymentMethodSelected`, e os dados coletados ficam sob o seu `transactionData` (próximas linhas). |
+| `EnrollmentCollectedData.customerSession` e o argumento `customerSession` de `continueEnrollment` | `TransactionConfig.customerSession` | Movido | Informe-o uma vez, na config. |
+| Argumento `countryCode` de `continueEnrollment` | `TransactionConfig.countryCode` | Movido | |
+| `paymentMethod.type` | `PaymentMethodSelected.type` | Movido | Passa para o objeto pai. |
+| `paymentMethod.card.detail` | `transactionData.card` | Movido | Mesmos campos, agrupados sob `transactionData` e planos: sem o wrapper `detail`. `CardType.CREDIT` e `CardType.DEBIT` passam a ser as strings `'CREDIT'` e `'DEBIT'`. Veja [`TransactionData`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-data). |
+| `paymentMethod.card.save` | *(removido)* | Removido | Apague-o: um cadastro sempre salva o meio. |
+| `paymentMethod.customer` | `transactionData.customer` | Movido | Passa para dentro de `transactionData`. |
+
+### Controller {#controller}
+
+| Headless | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| *(nenhum)* | `TransactionConfig.controller` | Novo | Um objeto simples com `onStatus`, passado na config. |
+| `{ vaultedToken, error }` retornado por `continueEnrollment` | `onStatus(status)` | Movido | Agora é o único callback de resultado, uma vez por transação. `status` e `substatus` vêm do backend: um cadastro bem-sucedido informa `ENROLLED`. O próprio SDK só emite `INTERNAL_ERROR` e `USER_CANCEL`. **O vaulted token não é mais retornado ao app**: busque-o no endpoint list-customer-payment-methods do seu backend depois que o status de sucesso chegar. Veja [`Status`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#status). |
+
+### Pontos de entrada {#entry-points}
+
+| Headless | Unificada | Mudança | O que fazer |
+|---|---|---|---|
+| `YunoSdk.continueEnrollment(data, customerSession, countryCode)` | `new Transaction(config).start(paymentSelected)` | Renomeado | Passe os dados coletados como `transactionData` em `PaymentMethodSelected`. A chamada não retorna mais um resultado: o SDK executa o cadastro e informa a conclusão por meio de `onStatus`. |
+
+## Relacionados {#related}
+
+- [Cadastro](/pt-br/docs/yuno-sdk/features/enrollment). Passo a passo do cadastro com a API unificada.
+- [Cadastro Lite](/pt-br/docs/yuno-sdk/migration/react-native/enrollment/lite). O SDK apresenta o formulário para você.
+- [Pagamento Headless](/pt-br/docs/yuno-sdk/migration/react-native/payment/headless). O equivalente de pagamento.
+- [`TransactionData`](/pt-br/docs/yuno-sdk/reference/objects-you-pass#transaction-data). Formato dos dados pré-coletados.
