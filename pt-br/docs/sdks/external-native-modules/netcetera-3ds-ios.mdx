@@ -1,0 +1,96 @@
+---
+title: "SDKs nativos de 3DS (iOS)"
+sidebarTitle: "Netcetera 3DS (iOS)"
+description: "Execute desafios 3D Secure de forma nativa no seu app iOS com o SDK de 3DS da Netcetera."
+robots: index
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+O SDK iOS da Yuno permite executar desafios 3D Secure (3DS) de forma nativa dentro do seu app usando o **SDK de 3DS da Netcetera**. O 3DS nativo oferece uma UX mais fluida do que os desafios baseados na web e pode ser exigido por alguns adquirentes para autenticação sem fricção.
+
+<Note>
+  O 3DS nativo via Netcetera se aplica aos fluxos de **pagamento** e de **cadastro**.
+</Note>
+
+<Note>
+  O 3DS nativo é **opcional**: você só precisa instalar o módulo se a sua integração executa desafios 3DS dentro do app. Se você não vai habilitar o 3DS, pode pular este guia.
+</Note>
+
+<Note>
+  Este é um módulo separado, então você só o adiciona se precisar de 3DS nativo. Se o seu app já personaliza os estilos do Yuno SDK, esses estilos são aplicados automaticamente à tela do desafio, sem necessidade de configuração adicional de UI.
+</Note>
+
+Este guia cobre o que é específico da Netcetera. A instalação e a ativação seguem as mesmas regras de todos os outros módulos, veja [Módulos nativos externos (iOS)](/pt-br/docs/sdks/external-native-modules/ios-overview).
+
+<Warning>
+  O pacote independente anterior, `yuno-3DS-netcetera-iOS`, está obsoleto. Instale o módulo a partir do pacote `yuno-sdk-ios`, conforme descrito abaixo.
+</Warning>
+
+## Requisitos {#requirements}
+
+- iOS **14.0** ou superior.
+- **YunoSDK 2.25.0 ou superior** instalado pelo Swift Package Manager. A partir da versão 2.31.0, o Swift Package Manager é a única forma de distribuição, com `YunoSDK` ou `YunoSDK-Static`.
+- O produto `Yuno3DSNetcetera` do mesmo pacote (veja abaixo).
+
+## Instalação {#installation}
+
+O módulo é distribuído no mesmo pacote do Yuno SDK. No Xcode, vá em **File > Add Package Dependencies...** e adicione:
+
+```
+https://github.com/yuno-payments/yuno-sdk-ios
+```
+
+escolha **Up to Next Major Version** a partir de `2.31.0` e marque o produto `Yuno3DSNetcetera` ao lado de `YunoSDK` ou `YunoSDK-Static`. O binário `ThreeDS_SDK` da Netcetera é resolvido automaticamente a partir do repositório da Netcetera.
+
+## Ativar o provedor de 3DS {#activating-the-3ds-provider}
+
+O provedor **se registra automaticamente** quando o app é iniciado, com `YunoSDK` ou `YunoSDK-Static`. Nenhum código extra é necessário:
+
+```swift
+import YunoSDK
+
+Yuno.initialize(apiKey: "YOUR_API_KEY", config: YunoConfig())
+```
+
+<Tip>
+  Depois de registrado, o YunoSDK encaminha automaticamente qualquer desafio 3DS pelo provedor Netcetera. **Você não precisa alterar nenhum código de pagamento ou de cadastro.**
+</Tip>
+
+## Certificado de sandbox {#sandbox-certificate}
+
+Ao testar no ambiente de sandbox da Yuno, o SDK da Netcetera exige que um certificado raiz de teste da Visa (`acq-root-certeq-prev-environment.crt`) esteja presente no bundle principal do seu app.
+
+<Info>
+  **Entre em contato com o seu TAM (Technical Account Manager) da Yuno para obter o certificado.** Ele não é distribuído publicamente.
+</Info>
+
+Depois de obter o arquivo:
+
+<Steps>
+  <Step title="Adicione ao Xcode">
+    Arraste-o para o Project Navigator do Xcode, dentro do grupo do target do seu app.
+  </Step>
+  <Step title="Selecione o target">
+    Marque **Add to targets** e selecione o target do seu app.
+  </Step>
+  <Step title="Verifique os recursos do bundle">
+    Verifique se ele aparece em **Target → Build Phases → Copy Bundle Resources**.
+  </Step>
+</Steps>
+
+<Note>
+  Em ambientes de produção, esse certificado não é usado e pode ser omitido dos builds de Release.
+</Note>
+
+## Solução de problemas {#troubleshooting}
+
+<AccordionGroup>
+  <Accordion title="Erro de linker mencionando YunoThreeDSRegistry">
+    Seu `YunoSDK` é mais antigo do que a versão exigida por este módulo. Atualize-o para `>= 2.25.0`.
+  </Accordion>
+  <Accordion title="Console: acq-root-certeq-prev-environment.crt not found">
+    Relevante apenas em sandbox. Adicione o certificado ao bundle do seu app (veja [Certificado de sandbox](#sandbox-certificate)). Pode ser ignorado com segurança em produção.
+  </Accordion>
+</AccordionGroup>

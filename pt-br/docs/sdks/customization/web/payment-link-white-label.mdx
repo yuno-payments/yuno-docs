@@ -1,0 +1,99 @@
+---
+title: White Label do link de pagamento
+description: Disponibilize o checkout hospedado do link de pagamento da Yuno no seu próprio domínio, sem a marca da Yuno.
+hidden: false
+metadata:
+  robots: noindex
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Por padrão, um [link de pagamento](/pt-br/docs/using-yuno/dashboard-overview/payment-links) da Yuno redireciona o cliente para o checkout hospedado da Yuno em um domínio da Yuno:
+
+```text
+https://checkout.sandbox.y.uno/payment?session={session_id}
+```
+
+Lá, o SDK de checkout é carregado de uma origem `*.y.uno` e chama os serviços da Yuno diretamente. O white label permite disponibilizar esse mesmo checkout hospedado **no seu próprio domínio** (por exemplo, `pay.yourbrand.com`) sem a marca da Yuno. Toda requisição seguinte (bundle do SDK, assets, API, WebSocket, 3DS) passa pela sua infraestrutura.
+
+<Tip>
+  Esta é a contraparte, para o checkout hospedado, da página [White Label](/pt-br/docs/sdks/customization/web/white-label) no nível do SDK. Ela reutiliza as mesmas substituições `apiUrl` / `assetUrl`, aplicadas ao redirecionamento do link de pagamento em vez de uma integração direta com `<script>`.
+</Tip>
+
+## Como funciona {#how-it-works}
+
+Duas coisas fazem o checkout hospedado ser renderizado no seu domínio:
+
+1. **Um proxy no seu domínio** que encaminha o tráfego de checkout, assets, API e WebSocket para os upstreams correspondentes da Yuno, de modo que o navegador só converse com a sua origem. Veja [Servidor proxy de White Label](/pt-br/docs/sdks/customization/web/white-label-proxy-server) para uma implementação de referência e um ambiente de teste local.
+2. **Uma URL de redirecionamento reescrita.** A API da Yuno retorna a URL padrão `checkout.<env>.y.uno`, então **seu backend a intercepta e reescreve** antes de entregá-la ao cliente: troque o domínio pelo seu e adicione os parâmetros de query `apiUrl` / `assetUrl`, que dizem ao SDK para onde encaminhar as requisições e de onde carregar os assets.
+
+```text
+Yuno API returns →  https://checkout.sandbox.y.uno/payment?session={session_id}
+
+Your backend rewrites to →
+  https://pay.yourbrand.com/payment?session={session_id}&apiUrl={your_api_url}&assetUrl={your_asset_url}
+```
+
+## Passos para reescrever a URL {#url-rewrite-steps}
+
+Execute estes passos no seu **backend**, na URL de redirecionamento retornada pela API da Yuno:
+
+1. **Intercepte a resposta da API.** Capture o payload que contém a URL de redirecionamento padrão `checkout.<env>.y.uno` gerada pela Yuno.
+2. **Substitua o domínio base.** Troque `checkout.<env>.y.uno` pelo seu domínio white label (por exemplo, `pay.yourbrand.com`).
+3. **Adicione os parâmetros de query obrigatórios.** Adicione `apiUrl` e `assetUrl`. O SDK depende dessas substituições para encaminhar todas as requisições de pagamento seguintes e carregar os assets visuais pela sua infraestrutura, em vez da infraestrutura da Yuno.
+4. **Registre seus domínios na Yuno.** Envie seu domínio de checkout, `apiUrl` e `assetUrl` ao representante da sua conta na Yuno, para que sejam adicionados à allowlist de segurança do link de pagamento **antes** de entrar em produção (veja [Segurança](#security)).
+
+### Referência de parâmetros {#parameter-reference}
+
+| Parâmetro | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `session` | String | O identificador da sessão gerado pela API de link de pagamento. Mantenha-o sem alterações. |
+| `apiUrl` | String | URL base que o SDK usa para encaminhar as requisições de pagamento (REST + WebSocket) e o BFF do checkout. |
+| `assetUrl` | String | URL base de onde o SDK busca o bundle do script, imagens, folhas de estilo e outros assets de frontend. |
+
+Tanto `apiUrl` quanto `assetUrl` aceitam um subcaminho (o SDK preserva o prefixo em toda requisição seguinte), então podem apontar para um proxy montado em um caminho, por exemplo `https://pay.yourbrand.com/checkout`.
+
+<Note>
+  Normalmente `apiUrl` e `assetUrl` são a mesma origem: o proxy no seu domínio. O SDK usa o valor literalmente, apenas adicionando o próprio segmento de versão (por exemplo, `…/v1.9/main.js`) quando `assetUrl` ainda não termina com um.
+</Note>
+
+## Segurança {#security}
+
+Os parâmetros `apiUrl` / `assetUrl` fazem parte de um link que chega ao navegador do cliente, então podem ser influenciados por um atacante, e `assetUrl` define a origem de onde o **script** do SDK é carregado. Um valor não validado permitiria a execução de script remoto contra o checkout. Por isso, a Yuno os controla assim:
+
+- **Allowlist de hosts.** Uma substituição só é aceita quando o host corresponde exatamente a um domínio que a Yuno aprovou para os seus links de pagamento. O recurso vem **desativado por padrão**: hosts desconhecidos são ignorados e o checkout volta para a origem da Yuno.
+- **Somente `https:`**, com correspondência exata de host (sem curingas de subdomínio) e parsing de URL WHATWG (assim, truques como `https://approved@evil.com` resolvem para `evil.com` e são rejeitados).
+
+<Warning>
+  Informe seu domínio, `apiUrl` e `assetUrl` ao representante da sua conta na Yuno e confirme que eles estão na allowlist **antes** de distribuir links com white label. Até lá, as substituições são ignoradas (o checkout continua no domínio da Yuno) e um navegador pode bloquear o redirecionamento fora da allowlist.
+</Warning>
+
+## O que perde a marca {#what-gets-de-branded}
+
+Quando uma substituição de white label válida está ativa, a estrutura do checkout hospedado fica sem a marca:
+
+- O `<title>` e os metadados da aba do navegador ficam neutros (sem "Yuno").
+- O elemento de carregamento e o evento DOM dele usam a superfície neutra `sdk-payments-*` (seguindo a renomeação do [White Label](/pt-br/docs/sdks/customization/web/white-label) do SDK).
+- A tag **"Secure by Yuno"** fica oculta.
+- Nenhuma requisição `*.y.uno` parte da página: o bundle do SDK, os assets, o BFF do checkout, REST/WebSocket e 3DS passam todos pela sua origem `apiUrl` / `assetUrl`.
+
+## Requisitos {#requirements}
+
+- Uma build do checkout hospedado com suporte a white label (estrutura do checkout em `@yuno-payments/sdk-web` `^1.9.1` ou posterior, a mesma versão que trouxe a renomeação do [White Label](/pt-br/docs/sdks/customization/web/white-label) do SDK).
+- Seu domínio de checkout, `apiUrl` e `assetUrl` na allowlist da Yuno.
+- Um proxy no seu domínio que encaminhe para os upstreams da Yuno. Veja [Servidor proxy de White Label](/pt-br/docs/sdks/customization/web/white-label-proxy-server).
+
+## Como verificar a configuração {#verifying-the-setup}
+
+Carregue um link de pagamento com white label e confirme no DevTools do navegador:
+
+1. **Aba Network**: nenhuma requisição para qualquer host `*.y.uno` (bundle do SDK, BFF do checkout, REST, WebSocket, 3DS). Todo o tráfego vai para o seu domínio.
+2. O título da aba do navegador e o elemento de carregamento estão sem a marca, e a tag "Secure by Yuno" não aparece.
+3. Um pagamento (incluindo um desafio 3DS, se for o caso) é concluído de ponta a ponta e volta para o checkout no seu domínio.
+
+## Veja também {#see-also}
+
+- [White Label (Web SDK)](/pt-br/docs/sdks/customization/web/white-label): as substituições `apiUrl` / `assetUrl` e a superfície do SDK sem marca em que esta página se baseia.
+- [Servidor proxy de White Label](/pt-br/docs/sdks/customization/web/white-label-proxy-server): proxy de referência + ambiente de teste local para as duas superfícies de white label.
+- [Links de pagamento](/pt-br/docs/using-yuno/dashboard-overview/payment-links): como criar os links aos quais isso se aplica.

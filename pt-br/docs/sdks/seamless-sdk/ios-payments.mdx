@@ -1,0 +1,268 @@
+---
+title: Seamless SDK (Pagamento iOS)
+hidden: false
+description: "Integre o Seamless SDK iOS da Yuno ao seu app mobile para ter uma experiência de pagamento flexível."
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Nesta página, você encontra todos os passos para adicionar, configurar e usar o Seamless SDK iOS para fazer pagamentos no seu projeto iOS.
+
+<Tip>
+**SDK recomendado**
+
+A Yuno recomenda usar o **iOS Seamless SDK** para ter uma experiência de integração tranquila. Essa opção oferece uma solução de pagamento flexível, com componentes de UI prontos e opções de personalização.
+</Tip>
+
+<img
+  className="block"
+  src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png"
+  alt="Visão geral do Seamless SDK iOS"
+/>
+
+## Passo 1: Inclua a biblioteca no seu projeto {#step-1-include-the-library-in-your-project}
+
+Você adiciona a biblioteca usando o Swift Package Manager. O YunoSDK não é mais publicado no CocoaPods; a última versão no CocoaPods é a 2.30.0.
+
+### Swift Package Manager {#swift-package-manager}
+
+Adicione o Yuno SDK como dependência com o [Swift Package Manager](https://www.swift.org/package-manager/), como mostrado no bloco de código a seguir:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.31.0"))
+]
+```
+
+Adicione `YunoSDK` (dinâmico) ou `YunoSDK-Static` (estático, o que o CocoaPods distribuía) ao target do seu app, nunca os dois.
+
+## Passo 2: Inicialize o SDK com a chave pública {#step-2-initialize-sdk-with-the-public-key}
+
+Para começar a executar o checkout Seamless iOS da Yuno, primeiro você precisa obter o app ID e a chave de API pública da Yuno. Depois, importe e inicialize a Yuno como mostrado no trecho de código a seguir:
+
+```swift
+import YunoSDK
+
+Yuno.initialize(
+    apiKey: "PUBLIC_API_KEY",
+    config: YunoConfig(),
+    callback: { print("Yuno SDK initialized") }
+)
+```
+
+<Warning>
+**UISceneDelegate**
+
+Se o seu app usa um `UISceneDelegate`, garanta que o código de inicialização da Yuno fique dentro do seu `SceneDelegate`.
+</Warning>
+
+O checkout Seamless permite configurar a aparência do SDK. É um passo opcional, que você configura pela classe `YunoConfig`. Para definir as configurações, use o bloco de código a seguir para configurar os elementos disponíveis:
+
+```swift
+final class YunoConfig {
+    let appearance: Yuno.Appearance,
+    let saveCardEnabled: Bool
+}
+```
+
+Configure o SDK com as seguintes opções:
+
+| Parâmetro            | Descrição                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `appearance`         | Este campo opcional define a aparência do checkout. Por padrão, ele usa os estilos da Yuno. Veja [Personalizações do SDK](/pt-br/docs/sdks/customization/ios) para mais informações.                                                                                                                                                                                 |
+| `saveCardEnabled`    | Este campo opcional permite escolher se a caixa de seleção **Save Card** aparece nos fluxos de cartão. O padrão é false.                                                                                                                                                                                                                                                                                                                                                 |
+
+<Note>
+**Como acessar sua chave de API**
+
+Você pode obter sua chave de API na [seção Developers](/pt-br/docs/using-yuno/settings/developers-credentials) do Dashboard da Yuno.
+</Note>
+
+### Crie uma sessão de checkout {#create-a-checkout-session}
+
+Antes de iniciar o processo de pagamento, você precisa criar uma `checkout_session` usando o endpoint [Criar sessão de checkout](/reference/checkout-sessions/create-checkout-session). Essa sessão inicializa o fluxo de pagamento e será usada no próximo passo.
+
+<Info>
+  Controle a autorização ou a captura enviando `payment_method.detail.card.capture` na sessão de checkout: `false` = apenas autorizar, `true` = capturar imediatamente.
+</Info>
+
+#### Parâmetros principais {#key-parameters}
+
+| Parâmetro            | Obrigatório | Descrição                                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Sim      | O objeto do valor principal da transação, que contém `currency` (código ISO 4217) e `value` (valor numérico nessa moeda).                                                                                                                                                                                         |
+| `workflow`           | Sim      | Defina o valor como `SDK_SEAMLESS` para que o SDK conclua o fluxo de pagamento corretamente.                                                                                                                                                                                                                                |
+| `alternative_amount` | Não       | Uma representação do valor da transação em uma moeda alternativa, com a mesma estrutura de `amount` (`currency` e `value`). Útil em cenários com várias moedas. Por exemplo, você pode exibir os preços aos clientes na moeda preferida deles (por exemplo, USD) e processar o pagamento na moeda local (por exemplo, COP). |
+
+## Passo 3: Inicie o processo de checkout e pagamento {#step-3-start-the-checkout-and-payment-process}
+
+O processo de checkout e pagamento seamless é iniciado com um único método, `startPaymentSeamlessLite`. No `ViewController` em que a Yuno será exibida, chame o método `Yuno.startPaymentSeamlessLite()`. Você pode usar o método com async/await ou com callbacks:
+
+```swift Swift (async/await)
+func startPaymentSeamlessLite(
+    with params: SeamlessParams,
+    paymentSelected: PaymentMethodSelected,
+    showPaymentStatus: Bool = true
+) async -> Result
+```
+```swift Swift (with callbacks)
+func startPaymentSeamlessLite(
+    with params: SeamlessParams,
+    paymentSelected: PaymentMethodSelected,
+    showPaymentStatus: Bool = true,
+    callback: @escaping ((Result) -> Void)
+)
+```
+
+A versão seamless exige parâmetros adicionais. Eles incluem:
+
+* `PaymentMethodSelected`: o token armazenado e/ou o meio de pagamento que o cliente vai usar para fazer o pagamento.
+
+```swift
+protocol PaymentMethodSelected {
+    var vaultedToken: String? { get }
+    var paymentMethodType: String { get }
+}
+```
+
+* `SeamlessParams`
+
+```swift
+class SeamlessParams {
+    var checkoutSession: String
+    var countryCode: String
+    var language: String?
+    var viewController: UIViewController?
+}
+```
+
+Parâmetros
+
+A tabela a seguir descreve cada parâmetro de `SeamlessParams`:
+
+| Parâmetro         | Descrição                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession` | Refere-se à sessão de checkout do pagamento atual.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `countryCode`     | Este parâmetro determina o país para o qual o processo de pagamento está sendo configurado. Veja a página [Cobertura por país](/pt-br/docs/sdks/resources/country-coverage) para a lista completa de países compatíveis e seus códigos.                                                                                                                                                                                                                                                                             |
+| `language`        | Define o idioma usado nos formulários de pagamento. Veja [Idiomas compatíveis](/pt-br/docs/sdks/resources/languages-supported) para conhecer as opções. |
+| `viewController`  | Esta propriedade representa o `UIViewController` usado para apresentar o fluxo de pagamento. A propriedade continua opcional por compatibilidade com versões anteriores. Mesmo assim, você precisa fornecer um controller visível para que o SDK apresente sua UI corretamente.                                                                                                                                                                               |
+
+<Info>
+**Requisitos de concorrência do Swift 6**
+
+Se você usa o Swift 6, precisa implementar o protocolo `YunoPaymentDelegate` com considerações específicas de concorrência. Veja o guia [Concorrência no Swift 6](/pt-br/docs/sdks/resources/swift-6-concurrency) para conhecer as opções de implementação detalhadas e as boas práticas.
+</Info>
+
+## Passo 4: Trate o status do pagamento (opcional) {#step-4-handle-payment-status-optional}
+
+<Danger>
+**Deep links e Mercado Pago Checkout Pro**
+
+Este passo só é necessário se você usa um meio de pagamento que depende de deep links ou do Mercado Pago Checkout Pro. Se os seus meios de pagamento não usam deep links, você pode pular este passo.
+</Danger>
+
+Alguns meios de pagamento levam os usuários para fora do seu app para concluir a transação. Quando o pagamento termina, o usuário é redirecionado de volta ao seu app por um deep link. O SDK usa esse deep link para determinar o que aconteceu (se o pagamento foi bem-sucedido, falhou ou foi cancelado) e pode mostrar uma tela de status ao usuário.
+
+Para tratar isso, você precisa atualizar o seu `AppDelegate` para repassar a URL recebida ao Yuno SDK. Assim, o SDK lê o resultado e, opcionalmente, exibe o status do pagamento. O trecho de código a seguir mostra como você pode adicionar isso ao seu app:
+
+```swift
+func application(_ app: UIApplication,
+                 open url: URL,
+                 options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+
+  guard url.scheme == "yunoexample" else { return false }
+
+  return Yuno.receiveDeeplink(url)
+}
+```
+
+Este código escuta os deep links que abrem o seu app. Quando uma URL é recebida, ele verifica se o scheme corresponde ao que você usou no `callback_url` ao configurar a sessão de checkout. Se corresponder, a URL é repassada ao Yuno SDK usando `Yuno.receiveDeeplink(_:)`, que lê o resultado do pagamento.
+
+Garanta que o `url.scheme` neste código corresponda ao `callback_url` que você informou ao criar a `checkout_session`.
+
+## Estado da transação {#transaction-state}
+
+Depois que o pagamento é concluído, o SDK pode retornar diferentes estados da transação. A lista de todos os estados possíveis e suas descrições é apresentada na tabela a seguir:
+
+| Estado da transação | Descrição                                                                                                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `succeeded`       | Indica que a transação ou o processo de pagamento foi concluído com sucesso.                                                                                                                                                  |
+| `fail`            | Este estado indica que a transação ou o processo de pagamento falhou. Significa que houve um erro ou problema durante o processo de pagamento que impediu que ele fosse concluído com sucesso.                                  |
+| `processing`      | Indica que a transação ou o processo de pagamento está sendo processado no momento. Normalmente é usado quando há um atraso no processamento do pagamento, como na espera pela aprovação de um serviço de terceiros ou de uma instituição financeira. |
+| `reject`          | Este estado indica que a transação foi rejeitada. A rejeição pode ocorrer por vários motivos, como saldo insuficiente, atividade fraudulenta ou requisições que violam regras ou políticas específicas.                     |
+| `internalError`   | Significa que ocorreu um erro inesperado no sistema ou na infraestrutura que processa o pagamento. Este estado sugere um problema no servidor ou no backend, e não um problema com os dados informados pelo usuário ou com a requisição.     |
+| `userCancelled`   | Este estado indica que o usuário cancelou ou interrompeu voluntariamente a transação ou o processo de pagamento. Normalmente é usado quando o usuário tem a opção de cancelar ou abandonar o processo de pagamento.                              |
+
+### Validação do status do pagamento {#payment-status-validation}
+
+Esta seção explica como o SDK trata o status do pagamento quando os usuários cancelam ou saem dos fluxos de pagamento, e como o status do SDK se relaciona com o status do pagamento no backend nesses cenários.
+
+#### Meios de pagamento síncronos (Apple Pay) {#sync-payment-methods-apple-pay}
+
+Para meios de pagamento síncronos como o Apple Pay, quando um usuário cancela ou fecha a UI da carteira antes de receber uma resposta do provedor de serviços de pagamento (PSP):
+
+* **Status do SDK**: retorna `userCancelled` (CANCELLED_BY_USER)
+* **Status do pagamento no backend**: continua `PENDING` até o timeout do PSP ou o cancelamento pelo lojista
+* **Importante**: o SDK não vai retornar `reject` nem `processing` nesse cenário
+
+Isso garante que o pagamento no backend continue em estado pendente e possa ser tratado corretamente pelo sistema do lojista.
+
+#### Meios de pagamento assíncronos (PIX e métodos baseados em QR) {#async-payment-methods-pix-and-qr-based-methods}
+
+Para meios de pagamento assíncronos, quando um usuário fecha a janela de pagamento antes de concluir o pagamento:
+
+* **Status do SDK**: retorna `userCancelled`\*.
+* **Status do pagamento no backend**: continua `PENDING`, e o código de pagamento continua válido até expirar.
+* **Reutilização da sessão de checkout**: reabrir a mesma sessão de checkout pode exibir o mesmo código de pagamento válido.
+* **Sem cancelamento automático**: o pagamento não é cancelado automaticamente no backend quando o usuário fecha a janela.
+* **Confirmação do status**: `userCancelled` significa que o comprador saiu da tela, não que o pagamento falhou. Confirme o estado final por webhook ou por `GET /v1/payments/{payment_id}` antes de mostrar um cancelamento.
+
+<Note>
+\* Meios de pagamento que mostram um código de pagamento ou voucher (QR code do PIX, boleto, OXXO e similares) e o Pix Parcelado retornam `processing` com o substatus `CLOSED_BY_USER`, em vez de `userCancelled`, quando o usuário fecha a tela. O pagamento continua `PENDING` no backend e ainda pode ser concluído.
+</Note>
+
+#### Pagamentos assíncronos expirados {#expired-async-payments}
+
+Se um QR code do PIX expirar naturalmente:
+
+* **Status no backend**: atualizado para `EXPIRED`
+* **Status do SDK**: os callbacks do SDK e os endpoints de polling retornam `EXPIRED` de forma consistente
+
+Isso garante que os lojistas recebam informações de status precisas quando um meio de pagamento expira.
+
+O estado da transação pode ser tratado de duas formas ao usar o método `startPaymentSeamlessLite`:
+
+* **Async/Await**: use a abordagem async/await para ter um fluxo mais simples. Este método retorna um Result de forma assíncrona, o que deixa o código mais fácil de ler e manter.
+* **Callback**: você pode tratar o estado da transação por uma função de callback, que permite a execução imediata assim que o resultado estiver disponível.
+
+As duas opções oferecem flexibilidade, de acordo com a abordagem que você prefere para código assíncrono.
+
+```swift
+class Result {
+    var status: Status
+
+    enum Status {
+        case reject, succeeded, fail, processing, internalError, userCancelled
+    }
+}
+```
+
+Use o switch em `result.status`, não no próprio `result`.
+
+## Recursos complementares {#complementary-features}
+
+O Yuno iOS SDK oferece serviços e configurações adicionais que você pode usar para melhorar a experiência dos clientes. Use as [Personalizações do SDK](/pt-br/docs/sdks/customization/ios) para mudar a aparência do SDK de acordo com a sua marca ou para configurar o loader.
+
+* **Loader**: controle o uso do loader pelas opções de configuração do SDK.
+* **Salvar cartão para pagamentos futuros**: além disso, você pode exibir uma caixa de seleção para salvar ou cadastrar cartões usando `saveCardEnabled: true`. Abaixo, você encontra exemplos da caixa de seleção nas duas renderizações do formulário de cartão.
+
+<img
+  className="block"
+  src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXe9dPjXE9Y8Uq3EKpmzUrsBpXHCHtspu98NLo41GsszFV1lCCGNsiXvB-9dmQRtPTExcDWQ7S-Qqoq0iFXaeogBZPpONcLy8Ep55cqog0KHHasbstgeCgSTR00BiFmIbcWd4NwHkO7LrLUOsQXnFV1_gT45?key=-31QL7MEbUE8QLWSURQp1jZt"
+  alt="Salvar cartão para pagamentos futuros"
+/>
+
+## Tratamento de erros {#error-handling}
+
+Trate no seu app os erros retornados pelo SDK, como pagamentos com falha e erros de validação. Para os status HTTP e os códigos de resposta, veja [Códigos de status e de resposta](/reference/payments/status-and-response-codes/payment) na referência da API.

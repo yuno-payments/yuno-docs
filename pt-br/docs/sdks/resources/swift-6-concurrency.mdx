@@ -1,0 +1,119 @@
+---
+title: Concorrência no Swift 6
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Trate os requisitos de concorrência do Swift 6 ao implementar os protocolos delegate de pagamento e de cadastro da Yuno"
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+O Swift 6 introduz requisitos de concorrência mais rígidos que afetam a forma como você implementa os protocolos delegate do SDK (por exemplo, `YunoPaymentDelegate`, `YunoEnrollmentDelegate`). Esta seção explica os desafios e oferece soluções para diferentes cenários de implementação.
+
+<Info>
+**Entendendo a concorrência no Swift 6**
+
+Concorrência é a capacidade do seu app de gerenciar várias tarefas simultaneamente. Com o Swift 6, as regras de concorrência ficaram mais rigorosas para aumentar a estabilidade do app e evitar crashes.
+</Info>
+
+## O problema {#the-problem}
+
+Com o Swift 6, protocolos que herdam de `Sendable` exigem que todas as suas implementações sejam thread-safe. Isso gera avisos ao implementar o delegate em classes marcadas como `@MainActor`.
+
+Thread-safe significa que o seu código pode ser chamado com segurança a partir de várias threads sem causar crashes ou comportamentos inesperados. `@MainActor` garante que o código seja executado na thread principal (thread de UI).
+
+## Decisão de design {#design-decision}
+
+O SDK não marca os protocolos como `@MainActor` porque:
+
+* Isso forçaria todas as implementações a serem compatíveis com `MainActor`
+* Isso reduziria a flexibilidade para os lojistas que não usam `MainActor`
+* Cada implementação tem necessidades de concorrência diferentes
+
+## Responsabilidade do lojista {#merchants-responsibility}
+
+É responsabilidade do lojista tratar a concorrência de acordo com a sua implementação. Abaixo estão três abordagens diferentes que você pode usar, conforme as suas necessidades específicas.
+
+### Opção 1: Propriedades imutáveis {#option-1-immutable-properties}
+
+Esta abordagem usa propriedades imutáveis, que são automaticamente thread-safe, e é ideal para apps simples com valores de configuração fixos que não mudam em tempo de execução.
+
+```swift
+@MainActor
+class MyViewController: UIViewController, YunoPaymentDelegate {
+
+    private let _countryCode = "CO"
+    private let _language = "EN"
+    private let _checkoutSession = "session_id"
+
+    nonisolated var countryCode: String { _countryCode }
+    nonisolated var language: String? { _language }
+    nonisolated var checkoutSession: String { _checkoutSession }
+
+    nonisolated func yunoPaymentResult(_ result: Yuno.Result) {
+        Task { @MainActor in
+            // Handle result on main thread
+        }
+    }
+}
+```
+
+### Opção 2: Propriedades mutáveis com `MainActor.assumeIsolated` {#option-2-mutable-properties-with-mainactorassumeisolated}
+
+Esta abordagem permite propriedades mutáveis mantendo a segurança de threads com o uso de `MainActor.assumeIsolated`. É a melhor opção para apps em que os valores de configuração podem mudar em tempo de execução, como as preferências do usuário.
+
+```swift
+@MainActor
+class MyViewController: UIViewController, YunoPaymentDelegate {
+
+    @Published var configLanguage: String = "EN"
+    @Published var configCountryCode: String = "CO"
+
+    nonisolated var language: String? {
+        MainActor.assumeIsolated { configLanguage }
+    }
+
+    nonisolated var countryCode: String {
+        MainActor.assumeIsolated { configCountryCode }
+    }
+}
+```
+
+### Opção 3: Para classes que não são `MainActor` {#option-3-for-non-mainactor-classes}
+
+Esta abordagem é adequada para classes de serviço que não exigem isolamento `MainActor`. É a melhor opção para serviços em segundo plano ou classes utilitárias que não interagem com a UI.
+
+```swift
+class MyService: YunoPaymentDelegate {
+
+    let countryCode: String
+    let language: String?
+    let checkoutSession: String
+    let viewController: UIViewController?
+
+    init(countryCode: String, language: String?, checkoutSession: String, viewController: UIViewController?) {
+        self.countryCode = countryCode
+        self.language = language
+        self.checkoutSession = checkoutSession
+        self.viewController = viewController
+    }
+
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        // Handle result
+    }
+}
+```
+
+<Note>
+Os exemplos anteriores usam `YunoPaymentDelegate`, mas os mesmos princípios se aplicam a `YunoEnrollmentDelegate`. Use `customerSession` em vez de `checkoutSession` ao implementar o delegate de cadastro.
+</Note>
+
+## Considerações importantes {#important-considerations}
+
+Ao implementar a concorrência no seu delegate, tenha em mente estes pontos principais:
+
+* `MainActor.assumeIsolated`: use apenas quando você garantir que ele é chamado a partir do `MainActor`. É um mecanismo de segurança que diz ao Swift "confie em mim, eu sei que isto está sendo executado na thread principal".
+* `nonisolated`: significa que pode ser acessado de qualquer thread, então precisa ser thread-safe. Use quando as suas propriedades ou métodos não dependem do estado da UI.
+* `viewController`: o protocolo delegate declara essa propriedade como `@MainActor` porque ela deve sempre ser acessada a partir da thread principal. Os componentes de UI precisam sempre ser executados na thread principal para evitar crashes.

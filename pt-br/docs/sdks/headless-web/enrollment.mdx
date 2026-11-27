@@ -1,0 +1,169 @@
+---
+title: Headless SDK (cadastro na Web)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Headless SDK (cadastro na Web)
+  description: >-
+    Guia passo a passo para integrar o Headless SDK (cadastro na Web) da Yuno à
+    sua aplicação web, incluindo a sessão de cliente e a geração do vaulted token.
+  robots: index
+description: "Cadastre meios de pagamento usando o Headless SDK na Web, gerando um vaulted token para os dados do cartão"
+---
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+O Headless SDK da Yuno permite cadastrar meios de pagamento e tokenizar cartões, salvando-os para uso futuro.
+
+Os passos a seguir descrevem o cadastro de um meio de pagamento usando o Headless SDK da Yuno.
+
+## Requisitos {#requirements}
+
+Para executar o processo de cadastro, você precisa fornecer a `customer_session` para iniciar o processo de cadastro no [Passo 3](#step-3-create-a-customer-session). Para obter a `customer_session`, você precisa:
+
+1. **Criar um cliente**: é necessário um cliente para fazer cadastros de pagamento. Use o endpoint [Criar cliente](/reference/customers/create-customer) para criar novos clientes. Na resposta, você recebe o `id` do cliente, que você usa para criar a sessão de cliente.
+2. **Criar a sessão de cliente**: use o `id` do cliente e o endpoint [Criar sessão de cliente](/reference/customer-sessions-enrollment/create-customer-session) para receber a `customer_session`.
+
+## Passo 1: Inclua a biblioteca no seu projeto {#step-1-include-the-library-in-your-project}
+
+Antes de seguir com a implementação do Headless SDK, consulte a [Visão geral da integração do SDK](/pt-br/docs/sdks/overview/quickstart) para ver instruções detalhadas sobre como integrar corretamente o SDK ao seu projeto.
+
+O guia de integração oferece três métodos flexíveis:
+
+1. Inclusão direta do script no HTML
+2. Injeção dinâmica via JavaScript
+3. Instalação do módulo NPM
+
+Escolha o método de integração que melhor se adapta ao seu fluxo de desenvolvimento e aos seus requisitos técnicos. Depois de concluir a integração do SDK, você pode seguir com os passos abaixo para implementar o recurso de cadastro headless.
+
+<Note>
+**Biblioteca TypeScript**
+
+Se você usa TypeScript, a Yuno oferece uma [biblioteca](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) que você pode usar para ver todos os métodos disponíveis no Yuno Web SDK.
+</Note>
+
+## Passo 2: Inicialize o Headless SDK com a chave pública {#step-2-initialize-headless-sdk-with-the-public-key}
+
+No seu app JavaScript, crie uma instância da classe `Yuno` informando uma `PUBLIC_API_KEY` válida.
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+<Note>
+**Credenciais**
+
+Consulte a página de credenciais para mais informações: [/reference/getting-started/authentication](/reference/getting-started/authentication)
+</Note>
+
+## Passo 3: Crie uma sessão de cliente {#step-3-create-a-customer-session}
+
+Para iniciar o processo de cadastro, você precisa fornecer a `customer_session`. Primeiro, você precisa criar um cliente. Você precisa de um cliente para fazer cadastros de pagamento. Use o endpoint [Criar cliente](/reference/customers/create-customer) para criar novos clientes. Na resposta, você recebe o `id` do cliente, que você usa para criar a sessão de cliente.
+
+Depois de criar o cliente, você pode criar a sessão de cliente. Use o `id` do cliente e o endpoint [Criar sessão de cliente](/reference/customer-sessions-enrollment/create-customer-session). A `customer_session` é fornecida na resposta. Você precisa de uma nova `customer_session` toda vez que cadastrar um novo meio de pagamento.
+
+## Passo 4: Crie um objeto de cadastro de meio de pagamento {#step-4-create-an-enrollment-payment-method-object}
+
+Você precisa de um objeto de cadastro de meio de pagamento para configurar a integração do Headless SDK para cadastro. Você pode criar um usando o endpoint [Cadastrar meio de pagamento](/reference/payment-methods-checkout/enroll-payment-method-checkout). Ao criar o objeto de meio de pagamento, você precisa definir qual meio de pagamento o seu cliente pode cadastrar. No momento, somente CARD está disponível para o Headless SDK.
+
+<Warning>
+**Verificar cartão**
+
+Se você quiser verificar cartões (autorização de valor zero) antes do cadastro, precisa fornecer o objeto `verify`. Inclua-o ao criar o objeto de meio de pagamento para a sessão de cliente.
+</Warning>
+
+## Passo 5: Inicie o processo de cadastro {#step-5-start-the-enrollment-process}
+
+Em seguida, você vai iniciar o processo de cadastro usando a função `apiClientEnroll`, informando os parâmetros de configuração necessários.
+
+### Parâmetros {#parameters}
+
+Configure o cadastro com as seguintes opções:
+
+| Parâmetro          | Descrição                                                                                                                                                                                                                                                                                   |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `country_code`     | Este parâmetro especifica o país para o qual o processo de pagamento está sendo configurado. Use um valor `ENUM` que represente o código do país desejado. Você encontra a lista completa de países compatíveis e seus códigos na página [Cobertura de países](/pt-br/docs/sdks/resources/country-coverage). |
+| `customer_session` | Refere-se à [sessão de cliente](/pt-br/docs/basic-concepts/sessions) do cadastro atual, recebida como resposta do endpoint [Criar sessão de cliente](/reference/customer-sessions-enrollment/create-customer-session). Exemplo: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                          |
+
+```javascript
+const apiClientEnroll = await yuno.apiClientEnroll({
+  country_code: "CO",
+  customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+});
+```
+
+## Passo 6: Gere um vaulted token {#step-6-generate-a-vaulted-token}
+
+Depois de coletar todas as informações do usuário, você pode iniciar o cadastro. Primeiro, você precisa criar um `vaulted_token` usando a função `apiClientEnroll.continueEnrollment`. Como é uma função assíncrona, você pode usar `try/catch` para garantir que vai tratar corretamente os erros disparados. O exemplo a seguir mostra como criar um `vaulted_token`:
+
+```javascript
+const vaultedTokenResponse = await apiClientEnroll.continueEnrollment({
+  customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+  payment_method: {
+    type: "CARD",
+    card: {
+      detail: {
+        expiration_month: 11,
+        expiration_year: 25,
+        number: "4111111111111111",
+        security_code: "123",
+        holder_name: "ANDREA B",
+        type: "CREDIT"
+      }
+    },
+    customer: {
+    }
+  }
+});
+```
+
+`card.detail.type` é opcional. Se você não o informar, a Yuno detecta o tipo do cartão a partir do número do cartão. Se você o enviar, ele é salvo com o cartão e usado em pagamentos futuros, então um tipo errado pode causar recusas.
+
+Depois de cadastrar o novo cartão, você recebe o `vaulted_token`. Você pode usá-lo para fazer pagamentos no futuro sem pedir as informações do cartão ao seu cliente. O bloco de código a seguir mostra um exemplo de resposta da função `apiClientEnroll.continueEnrollment`:
+
+```json
+{
+ "vaulted_token": "9104911d-5df9-429e-8488-ad41abea1a4b",
+ "customer": {
+   "session": "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+ },
+ "status": "ENROLLED"
+}
+```
+
+<Note>
+**Valores de status possíveis**
+
+O campo `status` pode ter um dos seguintes valores:
+
+* `CREATED`
+* `EXPIRED`
+* `REJECTED`
+* `READY_TO_ENROLL`
+* `ENROLL_IN_PROCESS`
+* `UNENROLL_IN_PROCESS`
+* `IN_PROCESS`
+* `ENROLLED`
+* `DECLINED`
+* `CANCELED`
+* `ERROR`
+* `UNENROLLED`
+</Note>
+
+<Note>
+**App de demonstração**
+
+Além dos exemplos de código fornecidos, você pode acessar o [App de demonstração](https://github.com/yuno-payments/yuno-sdk-web) para ver uma implementação completa dos SDKs da Yuno (clone a partir do repositório).
+</Note>
+
+## Tratamento de erros {#error-handling}
+
+Trate no seu app os erros retornados pelo SDK, como falhas de cadastro ou erros de validação. Para status HTTP e códigos de resposta, consulte [Códigos de status e de resposta](/reference/getting-started/response-codes) na referência da API.
+
+## Mantenha-se atualizado {#stay-updated}
+
+Acesse o [changelog](/changelog/web#v1-6-0) para ver as atualizações mais recentes do SDK e o histórico de versões.

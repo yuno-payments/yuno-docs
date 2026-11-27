@@ -1,0 +1,264 @@
+---
+title: Parcelas
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Seja notificado quando o comprador selecionar uma opção de parcelamento no formulário de cartão na Web, no iOS e no Android"
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Registre o callback opcional `onInstallmentSelected` para manter o total do seu carrinho sincronizado com o plano de parcelas que o comprador escolhe no formulário de cartão. O SDK notifica você quando uma parcela padrão é pré-selecionada e toda vez que o comprador muda a seleção. Ele também notifica você quando o plano é recalculado (por exemplo, depois de uma mudança de BIN).
+
+O callback é opcional em todas as plataformas: se você não o registrar, o comportamento do SDK não muda. Exceções lançadas dentro do seu callback são capturadas pelo SDK e nunca interrompem o fluxo de pagamento.
+
+| Plataforma | Disponível a partir de | Onde registrar |
+| -------- | -------------- | ----------------- |
+| Web      | SDK `1.6.7`    | `card.onInstallmentSelected` em `startCheckout` |
+| iOS      | SDK `2.21.0`   | `onInstallmentSelected(_:)` em `YunoPaymentDelegate` |
+| Android  | SDK `2.20.0`   | Parâmetro `onInstallmentSelected` de `startCheckout` |
+
+## Implementação {#implementation}
+
+<Tabs>
+<Tab title="Web">
+
+### Forneça suas próprias opções de parcelas com `onGetInstallments` {#supply-your-own-installment-options-with-ongetinstallments}
+
+Disponível a partir do Web SDK **1.6.7**. Passe `onGetInstallments` dentro das opções de `card`; o SDK o chama assim que conhece o BIN do cartão e exibe no seletor de parcelas o que você retornar. O callback tem um timeout de 10 segundos; se ele expirar, lançar um erro ou retornar um array vazio, `undefined` ou nada, o SDK volta a usar os planos de parcelas configurados na Yuno.
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  elementSelector: '#payment-form',
+  countryCode: 'BR',
+  card: {
+    onGetInstallments: async ({ bin, brand, cardType, amount, currency }) => {
+      const plans = await fetch(`/api/installments?bin=${bin}&amount=${amount}`).then((r) => r.json())
+      return plans.map((plan) => ({
+        installment: plan.count,
+        label: plan.label,
+        amount: { currency, value: plan.value, total_value: plan.total },
+      }))
+    },
+  },
+  // ...
+})
+```
+
+O callback recebe um único argumento do tipo objeto e pode ser assíncrono:
+
+```typescript
+type OnGetInstallments = (args: {
+  bin: string
+  brand: string
+  cardType: string
+  issuerCode?: string
+  issuerName?: string
+  amount?: string
+  currency?: string
+}) => MerchantInstallmentOption[] | void | Promise<MerchantInstallmentOption[] | void>
+
+type MerchantInstallmentOption = {
+  installment: number
+  label: string
+  amount?: {
+    currency: string
+    value: string
+    total_value: string
+  }
+  additionalData?: Record<string, unknown>
+}
+```
+
+| Argumento | Tipo | Descrição |
+| --- | --- | --- |
+| `bin` | `string` | O BIN do cartão (primeiros dígitos), resolvido pela Yuno. O callback não é chamado até que o BIN seja conhecido. |
+| `brand` | `string` | Bandeira do cartão, por exemplo `VISA`, `MASTERCARD`. |
+| `cardType` | `string` | `CREDIT` ou `DEBIT`. |
+| `issuerCode`, `issuerName` | `string` | Banco emissor, quando a Yuno consegue resolvê-lo. |
+| `amount`, `currency` | `string` | O valor da sessão de checkout como string e sua moeda. |
+
+| Campo de retorno | Tipo | Descrição |
+| --- | --- | --- |
+| `installment` | `number` | Número de parcelas, por exemplo `3`. É usado como chave da opção, então mantenha-o único. |
+| `label` | `string` | O texto exato exibido no seletor, no idioma do comprador. |
+| `amount` | `object` | `currency`, `value` (por parcela) e `total_value` opcionais, como strings. É repassado para `onInstallmentSelected`. |
+| `additionalData` | `object` | Opcional. Aceito pelo tipo, mas atualmente omitido de `onInstallmentSelected` (reservado para uso futuro). |
+
+O SDK chama `onGetInstallments` novamente sempre que o BIN ou o valor muda, e ignora uma resposta desatualizada se uma chamada mais recente já tiver começado. As opções que você retorna são informadas a `onInstallmentSelected` com `isMerchantInstallment: true`.
+
+### Reaja à escolha do comprador com `onInstallmentSelected` {#react-to-the-shoppers-choice-with-oninstallmentselected}
+
+Passe o callback dentro das opções de `card` de `startCheckout`:
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  elementSelector: '#payment-form',
+  countryCode: 'BR',
+  card: {
+    onInstallmentSelected: (selection) => {
+      if (!selection) {
+        // The previous selection no longer applies: restore your base total
+        return
+      }
+      const { installment, label, amount, isMerchantInstallment } = selection
+      // Update your cart total, e.g. with amount?.total_value
+      console.log('Installment selected:', { installment, label, amount, isMerchantInstallment })
+    },
+  },
+  // ...
+})
+```
+
+O callback recebe um único argumento do tipo objeto, ou `null` quando a seleção anterior não é mais válida:
+
+```typescript
+type OnInstallmentSelected = (args: {
+  installment: number
+  label: string
+  amount?: {
+    currency: string
+    value: string
+    total_value: string
+  }
+  installmentId?: string   // 1.11.28+
+  type?: string            // 1.11.28+
+  rate?: number            // 1.11.28+
+  financialCosts?: Array<{ type, rate, formattedValue }>  // 1.11.28+
+  additionalData?: Record<string, unknown>
+  isMerchantInstallment: boolean
+} | null) => void
+```
+
+| Campo                   | Tipo      | Descrição                                                                                                                                    |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installment`           | `number`  | Número de parcelas selecionado (por exemplo, `3`).                                                                                                    |
+| `label`                 | `string`  | O rótulo exato da parcela exibido no formulário, localizado (por exemplo, `3x de R$875.00 - Total R$2,625.00`).                                        |
+| `amount`                | `object`  | Opcional. `currency`, `value` e `total_value` como strings brutas, exatamente como informados pelo plano de parcelas.                                 |
+| `installmentId`         | `string`  | Opcional, a partir do SDK `1.11.28`. ID do plano de parcelas ao qual a opção pertence. As opções do mesmo plano o compartilham, então combine-o com `installment` para identificar a opção. É enviado com o token de uso único. |
+| `type`                  | `string`  | Opcional, a partir do SDK `1.11.28`. O tipo do plano de parcelas. |
+| `rate`                  | `number`  | Opcional, a partir do SDK `1.11.28`. APR da opção, obtido da entrada `APR` de `financialCosts`. `undefined` quando não houver. |
+| `financialCosts`        | `array`   | Opcional, a partir do SDK `1.11.28`. Detalhamento dos custos financeiros da opção de parcelamento, contendo `type`, `rate` e `formattedValue`. |
+| `additionalData`        | `object`  | Reservado para uso futuro. Atualmente é sempre `undefined`.                                                                                         |
+| `isMerchantInstallment` | `boolean` | `true` quando a opção selecionada foi fornecida pelo seu próprio callback `onGetInstallments` (parcelas do lojista); `false` para planos fornecidos pela Yuno. |
+
+Quando a opção selecionada vem do seu callback `onGetInstallments` (`isMerchantInstallment: true`), `installmentId`, `type`, `rate` e `financialCosts` são `undefined`, e o token de uso único é criado com `installment: null`.
+
+Quando o callback é disparado:
+
+* É disparado com a seleção atual assim que o plano é exibido e uma parcela padrão é pré-selecionada, para que o seu total esteja correto desde a primeira renderização.
+* É disparado a cada seleção que o comprador faz.
+* É disparado novamente com a seleção atual quando as opções disponíveis mudam (por exemplo, uma mudança de BIN recalcula o plano).
+* É disparado com `null` quando opções notificadas antes deixam de estar disponíveis, por exemplo quando o comprador troca para um cartão sem parcelas (a partir do SDK `1.10.3`). Ele só é disparado se uma seleção foi notificada antes, então formulários que nunca tiveram parcelas continuam silenciosos.
+* Funciona em todos os fluxos de cartão, incluindo secure fields e Click to Pay.
+
+</Tab>
+
+<Tab title="iOS">
+
+Implemente o método opcional `onInstallmentSelected(_:)` de `YunoPaymentDelegate`:
+
+```swift
+class ViewController: UIViewController, YunoPaymentDelegate {
+
+    // ... required YunoPaymentDelegate implementation ...
+
+    func onInstallmentSelected(_ installmentSelected: YunoInstallmentSelected?) {
+        guard let installmentSelected else {
+            // Installments are no longer available — restore your base total
+            return
+        }
+        // Update your cart total, e.g. with installmentSelected.amount?.totalValue
+    }
+}
+```
+
+O método recebe um payload `YunoInstallmentSelected?`:
+
+```swift
+@objc public final class YunoInstallmentSelected: NSObject {
+    @objc public let installment: Int
+    @objc public let label: String
+    @objc public let amount: YunoInstallmentAmount?
+    @objc public let additionalData: [String: Any]?
+}
+
+@objc public final class YunoInstallmentAmount: NSObject {
+    @objc public let currency: String
+    @objc public let value: String
+    @objc public let totalValue: String
+}
+```
+
+| Campo                   | Tipo                     | Descrição                                                                                               |
+| ----------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `installment`           | `Int`                    | Número de parcelas selecionado (por exemplo, `3`).                                                               |
+| `label`                 | `String`                 | O rótulo exato da parcela exibido no formulário, localizado (por exemplo, `3x of R$ 500,31 - Total R$ 1.500,93`). |
+| `amount`                | `YunoInstallmentAmount?` | `currency`, `value` e `totalValue` como strings brutas, exatamente como informados pelo plano de parcelas.       |
+| `additionalData`        | `[String: Any]?`         | O objeto `additional_data` da opção selecionada, quando o serviço de parcelas o fornece.           |
+
+Quando o método é disparado:
+
+* É disparado uma vez quando uma parcela padrão é pré-selecionada enquanto o plano carrega, para que o seu total esteja correto desde a primeira renderização.
+* É disparado a cada seleção que o comprador faz e com o padrão recalculado depois que o plano muda (por exemplo, uma mudança de BIN).
+* É disparado uma vez com `nil` quando uma seleção informada antes não se aplica mais (por exemplo, o comprador troca para um cartão sem parcelas). Restaure o seu total base. Ele nunca é chamado com `nil` antes de a primeira seleção ser informada.
+* É entregue na main thread. O método é opcional; omiti-lo mantém o comportamento do SDK inalterado.
+
+</Tab>
+
+<Tab title="Android">
+
+Passe o callback ao chamar `startCheckout`:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "country_code_iso",
+  callbackPaymentState = { state, subState, message -> /* ... */ },
+  onInstallmentSelected = { selection ->
+    if (selection != null) {
+      // Update your cart total, e.g. with selection.amount?.totalValue
+    } else {
+      // Installments are no longer available — restore your base total
+    }
+  },
+)
+```
+
+O callback recebe um payload `InstallmentSelected?`:
+
+```kotlin
+data class InstallmentSelected(
+    val installment: Int,
+    val label: String,
+    val amount: InstallmentAmount? = null,
+    val additionalData: Map<String, Any?>? = null,
+)
+
+data class InstallmentAmount(
+    val currency: String,
+    val value: String,
+    val totalValue: String,
+)
+```
+
+| Campo                   | Tipo                 | Descrição                                                                                             |
+| ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `installment`           | `Int`                | Número de parcelas selecionado (por exemplo, `3`).                                                             |
+| `label`                 | `String`             | O rótulo exato da parcela exibido no formulário, localizado (por exemplo, `3x de R$875.00 - Total R$2,625.00`). |
+| `amount`                | `InstallmentAmount?` | `currency`, `value` e `totalValue` como strings brutas, exatamente como informados pelo plano de parcelas.     |
+| `additionalData`        | `Map<String, Any?>?` | Reservado para uso futuro. Atualmente é sempre `null`.                                                       |
+
+Quando o callback é disparado:
+
+* É disparado uma vez quando uma parcela padrão é pré-selecionada enquanto o plano é exibido, para que o seu total esteja correto desde a primeira renderização.
+* É disparado a cada seleção que o comprador faz e com o padrão recalculado depois que o plano muda (por exemplo, uma mudança de BIN).
+* É disparado uma vez com `null` quando as parcelas deixam de estar disponíveis depois que uma seleção já foi informada (por exemplo, o comprador troca para um cartão sem parcelas). Restaure o seu total base.
+* Não é disparado quando o formulário de cartão é exibido sem parcelas. O callback é executado na main thread, e não registrar nenhum callback mantém o comportamento do SDK inalterado.
+
+</Tab>
+</Tabs>

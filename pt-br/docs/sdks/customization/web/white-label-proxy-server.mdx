@@ -1,0 +1,458 @@
+---
+title: Servidor proxy White Label
+description: Um harness Express local que carrega o Web SDK da Yuno a partir de uma origem que não é da Yuno para verificar os caminhos white-label.
+hidden: false
+metadata:
+  robots: noindex
+---
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+Um pequeno servidor Express que emula a origem própria de um lojista (ou um subcaminho) na frente da stack da Yuno. Ele permite testar de ponta a ponta as duas superfícies white-label a partir de uma **origem que não é da Yuno** antes de entregar uma integração hospedada pelo parceiro:
+
+- **White-label do SDK**: o Web SDK da Yuno carregado a partir de um host externo, verificando os globais, eventos e tokens DOM renomeados.
+- **White-label do checkout hospedado (link de pagamento)**: o app `sdk-checkout` (normalmente `checkout.<env>.y.uno`) servido por trás da origem/subcaminho do lojista, para que `checkout.y.uno/payment?session=…` possa ser mapeado para `their.host/<base-path>/payment?session=…`.
+
+<Tip>
+  Esta página complementa a página [White Label](/pt-br/docs/sdks/customization/web/white-label). Leia aquela primeiro para conhecer as substituições do lado do SDK que este harness foi criado para verificar.
+</Tip>
+
+## Por que este servidor existe {#why-this-server-exists}
+
+Historicamente, o Web SDK da Yuno é distribuído com uma superfície com o prefixo `yuno-`: `window.Yuno`, o evento `yuno-sdk-ready` e as classes CSS e atributos de dados `yuno-*`. A versão white-label introduz uma superfície paralela:
+
+| Legado | White-label |
+| :--- | :--- |
+| `window.Yuno` | `window.SdkPayments` |
+| Evento `yuno-sdk-ready` | Evento `sdk-payments-ready` |
+| Tokens DOM `yuno-*` | Tokens DOM `sdk-payments-*` |
+
+Para verificar se a renomeação realmente foi entregue, o SDK precisa ser carregado a partir de um host que **não** seja `*.y.uno`. Se ele carregar a partir de uma origem da Yuno, vazamentos da marca passariam despercebidos. Este servidor é o harness: ele serve o SDK a partir de `localhost:9090` (ou de qualquer hostname que não seja da Yuno para o qual você o apontar) e encaminha cada requisição para os upstreams reais da Yuno de forma transparente.
+
+O mesmo harness também fica na frente do **checkout hospedado do link de pagamento**: ele serve as rotas da SPA `sdk-checkout` a partir da origem do proxy, reescreve a origem dos assets do app para si mesmo e encaminha o BFF do checkout e o WebSocket de status para o upstream. Isso permite aplicar o white-label do checkout hospedado em uma origem/subcaminho do lojista sem que nenhuma requisição `*.y.uno` vaze da página. Consulte [White-label do checkout hospedado (link de pagamento)](#hosted-checkout-white-label-payment-link).
+
+## Como funciona {#how-it-works}
+
+```text
+┌──────────────────┐     ┌────────────────────────────┐     ┌─────────────────────┐
+│  Partner page    │───▶ │   white-label-proxy        │───▶ │ Yuno upstreams      │
+│  (browser)       │     │   (Express :9090)          │     │  - checkout.*.y.uno │
+│                  │ ◀───│                            │ ◀───│  - sdk-web.*.y.uno  │
+│ <script src=     │     │   Routes by path:          │     │  - sdk-3ds.*.y.uno  │
+│  localhost:9090/ │     │  /payment,/enroll → CHECKOUT│     │  - sdk-web-card.*   │
+│  v1.7/main.js>   │     │  /checkout-bff/*  → BFF     │     │  - sdk.prod.y.uno   │
+│   ─ or ─         │     │    /v1/*         → BACKEND  │     │  - icons.prod.y.uno │
+│  /payment?       │     │    /v<n>/pages    → CARD    │     │  - <env>.y.uno (BFF)│
+│  session=…       │     │    /challenge     → 3DS     │     │  - api[-env].y.uno  │
+│                  │     │  /sdk-static-bundles-ms/*   │     │  - prod.y.uno       │
+│                  │     │                → BUNDLES    │     │   (fonts, fraud JS) │
+│                  │     │    /icons,/css    → STATIC  │     │                     │
+│                  │     │    /flags,/*.png  → ICONS   │     │                     │
+│                  │     │    else           → SDK     │     │                     │
+└──────────────────┘     └────────────────────────────┘     └─────────────────────┘
+```
+
+Três invariantes tornam o harness útil:
+
+1. **O navegador só se comunica com a origem do proxy.** Nenhuma requisição `*.y.uno` parte da própria página; caso contrário, o SDK não está realmente sendo testado contra um host externo.
+2. **Todos os domínios upstream são acessíveis a partir do proxy.** Os assets do SDK, o micro-app do formulário de cartão, o micro-app de 3DS, a API REST e o serviço de WebSocket são hostnames separados, e cada um deles precisa ser configurável.
+3. **O CORS é responsabilidade do proxy, não do upstream.** O CORS do upstream responderia com origens `api.y.uno`; o proxy remove essas origens e escreve as suas próprias, repetindo a origem de quem chamou.
+
+## Arquitetura {#architecture}
+
+Um único processo Node.js construído sobre três bibliotecas:
+
+- `express`: roteamento e middleware para HTTP.
+- `node-fetch`: HTTP de saída para os upstreams, para streaming de corpos e controle dos cabeçalhos.
+- `http-proxy`: upgrades de WebSocket, porque o middleware do Express nunca vê requisições `Upgrade`.
+
+### Ciclo de vida da requisição {#request-lifecycle}
+
+0. **A remoção do base path** é executada antes de tudo, e somente quando `BASE_PATH` está definido. Ela reescreve `req.url` / `req.originalUrl` para remover o subcaminho configurado, de modo que toda a correspondência e o encaminhamento posteriores vejam caminhos relativos à raiz. Não faz nada (nem chega a ser registrada) em uma montagem na raiz. Consulte [`BASE_PATH`: montagem em subcaminho](#base_path--sub-path-mounting).
+1. **O middleware de CORS** é executado em seguida. Ele repete o `Origin` de quem chamou, trata o preflight `OPTIONS` e define `Access-Control-Allow-Credentials: true`. O proxy é a autoridade de CORS.
+2. **As rotas locais** correspondem antes de qualquer outra coisa: `/`, `/static/*`, `/whitelabel-info`. Elas nunca acessam um upstream.
+3. **O pass-through do backend** corresponde a `/v1/*` e `/v2/*` (a superfície REST da Yuno usada pelo SDK) e encaminha via `node-fetch` para `BACKEND_URL`. Os cabeçalhos hop-by-hop são removidos; os cabeçalhos `access-control-*` do upstream são descartados para que não substituam o CORS do próprio proxy. O cabeçalho `Cookie` do navegador também é descartado nesses encaminhamentos. Os cookies de localhost da página do parceiro (sessão, analytics, cookies com valores de URL, …) não pertencem a uma chamada cross-origin para `api.y.uno` e podem acionar o WAF do upstream com um `403`; a API autentica por meio da chave de API pública.
+4. **O pass-through do BFF do checkout** corresponde a `/checkout-bff/*` e encaminha para `CHECKOUT_BFF_UPSTREAM`, compartilhando o mesmo encaminhador do backend (corpo reserializado, cabeçalhos hop-by-hop, `access-control-*` e `Cookie` removidos). O app `sdk-checkout` chama seu BFF por meio do `apiUrl` com white-label (`host/<base-path>/checkout-bff/v1`), então, depois da remoção do base path, o proxy vê `/checkout-bff/*` (`GET /checkout-bff/v1/checkout-info/{session}`, `POST /checkout-bff/v1/checkout/payment`). Consulte [White-label do checkout hospedado (link de pagamento)](#hosted-checkout-white-label-payment-link).
+5. **As rotas da SPA do checkout** correspondem a `/payment`, `/payment/status` e `/enroll` (`GET`), registradas antes do catch-all do SDK. Cada uma busca `CHECKOUT_UPSTREAM/index.html` e reescreve a origem absoluta dos assets do app (`PUBLIC_URL`, por exemplo `checkout.<env>.y.uno`) para `BASE_PATH`, para que o bundle CRA, o favicon e o manifest sejam carregados de volta pelo proxy em vez de vazarem para o host da Yuno. O react-router resolve a rota real no lado do cliente a partir de `window.location`.
+6. **O catch-all de SDK/assets** corresponde a todos os `GET`/`HEAD` restantes. Um pequeno dispatcher (`pickSdkUpstream`) escolhe o upstream certo com base no caminho, verificado de cima para baixo, com cada regra ancorada no início do caminho (depois do base path), para que as regras de checkout/3DS/cartão vençam primeiro:
+   - Assets do app de checkout: o bundle CRA (`/static/(js|css|media)/*`) e os arquivos públicos da raiz (`/favicon.ico`, `/manifest.json`, `/robots.txt`, `/asset-manifest.json`) → `CHECKOUT_UPSTREAM`. Verificados **primeiro** para que não caiam no upstream de ícones do SDK.
+   - Caminhos do micro-app de 3DS (`/challenge.html`, `/redirect.html`, `/session-id.html` e `/assets/(challenge|redirect|session-id|validate-url)*`) → `SDK_3DS_UPSTREAM`.
+   - Caminhos do micro-app de cartão (`/v<semver>/pages/*`, `/v<semver>/assets/*`) → `SDK_CARD_UPSTREAM`.
+   - Caminhos de static bundles (`/sdk-static-bundles-ms/*`) → `SDK_STATIC_BUNDLES_UPSTREAM` (`prod.y.uno`). Desde o SDK 1.10.9, o SDK carrega sua folha de estilo de fontes a partir de `prod.y.uno/sdk-static-bundles-ms/v1/static/css/…`, e a folha de estilo carrega seus arquivos `woff2` com URLs relativas `../fonts/` sob o mesmo prefixo. A partir do SDK 1.11.16, o script da Forter e o beacon SRI da Riskified também são requisitados a partir desse prefixo no host white-label (versões anteriores os requisitam diretamente de `prod.y.uno`, ignorando o proxy). Verificado antes da regra de assets estáticos, porque seus caminhos também contêm `/static/css/`, `/static/js/` e `/fonts/`.
+   - Caminhos de assets estáticos (`/icons/*`, `/css/*`, `/brands/*`, `/c2p/*`, `/wallets/*`, `/fonts/*`) → `SDK_STATIC_UPSTREAM` (`sdk.prod.y.uno`).
+   - Caminhos de assets de ícones (`/sdk-web/*`, `/flags/*` e imagens de bandeiras soltas na raiz, como `/Visa.png`, `/boleto_logosimbolo.png`) → `SDK_ICONS_UPSTREAM` (`icons.prod.y.uno`).
+   - Todo o resto → `SDK_UPSTREAM`.
+
+   Os ramos de estáticos / ícones existem porque o SDK carregava esses arquivos diretamente de `icons.prod.y.uno` / `sdk.prod.y.uno`, ignorando o host white-label. Builds recentes do SDK trocam o host deles para a origem do proxy (mantendo o caminho), então o proxy precisa encaminhá-los de volta para as CDNs pelo prefixo do caminho. `sdk.prod.y.uno` e `icons.prod.y.uno` são os mesmos em todos os ambientes; `/sdk-static-bundles-ms/*` usa `prod.y.uno` por padrão (somente o beacon SRI da Riskified usa `staging.y.uno` fora de produção).
+7. **Os upgrades de WebSocket** são tratados no `http.Server` subjacente, não no Express. `/checkout-websocket-notification-ms/ws/{payment,enrollment}` → `BACKEND_WS_URL` (o stream de status do checkout hospedado); todo o resto segue a mesma divisão SDK / cartão / 3DS do HTTP.
+
+### Normalização de versão {#version-normalization}
+
+O bundle principal do SDK é versionado (`/v1.7.4/main.js`). Há duas complicações:
+
+- As páginas do parceiro podem fixar no código uma versão que o upstream não publica mais.
+- A versão "atual" muda com o tempo.
+
+O proxy resolve a versão canônica uma vez na inicialização e reescreve cada requisição `/v<x>/*` do SDK recebida para essa versão antes de enviá-la ao upstream. Os caminhos do app de cartão e de 3DS **não** são reescritos; eles têm seus próprios ciclos de publicação.
+
+## White-label do checkout hospedado (link de pagamento) {#hosted-checkout-white-label-payment-link}
+
+Um lojista aplica o white-label ao checkout hospedado da Yuno mapeando `checkout.<env>.y.uno/payment?session=…` para seu próprio `host/<BASE_PATH>/payment?session=…`. O harness emula isso localmente com dois upstreams: `CHECKOUT_UPSTREAM` (o app shell `sdk-checkout`) e `CHECKOUT_BFF_UPSTREAM` (o BFF que ele chama):
+
+- **Rotas da SPA**: `/payment`, `/payment/status` e `/enroll` buscam, cada uma, `CHECKOUT_UPSTREAM/index.html`. Os links de assets do HTML servido são absolutos (`PUBLIC_URL` = `checkout.<env>.y.uno`), então o proxy reescreve essa origem para `BASE_PATH`, mantendo o bundle CRA, o favicon e o manifest na origem do proxy em vez de vazarem de volta para o host da Yuno. O react-router resolve a rota real no lado do cliente a partir de `window.location`.
+- **Chamadas ao BFF**: o `baseURL` do axios do app de checkout é o `apiUrl` com white-label (`host/<BASE_PATH>/checkout-bff/v1`). Depois da remoção do base path, o proxy vê `/checkout-bff/*` e encaminha para `CHECKOUT_BFF_UPSTREAM` (`GET /checkout-bff/v1/checkout-info/{session}`, `POST /checkout-bff/v1/checkout/payment`). A cotação da [promoção](/docs/payment-features/promotions) não vai para o BFF: o SDK dentro do checkout a solicita pelo pass-through do backend (`POST /v1/promotions/quote`), então um proxy que encaminha apenas rotas explícitas também precisa encaminhar essa, ou o cliente verá silenciosamente o preço normal.
+- **WebSocket de status**: `/checkout-websocket-notification-ms/ws/{payment,enrollment}` é encaminhado para `BACKEND_WS_URL`.
+
+<Note>
+  O host do BFF é `<env>.y.uno` diretamente, **sem** o prefixo `api-` (`sandbox.y.uno`, `prod.y.uno`), diferente da superfície REST do SDK em `api[-env].y.uno`. Defina `CHECKOUT_UPSTREAM` e `CHECKOUT_BFF_UPSTREAM` para o mesmo ambiente da sua sessão de checkout.
+</Note>
+
+<Warning>
+  O app `sdk-checkout` valida o `apiUrl` / `assetUrl` com white-label contra uma allowlist (`REACT_APP_WHITE_LABEL_ALLOWED_HOSTS`). Para testar isso pelo proxy, `localhost` precisa estar nessa allowlist no ambiente de destino; caso contrário, o app ignora a substituição e chama a Yuno diretamente.
+</Warning>
+
+Para testar, abra `http://localhost:9090<BASE_PATH>/payment?session=<checkout-session>` com `CHECKOUT_UPSTREAM` / `CHECKOUT_BFF_UPSTREAM` correspondentes ao ambiente da sessão. O checkout é renderizado sob a origem que não é da Yuno e chama o BFF de volta pelo proxy.
+
+## `SDK_MAIN_JS`: fixando a versão do SDK {#sdkmainjs--pinning-the-sdk-version}
+
+`SDK_MAIN_JS` decide qual build do SDK todos os navegadores carregam. Ele faz duas coisas relacionadas:
+
+1. **Injeção no template.** O proxy serve `pages/index.html` com o placeholder literal `__SDK_MAIN_JS__` substituído por este caminho. Uma página do parceiro pode escrever `<script src="__SDK_MAIN_JS__">` e obter, por exemplo, `/v1.9.4/main.js`.
+2. **Alvo da normalização de versão.** O proxy extrai o segmento `/v<x>/` de `SDK_MAIN_JS` e reescreve qualquer requisição `/v<other>/main.js` recebida (e as adjacentes `/v<other>/*.js`, `/v<other>/*.css`) para essa mesma versão. Assim, se `SDK_MAIN_JS=/v1.9.4/main.js`, uma requisição para `/v1.5.0/main.js` é buscada silenciosamente como `/v1.9.4/main.js` em `SDK_UPSTREAM`.
+
+### Ordem de resolução na inicialização {#resolution-order-at-boot}
+
+```text
+1. process.env.SDK_MAIN_JS                          (if set, used as-is, no upstream call)
+2. <SDK_UPSTREAM>/versions.json → latest.version    (auto-detect, 5s timeout)
+3. /v1.7/main.js                                    (hard-coded fallback)
+```
+
+Se as etapas 1 e 2 falharem, você recebe o fallback e um aviso é registrado no log. Definir `SDK_MAIN_JS` explicitamente é a única forma de pular totalmente a busca no upstream. Isso é útil quando `versions.json` está inacessível, quando você quer uma inicialização determinística ou quando o `latest` do upstream não é a versão contra a qual você quer testar.
+
+### Formato {#format}
+
+```bash
+SDK_MAIN_JS=/v<semver>/main.js
+```
+
+`<semver>` corresponde a `[\d.]+(?:-[\w.]+)?`: números separados por pontos com um sufixo de pré-lançamento opcional.
+
+| Valor | Quando usar |
+| :--- | :--- |
+| `/v1.9/main.js` | Fixar em uma linha minor (o que o upstream publicar nela) |
+| `/v1.9.4/main.js` | Fixar em um patch exato (o mais comum) |
+
+O caminho **precisa** começar com `/v` e conter `/main.js` para que a normalização funcione. Se a expressão regular não corresponder, o caminho é usado na injeção no template, mas a reescrita de versão fica desativada.
+
+### Casos de uso comuns {#common-use-cases}
+
+**Testar uma versão específica do SDK de ponta a ponta:**
+
+```shell
+SDK_MAIN_JS=/v1.9.4/main.js npm start
+```
+
+Agora todas as páginas carregam `v1.9.4`, e qualquer `/v<other>/*.js` fixado no código das páginas do parceiro é reescrito silenciosamente para `v1.9.4` em `SDK_UPSTREAM`.
+
+**Inicialização silenciosa (sem chamada a `versions.json` no upstream):**
+
+```shell
+SDK_MAIN_JS=/v1.9.4/main.js npm start
+```
+
+Útil em ambientes isolados da rede ou quando `SDK_UPSTREAM` é um servidor de arquivos local que não expõe `versions.json`.
+
+**Reproduzir um bug de um cliente em uma versão mais antiga:**
+
+```shell
+SDK_MAIN_JS=/v1.7.4/main.js npm start
+```
+
+Enquanto `v1.7.4` ainda estiver publicada em `SDK_UPSTREAM`, todo navegador que acessar o proxy a carrega, sem necessidade de rebuild.
+
+### Pontos de atenção {#gotchas}
+
+- **Os upstreams de cartão e de 3DS não são afetados.** `SDK_MAIN_JS` fixa apenas a versão do bundle principal do SDK. O micro-app de cartão (`/v<x>/pages/*`) e o micro-app de 3DS mantêm seus próprios segmentos de versão.
+- **Defini-lo desativa a detecção automática.** Se uma versão mais nova do SDK for publicada no upstream, você continua carregando a versão fixada até alterar a variável de ambiente e reiniciar.
+- **É preciso reiniciar.** O valor é lido uma vez na inicialização. Não há hot reload.
+- **A divergência com o upstream é silenciosa.** Fixar uma versão que o upstream não publica resulta em um `404` para `/v<your-pin>/main.js`. Verifique a aba de rede para identificar isso.
+- **Sem query strings nem hash.** Somente o caminho.
+
+## `BASE_PATH`: montagem em subcaminho {#basepath--sub-path-mounting}
+
+Um gateway de parceiro costuma ser **montado sob um subcaminho** em vez de na raiz da origem. A Zuora, por exemplo, serve o SDK a partir de `https://host/hosted-payment-methods/hosted-payment-form/orchestrator` em vez de `https://host/`. Builds recentes do SDK preservam esse prefixo em **todas** as requisições de assets, de API e de WebSocket (o `apiUrl` / `assetUrl` configurado o carrega), então uma requisição de um ícone chega como `…/orchestrator/sdk-web/foo.svg`, e não `/sdk-web/foo.svg`.
+
+Sem ajuda, esses caminhos com prefixo nunca corresponderiam ao roteamento no nível da raiz do proxy. `BASE_PATH` resolve isso: defina-o com o subcaminho sob o qual o proxy está "montado", e o proxy remove o prefixo de cada requisição recebida (rotas locais, o encaminhamento do backend `/v1`–`/v2`, o catch-all de assets e os upgrades de WebSocket) **antes** do roteamento. As regras existentes no nível da raiz passam a corresponder sem mudanças.
+
+Deixe-o vazio para uma montagem na raiz (o padrão: o comportamento é idêntico a não ter o recurso).
+
+### O que ele muda {#what-it-changes}
+
+1. **Remoção do prefixo.** Um middleware no topo reescreve `req.url` / `req.originalUrl` para remover `BASE_PATH`, de modo que tudo o que vem depois opere sobre caminhos relativos à raiz. Os upgrades de WebSocket recebem a mesma remoção no `http.Server` subjacente.
+2. **Injeção no template.** O placeholder `__SDK_MAIN_JS__` é emitido **com** o prefixo, então a landing page servida aponta para `<BASE_PATH>/v<x>/main.js`.
+3. **`/whitelabel-info`** informa o `basePath` resolvido (ou `null` na raiz) junto com a configuração dos upstreams.
+
+### Formato {#format-1}
+
+```bash
+BASE_PATH=/hosted-payment-methods/hosted-payment-form/orchestrator
+```
+
+Barra inicial, sem barra final (barras finais são removidas). Vazio ou não definido = montagem na raiz.
+
+### Configuração da página do parceiro {#partner-page-setup}
+
+Quando `BASE_PATH` está definido, a página do parceiro precisa carregar o mesmo prefixo em dois lugares:
+
+- **Carregue o bundle** a partir de `http://localhost:9090<BASE_PATH>/v<ver>/main.js`.
+- **Inicialize** com `apiUrl` / `assetUrl` = `http://localhost:9090<BASE_PATH>`.
+
+```text
+icon → http://localhost:9090/hosted-payment-methods/.../orchestrator/sdk-web/foo.svg
+     → strip BASE_PATH → /sdk-web/foo.svg → SDK_ICONS_UPSTREAM
+```
+
+<Note>
+  **`assetUrl` versionado.** Você pode fixar uma versão do bundle no `assetUrl` (`…/orchestrator/v1.0`). O SDK usa esse caminho para os chunks JS, mas **remove o `/v<semver>` final** ao resolver assets de CDN com host trocado (ícones e fontes não são versionados), então tanto `assetUrl = …/orchestrator` quanto `assetUrl = …/orchestrator/v1.0` roteiam os ícones corretamente.
+</Note>
+
+### Pontos de atenção {#gotchas-1}
+
+- **O prefixo fica na URL, não em um cabeçalho.** Tanto o `<script src>` do bundle quanto o `apiUrl` / `assetUrl` precisam incluir `BASE_PATH`, ou as requisições chegam na raiz e a remoção nunca é exercitada.
+- **A remoção usa o prefixo exato.** Somente `BASE_PATH`, `BASE_PATH/…` e `BASE_PATH?…` são reescritos. Um caminho que apenas se parece com o prefixo não é alterado.
+- **Os upgrades de WebSocket também passam pela remoção**, no handler `upgrade` do `http.Server`, já que o middleware do Express nunca os vê.
+
+## Como construir um servidor como este {#building-a-server-like-this}
+
+### 1. Inicialize o projeto {#1-bootstrap-the-project}
+
+```shell
+mkdir my-proxy && cd my-proxy
+npm init -y
+npm install express http-proxy node-fetch@2 dotenv
+```
+
+<Note>
+  Use `node-fetch@2` (CommonJS), a menos que você tenha uma etapa de build; a v3 é somente ESM.
+</Note>
+
+### 2. Defina seu mapa de upstreams {#2-define-your-upstream-map}
+
+<div className="nowrap-col1-table dense-table">
+
+| Variável de upstream | Caminhos sob sua responsabilidade |
+| :--- | :--- |
+| `CHECKOUT_UPSTREAM` | `/payment`, `/payment/status`, `/enroll` (`index.html` da SPA), o bundle CRA `/static/(js\|css\|media)/*` e os arquivos públicos da raiz (`/favicon.ico`, `/manifest.json`, `/robots.txt`, `/asset-manifest.json`) |
+| `CHECKOUT_BFF_UPSTREAM` | `/checkout-bff/*` (BFF do checkout; o host é `<env>.y.uno`, **sem** o prefixo `api-`) |
+| `SDK_UPSTREAM` | `/v<x>/main.js` e tudo o que não corresponder às linhas abaixo |
+| `SDK_CARD_UPSTREAM` | `/v<x>/pages/*`, `/v<x>/assets/*` |
+| `SDK_3DS_UPSTREAM` | `/challenge.html`, `/redirect.html`, `/session-id.html`, `/assets/(challenge\|redirect\|session-id\|validate-url)*` |
+| `SDK_STATIC_UPSTREAM` | `/icons/*`, `/css/*`, `/brands/*`, `/c2p/*`, `/wallets/*`, `/fonts/*` (assets de CDN com host trocado) |
+| `SDK_ICONS_UPSTREAM` | `/sdk-web/*`, `/flags/*`, imagens de bandeiras soltas na raiz (`/Visa.png`, …) |
+| `SDK_STATIC_BUNDLES_UPSTREAM` | `/sdk-static-bundles-ms/*` (folha de estilo e arquivos de fontes, script da Forter, beacon SRI da Riskified) |
+| `BACKEND_URL` | `/v1/*`, `/v2/*` (API REST) |
+| `BACKEND_WS_URL` | `/checkout-websocket-notification-ms/ws/{payment,enrollment}` (somente WebSocket) |
+| `BASE_PATH` | _(opcional)_ subcaminho sob o qual o proxy está montado, removido antes do roteamento; vazio = raiz |
+
+</div>
+
+`SDK_CARD_UPSTREAM` e `SDK_3DS_UPSTREAM` usam `SDK_UPSTREAM` por padrão quando não estão definidos, e `BACKEND_WS_URL` usa `BACKEND_URL` por padrão. Mantenha esse comportamento de fallback, ele facilita os testes em um único ambiente. `SDK_STATIC_UPSTREAM` / `SDK_ICONS_UPSTREAM` / `SDK_STATIC_BUNDLES_UPSTREAM` são a exceção: eles usam por padrão os hosts fixos `sdk.prod.y.uno` / `icons.prod.y.uno` / `prod.y.uno`, **não** `SDK_UPSTREAM`. Os dois primeiros são os mesmos em todos os ambientes; defina `SDK_STATIC_BUNDLES_UPSTREAM` como `staging.y.uno` para testar o beacon SRI da Riskified fora de produção. `CHECKOUT_UPSTREAM` / `CHECKOUT_BFF_UPSTREAM` usam sandbox por padrão (`checkout.sandbox.y.uno` / `sandbox.y.uno`); a regra de assets do checkout é verificada **antes** das regras de ícones do SDK para que o bundle CRA e os arquivos da raiz (`/favicon.ico`, …) não caiam em `icons.prod.y.uno`.
+
+<Note>
+  Se você precisar emular um gateway de parceiro montado sob um subcaminho, registre um middleware de remoção **antes** de todas as rotas que reescreva `req.url` / `req.originalUrl` para remover `BASE_PATH` (e aplique a mesma remoção no handler `upgrade` do `http.Server`). Assim, todas as rotas abaixo veem caminhos relativos à raiz. Pule isso totalmente quando `BASE_PATH` estiver vazio. Consulte [`BASE_PATH`: montagem em subcaminho](#base_path--sub-path-mounting).
+</Note>
+
+### 3. Configure o CORS como responsabilidade do proxy {#3-set-up-cors-as-the-proxys-responsibility}
+
+```javascript
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (origin) {
+    res.set('access-control-allow-origin', origin)
+    res.set('access-control-allow-credentials', 'true')
+    res.set('vary', 'origin')
+  } else {
+    res.set('access-control-allow-origin', '*')
+  }
+  res.set('access-control-allow-methods', req.headers['access-control-request-method'] || 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS')
+  res.set('access-control-allow-headers', req.headers['access-control-request-headers'] || '*')
+  res.set('access-control-expose-headers', '*')
+  res.set('access-control-max-age', '86400')
+  if (req.method === 'OPTIONS') return res.status(204).end()
+  next()
+})
+```
+
+Repita a origem de quem chamou (não `*`) para que as requisições com credenciais funcionem, e encerre os preflights logo no início. Quando você depois encaminhar as respostas do upstream, remova todos os cabeçalhos `access-control-*` do upstream, ou eles substituirão os seus.
+
+### 4. Filtre os cabeçalhos hop-by-hop nas duas direções {#4-filter-hop-by-hop-headers-in-both-directions}
+
+Conforme a [RFC 7230 §6.1](https://datatracker.ietf.org/doc/html/rfc7230#section-6.1):
+
+```javascript
+const HOP_BY_HOP = new Set([
+  'host', 'connection', 'keep-alive',
+  'proxy-authenticate', 'proxy-authorization',
+  'te', 'trailer', 'transfer-encoding', 'upgrade',
+  'content-length', // node-fetch sets this itself
+])
+```
+
+Filtre esses cabeçalhos tanto na entrada (requisição para o upstream) quanto na saída (do upstream para o cliente). Esquecer o `content-length` é o bug clássico: o node-fetch o define, mas, se você também copiar o valor original, a resposta fica truncada.
+
+### 5. Encaminhe a superfície da API {#5-forward-the-api-surface}
+
+```javascript
+app.all('/v1/*', forwardToBackend)
+app.all('/v2/*', forwardToBackend)
+
+async function forwardToBackend(req, res) {
+  const targetUrl = `${BACKEND_URL}${req.originalUrl}`
+  const headers = pickRequestHeaders(req) // filters HOP_BY_HOP
+  delete headers.cookie                   // partner cookies don't belong on api.y.uno
+  const init = { method: req.method, headers }
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    // express.json() consumed the original body; re-serialize it.
+    init.body = req.body && Object.keys(req.body).length ? JSON.stringify(req.body) : undefined
+    if (init.body && !headers['content-type']) headers['content-type'] = 'application/json'
+  }
+  const upstream = await fetch(targetUrl, init)
+  res.status(upstream.status)
+  for (const [k, v] of upstream.headers.entries()) {
+    const lk = k.toLowerCase()
+    if (HOP_BY_HOP.has(lk)) continue
+    if (lk.startsWith('access-control-')) continue   // proxy owns CORS
+    res.set(k, v)
+  }
+  res.send(await upstream.text())
+}
+```
+
+O `express.json()` já consumiu o corpo da requisição, então, para métodos que não são GET, você reserializa `req.body`. Não tente usar `req.pipe(upstream)` depois que o corpo foi consumido.
+
+<Note>
+  Descarte o cabeçalho `Cookie` antes de encaminhar. Os cookies do navegador da página do parceiro pertencem à origem do proxy (sessão, analytics, cookies com valores de URL como `spage`), e uma chamada cross-origin genuína para `api.y.uno` nunca os carregaria. Encaminhá-los só traz o risco de o WAF do upstream rejeitar a requisição com um `403`. A API autentica por meio da chave de API pública, não de cookies. (Os upgrades de WebSocket são a exceção; consulte a etapa 7.)
+</Note>
+
+### 6. Proxy catch-all para os assets do SDK {#6-catch-all-proxy-for-sdk-assets}
+
+```javascript
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next()
+  proxyToUpstream(req, res, next)
+})
+
+async function proxyToUpstream(req, res, next) {
+  const upstreamBase = pickSdkUpstream(req.path)   // checkout / 3DS / card / static-bundles / static / icons / SDK
+  const targetUrl = `${upstreamBase}${normalizePath(req.originalUrl)}`
+  const upstream = await fetch(targetUrl, { redirect: 'follow', headers: { /* accept, user-agent */ } })
+  if (upstream.status === 404) return next()
+  res.status(upstream.status)
+  for (const h of ['content-type', 'cache-control', 'etag', 'last-modified']) {
+    const v = upstream.headers.get(h)
+    if (v) res.set(h, v)
+  }
+  upstream.body.pipe(res)   // stream — don't buffer, assets can be big
+}
+```
+
+<Warning>
+  Registre o catch-all por último. Ele corresponde a tudo, então qualquer middleware adicionado depois dele fica inacessível, a menos que você o proteja explicitamente.
+</Warning>
+
+### 7. Trate os upgrades de WebSocket no http.Server {#7-handle-websocket-upgrades-on-the-httpserver}
+
+O middleware do Express não vê requisições `Upgrade`. Conecte-se diretamente ao servidor http:
+
+```javascript
+const wsProxy = httpProxy.createProxyServer({ changeOrigin: true, ws: true })
+const server = app.listen(PORT)
+server.on('upgrade', (req, socket, head) => {
+  const target = pickWsTarget(req.url)   // BACKEND_WS_URL or SDK_UPSTREAM
+  wsProxy.ws(req, socket, head, { target })
+})
+```
+
+O `http-proxy` negocia `ws://` ou `wss://` a partir do esquema da URL de destino.
+
+### 8. Configure as variáveis de ambiente {#8-wire-up-environment-variables}
+
+Use `dotenv`. Documente os valores **por ambiente**, não apenas os padrões. Para a Yuno:
+
+- Os serviços do SDK seguem `<service>[.<env>].y.uno`: `sdk-web.y.uno`, `sdk-web.staging.y.uno`, `sdk-web.dev.y.uno`.
+- A superfície da API usa `api[-<env>].y.uno`: `api.y.uno`, `api-staging.y.uno`, `api-dev.y.uno`. **Observe o hífen, não um ponto.**
+- O serviço de WebSocket **não** tem o prefixo `api-`; ele é `<env>.y.uno` diretamente (`y.uno`, `staging.y.uno`, `dev.y.uno`).
+
+Essas inconsistências de nomenclatura causam mais 404s do que qualquer outra classe de bug. Registre-as no seu `.env.example` para que os usuários não precisem adivinhar.
+
+### 9. Entregue uma landing page mínima {#9-ship-a-minimal-landing-page}
+
+Sirva `index.html` em `/` e um endpoint JSON `/whitelabel-info` que retorne a configuração resolvida dos upstreams. A landing page chama o endpoint JSON e o renderiza, para que qualquer pessoa depurando o proxy veja exatamente o que é roteado para onde sem precisar vasculhar logs.
+
+## Armadilhas e casos extremos {#pitfalls-and-edge-cases}
+
+- **A ordem das rotas importa.** O catch-all do SDK é registrado por último. Qualquer coisa que você adicionar com `app.use` depois dele nunca é executada.
+- **A autoridade de CORS precisa ser o proxy.** Deixar passar os cabeçalhos `access-control-*` do upstream faz com que requisições cross-origin com credenciais falhem aleatoriamente quando a allowlist do upstream não inclui `localhost`.
+- **Os cabeçalhos hop-by-hop são bidirecionais.** Remova-os nos dois trechos. O `content-length` é o que mais causa problemas.
+- **O consumo do corpo acontece uma única vez.** Depois que o `express.json()` faz o parse de uma requisição, o stream subjacente é esvaziado. Reserialize a partir de `req.body` se você precisar encaminhar um `POST`.
+- **Streaming, não buffering, para assets.** `upstream.body.pipe(res)` mantém o uso de memória estável mesmo para bundles de vários MB.
+- **A normalização de versão vale somente para `SDK_UPSTREAM`.** Os micro-apps de cartão e de 3DS têm seus próprios segmentos de versão; reescrevê-los quebra a URL do upstream. As CDNs de estáticos / ícones não são versionadas, então também não são normalizadas.
+- **Os assets estáticos da CDN também têm o host trocado.** Builds recentes do SDK reescrevem suas URLs de assets fixas no código `icons.prod.y.uno` / `sdk.prod.y.uno` para o host white-label, então o proxy precisa encaminhar `/icons`, `/css`, `/brands`, `/c2p`, `/wallets`, `/fonts` → `sdk.prod.y.uno` e `/sdk-web`, `/flags`, `/*.png` soltos → `icons.prod.y.uno`. Builds mais antigos do SDK carregam esses arquivos diretamente da CDN e nunca chegam ao proxy. Testar isso de ponta a ponta exige um build recente do SDK **e** uma página do parceiro que inicialize com `{ apiUrl: '<proxy origin>' }` (ou `assetUrl`).
+- **As fontes precisam de uma rota própria a partir do SDK 1.10.9.** O SDK carrega sua folha de estilo de fontes a partir de `prod.y.uno/sdk-static-bundles-ms/…`, com o host trocado para o host white-label. Sem uma regra `/sdk-static-bundles-ms/*` → `prod.y.uno`, a requisição cai em `SDK_UPSTREAM` e retorna `404`. O SDK então é renderizado com a fonte do sistema, sem nenhum erro.
+- **Não encaminhe os cookies da página do parceiro para a API.** Remova o `Cookie` nos encaminhamentos de `/v1`/`/v2`. Os cookies de localhost do navegador (sessão, analytics, cookies com valores de URL como `spage`) não pertencem a uma chamada cross-origin para `api.y.uno` e podem acionar o WAF do upstream com um `403`. A API autentica por meio da chave de API pública.
+- **A autenticação do WebSocket é feita com os cabeçalhos que o `http-proxy` vê.** **Não** remova `cookie` nem `authorization` dos upgrades de WS; a remoção de cookies se aplica somente aos encaminhamentos HTTP de `/v1`/`/v2` para o backend.
+- O `.env` está no gitignore. Mantenha sempre o `.env.example` sincronizado; ele é a especificação para quem clonar o repositório.
+
+## Rotas que um proxy de parceiro precisa encaminhar {#routes-a-partner-proxy-must-forward}
+
+Um gateway de parceiro em produção precisa da mesma divisão deste harness (esta tabela é a referência; as listas acima descrevem o harness). Todo caminho chega sob o base path do parceiro, com o prefixo exatamente como o `apiUrl` / `assetUrl` o carrega. Confira esta lista antes de atualizar a linha do SDK.
+
+**Aplique as regras nesta ordem; a primeira correspondência vence.** Vários formatos se sobrepõem (`/v1/*`, `/v<major.minor>/*`, `/v<card-semver>/pages/*`), então um conjunto não ordenado de regras de prefixo ou regex envia páginas de cartão ou chamadas de API para o host errado.
+
+<div className="dense-table">
+
+| # | Caminho | Encaminhar para | Necessário a partir de |
+| :--- | :--- | :--- | :--- |
+| 1 | `/v1/*`, `/v2/*` (HTTP e WebSocket) | `api[-<env>].y.uno` | Sempre |
+| 2 | `/checkout-websocket-notification-ms/ws/*` (WebSocket) | `<env>.y.uno` (`prod.y.uno` em produção) | Sempre |
+| 3 | `/payment`, `/payment/status`, `/enroll`, `/static/(js\|css\|media)/*`, `/favicon.ico`, `/manifest.json`, `/robots.txt`, `/asset-manifest.json`, `/checkout-bff/*` | `checkout[.<env>].y.uno` / `<env>.y.uno` | White-label do link de pagamento |
+| 4 | `/challenge.html`, `/redirect.html`, `/session-id.html`, `/assets/(challenge\|redirect\|session-id\|validate-url)*` | `sdk-3ds[.<env>].y.uno` | 3DS |
+| 5 | `/v<card-semver>/pages/*`, `/v<card-semver>/assets/*` | `sdk-web-card[.<env>].y.uno` | Sempre |
+| 6 | `/sdk-static-bundles-ms/*` (mantenha a query string) | `prod.y.uno` (`staging.y.uno` para o SRI da Riskified em sandbox e staging) | **SDK 1.10.9+** (folha de estilo de fontes); **SDK 1.11.16+** (script da Forter, beacon SRI da Riskified) |
+| 7 | `/icons/*`, `/css/*`, `/brands/*`, `/c2p/*` | `sdk.prod.y.uno` | SDK 1.9.32+ |
+| 8 | `/wallets/*` (botão do Samsung Pay em português), `/fonts/*` (fontes personalizadas do Checkout Builder) | `sdk.prod.y.uno` | **SDK 1.11.16+** |
+
+A coluna **Necessário a partir de** indica a versão do SDK a partir da qual o SDK envia essa requisição para o host white-label. Os assets em si são mais antigos (o script da Forter está em `/sdk-static-bundles-ms/` desde o SDK 1.5.19, o beacon SRI da Riskified desde a 1.6.4, o botão do Samsung Pay em português em `/wallets/` desde a 1.10.9), mas, antes da versão indicada, o SDK os requisitava diretamente de `*.y.uno`, então um proxy de parceiro nunca os via e não precisava de regra. Adicionar as regras antes de atualizar não causa nenhum problema.
+| 9 | `/sdk-web/*`, `/flags/*`, imagens de bandeiras soltas (`/Visa.png`, …) | `icons.prod.y.uno` | SDK 1.9.32+ |
+| 10 | `/v<major.minor>/*` (bundle e chunks do SDK) e qualquer outra coisa | `sdk-web[.<env>].y.uno` | Sempre |
+
+</div>
+
+- **CORS.** As fontes (`/sdk-static-bundles-ms/*`, `/fonts/*`) e os scripts SRI de fraude são buscados em modo CORS a partir da página do lojista, então o gateway precisa retornar `Access-Control-Allow-Origin` para a origem do lojista. `sdk.prod.y.uno/fonts/*` não envia nenhum, então encaminhar a resposta sem alterações não é suficiente.
+- **Rejeite segmentos de caminho `.` e `..`** antes de encaminhar. Caso contrário, `/sdk-static-bundles-ms/../…` resolve para qualquer caminho no host upstream, incluindo o gateway da API de produção.
+- **Regiões.** Com uma substituição de `apiUrl`, o SDK deixa de adicionar a região da chave de API pública aos hosts, então um gateway que atende chaves da MENA precisa roteá-las por conta própria para os hosts regionais.
+- **`assetUrl` versionado** (por exemplo, `…/orchestrator/v1.0`). Os chunks são requisitados sob esse segmento de versão, então o gateway precisa mapeá-lo para um caminho `sdk-web` publicado (o harness o normaliza para a versão publicada mais recente).
+- **Link de pagamento.** Reescreva a origem absoluta `checkout.<env>.y.uno` no `index.html` servido para o seu base path, como o harness faz, ou o bundle será carregado a partir do host da Yuno.
+- **Fallback.** O SDK 1.11.16+ volta a carregar os scripts de fraude, o botão do Samsung Pay em português e as fontes do Checkout Builder a partir da Yuno quando o gateway não consegue servi-los, então uma regra ausente degrada o funcionamento em vez de quebrá-lo. Manter todas as requisições fora de `*.y.uno` ainda exige todas as regras acima.
+
+## Checklist de verificação {#verification-checklist}
+
+Com o proxy em execução, verifique no DevTools do navegador:
+
+1. **Aba de rede**: nenhuma requisição para qualquer host `*.y.uno` parte da página do lojista. Todo o tráfego vai para a origem do proxy.
+2. `window.SdkPayments` está definido; `window.Yuno` está indefinido ou é um alias legado.
+3. O evento `sdk-payments-ready` é disparado em `document` depois que o SDK inicializa.
+4. Não há tokens DOM `yuno-*` na saída renderizada, exceto os da allowlist de marcas de confiança (`yuno-badge`, `secure-by-yuno`, `yuno-typography-provider`, `yuno-c2p`, `yuno-redirect`, `yuno-debug`, `data-yuno-session-id`).
+
+## Implementação de referência {#reference-implementation}
+
+O código-fonte completo está no repositório [`yuno-sdk-web/white-label-proxy-server`](https://github.com/yuno-payments/yuno-sdk-web/tree/main/white-label-proxy-server). São cerca de 350 linhas em `server.js`; tudo cabe em um único arquivo porque não há lógica de negócio, apenas roteamento e higiene de cabeçalhos.
+
+## Veja também {#see-also}
+
+- [White Label (Web SDK)](/pt-br/docs/sdks/customization/web/white-label): as substituições do lado do SDK que este harness verifica.
+- [yuno-payments/yuno-sdk-web/tree/main/white-label-proxy-server](https://github.com/yuno-payments/yuno-sdk-web/tree/main/white-label-proxy-server): código-fonte completo.
+- [RFC 7230 §6.1: cabeçalhos específicos da conexão](https://datatracker.ietf.org/doc/html/rfc7230#section-6.1)
+- [Documentação de WebSocket do http-proxy](https://github.com/http-party/node-http-proxy#proxying-websockets)

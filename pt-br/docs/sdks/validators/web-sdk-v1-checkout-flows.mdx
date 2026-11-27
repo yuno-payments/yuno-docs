@@ -1,0 +1,375 @@
+---
+title: "Validador: fluxos de checkout do Web SDK v1"
+sidebarTitle: "Web SDK v1: fluxos de checkout"
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Um checklist somente leitura para agentes de código com IA que audita os fluxos Full, Lite, Seamless, botões externos, cadastro e status de uma integração do Yuno Web SDK 1.11."
+---
+
+Coloque este arquivo na raiz do seu projeto e peça ao seu agente de código:
+
+> Valide minha integração do Yuno Web SDK seguindo este arquivo.
+
+Ele funciona como `CLAUDE.md`, `AGENTS.md` ou prompt colado, com qualquer agente de código (Claude Code, Cursor, Codex,
+Copilot). Ele audita como seu app web usa o Yuno Web SDK v1 (linha 1.11) nos fluxos de interface: checkout Full, Lite,
+Seamless, botões externos (de carteiras), cadastro Lite, telas de status e continuação após 3DS ou um redirecionamento,
+e o ciclo de vida do framework (React, Next.js, Vue, Angular, roteadores SPA, SSR). Ele informa o que está errado com arquivo
+e linha. Ele só lê o código e não altera nada, a menos que você peça. Headless, Secure Fields, VTEX e SDKs mobile
+estão fora do escopo.
+
+## Como usar {#how-to-use}
+
+Primeiro detecte quais fluxos o repositório usa, depois rode o Grupo A mais os grupos que se aplicam e marque os outros
+como N/A:
+
+`grep -rnE "loadScript|sdk-payments-script|SdkPayments|window\.Yuno|sdk-payments-ready|yuno-sdk-ready|\.initialize\(|startCheckout|mountCheckout|mountCheckoutLite|startSeamlessCheckout|mountSeamlessCheckout|mountSeamlessCheckoutLite|mountSeamlessExternalButtons|mountExternalButtons|mountEnrollmentLite|mountStatusPayment|paymentResult|continuePayment|startPayment|updateCheckoutSession|unmountSdk|unmountAllExternalButtons" --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git --exclude-dir=build .`
+
+Não aprove uma verificação porque o código "parece certo": cite a linha que comprova.
+
+## Os fluxos validados {#the-flows-being-validated}
+
+O SDK é carregado uma vez, com `const Yuno = await loadScript()` de `@yuno-payments/sdk-web` ou com uma
+tag script para `https://sdk-web.y.uno/v1.11/main.js`. O loader injeta a tag com id `sdk-payments-script`.
+O bundle define `window.SdkPayments` (e `window.Yuno` como alias) e dispara `sdk-payments-ready` (e
+`yuno-sdk-ready` como alias) uma vez. Uma única instância `yuno` atende todos os fluxos da página:
+`const yuno = await Yuno.initialize(PUBLIC_API_KEY)`.
+
+```
+Full:      backend creates checkout session -> await yuno.startCheckout({ checkoutSession, elementSelector,
+           countryCode, language, createPayment, ... }) -> await yuno.mountCheckout()
+           -> shopper pays (SDK button, or your button calling await yuno.startPayment())
+           -> createPayment(oneTimeToken) -> your backend POST /payments with checkout.session
+           -> await yuno.continuePayment() (declined card retry, sdk_action_required) or await yuno.unmountSdk()
+           -> paymentResult(status, subStatus) callback; webhook is the final truth
+Lite:      same startCheckout (all five fields) -> await yuno.mountCheckoutLite({ paymentMethodType, vaultedToken? })
+           -> createPayment -> backend -> continuePayment / unmountSdk; wallets via mountExternalButtons
+Seamless:  await yuno.startSeamlessCheckout({ checkoutSession, elementSelector, countryCode, language, ... })
+           (no createPayment) -> mountSeamlessCheckout() | mountSeamlessCheckoutLite({ paymentMethodType })
+           | mountSeamlessExternalButtons([...]) -> the SDK creates the payment -> paymentResult + webhook
+External:  startCheckout (with createPayment) -> await yuno.mountExternalButtons([{ paymentMethodType,
+           elementSelector }, ...]) once -> OTT to createPayment -> continuePayment
+           -> teardown unmountExternalButton(type) / unmountAllExternalButtons()
+Enrollment: backend creates customer + a new customer session -> await yuno.mountEnrollmentLite({ customerSession,
+           countryCode, language, renderMode?, enrollmentStatus, error }) (no startCheckout)
+           -> enrollmentStatus({ vaultedToken, status }) -> unmountSdk()
+Status:    after a redirect or 3DS return: await yuno.mountStatusPayment({ checkoutSession, countryCode, language })
+           or const status = await yuno.paymentResult(checkoutSession)   (renders nothing)
+Retry:     new checkout session -> await yuno.updateCheckoutSession(newSession), or remount
+```
+
+## Verificações {#checks}
+
+Severidade: (B) bloqueia ou quebra o pagamento, (W) degrada, (I) informativo. Informe PASS / FAIL / N/A para cada uma.
+As falhas de validação do SDK são lançadas (a promise é rejeitada); elas não são passadas ao callback `error`, exceto
+`Element <sel> doesn't exist in the DOM`, que é lançada e também enviada ao `error` como `ELEMENT_NOT_FOUND`.
+
+### Grupo A. Qualquer fluxo {#group-a-any-flow}
+
+#### 1. O script é carregado de uma só forma, aguardado, e o global retornado é usado (A1, B) {#1-the-script-is-loaded-one-way-awaited-and-the-returned-global-is-used-a1-b}
+- Veja `loadScript(`, tags script com `sdk-web.*y.uno/v1`, `id="sdk-payments-script"`, `window.Yuno`,
+  `window.SdkPayments` e listeners de `sdk-payments-ready` / `yuno-sdk-ready`.
+- FAIL em: `Yuno.initialize` no nível superior de um script `async`/`defer` sem evento de pronto; um
+  `<script id="sdk-payments-script">` escrito à mão ao lado de `loadScript()`; um listener de pronto registrado depois da tag script;
+  `loadScript` chamado em vários módulos com opções diferentes (`env`, `region`, `sri`).
+- Por quê: o global fica indefinido (`Cannot read properties of undefined (reading 'initialize')`), ou o loader reutiliza
+  qualquer tag com esse id sem verificar a URL, então a primeira tag vence e as opções seguintes são ignoradas sem aviso.
+
+#### 2. `initialize` é aguardado e chamado com os argumentos certos (A2, B) {#2-initialize-is-awaited-and-called-with-the-right-arguments-a2-b}
+- Veja `.initialize(`. A assinatura é `initialize(publicApiKey, applicationSession?, options = {})` e ela
+  retorna uma Promise.
+- FAIL em: o resultado usado sem `await`/`.then`; opções passadas na segunda posição (`initialize(KEY, { apiUrl })`);
+  uma chave vinda de uma variável de ambiente indefinida no navegador (uma variável do Next.js sem `NEXT_PUBLIC_`).
+- Por quê: `yuno.startCheckout is not a function` em uma Promise, ou `publicApiKey=undefined is not valid`.
+
+#### 3. Um único `initialize` por página, compartilhado por todos os fluxos (A3, B) {#3-one-initialize-per-page-shared-by-every-flow-a3-b}
+- Conte os pontos de chamada de `.initialize(` e onde ficam (corpo do componente, effect, handler de rota, helper por fluxo).
+- PASS: uma promise no nível do módulo, singleton, context provider ou `useRef` protegido.
+- FAIL em: `initialize` no corpo de um componente ou em um effect sem proteção; uma segunda instância para status, cadastro,
+  botões express ou uma segunda seção de pagamento.
+- Por quê: o SDK tem um único event bus global, e cada assinatura `start*` / `mount*` remove os callbacks da instância
+  anterior; o token de uso único então chega a uma instância sem `createPayment` e nada acontece,
+  sem erro. Sinal em tempo de execução: várias linhas `sdk-session:` no console significam várias chamadas de `initialize`.
+
+#### 4. A chave pública e o ambiente do script coincidem (A4, W) {#4-public-key-and-script-environment-agree-a4-w}
+- Veja literais de chave e variáveis de ambiente (`prod_`, `sandbox_`, `prod_eu_...`) e `loadScript({ env, region })`.
+- FAIL em: prefixo da chave e `env`/`region` divergentes; uma chave privada ou secreta no código do navegador ou em uma
+  variável `NEXT_PUBLIC_`.
+- Por quê: o host da API segue a chave, enquanto o host do bundle segue o `loadScript`. Nenhuma falha grave foi encontrada no código
+  para uma divergência, então verifique em tempo de execução; uma chave privada vazada é sempre FAIL.
+
+#### 5. Ordem das chamadas, espera e família do fluxo (A5, B) {#5-call-order-awaiting-and-flow-family-a5-b}
+- Em cada arquivo, `startCheckout` ou `startSeamlessCheckout` deve ser aguardado antes de qualquer `mount*`.
+- FAIL em: start e mount disparados sem espera (ambos carregam chunks lazy, a ordem não é garantida); `mountCheckout`
+  sem `startCheckout`; `startSeamlessCheckout` + `mountCheckout` / `mountCheckoutLite` / `mountExternalButtons`;
+  `startCheckout` + `mountSeamlessCheckout`.
+- Por quê: `Wrong element selector` (estado ainda vazio), o que esconde a causa real; ou o token é descartado sem aviso,
+  ou seu `createPayment` nunca é chamado.
+
+#### 6. Argumentos obrigatórios de `startCheckout` / `startSeamlessCheckout` (A6, B) {#6-required-startcheckout--startseamlesscheckout-arguments-a6-b}
+- PASS: `checkoutSession`, `elementSelector`, `language` (strings não vazias), `countryCode` (código ISO em maiúsculas
+  do enum do SDK) e, apenas para `startCheckout`, uma função `createPayment`.
+- FAIL em: qualquer um ausente, `countryCode: 'co'`, um código fora do enum, `createPayment` que não é função.
+- Por quê: lançado como `<key>=<value> is not valid`, por exemplo `language=undefined is not valid` ou
+  `countryCode=co is not valid`. `language` é obrigatório no código, embora várias páginas da documentação digam que é opcional.
+
+#### 7. Os contêineres existem, estão visíveis e não colidem (A7, B) {#7-containers-exist-are-visible-and-do-not-collide-a7-b}
+- Relacione cada `elementSelector` e `renderMode.elementSelector` (`apmForm`, `actionForm`) com seu elemento.
+- FAIL em: um elemento renderizado depois ou de forma condicional; um contêiner com `display:none`, `visibility:hidden`,
+  `height:0` ou `overflow:hidden`; um seletor de `renderMode` sem elemento correspondente; dois componentes com o mesmo
+  id; um elemento seu usando um id que o SDK adiciona ao `<body>` (`payment-status`, `enrollment-lite`,
+  `sdk-payments-loader`).
+- Por quê: `Element <sel> doesn't exist in the DOM`; um seletor de `renderMode` apontando para um elemento inexistente não renderiza nada
+  e não gera erro; um contêiner oculto parece que "o formulário não renderiza". Um `renderMode.elementSelector` em string
+  é suportado: ele posiciona apenas o formulário de APM, e as telas de ação (QR do PIX, voucher) abrem em um modal, como acontece com
+  um `actionForm` não definido. Informe como (I) apenas se forem esperadas telas de ação inline.
+
+#### 8. Os nomes dos callbacks batem com o SDK (A8, W) {#8-callback-names-match-the-sdk-a8-w}
+- Verifique as chaves passadas a `startCheckout`, `startSeamlessCheckout`, `mountEnrollmentLite`, `mountStatusPayment`
+  e `continuePayment`. Nomes reais: `createPayment`, `paymentMethodSelected`, `paymentResult`, `error`,
+  `enrollmentStatus`, `onLoading`, `onChange`.
+- FAIL em: `onPaymentMethodSelected` (não existe, embora os exemplos da documentação o mostrem), `onError`,
+  `onPaymentResult`, `onSuccess`; `onRendered` usado como sinal de "formulário pronto" (interno, só cartão). Os aliases
+  `yuno*` descontinuados ainda funcionam: informe como (I).
+- Por quê: chaves desconhecidas são ignoradas, então o callback nunca dispara e nada avisa você.
+
+#### 9. Os handlers de resultado e de erro tratam corretamente os desfechos não finais (A9, W) {#9-result-and-error-handlers-treat-non-final-outcomes-correctly-a9-w}
+- Leia o corpo de `paymentResult`, `error` e `enrollmentStatus`.
+- FAIL em: um pedido marcado como pago ou com falha apenas pelo `status`; nenhum handler de `error`; código que espera uma chamada de `error`
+  por falha.
+- Por quê: um modal de 3DS ou de voucher fechado pelo comprador informa `paymentResult('PENDING', 'CANCELLED_BY_USER')`; o fechamento de um PIX
+  ou de um redirecionamento informa `error('CANCELED_BY_USER')`; o `error` tem debounce de 250 ms, então uma rajada vira
+  uma única chamada. Confirme o status final pelo webhook.
+
+#### 10. As rejeições de promise do SDK são capturadas (A10, W) {#10-sdk-promise-rejections-are-caught-a10-w}
+- Encontre `await yuno.start*`, `yuno.mount*`, `yuno.continuePayment` fora de `try`/`.catch`.
+- FAIL em: `await` solto ou fire-and-forget em um event handler ou effect sem recuperação da interface (reabilitar seu
+  botão, esconder seu loader, `yuno.hideLoader()`).
+- Por quê: erros de validação, `Invalid payment: <session>` e `Wrong status: CREATED` viram rejeições não tratadas e
+  o comprador vê uma página travada.
+
+#### 11. Ciclo de vida da sessão de checkout (A11, B) {#11-checkout-session-lifecycle-a11-b}
+- Encontre a criação da sessão (`/v1/checkout/sessions`) e como o id dela chega à página.
+- PASS: criada no servidor, por tentativa, quando o comprador chega ao pagamento, com o mesmo `country` que o `countryCode`, estável
+  entre re-renderizações; uma nova tentativa usa `updateCheckoutSession(newSession)` ou uma remontagem.
+- FAIL em: criada em tempo de build, no corpo do render ou em um effect cujas dependências mudam a cada render; uma sessão reutilizada
+  depois de já ter um pagamento; a chave privada no código do navegador.
+- Por quê: os dados digitados se perdem na remontagem; uma sessão reutilizada é recusada (só os botões externos mostram `The checkout session
+  already has a payment. Create a new checkout session to pay again.`); meios errados se o país for diferente.
+
+#### 12. Ciclo de vida do framework: uma montagem, limpeza, re-renderizações (A12, B) {#12-framework-lifecycle-one-mount-cleanup-re-renders-a12-b}
+- React: a instância fica em um `useRef`, um context ou no escopo do módulo, a partir de um único `initialize` em cache. Um effect
+  executa `start*` -> `if (cancelled) return` -> `mount*`, com dependências limitadas a `[yuno, checkoutSession, countryCode]`
+  e callbacks lidos de uma ref. A limpeza define `cancelled = true` e chama `unmountSdk()` (mais
+  `unmountAllExternalButtons()` se botões foram montados). O StrictMode executa os effects duas vezes em desenvolvimento, então
+  `initialize` precisa de uma proteção (a demo React da Yuno usa uma flag `useRef`). Nunca chame `start*`/`mount*` durante o
+  render ou em `onChange`. O id do contêiner é único por componente montado. Não recrie a sessão de checkout
+  a cada re-renderização.
+- Vue (orientação, não coberta pela documentação da Yuno): `start*`/`mount*` em `onMounted` (o contêiner já existe nesse ponto),
+  `unmountSdk()` em `onBeforeUnmount`; mantenha a instância fora do estado reativo.
+- Angular (orientação, não coberta pela documentação da Yuno): monte em `ngAfterViewInit` (não em `ngOnInit`, a view ainda não está no
+  DOM), `unmountSdk()` em `ngOnDestroy`; mantenha a instância em um serviço root.
+- Roteadores SPA simples: desmonte tudo (`unmountSdk()`, desmontagem dos botões) ao sair da rota e não execute `initialize` de novo
+  a cada carregamento de seção.
+- FAIL em: nenhuma limpeza; dependências `[]` enquanto props são usadas dentro; objetos ou callbacks inline nas dependências; montagem no
+  corpo do render; mudanças de rota sem desmontagem.
+- Por quê: formulários duplicados ou piscando em desenvolvimento, o formulário sumindo a cada tecla, um formulário desatualizado depois da
+  navegação. Parcelas ausentes quando dois formulários se empilham é relatado em casos de suporte: verifique em tempo de execução. Uma
+  montagem repetida no mesmo contêiner substitui o root anterior, então reconstrói os iframes em vez de
+  duplicá-los. Um `unmountSdk()` tardio de um effect cancelado do StrictMode esvaziando o formulário mais novo é uma
+  hipótese: verifique em tempo de execução se o formulário some em dev.
+
+#### 13. Nenhuma chamada ao SDK durante o SSR (A13, B) {#13-no-sdk-calls-during-ssr-a13-b}
+- Procure `loadScript(` ou `.initialize(` no escopo do módulo, em server components do Next.js, `getServerSideProps`,
+  server actions ou arquivos sem `'use client'`.
+- PASS: chamadas apenas dentro de effects de componentes `'use client'`, `dynamic(() => import(...), { ssr: false })` ou
+  atrás do evento de pronto no navegador. Importar `@yuno-payments/sdk-web` no servidor é seguro.
+- FAIL em: qualquer chamada que possa rodar no Node. Por quê: `loadScript()` é rejeitado com `ReferenceError: document is not
+  defined` (`window is not defined` para acesso direto ao global) em tempo de build ou de requisição.
+
+#### 14. Seu CSS não esconde nem reestiliza o SDK (A14, W) {#14-your-css-does-not-hide-or-restyle-the-sdk-a14-w}
+- Busque no CSS `*`, `iframe`, `div > div`, `[class*=sdk-payments]`, `[id^=yuno]`, `font-family ... !important`,
+  `display:none` em ancestrais do contêiner e regras com escopo em um contêiner de botões (`#<container> > div`).
+- FAIL em: qualquer regra que esconda, redimensione ou reestilize filhos de um contêiner do SDK; um `* { font-family }` global
+  com um SDK anterior ao 1.11.41.
+- Por quê: botão de carteira "não renderiza", fontes erradas, deslocamento de layout (dê aos contêineres um `min-height`).
+
+#### 15. A rede e a CSP permitem os hosts do SDK (A15, W) {#15-network-and-csp-allow-the-sdk-hosts-a15-w}
+- Verifique os cabeçalhos ou a meta `Content-Security-Policy`, proxies e regras de WAF.
+- PASS: script `sdk-web.y.uno`, `sdk-web.<env>.y.uno`, UE `sdk-web.prod.eu.y.uno` e, com `sri: true`,
+  `https://prod.y.uno/sdk-static-bundles-ms/` (`prod.eu.y.uno` para a UE, `sandbox.y.uno` no sandbox); frames
+  `sdk-web-card.<env>.y.uno` e `sdk-3ds.<env>.y.uno`; connect `api[-env|.region].y.uno` e `wss://<env>.y.uno`;
+  assets `sdk.prod.y.uno`, `icons.prod.y.uno`; `form-action` para provedores que fazem POST. Overrides de `apiUrl`/`assetUrl`
+  somente atrás de um proxy que encaminhe todos os caminhos da Yuno.
+- Por quê: o formulário de cartão nunca renderiza, desafio 3DS em branco, timeouts silenciosos. A documentação da Yuno ainda não tem seção sobre CSP.
+
+#### 16. Fixação de versão, SRI e nível de recursos (A16, W) {#16-version-pinning-sri-and-feature-level-a16-w}
+- Leia o `package.json`, `loadScript({ sri })`, as URLs de script (`/v1.x/main.js`) e `integrity=`.
+- FAIL em: `integrity` em um caminho móvel como `https://sdk-web.y.uno/v1.11/main.js`; um hash copiado de uma
+  release mais antiga; `/v1.10/` ou anterior usando recursos da 1.11 (`onChange` precisa da 1.10.11, `savePaymentMethodEnabled`
+  da 1.10.12, cadastro PayPal inline da 1.10.13); `sri: true` em um pacote antigo esperando correções recentes.
+- Por quê: o navegador bloqueia o script após o próximo patch; lojistas com versão fixa só recebem correções após atualizar o pacote.
+
+#### 17. Apenas um formulário de cartão fica visível (A17, W) {#17-only-one-card-form-is-visible-a17-w}
+- Procure seus próprios campos de cartão (`cardnumber`, `cc-number`, `name="card`) na mesma página do contêiner da Yuno.
+- FAIL se um formulário de cartão feito à mão puder aparecer ao lado do da Yuno: o comprador pode digitar no campo errado (parcelas
+  ausentes por isso são relatadas em casos de suporte, verifique em tempo de execução).
+
+### Grupo B. Checkout Full {#group-b-full-checkout}
+
+#### 18. `createPayment` ramifica e faz a limpeza (B1, B) {#18-createpayment-branches-and-cleans-up-b1-b}
+- Leia o corpo de `createPayment`. PASS: depois que seu backend responde, um cartão recusado ou com erro chama
+  `continuePayment()`; `checkout.sdk_action_required` chama `continuePayment({ showPaymentStatus: true })`;
+  caso contrário, `unmountSdk()`. Um único `await yuno.continuePayment()` incondicional (o quickstart) é tolerado.
+- FAIL em: nem `continuePayment` nem `unmountSdk`; uma chamada ao backend sem `try/catch` e sem reset da interface.
+- Por quê: um cartão recusado deixa um formulário morto, e o loader do SDK continua na tela.
+
+#### 19. Momento do `continuePayment` e tratamento do resultado (B2, W) {#19-continuepayment-timing-and-result-handling-b2-w}
+- PASS: aguardado, uma vez por tentativa, depois que o backend criou o pagamento na mesma sessão de checkout. Em uma
+  WebView, o código lê `result?.action === 'REDIRECT_URL'` e `result.redirect_url.init_url`. Esse objeto só
+  volta quando o redirecionamento do provedor tem `open_external_browser`; caso contrário, o próprio SDK navega a página.
+- FAIL em: chamado antes de `POST /payments` resolver ou com outra sessão; chamado duas vezes; leitura de
+  `result.redirect.init_url` (o formato da documentação).
+- Por quê: `Invalid payment: <session>`, `Wrong status: CREATED`, `Action <X> was already executed` (apenas no log) ou
+  `TypeError: Cannot read properties of undefined (reading 'init_url')`.
+
+#### 20. Seu botão de pagar combina `showPayButton: false` com `startPayment` (B3, W) {#20-your-pay-button-pairs-showpaybutton-false-with-startpayment-b3-w}
+- PASS: com `showPayButton: false` ou seu próprio botão, um handler chama `await yuno.startPayment()`, condicionado a
+  `onChange({ form: { isValid } })` (1.10.11+).
+- FAIL em: `showPayButton: false` sem nenhum `startPayment`; `startPayment()` antes de o formulário ser montado.
+- Por quê: ninguém consegue enviar; o evento de início não fica em buffer, então uma chamada antecipada se perde.
+
+### Grupo C. Lite {#group-c-lite}
+
+#### 21. Argumentos e exclusividade de `mountCheckoutLite` (C1, B) {#21-mountcheckoutlite-arguments-and-exclusivity-c1-b}
+- PASS: `paymentMethodType` é um tipo não vazio e que não é carteira; `vaultedToken` apenas para um meio salvo; um formulário Lite
+  por instância (uma segunda chamada substitui a primeira no mesmo `elementSelector`).
+- FAIL em: `APPLE_PAY`, `GOOGLE_PAY`, `PAYPAL` ou outra carteira sem `vaultedToken`; um tipo vazio; duas seções Lite
+  esperadas ao mesmo tempo.
+- Por quê: `paymentMethodType=<X> is not compatible with checkout lite`; `paymentMethodType=undefined is not valid`
+  (ausente) ou `paymentMethodType= is not valid` (string vazia).
+
+#### 22. O Lite ainda precisa do contrato completo de `startCheckout` (C2, B) {#22-lite-still-needs-the-full-startcheckout-contract-c2-b}
+- Aplique o A6 ao `startCheckout` anterior ao `mountCheckoutLite`, mesmo quando a página mostra um único APM.
+- Por quê: `elementSelector` e `createPayment` continuam sendo validados, e o formulário Lite renderiza nesse seletor.
+  O Lite renderiza na montagem; `startPayment()` apenas envia.
+
+### Grupo D. Seamless {#group-d-seamless}
+
+#### 23. O Seamless não recebe `createPayment` e não precisa de `continuePayment` (D1, W) {#23-seamless-takes-no-createpayment-and-needs-no-continuepayment-d1-w}
+- FAIL em: `createPayment` passado para `startSeamlessCheckout`; um Create Payment no backend após uma montagem Seamless; um
+  `continuePayment()` incondicional após um pagamento Seamless.
+- Por quê: o SDK cria o pagamento e nunca chama seu callback, então você cria, ou espera, um segundo pagamento.
+  A nova tentativa com cartão recusado é automática, e o resultado chega em `paymentResult` e no webhook. Promoções não se aplicam.
+- A documentação diz para chamar `startPayment()` após uma montagem Seamless; se o formulário Seamless precisa disso para abrir não está
+  confirmado no código: verifique em tempo de execução.
+
+#### 24. Carteiras no Seamless usam `mountSeamlessExternalButtons` (D2, W) {#24-wallets-in-seamless-use-mountseamlessexternalbuttons-d2-w}
+- FAIL em: `startSeamlessCheckout` + `mountExternalButtons` sem nenhuma chamada `mountSeamlessCheckout*`.
+- Por quê: `mountExternalButtons` renderiza botões que entregam o token a um `createPayment` do lojista, que o Seamless
+  não tem; o comprador aprova a carteira e nada acontece. A página pública do Seamless mostra
+  `mountExternalButtons`; o caminho do código sugere a variante Seamless. Verifique em tempo de execução antes de reprovar um repositório
+  que funciona em produção.
+
+### Grupo E. Botões externos {#group-e-external-buttons}
+
+#### 25. Apenas tipos de carteira, montados uma vez, após `startCheckout` (E1, B) {#25-only-wallet-types-mounted-once-after-startcheckout-e1-b}
+- PASS: uma chamada listando todas as carteiras, cada uma com `paymentMethodType` e `elementSelector`, após `startCheckout`
+  com `createPayment`. Permitidos: `APPLE_PAY`, `GOOGLE_PAY`, `PAYPAL`, `PAYPAL_ENROLLMENT`, `PAYPAL_BA_ENROLLMENT`,
+  `REVOLUT_PAY`, `PAYPAL_BRAINTREE`, `SAMSUNG_PAY` (a documentação lista menos; o código aceita estes oito).
+- FAIL em: uma chamada por meio; NuPay, Pix, cartão ou qualquer tipo que não seja carteira (use `mountCheckoutLite`); um array
+  vazio; um contêiner ausente; nenhum start anterior.
+- Por quê: `There are not valid paymentMethods types to mount external buttons`; `External buttons has not valid
+  arguments...`; `Can't mount because SDK has not been started.  Please call startCheckout or startEnrollment
+  first`; `There are no payment methods enabled to mount external buttons`; um contêiner ausente interrompe o restante
+  do array; cada chamada busca as configurações de novo (renderizações acima de 10 s relatadas em casos de suporte, verifique em tempo de execução).
+
+#### 26. Uma carteira que não renderiza não é um erro (E2, I) {#26-a-wallet-that-does-not-render-is-not-an-error-e2-i}
+- FAIL em: layout ou fluxo que exige que uma carteira renderize.
+- Relatado em casos de suporte, verifique em tempo de execução, não são FAIL por si só: Google Pay oculto no Safari, Firefox e
+  Samsung Internet (não filtrado no SDK); Apple Pay falhando quando servido a partir de `host:port`.
+
+#### 27. Os botões são desmontados junto com o SDK (E3, W) {#27-buttons-are-torn-down-with-the-sdk-e3-w}
+- FAIL se a desmontagem chama apenas `unmountSdk()`. Por quê: `unmountSdk()` remove apenas o root principal; os botões continuam na
+  página após a navegação. Adicione `unmountAllExternalButtons()` (ou `unmountSeamlessExternalButtons()`).
+
+### Grupo F. Cadastro {#group-f-enrollment}
+
+#### 28. Contrato de `mountEnrollmentLite` (F1, B) {#28-mountenrollmentlite-contract-f1-b}
+- PASS: um novo `customerSession` por cadastro, `countryCode` em maiúsculas, `language`, `enrollmentStatus` e `error`,
+  e `renderMode: { type: 'element', elementSelector }` para um formulário inline. Sem `startCheckout` nem `startPayment`.
+- FAIL em: `customerSession` ausente ou reutilizado; um `elementSelector` no nível superior; chamadas a `startEnrollment` ou
+  `mountEnrollment` (elas não existem); `language` omitido.
+- Por quê: `customerSession=undefined is not valid`; o seletor no nível superior é ignorado e o formulário abre como modal;
+  uma sessão reutilizada falha no segundo cadastro; um `language` omitido volta para espanhol (ou para o idioma do fluxo
+  anterior) e envia `accept-language: es`. O cadastro valida apenas que `customerSession` e
+  `countryCode` são strings não vazias, então `'co'` não é rejeitado: verifique as maiúsculas você mesmo.
+
+#### 29. Botão inline de cadastro PayPal (F2, I) {#29-paypal-enrollment-inline-button-f2-i}
+- PASS: SDK 1.10.13+, `renderMode` element, um contêiner vazio, nenhum botão PayPal do lojista na frente. Caso contrário,
+  o comprador clica duas vezes ou vê dois botões PayPal.
+
+### Grupo G. Telas de status e continuação {#group-g-status-screens-and-continuation}
+
+#### 30. Página de retorno após um redirecionamento ou 3DS (G1, B) {#30-return-page-after-a-redirect-or-3ds-g1-b}
+- PASS: o `callback_url` da sessão é absoluto `https://`; o id da sessão de checkout sobrevive ao redirecionamento (parâmetro
+  de URL, cookie ou servidor); a página de retorno chama `mountStatusPayment({ checkoutSession, countryCode, language })`
+  ou `await yuno.paymentResult(checkoutSession)`; o status final vem do webhook.
+- FAIL em: nenhum tratamento de retorno, ou uma página de retorno esperando o callback `paymentResult` original.
+- Por quê: um redirecionamento de página inteira descarrega a página, então o callback da página nunca dispara. Por enquanto, esse fluxo está documentado apenas no
+  README da demo. Relatado em casos de suporte, verifique em tempo de execução: um `callback_url` vazio ou sem protocolo
+  quebra o retorno ou deixa uma janela de desafio em branco, e alguns fluxos adicionam `status` e
+  `payment_id` à URL de retorno, então um parser estrito precisa aceitá-los.
+
+#### 31. Argumentos de `mountStatusPayment` (G2, W) {#31-mountstatuspayment-arguments-g2-w}
+- PASS: `checkoutSession`, `language` e `countryCode` (enum em maiúsculas) definidos; callback chamado `paymentResult`. Ele
+  renderiza em um `<div id="payment-status">` que o SDK adiciona ao `<body>`; não recebe `elementSelector`.
+- Por quê: `language=undefined is not valid` é lançado depois que a requisição de configurações já foi executada.
+
+#### 32. WebView e redirecionamentos para navegador externo (G3, W) {#32-webview-and-external-browser-redirects-g3-w}
+- PASS: em uma WebView de app, o código trata o resultado `REDIRECT_URL` abrindo `redirect_url.init_url` no
+  navegador externo e retornando em `success_url` / `error_url`. O objeto só vem para redirecionamentos `open_external_browser`;
+  caso contrário, o próprio SDK navega a página.
+- FAIL em: ignorar o objeto retornado ou carregar o redirecionamento dentro da WebView por conta própria.
+- Por quê: páginas de provedores que não funcionam em uma WebView (Addi, Mercado Pago Checkout Pro) falham.
+
+## Formato do relatório {#report-format}
+
+```
+CHECK A3   One initialize per page        FAIL  src/components/Checkout.tsx:24 Yuno.initialize in component body
+                                                (second instance in src/pages/status.tsx:11)
+CHECK A6   startCheckout arguments        FAIL  src/checkout/useYuno.ts:40 no language -> language=undefined is not valid
+CHECK C1   mountCheckoutLite arguments    PASS  src/checkout/Lite.tsx:57 paymentMethodType from props, not a wallet
+CHECK F1   mountEnrollmentLite contract   N/A   no enrollment in this repository
+...
+SDK: @yuno-payments/sdk-web 9.7.0 (package-lock.json), bundle v1.11
+```
+
+Termine com as falhas ordenadas por impacto (pagamento bloqueado, depois resultado perdido ou errado, depois UX degradada), cada uma
+com uma correção de uma linha.
+
+## Diagnósticos a coletar {#diagnostics-to-capture}
+
+1. A versão do SDK: a URL do script ou a versão de `@yuno-payments/sdk-web`, e a linha `sdk-version:` do console.
+2. O id da sessão de checkout (ou da sessão de cliente, no cadastro) e o horário UTC da tentativa.
+3. Erros do console do navegador, incluindo todas as linhas `sdk-session:` (mais de uma significa várias chamadas de `initialize`).
+4. A chamada que falhou e seus argumentos, sem chaves nem dados pessoais, e o que `paymentResult` / `error` recebeu.
+5. Entradas de rede que falharam (bloqueadas pela CSP, 4xx/5xx) e, para WebViews, o dispositivo, o sistema operacional e a versão da WebView.
+
+## Documentação versus código {#docs-versus-code}
+
+Quando a documentação pública e o código divergirem, siga o lado do código e informe ao lojista que a documentação está sendo corrigida.
+
+| Tema | A documentação diz | O código faz |
+|---|---|---|
+| `language` | opcional, usa o idioma do navegador por padrão | obrigatório em `startCheckout`, `startSeamlessCheckout`, `mountStatusPayment` |
+| Callback de meio selecionado | `onPaymentMethodSelected` | `paymentMethodSelected` |
+| Retorno de `continuePayment` | `redirect: { init_url, ... }` | `redirect_url: { init_url, success_url, error_url }` |
+| Contêiner do cadastro | `elementSelector` no nível superior (uma página) | apenas `renderMode.elementSelector` |
+| Tipos de botão externo | dois ou quatro tipos | oito tipos de carteira |
+| `startPayment` | "obrigatório, senão o formulário não abre" | o Lite renderiza na montagem; `startPayment` apenas envia |
+| Depois de `createPayment` | sempre `continuePayment` | concorda: sem ação pendente, mostra a tela de status ou chama `paymentResult`; `Wrong status: CREATED` apenas enquanto o pagamento ainda está `CREATED` (chame depois que o Create Payment do seu backend retornar; veja B1) |
+
+Fontes: o código-fonte do Web SDK 1.11.47, o loader npm `@yuno-payments/sdk-web` 9.7.0,
+`@yuno-payments/sdk-web-types` 5.8.1, a demo do Yuno Web SDK e a documentação pública da Yuno.

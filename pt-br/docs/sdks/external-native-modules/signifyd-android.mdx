@@ -1,0 +1,190 @@
+---
+title: "Antifraude Signifyd (Android)"
+sidebarTitle: "Antifraude Signifyd (Android)"
+description: "Adicione o device profiling da Signifyd aos checkouts da Yuno no Android com o módulo yuno-sdk-antifraud-signifyd."
+robots: index
+---
+O módulo `yuno-sdk-antifraud-signifyd` adiciona o **device profiling da Signifyd** ao Yuno SDK para Android. Quando a Signifyd é um provedor de análise de fraude na sua rota de pagamento da Yuno, o Yuno SDK faz o profiling do dispositivo durante o checkout com o SDK para Android da Signifyd e envia o ID da sessão com o pagamento, para qualquer meio de pagamento. A Yuno então o repassa à Signifyd junto com o pedido.
+
+<Note>
+  O módulo é **opcional (opt-in)**: adicione-o somente se a sua conta da Yuno usar a Signifyd para análise de fraude. Instalá-lo não altera o seu código de pagamento nem de cadastro.
+</Note>
+
+Diferente dos outros módulos, o SDK para Android da Signifyd não está no Maven Central nem no repositório da Yuno: ele só está disponível no **registro privado da Signifyd**, e o seu build faz o download dele com **o seu próprio token da Signifyd**. A Yuno não empacota nem redistribui o SDK da Signifyd. A ativação segue as mesmas regras de todos os outros módulos, veja [Módulos nativos externos (Android)](/pt-br/docs/sdks/external-native-modules/android-overview).
+
+## Requisitos {#requirements}
+
+- Android **6.0 (API 23)** ou superior.
+- **android-sdk 2.29.0 ou superior** (`com.yuno.payments:android-sdk`).
+- `kotlin-stdlib` **1.9.22** ou superior, exigido pelo SDK da Signifyd.
+- Um **token de download do SDK da Signifyd**, emitido pelo seu solution engineer da Signifyd.
+- A Signifyd habilitada como **provedor de análise de fraude** na sua rota de pagamento da Yuno.
+
+## Instalação {#installation}
+
+<Steps>
+  <Step title="Armazene o seu token da Signifyd">
+    O token permite que o Gradle faça o download do SDK para Android da Signifyd (`com.signifyd:profiling:5.1.4`) a partir do registro privado da Signifyd. Ele só é usado quando o seu build resolve as dependências, nunca em tempo de execução: se ele expirar, novos builds falham e os apps que você já publicou continuam funcionando.
+
+    - **Sua máquina:** adicione-o ao arquivo `gradle.properties` no diretório home do usuário do Gradle (`~/.gradle/gradle.properties`), e não ao seu projeto:
+
+      ```properties
+      signifydGithubToken=<your-signifyd-token>
+      ```
+
+    - **CI:** exponha-o a partir do seu cofre de segredos como a variável de ambiente `ORG_GRADLE_PROJECT_signifydGithubToken`.
+
+    Nunca faça commit do token no seu repositório.
+  </Step>
+
+  <Step title="Declare o registro da Signifyd">
+    No seu `settings.gradle` (ou `settings.gradle.kts`), adicione o registro da Signifyd dentro de `dependencyResolutionManagement`, ao lado dos repositórios que você já declara:
+
+    <Tabs>
+      <Tab title="Groovy DSL">
+        ```groovy
+        dependencyResolutionManagement {
+            repositories {
+                exclusiveContent {
+                    forRepository {
+                        maven {
+                            url "https://maven.pkg.github.com/Signifyd-sdks/android-sdk-dist"
+                            credentials {
+                                username = ""
+                                password = providers.gradleProperty("signifydGithubToken").orNull
+                            }
+                        }
+                    }
+                    filter { includeGroup "com.signifyd" }
+                }
+            }
+        }
+        ```
+      </Tab>
+
+      <Tab title="Kotlin DSL">
+        ```kotlin
+        dependencyResolutionManagement {
+            repositories {
+                exclusiveContent {
+                    forRepository {
+                        maven {
+                            url = uri("https://maven.pkg.github.com/Signifyd-sdks/android-sdk-dist")
+                            credentials {
+                                username = ""
+                                password = providers.gradleProperty("signifydGithubToken").orNull
+                            }
+                        }
+                    }
+                    filter { includeGroup("com.signifyd") }
+                }
+            }
+        }
+        ```
+      </Tab>
+    </Tabs>
+
+    `exclusiveContent` faz o Gradle procurar artefatos `com.signifyd` somente nesse registro e envia o seu token somente para lá.
+  </Step>
+
+  <Step title="Adicione o módulo">
+    Adicione o módulo ao arquivo de build do módulo do seu app, ao lado da dependência do Yuno SDK:
+
+    <Tabs>
+      <Tab title="Groovy DSL">
+        Em `build.gradle`:
+
+        ```groovy
+        dependencies {
+            implementation "com.yuno.payments:android-sdk:2.29.0"
+            implementation "com.yuno.payments:yuno-sdk-antifraud-signifyd:1.0.0"
+        }
+        ```
+      </Tab>
+
+      <Tab title="Kotlin DSL">
+        Em `build.gradle.kts`:
+
+        ```kotlin
+        dependencies {
+            implementation("com.yuno.payments:android-sdk:2.29.0")
+            implementation("com.yuno.payments:yuno-sdk-antifraud-signifyd:1.0.0")
+        }
+        ```
+      </Tab>
+    </Tabs>
+
+    O módulo já traz o SDK da Signifyd, então você não precisa adicionar `com.signifyd:profiling` por conta própria.
+  </Step>
+
+  <Step title="Habilite a Signifyd na Yuno">
+    Peça à equipe da sua conta na Yuno para adicionar a Signifyd como provedor de análise de fraude na sua rota de pagamento. Sem isso, o módulo fica instalado, mas o Yuno SDK nunca o executa.
+  </Step>
+</Steps>
+
+## Ativando o módulo {#activating-the-module}
+
+O módulo **se registra sozinho** quando o processo do seu app inicia, por meio do [Jetpack App Startup](https://developer.android.com/topic/libraries/app-startup). Nenhum código é necessário além de adicionar a dependência, e você não define nenhuma chave da Signifyd no seu app: o Yuno SDK usa a chave do SDK da Signifyd que a Yuno fornece para a sua conta durante o checkout.
+
+Para confirmar que o módulo foi carregado, filtre o Logcat pela tag dele logo depois que o app iniciar e procure a linha `registered`:
+
+```bash
+adb logcat -s SignifydAntifraud
+```
+
+<Tip>
+  Depois que o módulo estiver instalado e a Signifyd estiver na sua rota de pagamento, o Yuno SDK passa a usá-lo automaticamente em todo checkout. Você não precisa alterar nenhum código de pagamento nem de cadastro.
+</Tip>
+
+<Accordion title="Se o seu app desativa o App Startup">
+  Se o seu app remove o content provider do App Startup do manifest (`androidx.startup.InitializationProvider` com `tools:node="remove"`), o módulo não consegue se registrar sozinho. Execute o inicializador dele você mesmo, uma única vez, antes de `Yuno.initialize(...)`:
+
+  ```kotlin
+  import androidx.startup.AppInitializer
+  import com.yuno.antifraud.signifyd.SignifydAntifraudInitializer
+
+  AppInitializer.getInstance(applicationContext)
+      .initializeComponent(SignifydAntifraudInitializer::class.java)
+  ```
+</Accordion>
+
+## Como funciona {#how-it-works}
+
+1. Quando o app inicia, o módulo registra o provedor Signifyd no Yuno SDK.
+2. Durante o checkout, se a Signifyd for um provedor de análise de fraude para a transação, o Yuno SDK executa o módulo com a chave do SDK da Signifyd que a Yuno fornece para a sua conta.
+3. O módulo faz o profiling do dispositivo com o SDK para Android da Signifyd e retorna o ID da sessão da Signifyd.
+4. O Yuno SDK envia esse ID de sessão em `payment_method.device_fingerprints` do pagamento, e a Yuno o repassa à Signifyd junto com o pedido.
+
+Se o profiling falhar ou demorar mais do que o checkout permite, o pagamento continua sem o fingerprint da Signifyd.
+
+## O que o módulo adiciona ao seu app {#what-the-module-adds-to-your-app}
+
+- O SDK da Signifyd traz `kotlinx-coroutines` 1.8.1 e `kotlinx-serialization-json` 1.6.3, então o seu app resolve pelo menos essas versões.
+- O módulo declara `INTERNET`, e o SDK da Signifyd adiciona a permissão normal `com.google.android.providers.gsf.permission.READ_GSERVICES`. As duas são mescladas automaticamente no seu manifest e nenhuma delas exibe um pedido ao usuário.
+- O módulo nunca solicita localização. Se o seu app já tiver permissão de localização, o SDK da Signifyd lê a última localização conhecida. Informe essa coleta de dados do dispositivo no seu formulário de Segurança dos dados do Google Play.
+- As regras de R8 / ProGuard do módulo e do SDK da Signifyd vêm como consumer rules. Nenhuma configuração manual é necessária ao minificar o seu app.
+
+<Accordion title="Migrando da dependência legada com.yuno.fraud-signifyd:yunosignifyd">
+  Se o seu app integrou a Signifyd pela antiga dependência `com.yuno.fraud-signifyd:yunosignifyd`, remova-a e adicione `yuno-sdk-antifraud-signifyd` no lugar. Não execute o profiling da Signifyd por conta própria quando usar este módulo.
+</Accordion>
+
+## Solução de problemas {#troubleshooting}
+
+<AccordionGroup>
+  <Accordion title="Gradle: 401 Unauthorized ou could not find com.signifyd:profiling">
+    O seu build não conseguiu fazer o download do SDK da Signifyd. Verifique se o registro da Signifyd está declarado como mostrado em [Instalação](#installation) e se `signifydGithubToken` contém um token válido da Signifyd, na sua máquina e no seu CI. Se o token expirou ou foi revogado, peça um novo ao seu solution engineer da Signifyd. Os apps que você já publicou continuam funcionando, porque o token só é usado no momento do build.
+  </Accordion>
+  <Accordion title="O módulo está instalado, mas os pagamentos não levam nenhum fingerprint da Signifyd">
+    Verifique, nesta ordem:
+
+    1. A Signifyd é um provedor de análise de fraude na sua rota de pagamento da Yuno.
+    2. O módulo foi registrado na inicialização: filtre o Logcat por `SignifydAntifraud` e procure a linha `registered`.
+    3. O seu app não está removendo o provider do App Startup do manifest. Se estiver, execute o inicializador manualmente, como descrito em [Ativando o módulo](#activating-the-module).
+  </Accordion>
+  <Accordion title="Logcat: Missing API_KEY param; skipping Signifyd profiling">
+    A Signifyd está habilitada para a sessão de checkout, mas nenhuma chave do SDK da Signifyd é fornecida para a sua conta, então o pagamento continua sem um fingerprint da Signifyd. Fale com o seu TAM da Yuno.
+  </Accordion>
+  <Accordion title="Falha em tempo de execução com NoSuchMethodError ou NoSuchFieldError mencionando com.yuno">
+    O seu `android-sdk` é anterior à 2.29.0. Atualize-o para a 2.29.0 ou superior.
+  </Accordion>
+</AccordionGroup>

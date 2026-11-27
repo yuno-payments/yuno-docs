@@ -1,0 +1,123 @@
+---
+title: Lite SDK (cadastro no Android)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Lite SDK (cadastro no Android)
+  description: >-
+    Guia passo a passo para integrar o Lite SDK (cadastro no Android) da Yuno ao
+    seu aplicativo móvel.
+  robots: index
+description: "Cadastre meios de pagamento usando o Lite SDK no Android com um fluxo de cadastro leve"
+---
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Siga este guia passo a passo para implementar e habilitar o recurso de cadastro do Lite SDK para Android da Yuno no seu app.
+
+## Passo 1: Inclua a biblioteca no seu projeto {#step-1-include-the-library-in-your-project}
+
+Antes de seguir com a implementação do Lite SDK, consulte o [Guia de início rápido](/pt-br/docs/sdks/overview/quickstart) para ver instruções detalhadas sobre como integrar corretamente o SDK ao seu projeto.
+
+Escolha o método de integração que melhor se adapta ao seu fluxo de desenvolvimento e aos seus requisitos técnicos. Depois de concluir a integração do SDK, você pode seguir com os passos abaixo para implementar a funcionalidade de cadastro lite.
+
+## Passo 2: Inicialize o SDK {#step-2-initialize-sdk}
+
+Inicialize o Yuno SDK na sua classe `Application` informando uma `PUBLIC_API_KEY` válida:
+
+```kotlin
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        Yuno.initialize(
+            this,
+            apiKey = "YOUR_PUBLIC_API_KEY",
+            config = YunoConfig()
+        )
+    }
+}
+```
+
+<Note>
+**Credenciais**
+
+Consulte a página de credenciais para mais informações: [/reference/getting-started/authentication](/reference/getting-started/authentication)
+</Note>
+
+## Passo 3: Crie uma sessão de cliente {#step-3-create-a-customer-session}
+
+Para iniciar o processo de cadastro, você precisa fornecer a `customer_session`. Primeiro, você precisa criar um cliente. Use o endpoint [Criar cliente](/reference/customers/create-customer) para criar novos clientes. Na resposta, você recebe o `id` do cliente, que você usa para criar a sessão de cliente.
+
+Depois de criar o cliente, você pode criar a sessão de cliente. Use o `id` do cliente e o endpoint [Criar sessão de cliente](/reference/customer-sessions-enrollment/create-customer-session). A `customer_session` é fornecida na resposta. Você precisa de uma nova `customer_session` toda vez que cadastrar um novo meio de pagamento.
+
+No seu servidor, crie também um [objeto de cadastro de meio de pagamento](/reference/payment-methods-checkout/enroll-payment-method-checkout) para essa sessão de cliente, para definir qual meio de pagamento o cliente pode cadastrar. Mantenha suas chaves privadas de API no servidor.
+
+## Passo 4: Inicie o processo de cadastro {#step-4-start-the-enrollment-process}
+
+Para oferecer uma experiência de cadastro lite, você deve primeiro inicializar o processo de cadastro e depois abrir a UI.
+
+### 1. Inicialize o cadastro {#1-initialize-enrollment}
+
+Chame `initEnrollment` no método `onCreate` da sua activity para preparar o SDK para o fluxo de cadastro.
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    
+    initEnrollment { state, message ->
+        Log.d("YunoEnrollment", "Enrollment state: $state, error: ${message?.code}")
+    }
+}
+```
+
+### 2. Abra a UI de cadastro {#2-launch-enrollment-ui}
+
+Chame `startEnrollment` com as sessões e os parâmetros de configuração para exibir o formulário de cadastro.
+
+```kotlin
+startEnrollment(
+    customerSession = "CUSTOMER_SESSION",
+    countryCode = "US",
+    showEnrollmentStatus = true,
+)
+```
+
+### Parâmetros {#parameters}
+
+Configure o cadastro lite com as seguintes opções:
+
+| Parâmetro              | Descrição                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`      | Refere-se à [sessão de cliente](/reference/customer-sessions-enrollment/create-customer-session) do cadastro atual. |
+| `countryCode`          | Este parâmetro especifica o código do país para o qual o cadastro está sendo configurado. |
+| `showEnrollmentStatus` | Controla a visibilidade da página de carregamento/spinner da Yuno durante o processo de cadastro. O padrão é `true`. |
+
+## Passo 5: Status do cadastro {#step-5-enrollment-status}
+
+Quando o processo de cadastro termina, o SDK invoca o callback fornecido em `initEnrollment` com o estado e, em `INTERNAL_ERROR`, uma [`StatusMessage`](/pt-br/docs/sdks/resources/references/android#statusmessage-error-details) que descreve a falha (`null` em todos os outros estados).
+
+### Valores de status possíveis {#possible-status-values}
+
+* `SUCCEEDED`: o cadastro foi bem-sucedido.
+* `FAIL`: o cadastro falhou.
+* `PROCESSING`: o cadastro está sendo processado.
+* `REJECT`: o cadastro foi rejeitado.
+* `CANCELED`: o usuário cancelou o cadastro.
+
+<Note>
+**App de demonstração**
+
+Além dos exemplos de código fornecidos, você pode acessar o [repositório do Yuno Android SDK](https://github.com/yuno-payments/yuno-sdk-android) para ver uma implementação completa dos SDKs da Yuno.
+</Note>
+
+## Tratamento de erros {#error-handling}
+
+Trate no seu app os erros retornados pelo SDK, como falhas de cadastro ou erros de validação. Para status HTTP e códigos de resposta, consulte [Códigos de status e de resposta](/reference/getting-started/response-codes) na referência da API.
+
+## Mantenha-se atualizado {#stay-updated}
+
+Acesse as [notas de versão](/changelog/android) para ver as atualizações mais recentes do SDK e o histórico de versões.

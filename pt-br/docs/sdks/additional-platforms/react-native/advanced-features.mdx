@@ -1,0 +1,186 @@
+---
+title: Recursos avançados
+sidebarTitle: Recursos avançados
+description: Otimização de desempenho, deep linking e configurações específicas de cada plataforma para React Native.
+---
+
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+
+## Deep linking / retorno do navegador externo {#deep-linking--external-browser-return}
+
+Alguns fluxos de pagamento redirecionam os usuários para um navegador externo, incluindo desafios de autenticação 3DS, redirecionamentos de transferência bancária, pagamentos PIX e outros meios de pagamento alternativos. Trate o retorno deles ao seu app com os passos a seguir.
+
+### 1. Defina callback_url na sessão de checkout {#1-set-callbackurl-in-checkout-session}
+
+Inclua `callback_url` ao criar a sessão de checkout no seu backend:
+
+```json
+{
+  "callback_url": "myapp://return"
+}
+```
+
+### 2. Configure os deep links {#2-configure-deep-links}
+
+**iOS - Info.plist:**
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLName</key>
+        <string>com.yourapp</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+    </dict>
+</array>
+```
+
+**Android - AndroidManifest.xml:**
+
+```xml
+<activity android:name=".MainActivity">
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+            android:scheme="myapp"
+            android:host="return" />
+    </intent-filter>
+</activity>
+```
+
+### 3. Trate os deep links no react-native {#3-handle-deep-links-in-react-native}
+
+```typescript
+import { YunoSdk } from '@yuno-payments/yuno-sdk-react-native';
+import { Linking } from 'react-native';
+import { useEffect } from 'react';
+
+function App() {
+  useEffect(() => {
+    // Handle initial URL (app opened from closed state)
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink(url);
+      }
+    });
+    
+    // Handle URL changes (app is running)
+    const subscription = Linking.addEventListener('url', (event) => {
+      handleDeepLink(event.url);
+    });
+    
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+  
+  const handleDeepLink = async (url: string) => {
+    // Check if it's a payment return URL
+    if (url.startsWith('myapp://return')) {
+      try {
+        await YunoSdk.receiveDeeplink(url);
+      } catch (error) {
+        console.error('Error processing deep link:', error);
+      }
+    }
+  };
+}
+```
+
+### 4. Continue o pagamento após o retorno {#4-continue-payment-after-return}
+
+Depois de tratar o deep link, continue o fluxo de pagamento:
+
+```typescript
+const handleDeepLink = async (url: string) => {
+  if (url.startsWith('myapp://return')) {
+    try {
+      await YunoSdk.receiveDeeplink(url);
+      
+      // Continue payment flow
+      await YunoSdk.continuePayment(
+        checkoutSessionId,
+        'US',
+        true // show payment status
+      );
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+};
+```
+
+## Desempenho {#performance}
+
+### Carregamento lazy {#lazy-loading}
+
+Inicialize o SDK somente quando o usuário entrar no fluxo de pagamento, para economizar recursos.
+
+```typescript
+const PaymentScreen = () => {
+  const [yunoLoaded, setYunoLoaded] = useState(false);
+  
+  useEffect(() => {
+    if (!yunoLoaded) {
+      YunoSdk.initialize({
+        apiKey: 'pk_test_key',
+        countryCode: 'US',
+      });
+      setYunoLoaded(true);
+    }
+  }, []);
+};
+```
+
+## Tratamento de erros {#error-handling}
+
+Escute o evento `onPaymentStatus` para tratar as falhas de forma adequada.
+
+```typescript
+const subscription = YunoSdk.onPaymentStatus((state) => {
+  if (state.status === 'FAILED') {
+    Alert.alert('Error', 'Payment failed. Please try again.');
+  }
+});
+```
+
+## Configuração específica de cada plataforma {#platform-specific-configuration}
+
+Trate as diferenças entre iOS e Android no seu app React Native.
+
+### Configuração condicional {#conditional-configuration}
+
+```typescript
+import { Platform } from 'react-native';
+
+await YunoSdk.initialize({
+  apiKey: 'your-api-key',
+  countryCode: 'US',
+  ...(Platform.OS === 'ios' && {
+    iosConfig: { /* iOS settings */ },
+  }),
+  ...(Platform.OS === 'android' && {
+    androidConfig: { /* Android settings */ },
+  }),
+});
+```
+
+### Diferenças entre plataformas {#platform-differences}
+
+| Recurso       | iOS                 | Android             |
+| ------------- | ------------------- | ------------------- |
+| Leitura de cartão | Não disponível       | Disponível           |
+| Deep links    | Universal Links     | Intent Filters      |
+| SO mínimo    | iOS 14.0+           | API 21 (5.0)+       |

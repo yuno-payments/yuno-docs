@@ -1,0 +1,110 @@
+---
+title: "Antifraude Signifyd (iOS)"
+sidebarTitle: "Antifraude Signifyd (iOS)"
+description: "Adicione o perfil de dispositivo da Signifyd aos checkouts iOS da Yuno com o módulo YunoAntifraudSignifyd."
+robots: index
+---
+<Note>
+  Este guia é para o Legacy SDK (`YunoSDK` 2.x). Para o Yuno SDK 3.x (`SdkPayments`), veja [Antifraude Signifyd (iOS)](/pt-br/docs/yuno-sdk/features/signifyd-ios).
+</Note>
+
+O módulo `YunoAntifraudSignifyd` adiciona o **perfil de dispositivo da Signifyd** ao SDK iOS da Yuno. Quando a Signifyd é um provedor de análise de fraude na sua rota de pagamento da Yuno, o Yuno SDK faz o perfil do dispositivo durante o checkout com o Profiling SDK da Signifyd e envia o ID da sessão com o pagamento. A Yuno então o encaminha para a Signifyd junto com o pedido.
+
+<Note>
+  O módulo é **opcional**: adicione-o apenas se a sua conta Yuno usa a Signifyd para análise de fraude. Instalá-lo não altera seu código de pagamento ou de cadastro.
+</Note>
+
+Diferente dos outros módulos, o Signifyd é distribuído em **um pacote próprio do Swift Package Manager**, e o Profiling SDK da Signifyd é baixado do repositório privado da Signifyd com **o seu próprio token da Signifyd**. A Yuno não inclui nem redistribui o SDK da Signifyd. A ativação segue as mesmas regras de todos os outros módulos, veja [Módulos nativos externos (iOS)](/pt-br/docs/sdks/external-native-modules/ios-overview).
+
+## Requisitos {#requirements}
+
+- iOS **14.0** ou superior.
+- Xcode **26.2** ou superior.
+- **YunoSDK 2.30.0 ou superior**, instalado pelo **Swift Package Manager**.
+- Um **token de download do Signifyd SDK**, emitido pelo seu solution engineer da Signifyd.
+- A Signifyd habilitada como **provedor de análise de fraude** na sua rota de pagamento da Yuno.
+
+<Warning>
+  O módulo está disponível **somente pelo Swift Package Manager**. Não existe pod do CocoaPods. O Yuno SDK também precisa vir do Swift Package Manager: se o seu app instala `YunoSDK` com CocoaPods e este módulo com Swift Package Manager, o app carrega duas cópias do Yuno SDK e o checkout não usa a Signifyd.
+</Warning>
+
+## Instalação {#installation}
+
+<Steps>
+  <Step title="Adicione seu token da Signifyd">
+    O token permite que o Swift Package Manager baixe o Profiling SDK da Signifyd do repositório privado da Signifyd. Ele só é usado quando o seu build resolve pacotes, nunca em tempo de execução.
+
+    - **Xcode 26:** vá em **Xcode > Settings > Source Control**, clique em **+**, escolha **GitHub** e informe a conta do GitHub e o token que a Signifyd forneceu. Em versões anteriores do Xcode, a mesma opção fica em **Settings > Accounts**.
+    - **CI:** grave o token em `~/.netrc` antes do build e remova o arquivo quando o build terminar:
+
+      ```
+      machine github.com
+        login x-access-token
+        password <your-signifyd-token>
+      ```
+  </Step>
+
+  <Step title="Adicione o pacote">
+    No Xcode, vá em **File > Add Package Dependencies...** e adicione:
+
+    ```
+    https://github.com/yuno-payments/yuno-sdk-ios-signifyd
+    ```
+
+    escolha **Up to Next Major Version** a partir de `1.0.0` e adicione o produto `YunoAntifraudSignifyd` ao target do seu app. O Xcode resolve o Yuno SDK e o Profiling SDK da Signifyd automaticamente.
+
+    Se o seu app usa um `Package.swift`, adicione a dependência lá:
+
+    ```swift
+    dependencies: [
+        .package(url: "https://github.com/yuno-payments/yuno-sdk-ios-signifyd.git", from: "1.0.0")
+    ],
+    targets: [
+        .target(
+            name: "YourApp",
+            dependencies: [
+                .product(name: "YunoAntifraudSignifyd", package: "yuno-sdk-ios-signifyd")
+            ]
+        )
+    ]
+    ```
+  </Step>
+
+  <Step title="Habilite a Signifyd na Yuno">
+    Peça à equipe da sua conta Yuno para adicionar a Signifyd como provedor de análise de fraude na sua rota de pagamento. Sem isso, o módulo fica instalado, mas o Yuno SDK nunca o executa.
+  </Step>
+</Steps>
+
+## Ativar o módulo {#activating-the-module}
+
+O módulo **se registra sozinho** quando o app é iniciado. Nenhum código é necessário além de adicionar o produto `YunoAntifraudSignifyd` ao target do seu app.
+
+<Tip>
+  Depois que o módulo é instalado e a Signifyd está na sua rota de pagamento, o Yuno SDK o usa automaticamente em todo checkout. Você não precisa alterar nenhum código de pagamento ou de cadastro.
+</Tip>
+
+## Como funciona {#how-it-works}
+
+1. Quando o app é iniciado, o módulo registra o provedor Signifyd no Yuno SDK.
+2. Durante o checkout, se a Signifyd for um provedor de análise de fraude da transação, o Yuno SDK executa o módulo.
+3. O módulo faz o perfil do dispositivo com o Profiling SDK da Signifyd e retorna o ID da sessão em que o perfil foi feito.
+4. O Yuno SDK envia esse ID da sessão com o pagamento, e a Yuno o encaminha para a Signifyd junto com o pedido.
+
+Se o perfil falhar ou demorar mais do que o checkout permite, o pagamento continua sem o fingerprint da Signifyd.
+
+## Solução de problemas {#troubleshooting}
+
+<AccordionGroup>
+  <Accordion title="A resolução do pacote falha para ios-sdk-dist (401 ou repository not found)">
+    O Swift Package Manager não conseguiu baixar o Profiling SDK da Signifyd. Verifique se o seu token da Signifyd está adicionado em **Xcode > Settings > Source Control** (ou em `~/.netrc` no CI) e se ainda é válido. Se o token expirou ou foi revogado, peça um novo ao seu solution engineer da Signifyd. Os apps que você já publicou continuam funcionando, porque o token só é usado no momento do build.
+  </Accordion>
+  <Accordion title="O módulo está instalado, mas os pagamentos não levam o fingerprint da Signifyd">
+    Verifique se o produto `YunoAntifraudSignifyd` está adicionado ao **target do app**, e não apenas ao projeto, e se a Signifyd é um provedor de análise de fraude na sua rota de pagamento da Yuno.
+  </Accordion>
+  <Accordion title="Meu app instala o YunoSDK com CocoaPods">
+    O módulo depende do Yuno SDK vindo do Swift Package Manager. Migre o `YunoSDK` para o Swift Package Manager (versão 2.30.0 ou superior) antes de adicionar este módulo.
+  </Accordion>
+  <Accordion title="Framework SignifydProfilingSdk duplicado">
+    O pacote `YunoAntifraudSignifyd` já traz o Profiling SDK da Signifyd. Se o seu app também incorpora `SignifydProfilingSdk.xcframework` manualmente, remova-o e mantenha apenas a dependência do pacote.
+  </Accordion>
+</AccordionGroup>

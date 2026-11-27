@@ -1,0 +1,275 @@
+---
+title: Lite SDK (cadastro Web)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Lite SDK (cadastro Web)
+  description: >-
+    Guia passo a passo para integrar o Lite SDK (cadastro Web) da Yuno à
+    sua aplicação web para uma experiência de cadastro personalizada.
+  robots: index
+description: "Cadastre meios de pagamento usando o Lite SDK na Web com um formulário de cadastro personalizável"
+---
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Siga este guia passo a passo para implementar e habilitar o recurso de cadastro do Lite Web SDK da Yuno no seu app.
+
+## Passo 1: Inclua a biblioteca no seu projeto {#step-1-include-the-library-in-your-project}
+
+Antes de prosseguir com a implementação do Lite SDK, consulte o [Guia de início rápido](/pt-br/docs/sdks/overview/quickstart) para obter instruções detalhadas sobre como integrar corretamente o SDK ao seu projeto.
+
+O guia de integração oferece três métodos flexíveis:
+
+1. Inclusão direta do script no HTML
+2. Injeção dinâmica via JavaScript
+3. Instalação do módulo NPM
+
+Escolha o método de integração que melhor se adapta ao seu fluxo de desenvolvimento e aos seus requisitos técnicos. Depois de concluir a integração do SDK, você pode prosseguir com os passos a seguir para implementar o recurso de cadastro lite.
+
+<Note>
+**Biblioteca TypeScript**
+
+Se você usa TypeScript, a Yuno oferece uma [biblioteca](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) que dá acesso a todos os métodos disponíveis no Yuno Web SDK.
+</Note>
+
+## Passo 2: Inicialize o SDK com a chave pública {#step-2-initialize-sdk-with-the-public-key}
+
+Inicialize o Yuno SDK na sua aplicação JavaScript informando uma `PUBLIC_API_KEY` válida:
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+<Note>
+**Credenciais**
+
+Consulte a página de credenciais para mais informações: [/reference/getting-started/authentication](/reference/getting-started/authentication)
+</Note>
+
+## Passo 3: Crie uma sessão de cliente {#step-3-create-a-customer-session}
+
+Para iniciar o processo de cadastro, você precisa fornecer a `customer_session`. Primeiro, você precisa criar um cliente. Use o endpoint [Create Customer](/reference/customers/create-customer) para criar novos clientes. Na resposta, você receberá o `id` do cliente, que você usa para criar a sessão de cliente.
+
+Depois de criar o cliente, você pode criar a sessão de cliente. Use o `id` do cliente e o endpoint [Create Customer Session](/reference/customer-sessions-enrollment/create-customer-session). A `customer_session` será fornecida na resposta. Você precisa de uma nova `customer_session` sempre que cadastrar um novo meio de pagamento.
+
+## Passo 4: Inicie o processo de cadastro {#step-4-start-the-enrollment-process}
+
+Use a configuração abaixo para oferecer uma experiência de cadastro lite e fácil de usar para os seus clientes:
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  renderMode: {
+    type: "element",
+    elementSelector: "#root",
+  },
+  countryCode: "US",
+  language: "en",
+  showLoading: true,
+  issuersFormEnable: true,
+  onLoading: (args) => console.log(args),
+  card: {
+    type: "extends",
+    styles: "",
+    texts: {},
+  },
+  texts: {},
+  enrollmentStatus(data) {
+    console.log("Enrollment status:", data);
+  },
+  async error(error, data) {
+    console.error("An error occurred:", error);
+    await yuno.hideLoader();
+  },
+});
+```
+
+Ao usar `mountEnrollmentLite`, especifique os callbacks para tratar o cadastro. Você também pode personalizar a interface usando os objetos `texts`.
+
+### Parâmetros {#parameters}
+
+Configure o cadastro lite com as seguintes opções:
+
+| Parâmetro              | Descrição |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`      | Refere-se à [sessão de cliente](/reference/customer-sessions-enrollment/create-customer-session) do cadastro atual. |
+| `elementSelector`      | O elemento HTML onde o formulário de cadastro é renderizado. Passe-o dentro de `renderMode: { type: "element", elementSelector }`; um `elementSelector` no nível superior é ignorado e o formulário abre como modal. |
+| `countryCode`          | Este parâmetro especifica o código do país para o qual o cadastro está sendo configurado. |
+| `language`             | Idioma dos formulários de cadastro. |
+| `showLoading`          | Controla a visibilidade da página de carregamento/spinner da Yuno durante o processo de cadastro. |
+| `onLoading`            | Necessário para receber notificações sobre chamadas ao servidor ou eventos de carregamento durante o processo de cadastro. |
+| `issuersFormEnable`    | Habilita o formulário do emissor (por exemplo, uma lista de bancos). |
+| `card`                 | Define a configuração do formulário de cartão. |
+| `texts`                | Permite definir textos personalizados para os botões. |
+| `enrollmentStatus` | Callback chamado quando o processo de cadastro termina. Recebe `{ vaultedToken, status }`. |
+| `error`            | Callback chamado quando ocorre um erro no processo de cadastro. |
+| `onChange`                        | Informa se o formulário de cadastro está completo. Recebe `{ form: { isValid } }`. Disponível desde a v1.10.11. |
+
+<Note>
+**Valores de status**
+
+Os valores de status comuns incluem `ENROLLED`, `DECLINED`, `CANCELED` e `ERROR`.
+</Note>
+
+## Cadastro de PayPal com o modo de renderização em elemento {#paypal-enrollment-with-element-render-mode}
+
+<Note>
+Disponível a partir do Web SDK **1.10.13**.
+</Note>
+
+Por padrão, `mountEnrollmentLite` abre o modal da Yuno para o cadastro de PayPal. O comprador clica no seu botão do PayPal, vê o modal e precisa clicar em PayPal uma segunda vez. Com o modo de renderização em elemento, o botão do PayPal é renderizado diretamente na sua página, e o comprador conclui o cadastro com um clique.
+
+### Como funciona {#how-it-works}
+
+Adicione um contêiner vazio à sua página e passe `renderMode: { type: 'element', elementSelector }` para `mountEnrollmentLite`. O SDK renderiza o botão real do PayPal dentro desse contêiner e mostra um skeleton de carregamento até o PayPal terminar de carregar.
+
+O botão do PayPal substitui o seu próprio botão: não coloque o seu botão na frente dele. Se você não passar `renderMode`, o comportamento do modal continua exatamente como antes.
+
+### Passos de integração {#integration-steps}
+
+1. Remova o seu botão do PayPal existente.
+2. Adicione uma `<div>` vazia onde o botão do PayPal deve aparecer.
+3. Passe `renderMode` com `type: 'element'` e um `elementSelector` apontando para essa `<div>`.
+
+```html
+<div id="paypal-enrollment"></div>
+```
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  countryCode: "US",
+  language: "en",
+  renderMode: {
+    type: "element",
+    elementSelector: "#paypal-enrollment",
+  },
+  enrollmentStatus(data) {
+    console.log("Enrollment status:", data);
+  },
+  error(error, data) {
+    console.error("An error occurred:", error);
+  },
+});
+```
+
+O botão ocupa 100% da largura do contêiner, a menos que você defina `width`.
+
+### Personalizando o botão do PayPal {#customizing-the-paypal-button}
+
+Opcional. Passe `externalButtons.paypal` para `mountEnrollmentLite` para estilizar o botão, usando as mesmas propriedades do [botão express do PayPal](/pt-br/docs/sdks/resources/references/web#paypal) no checkout. Os valores padrão são diferentes dos do checkout, por isso estão listados por completo abaixo.
+
+```javascript
+await yuno.mountEnrollmentLite({
+  customerSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  countryCode: "US",
+  language: "en",
+  renderMode: {
+    type: "element",
+    elementSelector: "#paypal-enrollment",
+  },
+  externalButtons: {
+    paypal: {
+      color: "blue",
+      shape: "pill",
+      label: "paypal",
+      height: 48,
+      width: 300,
+      locale: "en_US",
+    },
+  },
+  // ... rest of config
+});
+```
+
+<div className="nowrap-col1-table dense-table">
+
+| Propriedade | Tipo | Padrão | Descrição |
+| -------- | ---- | ------- | ----------- |
+| `color` | `'gold'` \| `'blue'` \| `'silver'` \| `'white'` \| `'black'` | O PayPal decide | Cor de fundo do botão |
+| `shape` | `'rect'` \| `'pill'` \| `'sharp'` | `'rect'` | Formato do botão |
+| `label` | `'paypal'` \| `'checkout'` \| `'buynow'` \| `'pay'` \| `'installment'` | O PayPal decide | Texto do rótulo do botão |
+| `height` | `number` | `48` | Altura do botão em px (intervalo válido: 25–55) |
+| `width` | `number` | 100% do contêiner | Largura do wrapper em px |
+| `locale` | `string` | O PayPal decide com base no navegador do comprador | Idioma do botão, no formato `language_COUNTRY` do PayPal (por exemplo `en_US`, `es_ES`, `pt_BR`). Consulte os [locales suportados](https://developer.paypal.com/sdk/js/configuration/#locale) do PayPal. |
+
+</div>
+
+### Resultado {#result}
+
+- O comprador clica no botão do PayPal, aprova no popup do PayPal e o SDK conclui o cadastro.
+- `enrollmentStatus` recebe o `vaultedToken` com o status `ENROLLED`.
+- Se o comprador fechar o popup, `error` recebe `CANCELED_BY_USER`.
+
+## Cadastro de KCP KakaoPay e PAYCO (Web) {#kcp-kakaopay-and-payco-enrollment-web}
+
+<Note>
+O cadastro de KakaoPay no desktop e os redirecionamentos POST da KCP no celular estão disponíveis a partir do Web SDK **1.11.27**. O cadastro de PAYCO no desktop é suportado a partir do Web SDK **1.11.43**.
+</Note>
+
+O Lite Web SDK da Yuno suporta o cadastro de KakaoPay (`KAKAO_PAY`) e PAYCO (`KCP_PAYCO`) via KCP em navegadores desktop, além de redirecionamentos automáticos por formulário HTTP POST para o cadastro via KCP em navegadores de celular.
+
+### Fluxo de cadastro no desktop {#desktop-enrollment-flow}
+
+Em navegadores desktop, os cadastros de KakaoPay e PAYCO renderizam um botão de ação dentro do componente de cadastro lite.
+
+#### Como funciona {#how-it-works-1}
+
+1. **Carregamento do script e configuração do callback:** quando o componente de cadastro é montado, o SDK declara o handler de callback da KCP (`window.m_Completepayment`) e, em seguida, verifica e carrega o pacote de scripts da KCP a partir de `script_url` (`https://*.kcp.co.kr`).
+2. **Ação do usuário:** o comprador clica no botão de ação. O SDK prepara o formulário do pedido e abre a janela de autorização da KCP (`KCP_Pay_Execute_Web`).
+3. **Conclusão e envio:** quando o comprador termina na KCP, a KCP chama o callback do SDK com o resultado (`res_cd`, `res_msg`, `enc_data`, `enc_info`, `tran_cd`), e o SDK o envia para o `result_url` do backend (`https://*.y.uno` ou o seu host de API white-label) usando o envio de um formulário oculto. Quando configurado com `RENDER_POPUP`, o envio POST ocorre dentro do popup, em vez de navegar a página principal.
+4. **Limpeza:** desmontar o componente de cadastro fecha qualquer janela da KCP aberta e restaura qualquer handler `window.m_Completepayment` preexistente.
+
+#### Estados do botão e recuperação de erros {#button-states-and-error-recovery}
+
+- **Botão desabilitado:** se a configuração de cadastro do backend exigida (`script_url`, `form_fields` ou `result_url`) estiver ausente ou apontar para um host não autorizado, o botão é desabilitado e exibe uma mensagem de erro inline.
+- **Nova tentativa de carregar o script:** se os scripts da KCP não carregarem, o botão mostra um erro inline; clicar nele carrega a KCP novamente e, depois de carregada, o próximo clique abre a KCP.
+- **Recuperação de popup fechado:** se o comprador fechar o popup da KCP sem aprovar, o SDK detecta a remoção da camada por meio de observadores de mutação do DOM e reabilita o botão para uma nova tentativa.
+- **Recuperação de timeout:** se o navegador permanecer na página 10 segundos depois de enviar o resultado do cadastro (normalmente porque faltam políticas CSP form-action e o envio do formulário é bloqueado), o SDK limpa o estado de processamento, mostra um erro inline e reabilita o botão para que o comprador possa tentar novamente. Observe que nenhum callback de erro do lojista é disparado.
+
+### Redirecionamento POST da KCP no celular {#kcp-mobile-post-redirect}
+
+Ao cadastrar via KCP em navegadores de celular, o backend retorna um payload `require_action.redirect` com `method: "POST"` e um `init_url` apontando para um host da KCP (`*.kcp.co.kr`).
+
+O Lite Web SDK detecta automaticamente a configuração de redirecionamento POST, monta um formulário oculto preenchido com `form_fields`, adiciona-o ao DOM e envia o formulário para levar o usuário diretamente ao provedor.
+
+### Requisitos de Content Security Policy (CSP) {#content-security-policy-csp-requirements}
+
+Se o seu site aplica uma Content Security Policy (CSP) rígida, configure as seguintes diretivas para permitir os scripts da KCP, os overlays em iframe e os envios de formulário:
+
+<div className="nowrap-col1-table dense-table">
+
+| Diretiva | Origens permitidas | Descrição |
+| --------- | --------------- | ----------- |
+| `script-src` | `https://*.kcp.co.kr` | Permite carregar o hub do SDK da KCP e os scripts auxiliares (`kcp_spay_hub.js`, `kcp_jquery` etc.). |
+| `frame-src` | `https://*.kcp.co.kr` | Permite renderizar o modal de overlay da KCP e o iframe de pagamento. |
+| `form-action` | `https://*.kcp.co.kr https://*.y.uno` | Permite a navegação POST do formulário oculto para a KCP e o envio do resultado do cadastro para a Yuno (ou para o seu domínio de API white-label). |
+
+</div>
+
+<Warning>
+A falta de diretivas `form-action` para `*.y.uno` ou `*.kcp.co.kr` fará com que o navegador bloqueie o envio do formulário sem erros de JavaScript, e o cadastro expirará por timeout.
+</Warning>
+
+## Passo 5: Inicie o cadastro (obrigatório) {#step-5-initiate-the-enrollment-required}
+
+Depois de montar o SDK usando `await yuno.mountEnrollmentLite()`, o formulário será exibido no elemento especificado. O usuário pode então inserir os dados do meio de pagamento para concluir o cadastro.
+
+<Note>
+**App de demonstração**
+
+Além dos exemplos de código fornecidos, você pode acessar o [App de demonstração](https://github.com/yuno-payments/yuno-sdk-web) para ver uma implementação completa dos SDKs da Yuno (clone a partir do repositório).
+</Note>
+
+## Tratamento de erros {#error-handling}
+
+Trate no seu app os erros retornados pelo SDK, como falhas de cadastro ou erros de validação. Para status HTTP e códigos de resposta, consulte [Códigos de status e de resposta](/reference/getting-started/response-codes) na referência da API.
+
+## Fique atualizado {#stay-updated}
+
+Acesse o [changelog](/changelog/web#v1-6-0) para ver as atualizações mais recentes do SDK e o histórico de versões.

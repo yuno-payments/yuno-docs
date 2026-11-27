@@ -1,0 +1,110 @@
+---
+title: Lite SDK (pagamento iOS)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Lite SDK (Payment iOS)
+  description: >-
+    Step-by-step guide on integrating Yuno's Lite SDK (Payment iOS) into your
+    mobile application for a streamlined checkout experience.
+  robots: index
+description: "Integre o Lite SDK no iOS para uma experiência de checkout simplificada com pagamento por cartão"
+---
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+## Etapa 1: Inclua a biblioteca no seu projeto {#step-1-include-the-library-in-your-project}
+
+### Swift Package Manager {#swift-package-manager}
+
+O YunoSDK não é mais publicado no CocoaPods; a última versão no CocoaPods é a 2.30.0. Adicione o pacote como dependência:
+
+```swift
+.package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.31.0"))
+```
+
+Adicione `YunoSDK` (dinâmico) ou `YunoSDK-Static` (estático, o que o CocoaPods distribuía) ao target do seu app, nunca os dois.
+
+## Etapa 2: Inicialize o SDK {#step-2-initialize-sdk}
+
+Inicialize o SDK com a sua chave de API pública:
+
+```swift
+import YunoSDK
+
+Yuno.initialize(
+    apiKey: "PUBLIC_API_KEY",
+    config: YunoConfig(),
+    callback: { print("Yuno SDK initialized") }
+)
+```
+
+## Etapa 3: Adote o YunoPaymentDelegate {#step-3-adopt-yunopaymentdelegate}
+
+Adote o protocolo `YunoPaymentDelegate`:
+
+<Info>
+**Requisitos de concorrência do Swift 6**
+
+Se você usa o Swift 6, precisa implementar o protocolo `YunoPaymentDelegate` com considerações específicas de concorrência. Veja o guia [Concorrência no Swift 6](/pt-br/docs/sdks/resources/swift-6-concurrency) para conhecer as opções de implementação detalhadas e as boas práticas.
+</Info>
+
+```swift
+class ViewController: UIViewController, @preconcurrency YunoPaymentDelegate {
+    var checkoutSession: String { "checkout_session" }
+    var countryCode: String { "US" }
+    var viewController: UIViewController? { self }
+
+    func yunoCreatePayment(with token: String) {
+        // Call your backend to create a payment
+    }
+
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        // Call your backend to create a payment using the additional token information
+    }
+
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        // Handle final payment state
+    }
+}
+```
+
+| Método | Descrição |
+| :--- | :--- |
+| `yunoCreatePayment(with:)` | Chamado quando um token de uso único é gerado. Crie o pagamento no seu backend. |
+| `yunoCreatePayment(with:information:)` | Callback alternativo que também inclui informações adicionais sobre o token de uso único, como dados do cartão (BIN do DPAN, bandeira, últimos quatro dígitos). Veja [Informações adicionais do OTT](/docs/sdks/full-checkout/ios-payments#ott-additional-information) para conhecer as chaves disponíveis. |
+| `yunoPaymentResult(_:)` | Chamado quando o processo de pagamento termina. Recebe um valor `Yuno.Result`. |
+
+<Danger>
+**Observação importante**
+
+Implemente `yunoCreatePayment(with:)` **ou** `yunoCreatePayment(with:information:)`, não os dois. O SDK chama todas as versões que você implementa, então implementar as duas cria o pagamento duas vezes.
+</Danger>
+
+## Etapa 4: Inicie o processo de pagamento {#step-4-initiate-the-payment-process}
+
+```swift
+Yuno.startPaymentLite(
+    with: self,
+    paymentSelected: paymentSelected,
+    showPaymentStatus: true
+)
+```
+
+## Etapa 5: Continue o pagamento (obrigatório) {#step-5-continue-payment-required}
+
+Se a API retornar `sdk_action_required: true`, chame:
+
+```swift
+Yuno.continuePayment()
+```
+
+<Note>
+**App de demonstração**
+
+Veja o [repositório do Yuno iOS SDK](https://github.com/yuno-payments/yuno-sdk-ios) para exemplos completos de implementação.
+</Note>

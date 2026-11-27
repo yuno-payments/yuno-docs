@@ -1,0 +1,157 @@
+---
+title: Lite SDK (Pagamento Android)
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: Lite SDK (Payment Android)
+  description: >-
+    Step-by-step guide on integrating Yuno's Lite SDK (Payment Android) into
+    your mobile application for a streamlined checkout experience.
+  robots: index
+description: "Integre o Lite SDK no Android para uma experiência de checkout simplificada com pagamento com cartão"
+---
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+import LegacySdkNotice from '/snippets/pt-br/LegacySdkNotice.mdx'
+
+<LegacySdkNotice />
+
+<GenericOrientation />
+Esta página apresenta um guia do Lite SDK da Yuno para pagamentos no Android. Este SDK oferece um processo de integração simplificado com os recursos essenciais de pagamento, sendo ideal para lojistas que:
+
+* Precisam de uma implementação rápida com requisitos mínimos de personalização
+* Querem focar principalmente no processamento de pagamentos com cartão
+* Preferem uma interface pronta para uso que cuida do fluxo de pagamento
+
+O Lite SDK inclui recursos principais como:
+
+* Componentes de interface de pagamento prontos
+* Processamento de pagamentos com cartão
+* Tratamento básico do status do pagamento
+* Gerenciamento essencial de erros
+
+Para lojistas que precisam de recursos mais avançados, como vários meios de pagamento, interface personalizada ou prevenção de fraude avançada, considere usar o [Full SDK](/docs/sdks/full-checkout/android-payments) da Yuno.
+
+## Requisitos {#requirements}
+
+Antes de iniciar a integração do SDK Android da Yuno, garanta que seu projeto atenda aos [requisitos técnicos](/pt-br/docs/sdks/resources/references/android). Garanta também que os seguintes pré-requisitos estejam atendidos:
+
+* Você precisa ter uma conta ativa na Yuno.
+* Você precisa das suas credenciais de API da Yuno (`account_id`, `public-api-key` e `private-secret-key`), que podem ser obtidas na [seção de credenciais de Developers](/reference/getting-started/authentication) do dashboard da Yuno.
+
+## Passo 1: Crie um cliente {#step-1-create-a-customer}
+
+Crie um cliente usando o [endpoint Criar cliente](/reference/customers/create-customer) antes de iniciar pagamentos. O ID do cliente retornado por esse endpoint será usado ao criar a `checkout_session`.
+
+## Passo 2: Crie uma sessão de checkout {#step-2-create-a-checkout-session}
+
+Crie uma nova `checkout_session` usando o endpoint [Criar sessão de checkout](/reference/checkout-sessions/create-checkout-session) para inicializar o fluxo de pagamento.
+
+## Passo 3: Inclua a biblioteca no seu projeto {#step-3-include-the-library-in-your-project}
+
+Inclua o arquivo do Yuno SDK no seu projeto por meio do Gradle. Adicione a origem do repositório:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+Inclua o seguinte código no arquivo `build.gradle` para adicionar a dependência do Yuno SDK:
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:2.27.0'
+}
+```
+
+## Passo 4: Inicialize o SDK com a chave pública {#step-4-initialize-sdk-with-the-public-key}
+
+Inicialize o SDK chamando `Yuno.initialize()` no método `onCreate()` da sua aplicação:
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      PUBLIC_API_KEY,
+      config = YunoConfig(
+        saveCardEnabled = false,
+        keepLoader = true,
+        language = YunoLanguage.ENGLISH,
+      )
+    )
+  }
+}
+```
+
+### Personalização do YunoConfig {#yunoconfig-customization}
+
+| Opção | Descrição |
+| --- | --- |
+| `saveCardEnabled` | Habilita a **Save card checkbox**. |
+| `keepLoader` | Se `true`, o loader do SDK permanece visível desde a geração do OTT até a chamada de `continuePayment()`. Consulte [Parâmetro keepLoader](/pt-br/docs/sdks/resources/references/android#keeploader-parameter). |
+| `language` | Define o idioma como um valor de `YunoLanguage` (por exemplo, `SPANISH`, `ENGLISH`, `PORTUGUESE`). |
+| `styles` | [Estilos](/pt-br/docs/sdks/resources/references/android#styles) predefinidos. |
+
+## Passo 5: Inicie o processo de checkout {#step-5-start-the-checkout-process}
+
+Chame o método `startCheckout` na sua activity:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "US",
+  callbackPaymentState = { state, subState, message ->
+    println("Payment State: $state, Substate: $subState, Error: ${message?.code}")
+  }
+)
+```
+
+### Estados do callback {#callback-states}
+
+| Estado | Descrição |
+| --- | --- |
+| `SUCCEEDED` | Transação concluída com sucesso. |
+| `FAIL` | A transação falhou. |
+| `PROCESSING` | Em andamento, aguardando verificação. |
+| `REJECT` | Rejeitada (por exemplo, saldo insuficiente). |
+| `CANCELED_BY_USER` | O usuário cancelou o processo. |
+
+## Passo 6: Inicie o processo de pagamento {#step-6-initiate-the-payment-process}
+
+Chame `startPaymentLite` para iniciar o processo:
+
+```kotlin
+startPaymentLite(
+    paymentSelected = PaymentSelected(
+      paymentMethodType = "CARD",
+      vaultedToken = null
+    ),
+    callbackOTT = { ott -> println("OTT: $ott") },
+    callBackTokenWithInformation = { info -> println("Token Info: $info") },
+    showPaymentStatus = true,
+)
+```
+
+## Passo 7: Crie o pagamento {#step-7-create-the-payment}
+
+Depois de obter o token de uso único (OTT), crie o pagamento pelo seu backend usando a API [Criar pagamento](/reference/payments/create-payment).
+
+## Passo 8: Continue o pagamento (obrigatório) {#step-8-continue-payment-required}
+
+Se a resposta da API tiver `sdk_action_required: true`, chame `continuePayment()`:
+
+```kotlin
+continuePayment(
+    showPaymentStatus = true,
+    checkoutSession = "checkout_session",
+    countryCode = "US",
+    callbackPaymentState = { state, subState, message -> ... }
+)
+```
+
+<Note>
+**App de demonstração**
+
+Consulte o [repositório do SDK Android da Yuno](https://github.com/yuno-payments/yuno-sdk-android) para ver exemplos completos de implementação.
+</Note>
