@@ -1,0 +1,405 @@
+---
+title: "AgentPass"
+description: "Permite que agentes de IA compren por ti dentro de los límites que apruebas con tu passkey de Visa: conecta un asistente mediante MCP o integra la API para socios para inscribir clientes y recibir credenciales de un solo uso."
+---
+
+AgentPass permite que los agentes de IA hagan compras dentro de los límites que tú apruebas. Un agente solo puede proponer: tú apruebas el comercio, el máximo por compra, el presupuesto y cuánto dura el permiso, y lo confirmas con tu Visa Payment Passkey. En cada compra, el agente recibe una credencial de Visa de un solo uso, verificada contra esos límites. Nunca ve el número de tu tarjeta.
+
+Yuno desarrolla y opera AgentPass. Las tarjetas se guardan en Yuno Vault, y las compras con Visa usan Visa Intelligent Commerce.
+
+Hay dos formas de usar AgentPass:
+
+* **[Conecta un asistente de IA](#connect-an-ai-assistant)**: agrega el servidor MCP de AgentPass a ChatGPT, Claude, Cursor o cualquier cliente MCP, y aprueba lo que el agente puede comprar.
+* **[API para socios](#partner-api)**: integra AgentPass en tu propio checkout, app o plataforma de agentes. Tu backend inscribe clientes, solicita aprobaciones de compra y recibe las credenciales con tu marca.
+
+<Note>
+  AgentPass aporta la tecnología y la credencial. Nunca envía, captura ni liquida un pago, y Yuno no retiene fondos. El comercio cobra la tarjeta como en cualquier otra compra.
+</Note>
+
+## Conecta un asistente de IA {#connect-an-ai-assistant}
+
+| Configuración | Valor |
+| --- | --- |
+| URL del servidor MCP | `https://prod.y.uno/wallet-mcp/mcp` |
+| Transporte | Streamable HTTP |
+| Inicio de sesión | OAuth 2.1 con PKCE |
+| Cuenta | Se crea al conectar, si aún no tienes una |
+| Duración del acceso | Hasta que desconectes el asistente o hasta que el cliente pase 30 días sin renovar su token |
+
+### Agrega el servidor a tu asistente {#add-the-server-to-your-assistant}
+
+<Tabs>
+  <Tab title="ChatGPT">
+    <Steps>
+      <Step title="Activa el modo de desarrollador">
+        En ChatGPT, abre **Settings** → **Security and login** y activa **Developer mode**.
+      </Step>
+      <Step title="Agrega la URL del MCP">
+        Abre **Plugins**, selecciona el botón de más y agrega la URL del servidor MCP con autenticación OAuth.
+      </Step>
+      <Step title="Inicia sesión y aprueba">
+        Inicia sesión en AgentPass, o crea tu cuenta, y aprueba la conexión.
+      </Step>
+    </Steps>
+
+    Las etiquetas cambian entre versiones de ChatGPT. Si las tuyas son distintas, sigue la [guía de conexión de OpenAI](https://developers.openai.com/plugins/deploy/connect-chatgpt).
+  </Tab>
+  <Tab title="Claude">
+    <Steps>
+      <Step title="Agrega un conector personalizado">
+        En Claude (web o escritorio), abre **Settings** → **Connectors** y elige **Add custom connector**.
+      </Step>
+      <Step title="Pega la URL">
+        Pega la URL del servidor MCP y guarda.
+      </Step>
+      <Step title="Conecta y aprueba">
+        Elige **Connect**, inicia sesión en AgentPass y aprueba la conexión.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Claude Code">
+    ```bash
+    claude mcp add --transport http yuno-wallet https://prod.y.uno/wallet-mcp/mcp
+    ```
+
+    Ejecuta el comando, abre `/mcp` en Claude Code, elige **Authenticate** y aprueba en AgentPass.
+  </Tab>
+  <Tab title="Codex">
+    ```bash
+    codex mcp add yuno-wallet --url https://prod.y.uno/wallet-mcp/mcp
+    codex mcp login yuno-wallet
+    ```
+
+    Ejecuta los dos comandos, inicia sesión en AgentPass en tu navegador y abre una nueva sesión de Codex.
+  </Tab>
+  <Tab title="Cursor">
+    Agrega el servidor a `~/.cursor/mcp.json`, o al `.cursor/mcp.json` del proyecto:
+
+    ```json
+    {
+      "mcpServers": {
+        "yuno-wallet": {
+          "url": "https://prod.y.uno/wallet-mcp/mcp"
+        }
+      }
+    }
+    ```
+
+    Abre **Cursor Settings** → **MCP**, elige **Connect** junto a `yuno-wallet` y aprueba en AgentPass.
+  </Tab>
+  <Tab title="Otros clientes MCP">
+    Cualquier cliente compatible con Streamable HTTP y OAuth 2.1 puede conectarse. Descubre todo a partir de la URL:
+
+    * Metadatos del recurso protegido en `/.well-known/oauth-protected-resource`
+    * Metadatos del servidor de autorización en `/.well-known/oauth-authorization-server`
+    * Registro dinámico de clientes y, luego, el flujo de código de autorización con PKCE S256
+
+    No necesitas clave de API, secreto de cliente ni registro previo.
+  </Tab>
+</Tabs>
+
+Después de que apruebas, el asistente aparece en **Agents** en AgentPass. Pídele que llame a `get_account` para confirmar la conexión.
+
+### Inicio de sesión y permisos {#sign-in-and-permissions}
+
+* La conexión usa OAuth estándar. El asistente recibe su propio token con alcance limitado; tu inicio de sesión en AgentPass nunca se comparte con él.
+* Antes de aprobar, ves el nombre del asistente, el operador que declara y el sitio web desde el que llega. Las conexiones desde chatgpt.com, claude.ai, cursor.com y grok.com aparecen como verificadas; cualquier otro origen se muestra tal como es.
+* Cada conexión nueva necesita tu consentimiento. Registrar un cliente lo identifica; no le da acceso.
+* Cada herramienta verifica su alcance, tu cuenta y la conexión en cada llamada. Una herramienta fuera de los alcances otorgados no aparece en la lista y no se puede llamar.
+
+| Alcance | Permite | Herramientas |
+| --- | --- | --- |
+| `wallet:read` | Leer metadatos enmascarados de las tarjetas, su disponibilidad y las autorizaciones. Verificar una compra contra una autorización. | `get_account`, `get_payment_setup_link`, `get_authorization`, `check_purchase`, `get_credential_request` |
+| `wallet:authorize` | Proponer una autorización de gasto. Nada se permite hasta que la apruebas. | `create_authorization` |
+| `wallet:credentials` | Solicitar una credencial de Visa de un solo uso dentro de una autorización aprobada e informar el resultado del checkout. | `issue_purchase_credential`, `report_credential_outcome` |
+| `wallet:purchase` | Emitir una tarjeta de prueba sintética que no se puede cobrar. Solo en implementaciones que permiten el modo de simulación. | `issue_temporary_card` |
+
+### Herramientas {#tools}
+
+Los montos son enteros en unidades menores (`2500` es 25.00 en USD). Las monedas son códigos ISO 4217, y los comercios se identifican por su host.
+
+| Herramienta | Tipo | Qué hace |
+| --- | --- | --- |
+| `get_account` | Lectura | Devuelve el AgentPass conectado: tarjetas enmascaradas (marca y últimos cuatro dígitos), la tarjeta predeterminada, si está lista para compras con Visa y las autorizaciones del agente. Llámala primero. Nunca devuelve un número de tarjeta, un código de seguridad ni un token. |
+| `get_payment_setup_link` | Lectura | Devuelve la página segura de AgentPass donde agregas una tarjeta con el formulario alojado de Yuno. El agente te envía el enlace y tú ingresas la tarjeta; un agente nunca debe pedir los datos de la tarjeta en el chat. |
+| `create_authorization` | Solicitud | Propone una autorización: para qué es, el máximo por compra, un presupuesto y un período, los comercios permitidos y un vencimiento. Devuelve una URL de aprobación para ti. La propuesta no se puede cambiar; para cambiar un límite, el agente propone una nueva. |
+| `get_authorization` | Lectura | Indica si aprobaste, rechazaste o revocaste una autorización, sus límites, su vencimiento y el presupuesto restante. Los agentes la consultan después de enviarte el enlace de aprobación. |
+| `check_purchase` | Lectura | Verifica si una compra cabe en una autorización activa y explica cualquier rechazo. No emite nada, no reserva nada y no contacta a ningún comercio. |
+| `issue_purchase_credential` | Credencial | Emite una credencial de pago de Visa para una compra, bajo una autorización aprobada y confirmada con passkey. El presupuesto se reserva antes de llamar a Visa. La credencial funciona una vez, en ese comercio, por ese monto, y vence. |
+| `get_credential_request` | Lectura | Muestra la vista segura de una solicitud de credencial: estado, últimos cuatro dígitos del token, tipo de dato dinámico y vencimiento. Nunca devuelve los valores de la credencial. |
+| `report_credential_outcome` | Solicitud | Registra el resultado del checkout (aprobado, rechazado, error o cancelado) y envía la confirmación de la transacción a Visa. Los agentes la llaman después de cada checkout. Informar el resultado no mueve dinero. |
+| `issue_temporary_card` | Credencial | Solo en implementaciones de prueba. Emite una tarjeta sintética que no se puede cobrar, vinculada a una compra y válida por cinco minutos como máximo. |
+
+Para `create_authorization` en modo de red (tu tarjeta Visa, confirmada con tu passkey), incluye exactamente un hostname de comercio en `merchants_allow`. Monedas admitidas: BHD, BRL, CLP, COP, EUR, GBP, JPY, KWD, MXN, OMR, PEN, TND y USD. El enlace de aprobación funciona durante 30 minutos y solo para el titular que inició sesión.
+
+### Una compra, paso a paso {#a-purchase-step-by-step}
+
+<Steps>
+  <Step title="Verifica la tarjeta">
+    `get_account` confirma que hay una tarjeta lista. Si no la hay, `get_payment_setup_link` te da la página para agregar una.
+  </Step>
+  <Step title="Propón los límites">
+    `create_authorization` propone los límites. Por ejemplo:
+
+    ```json
+    {
+      "title": "Coffee beans",
+      "natural_language_description": "Reorder one bag of house-blend coffee beans when we run low.",
+      "mode": "network",
+      "policy": {
+        "currency": "USD",
+        "per_purchase_max_minor": 3000,
+        "budget_minor": 6000,
+        "budget_period": "month",
+        "timezone": "America/New_York",
+        "valid_until": "2026-12-31T23:59:59Z",
+        "merchants_allow": ["shop.example.com"],
+        "categories_allow": []
+      },
+      "idempotency_key": "coffee-2026-11"
+    }
+    ```
+  </Step>
+  <Step title="Aprueba con tu passkey">
+    El agente te envía la `approval_url`. Apruebas en un plazo de 30 minutos y confirmas con tu passkey de Visa. `get_authorization` muestra tu decisión.
+  </Step>
+  <Step title="Verifica la compra">
+    Con el carrito listo, `check_purchase` confirma que la compra cabe en la autorización. No se reserva nada.
+  </Step>
+  <Step title="Obtén la credencial y paga">
+    `issue_purchase_credential` reserva el monto y devuelve una credencial de un solo uso para ese comercio y ese monto. El agente la usa en el checkout y sigue sus reglas de manejo.
+  </Step>
+  <Step title="Informa el resultado">
+    `report_credential_outcome` registra el resultado. Cada paso aparece en **Activity** en AgentPass.
+  </Step>
+</Steps>
+
+### Seguridad {#safety}
+
+* **Apruebas cada autorización.** Un agente solo puede proponer. No se puede gastar nada hasta que lo apruebes desde tu propio AgentPass con sesión iniciada, y las compras con Visa también necesitan tu passkey.
+* **Los límites se verifican en cada compra.** Se verifican el comercio, el máximo por compra, el presupuesto y el vencimiento, y el presupuesto se reserva antes de emitir cualquier credencial. Una autorización aprobada no se puede editar, solo reemplazar.
+* **El número de tu tarjeta queda fuera del chat.** Agregas las tarjetas con el formulario alojado de Yuno en Yuno Vault, y las consultas de la cuenta muestran las tarjetas guardadas solo como metadatos enmascarados. Emitir una credencial de compra devuelve los datos de pago que necesita el checkout, que pueden incluir tu dirección de facturación y de envío y tus datos de contacto.
+* **Las credenciales son de un solo uso.** Cada credencial está vinculada a un comercio y un monto, funciona una vez y vence. Nunca se vuelve a mostrar después de emitirse.
+* **Los reintentos no pueden gastar dos veces.** Las solicitudes que cambian algo llevan una clave de idempotencia. Reintenta con la misma clave y los mismos datos; una compra distinta necesita una clave nueva. Una vez emitida una credencial, un reintento devuelve `CREDENTIAL_ALREADY_ISSUED`.
+* **Puedes detener todo.** Desconecta un asistente desde **Agents**: su token deja de funcionar de inmediato. Revoca una autorización desde **Authorizations**: las credenciales ya emitidas aún pueden completarse, pero no se emiten nuevas.
+
+### Solución de problemas {#troubleshooting}
+
+**El asistente no puede llegar al servidor**
+
+Verifica que la URL termine en `/mcp` y sea la URL del servidor MCP de arriba, no la dirección del sitio web de AgentPass.
+
+**Faltan las herramientas después de conectar**
+
+Termina el inicio de sesión y la aprobación en el navegador, y luego abre una nueva conversación o sesión para que el cliente vuelva a cargar la lista de herramientas.
+
+**El agente dice que no hay ninguna tarjeta lista**
+
+Agrega una desde **Cards** en AgentPass, o pídele al agente un enlace de configuración. Las compras con Visa necesitan una tarjeta inscrita en Visa con una passkey.
+
+**Se rechazó una compra**
+
+La respuesta explica por qué: por ejemplo, un comercio fuera de la lista, un monto por encima del límite o un presupuesto agotado. El agente puede proponerte una nueva autorización para que la apruebes.
+
+**Venció el enlace de aprobación**
+
+Los enlaces duran 30 minutos. Pídele al agente que vuelva a proponer la autorización.
+
+## API para socios {#partner-api}
+
+Integra AgentPass en tu propio checkout, app o plataforma de agentes. Tu backend inscribe a tus clientes, solicita aprobaciones de compra y recibe las credenciales de un solo uso. Tus clientes aprueban en AgentPass con su Visa Payment Passkey, así que ingresan los datos de su tarjeta ahí, no en tu app.
+
+### Cómo funciona el flujo para socios {#how-the-partner-flow-works}
+
+Tu backend llama a la API. Los pasos de consentimiento, tarjeta y passkey ocurren en AgentPass.
+
+| Paso | Acción | Dónde | Resultado |
+| --- | --- | --- | --- |
+| 1 | Crear la cuenta del cliente mediante la inscripción | API | `customer_id` |
+| 2 | Guardar la dirección en el perfil | AgentPass | |
+| 3 | Inscribir una tarjeta Visa | AgentPass | |
+| 4 | Registrar la Visa Payment Passkey | AgentPass y Visa | |
+| 5 | Verificar la passkey | AgentPass y Visa | |
+| 6 | Comprobar que la tarjeta está lista | API | `ready: true` |
+| 7 | Crear la autorización de compra | API | `requires_action` |
+| 8 | Aprobar y firmar con la passkey | AgentPass | `credential_ready` |
+| 9 | Obtener la credencial de un solo uso | API | `credential_issued` |
+
+**Tu lado** autentica al cliente, llama a la API desde tu backend, abre las pantallas de consentimiento y usa la credencial en tu integración de pagos.
+
+**AgentPass** gestiona la inscripción de la tarjeta, el consentimiento y la verificación de la passkey, administra la autorización y entrega la credencial para la compra aprobada.
+
+### Antes de empezar {#before-you-start}
+
+El acceso para socios se habilita por integración: [contacta a Yuno](https://www.y.uno/en/book-a-demo) para solicitarlo. Yuno te entrega tu clave de API de socio y configura tu comercio, país, moneda y `return_url` aprobada. Guarda la clave de API en tu backend.
+
+| Entorno | URL base |
+| --- | --- |
+| Producción | `https://prod.y.uno/wallet-api` |
+| Staging | `https://staging.y.uno/wallet-api` |
+
+Envía estos encabezados en cada solicitud:
+
+```http
+Authorization: Bearer {partner_api_key}
+Content-Type: application/json
+Accept: application/json
+```
+
+### 1. Inscribe al cliente {#1-enroll-the-customer}
+
+Crea la cuenta del cliente:
+
+```http
+POST /v1/customers/enroll
+```
+
+```json
+{
+  "external_customer_id": "customer-001",
+  "name": "Customer Name",
+  "email": "customer@example.com",
+  "return_url": "{approved_return_url}"
+}
+```
+
+La respuesta es HTTP 200 con `customer_id`, `status: requires_action` y `next_action.url`. Abre el enlace en Chrome. El titular de la tarjeta confirma la cuenta, guarda su dirección, inscribe la tarjeta Visa y completa el registro y la verificación de la passkey.
+
+Luego comprueba que el cliente y la tarjeta están listos:
+
+```http
+GET /v1/customers/{customer_id}
+```
+
+```json
+{
+  "customer_id": "{customer_id}",
+  "status": "ready",
+  "cards": [
+    {
+      "card_id": "{card_id}",
+      "last4": "{last_four_digits}",
+      "brand": "VISA",
+      "status": "active",
+      "ready": true
+    }
+  ]
+}
+```
+
+Continúa cuando el cliente tenga `status: ready` y la tarjeta seleccionada tenga `ready: true`.
+
+* El titular de la tarjeta ingresa su dirección y los datos de su tarjeta en AgentPass. Esta solicitud devuelve solo los metadatos de la tarjeta.
+* La identidad del cliente está limitada a cada socio, sin vinculación automática por email. Para retomar una inscripción, reutiliza la identidad original.
+
+### 2. Crea y aprueba la compra {#2-create-and-approve-the-purchase}
+
+Crea la autorización de compra. Envía un `Idempotency-Key` único para cada compra:
+
+```http
+POST /v1/purchases
+Idempotency-Key: {unique_purchase_key}
+```
+
+```json
+{
+  "customer_id": "{customer_id}",
+  "card_id": "{card_id}",
+  "order_reference": "order-001",
+  "amount_minor": 100,
+  "currency": "{configured_currency}",
+  "description": "Customer-authorized purchase",
+  "credential_format": "card_form",
+  "return_url": "{approved_return_url}"
+}
+```
+
+La respuesta es HTTP 200 con `purchase_id`, `status: requires_action` y `next_action.url`. Guarda el `purchase_id`. Para reintentar la misma compra después de un error técnico, reutiliza la misma clave de idempotencia y el mismo cuerpo de la solicitud.
+
+Abre `next_action.url` en Chrome. El titular de la tarjeta revisa el comercio y el monto, aprueba y firma con la passkey.
+
+<Note>
+  Que el cliente vuelva a tu app no prueba que la compra se haya aprobado. Verifica el estado de la compra con la solicitud de abajo.
+</Note>
+
+Si el enlace venció, solicita uno nuevo:
+
+```http
+POST /v1/purchases/{purchase_id}/sessions
+```
+
+```json
+{}
+```
+
+Verifica la compra después de la aprobación:
+
+```http
+GET /v1/purchases/{purchase_id}
+```
+
+```json
+{
+  "purchase_id": "{purchase_id}",
+  "amount_minor": 100,
+  "currency": "{configured_currency}",
+  "credential_format": "card_form",
+  "status": "credential_ready"
+}
+```
+
+* `amount_minor` usa la unidad más pequeña de la moneda: `100` es 1.00 en BRL o USD.
+* La moneda debe coincidir con tu configuración de socio.
+* El monto y el formato de la credencial no se pueden cambiar después de crear la compra.
+* La autorización dura 30 minutos.
+* Los enlaces tienen una marca de tiempo `expires_at`. Renueva un enlace solo mientras la compra esté en `requires_action`. Renovar un enlace no extiende la autorización.
+
+### 3. Obtén la credencial {#3-retrieve-the-credential}
+
+Cuando la compra llegue a `credential_ready`, solicita la credencial desde tu backend. Envía un `Idempotency-Key` único:
+
+```http
+POST /v1/purchases/{purchase_id}/credentials
+Idempotency-Key: {unique_issuance_key}
+```
+
+```json
+{}
+```
+
+```json
+{
+  "purchase_id": "{purchase_id}",
+  "status": "credential_issued",
+  "format": "card_form",
+  "expires_at": "{expires_at}",
+  "card_form": {
+    "number": "{tokenized_number}",
+    "expiration_month": "{month}",
+    "expiration_year": "{year}",
+    "security_code": "{dynamic_security_code}",
+    "holder_name": "{cardholder_name}"
+  }
+}
+```
+
+El formato `card_form` contiene un número de token de Visa, la fecha de vencimiento, un código de seguridad dinámico y el nombre del titular de la tarjeta. Úsalo en tu integración de pagos antes de `expires_at`.
+
+<Warning>
+  La respuesta contiene datos de pago sensibles. Pasa la credencial solo por tu flujo de pago seguro en el backend. No registres el contenido en logs ni lo expongas en el chat ni en la telemetría. Las solicitudes `GET` nunca devuelven la credencial.
+</Warning>
+
+Una respuesta HTTP 200 también puede contener `requires_action` o `refused`. Verifica siempre `status` y `reason`:
+
+| Estado | Qué hacer |
+| --- | --- |
+| `requires_action` | Completa la aprobación antes de solicitar la credencial. |
+| `credential_issued` | La credencial ya se entregó. Una nueva solicitud devuelve `CREDENTIAL_ALREADY_ISSUED`. |
+| `requires_reconciliation` | La solicitud superó el tiempo de espera. Busca la compra y concilia con Yuno. |
+| `expired` o `failed` | Investiga la causa. Reintentar requiere una decisión explícita y una nueva aprobación. |
+
+Cada compra emite una sola credencial: una nueva clave de idempotencia no puede emitir otra credencial para la misma compra. Después de la entrega, `GET /v1/purchases/{purchase_id}` devuelve `credential_issued`.
+
+<Note>
+  Emitir la credencial no significa que el pago se haya aprobado. El resultado del pago viene de tu integración de pagos.
+</Note>
