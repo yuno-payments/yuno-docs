@@ -2,6 +2,110 @@
   "sdk": "android",
   "releases": [
     {
+      "version": "3.2.0",
+      "release_date": "2026-11-27",
+      "upgrade": {
+        "snippet": "implementation 'com.yuno.payments:android-sdk:3.2.0'",
+        "language": "groovy"
+      },
+      "entries": [
+        {
+          "type": "CHANGED",
+          "title": "A new card as the only payment method is shown as in 3.0.0 again",
+          "description": "The behavior added in 3.1.0 for a payment method list with only a new card is withdrawn: that list shows the method header and selects and opens the card the same way as in 3.0.0. The checkout configuration options for that behavior no longer have any effect.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-20239"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "Device fingerprints are collected from every configured fraud provider",
+          "description": "The SDK now collects a device fingerprint from every fraud provider in the checkout configuration instead of only the first, and always sends them provider-attributed as payment_method.device_fingerprints, the same as the web SDK: an array with one element when a single provider is configured. The collected fingerprint no longer goes in customer_payer.device_fingerprint. This applies to cards, APMs and wallets alike, so the payment carries a usable fingerprint whichever provider routing selects. Native antifraud modules run in parallel, each within its configured timeout, and the whole collection never waits longer than the max_fraud_timeout_ms setting of the checkout (6 seconds when it is not set). Every web script provider (CyberSource, Airwallex, ClearSale web) is started instead of just the first one. A provider that fails, times out or returns nothing is left out and logged, and the payment continues. Each provider and each collection are reported as the fraud_provider.completed and fraud_collection.completed events.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-20979"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "Optional Signifyd antifraud module",
+          "description": "Signifyd fraud screening from Android apps now ships as a separate opt-in module (com.yuno.payments:yuno-sdk-antifraud-signifyd). Add Signifyd's registry with your download token and add the module. The SDK registers the Signifyd provider automatically, runs Signifyd's device profiling whenever your checkout configuration enables Signifyd, and sends the Signifyd session id as the device fingerprint so Signifyd screens the order with device information, for any payment method. It replaces the old com.yuno.fraud-signifyd:yunosignifyd package, which is no longer supported.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-20825"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "Transaction lifecycle analytics events",
+          "description": "The SDK now reports the transaction.started, sdk.ready and transaction.status_delivered analytics events with the same names and attributes as the iOS and web SDKs. transaction.started is sent once per Transaction.start, sdk.ready the first time the SDK shows a form for that transaction, and transaction.status_delivered every time a status reaches onStatus. Each event carries the transaction mode, surface, flow, payment method and the time elapsed since the transaction started; an attribute that does not apply is sent as null. No public API changes and no integration changes are needed.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "Android 6.0 crash when the embedded payment method list closes",
+          "description": "On Android 6.0 (API level 23), the app crashed when the shopper opened a payment method from the embedded list or left the screen that showed it. The SDK no longer calls Java APIs that Android added in 7.0. No integration changes are needed.",
+          "group": "Embedded views",
+          "migration_guide": null,
+          "links": [
+            "https://crew.anyforge.ai/work-item/RPB2-038"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "Banks in a maintenance window are shown as unavailable",
+          "description": "When Yuno reports a bank as offline, for example during a bank maintenance window, the bank list of the payment form keeps it in the position Yuno sent, dims its name and marks it \"Offline\" in the buyer's language. The bank cannot be selected, and TalkBack reads its status and announces it as disabled. When no bank is offline the list looks the same as before. No public API changes and no integration changes are needed.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Accepted card brands",
+          "description": "When the checkout limits the card brands it accepts, the card form follows that setting. A card whose brands are not accepted shows an error under the card number that names the brands the shopper can use, and the form does not create a token for it. A co-badged card is accepted when any of its brands is. With \"Show brand logos\" on, up to four accepted brand logos appear in the Card option of the payment method list, and in the empty card number field when your app opens the form with a payment method it selected itself; when the card scanner is available, the scanner keeps that place. Checkouts that do not limit card brands work as before.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "FIXED",
+          "title": "Two-card payments send device fingerprints and customer data",
+          "description": "A two-card payment started with start(activity, paymentsSelected) now collects the device fingerprints once, from the fraud providers in the checkout configuration for the first card's payment type, and sends them as device_fingerprints on every card of the payment, new or saved, as a single-card payment does. Before, a two-card payment reached the fraud providers without device data. Each card also carries the customer data you pass in its transactionData, with the device browser information, and the 3DS setup id when you pass one, as on iOS. A provider that fails, times out or returns nothing is left out and the payment continues. No integration changes are needed.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://crew.anyforge.ai/work-item/SPP4-034"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "Headless payments collect device fingerprints from providers that need an Activity",
+          "description": "A single-card payment started with start(activity, paymentSelected) and the card data in transactionData now collects the device fingerprint from fraud providers that need your app's Activity, such as the ClearSale module, as iOS does. Before, those providers were skipped in these payments and the token went without their device data. No integration changes are needed.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://crew.anyforge.ai/work-item/SPP4-034"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "Two-card payments with a 3DS challenge on more than one card",
+          "description": "In a two-card payment started with start(activity, paymentsSelected), the SDK now keeps its loader on between one card's 3DS challenge and the next (or calls showLoading when you use your own loader) and sends no onStatus in between. After the last challenge, onStatus receives PENDING and then the final status. If a card's status does not arrive within 20 seconds after its challenge, the SDK reads the payment once and opens the next card's challenge, delivers the failure, or delivers PENDING when the card is still in progress; it no longer re-reads the payment periodically while it waits. If the first card fails, the second card's challenge does not open. Same behaviour as iOS. No integration changes are needed.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://crew.anyforge.ai/work-item/SPP4-033"
+          ]
+        }
+      ]
+    },
+    {
       "version": "3.1.0",
       "release_date": "2026-11-06",
       "upgrade": {
