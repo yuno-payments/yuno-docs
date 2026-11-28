@@ -1,0 +1,260 @@
+---
+title: "Changelog do Yuno SDK (Web)"
+description: "Últimas atualizações e histórico de versões do novo Yuno SDK para Web"
+---
+
+import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
+
+## v2.8.1 {#v281}
+*November 18, 2026*
+
+**Google Pay**
+
+- <ChangelogBadge type="fixed" /> **O Google Pay acompanha o updateCheckoutSession**  
+  Um botão do Google Pay já montado agora assume a sessão de checkout definida por `updateCheckoutSession` (ou por uma nova tentativa de pagamento): a folha de pagamento mostra o valor e a moeda da nova sessão, e o token de uso único e o pagamento usam a nova sessão. Um toque enquanto a configuração da nova sessão ainda está carregando é ignorado.
+
+**Apple Pay**
+
+- <ChangelogBadge type="fixed" /> **O Apple Pay acompanha o updateCheckoutSession**  
+  Um botão do Apple Pay já montado agora assume a sessão de checkout definida por `updateCheckoutSession` (ou por uma nova tentativa de pagamento): a folha de pagamento mostra o valor e a moeda da nova sessão, e o token de uso único e o pagamento usam a nova sessão. Um toque enquanto a configuração da nova sessão ainda está carregando é ignorado. Se essa configuração não puder ser carregada, o botão fica oculto e volta a aparecer quando uma sessão posterior carregar.
+
+## v2.8.0 {#v280}
+*November 18, 2026*
+
+**Formulário do cliente**
+
+- <ChangelogBadge type="added" /> **Bancos em manutenção continuam visíveis, mas não podem ser selecionados**  
+  Quando a lista de emissores marca um banco como offline, o seletor de bancos o mostra em um grupo "Temporarily unavailable", identificado como offline e sem possibilidade de seleção por clique ou teclado. Um banco offline não pode ser enviado: o formulário pede ao comprador que escolha outro banco. Listas sem bancos offline são renderizadas exatamente como antes.
+
+**Lite Web SDK**
+
+- <ChangelogBadge type="added" /> **Janela pop-up de cadastro e cadastro de KakaoPay, PAYCO e cartão via KCP**  
+  Quando o provedor de um cadastro responde com uma ação de pop-up, o cadastro agora abre a página do provedor em uma janela controlada pelo SDK em vez de substituir a página. A página do lojista continua montada atrás de uma sobreposição de cadastro, e o SDK resolve o status do cadastro como antes, então nenhuma mudança na integração é necessária. Se o navegador bloquear a janela, o comprador recebe um botão Continue. Cadastros respondidos com um redirecionamento simples mantêm o redirecionamento na mesma aba. Uma janela de cartão da KCP aberta nesse pop-up não falha mais com um erro de integração de cartão (신용카드 연동 오류) e é concluída no pop-up. O cadastro também segue uma ação REDIRECT_URL que pede um POST de formulário para um host da KCP (https, *.kcp.co.kr): o SDK envia um formulário oculto para init_url uma vez por cadastro. Todos os outros redirecionamentos mantêm o GET. Em navegadores desktop, o cadastro de KakaoPay (`KAKAO_PAY`) e PAYCO (`KCP_PAYCO`) via KCP mostra um botão que abre a janela da KCP ao clicar e encaminha o resultado da KCP para a URL de resultado do cadastro (apenas um host da Yuno ou o host do apiUrl white-label), então o comprador chega à página de sucesso ou de erro do lojista. Se a KCP não carregar, o envio do resultado for bloqueado ou o comprador fechar a KCP sem um resultado, o botão é habilitado novamente com um erro inline para que o comprador possa tentar de novo. Desmontar o SDK fecha a janela da KCP. Lojistas com uma Content Security Policy rígida precisam dos hosts da KCP em script-src e frame-src, e em form-action para o host da URL de resultado (*.y.uno, ou o host do apiUrl white-label) e *.kcp.co.kr.
+
+**Apple Pay**
+
+- <ChangelogBadge type="fixed" /> **O Apple Pay aparece quando o comprador não tem cartão na Wallet**  
+  O botão do Apple Pay não fica mais oculto quando o comprador não tem cartão na Apple Wallet: ele aparece sempre que o dispositivo é compatível com Apple Pay, e a folha da Apple permite que o comprador adicione um cartão durante a compra. Isso vale em todos os lugares em que o SDK o renderiza (a lista de meios de pagamento e a visualização da carteira Apple Pay de `getPaymentMethodsViews`), e `transaction.isPaymentMethodAvailable({ paymentMethodType: 'APPLE_PAY' })` agora retorna `true` para esses compradores. O SDK não chama mais `ApplePaySession.applePayCapabilities()`, o que também elimina uma requisição aos servidores da Apple antes de o botão ser renderizado.
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **Sem erro do formulário de cartão depois que a página remove o elemento do SDK**  
+  Quando a página do lojista removia o elemento entregue ao SDK sem chamar `transaction.unmount()` (por exemplo, quando o comprador voltava enquanto o checkout carregava), o SDK informava `Element card-form-<uuid> doesn't exist in the DOM` como status de erro por meio de `onStatus`. Esse status de erro não é mais entregue nesse caso. A lista de meios de pagamento que estava sendo renderizada no elemento removido permanece como estava até o pagamento ser concluído, o SDK ser inicializado novamente ou a lista ser montada novamente, como antes.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **A lista de meios de pagamento mostra seus meios mais cedo**  
+  A lista de meios de pagamento mostra seus meios de pagamento antes de o SDK baixar os formulários de pagamento. Os formulários são baixados logo depois, em segundo plano, e um formulário aberto antes de seu código chegar mostra o placeholder de carregamento que o formulário já usa enquanto inicia.
+
+## v2.7.2 {#v272}
+*November 12, 2026*
+
+**Pagamentos com cartão**
+
+- <ChangelogBadge type="fixed" /> **Um cartão salvo não paga mais sozinho quando as parcelas falham**  
+  Quando a consulta de parcelas de um cartão de crédito salvo falhava e as parcelas eram seu único campo obrigatório, o SDK criava o token de uso único e o pagamento sem nenhum clique em pagar. Na lista de meios de pagamento, o cartão salvo preferido é selecionado enquanto o checkout carrega, então ele pagava assim que o SDK era montado, por exemplo quando o valor não tem plano de parcelamento (`NO_INSTALLMENT_PLAN_AVAILABLE`). Uma consulta com falha agora significa sem parcelas: o cartão salvo é exibido com seu botão de pagar e nada é pago até que o comprador clique em pagar ou escolha outro meio de pagamento.
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Presença do contêiner registrada na montagem**  
+  Quando o elemento passado ao SDK não está na página no momento da montagem, ou saiu da página e foi desenhado novamente, o SDK agora registra se o elemento estava lá quando começou e quantos milissegundos depois ele saiu. Nenhuma mudança para o comprador.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Lista de meios de pagamento e botões de carteira mais rápidos**  
+  A lista de meios de pagamento e os botões de carteira carregam mais rápido: o SDK baixa o código deles enquanto carrega as configurações do checkout, e não depois, e os botões de carteira reutilizam os meios de pagamento que o SDK já solicitou, então fazem uma requisição a menos. Os botões express acima da lista mantêm seu lugar enquanto carregam, então os meios de pagamento abaixo não se movem quando um botão aparece.
+
+## v2.7.1 {#v271}
+*November 11, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **CVV do cartão salvo e PIN do cartão usam a fonte do lojista**  
+  Os campos de código de segurança e de PIN do cartão do formulário de cartão salvo agora carregam as fontes passadas em `card.fonts`, como o formulário de cartão novo, então não voltam mais para a fonte padrão do navegador.
+
+- <ChangelogBadge type="added" /> **Pagamentos rápidos do Mercado Pago no start() headless**  
+  Um `start()` headless com `MERCADO_PAGO_SUPERTOKEN` agora envia os campos da carteira Mercado Pago (`thirdPartyToken`, `providerMethodId`, `providerMethodType`) e as parcelas no token de uso único. Se algum campo da carteira estiver faltando, `onStatus` informa `WALLET_DATA_MISSING` e nenhum token é criado.
+
+## v2.7.0 {#v270}
+*November 10, 2026*
+
+**PayPal**
+
+- <ChangelogBadge type="added" /> **Botão apenas do Venmo**  
+  Quando Disable Funding Sources inclui paypal e Enable Funding Sources inclui venmo, o checkout mostra apenas o botão do Venmo. O PayPal continua ao lado do Venmo quando paypal não está desabilitado. Com paypal desabilitado e venmo não habilitado, nenhum dos dois botões é exibido.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Sessão de lojista do Apple Pay e cadastro do PayPal sob demanda**  
+  Quando a configuração marca a sessão de lojista do Apple Pay ou o cadastro do PayPal como sob demanda, o SDK os solicita ao endpoint sdk-provider quando o comprador toca no botão, em vez de lê-los da configuração, então nenhum setup token do PayPal é criado para compradores que nunca clicam no PayPal. O botão do PayPal continua visível sem um setup token na configuração. Se a requisição falhar, a folha do Apple Pay ou a janela do PayPal é fechada e o comprador pode tocar novamente, enquanto o restante do checkout continua funcionando.
+
+## v2.6.0 {#v260}
+*November 6, 2026*
+
+**Pagamentos com cartão**
+
+- <ChangelogBadge type="added" /> **Dividir um pagamento entre dois cartões**  
+  `transaction.start([...])` recebe um array de dois meios de pagamento com cartão, cada um com seu `data.amount`. O SDK cria um token composto, o entrega a `createPayment`, executa o 3DS de cada cartão em sequência e envia um único `onStatus` para o pagamento inteiro. Com `autoContinuePayment: false`, ele para depois de `createPayment` e você continua cada cartão do seu lado. Um array inválido rejeita `start()` com `INVALID_SPLIT_PAYMENT` antes de qualquer requisição.
+
+## v2.5.1 {#v251}
+*November 5, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **O cadastro no Click to Pay volta a funcionar quando o comprador marca a caixa de consentimento**  
+  No formulário de cartão do Golden Flow, marcar "Save my information with Mastercard Click to Pay" exibia a marcação, mas o SDK a recebia como desmarcada, então o cartão era pago como um cartão comum e nunca era cadastrado no Click to Pay. "Remember me in this browser" e a caixa de consentimento do mandato tinham o mesmo problema. As três agora informam o que o comprador vê.
+
+- <ChangelogBadge type="changed" /> **Toda carteira express que você ativa agora é renderizada como botão**  
+  Com o Horizontal express button stacking, toda carteira cuja chave Render as express button está ativada agora é renderizada como botão express, na ordem da sua lista. Duas regras tiravam carteiras da linha: o Google Pay ia para a lista de meios de pagamento assim que uma segunda carteira express era ativada, e a linha parava em três botões. As duas foram removidas. Em vez de descartar uma carteira para que as demais caibam, a linha quebra: os botões mantêm a mesma largura, uma linha comporta dois em um celular e três quando há espaço, e uma última linha curta fica centralizada. A ordem da lista, o retorno à lista quando um botão não carrega e o empilhamento Vertical funcionam como antes. Lojistas com duas ou mais carteiras express ativadas verão o Google Pay sair da lista para a linha, e lojistas com mais de três verão todas as carteiras como botões em duas ou mais linhas.
+
+## v2.5.0 {#v250}
+*November 3, 2026*
+
+**Checkout**
+
+- <ChangelogBadge type="added" /> **Campos do cliente que você já enviou podem ficar ocultos, somente leitura ou editáveis**  
+  Quando a sessão de checkout traz um cliente e o Checkout Builder define um estado para um campo do cliente, o formulário o segue: um campo oculto não é exibido e seu valor continua sendo enviado com o pagamento, um campo somente leitura mostra o valor bloqueado com um ícone de cadeado, e um campo editável mostra o valor preenchido para que o comprador possa alterá-lo apenas para este pagamento. O SDK verifica todo valor oculto e somente leitura com a mesma validação do formulário: um valor que não passa é exibido como editável com seu erro. Quando todos os campos estão ocultos e válidos, o formulário é pulado. Se os dados de país de que a verificação de documento, telefone ou endereço precisa não puderem ser carregados, esses valores são enviados como estão. Sem um estado, sem um cliente ou sem um valor, os campos se comportam como antes.
+
+- <ChangelogBadge type="changed" /> **A lista de meios de pagamento aparece antes dos botões de carteira**  
+  A lista de meios de pagamento agora aparece assim que seus meios de pagamento são renderizados, sem esperar pelos botões do Google Pay ou do Apple Pay. Uma carteira que carrega devagar ou nunca carrega não deixa mais a lista atrás de um spinner por até 5 segundos.
+
+**Apple Pay**
+
+- <ChangelogBadge type="changed" /> **O Apple Pay carrega mais cedo na lista de meios de pagamento**  
+  Na lista de meios de pagamento, o SDK agora começa a carregar o botão do Apple Pay e o SDK da Apple assim que os meios de pagamento chegam, quando o Apple Pay está na lista, então os botões de carteira aparecem mais cedo. Nada muda quando o Apple Pay não é oferecido ou não pode ser exibido no dispositivo.
+
+**Core SDK**
+
+- <ChangelogBadge type="changed" /> **Os logs de desempenho incluem o tempo desde o início do SDK**  
+  Os logs de desempenho agora incluem o tempo decorrido desde que o lojista chamou `start()`, então inícios lentos podem ser rastreados a partir da primeira chamada do lojista.
+
+- <ChangelogBadge type="changed" /> **Os tempos de download dos chunks do SDK são informados como métricas de rede**  
+  Os próprios chunks lazy de JS e CSS do SDK agora informam seu tempo de download como métricas de rede, com os acertos de cache marcados, então carregamentos lentos de chunks aparecem no monitoramento. O comportamento e o tempo de carregamento não mudam.
+
+- <ChangelogBadge type="changed" /> **Um log de desempenho marca quando todos os botões externos foram renderizados**  
+  Na lista de meios de pagamento, o SDK registra um log uma vez quando todos os botões externos terminam de carregar, como faz o Web SDK 1.11.
+
+- <ChangelogBadge type="changed" /> **Carregamentos de chunks e de carteiras não concluídos são registrados quando a página fica oculta**  
+  Quando a página fica oculta enquanto o download de um chunk ou um botão de carteira ainda está carregando, o SDK registra quais carregamentos ainda estavam abertos e por quanto tempo.
+
+## v2.4.0 {#v240}
+*November 3, 2026*
+
+**Parcelas**
+
+- <ChangelogBadge type="changed" /> **As opções de parcelamento são identificadas pelo id do plano**  
+  Quando duas opções de parcelamento tinham o mesmo número de parcelas, escolher a segunda exibia a primeira. As opções agora são identificadas pelo id do plano, o id do plano selecionado acompanha o token de uso único, e as opções com juros mostram um rótulo de juros. O callback `onInstallmentSelected` também recebe o id do plano (`installmentId`), o tipo do plano, a taxa e seus custos financeiros (sdk-web-core 9.7.0).
+
+**Apple Pay**
+
+- <ChangelogBadge type="fixed" /> **Botão do Apple Pay fora do Safari**  
+  Quando a Apple responde `applePayUnsupported` para o identificador de lojista em um navegador diferente do Safari, o SDK não oculta mais o botão do Apple Pay apenas com base nessa resposta: agora ele mostra o botão quando `canMakePayments()` é verdadeiro. Compradores sem cartão na Wallet (`paymentCredentialsUnavailable`) continuam sem vê-lo.
+
+## v2.3.0 {#v230}
+*October 29, 2026*
+
+**Cadastro**
+
+- <ChangelogBadge type="added" /> **Token salvo no resultado do onStatus do cadastro**  
+  Quando um cadastro termina com o status ENROLLED, o resultado entregue a `onStatus` agora traz `vaultedToken` com o token do meio de pagamento salvo, em todos os fluxos de cadastro. Outros status e os resultados de pagamento não trazem o campo.
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Contas PayPal salvas não mostram mais o banner "Unauthorized payment"**  
+  Selecionar uma conta PayPal salva cuja consulta de parcelas não retorna planos não mostra mais o banner "Unauthorized payment. There are no payment options available" do NuPay. Esse banner é uma regra própria do NuPay e só se aplica ao NuPay; uma conta PayPal salva sem planos paga como qualquer outro meio de pagamento salvo.
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **As visualizações de carteira seguem o showStatusScreen**  
+  As visualizações de carteira de `getPaymentMethodsViews` (Apple Pay, Google Pay, PayPal, Samsung Pay, Revolut Pay e PayPal Braintree) ignoravam o `showStatusScreen` da transação e sempre mostravam a tela de status do SDK, então com `showStatusScreen: false` o `onStatus` esperava o comprador clicar em Continue. Agora elas seguem o valor da transação, como faz a lista de meios de pagamento: com `false`, nenhuma tela de status é exibida e o `onStatus` é disparado sem ela.
+
+- <ChangelogBadge type="fixed" /> **A montagem espera um contêiner que chega depois**  
+  Quando o elemento informado em elementSelector ainda não está na página, o SDK agora espera até 3 segundos que ele apareça antes de informar ELEMENT_NOT_FOUND. Nada muda quando o elemento já está lá.
+
+## v2.2.1 {#v221}
+*October 29, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="fixed" /> **As visualizações de carteira seguem o showStatusScreen**  
+  As visualizações de carteira de `getPaymentMethodsViews` (Apple Pay, Google Pay, PayPal, Samsung Pay, Revolut Pay e PayPal Braintree) ignoravam o `showStatusScreen` da transação e sempre mostravam a tela de status do SDK, então com `showStatusScreen: false` o `onStatus` esperava o comprador clicar em Continue. Agora elas seguem o valor da transação, como faz a lista de meios de pagamento: com `false`, nenhuma tela de status é exibida e o `onStatus` é disparado sem ela.
+
+## v2.2.0 {#v220}
+*October 27, 2026*
+
+**Core SDK**
+
+- <ChangelogBadge type="added" /> **Meios de pagamento com redirecionamento podem abrir em uma janela pop-up**  
+  Quando uma conexão de provedor está configurada para abrir seu redirecionamento em um pop-up, os meios de pagamento baseados em redirecionamento abrem o provedor em uma janela controlada pelo SDK em vez de substituir a página. A página do lojista continua montada, e o SDK espera o resultado do pagamento, fecha a janela e dispara os callbacks de resultado existentes, então nenhuma mudança na integração é necessária. A janela abre na etapa em que a página antes era redirecionada; quando o navegador a bloqueia, o comprador recebe um botão Continue to payment. Conexões sem essa configuração mantêm o redirecionamento na mesma aba.
+
+- <ChangelogBadge type="fixed" /> **Uma segunda transação na mesma página chama createPayment**  
+  Quando uma página executava um pagamento sem `createPayment` e depois um pagamento com `createPayment` usando o formulário do SDK, o segundo criava o próprio pagamento e informava `INVALID_CHECKOUT_SESSION`. Agora ele entrega o token a `createPayment`, como faz quando é a primeira transação na página.
+
+**Fraude e risco**
+
+- <ChangelogBadge type="added" /> **Sessão de dispositivo do Risk.js da Checkout.com**  
+  Quando uma conexão roteada para a Checkout.com tem `RISK_JS_ENABLED` ativado, uma `PUBLIC_KEY` e o subdomínio específico do lojista (`MSSD`), o SDK carrega o Risk.js da Checkout.com em segundo plano quando o meio de pagamento é montado, publica os dados do dispositivo e envia o `deviceSessionId` retornado com o token e o pagamento como o id de sessão de terceiros `CHECKOUT`, para que a Checkout.com possa encaminhá-lo como `risk.device_session_id`. Isso vale para todo meio de pagamento roteado para a Checkout.com (cartões, carteiras e meios de pagamento alternativos). Uma falha no carregamento do script, na inicialização ou na publicação nunca bloqueia o checkout: a entrada fica vazia, a falha é registrada e a próxima requisição publica novamente. A Checkout.com mantém a sessão do dispositivo por 20 minutos após emiti-la, então um checkout que fica aberto por mais tempo que isso paga sem ela.
+
+**Checkout**
+
+- <ChangelogBadge type="changed" /> **Os campos do cartão seguem a cor de campo do Checkout Builder**  
+  Quando a cor de campo do Checkout Builder é diferente de branco, os campos de número do cartão, data de validade e CVV e as sugestões de endereço a adotam. O texto deles usa as cores de texto do Checkout Builder, e as bordas e as opções destacadas são uma mistura das cores de texto e de campo, então um texto claro em um campo escuro continua legível. Nada muda quando a cor de campo é branca ou não está definida, e os estilos passados em `card.styles` continuam sendo aplicados por cima (sdk-web-card 1.93.0).
+
+- <ChangelogBadge type="fixed" /> **Espaçamento e divisor de More options**  
+  Nos layouts Moon Active e recolhido, a seção "More options" tem espaço acima dela e mostra o divisor "Or pay with" entre os botões express e os outros meios de pagamento.
+
+## v2.1.2 {#v212}
+*October 20, 2026*
+
+**Transação**
+
+- <ChangelogBadge type="added" /> **Verifique se um meio de pagamento será renderizado antes de listá-lo**  
+  O novo [`transaction.isPaymentMethodAvailable({ paymentMethodType })`](/pt-br/docs/yuno-sdk/reference/objects-you-receive#checking-payment-method-availability-web) é resolvido como `true` ou `false` para qualquer tipo de meio de pagamento, com a mesma decisão que o SDK toma antes de mostrar esse meio para a sessão de checkout. Lojistas que desenham a própria lista de meios de pagamento podem chamá-lo e ocultar os meios que não seriam renderizados.
+
+**Checkout**
+
+- <ChangelogBadge type="fixed" /> **Os nomes dos meios de pagamento mantêm a fonte do checkout**  
+  Em páginas host que definem fontes em todos os elementos com uma regra `*`, o nome do meio de pagamento e sua descrição do Checkout Builder na lista de opções usam a fonte, o peso e o espaçamento do checkout.
+
+- <ChangelogBadge type="fixed" /> **Os textos das caixas de seleção mantêm a fonte do checkout**  
+  Em páginas host que definem fontes em todos os elementos com uma regra `*`, o texto de todas as caixas de seleção (salvar cartão, salvar em caso de sucesso, cobrança igual à entrega, consentimento do mandato, inscrição no Click to Pay e lembrar de mim) e das opções de rádio do Click to Pay usa a fonte, o peso e o espaçamento do checkout, como os nomes dos meios de pagamento (sdk-web-core 9.4.1).
+
+## v2.1.1 {#v211}
+*October 19, 2026*
+
+**Pagamentos com cartão**
+
+- <ChangelogBadge type="fixed" /> **O tamanho do CVC do cartão segue o serviço de cartões**  
+  O campo CVC agora aplica o `security_code_length` que o serviço de cartões retorna para a bandeira do cartão, tanto para um cartão novo quanto para um cartão salvo. Um CVC de 4 dígitos digitado em uma bandeira de 3 dígitos (Elo, Alelo, Edenred, Sodexo, VR) mostra "Invalid security code" em vez de ser enviado, o que a Adyen recusava com o código 103 "CVC is not the right length". A Amex mantém 4 dígitos, e as bandeiras sem tamanho informado pelo serviço de cartões mantêm a regra anterior de 3 ou 4. Também incorpora o sdk-web-card 1.91.1: um frame de cartão servido a partir de y.uno ignora um `apiUrl` ou `assetUrl` fora do domínio da Yuno (sdk-web-card 1.92.0).
+
+## v2.1.0 {#v210}
+*October 17, 2026*
+
+**Universal Web SDK**
+
+- <ChangelogBadge type="added" /> **Idioma tcheco no checkout**  
+  Adiciona a localização em tcheco (cs, cs-CZ) ao checkout do Universal Web SDK, com os mesmos textos da versão 1.11 do Web SDK.
+
+- <ChangelogBadge type="added" /> **Descrição do meio de pagamento a partir do Checkout Builder**  
+  Na lista de meios de pagamento, a descrição que o lojista define para um meio de pagamento no Checkout Builder (`custom_description`) aparece como uma segunda linha cinza abaixo do nome. O texto é exibido completo, quebra em quantas linhas precisar e mantém suas quebras de linha. Meios sem descrição, e cartões ou contas salvos, são renderizados como antes. Mesmo comportamento da versão 1.11 do Web SDK.
+
+- <ChangelogBadge type="fixed" /> **Loader corrigido após a configuração do 3DS**  
+  Quando um pagamento termina na etapa de configuração do 3DS e o lojista trata o status do pagamento (`showStatusScreen: false`), o SDK agora oculta seu loader assim que entrega o resultado. Antes, o loader ficava na tela por cerca de um minuto e depois mostrava um erro "Transaction failed", mesmo com o resultado já entregue ao lojista. Isso afetava autenticações somente 3DS e pagamentos com cartão recusados durante a autenticação 3DS. Mesmo comportamento da versão 1.11 do Web SDK.
+
+- <ChangelogBadge type="fixed" /> **O fingerprint da EBANX não lança mais "invalid country"**  
+  Quando o fingerprint de dispositivo da EBANX está configurado e o `countryCode` passado ao SDK é um país que a EBANX não atende (por exemplo, `US`), o SDK não exibe mais um erro `invalid country` não tratado a cada carregamento. O erro agora é capturado e registrado, e o fingerprint da EBANX é ignorado nesse carregamento. Os pagamentos não foram afetados nem antes nem depois desta mudança.
+
+## v2.0.0 {#v200}
+*October 16, 2026*
+
+- <ChangelogBadge type="breaking" /> **Um novo Yuno SDK**  
+  A versão 2.0.0 é o novo Yuno SDK: uma única integração para pagamentos e cadastro, com a mesma API na Web, no iOS e no Android. Carregue-o a partir da CDN, crie uma transação e receba o resultado em `onStatus`. Ele substitui as integrações Full, Lite, Seamless, Render, Headless e Secure Fields e não é compatível com a 1.x.  
+  [Guia de migração →](/pt-br/docs/yuno-sdk/migration/overview)
+  *Veja também: [Documentação do Yuno SDK](/docs/yuno-sdk/introduction) · [Primeiros passos](/pt-br/docs/yuno-sdk/get-started)*
+
+- <ChangelogBadge type="breaking" /> **Novo global: SdkPayments**  
+  O SDK é exposto como `window.SdkPayments` e inicializado com `SdkPayments.initialize` (antes `window.Yuno`).
+  *Veja também: [Primeiros passos](/pt-br/docs/yuno-sdk/get-started)*
+
+- <ChangelogBadge type="deprecated" /> **SDK anterior com suporte até 2027**  
+  O SDK 1.x (Full, Lite, Seamless, Render, Headless e Secure Fields) continua com suporte lado a lado com o novo Yuno SDK durante a transição. A descontinuação dele está prevista para 2027. Entre em contato com seu Account Manager para planejar a migração.

@@ -1,0 +1,76 @@
+---
+title: "Changelog do Yuno SDK (Android)"
+description: "Últimas atualizações e histórico de versões do novo Yuno SDK para Android"
+---
+
+import { ChangelogBadge } from '/snippets/ChangelogBadge.jsx';
+
+## v3.1.0 {#v310}
+*November 6, 2026*
+
+**Payments**
+
+- <ChangelogBadge type="added" /> **Split de pagamento em dois cartões no headless**  
+  Transaction.start(activity, paymentsSelected) cobra um pedido em dois ou mais cartões. Cada item é um PaymentMethodSelected comum, seja um vaultedToken para um cartão salvo ou transactionData.card para um novo, e deve definir o novo transactionData.amount (PaymentAmount(currency, value)). A ordem da lista é a ordem do pagamento: o primeiro cartão é cobrado e autenticado primeiro. O SDK cria um token composto, entrega-o a TransactionController.createPayment, depois executa o 3DS cartão por cartão e informa o status geral do pagamento em onStatus. Com autoContinuePayment = false, ele para depois de createPayment, como acontece com um único cartão. Antes de qualquer requisição, ele falha com INVALID_SPLIT_PAYMENT e indica o cartão quando a lista tem menos de dois itens, um item não tem valor, um valor não é maior que 0 ou não tem moeda, as moedas são diferentes entre os itens, ou o mesmo cartão ou vaultedToken aparece duas vezes. Transaction.start(activity, paymentSelected) não muda.
+
+- <ChangelogBadge type="added" /> **PayPal via Braintree**  
+  Os compradores podem pagar com PayPal processado pela Braintree (PAYPAL_BRAINTREE) a partir da lista de meios de pagamento. O SDK abre a página de aprovação do PayPal em uma Chrome Custom Tab, envia a conta aprovada no token de uso único e coleta os dados do dispositivo da Braintree para pagamentos posteriores com a conta salva. Ele precisa do novo módulo opcional com.yuno.payments:yuno-sdk-paypal-braintree:1.0.0; como as classes de dados de dispositivo do PayPal vêm tanto no core quanto na Braintree, adicione também `configurations.all { exclude group: 'com.paypal.android', module: 'fraud-protection' }` ao app. A mesma exclusão vale para qualquer app que já inclua a Braintree. Ele aparece na lista de meios de pagamento, então Transaction.start() e getPaymentMethodsViews() não precisam de mudanças.
+
+- <ChangelogBadge type="changed" /> **Erro mais claro quando falta um módulo de pagamento opcional**  
+  Quando um meio de pagamento precisa de um módulo opcional que o app não inclui (Revolut Pay, PayPal via Braintree), a transação continua terminando com INTERNAL_ERROR, e a mensagem de erro agora indica a dependência do Gradle a ser adicionada.
+
+- <ChangelogBadge type="fixed" /> **Os dados de dispositivo do PayPal não fecham mais o app quando fraud-protection é excluído**  
+  Apps que excluem com.paypal.android:fraud-protection sem ter a Braintree não fecham mais ao pagar com um meio que coleta dados de dispositivo do PayPal nem ao abrir uma conta PayPal salva; o pagamento continua sem esses dados de dispositivo.
+
+- <ChangelogBadge type="changed" /> **Os campos do formulário seguem a cor de campo do Checkout Builder**  
+  Quando a cor de campo do Checkout Builder é definida com uma cor diferente de branco, os campos do formulário, os menus suspensos e suas listas de opções, o seletor de bandeira para cartões co-badged, o seletor de tipo de cartão, as caixas de código OTP e PIN e as dicas de ajuda agora usam essa cor de campo, com a cor de destaque no campo em foco e no cursor, para que os valores digitados e preenchidos previamente continuem legíveis em fundos escuros. O título da seção de endereço de entrega e os títulos mais finos das seções do formulário também passam a usar a cor de texto do Checkout Builder. As cores de erro não mudam. Com a cor de campo branca ou não definida, quando o app passa sua própria Appearance ou quando o tema escuro do SDK está em uso, os campos ficam exatamente como antes. Para usar, defina a cor de campo no Checkout Builder; nenhuma mudança de código é necessária.
+
+- <ChangelogBadge type="changed" /> **A borda do campo e a linha destacada seguem as cores enviadas com o checkout**  
+  A borda dos campos do formulário, os divisores e a linha destacada das listas que eles abrem agora usam as cores que vêm com as configurações do checkout. Quando essas cores não são fornecidas, os campos mantêm a borda e o destaque habituais. Nenhuma mudança de código é necessária.
+
+- <ChangelogBadge type="changed" /> **Um cartão novo como único meio de pagamento abre seu formulário quando a lista carrega**  
+  Quando a lista de meios de pagamento contém apenas um cartão novo, o cartão é selecionado quando a lista carrega, sem necessidade de toque, e `onPaymentSelected` o recebe com `selectionSource` `AUTO`; a linha não pode ser tocada e o formulário do cartão aparece aberto, com ou sem a exibição expandida ativada. O cabeçalho do meio fica oculto por padrão e é exibido como um título não interativo com o nome e o logotipo quando a configuração do checkout pede isso. O comportamento vem ativado por padrão e pode ser desativado por lojista na configuração do checkout, o que traz de volta a lista anterior. Listas com dois ou mais meios, cartões salvos ou um único meio que não seja cartão não mudam.
+
+- <ChangelogBadge type="added" /> **Informações do cartão por callback enquanto o comprador digita**  
+  Encadeie o callback opcional `TransactionConfig.onCardInfoChanged { }` para receber a bandeira, o tipo, o emissor e o país do cartão enquanto o comprador digita o número do cartão, em pagamentos e cadastros. Ele recebe `null` quando o número é apagado para menos de 6 dígitos ou a consulta do cartão falha.
+
+- <ChangelogBadge type="added" /> **Logotipo da bandeira a partir dos primeiros dígitos**  
+  Quando está ativado para a conta, o campo do número do cartão mostra o logotipo da bandeira a partir dos primeiros dígitos, antes da resposta da consulta do cartão. O logotipo é apenas visual: a validação, os comprimentos, as parcelas, o seletor de rede e o pagamento continuam usando a bandeira da consulta do cartão, cujo logotipo substitui o antecipado assim que ela responde com uma bandeira. Bandeiras sem logotipo não mostram nada até lá. Contas sem esse recurso mantêm o comportamento atual.
+
+- <ChangelogBadge type="fixed" /> **Apps que reduzem o código com R8 em modo completo acessam a API da Yuno**  
+  Em builds de release com R8 em modo completo (o padrão desde o Android Gradle Plugin 8) e sem Retrofit 2.10 ou mais recente no app, todas as requisições do SDK falhavam com erro de rede. As regras ProGuard de consumidor do SDK agora mantêm o que o Retrofit precisa, então seu app não precisa de regras para isso.
+
+- <ChangelogBadge type="changed" /> **As telas que o SDK desenha depois do pagamento passam por showView**  
+  Quando você sobrescreve `showView`, as telas que o SDK desenha depois de criar o pagamento, como o QR do Pix, vouchers, instruções, OTP e PIN, agora chegam a ele com `step` `ACTION`, para que você possa exibi-las na sua própria tela. Sem a sobrescrita, elas continuam em tela cheia. Desafios de 3DS e redirecionamentos continuam sempre em tela cheia.
+
+**Universal SDK**
+
+- <ChangelogBadge type="fixed" /> **Um cancelamento pelo usuário chega a onStatus como USER_CANCEL**  
+  Fechar o formulário de pagamento, a visualização de 3DS, de redirecionamento ou do meio de pagamento, ou o cadastro, ou iniciar uma nova transação sobre uma em andamento, agora entrega `status` `USER_CANCEL` sem substatus, conforme documentado e como no iOS, em vez de `CANCELED` / `CANCELED_BY_USER`.
+
+- <ChangelogBadge type="fixed" /> **Pagamentos que passaram por 3DS, um redirecionamento ou uma visualização de meio de pagamento informam o status do backend**  
+  Depois da ação adicional, `onStatus` recebe o `status` e o `substatus` do pagamento exatamente como o backend os retorna, então `REJECTED`, `CANCELED` e `EXPIRED` não chegam mais como `DECLINED`, e `ERROR` e `PENDING` mantêm o substatus do backend.
+
+- <ChangelogBadge type="fixed" /> **Cadastros informam o status do backend**  
+  Cadastros pelo formulário do SDK, por um redirecionamento, por um OTP ou por 3DS entregam o `status` e o `substatus` do backend (por exemplo, `ENROLLED`) em vez de `SUCCEEDED`, `PROCESSING`, `REJECT` ou `FAIL`, e a tela de status do SDK mostra o resultado correspondente.
+
+- <ChangelogBadge type="fixed" /> **Um status fora da lista documentada informa UNSUPPORTED_STATUS**  
+  Pagamentos e cadastros repassam os status listados na referência de status; qualquer outro valor chega como `INTERNAL_ERROR` com `message.code` `UNSUPPORTED_STATUS` e `message.reason` `unsupported status: <value>`, como no iOS e na Web. `REFUNDED` agora é repassado.
+
+- <ChangelogBadge type="fixed" /> **Um createPayment rejeitado informa MERCHANT_CREATE_PAYMENT_FAILED**  
+  Quando o seu `createPayment` lança uma exceção, `onStatus` recebe `INTERNAL_ERROR` com `message.code` `MERCHANT_CREATE_PAYMENT_FAILED` e o SDK fecha sua visualização sem mostrar a tela de status, para que o seu app mostre o erro.
+
+## v3.0.0 {#v300}
+*October 16, 2026*
+
+- <ChangelogBadge type="breaking" /> **Um novo Yuno SDK**  
+  A versão 3.0.0 é o novo Yuno SDK: uma integração para pagamentos e cadastro, com a mesma API no Android, no iOS e na Web. Crie uma `Transaction`, inicie-a e obtenha o resultado em `onStatus`. Ela substitui as integrações Full, Lite, Seamless, Render e Headless e não é compatível com a 2.x.  
+  [Guia de migração →](/pt-br/docs/yuno-sdk/migration/overview)  
+  *Veja também: [Documentação do Yuno SDK](/docs/yuno-sdk/introduction) · [Primeiros passos](/pt-br/docs/yuno-sdk/get-started)*
+
+- <ChangelogBadge type="breaking" /> **Novo pacote e novo ponto de entrada**  
+  O novo SDK fica em `com.yuno.payments.sdk.api` e começa a partir de `SdkPayments` (antes `com.yuno.sdk.Yuno`). A dependência do Gradle mantém o nome; só a versão muda para 3.0.0.  
+  *Veja também: [Primeiros passos](/pt-br/docs/yuno-sdk/get-started)*
+
+- <ChangelogBadge type="deprecated" /> **SDK anterior com suporte até 2027**  
+  O SDK 2.x (Full, Lite, Seamless, Render e Headless) continua com suporte lado a lado com o novo Yuno SDK durante a transição. A descontinuação está prevista para 2027. Entre em contato com o seu Account Manager para planejar a migração.
