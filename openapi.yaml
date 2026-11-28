@@ -15943,18 +15943,28 @@ paths:
         - Dry Run
   /external-subscriptions/{external_subscription_id}/payment-method:
     post:
-      summary: Change External Subscription Payment Method
+      summary: Set External Subscription Payment Method
       description: >-
-        Moves an external subscription (a Stripe Billing subscription linked through the billing bridge) to another
-        payment method the customer already enrolled in Yuno, without a payment.
+        Sets the payment method a Stripe Billing subscription charges, without a payment. Use it in two cases:
+
+
+        - **The subscription is not linked to Yuno yet**: Send `external_customer_id`, and Yuno links it to a card the
+        customer already verified in Yuno. The Stripe subscription must be `active` or `trialing`, charged automatically
+        (`collection_method: charge_automatically`) and belong to `external_customer_id`. The card must have been
+        verified before, so Yuno can charge the renewals as merchant-initiated.
+
+        - **The subscription is already linked**: Yuno moves it to another payment method the customer already enrolled
+        in Yuno. `external_customer_id` is optional in this case.
 
 
         No payment is made: Yuno does not charge the customer and does not run a $0 verification or 3DS. The next
-        renewals charge the new payment method.
+        renewals charge the payment method in `vaulted_token`.
 
 
-        `customer_payer.id` is the Yuno customer ID, not the Stripe customer ID (`cus_...`). Sending the payment method
-        the subscription already charges returns `200` and changes nothing.
+        `customer_payer.id` is the Yuno customer ID; `external_customer_id` is the Stripe customer ID (`cus_...`).
+        Sending the payment method the subscription already charges returns `200` and changes nothing (`result`
+        `NO_CHANGE`). The response includes `external_customer_id` and `result` when the request sends
+        `external_customer_id`.
 
 
         This API is enabled per account: contact your Key Account Manager to request access.
@@ -16021,6 +16031,16 @@ paths:
                     it from now on.
                   examples:
                     - 2deff5c9-da62-4888-8f05-df76ab2967a5
+                external_customer_id:
+                  type: string
+                  minLength: 3
+                  maxLength: 255
+                  description: >-
+                    The Stripe customer ID (`cus_...`) of the subscription. Between 3 and 255 characters. Required to
+                    link a subscription that is not linked yet; optional to move a linked one. When sent, Yuno checks
+                    that the Stripe subscription belongs to this customer. An empty value counts as not sent.
+                  examples:
+                    - cus_RplXYZ
             examples:
               Change the payment method:
                 value:
@@ -16028,11 +16048,12 @@ paths:
                   customer_payer:
                     id: cfae0941-7234-427a-a739-ef4fce966c79
                   vaulted_token: 2deff5c9-da62-4888-8f05-df76ab2967a5
+                  external_customer_id: cus_RplXYZ
       responses:
         '200':
           description: >-
-            The subscription now uses the payment method in `vaulted_token`. Also returned, with no change, when that
-            payment method is the one the subscription already uses.
+            The subscription now charges the payment method in `vaulted_token`. `result` tells whether it was linked,
+            changed or already used that payment method.
           content:
             application/json:
               schema:
@@ -16056,7 +16077,29 @@ paths:
                     type: string
                     format: uuid
                     description: The vaulted token the subscription charges from now on.
+                  external_customer_id:
+                    type: string
+                    description: The Stripe customer ID from the request. Only when the request sends `external_customer_id`.
+                  result:
+                    type: string
+                    enum:
+                      - LINKED
+                      - PAYMENT_METHOD_CHANGED
+                      - NO_CHANGE
+                    description: >-
+                      Only when the request sends `external_customer_id`. `LINKED` when the subscription was not linked
+                      to Yuno yet, `PAYMENT_METHOD_CHANGED` when it moved to this payment method, `NO_CHANGE` when it
+                      already charged it.
               examples:
+                Subscription linked:
+                  value:
+                    external_subscription_id: sub_1QF2abc
+                    account_id: 9104911d-5df9-429e-8488-ad41abea1a4b
+                    customer_payer:
+                      id: cfae0941-7234-427a-a739-ef4fce966c79
+                    vaulted_token: 2deff5c9-da62-4888-8f05-df76ab2967a5
+                    external_customer_id: cus_RplXYZ
+                    result: LINKED
                 Payment method changed:
                   value:
                     external_subscription_id: sub_1QF2abc
@@ -16064,10 +16107,12 @@ paths:
                     customer_payer:
                       id: cfae0941-7234-427a-a739-ef4fce966c79
                     vaulted_token: 2deff5c9-da62-4888-8f05-df76ab2967a5
+                    external_customer_id: cus_RplXYZ
+                    result: PAYMENT_METHOD_CHANGED
         '400':
           description: >-
-            The request is invalid, or the customer, the payment method or the subscription was not found or does not
-            match.
+            The request is invalid, the customer, the payment method or the subscription was not found or does not
+            match, or the subscription or the card cannot be linked.
           content:
             application/json:
               schema:
@@ -16092,12 +16137,50 @@ paths:
                   value:
                     code: EXTERNAL_SUBSCRIPTION_NOT_FOUND
                     messages:
+                      - The billing platform has no subscription with this id for the account.
+                EXTERNAL_SUBSCRIPTION_NOT_FOUND_WITHOUT_EXTERNAL_CUSTOMER_ID:
+                  summary: Without external_customer_id
+                  value:
+                    code: EXTERNAL_SUBSCRIPTION_NOT_FOUND
+                    messages:
                       - No active external subscription with this id for the account.
                 CUSTOMER_MISMATCH:
                   value:
                     code: CUSTOMER_MISMATCH
                     messages:
+                      - The external subscription belongs to another customer or to another external_customer_id.
+                CUSTOMER_MISMATCH_WITHOUT_EXTERNAL_CUSTOMER_ID:
+                  summary: Without external_customer_id
+                  value:
+                    code: CUSTOMER_MISMATCH
+                    messages:
                       - The external subscription belongs to another customer.
+                VAULTED_TOKEN_NOT_ENROLLED:
+                  summary: Only when the request sends external_customer_id
+                  value:
+                    code: VAULTED_TOKEN_NOT_ENROLLED
+                    messages:
+                      - The vaulted_token is not enrolled.
+                VAULTED_TOKEN_WITHOUT_COUNTRY:
+                  value:
+                    code: VAULTED_TOKEN_WITHOUT_COUNTRY
+                    messages:
+                      - The vaulted_token has no country.
+                VAULTED_TOKEN_WITHOUT_NETWORK_TRANSACTION_ID:
+                  value:
+                    code: VAULTED_TOKEN_WITHOUT_NETWORK_TRANSACTION_ID
+                    messages:
+                      - The vaulted_token has no network transaction id to charge the renewals merchant-initiated.
+                EXTERNAL_SUBSCRIPTION_NOT_ACTIVE:
+                  value:
+                    code: EXTERNAL_SUBSCRIPTION_NOT_ACTIVE
+                    messages:
+                      - The external subscription is neither active nor trialing.
+                EXTERNAL_SUBSCRIPTION_NOT_CHARGED_AUTOMATICALLY:
+                  value:
+                    code: EXTERNAL_SUBSCRIPTION_NOT_CHARGED_AUTOMATICALLY
+                    messages:
+                      - The external subscription is not charged automatically.
         '403':
           description: 'PRODUCT_NOT_ENABLED: the account is not enabled for the billing bridge. Contact your Key Account Manager.'
           content:
@@ -16113,7 +16196,11 @@ paths:
                         External subscriptions are not enabled for this account. Please contact your Key Account
                         Manager.
         '409':
-          description: 'CONCURRENT_CHANGE: another payment method change for this subscription completed first.'
+          description: >-
+            CONCURRENT_CHANGE: another payment method change for this subscription completed first.
+            EXTERNAL_SUBSCRIPTION_PENDING_ACTIVATION: the subscription is being migrated to Yuno; retry once the
+            migration finishes. Only when the request sends external_customer_id; without it, the subscription answers
+            EXTERNAL_SUBSCRIPTION_NOT_FOUND.
           content:
             application/json:
               schema:
@@ -16124,16 +16211,29 @@ paths:
                     code: CONCURRENT_CHANGE
                     messages:
                       - Another payment method change for this subscription completed first.
+                EXTERNAL_SUBSCRIPTION_PENDING_ACTIVATION:
+                  value:
+                    code: EXTERNAL_SUBSCRIPTION_PENDING_ACTIVATION
+                    messages:
+                      - The external subscription is being migrated to Yuno. Retry once the migration finishes.
         '502':
           description: >-
-            BILLING_PLATFORM_ERROR: the billing platform could not confirm the change. The previous payment method
-            stays. Retry with a new idempotency key.
+            BILLING_PLATFORM_ERROR: the billing platform could not confirm the change. The subscription keeps charging
+            what it charged before. Retry with a new idempotency key.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error_3'
               examples:
                 BILLING_PLATFORM_ERROR:
+                  value:
+                    code: BILLING_PLATFORM_ERROR
+                    messages:
+                      - >-
+                        The billing platform could not confirm the change. The subscription keeps charging what it
+                        charged before. Retry with a new idempotency key.
+                BILLING_PLATFORM_ERROR_WITHOUT_EXTERNAL_CUSTOMER_ID:
+                  summary: Without external_customer_id
                   value:
                     code: BILLING_PLATFORM_ERROR
                     messages:
