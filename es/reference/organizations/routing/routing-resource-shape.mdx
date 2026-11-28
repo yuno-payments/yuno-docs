@@ -150,6 +150,9 @@ Cada paso es un **paso de proveedor** (`provider_id` + `connection_id`: un prove
 | `SUCCEEDED_GROUP` | Resultado exitoso cuyo subestado está en el grupo; hoy es `PENDING_IN_REVIEW`, una autorización que el proveedor retiene para revisión manual. | `group_id` |
 | `PENDING` | Un proveedor de fraude, 3DS o autenticación dejó el pago pendiente (una revisión por resolver, un desafío por completar). Solo en esos pasos. Consulta [Tipos de paso de proveedor](#provider-step-kinds). | — |
 | `INTERNAL_ERROR` | El proveedor devolvió un error (5xx, falla de conexión, tiempo de espera agotado) antes de llegar al emisor. | — |
+| `LIABILITY_SHIFTED` | Un paso de proveedor 3DS fue exitoso y la autenticación informa `liability_shift: true`. Refina `APPROVED`. Solo en pasos de proveedor 3DS. Consulta [Outputs de liability shift](#liability-shift-outputs). | — |
+| `LIABILITY_NOT_SHIFTED` | Un paso de proveedor 3DS fue exitoso y la autenticación informa `liability_shift: false`. Refina `APPROVED`. Solo en pasos de proveedor 3DS. Consulta [Outputs de liability shift](#liability-shift-outputs). | — |
+| `LIABILITY_NOT_REPORTED` | Un paso de proveedor 3DS fue exitoso y la autenticación no informa ningún valor de `liability_shift`. Refina `APPROVED`. Solo en pasos de proveedor 3DS. Consulta [Outputs de liability shift](#liability-shift-outputs). | — |
 
 </div>
 
@@ -167,12 +170,59 @@ El tipo de un paso de proveedor se deriva de su `provider_id` y se devuelve como
 |---|---|---|---|
 | `PAYMENT` | Adquirentes y PSPs (`STRIPE`, `ADYEN`, `DLOCAL`, …) | `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `MAC_CODE_GROUP`, `SUCCEEDED_GROUP`, `INTERNAL_ERROR` | El intento de pago. Las aprobaciones pueden continuar hacia un paso `CAPTURE` / `HOLD_FOR_REVIEW` o hacia un paso de fraude que se ejecuta después del pago. |
 | `FRAUD` | Análisis de fraude (`CYBERSOURCE`, `SIGNIFYD`, `FORTER`, `CLEAR_SALE`, `RISKIFIED`, `YUNO_FRAUD_SCREENING`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | **Antes del pago** (la ruta entra por él, o sigue a otro paso de fraude, 3DS o autenticación): `PENDING` puede continuar hacia otro paso. **Después del pago** (se alcanza desde un output de un paso de pago o de enrutamiento inteligente): `PENDING` es terminal y el paso puede continuar hacia una acción `REVERT`. |
-| `THREE_D_SECURE` | Servidores 3DS (`NETCETERA_3DS`, `CHECKOUT_3DS`, `CYBERSOURCE_3DS`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | `PENDING` es el desafío a la espera de su resultado y puede continuar hacia otro paso. |
+| `THREE_D_SECURE` | Servidores 3DS (`NETCETERA_3DS`, `CHECKOUT_3DS`, `CYBERSOURCE_3DS`, …) | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR`, `LIABILITY_SHIFTED`, `LIABILITY_NOT_SHIFTED`, `LIABILITY_NOT_REPORTED` | `PENDING` es el desafío a la espera de su resultado y puede continuar hacia otro paso. Los tres estados de liability shift refinan `APPROVED`, consulta [Outputs de liability shift](#liability-shift-outputs). |
 | `AUTHENTICATION` | `NETWORK_TOKEN_AUTHENTICATION` | `APPROVED`, `DECLINED`, `PENDING`, `INTERNAL_ERROR` | Las mismas reglas que 3DS. |
 
 </div>
 
 `PENDING` en un paso `PAYMENT` o de enrutamiento inteligente se rechaza con `400 INVALID_ROUTE_CONFIGURATION` (`output PENDING is only supported on fraud, 3DS and authentication provider steps`), y también se rechaza un `PENDING` que continúa hacia otro paso en un paso de fraude que se ejecuta después del pago.
+
+### Outputs de liability shift {#liability-shift-outputs}
+
+Un paso de proveedor 3DS puede ramificarse según el [liability shift](/es/docs/security-and-compliance/3d-secure) de la autenticación cuando es exitoso. Los tres estados refinan `APPROVED`:
+
+<div className="code-nowrap-table dense-table">
+
+| `status` | `liability_shift` de la autenticación |
+|---|---|
+| `LIABILITY_SHIFTED` | `true` |
+| `LIABILITY_NOT_SHIFTED` | `false` |
+| `LIABILITY_NOT_REPORTED` | Sin valor |
+
+</div>
+
+Reglas:
+
+- Solo se permiten en pasos de proveedor 3DS (`provider_type: THREE_D_SECURE`). En un paso de pago, fraude, autenticación o enrutamiento inteligente la solicitud se rechaza con `400 INVALID_ROUTE_CONFIGURATION`, y `messages` indica el paso y el estado.
+- No se permiten `group_id`, `decline_types[]` ni `retry: true` en ellos: cada uno se rechaza con `400 INVALID_ROUTE_CONFIGURATION`. `retry: false` se acepta.
+- Cualquier subconjunto de los tres es válido. Cuando el output que corresponde al resultado no está en el paso, la ruta sigue `APPROVED`, como hoy. Un valor ausente nunca se trata como no transferido: con `LIABILITY_NOT_SHIFTED` y sin `LIABILITY_NOT_REPORTED`, una autenticación que no informa valor sigue `APPROVED`.
+- Un output sin `next` termina la ruta, y no se llama a ningún proveedor de pago.
+- Cuando el paso 3DS se omite (una exención SCA, un pago recurrente), no se ejecuta ninguna autenticación, por lo que los outputs de liability shift no aplican: la ruta sigue `APPROVED`, como hoy. `LIABILITY_NOT_REPORTED` aplica solo a una autenticación que se ejecutó y no informó ningún valor.
+- Un paso 3DS rechazado, fallido o pendiente sigue `DECLINED`, sus grupos, `INTERNAL_ERROR` o `PENDING`, sin importar el valor de liability shift.
+
+Ejemplo: autorizar solo cuando la responsabilidad pasó al emisor y terminar la ruta en los demás casos.
+
+```json
+{
+  "account_id": "acc-uuid",
+  "payment_method": "CARD",
+  "name": "Card routing - liability shift only",
+  "default_route": {
+    "steps": [
+      { "index": 1, "provider_id": "NETCETERA_3DS", "connection_id": "a9b8c7d6-…",
+        "output": [
+          { "status": "APPROVED",               "next": 2 },
+          { "status": "LIABILITY_SHIFTED",      "next": 2 },
+          { "status": "LIABILITY_NOT_SHIFTED",  "next": null },
+          { "status": "LIABILITY_NOT_REPORTED", "next": null }
+        ] },
+      { "index": 2, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…" }
+    ]
+  }
+}
+```
+
+Si `LIABILITY_NOT_REPORTED` no estuviera en este paso, una autenticación sin valor seguiría `APPROVED` y continuaría hacia `STRIPE`.
 
 **Configuración de fraude.** Un paso `FRAUD` lleva la misma configuración que edita el dashboard, en el objeto `fraud`:
 
