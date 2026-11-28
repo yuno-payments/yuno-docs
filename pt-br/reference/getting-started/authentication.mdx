@@ -1,0 +1,49 @@
+---
+title: "Autenticação"
+description: "Explica os cabeçalhos de chave de API e as chaves de idempotência usados para autenticar e proteger as requisições à API da Yuno"
+---
+
+A API da Yuno usa o esquema de segurança ApiKey para autenticar requisições HTTP. As chaves de API são credenciais alfanuméricas que concedem acesso a recursos específicos da API.
+
+Todas as requisições exigem os cabeçalhos `public-api-key` e `private-secret-key`. Encontre-os no seu [Dashboard da Yuno](https://dashboard.y.uno/developers).
+
+<Danger>
+  Não compartilhe suas chaves de API secretas em locais públicos como GitHub ou Bitbucket, para evitar chamadas maliciosas à API.
+</Danger>
+
+Ocasionalmente, um `X-Idempotency-Key` pode ser exigido. Esse UUID deve ser único para cada requisição. Consulte [Idempotência](/pt-br/reference/getting-started/authentication#idempotency) para mais detalhes.
+
+**Exemplo de requisição**:
+
+```sh
+curl --request <Method> \
+     --url <URL> \
+     --header 'X-Idempotency-Key: 7bf41af5-70ae-4e79-9b28-a8fa75c3ac53' \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <Your private-secret-key>' \
+     --header 'public-api-key: <Your public-api-key>'
+```
+
+## Idempotência {#idempotency}
+
+A idempotência permite repetir uma requisição com segurança quando o resultado dela não está claro, como em um timeout, um erro de conexão ou uma resposta `500`. Ela elimina o risco de executar a operação duas vezes.
+
+Algumas requisições incluem um identificador único enviado como o cabeçalho `X-Idempotency-Key` (por exemplo, `7bf41af5-70ae-4e79-9b28-a8fa75c3ac53`). Essa chave também serve para identificar uma transação específica.
+
+<Note>
+  Defina o valor de `X-Idempotency-Key` como `{$randomUUID}` para gerar chaves automaticamente.
+</Note>
+
+Reutilizar um `X-Idempotency-Key` produz um dos seguintes resultados:
+
+- **A resposta original.** Se a primeira requisição com essa chave criou um pagamento (qualquer que seja o status: aprovado, autorizado ou recusado), toda requisição posterior com a mesma chave retorna esse pagamento original em vez de criar um novo. O corpo da nova tentativa é ignorado.
+- **`400 REQUEST_IN_PROCESS`.** A primeira requisição com essa chave ainda está sendo processada. Tente novamente com a mesma chave após alguns segundos.
+- **`400 IDEMPOTENCY_DUPLICATED`.** A primeira requisição com essa chave falhou antes de um pagamento ser criado. Não existe pagamento para essa chave, e a chave não pode ser reutilizada: corrija a requisição e envie-a com uma nova chave.
+- **Processamento normal.** Se a primeira requisição foi rejeitada antes do início do processamento (por exemplo, um corpo malformado), a chave não foi consumida e a nova tentativa é processada como uma nova requisição.
+
+### Lógica de nova tentativa recomendada {#recommended-retry-logic}
+
+1. Se uma requisição falhar com um resultado incerto (um timeout, um erro de conexão, um `500` ou uma resposta que você não consegue interpretar), repita-a **com a mesma chave**. A nova tentativa retorna o resultado original, é processada normalmente ou retorna `IDEMPOTENCY_DUPLICATED`, o que significa que nenhum pagamento foi criado.
+2. Use uma **nova chave** apenas para iniciar uma tentativa realmente nova: um novo pedido, ou uma nova tentativa após uma recusa ou após `IDEMPOTENCY_DUPLICATED`.
+3. Nunca repita uma falha incerta com uma nova chave. Se a requisição original tiver sido de fato bem-sucedida, repeti-la com uma nova chave cria uma operação duplicada.
