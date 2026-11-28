@@ -1,0 +1,33 @@
+---
+title: "Status do reembolso não referenciado"
+description: "Ciclo de vida e máquina de estados dos reembolsos não referenciados."
+---
+
+O campo `status` informa a etapa atual do ciclo de vida. O campo `sub_status` fornece um contexto mais detalhado dentro de cada estado de nível superior.
+
+<div className="code-nowrap-table dense-table">
+
+| Status      | Sub_status             | Descrição |
+| ----------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CREATED`   | `CREATED`              | Estado temporário. A Yuno persistiu o reembolso após a validação e está em processo de roteamento para um provedor. |
+| `PENDING`   | `APPROVED`             | O provedor aceitou o reembolso e está aguardando a liquidação assíncrona pela rede ou pelo banco. Típico de ACH, SEPA, GoCardless. |
+| `SUCCEEDED` | `SUCCEEDED`            | Terminal. O reembolso foi entregue ao destino: liquidado de forma síncrona pelo provedor (reembolsos de cartão Stripe, Nuvei) ou confirmado de forma assíncrona via webhook do provedor (ACH, SEPA, GoCardless). |
+| `FAILED`    | `DECLINED_BY_PROVIDER` | Terminal. O reembolso não foi concluído. Abrange recusas síncronas, devoluções assíncronas (R-codes de ACH, SEPA RJCT), bloqueios da OFAC, contas inválidas, saldo insuficiente do lojista, timeouts de SLA e recusas por fraude. Os detalhes ficam em `provider.raw_response_code` e `provider.raw_response_message`. |
+
+</div>
+
+## Eventos de webhook {#webhook-events}
+
+Os eventos de webhook são disparados apenas em transições do `status` de nível superior. As mudanças de `sub_status` dentro de `PENDING` não são observáveis externamente.
+
+<div className="code-nowrap-table dense-table">
+
+| Evento | Disparado quando o `status` passa para |
+|---|---|
+| `unreferenced_refund.created` | `CREATED` |
+| `unreferenced_refund.succeeded` | `SUCCEEDED` |
+| `unreferenced_refund.failed` | `FAILED` |
+
+</div>
+
+---

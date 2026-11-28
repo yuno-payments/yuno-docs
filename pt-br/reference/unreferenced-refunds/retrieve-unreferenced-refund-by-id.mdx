@@ -1,0 +1,107 @@
+---
+title: "Consultar reembolso não referenciado por ID"
+description: "Consulte os detalhes de um reembolso não referenciado existente pelo id informado no caminho da requisição."
+api: "GET /v1/unreferenced-refunds/{unreferenced_refund_id}"
+---
+
+Esta requisição permite consultar os detalhes de um reembolso não referenciado com base no seu `id`, que precisa ser informado no caminho da requisição.
+
+<Info>
+**Dados brutos do provedor**
+
+O objeto `provider` traz a troca com o provedor, sem alterações, em dois campos. O formato de ambos é definido pelo provedor, não pela Yuno, então varia por provedor e por operação. Cada um é controlado separadamente:
+
+| Campo | Conteúdo | Como obter |
+| --- | --- | --- |
+| `raw_request` | O payload exato que a Yuno enviou ao provedor. | Exige que a sua conta esteja habilitada para dados brutos do provedor. Entre em contato com o seu account manager da Yuno para solicitar acesso. Não é afetado por `include_raw_responses`. |
+| `raw_response` | O payload completo que o provedor retornou. | Envie `include_raw_responses=true` nesta requisição. |
+
+`raw_response_code` e `raw_response_message` são resumos da resposta do provedor e são sempre retornados, independentemente dos dois campos anteriores.
+</Info>
+
+<ParamField header="public-api-key" type="string" required>
+A chave de API pública única da sua conta.
+</ParamField>
+
+<ParamField header="private-secret-key" type="string" required>
+A chave secreta privada única da sua conta.
+</ParamField>
+
+<ParamField path="unreferenced_refund_id" type="string" required>
+Identificador único do reembolso não referenciado, gerado pela Yuno.
+</ParamField>
+
+<ParamField query="include_raw_responses" type="boolean" default="false">
+Quando `true`, o objeto `provider` no payload da resposta inclui `raw_response`, o payload completo que o provedor retornou. Os campos de resumo `raw_response_code` e `raw_response_message` são sempre retornados, independentemente deste parâmetro.
+</ParamField>
+
+<ParamField query="include_transaction_responses" type="boolean" default="false">
+Quando `true`, retorna a lista completa de tentativas e de respostas intermediárias da rede se o reembolso tiver acionado várias novas tentativas internas.
+</ParamField>
+
+<RequestExample>
+```bash Example request
+curl --request GET \
+  --url 'https://api.y.uno/v1/unreferenced-refunds/d290f1ee-6c54-4b01-90e6-d701748f0851?include_raw_responses=true' \
+  --header 'public-api-key: YOUR_PUBLIC_API_KEY' \
+  --header 'private-secret-key: YOUR_PRIVATE_SECRET_KEY' \
+  --header 'Accept: application/json'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Refund found
+{
+  "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+  "account_id": "9f6e0a4c-1d2b-4e3f-8a9b-1c2d3e4f5a6b",
+  "merchant_order_id": "REFUND-2026-05-14-001",
+  "country": "US",
+  "amount": { "value": 25.00, "currency": "USD" },
+  "status": "SUCCEEDED",
+  "sub_status": "SUCCEEDED",
+  "payment_method": {
+    "vaulted_token": "550e8400-e29b-41d4-a716-446655440000",
+    "detail": {
+      "card": {
+        "card_data": { "brand": "VISA", "last_four": "1111", "type": "CREDIT" }
+      }
+    }
+  },
+  "customer_payer": {
+    "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+  },
+  "provider": {
+    "name": "STRIPE",
+    "type": "PSP",
+    "reference": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
+    "category": "APPROVED",
+    "raw_response_code": "succeeded",
+    "raw_response_message": "Refund settled",
+    "raw_request": {
+      "amount": 2500,
+      "currency": "usd",
+      "payment_method": "pm_1OqQz92eZvKYlo2C7Kx9Vbnm",
+      "metadata": { "merchant_order_id": "REFUND-2026-05-14-001" }
+    },
+    "raw_response": {
+      "id": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
+      "object": "refund",
+      "amount": 2500,
+      "currency": "usd",
+      "status": "succeeded"
+    }
+  },
+  "created_at": "2026-05-14T11:47:13.482Z",
+  "updated_at": "2026-05-14T11:47:18.030Z"
+}
+```
+
+```json 404 - Refund not found
+{
+  "code": "UNREFERENCED_REFUND_NOT_FOUND",
+  "messages": [
+    "No unreferenced refund with the provided id exists on this account."
+  ]
+}
+```
+</ResponseExample>

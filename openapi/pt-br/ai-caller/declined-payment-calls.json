@@ -1,0 +1,535 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AI Caller",
+    "description": "API for initiating large-scale processing of calls and WhatsApp messages related to declined payments and abandoned user flows.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "security": [
+    {
+      "public_api_key": [],
+      "private_secret_key": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "AI Caller",
+      "description": "Operações relacionadas às contas de usuário"
+    }
+  ],
+  "paths": {
+    "/smart-support/external/payments/recover": {
+      "post": {
+        "summary": "Chamadas de pagamentos recusados",
+        "tags": [
+          "AI Caller"
+        ],
+        "operationId": "declined-payment-calls",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "Identificador único usado nos cabeçalhos HTTP para garantir que uma requisição seja processada apenas uma vez, mesmo que seja repetida por problemas de rede ou timeouts.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "settings"
+                ],
+                "properties": {
+                  "settings": {
+                    "type": "object",
+                    "description": "Configuração do agente de IA",
+                    "required": [
+                      "contact_details"
+                    ],
+                    "properties": {
+                      "contact_details": {
+                        "type": "object",
+                        "description": "Objeto com os dados de contato",
+                        "required": [
+                          "channel"
+                        ],
+                        "properties": {
+                          "channel": {
+                            "type": "string",
+                            "enum": [
+                              "PHONE_CALL",
+                              "WHATSAPP_MESSAGE"
+                            ],
+                            "description": "A lista de canais de contato possíveis.\n\n",
+                            "example": "WHATSAPP_MESSAGE"
+                          },
+                          "initial_template_message": {
+                            "type": "object",
+                            "description": "Obrigatório se `channel = WHATSAPP_MESSAGE`. Configuração da mensagem de template inicial para `WHATSAPP_MESSAGE`.",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "ID do template da Yuno",
+                                "example": "HX8e7ac569f40a064c71a37e5d672bb9123"
+                              },
+                              "variables": {
+                                "type": "object",
+                                "description": "Objeto com as variáveis do template",
+                                "example": {
+                                  "name": "Maria",
+                                  "amount": "$10.0000"
+                                }
+                              }
+                            }
+                          },
+                          "pdf_template": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "ID do template de PDF da Yuno"
+                              },
+                              "variables": {
+                                "type": "object",
+                                "description": "Objeto com as variáveis do template de PDF",
+                                "example": {
+                                  "seller_name": "RAPPI",
+                                  "merchant_order_id": "MX_Verification_50708779"
+                                }
+                              }
+                            },
+                            "description": "Configuração do template de PDF para WHATSAPP_MESSAGE."
+                          },
+                          "payment_methods": {
+                            "type": "object",
+                            "description": "Meios de pagamento disponíveis para oferecer ao cliente pagador",
+                            "properties": {
+                              "available": {
+                                "type": "array",
+                                "description": "A lista de meios de pagamento disponíveis a serem oferecidos ao usuário como alternativas para concluir o pagamento.",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "example": [
+                                  "MERCADO_PAGO",
+                                  "NEQUI",
+                                  "CREDIT_CARD"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "available"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "additional_information": {
+                    "type": "object",
+                    "description": "Todas as informações relevantes para fornecer à IA e melhorar o contexto.",
+                    "properties": {
+                      "seller_details": {
+                        "type": "object",
+                        "description": "Objeto que contém as informações de contato do lojista, a serem usadas se o agente não conseguir responder à consulta.",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "O nome do lojista, usado pela IA para se apresentar.",
+                            "minLength": 3,
+                            "maxLength": 255,
+                            "example": "RAPPI"
+                          },
+                          "fallback_instructions": {
+                            "type": "string",
+                            "description": "Instrução a ser fornecida ao usuário sobre como entrar em contato com o suporte ao cliente caso a IA não consiga resolver o problema.",
+                            "minLength": 3,
+                            "maxLength": 255,
+                            "example": "Go to the application and click on the top right corner to contact a customer support agent."
+                          },
+                          "redirection_url": {
+                            "type": "string",
+                            "description": "URL para redirecionar o cliente para suporte adicional.",
+                            "example": "www.test.com/purchase"
+                          }
+                        }
+                      },
+                      "payment": {
+                        "type": "object",
+                        "description": "Informações do pagamento recusado",
+                        "properties": {
+                          "account_id": {
+                            "type": "string",
+                            "description": "O identificador único da conta.",
+                            "minLength": 36,
+                            "maxLength": 64,
+                            "example": "e4c03f29-b0f6-403a-8814-9aee1a88d60e"
+                          },
+                          "id": {
+                            "type": "string",
+                            "description": "O identificador único do pagamento.",
+                            "minLength": 3,
+                            "maxLength": 64,
+                            "example": "f1fbad16-93c1-4335-b735-2b01ec94ea9e"
+                          },
+                          "merchant_order_id": {
+                            "type": "string",
+                            "description": "Identificação do pedido.",
+                            "minLength": 3,
+                            "maxLength": 255,
+                            "example": "ORDER-12345"
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "País onde o pagamento foi processado (ISO 3166-1).",
+                            "minLength": 2,
+                            "maxLength": 2,
+                            "example": "US"
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "A descrição do produto ou serviço que o usuário tentou comprar.",
+                            "minLength": 3,
+                            "maxLength": 1000,
+                            "example": "Online store purchase"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "O timestamp de quando o pagamento foi feito (ISO 8601).",
+                            "minLength": 27,
+                            "maxLength": 27,
+                            "example": "2022-05-09T20:46:54.786342Z"
+                          },
+                          "declined_reason": {
+                            "type": "string",
+                            "description": "O motivo da recusa do pagamento informado pelo provedor de pagamento.",
+                            "minLength": 3,
+                            "maxLength": 255,
+                            "example": "insufficient funds"
+                          },
+                          "payment_method": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "description": "O tipo de meio de pagamento selecionado pelo cliente.",
+                                "minLength": 3,
+                                "maxLength": 255,
+                                "example": "Credit Card"
+                              },
+                              "detail": {
+                                "type": "object",
+                                "properties": {
+                                  "card_data": {
+                                    "type": "object",
+                                    "properties": {
+                                      "expiration_month": {
+                                        "type": "number",
+                                        "description": "Mês de expiração do cartão - MM",
+                                        "minimum": 1,
+                                        "maximum": 12,
+                                        "example": 12
+                                      },
+                                      "expiration_year": {
+                                        "type": "number",
+                                        "description": "Ano de expiração do cartão - YYYY",
+                                        "minimum": 2024,
+                                        "maximum": 9999,
+                                        "example": 2030
+                                      },
+                                      "iin": {
+                                        "type": "string",
+                                        "description": "O número de identificação da instituição (IIN) se refere aos primeiros dígitos de um número de cartão de pagamento emitido por uma instituição financeira.",
+                                        "minLength": 6,
+                                        "maxLength": 8,
+                                        "example": "411111"
+                                      },
+                                      "lfd": {
+                                        "type": "string",
+                                        "description": "Últimos quatro dígitos do cartão.",
+                                        "minLength": 4,
+                                        "maxLength": 4,
+                                        "example": "1234"
+                                      },
+                                      "issuer": {
+                                        "type": "string",
+                                        "description": "Emissor do cartão.",
+                                        "minLength": 3,
+                                        "maxLength": 255,
+                                        "example": "CHASE"
+                                      },
+                                      "type": {
+                                        "type": "string",
+                                        "description": "Tipo de emissor do cartão.",
+                                        "enum": [
+                                          "CREDIT",
+                                          "DEBIT",
+                                          "PREPAID"
+                                        ],
+                                        "minLength": 3,
+                                        "maxLength": 255,
+                                        "example": "CREDIT"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "number",
+                                "description": "O valor do pagamento que foi recusado.",
+                                "example": 149.99
+                              },
+                              "currency": {
+                                "type": "string",
+                                "description": "A moeda do pagamento que foi recusado (ISO 4217).",
+                                "minLength": 3,
+                                "maxLength": 3,
+                                "example": "USD"
+                              }
+                            }
+                          },
+                          "customer_payer": {
+                            "type": "object",
+                            "properties": {
+                              "first_name": {
+                                "type": "string",
+                                "description": "O primeiro nome do cliente.",
+                                "minLength": 3,
+                                "maxLength": 255,
+                                "example": "John"
+                              },
+                              "last_name": {
+                                "type": "string",
+                                "description": "O sobrenome do cliente.",
+                                "minLength": 3,
+                                "maxLength": 255,
+                                "example": "Doe"
+                              },
+                              "phone": {
+                                "type": "object",
+                                "properties": {
+                                  "country_code": {
+                                    "type": "string",
+                                    "description": "Código de área do celular do cliente pagador.",
+                                    "minLength": 2,
+                                    "maxLength": 3,
+                                    "example": "1"
+                                  },
+                                  "number": {
+                                    "type": "string",
+                                    "description": "Número do celular do cliente pagador.",
+                                    "minLength": 1,
+                                    "maxLength": 32,
+                                    "example": "5551234567"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Request Example": {
+                  "summary": "Request Example",
+                  "value": {
+                    "settings": {
+                      "contact_details": {
+                        "channel": "PHONE_CALL",
+                        "initial_template_message": {
+                          "id": "HX8e7ac569f40a064c71a37e5d672bb9123",
+                          "variables": {
+                            "name": "Maria",
+                            "amount": "$10.0000"
+                          }
+                        },
+                        "pdf_template": {
+                          "id": "ede0d2da-138d-441b-8101-85e2d21af8b9",
+                          "variables": {
+                            "seller_name": "RAPPI",
+                            "merchant_order_id": "MX_Verification_50708779"
+                          }
+                        },
+                        "payment_methods": {
+                          "available": [
+                            "MERCADO_PAGO",
+                            "NEQUI"
+                          ]
+                        }
+                      }
+                    },
+                    "additional_information": {
+                      "seller_details": {
+                        "name": "RAPPI",
+                        "fallback_instructions": "Go to the application and click on the top right corner to contact a customer support agent.",
+                        "redirection_url": "www.test.com/purchase"
+                      },
+                      "payment": {
+                        "account_id": "e4c03f29-b0f6-403a-8814-9aee1a88d60e",
+                        "id": "f1fbad16-93c1-4335-b735-2b01ec94ea9e",
+                        "merchant_order_id": "MX_Verification_50708779",
+                        "country": "CO",
+                        "description": "Purchase in McDonalds",
+                        "created_at": "2022-05-09T20:46:54.786342Z",
+                        "declined_reason": "insufficient funds",
+                        "payment_method": {
+                          "type": "Credit Card",
+                          "detail": {
+                            "card_data": {
+                              "iin": "636318",
+                              "lfd": "2671",
+                              "type": "CREDIT",
+                              "issuer": "SCOTIABANK",
+                              "expiration_year": 2030,
+                              "expiration_month": 12
+                            }
+                          }
+                        },
+                        "amount": {
+                          "currency": "COP",
+                          "value": 27000
+                        },
+                        "customer_payer": {
+                          "first_name": "Pepito",
+                          "last_name": "Perez",
+                          "phone": {
+                            "country_code": "57",
+                            "number": "3000000000"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "7c3a9c6e-9bf0-4c2c-9f67-752b16ba5dd5"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Communication processed successfully"
+                    }
+                  }
+                },
+                "examples": {
+                  "Success": {
+                    "value": {
+                      "id": "7c3a9c6e-9bf0-4c2c-9f67-752b16ba5dd5",
+                      "message": "Communication processed successfully"
+                    },
+                    "summary": "Success"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Missing customer_payer.first_name required field"
+                    }
+                  }
+                },
+                "examples": {
+                  "Bad Request": {
+                    "value": {
+                      "message": "Missing customer_payer.first_name required field"
+                    },
+                    "summary": "Bad Request"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal error"
+                    }
+                  }
+                },
+                "examples": {
+                  "Internal Error": {
+                    "value": {
+                      "message": "Internal error"
+                    },
+                    "summary": "Internal Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "public_api_key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "description": "Exemplo: `<Your public-api-key>`\n"
+      },
+      "private_secret_key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "description": "Exemplo: `<Your private-secret-key>`      \n"
+      }
+    }
+  },
+  "x-readme": {
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  }
+}

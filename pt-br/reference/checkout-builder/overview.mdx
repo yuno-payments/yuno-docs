@@ -1,0 +1,100 @@
+---
+title: "Visão geral do Checkout Builder"
+sidebarTitle: "Visão geral"
+description: "Configure de forma programática o checkout da Yuno de um lojista (meios de pagamento, condições, campos obrigatórios e estilo) por meio da API B2B pública da Yuno."
+badge: "Beta"
+---
+
+<Warning>
+**BETA: o acesso é concedido por conta.** Esta API está em beta fechado e é habilitada por conta. A sua conta precisa estar explicitamente na allowlist; requisições de uma conta fora da allowlist são rejeitadas com `401`. Os endpoints têm formato estável, mas estão sujeitos a mudanças aditivas durante o período BETA.
+</Warning>
+
+Configure o checkout da Yuno de um lojista **de servidor para servidor**, usando a mesma superfície de configuração que alimenta o Checkout Builder do Dashboard da Yuno. Isso permite que um parceiro gerencie os checkouts dos seus lojistas de forma programática, sem usar a interface da Yuno:
+
+- **Meios de pagamento**: quais meios são exibidos e em qual ordem de exibição
+- **Condições**: regras por meio (moeda, país, valor, metadados) que determinam quando um meio aparece
+- **Campos obrigatórios**: configuração dos campos do formulário por meio (CVV, parcelas, endereço de cobrança etc.) tanto para o fluxo cadastrado (cartão salvo) quanto para o não cadastrado (primeira vez)
+- **Configurações gerais**: tipos de documento aceitos por país
+- **Estilo e configurações do SDK**: cores, fontes, formatos de botão, logos e identidade visual do link de pagamento
+
+## URL base {#base-url}
+
+| Ambiente | URL base |
+| --- | --- |
+| Produção | `https://api.y.uno` |
+| Sandbox | `https://api-sandbox.y.uno` |
+
+Todos os exemplos desta referência usam a URL base de produção. O host de sandbox aceita os mesmos endpoints e formatos de payload.
+
+## Autenticação {#authentication}
+
+Toda requisição é autenticada com as suas credenciais de API de lojista e restrita a uma única conta.
+
+<div className="code-nowrap-table dense-table">
+
+| Cabeçalho | Obrigatório | Descrição |
+| --- | --- | --- |
+| `PUBLIC-API-KEY` | Sim | Chave de API pública do lojista. Encontrada no seu Dashboard da Yuno em **Settings → API Keys**. |
+| `PRIVATE-SECRET-KEY` | Sim | Chave secreta privada do lojista, associada à chave pública. Somente no servidor. Nunca a incorpore em código do lado do cliente. |
+| `X-Account-Code` | Sim | UUID da conta do lojista. A conta é resolvida **somente** a partir deste cabeçalho (nunca a partir do corpo ou do path da requisição) e precisa estar na allowlist do beta. |
+| `X-Idempotency-Key` | Não | Chave opcional do cliente, com até 64 caracteres. Melhor esforço. Consulte [Idempotência](#idempotency). |
+| `Content-Type` | Sim (POST/PUT/PATCH) | `application/json` |
+
+</div>
+
+<Note>
+A organização é resolvida pela Yuno a partir das suas credenciais. **Não envie** um cabeçalho de organização. Credenciais ausentes ou inválidas, ou uma conta fora da allowlist, retornam `401`.
+</Note>
+
+## Endpoints {#endpoints}
+
+Um **checkout personalizado** é identificado por um `checkout_code` (um UUID). Ele é criado, listado, lido, escrito e tem o ciclo de vida gerenciado pelo mesmo recurso, em cinco operações:
+
+| Método | Path | Finalidade |
+| --- | --- | --- |
+| `POST` | `/v1/checkouts` | Cria um novo checkout personalizado como um clone publicado do checkout padrão da conta. |
+| `GET` | `/v1/checkouts` | Lista os checkouts personalizados da conta (apenas resumos): ids, nomes, status, indicador de padrão. Suporta filtros e paginação opcional. |
+| `GET` | `/v1/checkouts/{checkout_code}` | Busca o checkout personalizado completo: configuração **e** estilo, juntos. |
+| `PUT` | `/v1/checkouts/{checkout_code}` | Publica a configuração e/ou o estilo. |
+| `PATCH` | `/v1/checkouts/{checkout_code}` | Gerencia o ciclo de vida: renomear, publicar, despublicar, arquivar, restaurar ou promover a padrão. |
+
+`{checkout_code}` precisa ser um UUID válido; outros valores são rejeitados com `400` antes de qualquer processamento.
+
+<Note>
+Você obtém um `checkout_code` chamando [Criar checkout](/pt-br/reference/checkout-builder/create-checkout) (o `id` de nível superior da resposta) ou chamando [Listar checkouts](/pt-br/reference/checkout-builder/list-checkouts) (o `id` de cada item é o `checkout_code`). Você também pode obter um quando o checkout personalizado é criado no Dashboard da Yuno / Checkout Builder incorporado.
+</Note>
+
+## Comportamentos principais {#key-behaviors}
+
+<Note>
+**`PUT` é um upsert esparso para a configuração, não uma substituição completa.** Os meios de pagamento omitidos do array `payment_methods` mantêm o estado anterior. Eles não são removidos nem desativados. Para desativar um meio, inclua-o com `is_active: false`.
+</Note>
+
+- **Configuração: atualização esparsa.** Apenas os meios de pagamento que você inclui são atualizados; os meios omitidos mantêm o estado anterior. A publicação atualiza apenas meios existentes. **Novos meios de pagamento não podem ser criados** pela API (entre em contato com o seu TAM da Yuno para adicionar meios).
+- **Estilo: merge parcial.** Os campos que você omite (ou envia como `null`) são preservados; apenas os campos que você inclui mudam. Atualizações parciais de estilo são seguras. Você não precisa reenviar o objeto `styles` inteiro. Para redefinir o estilo para o padrão, use `flags.force_default_styles`.
+- **A ordem é definida por `order_to_show`**, não pela posição no array. Valores menores são exibidos primeiro.
+- **No máximo um conjunto de condições por campo obrigatório.** Enviar mais de um conjunto de condições em um campo é rejeitado com `400` (`conditions_to_override must contain at most one condition set`).
+- **Os fluxos cadastrado e não cadastrado são independentes.** Para CARD, configure o fluxo não cadastrado via `fields` e o fluxo cadastrado (cartão salvo) via `enrollment_fields`. Para deixar um fluxo intocado, passe um array vazio para esse lado.
+- **As transições do ciclo de vida seguem uma máquina de estados.** Publicar só é válido a partir de `NOT_PUBLISHED`. Um checkout `ARCHIVED` é restaurado em duas etapas (primeiro `NOT_PUBLISHED`, depois `PUBLISHED`). O checkout padrão não pode ser arquivado nem despublicado. Consulte [Gerenciar o ciclo de vida do checkout](/pt-br/reference/checkout-builder/manage-checkout-lifecycle) para ver as regras completas.
+- **As mudanças entram em vigor imediatamente.** Valide os payloads na URL base de sandbox antes de aplicá-los em produção.
+- Cada corpo de requisição é validado de forma independente; em qualquer falha de regra, a requisição inteira é rejeitada com um único `400` agregado e nada é aplicado. Consulte o endpoint [Publicar](/pt-br/reference/checkout-builder/publish-checkout-configuration) para ver o formato completo da requisição e os valores permitidos.
+
+## Erros {#errors}
+
+Falhas de validação retornam HTTP `400` com um único corpo agregado listando todos os problemas encontrados:
+
+```json
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "payment_methods[0].order_to_show must be >= 0",
+    "styles.global.accent_color must be a 6- or 8-digit hex color (#RRGGBB or #RRGGBBAA)"
+  ]
+}
+```
+
+Outros status incluem `401` (autenticação / conta fora da allowlist) e `404` (checkout não encontrado para a conta, ou nenhum checkout padrão para clonar na criação). `409` cobre um nome de checkout duplicado, ou arquivar/despublicar o checkout padrão. Consulte a página [Publicar](/pt-br/reference/checkout-builder/publish-checkout-configuration) para ver o schema completo de requisição/resposta e exemplos de mensagens de validação.
+
+## Idempotência {#idempotency}
+
+`X-Idempotency-Key` é de **melhor esforço**: o cabeçalho é aceito e validado (até 64 caracteres), mas não há garantia de que repetições da mesma chave sejam desduplicadas. Projete a sua integração para entrega pelo menos uma vez (at-least-once).

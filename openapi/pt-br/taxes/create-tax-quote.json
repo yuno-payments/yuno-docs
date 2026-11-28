@@ -1,0 +1,316 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Yuno Taxes API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.y.uno/v1"
+    }
+  ],
+  "paths": {
+    "/taxes/quote": {
+      "post": {
+        "summary": "Criar cotação de imposto",
+        "operationId": "create-tax-quote",
+        "description": "Cota o imposto de uma assinatura do Stripe Billing para o endereço do cliente e o identificador fiscal opcional, com o Stripe Tax. Use o `tax_quote_id` retornado na linha de imposto do pagamento e cobre o `total`. Uma cotação é válida por 30 minutos.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Sua chave de API pública."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Sua chave secreta privada, quando você faz a cotação a partir do seu backend. Nunca a exponha no lado do cliente."
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A conta para a qual é a cotação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "address"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "Obrigatório com uma chave secreta e deve ser a conta autenticada. Opcional com uma chave pública, caso em que deve corresponder à sessão de checkout."
+                  },
+                  "checkout_session": {
+                    "type": "string",
+                    "description": "Obrigatório com uma chave pública: a sessão de checkout com `tax_collection`, cuja `external_subscription` é cotada. Não permitido com uma chave secreta."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Opcional. Com uma chave pública, deve corresponder à sessão de checkout."
+                  },
+                  "external_subscription": {
+                    "type": "object",
+                    "description": "Obrigatório com uma chave secreta, não permitido com uma chave pública. A assinatura a ser cotada.",
+                    "properties": {
+                      "customer_id": {
+                        "type": "string",
+                        "description": "O cliente no Stripe (`cus_...`)."
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "A moeda dos preços."
+                      },
+                      "items": {
+                        "type": "array",
+                        "description": "Pelo menos um item.",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "price": {
+                              "type": "string",
+                              "description": "O preço no Stripe (`price_...`)."
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "description": "Padrão `1`."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "address": {
+                    "type": "object",
+                    "required": [
+                      "country"
+                    ],
+                    "description": "Onde a assinatura é consumida.",
+                    "properties": {
+                      "country": {
+                        "type": "string",
+                        "description": "Código de país ISO de duas letras."
+                      },
+                      "postal_code": {
+                        "type": "string",
+                        "description": "Obrigatório para os Estados Unidos e o Canadá."
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "line1": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "tax_information": {
+                    "type": "object",
+                    "description": "Opcional. O identificador fiscal do comprador, usado para tratamento empresarial, como reverse charge, e salvo no cliente do Stripe com a assinatura.",
+                    "properties": {
+                      "business": {
+                        "type": "boolean",
+                        "description": "Indica se o comprador é uma empresa."
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Tipo de identificador fiscal, em minúsculas, da lista do Stripe: `eu_vat`, `gb_vat`, `us_ein`, `mx_rfc`, `br_cnpj`... Obrigatório com `id`."
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "Número do identificador fiscal, com até 64 caracteres. Obrigatório com `type`."
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "account_id": "<your_account_id>",
+                "external_subscription": {
+                  "customer_id": "cus_RplXYZ",
+                  "items": [
+                    {
+                      "price": "price_1QwAbc",
+                      "quantity": 1
+                    }
+                  ]
+                },
+                "address": {
+                  "country": "US",
+                  "postal_code": "10001"
+                },
+                "tax_information": {
+                  "business": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cotação de imposto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tax_quote_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "TAX_APPLIED",
+                        "NO_TAX",
+                        "NOT_CALCULATED"
+                      ]
+                    },
+                    "no_tax_reason": {
+                      "type": "string",
+                      "enum": [
+                        "REVERSE_CHARGE",
+                        "NOT_COLLECTING",
+                        "EXEMPT",
+                        "ZERO_RATED",
+                        "NOT_SUBJECT_TO_TAX",
+                        "OTHER"
+                      ]
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "subtotal": {
+                      "type": "number"
+                    },
+                    "tax": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "jurisdiction": {
+                            "type": "string"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          },
+                          "taxable_amount": {
+                            "type": "number"
+                          },
+                          "value": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "tax_quote_id": "txq_2a8a493dcc5c4230b4cf8d9359fd200a",
+                  "status": "TAX_APPLIED",
+                  "currency": "USD",
+                  "subtotal": 29,
+                  "tax": 2.57,
+                  "total": 31.57,
+                  "lines": [
+                    {
+                      "type": "sales_tax",
+                      "jurisdiction": "NY",
+                      "percentage": 8.875,
+                      "taxable_amount": 29,
+                      "value": 2.57
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "INVALID_REQUEST",
+                  "messages": [
+                    "address.postal_code is required for US."
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "O produto não está habilitado para a sua organização",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "PRODUCT_NOT_ENABLED",
+                  "messages": [
+                    "..."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

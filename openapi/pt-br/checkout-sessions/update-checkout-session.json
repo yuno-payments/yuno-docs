@@ -1,0 +1,509 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkout-api",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/checkout/sessions/{checkout_session}": {
+      "patch": {
+        "summary": "Atualizar sessão de checkout",
+        "description": "",
+        "operationId": "update-checkout-session",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "merchant_order_id",
+                  "payment_description",
+                  "country",
+                  "account_id"
+                ],
+                "properties": {
+                  "customer_id": {
+                    "type": "string",
+                    "description": "O identificador único do cliente, criado com o endpoint [Criar cliente](https://docs.y.uno/pt-br/reference/customers/create-customer) (UUID, 36 caracteres)."
+                  },
+                  "merchant_order_id": {
+                    "type": "string",
+                    "description": "O identificador único do pedido do cliente (MAX 255; MIN 3)."
+                  },
+                  "payment_description": {
+                    "type": "string",
+                    "description": "A descrição do pagamento (MAX 255; MIN 3)."
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "description": "A URL para a qual redirecionamos o seu cliente depois da compra. Obrigatória para meios de pagamento alternativos com redirecionamento. (MAX 526; MIN 3)"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "País onde a transação deve ser processada (MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference))."
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "O identificador único da conta. Você encontra essa informação no [Dashboard da Yuno](https://dashboard.y.uno/) (UUID, 36 caracteres).",
+                    "default": "{{account_id}}"
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Especifica o objeto de valor do pagamento, com o valor e a moeda.",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "A moeda usada para fazer o pagamento. Para a lista completa de códigos de moeda, consulte a [Referência de países](/reference/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "O valor do pagamento (múltiplo de 0.0001).",
+                        "format": "float"
+                      }
+                    }
+                  },
+                  "alternative_amount": {
+                    "type": "object",
+                    "description": "Representação em moeda alternativa do valor da transação.",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "O código da moeda alternativa. Para a lista completa de códigos de moeda, consulte [Referência de países](/reference/country-reference) (MAX 3; MIN 3; ISO 4217).",
+                        "nullable": true
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "O valor alternativo (múltiplo de 0.0001).",
+                        "format": "float"
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "type": "array",
+                    "description": "Especifica uma lista de objetos de metadados. Você pode adicionar até 120 objetos de metadados.",
+                    "items": {
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "description": "A chave dos metadados (MAX 48)"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "O valor da chave dos metadados (MAX 512)"
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "value"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "workflow": {
+                    "type": "string",
+                    "description": "Tipo de fluxo do checkout.",
+                    "enum": [
+                      "SDK_CHECKOUT",
+                      "CHECKOUT",
+                      "SDK_SEAMLESS"
+                    ]
+                  },
+                  "installments": {
+                    "type": "object",
+                    "description": "O objeto para enviar o plano de parcelas criado na Yuno, para exibir aos seus clientes e deixá-los escolher. Este campo opcional é usado quando um plano de parcelas específico precisa ser usado na sessão. Se não for enviado, exibiremos o plano de parcelas criado para a conta em cada cenário, se houver.",
+                    "properties": {
+                      "plan_id": {
+                        "type": "string",
+                        "description": "Plan Id do plano de parcelas criado na Yuno"
+                      },
+                      "plan": {
+                        "type": "array",
+                        "description": "Parcelas a exibir ao cliente com a checkout_session. Esta estrutura opcional é usada quando um plano de parcelas específico precisa ser usado na sessão e não há um plano de parcelas criado para ela. Se não for enviada, exibiremos o plano de parcelas criado para a conta em cada cenário, se houver.",
+                        "items": {
+                          "properties": {
+                            "installment": {
+                              "type": "integer",
+                              "description": "O número de parcelas mensais que os compradores podem escolher",
+                              "format": "int32"
+                            },
+                            "rate": {
+                              "type": "number",
+                              "description": "A taxa aplicada pelo provedor de pagamento ao valor final da transação depois do uso de parcelas. O valor deve ser informado como multiplicador, não como porcentagem. Por exemplo, para aplicar uma taxa de 20%, informe `1.20` em vez de `20`.",
+                              "format": "float"
+                            }
+                          },
+                          "required": [
+                            "installment",
+                            "rate"
+                          ],
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Update checkout session": {
+                  "value": {
+                    "country": "BR",
+                    "amount": {
+                      "currency": "ARS"
+                    },
+                    "alternative_amount": {
+                      "currency": "ARS"
+                    },
+                    "merchant_order_id": "007",
+                    "payment_description": "Payment Test",
+                    "account_id": "{{account_id}}"
+                  },
+                  "summary": "Update checkout session"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Success": {
+                    "value": {
+                      "merchant_order_id": "007",
+                      "checkout_session": "c67ce158-6053-4661-a1de-aed5c945b935",
+                      "country": "BR",
+                      "payment_description": "Payment Test",
+                      "callback_url": null,
+                      "amount": {
+                        "currency": "ARS",
+                        "value": 100
+                      },
+                      "created_at": "2025-11-14T00:43:22.719648Z",
+                      "metadata": null,
+                      "workflow": "SDK_CHECKOUT",
+                      "installments": {
+                        "plan_id": null,
+                        "plan": null
+                      },
+                      "used": false,
+                      "customer_id": "5e7baf7d-88d5-47c4-8baf-93354d5e195e",
+                      "recurring_payment": {
+                        "description": "Monthly subscription",
+                        "management_url": "https://example.com/manage",
+                        "billing_agreement": "BA-123",
+                        "regular_billing": {
+                          "label": "Monthly",
+                          "amount": 9.99,
+                          "interval_unit": "month",
+                          "interval_count": 1
+                        },
+                        "trial_billing": {
+                          "label": "Free trial",
+                          "amount": 0,
+                          "interval_unit": "month",
+                          "interval_count": 1
+                        }
+                      },
+                      "checkout_id": "fd9b15a0-92a4-4e2c-8e4c-27764a1aa43e"
+                    },
+                    "summary": "Success"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "merchant_order_id": {
+                      "type": "string",
+                      "example": "007"
+                    },
+                    "checkout_session": {
+                      "type": "string",
+                      "example": "c67ce158-6053-4661-a1de-aed5c945b935"
+                    },
+                    "country": {
+                      "type": "string",
+                      "example": "BR"
+                    },
+                    "payment_description": {
+                      "type": "string",
+                      "example": "Payment Test"
+                    },
+                    "callback_url": {},
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "example": "ARS"
+                        },
+                        "value": {
+                          "type": "integer",
+                          "example": 100,
+                          "default": 0
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2025-11-14T00:43:22.719648Z"
+                    },
+                    "metadata": {},
+                    "workflow": {
+                      "type": "string",
+                      "example": "SDK_CHECKOUT"
+                    },
+                    "installments": {
+                      "type": "object",
+                      "properties": {
+                        "plan_id": {},
+                        "plan": {}
+                      }
+                    },
+                    "used": {
+                      "type": "boolean",
+                      "example": false,
+                      "default": true
+                    },
+                    "customer_id": {
+                      "type": "string",
+                      "example": "5e7baf7d-88d5-47c4-8baf-93354d5e195e",
+                      "description": "Id do cliente."
+                    },
+                    "recurring_payment": {
+                      "type": "object",
+                      "properties": {
+                        "description": {
+                          "type": "string",
+                          "example": "Monthly subscription"
+                        },
+                        "management_url": {
+                          "type": "string",
+                          "example": "https://example.com/manage"
+                        },
+                        "billing_agreement": {
+                          "type": "string",
+                          "example": "BA-123"
+                        },
+                        "regular_billing": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "type": "string",
+                              "example": "Monthly"
+                            },
+                            "amount": {
+                              "type": "number",
+                              "example": 9.99
+                            },
+                            "interval_unit": {
+                              "type": "string",
+                              "example": "month"
+                            },
+                            "interval_count": {
+                              "type": "integer",
+                              "example": 1
+                            }
+                          }
+                        },
+                        "trial_billing": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "type": "string",
+                              "example": "Free trial"
+                            },
+                            "amount": {
+                              "type": "number",
+                              "example": 0
+                            },
+                            "interval_unit": {
+                              "type": "string",
+                              "example": "month"
+                            },
+                            "interval_count": {
+                              "type": "integer",
+                              "example": 1
+                            }
+                          }
+                        }
+                      },
+                      "description": "Pagamento recorrente."
+                    },
+                    "checkout_id": {
+                      "type": "string",
+                      "example": "fd9b15a0-92a4-4e2c-8e4c-27764a1aa43e",
+                      "description": "Id do checkout."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Bad Request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_CREDENTIALS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid credentials"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Forbidden": {
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "AUTHORIZATION_REQUIRED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "The merchant has no authorization to use this API."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "parameters": [
+          {
+            "in": "path",
+            "name": "checkout_session",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ]
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

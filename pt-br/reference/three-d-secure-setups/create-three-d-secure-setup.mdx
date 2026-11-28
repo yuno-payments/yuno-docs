@@ -1,0 +1,51 @@
+---
+title: "Criar configuração de 3DS2"
+description: "Registre os dados de navegador e dispositivo do 3D Secure 2 em integrações server-to-server e receba um three_d_secure_setup_id para usar no pagamento seguinte."
+keywords: ["3DS2", "three_d_secure_setup_id", "browser_info", "device_fingerprints", "server-to-server"]
+openapi: "/openapi/pt-br/three-d-secure-setups/create-three-d-secure-setup.json POST /three-d-secure/setups"
+---
+
+Registre os dados de configuração do 3D Secure 2 que a sua integração coletou: o ambiente do navegador do titular do cartão e quaisquer device fingerprints pré-calculados. Em troca, receba um `three_d_secure_setup_id` para referenciar no `POST /v1/payments` seguinte.
+
+<Note>
+**Apenas integrações server-to-server**
+
+Use este endpoint quando você opera uma integração server-to-server (B2B) e coleta os dados de dispositivo do 3DS2 do seu lado, por meio do seu próprio SDK, do coletor de um provedor de análise de fraude ou de um servidor 3DS2 que você chama diretamente.
+
+Se você integra por meio do SDK Web/Mobile da Yuno e de uma sessão de checkout, pode ignorar este endpoint por completo. O SDK coleta os dados de dispositivo e os registra automaticamente como parte do fluxo de checkout.
+</Note>
+
+<Note>
+**Apenas etapa de registro**
+
+Este endpoint não chama o emissor, não exibe um desafio e não se vincula a um cartão específico. O cartão e o `three_d_secure_setup_id` seguem juntos na chamada de pagamento.
+</Note>
+
+<Warning>
+**A qualidade dos dados de dispositivo importa**
+
+O provedor de pagamento usa `browser_info` e `device_fingerprints` para pontuar o risco e decidir entre o fluxo sem atrito e o desafio quando o pagamento é enviado. Campos ausentes ou desatualizados aumentam a taxa de desafio. Envie os valores exatamente como observados no navegador do titular do cartão no momento em que você chama este endpoint.
+</Warning>
+
+<Note>
+**Como o lojista fornece os dados de dispositivo**
+
+O campo `type` informa à Yuno onde os dados de dispositivo foram coletados. `MERCHANT_PROVIDED`, atualmente o único valor aceito, significa que você coletou o ambiente do navegador e os device fingerprints do seu lado e os está enviando diretamente. A Yuno não executa um coletor próprio para este endpoint. Se você precisa que a Yuno capture os dados de navegador/dispositivo, use a [variante com SDK](/pt-br/docs/payment-features/3ds-standalone).
+</Note>
+
+## Como usar a resposta {#how-to-use-the-response}
+
+1. **Armazene o id.** Guarde o `three_d_secure_setup_id` associado ao pedido do seu lado.
+2. **Referencie-o no pagamento.** No [Criar pagamento](/reference/payments/create-payment) seguinte, envie-o em `payment_method.detail.card.three_d_secure.three_d_secure_setup_id` junto com o cartão ou o token armazenado. A Yuno anexa o `browser_info` e os `device_fingerprints` registrados à requisição que envia ao provedor de pagamento.
+
+Observe que esta requisição exige um `X-Idempotency-Key`. A mesma chave com o mesmo payload retorna o id de configuração original dentro de uma janela de repetição de 24 horas. Consulte a página [Autenticação](/pt-br/reference/getting-started/authentication#idempotency) para mais informações.
+
+## Regras de campos e casos extremos {#field-rules-and-edge-cases}
+
+| Regra | Comportamento |
+|---|---|
+| `type` definido com um valor diferente de `MERCHANT_PROVIDED` | `400 INVALID_PARAMETERS`. Outros valores estão reservados para uso futuro. |
+| `browser_info.platform` definido com um valor não aceito | `400 INVALID_PARAMETERS`. Permitidos: `WEB`, `IOS`, `ANDROID`. |
+| `device_fingerprints` omitido | Aceito. A Yuno não fará o enriquecimento com device fingerprint para nenhum provedor que não tenha sido informado previamente. |
+| `device_fingerprints[*].provider_id` não encontrado na sua conta | A entrada é descartada silenciosamente; a configuração continua com as entradas restantes. |
+| `account_id` que não pertence à chave de API | Tratado como uma falha de autorização (`403`). |
