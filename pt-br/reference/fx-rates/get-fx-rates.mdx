@@ -1,0 +1,89 @@
+---
+title: "Obter taxas de câmbio"
+openapi: "/openapi/pt-br/fx-rates/get-fx-rates.json GET /fx-rates"
+description: "Consulte a taxa de câmbio diária oficial da Yuno (a mesma referência que a Yuno usa nos próprios relatórios) para que seus preços e sua conciliação fiquem alinhados com os nossos."
+---
+
+Lojistas que vendem para outros países precisam de uma única taxa de referência para precificar em uma moeda e conciliar em outra. Este endpoint retorna a **taxa de câmbio diária oficial da Yuno**, a mesma referência que a Yuno usa nos próprios relatórios, expressa em **unidades da moeda por 1 USD**.
+
+Cerca de 161 moedas são publicadas por dia. O próprio `USD` é publicado com taxa `1`.
+
+<Note>
+**Habilitada por organização**
+
+Esta API precisa ser ativada para a sua organização. Entre em contato com o seu Key Account Manager (KAM) para habilitá-la.
+</Note>
+
+## O que isto é e o que não é {#what-this-is-and-what-it-is-not}
+
+Esta é uma **taxa de referência**, publicada uma vez por dia para um dia fechado. A Yuno não se compromete a processar nem a liquidar com ela.
+
+- É somente leitura: sem cotação, sem travamento, sem conversão aplicada a um pagamento.
+- Não é uma taxa em tempo real nem intradiária. O valor de um dia é definitivo assim que a carga diária é fechada.
+- Para converter uma transação real no checkout, use [Conversion Rate](/pt-br/reference/conversion-rate/get-conversion-rate). É outro produto: uma cotação do provedor para uma transação.
+
+## Como escolher o que pedir {#choosing-what-you-ask-for}
+
+Todos os parâmetros são opcionais, e o formato da resposta segue o que você envia:
+
+| Você envia | Você recebe |
+| -------- | ------- |
+| Nada | O último dia disponível, todas as moedas. |
+| `currency=COP` | O último dia disponível, apenas essa moeda. |
+| `start_date=2026-09-28` | Esse dia, todas as moedas. |
+| `start_date=2026-09-28&end_date=2026-09-30` | Esse intervalo, todas as moedas. |
+| `start_date=…&currency=COP` | O dia ou intervalo, apenas essa moeda. |
+
+`end_date` é o único parâmetro que depende de outro: ele não pode ser usado sem `start_date`. Todos os outros são independentes.
+
+**Limites de intervalo:** até 31 dias quando `currency` é omitido, e até 366 dias quando você pede uma única moeda.
+
+### O último dia disponível {#the-latest-available-day}
+
+Sem datas, você recebe o dia publicado mais recente, em vez de uma data que você precisa calcular. O dia atual nunca é retornado (o valor dele não é definitivo até a carga diária ser fechada), então o dia mais recente que você pode receber é ontem (UTC).
+
+Se uma carga diária atrasar, esta também é a forma segura de consultar: você recebe o dia mais recente que realmente existe, em vez de uma resposta vazia para um dia que nunca foi publicado.
+
+## Como ler a resposta {#reading-the-response}
+
+```json
+{
+  "base_currency": "USD",
+  "rates": [
+    { "fx_date": "2026-09-28", "currency": "BRL", "rate": 5.3214 },
+    { "fx_date": "2026-09-28", "currency": "COP", "rate": 3306.859716727782946 },
+    { "fx_date": "2026-09-28", "currency": "USD", "rate": 1 }
+  ]
+}
+```
+
+Três regras valem para toda resposta:
+
+1. **Ordenada** por `fx_date` e depois por `currency`.
+2. **Um valor por moeda por dia.** Quando existe mais de uma fonte para um dia, o desempate acontece dentro da Yuno e não faz parte deste contrato.
+3. **O que não existe simplesmente não aparece.** Um dia ou uma moeda sem taxa publicada não aparece em `rates`, e um intervalo sem nada publicado retorna `200` com um array vazio, não um erro. Trate um `rates` vazio como "nada publicado para o que você pediu", nunca como uma falha.
+
+<Warning>
+**Faça o parse de `rate` com um tipo decimal.**
+
+As taxas têm até 15 casas decimais. `3306.859716727782946` lido como double vira `3306.859716727783`, e a diferença vai aparecer na conciliação. Use o tipo decimal ou de número grande da sua linguagem, não um float: `BigDecimal` em Java, `decimal.Decimal` em Python, `shopspring/decimal` em Go, uma biblioteca decimal em JavaScript em vez de apenas `JSON.parse`.
+</Warning>
+
+### Códigos de moeda {#currency-codes}
+
+Os códigos são, em sua maioria, ISO 4217, mas o conjunto publicado também inclui códigos que não são moedas fiduciárias, como `BTC`, `XAU` (ouro) e `XAG` (prata). Um código bem formado que a Yuno não publica não é um erro: ele retorna como um array `rates` vazio.
+
+## Cache {#caching}
+
+Um dia publicado nunca muda, então uma resposta para um dia passado pode ficar em cache indefinidamente. Consultar sem datas é a única requisição cuja resposta muda, uma vez por dia.
+
+## Erros {#errors}
+
+Os erros retornam um `code` e um array `messages`. A mensagem indica o parâmetro com problema.
+
+| HTTP | `code` | Quando |
+| ---- | ------ | ---- |
+| 400 | `INVALID_PARAMETERS` | `end_date` enviado sem `start_date`; uma data que não está em `YYYY-MM-DD` ou que não existe; `end_date` anterior a `start_date`; `end_date` posterior a ontem (UTC); um intervalo acima do limite; um `currency` que não tem três letras. |
+| 401 | `NOT_AUTHENTICATED` / `INVALID_CREDENTIALS` | Cabeçalhos `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` ausentes ou inválidos. |
+| 403 | `PRODUCT_NOT_ENABLED` | "A FX Rates API é habilitada por organização. Entre em contato com o seu Key Account Manager (KAM) para ativá-la." |
+| 503 | `SERVICE_UNAVAILABLE` | A fonte das taxas está temporariamente inacessível. Tente novamente; os dados não mudam. |

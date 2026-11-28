@@ -1,0 +1,548 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "pci-proxy-manage-destinations",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/pci-proxy/destinations": {
+      "get": {
+        "summary": "Listar destinos",
+        "description": "Retorna os destinos registrados na allowlist da sua conta. Somente os hosts dessa lista podem ser alcançados pelo [forward proxy](/pt-br/reference/pci-proxy/invoke-forward-proxy); uma requisição para qualquer outro host é rejeitada com `403 DESTINATION_NOT_ALLOWED`.",
+        "operationId": "listPciProxyDestinations",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "O `account_id` com que um destino foi registrado. Envie-o para ver os destinos com escopo nessa conta, além dos destinos de toda a organização (`account_id: null`). Se você omitir o cabeçalho, somente os destinos de toda a organização são retornados; os que têm escopo de conta não são incluídos."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Os destinos registrados para a sua conta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "destinations": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Destination"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "destinations": [
+                    {
+                      "id": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4",
+                      "hostname": "api.example-processor.com",
+                      "status": "ENABLED",
+                      "purpose": "Direct acquiring — Processor X",
+                      "created_at": "2026-07-09T13:05:36Z",
+                      "updated_at": "2026-07-09T13:05:36Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "summary": "Registrar destino",
+        "description": "Adiciona um host à allowlist da sua conta para que o forward proxy possa enviar dados do cartão a ele. A correspondência é feita pelo hostname exato, sem diferenciar maiúsculas de minúsculas; subdomínios e curingas não estão implícitos. Um host recém-registrado pode ser usado em poucos minutos.",
+        "operationId": "registerPciProxyDestination",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DestinationInput"
+              },
+              "example": {
+                "hostname": "api.example-processor.com",
+                "purpose": "Direct acquiring — Processor X"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "O destino foi registrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Destination"
+                },
+                "example": {
+                  "id": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4",
+                  "account_id": null,
+                  "hostname": "api.example-processor.com",
+                  "status": "ENABLED",
+                  "purpose": "Direct acquiring — Processor X",
+                  "created_at": "2026-07-09T13:05:36Z",
+                  "updated_at": "2026-07-09T13:05:36Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Não foi possível interpretar o corpo da requisição, ou o `account_id` não é uma conta válida da sua organização.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Invalid request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "invalid body"
+                      ]
+                    }
+                  },
+                  "Invalid account id": {
+                    "value": {
+                      "code": "INVALID_ACCOUNT_ID",
+                      "messages": [
+                        "account_id is not a valid account"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "O hostname já está registrado na sua allowlist (para este escopo de conta).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Destination exists": {
+                    "value": {
+                      "code": "DESTINATION_EXISTS",
+                      "messages": [
+                        "destination already registered"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "O hostname não é um hostname público simples (uma URL, um host com esquema, porta ou caminho, um endereço IP ou um curinga).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Invalid hostname": {
+                    "value": {
+                      "code": "INVALID_HOSTNAME",
+                      "messages": [
+                        "hostname must be a bare public FQDN with no scheme, port, path, or wildcard"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pci-proxy/destinations/{id}": {
+      "delete": {
+        "summary": "Remover destino",
+        "description": "Remove um host da allowlist da sua conta. A remoção tem efeito imediato: a próxima requisição do proxy para esse host é rejeitada com `403 DESTINATION_NOT_ALLOWED`.",
+        "operationId": "removePciProxyDestination",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "O `id` (UUID) do destino a remover, conforme retornado por [Listar destinos](/pt-br/reference/pci-proxy/list-destinations).",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Obrigatório se o destino foi registrado com um `account_id`: envie esse mesmo `account_id`. Sem ele, um destino com escopo de conta é tratado como não encontrado."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "O destino foi removido. Sem corpo de resposta."
+          },
+          "400": {
+            "description": "O parâmetro de caminho `id` não é um UUID válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Invalid id": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "invalid id"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Nenhum destino com esse `id` está registrado para a sua conta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Not found": {
+                    "value": {
+                      "code": "NOT_FOUND",
+                      "messages": [
+                        "destination not found"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pci-proxy/destinations/{id}/enable": {
+      "post": {
+        "summary": "Habilitar destino",
+        "description": "Reabilita um destino desabilitado. Somente destinos `ENABLED` são usados pelo caminho de encaminhamento.",
+        "operationId": "enablePciProxyDestination",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "O `id` (UUID) do destino a habilitar.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Obrigatório se o destino foi registrado com um `account_id`: envie esse mesmo `account_id`. Sem ele, um destino com escopo de conta é tratado como não encontrado."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "O destino foi habilitado; o objeto atualizado é retornado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Destination"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/DestinationNotFound"
+          }
+        }
+      }
+    },
+    "/pci-proxy/destinations/{id}/disable": {
+      "post": {
+        "summary": "Desabilitar destino",
+        "description": "Desativa um destino sem removê-lo: o registro e o histórico de auditoria são mantidos, mas o caminho de encaminhamento o rejeita com `403 DESTINATION_NOT_ALLOWED` até que ele seja habilitado novamente.",
+        "operationId": "disablePciProxyDestination",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "O `id` (UUID) do destino a desabilitar.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Obrigatório se o destino foi registrado com um `account_id`: envie esse mesmo `account_id`. Sem ele, um destino com escopo de conta é tratado como não encontrado."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "O destino foi desabilitado; o objeto atualizado é retornado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Destination"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/DestinationNotFound"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Falha na autenticação. Credenciais de API ausentes ou inválidas.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DestinationError"
+            },
+            "examples": {
+              "Not authenticated": {
+                "value": {
+                  "code": "NOT_AUTHENTICATED",
+                  "messages": [
+                    "not authenticated"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "InvalidId": {
+        "description": "O parâmetro de caminho `id` não é um UUID válido.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DestinationError"
+            },
+            "examples": {
+              "Invalid id": {
+                "value": {
+                  "code": "INVALID_REQUEST",
+                  "messages": [
+                    "invalid id"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "DestinationNotFound": {
+        "description": "Nenhum destino com esse `id` está registrado para o seu escopo.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DestinationError"
+            },
+            "examples": {
+              "Not found": {
+                "value": {
+                  "code": "NOT_FOUND",
+                  "messages": [
+                    "destination not found"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "DestinationInput": {
+        "type": "object",
+        "required": [
+          "hostname"
+        ],
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "description": "O hostname público simples a permitir, sem esquema, porta ou caminho (por exemplo `api.example-processor.com`). A correspondência é exata, sem diferenciar maiúsculas de minúsculas.",
+            "example": "api.example-processor.com"
+          },
+          "purpose": {
+            "type": "string",
+            "description": "Um rótulo opcional, legível por pessoas, que descreve por que este host é permitido. Exibido quando você lista os destinos.",
+            "example": "Direct acquiring — Processor X"
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Opcional. Restringe este destino a uma única conta (um UUID). Omita (ou envie `null`) para permitir o host em toda a organização.",
+            "example": null
+          }
+        }
+      },
+      "Destination": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único do destino. Use-o para remover o destino.",
+            "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
+          },
+          "account_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "A conta à qual este destino está restrito, ou `null` quando ele se aplica a toda a organização.",
+            "example": null
+          },
+          "hostname": {
+            "type": "string",
+            "description": "O hostname registrado.",
+            "example": "api.example-processor.com"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ENABLED",
+              "DISABLED"
+            ],
+            "description": "Indica se o destino está ativo. Somente destinos ENABLED são usados pelo caminho de encaminhamento.",
+            "example": "ENABLED"
+          },
+          "purpose": {
+            "type": "string",
+            "description": "O rótulo que você informou ao registrar o destino.",
+            "example": "Direct acquiring — Processor X"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Quando o destino foi registrado.",
+            "example": "2026-07-09T13:05:36Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Quando o destino foi alterado pela última vez.",
+            "example": "2026-07-09T13:05:36Z"
+          }
+        }
+      },
+      "DestinationError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Código de erro legível por máquina.",
+            "enum": [
+              "NOT_AUTHENTICATED",
+              "AuthenticationFail",
+              "INVALID_REQUEST",
+              "INVALID_HOSTNAME",
+              "INVALID_ACCOUNT_ID",
+              "DESTINATION_EXISTS",
+              "NOT_FOUND",
+              "INTERNAL_ERROR"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,229 @@
+---
+title: "Obter uma recomendação de roteamento"
+description: "Envie o contexto do pagamento e seus provedores candidatos: a Yuno retorna a rota recomendada, classificada pelo histórico de transações que você mesmo reportou."
+openapi: "/openapi/organizations/routing/get-routing-recommendations.json POST /routing/recommendations"
+---
+
+Este endpoint recomenda para qual das **suas próprias contas de provedor** rotear um pagamento, com base no histórico de resultados que você envia à Yuno pela [API de Reporte de Transações](/pt-br/reference/reporting/report-transactions). Você envia o contexto do pagamento e os candidatos que realmente pode usar; a Yuno retorna o candidato recomendado, uma classificação completa com métricas por candidato e um `recommendation_id`.
+
+A transação em si nunca passa pela Yuno. **A Yuno recomenda; você decide e processa.**
+
+<Note>
+**Habilitada por organização**: esta API precisa ser ativada para a sua organização. Entre em contato com o seu Key Account Manager (KAM) para habilitá-la. Até lá, toda chamada retorna `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+## Como funciona {#how-it-works}
+
+1. Você reporta os resultados das suas transações fora da Yuno pela [API de Reporte de Transações](/pt-br/reference/reporting/report-transactions). Apenas pagamentos com `origin: REPORTED` alimentam as estatísticas; o tráfego processado pela Yuno é uma população diferente e fica de fora de propósito.
+2. Antes de rotear um pagamento, você chama este endpoint com o contexto do pagamento e seus provedores candidatos.
+3. A Yuno calcula estatísticas por candidato (taxa de aprovação, latência média do provedor, tamanho da amostra) sobre uma janela móvel de **30 dias** dos seus pagamentos reportados, segmentadas por provedor, país e meio de pagamento, por BIN do cartão quando você envia um (veja [Estatísticas por BIN](#bin-level-statistics)) e por iniciação `CIT`/`MIT` quando você envia uma (veja [Estatísticas por iniciação](#initiation-level-statistics)), e retorna a classificação ordenada pelo seu objetivo.
+4. Você mesmo roteia o pagamento e reporta o resultado com o `recommendation_id` retornado aqui, e a Yuno atribui o resultado a esta recomendação exata. Se o evento reportado não trouxer `recommendation_id`, a Yuno usa como alternativa o mesmo `merchant_order_id` que você enviou aqui.
+
+Apenas pagamentos reportados em status final alimentam a taxa de aprovação: `SUCCEEDED` conta como aprovado e `SUCCEEDED + DECLINED` como decidido. Pagamentos em qualquer outro status (por exemplo, `ERROR`, pendente) são ignorados no cálculo da taxa e da latência, mas ainda contam para `sample_size`.
+
+## Corpo da requisição {#request-body}
+
+<ParamField body="account_id" type="string (UUID)" required>
+  A conta de lojista para a qual a recomendação é emitida. Vai no corpo; a Yuno a promove internamente para o cabeçalho de conta. Deve pertencer à organização das credenciais da API.
+</ParamField>
+
+<ParamField body="merchant_order_id" type="string">
+  Referência opcional do pedido fornecida pelo lojista (máx. 255). Armazenada com a recomendação emitida como chave de correlação para a atribuição em ciclo fechado.
+</ParamField>
+
+<ParamField body="payment" type="object" required>
+  O contexto do pagamento usado para pontuar a recomendação.
+  <Expandable title="propriedades">
+    <ParamField body="amount" type="object" required>
+      <Expandable title="propriedades">
+        <ParamField body="currency" type="string" required>
+          Código da moeda ISO 4217, por exemplo, `USD`.
+        </ParamField>
+        <ParamField body="value" type="number" required>
+          Valor da transação. Deve ser `≥ 0`.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField body="country" type="string" required>
+      Código do país ISO 3166-1 alpha-2, por exemplo, `US`. Seleciona o segmento de estatísticas.
+    </ParamField>
+    <ParamField body="payment_method" type="object" required>
+      <Expandable title="propriedades">
+        <ParamField body="type" type="string" required>
+          Por exemplo, `CARD`, `PIX`, `WALLET`. Seleciona o segmento de estatísticas.
+        </ParamField>
+        <ParamField body="details" type="object">
+          Opcional. `card.bin`: o BIN do cartão, com exatamente **6 ou 8 dígitos**. Quando esse BIN tem histórico reportado suficiente, a classificação é pontuada com as estatísticas dele (veja [Estatísticas por BIN](#bin-level-statistics)); caso contrário, ou para qualquer outro valor, as estatísticas recorrem ao país e ao meio de pagamento.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField body="initiation" type="enum">
+      Opcional. `CIT` (iniciada pelo titular do cartão) ou `MIT` (iniciada pelo lojista). Quando você a envia e a mesma iniciação tem histórico reportado suficiente no segmento, a classificação é pontuada com as estatísticas dessa iniciação (veja [Estatísticas por iniciação](#initiation-level-statistics)); caso contrário, recorre ao segmento inteiro. Omita-a para classificar pelo segmento inteiro exatamente como antes.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="candidates" type="object[]" required>
+  Os provedores a classificar. Entre **2 e 20** itens: uma recomendação sobre um único candidato não tem sentido.
+  <Expandable title="item">
+    <ParamField body="provider_id" type="string" required>
+      Código do provedor, por exemplo, `ADYEN`, `STRIPE`, `DLOCAL`.
+    </ParamField>
+    <ParamField body="merchant_connection_id" type="string">
+      Campo opcional de repasse para o seu próprio controle: retornado exatamente como enviado, sem validação.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="optimize_for" type="enum" default="APPROVAL_RATE">
+  O objetivo que a classificação otimiza. `APPROVAL_RATE` (padrão), `LATENCY` ou `BALANCED`.
+</ParamField>
+
+## Resposta {#response}
+
+<ResponseField name="recommendation_id" type="string">
+  Identificador único da recomendação emitida, um UUID v4 em minúsculas. Um novo id é gerado a cada chamada. Envie-o de volta como `recommendation_id` no [evento reportado](/pt-br/reference/reporting/report-transactions#recommendation-id-for-outcome-attribution) para atribuir o resultado a esta recomendação.
+</ResponseField>
+<ResponseField name="merchant_order_id" type="string">
+  Eco do campo da requisição, quando informado; `null` caso contrário.
+</ResponseField>
+<ResponseField name="optimized_for" type="enum">
+  O objetivo aplicado à classificação.
+</ResponseField>
+<ResponseField name="decision_source" type="enum">
+  Como a classificação foi decidida: `MERCHANT_HISTORY` ou `INSUFFICIENT_DATA` (veja abaixo).
+</ResponseField>
+<ResponseField name="recommended" type="object">
+  O topo da classificação. Sempre presente.
+  <Expandable title="propriedades">
+    <ResponseField name="provider_id" type="string">O código do provedor recomendado.</ResponseField>
+    <ResponseField name="merchant_connection_id" type="string">O `merchant_connection_id` do candidato, quando foi informado.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="ranking" type="object[]">
+  Todos os candidatos, ordenados pelo objetivo.
+  <Expandable title="item">
+    <ResponseField name="provider_id" type="string">Código do provedor.</ResponseField>
+    <ResponseField name="merchant_connection_id" type="string">O `merchant_connection_id` do candidato, quando foi informado.</ResponseField>
+    <ResponseField name="approval_rate" type="number">`SUCCEEDED / (SUCCEEDED + DECLINED)` sobre o histórico reportado, de `0` a `1`. `null` quando não há dados.</ResponseField>
+    <ResponseField name="avg_latency_ms" type="integer">Latência média de autorização em milissegundos sobre `SUCCEEDED + DECLINED`. `null` quando não há dados.</ResponseField>
+    <ResponseField name="sample_size" type="integer">Total de pagamentos reportados no segmento durante a janela, em todos os status: quanto histórico sustenta as métricas deste candidato.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Como ler a resposta {#reading-the-response}
+
+- **`recommended` está sempre presente**, mesmo sem histórico suficiente. Você nunca precisa de um caminho especial: `decision_source` indica o quanto confiar nele.
+- **`decision_source: MERCHANT_HISTORY`**: pelo menos um candidato atingiu a amostra mínima; a classificação reflete estatísticas reais dos seus pagamentos reportados.
+- **`decision_source: INSUFFICIENT_DATA`**: nenhum candidato atingiu a amostra mínima de eventos reportados recentes. A classificação completa ainda é retornada, e a recomendação recorre aos melhores dados disponíveis ou, em último caso, à ordem da requisição. Leia o `sample_size` de cada candidato para ver quanto histórico o sustenta antes de confiar na ordem.
+- **`sample_size`** mostra a confiabilidade da recomendação. Uma taxa de aprovação alta sobre 12 eventos não é o mesmo sinal que uma sobre 12,000.
+- **A `ranking` completa sempre é retornada**, ordenada pelo seu objetivo. Se o candidato recomendado recusar, use a próxima entrada: nova tentativa em cascata sem uma segunda chamada.
+
+## Estatísticas por BIN {#bin-level-statistics}
+
+Se você reporta o BIN do cartão nos seus eventos `CARD` (`payment_method_details.card.bin` na [API de Reporte de Transações](/pt-br/reference/reporting/report-transactions)), envie o mesmo BIN aqui em `payment.payment_method.details.card.bin`. Para cada candidato, a classificação usa o segmento mais específico que atinge a amostra mínima, no país do pagamento:
+
+1. **BIN de 8 dígitos**: quando você envia 8 dígitos e esse BIN exato tem histórico reportado suficiente.
+2. **BIN de 6 dígitos**: os 6 primeiros dígitos (também é o segmento usado quando você envia um BIN de 6 dígitos).
+3. **País**: provedor, país e meio de pagamento, como sem BIN.
+4. **Meio de pagamento**: provedor e meio de pagamento em todos os países.
+
+Um BIN sem histórico reportado simplesmente passa para os segmentos de país e de meio de pagamento: a resposta é exatamente a que você teria sem enviá-lo. Um valor que não tenha exatamente 6 ou 8 dígitos é ignorado, nunca rejeitado.
+
+## Estatísticas por iniciação {#initiation-level-statistics}
+
+Se você reporta `initiation` (`CIT` ou `MIT`) nos seus eventos (na [API de Reporte de Transações](/pt-br/reference/reporting/report-transactions)), envie o mesmo `payment.initiation` aqui. CIT e MIT têm aprovações muito diferentes em cada provedor, então, em cada nível de segmento acima, a classificação tenta primeiro o histórico com a **mesma iniciação** e só usa o nível inteiro se ele não atingir a amostra mínima. A ordem efetiva é: BIN8 + iniciação → BIN8 → BIN6 + iniciação → BIN6 → país + iniciação → país → meio de pagamento + iniciação → meio de pagamento.
+
+Eventos que você reportou sem iniciação contam apenas nas estatísticas sem iniciação (do nível inteiro). Uma requisição **sem** `payment.initiation` é pontuada pelo segmento inteiro, exatamente como antes de este campo ser usado: a resposta não muda. `approval_rate`, `avg_latency_ms` e `sample_size` sempre refletem o segmento efetivamente usado.
+
+## Como escolher um objetivo {#choosing-an-objective}
+
+`optimize_for` ordena a classificação: `APPROVAL_RATE` (padrão), `LATENCY` ou `BALANCED` (uma combinação ponderada dos dois). Ainda não há objetivo de custo: a API de Reporte não coleta tarifas, e a Yuno não classifica com dados que não tem.
+
+`LATENCY` e `BALANCED` classificam com base no `latency_ms` que você reporta em cada evento. Se os seus eventos reportados não trazem `latency_ms`, não há latência para classificar: `LATENCY` retorna os candidatos na ordem da requisição, e `BALANCED` considera apenas a taxa de aprovação. Reporte `latency_ms` (o tempo de ida e volta ao provedor, como você o mediu) para usar qualquer um dos dois objetivos.
+
+## Os candidatos são a sua camada de restrições {#candidates-are-your-constraint-layer}
+
+A recomendação é sempre um dos `candidates` que você envia: a Yuno nunca propõe um provedor que você não listou. Envie apenas os provedores que este pagamento realmente pode usar (elegibilidade, contratos, volumes comprometidos), e a recomendação respeita essas restrições por construção.
+
+## Novas tentativas {#retries}
+
+Não há cabeçalho de idempotência neste endpoint, e nenhum é necessário: cada chamada calcula uma nova recomendação com um novo `recommendation_id`, e solicitar uma recomendação não altera nenhum estado. Tentar de novo após uma falha de rede é sempre seguro.
+
+## Exemplos {#examples}
+
+<CodeGroup>
+```bash cURL
+curl -X POST 'https://api-sandbox.y.uno/v1/routing/recommendations' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
+    "merchant_order_id": "order_45678",
+    "payment": {
+      "amount": { "currency": "USD", "value": 99.00 },
+      "country": "US",
+      "payment_method": { "type": "CARD", "details": { "card": { "bin": "45717360" } } }
+    },
+    "candidates": [
+      { "provider_id": "ADYEN", "merchant_connection_id": "acct-adyen-us-1" },
+      { "provider_id": "STRIPE" },
+      { "provider_id": "DLOCAL" }
+    ],
+    "optimize_for": "APPROVAL_RATE"
+  }'
+```
+
+```json 200 — MERCHANT_HISTORY
+{
+  "recommendation_id": "3e37f0c9-e9cd-4d85-9e1a-ec5f09af296d",
+  "merchant_order_id": "order_45678",
+  "optimized_for": "APPROVAL_RATE",
+  "decision_source": "MERCHANT_HISTORY",
+  "recommended": { "provider_id": "ADYEN", "merchant_connection_id": "acct-adyen-us-1" },
+  "ranking": [
+    { "provider_id": "ADYEN",  "merchant_connection_id": "acct-adyen-us-1", "approval_rate": 0.9987, "avg_latency_ms": 180, "sample_size": 767 },
+    { "provider_id": "STRIPE", "merchant_connection_id": null, "approval_rate": 0.9167, "avg_latency_ms": 150, "sample_size": 60 },
+    { "provider_id": "DLOCAL", "merchant_connection_id": null, "approval_rate": 0.8000, "avg_latency_ms": 210, "sample_size": 60 }
+  ]
+}
+```
+
+```json 200 — INSUFFICIENT_DATA
+{
+  "recommendation_id": "7249c858-1f0f-4654-93e7-ebe34bc5048f",
+  "merchant_order_id": "order_45678",
+  "optimized_for": "APPROVAL_RATE",
+  "decision_source": "INSUFFICIENT_DATA",
+  "recommended": { "provider_id": "ADYEN", "merchant_connection_id": null },
+  "ranking": [
+    { "provider_id": "ADYEN",  "merchant_connection_id": null, "approval_rate": null, "avg_latency_ms": null, "sample_size": 0 },
+    { "provider_id": "STRIPE", "merchant_connection_id": null, "approval_rate": null, "avg_latency_ms": null, "sample_size": 0 }
+  ]
+}
+```
+
+```json 400 — Too Few Candidates
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": ["The field 'candidates' has a value less than allowed."]
+}
+```
+</CodeGroup>
+
+## Erros {#errors}
+
+Os erros retornam um `code` e um array `messages`.
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | Quando |
+| --- | --- | --- |
+| `400` | `INVALID_PARAMETERS` | Corpo malformado, campo obrigatório ausente, menos de 2 ou mais de 20 candidatos, `country`/`currency` fora do padrão ISO, ou um enum inválido (`optimize_for`, `initiation`). |
+| `400` | `INVALID_ACCOUNT_ID` | `account_id` está malformado ou não pertence à sua organização. |
+| `401` | `INVALID_CREDENTIALS` | Cabeçalhos `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` ausentes ou inválidos. |
+| `403` | `PRODUCT_NOT_ENABLED` | A API de Recomendações de Roteamento não está habilitada para a sua organização. Entre em contato com o seu KAM. |
+| `502` | `ROUTING_UPSTREAM_ERROR` | Não foi possível acessar o serviço de roteamento. |
+
+</div>

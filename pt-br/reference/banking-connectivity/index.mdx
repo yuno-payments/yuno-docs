@@ -1,0 +1,216 @@
+---
+title: "Banking Connectivity"
+description: "API unificada para criar contas bancárias, executar transferências e fazer o onboarding de entidades em vários provedores bancários"
+---
+
+O Banking Connectivity da Yuno oferece uma API unificada para criar contas bancárias, processar transferências e gerenciar o onboarding de entidades em vários provedores bancários. Uma única integração dá acesso a provedores nos EUA, no Reino Unido, na Austrália e na UE.
+
+## Fluxo de integração {#integration-flow}
+
+Siga estes passos para ir da criação da entidade até as transferências de fundos:
+
+1. **Crie uma entidade**: registre uma pessoa física ou uma empresa usando [Criar entidade](/pt-br/reference/banking-connectivity/entities-banking-connectivity/create-entity).
+2. **Faça o onboarding da entidade**: envie a documentação de KYC/KYB por meio de [Criar onboarding de entidade](/pt-br/reference/banking-connectivity/entity-onboarding-banking-connectivity/create-entity-onboarding).
+3. **Aguarde a aprovação do onboarding**: acompanhe o status do onboarding por meio de [Obter status do onboarding de entidade](/pt-br/reference/banking-connectivity/entity-onboarding-banking-connectivity/get-entity-onboarding-status) ou escute os eventos de webhook.
+4. **Crie uma conta bancária**: quando o onboarding for bem-sucedido, abra uma conta com [Criar conta](/pt-br/reference/banking-connectivity/accounts/create-account-banking).
+5. **Inicie transferências**: envie fundos usando [Iniciar transferência de entidade](/pt-br/reference/banking-connectivity/entity-transfers-banking-connectivity/initiate-entity-transfer).
+
+## Tipos de entidade {#entity-types}
+
+O campo `entity_type` determina a estrutura da entidade:
+
+<div className="code-nowrap-table dense-table">
+
+| Valor | Descrição | Detalhe obrigatório |
+| ------------ | -------------------------- | ---------------------------------------------------------------------------------- |
+| `INDIVIDUAL` | Uma pessoa física | `entity_detail.individual` com nome, data de nascimento, informações fiscais e documento de identidade |
+| `BUSINESS` | Uma empresa ou organização | `entity_detail.business` com nome da empresa, tipo, informações fiscais e beneficiários finais |
+
+</div>
+
+## Tipos de onboarding {#onboarding-types}
+
+<div className="code-nowrap-table dense-table">
+
+| Tipo | Comportamento |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `ONE_STEP` | Envia todas as informações, declarações de compliance, avaliação de risco e documentos de uma só vez. O provedor processa imediatamente. |
+| `PREVIOUSLY_ONBOARDED` | Gera um ID de onboarding interno da Yuno sem contatar o provedor. Use quando a entidade já tiver feito o onboarding externamente. |
+
+</div>
+
+## Status do onboarding {#onboarding-statuses}
+
+<div className="code-nowrap-table dense-table">
+
+| Status | Descrição | Final |
+| ---------------------------------- | --------------------------------------------- | -------- |
+| `CREATED` | Registro de onboarding criado | Não |
+| `PENDING` | Enviado ao provedor, aguardando análise | Não |
+| `PENDING_ADDITIONAL_DOCUMENTATION` | O provedor exige mais documentos | Não |
+| `UNDER_REVIEW` | O provedor está analisando o envio | Não |
+| `SUCCEEDED` | Onboarding aprovado: a entidade pode abrir contas | Sim |
+| `FAILED` | O onboarding falhou devido a erros | Sim |
+| `DECLINED` | O provedor recusou a entidade | Sim |
+| `CANCELLED` | Onboarding cancelado pelo lojista (ainda não disponível) | Sim |
+| `EXPIRED` | O onboarding expirou antes da conclusão | Sim |
+
+</div>
+
+## Status da transferência {#transfer-statuses}
+
+<div className="code-nowrap-table dense-table">
+
+| Status | Descrição | Final |
+| ------------ | -------------------------------------------------- | -------- |
+| `PENDING` | Transferência criada, aguardando processamento | Não |
+| `PROCESSING` | Transferência enviada à rede de pagamento | Não |
+| `COMPLETED` | Fundos entregues com sucesso | Sim |
+| `FAILED` | A transferência falhou | Sim |
+| `CANCELLED` | Transferência cancelada antes do processamento | Sim |
+| `REVERSED` | A transferência concluída foi revertida (por exemplo, devolução de ACH) | Sim |
+
+</div>
+
+<Note>
+**Observação:** os rails de pagamento instantâneo (RTP) pulam o estado `PROCESSING` e vão diretamente de `PENDING` para `COMPLETED` ou `FAILED`.
+</Note>
+
+## Rails de pagamento {#payment-rails}
+
+Os rails de pagamento disponíveis dependem da região do provedor. O campo `payment_rail` aceita apenas os valores abaixo, além de `BOOK` (com `transfer_type: BOOK`) e `PUSH_TO_CARD`:
+
+<div className="code-nowrap-table dense-table">
+
+| Região | Rail | Velocidade |
+| ------------- | -------------- | --------------------- |
+| **EUA** | `ACH_STANDARD` | 1–3 dias úteis |
+| **EUA** | `ACH_SAME_DAY` | No mesmo dia |
+| **EUA** | `WIRE` | No mesmo dia |
+| **EUA** | `RTP` | Instantâneo |
+
+</div>
+
+## Identificadores de conta por região {#account-identifiers-by-region}
+
+As respostas de [Criar conta](/pt-br/reference/banking-connectivity/accounts/create-account-banking) incluem identificadores bancários específicos de cada região:
+
+| Região | Campos retornados |
+| --------- | ------------------------------------- |
+| EUA | `account_number`, `routing_number` |
+| Reino Unido | `account_number`, `sort_code`, `iban` |
+| Austrália | `account_number`, `bsb` |
+| UE | `iban`, `swift` |
+
+## Tipos de documentação {#documentation-types}
+
+Ao criar ou atualizar um onboarding, o array `documentation` aceita itens com um campo `document_type` obrigatório. Preencha o subobjeto com o nome do tipo, em letras minúsculas (por exemplo, `bank_statement` para `BANK_STATEMENT`):
+
+<div className="code-nowrap-table dense-table">
+
+| `document_type` | Subobjeto | Descrição |
+| ------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `IDENTITY_DOCUMENT` | `identity_document` | Passaporte, carteira de motorista, documento nacional de identidade ou documento de identidade estadual, com imagens da frente e do verso |
+| `PROOF_OF_ADDRESS` | `proof_of_address` | Conta de consumo, extrato bancário, contrato de aluguel, hipoteca ou documento fiscal |
+| `BANK_STATEMENT` | `bank_statement` | Extrato bancário com período e dados da conta |
+| `BUSINESS_DOCUMENT` | `business_document` | Contrato social, alvará de funcionamento, confirmação de EIN, acordo operacional ou certidão de regularidade |
+| `TAX_INFORMATION` | `tax_information` | W9, 1099, declaração de imposto de renda, cartão de SSN, carta de ITIN, confirmação de EIN ou certificado de VAT |
+| `FINANCIAL_DOCUMENT` | `financial_document` | Balanço patrimonial, demonstração de resultados, demonstração de fluxo de caixa ou auditoria financeira |
+| `BIOMETRIC_VERIFICATION` | `biometric_verification` | Reconhecimento facial, fingerprint, voz ou leitura de íris com verificação de prova de vida |
+| `EMPLOYMENT_INFORMATION` | `employment_information` | Situação de emprego, dados do empregador, ocupação e renda |
+
+</div>
+
+Cada subobjeto leva seus documentos em um array `files` (por exemplo, `bank_statement.files`, `identity_document.files`), exceto `tax_information`, que usa `tax_records`. Cada arquivo usa codificação base64 com os campos `file_name`, `content_type` e `content`. Um item de exemplo:
+
+```json
+{
+  "document_type": "BANK_STATEMENT",
+  "bank_statement": {
+    "files": [
+      {
+        "file_name": "bank_statement_dec_2025.pdf",
+        "content_type": "application/pdf",
+        "content": "<base64>"
+      }
+    ]
+  }
+}
+```
+
+## Eventos de webhook {#webhook-events}
+
+A Yuno envia notificações de webhook para o endpoint que você configurou nos eventos a seguir. Para a configuração geral de webhooks, o comportamento de entrega e a lógica de novas tentativas, veja [Eventos e gatilhos](/pt-br/docs/webhooks/events#banking-connectivity).
+
+### Eventos de entidade {#entity-events}
+
+* `banking.entity.created`: entidade criada
+* `banking.entity.updated`: entidade atualizada
+* `banking.entity.deleted`: entidade excluída
+
+### Eventos de onboarding {#onboarding-events}
+
+* `banking.onboarding.created`: onboarding criado
+* `banking.onboarding.pending`: enviado, aguardando análise
+* `banking.onboarding.pending_additional_documentation`: mais documentos necessários
+* `banking.onboarding.succeeded`: onboarding aprovado
+* `banking.onboarding.failed`: onboarding falhou
+* `banking.onboarding.declined`: o provedor recusou
+* `banking.onboarding.cancelled`: o lojista cancelou (ainda não disponível)
+* `banking.onboarding.expired`: onboarding expirado
+
+### Eventos de conta {#account-events}
+
+* `banking.account.created`: conta criada
+* `banking.account.updated`: conta atualizada
+* `banking.account.activated`: conta ativada
+* `banking.account.closed`: conta encerrada
+
+### Eventos de transferência (enviadas) {#transfer-events-outgoing}
+
+* `banking.transfer.pending`: transferência pendente
+* `banking.transfer.processing`: transferência em processamento
+* `banking.transfer.completed`: transferência concluída
+* `banking.transfer.failed`: transferência falhou
+* `banking.transfer.cancelled`: transferência cancelada
+* `banking.transfer.reversed`: transferência revertida
+
+### Eventos de transferência (recebidas) {#transfer-events-incoming}
+
+* `banking.transfer.incoming.pending`: transferência recebida com liquidação pendente
+* `banking.transfer.incoming.completed`: transferência recebida liquidada
+
+As notificações de transferências recebidas são enviadas para o seu endpoint em `{merchant_base_URL}/v1/banking/transfers`. Veja [Notificações de webhook](/pt-br/reference/banking-connectivity/webhooks/webhook-notifications-banking) para a estrutura do payload.
+
+## Códigos de erro {#error-codes}
+
+<div className="code-nowrap-table dense-table">
+
+| Código | Status HTTP | Descrição |
+| ---------------------- | ----------- | ---------------------------------------------------- |
+| `NOT_AUTHENTICATED` | 401 | Chaves de API ausentes ou inválidas |
+| `AuthenticationFail` | 401 | Falha na autenticação |
+| `BadRequest` | 400 | Requisição malformada |
+| `VALIDATION_ERROR` | 400 | Falha na validação da requisição |
+| `DUPLICATE_ENTITY` | 409 | Já existe uma entidade com este `merchant_entity_id` |
+| `ENTITY_NOT_FOUND` | 404 | Entidade não encontrada |
+| `ONBOARDING_NOT_FOUND` | 404 | Onboarding não encontrado |
+| `ACCOUNT_NOT_FOUND` | 404 | Conta não encontrada |
+| `INSUFFICIENT_BALANCE` | 422 | Fundos insuficientes para a transferência |
+| `CURRENCY_MISMATCH` | 422 | A moeda da transferência não corresponde à moeda da conta |
+| `PROVIDER_ERROR` | 502 | Erro do provedor bancário |
+| `PROVIDER_TIMEOUT` | 504 | O provedor não respondeu a tempo |
+| `InternalError` | 500 | Erro interno do servidor |
+| `TooManyRequests` | 429 | Limite de requisições excedido |
+
+</div>
+
+As respostas de erro seguem este formato:
+
+```json
+{
+  "code": "ERROR_CODE",
+  "messages": ["Human-readable error message"],
+  "http_code": 400
+}
+```

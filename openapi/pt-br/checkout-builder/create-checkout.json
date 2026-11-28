@@ -1,0 +1,240 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkout-builder",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "description": "Chave de API pública do lojista. Encontrada no Dashboard da Yuno → Settings → API Keys."
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "description": "Chave secreta privada do lojista, usada em par com a chave pública. Nunca a incorpore em código do lado do cliente."
+      },
+      "accountCode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Account-Code",
+        "description": "UUID da conta do lojista que delimita o escopo da requisição. O tenant é identificado somente a partir deste cabeçalho."
+      }
+    },
+    "schemas": {
+      "CheckoutMutationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador do checkout (UUID). Use-o como checkout_code nos endpoints de consulta, publicação e ciclo de vida."
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do checkout."
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do checkout."
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Indica se este checkout é o padrão da conta. Um checkout recém-criado nunca é o padrão."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Indica se o checkout está ativo (atendendo tráfego)."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp de criação (ISO-8601)."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "publicApiKey": [],
+      "privateSecretKey": [],
+      "accountCode": []
+    }
+  ],
+  "paths": {
+    "/checkouts": {
+      "post": {
+        "summary": "Criar checkout",
+        "description": "Cria um novo checkout personalizado como um clone publicado do checkout padrão da conta: os meios de pagamento (incluindo substituições de ícone/nome e conjuntos de condições de campos obrigatórios) são copiados do padrão; as configurações gerais e o estilo herdam a base da conta até a primeira publicação do checkout. O novo checkout nasce com status PUBLISHED e nunca é o padrão da conta. O identificador é exposto como o `id` de nível superior.",
+        "operationId": "create-checkout",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "Chave opcional do cliente, com até 64 caracteres. Funciona por melhor esforço; não há garantia de que o reenvio da mesma chave seja deduplicado.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Nome do checkout. Obrigatório, não pode estar em branco e deve ser único por conta (um nome duplicado é rejeitado com 409)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Descrição opcional em texto livre."
+                  }
+                }
+              },
+              "examples": {
+                "Name only": {
+                  "value": {
+                    "name": "Promo Checkout"
+                  }
+                },
+                "Name and description": {
+                  "value": {
+                    "name": "Promo Checkout",
+                    "description": "Seasonal promo storefront"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "O checkout criado. Nasce PUBLISHED como um clone do padrão da conta; `is_default` é sempre false na criação. Use o `id` como checkout_code nos outros endpoints do Checkout Builder.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutMutationResponse"
+                },
+                "examples": {
+                  "Created": {
+                    "value": {
+                      "id": "0b28ff66-15f1-44c1-8d1e-bd1fefbc0a19",
+                      "name": "Promo Checkout",
+                      "description": "Seasonal promo storefront",
+                      "is_default": false,
+                      "is_active": true,
+                      "created_at": "2026-07-17T10:02:33.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`name` ausente ou em branco, ou um corpo JSON malformado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Missing name": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "name is required"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado, ou a conta não está na allowlist do beta.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A conta não tem um checkout padrão para clonar.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "No default checkout": {
+                    "value": {
+                      "code": "DEFAULT_CHECKOUT_NOT_FOUND",
+                      "messages": [
+                        "No default Custom Checkout found for account: 78163a7c-c63c-4fdd-b72b-d5f77093a927"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Já existe um checkout com o mesmo nome para a conta.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Duplicate name": {
+                    "value": {
+                      "code": "DUPLICATE_CHECKOUT_NAME",
+                      "messages": [
+                        "A Custom Checkout with name 'Promo Checkout' already exists for this account"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

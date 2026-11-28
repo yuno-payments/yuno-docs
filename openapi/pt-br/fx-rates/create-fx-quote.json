@@ -1,0 +1,263 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Yuno FX Rates API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.y.uno/v1"
+    }
+  ],
+  "paths": {
+    "/fx-rates/quote": {
+      "post": {
+        "summary": "Criar cotação de câmbio",
+        "operationId": "create-fx-quote",
+        "description": "Cota um valor em USD na moeda local do cliente, com a taxa de referência diária da Yuno mais a sua margem, e a mantém até `expires_at`. Envie a cotação com o pagamento para cobrar o valor local.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Sua chave de API pública."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Sua chave secreta privada, quando você faz a cotação a partir do seu backend. Nunca a exponha no lado do cliente."
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A conta para a qual é a cotação."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "target_currency"
+                ],
+                "properties": {
+                  "checkout_session": {
+                    "type": "string",
+                    "description": "A sessão de checkout para a qual a cotação é feita. Obrigatória com uma chave pública."
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "A conta para a qual é a cotação."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "enum": [
+                          "USD"
+                        ],
+                        "description": "Somente `USD`."
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "De 0.0001 a 9999999999."
+                      }
+                    }
+                  },
+                  "target_currency": {
+                    "type": "string",
+                    "description": "Moeda ISO de três letras em que a cotação é feita.",
+                    "example": "BRL"
+                  }
+                }
+              },
+              "example": {
+                "checkout_session": "<checkout_session>",
+                "amount": {
+                  "currency": "USD",
+                  "value": 29
+                },
+                "target_currency": "BRL"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cotação de câmbio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fx_quote_id": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "local_amount": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "reference_rate": {
+                      "type": "number"
+                    },
+                    "markup_percentage": {
+                      "type": "number"
+                    },
+                    "rate": {
+                      "type": "number"
+                    },
+                    "fx_date": {
+                      "type": "string",
+                      "description": "Dia da taxa de referência."
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "description": "Até quando a cotação pode ser cobrada."
+                    }
+                  }
+                },
+                "example": {
+                  "fx_quote_id": "fxq_D8BBCB40182E44799D4AE3F6BBF2D1FB",
+                  "amount": {
+                    "currency": "USD",
+                    "value": 29
+                  },
+                  "local_amount": {
+                    "currency": "BRL",
+                    "value": 152.55
+                  },
+                  "reference_rate": 5.1572,
+                  "markup_percentage": 2,
+                  "rate": 5.2603,
+                  "fx_date": "2026-11-19",
+                  "expires_at": "2026-11-21T22:24:07Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Corpo inválido, por exemplo, um valor que não está em USD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "INVALID_PARAMETERS",
+                  "messages": [
+                    "..."
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "O produto não está habilitado para a sua organização",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "PRODUCT_NOT_ENABLED",
+                  "messages": [
+                    "..."
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FX_QUOTE_NOT_AVAILABLE",
+                  "messages": [
+                    "No published rate for BRL on the latest available day."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

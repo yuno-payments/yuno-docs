@@ -1,0 +1,96 @@
+---
+title: "Gerar criptograma de network token"
+openapi: "/openapi/pt-br/network-tokens/generate-network-token-cryptogram.json POST /network-tokens/cryptograms"
+description: "Gera um criptograma de network token novo e de uso único para um cartão armazenado, para que ele possa ser autorizado em um PSP externo."
+---
+
+Este endpoint retorna sob demanda um **criptograma de network token** para um cartão armazenado e, por padrão, o network token atual do cartão (DPAN). O network token de um cartão sozinho não consegue autorizar um pagamento. As bandeiras de cartão exigem um criptograma de uso único por transação, e só a Yuno pode solicitá-lo porque a Yuno detém o Token Requestor ID. Use este endpoint quando quiser pegar um network token da Yuno e autorizar a transação no seu próprio PSP.
+
+Você identifica o cartão pelo seu `vaulted_token`, o mesmo identificador que você usa em [Criar pagamento](/reference/payments/create-payment). A Yuno resolve internamente o network token atual do cartão e absorve a rotação de tokens, então você sempre recebe um conjunto `(DPAN, cryptogram, ECI)` consistente e atual.
+
+<Warning>
+**O DPAN exige certificação PCI: o criptograma não**
+
+O network token completo (DPAN) é um dado equivalente ao PAN, então a resposta padrão, que o inclui, só está disponível para lojistas com certificação PCI. O criptograma em si não é equivalente ao PAN: ele é de uso único, de curta duração e vinculado a um DPAN específico, então não consegue autorizar nada sozinho.
+
+Se a sua organização não tiver certificação PCI, envie `include_network_token: false` para receber apenas o criptograma. Consulte [Modo somente criptograma](#cryptogram-only-mode) abaixo. Para habilitar o produto, entre em contato com o seu Key Account Manager (KAM).
+</Warning>
+
+<Warning>
+**Sempre envie um par consistente.** Um criptograma é vinculado a um network token específico. Envie o `network_token.number` (DPAN) retornado na **mesma resposta** junto com o seu `cryptogram` e `eci`. Nunca combine um criptograma retornado com um DPAN armazenado anteriormente. Depois de uma rotação de token, um DPAN armazenado deixará de corresponder. No [modo somente criptograma](#cryptogram-only-mode), a mesma regra se aplica por meio do proxy: encaminhe imediatamente após solicitar o criptograma, para que o DPAN que o proxy resolve seja aquele para o qual o criptograma foi gerado.
+</Warning>
+
+## Como funciona {#how-it-works}
+
+1. Solicite um criptograma logo antes de autorizar. Cada chamada gera um criptograma **novo e de uso único** a partir da bandeira: não há idempotência, e chamadas duplicadas retornam novos criptogramas (nenhum dinheiro é movimentado).
+2. Envie `network_token.number` (DPAN), `cryptogram` e `eci` ao seu PSP como uma transação com network token.
+3. Se a autorização for recusada e você tentar novamente, solicite primeiro um criptograma **novo**. Um criptograma usado ou expirado não pode ser reutilizado.
+
+## Modo somente criptograma {#cryptogram-only-mode}
+
+Envie `include_network_token: false` e a resposta omite totalmente `network_token.number` (o DPAN) e `network_token.token_data`. O objeto `network_token` mantém os seus metadados não equivalentes ao PAN (`network`, `status`, `par`, `network_token_id`), e a resposta traz `cryptogram` e `eci` normalmente. Como nenhum dado equivalente ao PAN é retornado, este modo não exige certificação PCI.
+
+Combine-o com o [Forward Proxy](/pt-br/docs/security-and-compliance/pci-proxy/forward-proxy) para executar uma transação com network token de ponta a ponta sem que dados equivalentes ao PAN entrem nos seus sistemas:
+
+1. Solicite o criptograma com `include_network_token: false`.
+2. Monte a requisição de encaminhamento com a expressão `{{vaulted_token.<TOKEN>.network_token_number}}` (e as expressões `network_token_expiration_*`) onde o destino espera o DPAN. Inclua o valor do `cryptogram` diretamente no corpo, já que os criptogramas são gerados por transação e o proxy não os resolve como expressões.
+3. Envie-a pelo proxy **imediatamente**: o proxy resolve o DPAN atual do cartão no momento do encaminhamento, e o criptograma é vinculado a um DPAN específico. Solicitar o criptograma logo antes do encaminhamento mantém o par consistente. Um atraso que atravesse uma rotação de token faria com que eles não correspondessem.
+
+A matriz completa de permissões:
+
+| Sua organização | `include_network_token` | Resultado |
+| --- | --- | --- |
+| Com certificação PCI | `true` / omitido | Resposta completa (network token + criptograma) |
+| Com certificação PCI | `false` | Resposta somente com criptograma |
+| Sem certificação PCI | `false` | Resposta somente com criptograma |
+| Sem certificação PCI | `true` / omitido | `403 NETWORK_TOKEN_RETURN_NOT_ALLOWED` |
+
+A última linha é um erro explícito por design: um integrador que espera `network_token` na resposta recebe uma rejeição clara, nunca uma resposta com formato degradado silenciosamente.
+
+## Requisitos {#requirements}
+
+Para usar este endpoint, a sua organização precisa:
+
+- Ter o **produto habilitado** para a sua organização.
+- Ter concluído o **onboarding de network tokens** para a bandeira do cartão e o `country` solicitado.
+- Ser um **lojista com certificação PCI** para receber o network token (DPAN) na resposta. O [modo somente criptograma](#cryptogram-only-mode) (`include_network_token: false`) não exige certificação PCI.
+
+O cartão referenciado por `vaulted_token` precisa ser um **cartão cadastrado** da sua organização que já tenha um **network token ativo**.
+
+Bandeiras suportadas: **Visa** e **Mastercard**.
+
+<Note>
+**Quando você não precisa deste endpoint.** Transações recorrentes iniciadas pelo lojista (MIT) são autorizadas com o network token e o `network_transaction_id` armazenado e **não** exigem um criptograma. Este endpoint é para transações iniciadas pelo cliente que precisam de um criptograma novo.
+</Note>
+
+## Validade do criptograma {#cryptogram-lifetime}
+
+O criptograma é de uso único. Solicite-o imediatamente antes de autorizar e não o armazene em cache.
+
+`expires_at` é o último momento em que a bandeira aceita o criptograma. É a validade do **criptograma**, não do network token nem do cartão.
+
+- **Um timestamp** (hoje, Mastercard): trate-o como um limite rígido. Um criptograma enviado depois de `expires_at` é recusado.
+- **`null`** (hoje, Visa): a bandeira não publica nenhuma validade para este criptograma. Isso não significa que ele nunca expira. Use-o imediatamente.
+
+Em ambos os casos, solicite um novo criptograma para cada tentativa de autorização, incluindo novas tentativas.
+
+## Erros {#errors}
+
+Os erros retornam um `code` e um array `messages`. O valor exato de `messages` por `code`:
+
+| HTTP | `code` | `messages` |
+| --- | --- | --- |
+| 404 | `PAYMENT_METHOD_NOT_FOUND` | "Payment method not found." |
+| 400 | `INSTRUMENT_NOT_TOKENIZABLE` | "Payment method is not a card." |
+| 400 | `PAYMENT_METHOD_NOT_ENROLLED` | "Payment method is not enrolled." |
+| 400 | `NETWORK_TOKEN_NOT_FOUND` | "Payment method has no network token." |
+| 400 | `TOKEN_NOT_ACTIVE` | "Network token is not active." |
+| 400 | `NETWORK_NOT_SUPPORTED` | "Network token brand is not supported." |
+| 400 | `COUNTRY_NOT_SUPPORTED` | "Country is not supported for this organization." |
+| 400 | `INVALID_REQUEST` | O campo inválido específico, por exemplo "The field 'vaulted_token' must be a valid uuid v4." |
+| 403 | `PCI_MERCHANT_REQUIRED` | "This endpoint is only available to PCI-certified merchants." |
+| 403 | `NETWORK_TOKEN_RETURN_NOT_ALLOWED` | "Returning the network token requires PCI certification. Send include_network_token: false to receive the cryptogram only, or contact your Key Account Manager (KAM)." |
+| 403 | `PRODUCT_NOT_ENABLED` | "The Network Token Cryptogram API is enabled per organization. Contact your Key Account Manager (KAM) to activate it." |
+| 502 | `PROVIDER_ERROR` | "The network token cryptogram service is temporarily unavailable, please retry." |
+
+Um `vaulted_token` que não existe e um que pertence a outra organização retornam o mesmo `PAYMENT_METHOD_NOT_FOUND`, então não há vazamento sobre a existência.

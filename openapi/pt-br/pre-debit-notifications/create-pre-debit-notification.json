@@ -1,0 +1,307 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "pre-debit-notifications",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/predebit-notify": {
+      "post": {
+        "summary": "Criar notificação de pré-débito",
+        "description": "Envia ao cliente a notificação de pré-débito exigida pela NPCI antes de um débito recorrente do UPI Autopay. O provedor entrega o aviso e retorna uma referência; guarde o id retornado e envie-o no débito recorrente como payment_method.detail.bank_transfer.pre_debit_notification_id.",
+        "operationId": "create-pre-debit-notification",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "Identificador único usado nos cabeçalhos HTTP para garantir que uma requisição seja processada apenas uma vez, mesmo que seja repetida por problemas de rede ou timeouts.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "merchant_reference",
+                  "amount",
+                  "billing_date"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "O ID da sua conta na Yuno."
+                  },
+                  "merchant_reference": {
+                    "type": "string",
+                    "description": "Sua referência única para esta notificação. Reutilizar uma referência retorna a notificação existente (idempotente por conta)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Texto exibido ao cliente na notificação (por exemplo, o nome da assinatura e o aviso de renovação)."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "Código de moeda ISO 4217 do próximo débito (para UPI Autopay, INR).",
+                        "example": "INR"
+                      },
+                      "value": {
+                        "type": "string",
+                        "description": "Valor do próximo débito.",
+                        "example": "499.00"
+                      }
+                    }
+                  },
+                  "billing_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Data do próximo débito (YYYY-MM-DD). Segundo a NPCI, notifique o cliente pelo menos 24 horas antes do débito."
+                  },
+                  "billing_sequence_number": {
+                    "type": "string",
+                    "description": "Número de sequência do débito dentro do mandato (por exemplo, 2 para a segunda cobrança)."
+                  },
+                  "origin_payment_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "ID do pagamento de criação do mandato. Quando informado, a Yuno deriva o provedor e a conexão a partir da cobrança bem-sucedida desse pagamento. É obrigatório informar origin_payment_id ou provider_data."
+                  },
+                  "customer_payer": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID do cliente na Yuno."
+                      },
+                      "merchant_customer_id": {
+                        "type": "string",
+                        "description": "Seu identificador do cliente."
+                      }
+                    }
+                  },
+                  "payment_method": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "Tipo de meio de pagamento do mandato.",
+                        "example": "UPI_AUTOPAY"
+                      },
+                      "vaulted_token": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Vaulted token do mandato cadastrado. A Yuno resolve a partir dele a credencial do mandato no provedor."
+                      }
+                    }
+                  },
+                  "provider_data": {
+                    "type": "object",
+                    "description": "Roteamento explícito do provedor. É obrigatório informar origin_payment_id ou provider_data (id + connection_id).",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "ID do provedor (por exemplo, EBANX).",
+                        "example": "EBANX"
+                      },
+                      "connection_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Conexão pela qual a notificação é enviada."
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "UPI Autopay": {
+                  "value": {
+                    "account_id": "00000000-0000-0000-0000-000000000000",
+                    "merchant_reference": "subscription-2026-08-INV-00187",
+                    "description": "Your subscription renews soon",
+                    "amount": {
+                      "currency": "INR",
+                      "value": "499.00"
+                    },
+                    "billing_date": "2026-08-01",
+                    "billing_sequence_number": "2",
+                    "customer_payer": {
+                      "id": "9a8b7c6d-5e4f-4a3b-8c1d-0e9f8a7b6c5d"
+                    },
+                    "payment_method": {
+                      "type": "UPI_AUTOPAY",
+                      "vaulted_token": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                    },
+                    "provider_data": {
+                      "id": "EBANX",
+                      "connection_id": "6c1f6bfb-736b-439e-b568-32f671f65256"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notificação criada. Verifique o status: SENT significa que o provedor a entregou.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Identificador único da notificação de pré-débito. Faça referência a ele no débito recorrente como payment_method.detail.bank_transfer.pre_debit_notification_id."
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "O ID da sua conta na Yuno."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "SENT",
+                        "REJECTED",
+                        "ERROR"
+                      ],
+                      "description": "SENT: o provedor aceitou e entregou a notificação. REJECTED: o provedor a recusou. ERROR: não foi possível repassar a notificação."
+                    },
+                    "merchant_reference": {
+                      "type": "string",
+                      "description": "Sua referência única para esta notificação (idempotente por conta)."
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Texto exibido ao cliente na notificação."
+                    },
+                    "amount": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "value"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "description": "Código de moeda ISO 4217 do próximo débito (para UPI Autopay, INR).",
+                          "example": "INR"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Valor do próximo débito.",
+                          "example": "499.00"
+                        }
+                      }
+                    },
+                    "billing_date": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Data do próximo débito (YYYY-MM-DD)."
+                    },
+                    "origin_payment_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "O pagamento de criação do mandato usado para derivar o provedor e a conexão, quando informado."
+                    },
+                    "provider_data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Provedor que processou a notificação (por exemplo, EBANX)."
+                        },
+                        "connection_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Conexão usada para enviar a notificação."
+                        },
+                        "provider_transaction_id": {
+                          "type": "string",
+                          "description": "Referência da transação no provedor, quando disponível."
+                        },
+                        "provider_notification_id": {
+                          "type": "string",
+                          "description": "Referência no provedor da notificação entregue. A Yuno a resolve e a encaminha automaticamente ao provedor quando o débito recorrente faz referência a esta notificação."
+                        },
+                        "raw_request": {
+                          "type": "object",
+                          "description": "Requisição ao provedor, ofuscada. Retornada apenas para organizações na allowlist."
+                        },
+                        "raw_response": {
+                          "type": "object",
+                          "description": "Resposta do provedor, ofuscada. Retornada apenas para organizações na allowlist."
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros inválidos (por exemplo, roteamento do provedor ausente ou billing_date malformado)."
+          },
+          "422": {
+            "description": "O vaulted_token não tem credencial armazenada para o provedor resolvido (STORED_CREDENTIAL_NOT_FOUND), ou o pagamento de origem não tem uma conexão utilizável (PROVIDER_CONNECTION_REQUIRED)."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,324 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkout-builder",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "description": "Chave de API pública do lojista. Encontrada no Dashboard da Yuno → Settings → API Keys."
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "description": "Chave secreta privada do lojista, usada em par com a chave pública. Nunca a incorpore em código do lado do cliente."
+      },
+      "accountCode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Account-Code",
+        "description": "UUID da conta do lojista que delimita o escopo da requisição. O tenant é identificado somente a partir deste cabeçalho."
+      }
+    },
+    "schemas": {
+      "CheckoutMutationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador do checkout (UUID)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do checkout."
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição do checkout."
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Indica se este checkout é o padrão da conta."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Indica se o checkout está ativo (atendendo tráfego)."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp de criação (ISO-8601)."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "publicApiKey": [],
+      "privateSecretKey": [],
+      "accountCode": []
+    }
+  ],
+  "paths": {
+    "/checkouts/{checkout_code}": {
+      "patch": {
+        "summary": "Gerenciar ciclo de vida do checkout",
+        "description": "Renomeia, publica, despublica, arquiva, restaura ou promove o checkout. O corpo traz qualquer combinação de `name`, `description`, `status` e `is_default`; pelo menos um campo é obrigatório (um corpo vazio é rejeitado com 400). As transições de status seguem a máquina de estados do ciclo de vida: publicar (`PUBLISHED`) só é válido a partir de `NOT_PUBLISHED`; um checkout ARCHIVED é restaurado em duas etapas (primeiro `status: NOT_PUBLISHED`, depois `status: PUBLISHED`); alterar para o status atual é rejeitado. Os metadados (`name`/`description`) continuam editáveis enquanto ARCHIVED. `is_default` aceita apenas `true`: ele promove o checkout a padrão da conta, publicando-o à força a partir de qualquer estado, e rebaixa atomicamente o padrão anterior; quando `is_default: true` é enviado junto com `status`, a promoção prevalece e `status` é ignorado. O checkout padrão não pode ser arquivado nem despublicado.",
+        "operationId": "manage-checkout-lifecycle",
+        "parameters": [
+          {
+            "name": "checkout_code",
+            "in": "path",
+            "description": "O identificador único do checkout a ser atualizado (UUID, 36 caracteres). Valores que não são UUID são rejeitados com 400 antes do processamento.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "Chave opcional do cliente, com até 64 caracteres. Funciona por melhor esforço; não há garantia de que o reenvio da mesma chave seja deduplicado.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Novo nome do checkout. Único por conta (um nome duplicado é rejeitado com 409). Editável em qualquer status, incluindo ARCHIVED."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Nova descrição do checkout. Editável em qualquer status, incluindo ARCHIVED."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "PUBLISHED",
+                      "NOT_PUBLISHED",
+                      "ARCHIVED"
+                    ],
+                    "description": "Status de destino no ciclo de vida. PUBLISHED só pode ser alcançado a partir de NOT_PUBLISHED; NOT_PUBLISHED pode ser alcançado a partir de PUBLISHED (despublicar) ou ARCHIVED (restaurar); ARCHIVED pode ser alcançado a partir de PUBLISHED ou NOT_PUBLISHED. Qualquer outra transição (incluindo alterar para o status atual) é rejeitada com 400. Valores desconhecidos são rejeitados com 400."
+                  },
+                  "is_default": {
+                    "type": "boolean",
+                    "description": "Apenas `true` é aceito: promove este checkout a padrão da conta, publicando-o à força a partir de qualquer estado e rebaixando atomicamente o padrão anterior. `false` é rejeitado com 400; para rebaixar, promova outro checkout."
+                  }
+                }
+              },
+              "examples": {
+                "Rename": {
+                  "value": {
+                    "name": "Promo Checkout (renamed)"
+                  }
+                },
+                "Publish": {
+                  "value": {
+                    "status": "PUBLISHED"
+                  }
+                },
+                "Unpublish": {
+                  "value": {
+                    "status": "NOT_PUBLISHED"
+                  }
+                },
+                "Archive": {
+                  "value": {
+                    "status": "ARCHIVED"
+                  }
+                },
+                "Restore an archived checkout (step 1 of 2)": {
+                  "value": {
+                    "status": "NOT_PUBLISHED"
+                  }
+                },
+                "Promote to default": {
+                  "value": {
+                    "is_default": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "O resumo do checkout atualizado. O identificador é exposto como o `id` de nível superior. Leia o `status` resultante com o endpoint Fetch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutMutationResponse"
+                },
+                "examples": {
+                  "Updated": {
+                    "value": {
+                      "id": "0b28ff66-15f1-44c1-8d1e-bd1fefbc0a19",
+                      "name": "Promo Checkout (renamed)",
+                      "description": "Seasonal promo storefront",
+                      "is_default": false,
+                      "is_active": true,
+                      "created_at": "2026-07-17T10:02:33.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Corpo vazio, transição inválida ou para o mesmo status, valor de `status` desconhecido, `is_default: false`, um `checkout_code` que não é UUID ou um corpo JSON malformado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Invalid transition (e.g. direct ARCHIVED → PUBLISHED)": {
+                    "value": {
+                      "code": "INVALID_STATUS_TRANSITION",
+                      "messages": [
+                        "Cannot transition from 'ARCHIVED' via this operation"
+                      ]
+                    }
+                  },
+                  "Empty body": {
+                    "value": {
+                      "code": "INVALID_PATCH_BODY",
+                      "messages": [
+                        "body is empty"
+                      ]
+                    }
+                  },
+                  "is_default false": {
+                    "value": {
+                      "code": "INVALID_OPERATION",
+                      "messages": [
+                        "isDefault: false direct demotion is not allowed; promote another checkout instead"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado, ou a conta não está na allowlist do beta.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "O checkout não foi encontrado para esta conta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Checkout not found": {
+                    "value": {
+                      "code": "CHECKOUT_NOT_FOUND",
+                      "messages": [
+                        "No Custom Checkout found for checkout_code: 0b28ff66-15f1-44c1-8d1e-bd1fefbc0a19"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Nome duplicado, ou o checkout é o padrão da conta e não pode ser arquivado nem despublicado.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Duplicate name": {
+                    "value": {
+                      "code": "DUPLICATE_CHECKOUT_NAME",
+                      "messages": [
+                        "A Custom Checkout with name 'Promo Checkout' already exists for this account"
+                      ]
+                    }
+                  },
+                  "Archive the default": {
+                    "value": {
+                      "code": "CANNOT_ARCHIVE_DEFAULT_CHECKOUT",
+                      "messages": [
+                        "Cannot archive the default Custom Checkout. Promote another checkout as default first."
+                      ]
+                    }
+                  },
+                  "Unpublish the default": {
+                    "value": {
+                      "code": "CANNOT_UNPUBLISH_DEFAULT_CHECKOUT",
+                      "messages": [
+                        "Cannot unpublish the default Custom Checkout. Promote another checkout as default first."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

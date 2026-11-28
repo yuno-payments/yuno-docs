@@ -1,0 +1,586 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkout-builder",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production (US)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "description": "Chave de API pública do lojista. Encontrada no Dashboard da Yuno → Settings → API Keys."
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "description": "Chave secreta privada do lojista, usada em par com a chave pública. Nunca a incorpore em código do lado do cliente."
+      },
+      "accountCode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Account-Code",
+        "description": "UUID da conta do lojista que delimita o escopo da requisição. O tenant é identificado somente a partir deste cabeçalho."
+      }
+    }
+  },
+  "security": [
+    {
+      "publicApiKey": [],
+      "privateSecretKey": [],
+      "accountCode": []
+    }
+  ],
+  "paths": {
+    "/checkouts/{checkout_code}": {
+      "put": {
+        "summary": "Publicar configuração do checkout",
+        "description": "Grava a configuração e/ou o estilo do checkout em uma única chamada. O corpo pode conter um objeto `config`, um objeto `styling` ou ambos; pelo menos um é obrigatório. Quando o corpo inclui `config`, `name` também é obrigatório. Cada parte é validada de forma independente antes de ser aplicada; se alguma regra falhar, a requisição é rejeitada com um único 400 agregado e nada é aplicado. A configuração é um upsert parcial (os meios de pagamento omitidos mantêm o estado anterior; não é possível criar novos meios). O estilo é um merge parcial (campos omitidos ou nulos são preservados).",
+        "operationId": "publish-checkout-configuration",
+        "parameters": [
+          {
+            "name": "checkout_code",
+            "in": "path",
+            "description": "O identificador único do checkout a ser atualizado (UUID, 36 caracteres). Valores que não são UUID são rejeitados com 400 antes do processamento.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "UUID gerado pelo cliente. Reenviar a mesma requisição com a mesma chave é seguro e não publicará duas vezes.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "Configuration and styling": {
+                  "value": {
+                    "name": "Main Checkout",
+                    "config": {
+                      "payment_methods": [
+                        {
+                          "payment_method_type": "CARD",
+                          "type": "PAYMENT_METHOD",
+                          "order_to_show": 0,
+                          "is_active": true,
+                          "active_enrollment_type": "BOTH",
+                          "conditions_to_override": [],
+                          "required_fields_to_override": {
+                            "is_active": true,
+                            "fields": [
+                              {
+                                "field_name": "security_code",
+                                "is_active": true,
+                                "current_value": "ALWAYS",
+                                "conditions_to_override": [
+                                  {
+                                    "name": "BR only",
+                                    "is_active": true,
+                                    "priority": 1,
+                                    "conditions": [
+                                      {
+                                        "condition_type": "COUNTRY",
+                                        "conditional": "ONE_OF",
+                                        "values": [
+                                          "BR"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "enrollment_fields": [],
+                            "is_enrollment_active": true
+                          }
+                        }
+                      ],
+                      "general_settings": {
+                        "country_documents": [
+                          {
+                            "country_code": "BR",
+                            "documents": [
+                              "CPF",
+                              "CNPJ"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "styling": {
+                      "styles": {
+                        "global": {
+                          "accent_color": "#1A73E8",
+                          "primary_background_color": "#FFFFFF",
+                          "font_family": "Inter"
+                        },
+                        "header": {
+                          "logo": "https://cdn.example.com/logo.png",
+                          "font_weight": 600
+                        },
+                        "button": {
+                          "corner_radius": 8,
+                          "font_weight": 500
+                        }
+                      },
+                      "flags": {
+                        "force_default_styles": false
+                      }
+                    }
+                  }
+                },
+                "Hide a field on the card form": {
+                  "value": {
+                    "name": "My Checkout",
+                    "config": {
+                      "payment_methods": [
+                        {
+                          "payment_method_type": "CARD",
+                          "type": "PAYMENT_METHOD",
+                          "order_to_show": 1,
+                          "is_active": true,
+                          "active_enrollment_type": "BOTH",
+                          "required_fields_to_override": {
+                            "is_active": true,
+                            "fields": [
+                              {
+                                "field_name": "phone",
+                                "is_active": false
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "type": "object",
+                "description": "Pelo menos um entre `config` e `styling` é obrigatório. `name` é obrigatório quando `config` é enviado.",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50,
+                    "description": "Nome da configuração do checkout (de 1 a 50 caracteres). Obrigatório quando o corpo inclui `config`; uma requisição com `config` e sem `name` retorna 400 `name must not be blank`. Uma requisição só de estilo não precisa dele. O valor substitui o nome atual do checkout, então envie o nome atual para mantê-lo.",
+                    "example": "Main checkout"
+                  },
+                  "config": {
+                    "type": "object",
+                    "description": "Configuração do checkout: meios de pagamento e configurações gerais. Upsert parcial; os meios de pagamento omitidos mantêm o estado anterior.",
+                    "properties": {
+                      "payment_methods": {
+                        "type": "array",
+                        "description": "Meios de pagamento a atualizar. A ordem é definida por `order_to_show` (menor = primeiro).",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "payment_method_type": {
+                              "type": "string",
+                              "description": "Tipo de meio de pagamento, por exemplo, CARD, PAYPAL, NU_PAY, GOOGLE_PAY.",
+                              "example": "CARD"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "PAYMENT_METHOD",
+                                "ENROLLMENT"
+                              ],
+                              "description": "Qual linha armazenada esta entrada atualiza para o `payment_method_type` informado: o fluxo de pagamento único (`PAYMENT_METHOD`) ou o fluxo de cadastro/cartão salvo (`ENROLLMENT`). A linha existente é localizada por este campo; omiti-lo significa que nenhuma linha corresponde, então `fields` é ignorado silenciosamente (a requisição ainda retorna 200, mas o formulário de cartão sem cadastro não muda). `enrollment_fields` continua valendo quando o meio de pagamento já tem uma linha de cadastro armazenada."
+                            },
+                            "order_to_show": {
+                              "type": "integer",
+                              "description": "Ordem de exibição (>= 0). O menor é exibido primeiro.",
+                              "example": 0
+                            },
+                            "is_active": {
+                              "type": "boolean",
+                              "description": "Indica se o meio é oferecido.",
+                              "example": true
+                            },
+                            "active_enrollment_type": {
+                              "type": "string",
+                              "enum": [
+                                "ENROLLMENT",
+                                "NO_ENROLLMENT",
+                                "BOTH",
+                                "NONE"
+                              ],
+                              "description": "Postura de cadastro do meio."
+                            },
+                            "conditions_to_override": {
+                              "type": "array",
+                              "description": "Conjuntos de condições no nível do meio de pagamento que controlam quando o meio aparece. Um `code` de conjunto (UUID) fornecido pelo cliente é preservado.",
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            "required_fields_to_override": {
+                              "type": "object",
+                              "description": "Configuração por campo. `fields` = fluxo sem cadastro; `enrollment_fields` = fluxo com cadastro (cartão salvo). No máximo um conjunto de condições por campo (um segundo é rejeitado com 400).",
+                              "properties": {
+                                "is_active": {
+                                  "type": "boolean"
+                                },
+                                "fields": {
+                                  "type": "array",
+                                  "description": "Substituições por campo para o fluxo sem cadastro (pagamento único).",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "field_name": {
+                                        "type": "string",
+                                        "description": "O campo do formulário a substituir, por exemplo, `phone`, `security_code`.",
+                                        "example": "phone"
+                                      },
+                                      "is_active": {
+                                        "type": "boolean",
+                                        "description": "Indica se o campo é exibido/obrigatório no formulário. Esta é a chave liga/desliga do campo: defina `false` para ocultá-lo.",
+                                        "example": false
+                                      },
+                                      "current_value": {
+                                        "type": "string",
+                                        "enum": [
+                                          "ALWAYS",
+                                          "FIRST_TIME",
+                                          "NONE"
+                                        ],
+                                        "description": "Um valor fixo a aplicar em vez de deixar o pagador informar um. Só faz sentido para `security_code`. `NONE` retorna 400 no fluxo CARD sem cadastro. Não tem relação com `is_active`.",
+                                        "example": "ALWAYS"
+                                      },
+                                      "conditions_to_override": {
+                                        "type": "array",
+                                        "description": "Condições que controlam quando esta substituição de campo se aplica, por exemplo, por país. No máximo um conjunto de condições por campo; um segundo é rejeitado com 400.",
+                                        "items": {
+                                          "type": "object"
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "field_name",
+                                      "is_active"
+                                    ]
+                                  }
+                                },
+                                "enrollment_fields": {
+                                  "type": "array",
+                                  "description": "Substituições por campo para o fluxo com cadastro (cartão salvo). Mesmo formato de `fields`.",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "field_name": {
+                                        "type": "string",
+                                        "description": "O campo do formulário a substituir, por exemplo, `phone`, `security_code`.",
+                                        "example": "phone"
+                                      },
+                                      "is_active": {
+                                        "type": "boolean",
+                                        "description": "Indica se o campo é exibido/obrigatório no formulário. Esta é a chave liga/desliga do campo: defina `false` para ocultá-lo.",
+                                        "example": false
+                                      },
+                                      "current_value": {
+                                        "type": "string",
+                                        "enum": [
+                                          "ALWAYS",
+                                          "FIRST_TIME",
+                                          "NONE"
+                                        ],
+                                        "description": "Um valor fixo a aplicar em vez de deixar o pagador informar um. Só faz sentido para `security_code`. `NONE` retorna 400 no fluxo CARD sem cadastro. Não tem relação com `is_active`.",
+                                        "example": "ALWAYS"
+                                      },
+                                      "conditions_to_override": {
+                                        "type": "array",
+                                        "description": "Condições que controlam quando esta substituição de campo se aplica, por exemplo, por país. No máximo um conjunto de condições por campo; um segundo é rejeitado com 400.",
+                                        "items": {
+                                          "type": "object"
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "field_name",
+                                      "is_active"
+                                    ]
+                                  }
+                                },
+                                "is_enrollment_active": {
+                                  "type": "boolean"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "general_settings": {
+                        "type": "object",
+                        "properties": {
+                          "country_documents": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "country_code": {
+                                  "type": "string",
+                                  "description": "Código de país ISO 3166-1 alpha-2.",
+                                  "example": "BR"
+                                },
+                                "documents": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "example": [
+                                    "CPF",
+                                    "CNPJ"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "styling": {
+                    "type": "object",
+                    "description": "Estilo e configurações do SDK do checkout. Merge parcial; campos omitidos ou nulos são preservados; use `flags.force_default_styles` para redefinir. `settings.urls`, `settings.click_to_pay`, `settings.form` e `settings.google_pay` estão bloqueados no beta e são rejeitados se enviados com um valor não vazio.",
+                    "properties": {
+                      "styles": {
+                        "type": "object",
+                        "description": "Estilos global, header e button. Todos os campos `*_color` devem ser uma cor hexadecimal de 6 ou 8 dígitos (#RRGGBB / #RRGGBBAA); `font_weight` deve ser um de 100..900 (de 100 em 100); `font_family` deve estar no catálogo suportado ou declarado em `external_fonts`. Os logos devem ser uma URL HTTPS para um host público ou um caminho relativo (sem data:/SVG/javascript:)."
+                      },
+                      "settings": {
+                        "type": "object",
+                        "description": "Configurações do SDK, repassadas ao SDK do checkout. `settings.urls`, `settings.click_to_pay`, `settings.form` e `settings.google_pay` estão bloqueados no beta e são rejeitados se enviados com um valor não vazio.",
+                        "properties": {
+                          "card": {
+                            "type": "object",
+                            "description": "Configurações do SDK de cartão.",
+                            "properties": {
+                              "save_on_success": {
+                                "type": "boolean",
+                                "description": "Oferecer salvar o cartão para pagamentos futuros."
+                              },
+                              "visualization_mode": {
+                                "type": "string",
+                                "description": "Modo de visualização do formulário de cartão."
+                              },
+                              "enable_ocr": {
+                                "type": "boolean",
+                                "description": "Habilitar a leitura do cartão (OCR)."
+                              },
+                              "credit_card_only_processing": {
+                                "type": "boolean",
+                                "description": "Processar apenas cartões de crédito."
+                              },
+                              "enable_payment_retry": {
+                                "type": "boolean",
+                                "description": "Permitir tentar novamente um pagamento com cartão recusado."
+                              },
+                              "default_network": {
+                                "type": "string",
+                                "description": "Rede de cartão padrão: DOM ou INT."
+                              }
+                            }
+                          },
+                          "sdk_type": {
+                            "type": "object"
+                          },
+                          "web_sdk": {
+                            "type": "object"
+                          },
+                          "payment_method_list": {
+                            "type": "object"
+                          },
+                          "ui": {
+                            "type": "object"
+                          }
+                        }
+                      },
+                      "flags": {
+                        "type": "object",
+                        "properties": {
+                          "force_default_styles": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      "external_fonts": {
+                        "type": "array",
+                        "description": "Fontes personalizadas. `files[].url` deve ser uma URL HTTPS para um host público.",
+                        "items": {
+                          "type": "object"
+                        }
+                      },
+                      "payment_link_styles": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resumo do checkout atualizado. A configuração e o estilo não são retornados nesta resposta; leia-os com [Consultar configuração do checkout](/pt-br/reference/checkout-builder/fetch-checkout-configuration). O identificador é exposto como o `id` de nível superior.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Success": {
+                    "value": {
+                      "id": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
+                      "name": "Main Checkout",
+                      "description": "Default checkout",
+                      "is_default": true,
+                      "is_active": true,
+                      "created_at": "2026-10-22T03:16:36Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "8005ca91-dcfb-4428-b9f6-49c6e3446474"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Main Checkout"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "Default checkout"
+                    },
+                    "is_default": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "is_active": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2026-10-22T03:16:36Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha na validação. Todas as violações são agregadas em uma única resposta. Um corpo JSON malformado também retorna 400.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Invalid parameters": {
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "payment_methods[0].order_to_show must be >= 0",
+                        "styles.global.accent_color must be a 6- or 8-digit hex color (#RRGGBB or #RRGGBBAA)"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_PARAMETERS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado, ou a conta não está na allowlist do beta.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": [
+                        "Not authenticated"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "NOT_AUTHENTICATED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "O checkout não foi encontrado para esta conta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  }
+}
